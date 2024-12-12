@@ -17,46 +17,57 @@
 from ... import types
 from .. import pytest_helper
 
-# TODO(b/383526328)
-# TODO(b/383524789)
-# test_table: list[pytest_helper.TestTableItem] = [
-#     pytest_helper.TestTableItem(
-#         name='test_video_audio_uri_with_media_resolution',
-#         parameters=types._GenerateContentParameters(
-#             model='gemini-2.0-flash-exp',
-#             contents=[
-#                 """
-#                 Is the audio related to the video?
-#                 If so, how?
-#                 What are the common themes?
-#                 What are the different emphases?
-#                 """,
-#                 types.Part.from_uri(
-#                     'gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
-#                     'video/mp4',
-#                 ),
-#                 types.Part.from_uri(
-#                     'gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
-#                     'audio/mpeg',
-#                 ),
-#             ],
-#             config={
-#                 'system_instruction': (
-#                     'you are a helpful assistant for people with visual and hearing'
-#                     ' disabilities.'),
-#                 'media_resolution': 'MEDIA_RESOLUTION_LOW',
-#             },
-#         ),
-#         exception_if_mldev='not supported',
-#         has_union=True,
-#     )]
+test_table: list[pytest_helper.TestTableItem] = [
+    pytest_helper.TestTableItem(
+        name='test_video_audio_uri_with_media_resolution',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=[
+                types.Content(
+                    role='user',
+                    parts=[types.Part.from_text(
+                        'Is the audio related to the video? '
+                        'If so, how? '
+                        'What are the common themes? '
+                        'What are the different emphases?'
+                    )],
+                ),
+                types.Content(
+                    role='user',
+                    parts=[types.Part.from_uri(
+                        'gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
+                        'video/mp4',
+                    )],
+                ),
+                types.Content(
+                    role='user',
+                    parts=[types.Part.from_uri(
+                        'gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
+                        'audio/mpeg',
+                    )],
+                ),
+            ],
+            config={
+                'system_instruction': types.Content(
+                    role='user',
+                    parts=[types.Part.from_text(
+                        'you are a helpful assistant for people with visual '
+                        'and hearing disabilities.'
+                    )],
+                ),
+              'media_resolution': 'MEDIA_RESOLUTION_LOW',
+            },
+        ),
+        exception_if_mldev='not supported',
+    )
+]
 
 
 pytestmark = pytest_helper.setup(
     file=__file__,
     globals_for_file=globals(),
     test_method='models.generate_content',
-    #test_table=test_table,
+    test_table=test_table,
 )
 
 

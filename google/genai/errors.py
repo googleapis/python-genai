@@ -29,29 +29,49 @@ class APIError(Exception):
   code: int
   response: requests.Response
 
-  message: str = ''
-  status: str = 'UNKNOWN'
-  details: Optional[Any] = None
+  status: Optional[str] = None
+  message: Optional[str] = None
+  response: Optional[Any] = None
 
   def __init__(
       self, code: int, response: Union[requests.Response, 'ReplayResponse']
   ):
-    self.code = code
     self.response = response
 
     if isinstance(response, requests.Response):
       try:
-        raw_error = response.json().get('error', {})
+        # do not do any extra muanipulation on the response.
+        # return the raw response json as is.
+        response_json = response.json()
       except requests.exceptions.JSONDecodeError:
-        raw_error = {'message': response.text, 'status': response.reason}
+        response_json = {
+            'message': response.text,
+            'status': response.reason,
+        }
     else:
-      raw_error = response.body_segments[0].get('error', {})
+      response_json = response.body_segments[0].get('error', {})
 
-    self.message = raw_error.get('message', '')
-    self.status = raw_error.get('status', 'UNKNOWN')
-    self.details = raw_error.get('details', None)
+    self.details = response_json
+    self.message = self._get_message(response_json)
+    self.status = self._get_status(response_json)
+    self.code = code if code else self._get_code(response_json)
 
-    super().__init__(f'{self.code} {self.status}. {self.message}')
+    super().__init__(f'{self.code} {self.status}. {self.details}')
+
+  def _get_status(self, response_json):
+    return response_json.get(
+        'status', response_json.get('error', {}).get('status', None)
+    )
+
+  def _get_message(self, response_json):
+    return response_json.get(
+        'message', response_json.get('error', {}).get('message', None)
+    )
+
+  def _get_code(self, response_json):
+    return response_json.get(
+        'code', response_json.get('error', {}).get('code', None)
+    )
 
   def _to_replay_record(self):
     """Returns a dictionary representation of the error for replay recording.

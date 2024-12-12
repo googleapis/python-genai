@@ -99,6 +99,15 @@ def test_vertex_from_env(monkeypatch):
   assert isinstance(client.aio.live.api_client, api_client.ApiClient)
 
 
+def test_websocket_base_url():
+  base_url = 'https://test.com'
+  api_client = gl_client.ApiClient(
+      api_key = 'google_api_key',
+      http_options={'base_url': base_url},
+  )
+  assert api_client._websocket_base_url() == 'wss://test.com'
+
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_text(

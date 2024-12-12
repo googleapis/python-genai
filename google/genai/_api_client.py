@@ -51,7 +51,7 @@ class HttpOptions(TypedDict):
 def _append_library_version_headers(headers: dict[str, str]) -> None:
   """Appends the telemetry header to the headers dict."""
   # TODO: Automate revisions to the SDK library version.
-  library_label = f'google-genai-sdk/0.2.1'
+  library_label = f'google-genai-sdk/0.2.2'
   language_label = 'gl-python/' + sys.version.split()[0]
   version_header_value = f'{library_label} {language_label}'
   if (
