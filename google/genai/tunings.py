@@ -24,30 +24,6 @@ from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
 
-def _GetTuningJobConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _GetTuningJobConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
 def _GetTuningJobParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -96,6 +72,7 @@ def _ListTuningJobsConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['page_size']) is not None:
     setv(
         parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
@@ -120,6 +97,7 @@ def _ListTuningJobsConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['page_size']) is not None:
     setv(
         parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
@@ -275,8 +253,6 @@ def _CreateTuningJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     raise ValueError(
@@ -333,8 +309,6 @@ def _CreateTuningJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     setv(
@@ -503,8 +477,6 @@ def _CreateDistillationJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     raise ValueError(
@@ -549,8 +521,6 @@ def _CreateDistillationJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     setv(
@@ -983,9 +953,12 @@ class Tunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1033,9 +1006,12 @@ class Tunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1095,9 +1071,12 @@ class Tunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1158,9 +1137,12 @@ class Tunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1255,9 +1237,12 @@ class AsyncTunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1305,9 +1290,12 @@ class AsyncTunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1367,9 +1355,12 @@ class AsyncTunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1430,9 +1421,12 @@ class AsyncTunings(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 

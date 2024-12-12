@@ -21,6 +21,7 @@ import pytest
 from ... import types
 from .. import pytest_helper
 
+test_http_options = {'headers': {'test': 'headers'}}
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
@@ -29,7 +30,13 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_list_models_with_config',
-        parameters=types._ListModelsParameters(config={'page_size': 3}),
+         parameters=types._ListModelsParameters(config={'page_size': 3}),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_list_models_with_http_options_in_method',
+        parameters=types._ListModelsParameters(
+            config={'page_size': 3, 'http_options': test_http_options}
+        ),
     ),
 ]
 pytestmark = pytest_helper.setup(
@@ -41,7 +48,9 @@ pytestmark = pytest_helper.setup(
 
 
 def test_pager(client):
-  models = client.models.list(config={'page_size': 10})
+  models = client.models.list(
+      config={'page_size': 10, 'http_options': test_http_options}
+  )
 
   assert models.name == 'models'
   assert models.page_size == 10
@@ -56,7 +65,9 @@ def test_pager(client):
 
 @pytest.mark.asyncio
 async def test_async_pager(client):
-  models = await client.aio.models.list(config={'page_size': 10})
+  models = await client.aio.models.list(
+      config={'page_size': 10, 'http_options': test_http_options}
+  )
 
   assert models.name == 'models'
   assert models.page_size == 10

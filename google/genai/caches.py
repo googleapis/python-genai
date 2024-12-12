@@ -632,8 +632,6 @@ def _CreateCachedContentConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['ttl']) is not None:
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
@@ -695,8 +693,6 @@ def _CreateCachedContentConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['ttl']) is not None:
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
@@ -802,30 +798,6 @@ def _CreateCachedContentParameters_to_vertex(
   return to_object
 
 
-def _GetCachedContentConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _GetCachedContentConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
 def _GetCachedContentParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -837,15 +809,6 @@ def _GetCachedContentParameters_to_mldev(
         to_object,
         ['_url', 'name'],
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GetCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
     )
 
   return to_object
@@ -864,39 +827,6 @@ def _GetCachedContentParameters_to_vertex(
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GetCachedContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _DeleteCachedContentConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _DeleteCachedContentConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
   return to_object
 
 
@@ -911,15 +841,6 @@ def _DeleteCachedContentParameters_to_mldev(
         to_object,
         ['_url', 'name'],
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _DeleteCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
     )
 
   return to_object
@@ -938,15 +859,6 @@ def _DeleteCachedContentParameters_to_vertex(
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _DeleteCachedContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
   return to_object
 
 
@@ -956,8 +868,6 @@ def _UpdateCachedContentConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['ttl']) is not None:
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
@@ -974,8 +884,6 @@ def _UpdateCachedContentConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['ttl']) is not None:
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
@@ -1042,6 +950,7 @@ def _ListCachedContentsConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['page_size']) is not None:
     setv(
         parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
@@ -1063,6 +972,7 @@ def _ListCachedContentsConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['page_size']) is not None:
     setv(
         parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
@@ -1285,9 +1195,12 @@ class Caches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1338,9 +1251,12 @@ class Caches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1393,9 +1309,12 @@ class Caches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1454,9 +1373,12 @@ class Caches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1504,9 +1426,12 @@ class Caches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1587,9 +1512,12 @@ class AsyncCaches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1640,9 +1568,12 @@ class AsyncCaches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1695,9 +1626,12 @@ class AsyncCaches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1756,9 +1690,12 @@ class AsyncCaches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1806,9 +1743,12 @@ class AsyncCaches(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 

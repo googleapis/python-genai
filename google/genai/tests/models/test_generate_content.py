@@ -34,7 +34,19 @@ safety_settings_with_method = [
     },
 ]
 
+test_http_options = {'api_version': 'v1', 'headers': {'test': 'headers'}}
+
 test_table: list[pytest_helper.TestTableItem] = [
+    pytest_helper.TestTableItem(
+        name='test_http_options_in_method',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash-002',
+            contents=t.t_contents(None, 'What is your name?'),
+            config={
+                'http_options': test_http_options,
+            },
+        ),
+    ),
     pytest_helper.TestTableItem(
         name='test_union_contents_is_string',
         override_replay_id='test_sync',
@@ -184,14 +196,22 @@ pytest_plugins = ('pytest_asyncio',)
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+      },
   )
   assert response.text
 
 
 def test_sync_stream(client):
   response = client.models.generate_content_stream(
-      model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+      },
   )
   chunks = 0
   for part in response:
@@ -205,7 +225,10 @@ def test_sync_stream(client):
 async def test_async_stream(client):
   chunks = 0
   async for part in client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+      model='gemini-1.5-flash', contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+      },
   ):
     chunks += 1
     assert part.text is not None or part.candidates[0].finish_reason
@@ -520,9 +543,7 @@ def test_catch_stack_trace_in_error_handling(client):
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents='What is your name?',
-        config={
-            'response_modalities': ['AUDIO']
-        },
+        config={'response_modalities': ['AUDIO']},
     )
   except errors.ClientError as e:
     # Note that the stack trace is truncated in replay file, therefore this is

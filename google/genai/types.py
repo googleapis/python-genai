@@ -1451,6 +1451,9 @@ class GenerateContentConfig(_common.BaseModel):
   <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
   """
 
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   system_instruction: Optional[ContentUnion] = Field(
       default=None,
       description="""Instructions for the model to steer it toward better performance.
@@ -1598,6 +1601,9 @@ class GenerateContentConfigDict(TypedDict, total=False):
   For more information, see `Content generation parameters
   <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
   """
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
 
   system_instruction: Optional[ContentUnionDict]
   """Instructions for the model to steer it toward better performance.
@@ -3678,15 +3684,39 @@ UpscaleImageResponseOrDict = Union[
 ]
 
 
+class GetModelConfig(_common.BaseModel):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class GetModelConfigDict(TypedDict, total=False):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
+
+
+GetModelConfigOrDict = Union[GetModelConfig, GetModelConfigDict]
+
+
 class _GetModelParameters(_common.BaseModel):
 
   model: Optional[str] = Field(default=None, description="""""")
+  config: Optional[GetModelConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
 
 
 class _GetModelParametersDict(TypedDict, total=False):
 
   model: Optional[str]
   """"""
+
+  config: Optional[GetModelConfigDict]
+  """Optional parameters for the request."""
 
 
 _GetModelParametersOrDict = Union[_GetModelParameters, _GetModelParametersDict]
@@ -3839,12 +3869,18 @@ ModelOrDict = Union[Model, ModelDict]
 
 class ListModelsConfig(_common.BaseModel):
 
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   page_size: Optional[int] = Field(default=None, description="""""")
   page_token: Optional[str] = Field(default=None, description="""""")
   filter: Optional[str] = Field(default=None, description="""""")
 
 
 class ListModelsConfigDict(TypedDict, total=False):
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
 
   page_size: Optional[int]
   """"""
@@ -3895,11 +3931,17 @@ ListModelsResponseOrDict = Union[ListModelsResponse, ListModelsResponseDict]
 
 class UpdateModelConfig(_common.BaseModel):
 
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   display_name: Optional[str] = Field(default=None, description="""""")
   description: Optional[str] = Field(default=None, description="""""")
 
 
 class UpdateModelConfigDict(TypedDict, total=False):
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
 
   display_name: Optional[str]
   """"""
@@ -3931,15 +3973,41 @@ _UpdateModelParametersOrDict = Union[
 ]
 
 
+class DeleteModelConfig(_common.BaseModel):
+
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  model: Optional[str] = Field(default=None, description="""""")
+
+
+class DeleteModelConfigDict(TypedDict, total=False):
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
+
+  model: Optional[str]
+  """"""
+
+
+DeleteModelConfigOrDict = Union[DeleteModelConfig, DeleteModelConfigDict]
+
+
 class _DeleteModelParameters(_common.BaseModel):
 
   model: Optional[str] = Field(default=None, description="""""")
+  config: Optional[DeleteModelConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
 
 
 class _DeleteModelParametersDict(TypedDict, total=False):
 
   model: Optional[str]
   """"""
+
+  config: Optional[DeleteModelConfigDict]
+  """Optional parameters for the request."""
 
 
 _DeleteModelParametersOrDict = Union[
@@ -5202,6 +5270,9 @@ TuningJobOrDict = Union[TuningJob, TuningJobDict]
 class ListTuningJobsConfig(_common.BaseModel):
   """Configuration for the list tuning jobs method."""
 
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   page_size: Optional[int] = Field(default=None, description="""""")
   page_token: Optional[str] = Field(default=None, description="""""")
   filter: Optional[str] = Field(default=None, description="""""")
@@ -5209,6 +5280,9 @@ class ListTuningJobsConfig(_common.BaseModel):
 
 class ListTuningJobsConfigDict(TypedDict, total=False):
   """Configuration for the list tuning jobs method."""
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
 
   page_size: Optional[int]
   """"""
@@ -6008,12 +6082,18 @@ _UpdateCachedContentParametersOrDict = Union[
 class ListCachedContentsConfig(_common.BaseModel):
   """Config for caches.list method."""
 
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   page_size: Optional[int] = Field(default=None, description="""""")
   page_token: Optional[str] = Field(default=None, description="""""")
 
 
 class ListCachedContentsConfigDict(TypedDict, total=False):
   """Config for caches.list method."""
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
 
   page_size: Optional[int]
   """"""
@@ -6907,6 +6987,26 @@ ListBatchJobResponseOrDict = Union[
 ]
 
 
+class DeleteBatchJobConfig(_common.BaseModel):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class DeleteBatchJobConfigDict(TypedDict, total=False):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
+
+
+DeleteBatchJobConfigOrDict = Union[
+    DeleteBatchJobConfig, DeleteBatchJobConfigDict
+]
+
+
 class _DeleteBatchJobParameters(_common.BaseModel):
   """Config class for batches.delete parameters."""
 
@@ -6916,6 +7016,9 @@ class _DeleteBatchJobParameters(_common.BaseModel):
     Example: "projects/.../locations/.../batchPredictionJobs/456"
     or "456" when project and location are initialized in the client.
     """,
+  )
+  config: Optional[DeleteBatchJobConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
   )
 
 
@@ -6927,6 +7030,9 @@ class _DeleteBatchJobParametersDict(TypedDict, total=False):
     Example: "projects/.../locations/.../batchPredictionJobs/456"
     or "456" when project and location are initialized in the client.
     """
+
+  config: Optional[DeleteBatchJobConfigDict]
+  """Optional parameters for the request."""
 
 
 _DeleteBatchJobParametersOrDict = Union[

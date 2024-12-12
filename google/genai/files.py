@@ -32,8 +32,6 @@ def _ListFilesConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['page_size']) is not None:
     setv(
@@ -56,8 +54,6 @@ def _ListFilesConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['page_size']) is not None:
     setv(
@@ -236,30 +232,6 @@ def _File_to_vertex(
   return to_object
 
 
-def _CreateFileConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _CreateFileConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
 def _CreateFileParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -273,15 +245,6 @@ def _CreateFileParameters_to_mldev(
         _File_to_mldev(api_client, getv(from_object, ['file']), to_object),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateFileConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
   return to_object
 
 
@@ -293,33 +256,6 @@ def _CreateFileParameters_to_vertex(
   to_object = {}
   if getv(from_object, ['file']) is not None:
     raise ValueError('file parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Vertex AI.')
-
-  return to_object
-
-
-def _GetFileConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _GetFileConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   return to_object
 
@@ -360,30 +296,6 @@ def _GetFileParameters_to_vertex(
 
   if getv(from_object, ['config']) is not None:
     raise ValueError('config parameter is not supported in Vertex AI.')
-
-  return to_object
-
-
-def _DeleteFileConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _DeleteFileConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   return to_object
 
@@ -626,9 +538,12 @@ class Files(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -673,9 +588,12 @@ class Files(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -734,9 +652,12 @@ class Files(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -788,9 +709,12 @@ class Files(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -940,9 +864,12 @@ class AsyncFiles(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -987,9 +914,12 @@ class AsyncFiles(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1048,9 +978,12 @@ class AsyncFiles(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
@@ -1102,9 +1035,12 @@ class AsyncFiles(_common.BaseModule):
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    http_options = (
+        parameter_model.config.http_options
+        if (hasattr(parameter_model, 'config') and parameter_model.config)
+        else None
+    )
+    request_dict.pop('config', None)
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.apply_base64_encoding(request_dict)
 
