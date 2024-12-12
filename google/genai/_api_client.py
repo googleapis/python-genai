@@ -24,7 +24,7 @@ import json
 import os
 import sys
 from typing import Any, Optional, TypedDict, Union
-import urllib
+from urllib.parse import urlparse, urlunparse
 
 import google.auth
 import google.auth.credentials
@@ -87,6 +87,13 @@ def _patch_http_options(
       copy_option[k] = v
   _append_library_version_headers(copy_option['headers'])
   return copy_option
+
+
+def _join_url_path(base_url: str, path: str) -> str:
+  parsed_base = urlparse(base_url)
+  base_path = parsed_base.path[:-1] if parsed_base.path.endswith('/') else parsed_base.path
+  path = path[1:] if path.startswith('/') else path
+  return urlunparse(parsed_base._replace(path=base_path + '/' + path))
 
 
 @dataclass
@@ -216,9 +223,10 @@ class ApiClient:
       patched_http_options = self._http_options
     if self.vertexai and not path.startswith('projects/'):
       path = f'projects/{self.project}/locations/{self.location}/' + path
-    url = urllib.parse.urljoin(
+    url = _join_url_path(
         patched_http_options['base_url'],
-        patched_http_options['api_version'] + '/' + path)
+        patched_http_options['api_version'] + '/' + path,
+    )
     return HttpRequest(
         method=http_method,
         url=url,
@@ -265,13 +273,13 @@ class ApiClient:
         data = http_request.data
 
     http_session = requests.Session()
-    async_request = requests.Request(
+    request = requests.Request(
         method=http_request.method,
         url=http_request.url,
         headers=http_request.headers,
         data=data,
     ).prepare()
-    response = http_session.send(async_request, stream=stream)
+    response = http_session.send(request, stream=stream)
     errors.APIError.raise_for_response(response)
     return HttpResponse(
         response.headers, response if stream else [response.text]

@@ -605,6 +605,7 @@ class Files(_common.BaseModule):
     Usage:
 
     .. code-block:: python
+
       pager = client.files.list(config={'page_size': 10})
       for file in pager.page:
         print(file.name)
@@ -712,6 +713,7 @@ class Files(_common.BaseModule):
     Usage:
 
     .. code-block:: python
+
       file = client.files.get(name='files/...')
       print(file.uri)
     """
@@ -766,6 +768,7 @@ class Files(_common.BaseModule):
     Usage:
 
     .. code-block:: python
+
       client.files.delete(name='files/...')
     """
 
@@ -916,6 +919,7 @@ class AsyncFiles(_common.BaseModule):
     Usage:
 
     .. code-block:: python
+
       pager = client.files.list(config={'page_size': 10})
       for file in pager.page:
         print(file.name)
@@ -1023,6 +1027,7 @@ class AsyncFiles(_common.BaseModule):
     Usage:
 
     .. code-block:: python
+
       file = client.files.get(name='files/...')
       print(file.uri)
     """
@@ -1077,6 +1082,7 @@ class AsyncFiles(_common.BaseModule):
     Usage:
 
     .. code-block:: python
+
       client.files.delete(name='files/...')
     """
 

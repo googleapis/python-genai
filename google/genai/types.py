@@ -154,6 +154,14 @@ DynamicRetrievalConfigMode = Literal["MODE_UNSPECIFIED", "MODE_DYNAMIC"]
 FunctionCallingConfigMode = Literal["MODE_UNSPECIFIED", "AUTO", "ANY", "NONE"]
 
 
+MediaResolution = Literal[
+    "MEDIA_RESOLUTION_UNSPECIFIED",
+    "MEDIA_RESOLUTION_LOW",
+    "MEDIA_RESOLUTION_MEDIUM",
+    "MEDIA_RESOLUTION_HIGH",
+]
+
+
 SafetyFilterLevel = Literal[
     "BLOCK_LOW_AND_ABOVE",
     "BLOCK_MEDIUM_AND_ABOVE",
@@ -1524,6 +1532,11 @@ class GenerateContentConfig(_common.BaseModel):
       modalities that the model can return.
       """,
   )
+  media_resolution: Optional[MediaResolution] = Field(
+      default=None,
+      description="""If specified, the media resolution specified will be used.
+    """,
+  )
   speech_config: Optional[SpeechConfigUnion] = Field(
       default=None,
       description="""The speech generation configuration.
@@ -1646,6 +1659,10 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """The requested modalities of the response. Represents the set of
       modalities that the model can return.
       """
+
+  media_resolution: Optional[MediaResolution]
+  """If specified, the media resolution specified will be used.
+    """
 
   speech_config: Optional[SpeechConfigUnionDict]
   """The speech generation configuration.
@@ -4210,10 +4227,31 @@ ComputeTokensResponseOrDict = Union[
 ]
 
 
+class GetTuningJobConfig(_common.BaseModel):
+  """Optional parameters for tunings.get method."""
+
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class GetTuningJobConfigDict(TypedDict, total=False):
+  """Optional parameters for tunings.get method."""
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
+
+
+GetTuningJobConfigOrDict = Union[GetTuningJobConfig, GetTuningJobConfigDict]
+
+
 class _GetTuningJobParameters(_common.BaseModel):
   """Parameters for the get method."""
 
   name: Optional[str] = Field(default=None, description="""""")
+  config: Optional[GetTuningJobConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
 
 
 class _GetTuningJobParametersDict(TypedDict, total=False):
@@ -4221,6 +4259,9 @@ class _GetTuningJobParametersDict(TypedDict, total=False):
 
   name: Optional[str]
   """"""
+
+  config: Optional[GetTuningJobConfigDict]
+  """Optional parameters for the request."""
 
 
 _GetTuningJobParametersOrDict = Union[
@@ -5242,6 +5283,9 @@ TuningValidationDatasetOrDict = Union[
 class CreateTuningJobConfig(_common.BaseModel):
   """Supervised fine-tuning job creation request - optional fields."""
 
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
       description="""Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
@@ -5276,6 +5320,9 @@ class CreateTuningJobConfig(_common.BaseModel):
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
   """Supervised fine-tuning job creation request - optional fields."""
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
   """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -5402,6 +5449,9 @@ DistillationValidationDatasetOrDict = Union[
 class CreateDistillationJobConfig(_common.BaseModel):
   """Distillation job creation request - optional fields."""
 
+  http_options: Optional[dict[str, Any]] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   validation_dataset: Optional[DistillationValidationDataset] = Field(
       default=None,
       description="""Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
@@ -5429,6 +5479,9 @@ class CreateDistillationJobConfig(_common.BaseModel):
 
 class CreateDistillationJobConfigDict(TypedDict, total=False):
   """Distillation job creation request - optional fields."""
+
+  http_options: Optional[dict[str, Any]]
+  """Used to override HTTP request options."""
 
   validation_dataset: Optional[DistillationValidationDatasetDict]
   """Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""

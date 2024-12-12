@@ -30,6 +30,10 @@ def divide_intergers_with_customized_math_rule(
   return numerator // denominator + 1
 
 
+def square_integer(given_integer: int) -> int:
+  return given_integer*given_integer
+
+
 def test_text(client):
   chat = client.chats.create(model='gemini-1.5-flash')
   chat.send_message(
@@ -145,6 +149,30 @@ def test_with_afc_history(client):
   assert '51' in chat_history[3].parts[0].text
 
 
+def test_with_afc_disabled(client):
+  chat = client.chats.create(
+      model='gemini-1.5-flash',
+      config={
+          'tools': [square_integer],
+          'automatic_function_calling': {'disable': True},
+      },
+  )
+  chat.send_message(
+      'Do the square of 3.',
+  )
+  chat_history = chat._curated_history
+
+  assert len(chat_history) == 2
+  assert chat_history[0].role == 'user'
+  assert chat_history[0].parts[0].text == 'Do the square of 3.'
+
+  assert chat_history[1].role == 'model'
+  assert chat_history[1].parts[0].function_call.name == 'square_integer'
+  assert chat_history[1].parts[0].function_call.args == {
+      'given_integer': 3,
+  }
+
+
 @pytest.mark.asyncio
 async def test_with_afc_history_async(client):
   chat = client.aio.chats.create(
@@ -177,6 +205,31 @@ async def test_with_afc_history_async(client):
 
   assert chat_history[3].role == 'model'
   assert '51' in chat_history[3].parts[0].text
+
+
+@pytest.mark.asyncio
+async def test_with_afc_disabled_async(client):
+  chat = client.aio.chats.create(
+      model='gemini-1.5-flash',
+      config={
+          'tools': [square_integer],
+          'automatic_function_calling': {'disable': True},
+      },
+  )
+  await chat.send_message(
+      'Do the square of 3.',
+  )
+  chat_history = chat._curated_history
+
+  assert len(chat_history) == 2
+  assert chat_history[0].role == 'user'
+  assert chat_history[0].parts[0].text == 'Do the square of 3.'
+
+  assert chat_history[1].role == 'model'
+  assert chat_history[1].parts[0].function_call.name == 'square_integer'
+  assert chat_history[1].parts[0].function_call.args == {
+      'given_integer': 3,
+  }
 
 
 @pytest.mark.asyncio

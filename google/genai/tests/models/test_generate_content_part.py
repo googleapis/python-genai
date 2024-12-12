@@ -387,7 +387,6 @@ def test_image_jpeg(client):
   )
 
 
-# TODO (yyyu): Add find ways to test from_uri in MLDev
 def test_from_uri(client):
   # gs://generativeai-downloads/images/scones.jpg isn't supported in MLDev
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
@@ -397,6 +396,20 @@ def test_from_uri(client):
             'What is this image about?',
             types.Part.from_uri(
                 'gs://generativeai-downloads/images/scones.jpg', 'image/jpeg'
+            ),
+        ],
+    )
+
+
+def test_from_uploaded_file_uri(client):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=[
+            'Summarize this file',
+            types.Part.from_uri(
+                'https://generativelanguage.googleapis.com/v1beta/files/w1l20sq33nwn',
+                'text/plain',
             ),
         ],
     )

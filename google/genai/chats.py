@@ -54,6 +54,7 @@ class Chat(_BaseChat):
     Usage:
 
     .. code-block:: python
+
       chat = client.chats.create(model='gemini-1.5-flash')
       response = chat.send_message('tell me a story')
     """
@@ -132,6 +133,7 @@ class AsyncChat(_BaseChat):
     Usage:
 
     .. code-block:: python
+
       chat = client.chats.create(model='gemini-1.5-flash')
       response = chat.send_message('tell me a story')
     """

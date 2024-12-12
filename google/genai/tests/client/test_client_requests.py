@@ -27,6 +27,60 @@ def build_test_client(monkeypatch):
   return Client()
 
 
+def test_join_url_path_base_url_with_trailing_slash_and_path_with_leading_slash():
+  base_url = 'https://fake-url.com/some_path/'
+  path = '/v1beta/models'
+  assert (
+      api_client._join_url_path(base_url, path)
+      == 'https://fake-url.com/some_path/v1beta/models'
+  )
+
+
+def test_join_url_path_with_base_url_with_trailing_slash_and_path_without_leading_slash():
+  base_url = 'https://fake-url.com/some_path/'
+  path = "v1beta/models"
+  assert (
+      api_client._join_url_path(base_url, path)
+      == 'https://fake-url.com/some_path/v1beta/models'
+  )
+
+
+def test_join_url_path_with_base_url_without_trailing_slash_and_path_with_leading_slash():
+  base_url = "https://fake-url.com/some_path"
+  path = "/v1beta/models"
+  assert (
+      api_client._join_url_path(base_url, path)
+      == 'https://fake-url.com/some_path/v1beta/models'
+  )
+
+
+def test_join_url_path_with_base_url_without_trailing_slash_and_path_without_leading_slash():
+  base_url = 'https://fake-url.com/some_path'
+  path = 'v1beta/models'
+  assert (
+      api_client._join_url_path(base_url, path)
+      == 'https://fake-url.com/some_path/v1beta/models'
+  )
+
+
+def test_join_url_path_base_url_without_path_with_trailing_slash():
+  base_url = 'https://fake-url.com/'
+  path = 'v1beta/models'
+  assert (
+      api_client._join_url_path(base_url, path)
+      == 'https://fake-url.com/v1beta/models'
+  )
+
+
+def test_join_url_path_base_url_without_path_without_trailing_slash():
+  base_url = 'https://fake-url.com'
+  path = 'v1beta/models'
+  assert (
+      api_client._join_url_path(base_url, path)
+      == 'https://fake-url.com/v1beta/models'
+  )
+
+
 def test_build_request_sets_library_version_headers(monkeypatch):
   request_client = build_test_client(monkeypatch).models.api_client
   request = request_client._build_request('GET', 'test/path', {'key': 'value'})

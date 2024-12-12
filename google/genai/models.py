@@ -880,6 +880,11 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['response_modalities']),
     )
 
+  if getv(from_object, ['media_resolution']):
+    raise ValueError(
+        'media_resolution parameter is not supported in Google AI.'
+    )
+
   if getv(from_object, ['speech_config']) is not None:
     setv(
         to_object,
@@ -1020,6 +1025,11 @@ def _GenerateContentConfig_to_vertex(
         to_object,
         ['responseModalities'],
         getv(from_object, ['response_modalities']),
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
     )
 
   if getv(from_object, ['speech_config']) is not None:

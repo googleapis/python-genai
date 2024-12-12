@@ -1,6 +1,19 @@
 Google Gen AI SDK
 ======
 
+|pypi|
+
+`<https://github.com/googleapis/python-genai>`_
+
+.. |pypi| image:: https://img.shields.io/pypi/v/google-genai.svg
+   :target: https://pypi.org/project/google-genai/
+
+:strong:`google-genai` is an initial Python client library for interacting with
+Google's Generative AI APIs. This SDK provides an interface for developers to
+integrate Google's generative models into their Python applications. This is an
+early release (version 0.1.0). API is subject to change. Please do not use this
+SDK in production.
+
 Imports
 =======
 
@@ -47,7 +60,7 @@ Generate Content
 .. code:: python
 
     response = client.models.generate_content(
-        model='gemini-1.5-pro-002', contents='What is your name?'
+        model='gemini-2.0-flash-exp', contents='What is your name?'
     )
     print(response.text)
 
@@ -57,7 +70,7 @@ System Instructions and Other Configs
 .. code:: python
 
     response = client.models.generate_content(
-        model='gemini-1.5-pro-002',
+        model='gemini-2.0-flash-exp',
         contents='high',
         config=types.GenerateContentConfig(
             system_instruction='I say high, you say low',
@@ -75,7 +88,7 @@ dictionaries. You can get the type from ``google.genai.types``.
 .. code:: python
 
     response = client.models.generate_content(
-        model='gemini-1.5-flash-002',
+        model='gemini-2.0-flash-exp',
         contents=types.Part.from_text('Why is sky blue?'),
         config=types.GenerateContentConfig(
             temperature=0,
@@ -89,7 +102,7 @@ dictionaries. You can get the type from ``google.genai.types``.
             frequency_penalty=0.0,
         )
     )
-    
+
     response
 
 Safety Settings
@@ -98,7 +111,7 @@ Safety Settings
 .. code:: python
 
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.0-flash-exp',
         contents='Say something bad.',
         config=types.GenerateContentConfig(
             safety_settings= [types.SafetySetting(
@@ -122,18 +135,18 @@ called and responded.
 
     def get_current_weather(location: str,) -> int:
       """Returns the current weather.
-    
+
       Args:
         location: The city and state, e.g. San Francisco, CA
       """
       return 'sunny'
-    
+
     response = client.models.generate_content(
-        model='gemini-1.5-pro-002',
+        model='gemini-2.0-flash-exp',
         contents="What is the weather like in Boston?",
         config=types.GenerateContentConfig(tools=[get_current_weather],)
     )
-    
+
     response.text
 
 .. code:: python
@@ -152,38 +165,38 @@ called and responded.
           "required": ["location"],
         }
     )
-    
+
     tool = types.Tool(function_declarations=[function])
-    
-    
+
+
     response = client.models.generate_content(
-        model='gemini-1.5-pro-002',
+        model='gemini-2.0-flash-exp',
         contents="What is the weather like in Boston?",
         config=types.GenerateContentConfig(tools=[tool],)
     )
-    
+
     response.candidates[0].content.parts[0].function_call
 
 .. code:: python
 
     function_call_part = response.candidates[0].content.parts[0]
-    
+
     function_reponse = get_current_weather(**function_call_part.function_call.args)
-    
-    
+
+
     function_response_part = types.Part.from_function_response(
         name=function_call_part.function_call.name,
-        response={'result': function_reponse}
+        response={'result': function_response}
     )
-    
+
     response = client.models.generate_content(
-        model='gemini-1.5-pro-002',
+        model='gemini-2.0-flash-exp',
         contents=[
             types.Part.from_text("What is the weather like in Boston?"),
             function_call_part,
             function_response_part,
         ])
-    
+
     response
 
 JSON Response Schema
@@ -197,7 +210,7 @@ Schemas can be provided as Pydantic Models.
 .. code:: python
 
     from pydantic import BaseModel
-    
+
     class CountryInfo(BaseModel):
       name: str
       population: int
@@ -206,10 +219,10 @@ Schemas can be provided as Pydantic Models.
       gdp: int
       official_language: str
       total_area_sq_mi: int
-    
-    
+
+
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.0-flash-exp',
         contents='Give me information of the United States.',
         config=types.GenerateContentConfig(
             response_mime_type= 'application/json',
@@ -221,7 +234,7 @@ Schemas can be provided as Pydantic Models.
 .. code:: python
 
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.0-flash-exp',
         contents='Give me information of the United States.',
         config={
             'response_mime_type': 'application/json',
@@ -257,7 +270,7 @@ Streaming
 .. code:: python
 
     for chunk in client.models.generate_content_stream(
-        model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+        model='gemini-2.0-flash-exp', contents='Tell me a story in 300 words.'
     ):
       print(chunk.text)
 
@@ -273,9 +286,9 @@ of ``client.models.generate_content``
 .. code:: python
 
     request = await client.aio.models.generate_content(
-        model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+        model='gemini-2.0-flash-exp', contents='Tell me a story in 300 words.'
     )
-    
+
     print(response.text)
 
 Streaming
@@ -284,7 +297,7 @@ Streaming
 .. code:: python
 
     async for response in client.aio.models.generate_content_stream(
-        model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+        model='gemini-2.0-flash-exp', contents='Tell me a story in 300 words.'
     ):
       print(response.text)
 
@@ -294,7 +307,7 @@ Count Tokens and Compute Tokens
 .. code:: python
 
     response = client.models.count_tokens(
-        model='gemini-1.5-flash',
+        model='gemini-2.0-flash-exp',
         contents='What is your name?',
     )
     print(response)
@@ -307,7 +320,7 @@ Compute tokens is not supported by Google AI.
 .. code:: python
 
     response = client.models.compute_tokens(
-        model='gemini-1.5-flash',
+        model='gemini-2.0-flash-exp',
         contents='What is your name?',
     )
     print(response)
@@ -318,7 +331,7 @@ Async
 .. code:: python
 
     response = await client.aio.models.count_tokens(
-        model='gemini-1.5-flash',
+        model='gemini-2.0-flash-exp',
         contents='What is your name?',
     )
     print(response)
@@ -342,7 +355,7 @@ Embed Content
         contents=['What is your name?', 'What is your age?'],
         config=types.EmbedContentConfig(output_dimensionality= 10)
     )
-    
+
     response
 
 Imagen
@@ -371,6 +384,8 @@ Support for generate image in Google AI is behind an allowlist
 Upscale Image
 ~~~~~~~~~~~~~
 
+Upscale image is not supported in Google AI.
+
 .. code:: python
 
     # Upscale the generated image from above
@@ -383,6 +398,8 @@ Upscale Image
 
 Edit Image
 ~~~~~~~~~~
+
+Edit image is not supported in Google AI.
 
 .. code:: python
 
@@ -431,7 +448,7 @@ Upload
 
     file1 = client.files.upload(path='2312.11805v3.pdf')
     file2 = client.files.upload(path='2403.05530.pdf')
-    
+
     print(file1)
     print(file2)
 
@@ -441,7 +458,7 @@ Delete
 .. code:: python
 
     file3 = client.files.upload(path='2312.11805v3.pdf')
-    
+
     client.files.delete(name=file3.name)
 
 Caches
@@ -454,14 +471,14 @@ Create
 
 .. code:: python
 
-    if client._api_client.vertexai:
+    if client.vertexai:
       file_uris = [
           'gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf',
           'gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf'
       ]
     else:
       file_uris = [file1.uri, file2.uri]
-    
+
     cached_content = client.caches.create(
           model='gemini-1.5-pro-002',
           contents=[
@@ -506,7 +523,7 @@ Tunings
 =======
 
 ``client.tunings`` contains tuning job APIs and supports supervised fine
-tuning through ``tune`` and distiallation through ``distill``
+tuning through ``tune`` and distillation through ``distill``
 
 Tune
 ----
@@ -516,7 +533,7 @@ Tune
 
 .. code:: python
 
-    if client._api_client.vertexai:
+   if client.vertexai:
       model = 'gemini-1.5-pro-002'
       training_dataset=types.TuningDataset(
             gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
@@ -556,12 +573,12 @@ Get Tuning Job
 .. code:: python
 
     import time
-    
+
     running_states = set([
         "JOB_STATE_PENDING",
         "JOB_STATE_RUNNING",
     ])
-    
+
     while tuning_job.state in running_states:
         print(tuning_job.state)
         tuning_job = client.tunings.get(name=tuning_job.name)
@@ -576,7 +593,7 @@ Use Tuned Model
         model=tuning_job.tuned_model.endpoint,
         contents='What is your name?',
     )
-    
+
     response.text
 
 Get Tuned Model
@@ -599,9 +616,9 @@ List Tuned Models
 
     pager = client.models.list(config={'page_size': 10})
     print(pager.page_size)
-    print(pager.page[0])
+    print(pager[0])
     pager.next_page()
-    print(pager.page[0])
+    print(pager[0])
 
 Async
 ~~~~~
@@ -615,23 +632,23 @@ Async
 
     async_pager = await client.aio.models.list(config={'page_size': 10})
     print(async_pager.page_size)
-    print(async_pager.page[0])
+    print(async_pager[0])
     await async_pager.next_page()
-    print(async_pager.page[0])
+    print(async_pager[0])
 
 Update Tuned Model
 ------------------
 
 .. code:: python
 
-    model = pager.page[0]
-    
+    model = pager[0]
+
     model = client.models.update(
         model=model.name,
         config=types.UpdateModelConfig(
             display_name='my tuned model',
             description='my tuned model description'))
-    
+
     model
 
 Distillation
@@ -664,7 +681,7 @@ Only supported on Vertex. Requires allowlist.
         "JOB_STATE_CANCELLED",
         "JOB_STATE_PAUSED"
     ])
-    
+
     while distillation_job.state not in completed_states:
         print(distillation_job.state)
         distillation_job = client.tunings.get(name=distillation_job.name)
@@ -686,9 +703,9 @@ List Tuning Jobs
 
     pager = client.tunings.list(config={'page_size': 10})
     print(pager.page_size)
-    print(pager.page[0])
+    print(pager[0])
     pager.next_page()
-    print(pager.page[0])
+    print(pager[0])
 
 Async
 ~~~~~
@@ -702,9 +719,9 @@ Async
 
     async_pager = await client.aio.tunings.list(config={'page_size': 10})
     print(async_pager.page_size)
-    print(async_pager.page[0])
+    print(async_pager[0])
     await async_pager.next_page()
-    print(async_pager.page[0])
+    print(async_pager[0])
 
 Batch Prediction
 ================
@@ -719,21 +736,16 @@ Create
     # Specify model and source file only, destination and job display name will be auto-populated
     job = client.batches.create(
         model='gemini-1.5-flash-002',
-        src='bq://vertex-sdk-dev.unified_genai_tests_batches.generate_content_requests',
-        # # optionally specify destination and display_name by yourself
-        # config = {
-        #     'dest': 'bq://vertex-sdk-dev.unified_genai_tests_batches.generate_content_responses',
-        #     'display_name': 'create_batch_job_demo'
-        # }
+        src='bq://my-project.my-dataset.my-table',
     )
-    
+
     job
 
 .. code:: python
 
     # Get a job by name
     job = client.batches.get(name=job.name)
-    
+
     job.state
 
 .. code:: python
@@ -744,12 +756,12 @@ Create
         "JOB_STATE_CANCELLED",
         "JOB_STATE_PAUSED"
     ])
-    
+
     while job.state not in completed_states:
         print(job.state)
         job = client.batches.get(name=job.name)
         time.sleep(30)
-    
+
     job
 
 List
@@ -764,9 +776,9 @@ List
 
     pager = client.batches.list(config={'page_size': 10})
     print(pager.page_size)
-    print(pager.page[0])
+    print(pager[0])
     pager.next_page()
-    print(pager.page[0])
+    print(pager[0])
 
 Async
 ~~~~~
@@ -778,11 +790,11 @@ Async
 
 .. code:: python
 
-    async_pager = await client.aio.tunings.list(config={'page_size': 10})
+    async_pager = await client.aio.batches.list(config={'page_size': 10})
     print(async_pager.page_size)
-    print(async_pager.page[0])
+    print(async_pager[0])
     await async_pager.next_page()
-    print(async_pager.page[0])
+    print(async_pager[0])
 
 Delete
 ------

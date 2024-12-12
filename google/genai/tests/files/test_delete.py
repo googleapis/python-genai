@@ -16,6 +16,7 @@
 
 """Test files delete method."""
 
+import pytest
 from ... import types
 from .. import pytest_helper
 
@@ -33,3 +34,9 @@ pytestmark = pytest_helper.setup(
     test_method='files.delete',
     test_table=test_table,
 )
+
+
+@pytest.mark.asyncio
+async def test_async(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = await client.aio.files.get(name='files/vjvu9fwk2qj8')

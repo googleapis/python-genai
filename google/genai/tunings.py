@@ -24,6 +24,30 @@ from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
 
+def _GetTuningJobConfig_to_mldev(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['http_options']) is not None:
+    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
+
+  return to_object
+
+
+def _GetTuningJobConfig_to_vertex(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['http_options']) is not None:
+    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
+
+  return to_object
+
+
 def _GetTuningJobParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -32,6 +56,15 @@ def _GetTuningJobParameters_to_mldev(
   to_object = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _GetTuningJobConfig_to_mldev(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
 
   return to_object
 
@@ -44,6 +77,15 @@ def _GetTuningJobParameters_to_vertex(
   to_object = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _GetTuningJobConfig_to_vertex(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
 
   return to_object
 
@@ -233,6 +275,9 @@ def _CreateTuningJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+  if getv(from_object, ['http_options']) is not None:
+    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
+
   if getv(from_object, ['validation_dataset']):
     raise ValueError(
         'validation_dataset parameter is not supported in Google AI.'
@@ -288,6 +333,9 @@ def _CreateTuningJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+  if getv(from_object, ['http_options']) is not None:
+    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
+
   if getv(from_object, ['validation_dataset']) is not None:
     setv(
         parent_object,
@@ -455,6 +503,9 @@ def _CreateDistillationJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+  if getv(from_object, ['http_options']) is not None:
+    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
+
   if getv(from_object, ['validation_dataset']):
     raise ValueError(
         'validation_dataset parameter is not supported in Google AI.'
@@ -498,6 +549,9 @@ def _CreateDistillationJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+  if getv(from_object, ['http_options']) is not None:
+    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
+
   if getv(from_object, ['validation_dataset']) is not None:
     setv(
         parent_object,
@@ -896,7 +950,12 @@ def _TuningJobOrOperation_from_vertex(
 
 class Tunings(_common.BaseModule):
 
-  def _get(self, *, name: str) -> types.TuningJob:
+  def _get(
+      self,
+      *,
+      name: str,
+      config: Optional[types.GetTuningJobConfigOrDict] = None,
+  ) -> types.TuningJob:
     """Gets a TuningJob.
 
     Args:
@@ -908,6 +967,7 @@ class Tunings(_common.BaseModule):
 
     parameter_model = types._GetTuningJobParameters(
         name=name,
+        config=config,
     )
 
     if self.api_client.vertexai:
@@ -1129,8 +1189,13 @@ class Tunings(_common.BaseModule):
         config,
     )
 
-  def get(self, *, name: str) -> types.TuningJob:
-    job = self._get(name=name)
+  def get(
+      self,
+      *,
+      name: str,
+      config: Optional[types.GetTuningJobConfigOrDict] = None,
+  ) -> types.TuningJob:
+    job = self._get(name=name, config=config)
     if job.experiment and self.api_client.vertexai:
       _IpythonUtils.display_experiment_button(
           experiment=job.experiment,
@@ -1157,7 +1222,12 @@ class Tunings(_common.BaseModule):
 
 class AsyncTunings(_common.BaseModule):
 
-  async def _get(self, *, name: str) -> types.TuningJob:
+  async def _get(
+      self,
+      *,
+      name: str,
+      config: Optional[types.GetTuningJobConfigOrDict] = None,
+  ) -> types.TuningJob:
     """Gets a TuningJob.
 
     Args:
@@ -1169,6 +1239,7 @@ class AsyncTunings(_common.BaseModule):
 
     parameter_model = types._GetTuningJobParameters(
         name=name,
+        config=config,
     )
 
     if self.api_client.vertexai:
@@ -1390,8 +1461,13 @@ class AsyncTunings(_common.BaseModule):
         config,
     )
 
-  async def get(self, *, name: str) -> types.TuningJob:
-    job = await self._get(name=name)
+  async def get(
+      self,
+      *,
+      name: str,
+      config: Optional[types.GetTuningJobConfigOrDict] = None,
+  ) -> types.TuningJob:
+    job = await self._get(name=name, config=config)
     if job.experiment and self.api_client.vertexai:
       _IpythonUtils.display_experiment_button(
           experiment=job.experiment,

@@ -483,7 +483,7 @@ client.models.generate_content(
 ## Tunings
 
 `client.tunings` contains tuning job APIs and supports supervised fine
-tuning through `tune` and distiallation through `distill`
+tuning through `tune` and distillation through `distill`
 
 ### Tune
 
@@ -491,7 +491,7 @@ tuning through `tune` and distiallation through `distill`
 -   Google AI supports tuning from inline examples
 
 ``` python
-if client._api_client.vertexai:
+if client.vertexai:
   model = 'gemini-1.5-pro-002'
   training_dataset=types.TuningDataset(
         gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
@@ -570,9 +570,9 @@ for model in client.models.list(config={'page_size': 10}):
 ``` python
 pager = client.models.list(config={'page_size': 10})
 print(pager.page_size)
-print(pager.page[0])
+print(pager[0])
 pager.next_page()
-print(pager.page[0])
+print(pager[0])
 ```
 
 #### Async
@@ -585,15 +585,15 @@ async for job in await client.aio.models.list(config={'page_size': 10}):
 ``` python
 async_pager = await client.aio.models.list(config={'page_size': 10})
 print(async_pager.page_size)
-print(async_pager.page[0])
+print(async_pager[0])
 await async_pager.next_page()
-print(async_pager.page[0])
+print(async_pager[0])
 ```
 
 ### Update Tuned Model
 
 ``` python
-model = pager.page[0]
+model = pager[0]
 
 model = client.models.update(
     model=model.name,
@@ -653,9 +653,9 @@ for job in client.tunings.list(config={'page_size': 10}):
 ``` python
 pager = client.tunings.list(config={'page_size': 10})
 print(pager.page_size)
-print(pager.page[0])
+print(pager[0])
 pager.next_page()
-print(pager.page[0])
+print(pager[0])
 ```
 
 #### Async
@@ -668,9 +668,9 @@ async for job in await client.aio.tunings.list(config={'page_size': 10}):
 ``` python
 async_pager = await client.aio.tunings.list(config={'page_size': 10})
 print(async_pager.page_size)
-print(async_pager.page[0])
+print(async_pager[0])
 await async_pager.next_page()
-print(async_pager.page[0])
+print(async_pager[0])
 ```
 
 ## Batch Prediction
@@ -684,6 +684,8 @@ Only supported in Vertex AI.
 job = client.batches.create(
     model='gemini-1.5-flash-002',
     src='bq://my-project.my-dataset.my-table',
+)
+
 job
 ```
 
@@ -720,9 +722,9 @@ for job in client.batches.list(config={'page_size': 10}):
 ``` python
 pager = client.batches.list(config={'page_size': 10})
 print(pager.page_size)
-print(pager.page[0])
+print(pager[0])
 pager.next_page()
-print(pager.page[0])
+print(pager[0])
 ```
 
 #### Async
@@ -733,11 +735,11 @@ async for job in await client.aio.batches.list(config={'page_size': 10}):
 ```
 
 ``` python
-async_pager = await client.aio.tunings.list(config={'page_size': 10})
+async_pager = await client.aio.batches.list(config={'page_size': 10})
 print(async_pager.page_size)
-print(async_pager.page[0])
+print(async_pager[0])
 await async_pager.next_page()
-print(async_pager.page[0])
+print(async_pager[0])
 ```
 
 ### Delete
