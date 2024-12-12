@@ -200,7 +200,7 @@ class ApiClient:
       _append_library_version_headers(self._http_options['headers'])
 
   def _websocket_base_url(self):
-    url_parts = urllib.parse.urlparse(self._http_options['base_url'])
+    url_parts = urlparse(self._http_options['base_url'])
     return url_parts._replace(scheme='wss').geturl()
 
   def _build_request(
