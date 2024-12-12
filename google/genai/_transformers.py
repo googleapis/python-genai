@@ -24,6 +24,7 @@ import time
 from typing import Any, Optional, Union
 
 import PIL.Image
+import PIL.PngImagePlugin
 
 from . import _api_client
 from . import types
