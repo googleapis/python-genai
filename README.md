@@ -7,6 +7,11 @@
 
 -----
 
+## Installation
+```cmd
+pip install google-genai
+```
+
 ## Imports
 
 ``` python
