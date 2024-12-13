@@ -131,6 +131,14 @@ response = client.models.generate_content(
 response.text
 ```
 
+#### Manually declare and invoke a function for function calling
+
+If you don't want to use the automatic function support, you can manually
+declare the function and invoke it.
+
+The following example shows how to declare a function and pass it as a tool.
+Then you will receive a function call part in the response.
+
 ``` python
 function = dict(
     name="get_current_weather",
@@ -159,15 +167,24 @@ response = client.models.generate_content(
 response.candidates[0].content.parts[0].function_call
 ```
 
+After you receive the function call part from model, you can invoke the function
+and get the function response. And then you can pass the function response to
+the model.
+The following example shows how to do it for a simple function invocation.
+
 ``` python
 function_call_part = response.candidates[0].content.parts[0]
 
-function_response = get_current_weather(**function_call_part.function_call.args)
+try:
+  function_result = get_current_weather(**function_call_part.function_call.args)
+  function_response = {'result': function_result}
+except Exception as e:  # instead of raising the exception, you can let the model handle it
+  function_response = {'error': str(e)}
 
 
 function_response_part = types.Part.from_function_response(
     name=function_call_part.function_call.name,
-    response={'result': function_response}
+    response=function_response,
 )
 
 response = client.models.generate_content(
@@ -245,9 +262,52 @@ print(response.text)
 
 ### Streaming
 
+#### Streaming for text content
+
 ``` python
 for chunk in client.models.generate_content_stream(
     model='gemini-2.0-flash-exp', contents='Tell me a story in 300 words.'
+):
+  print(chunk.text)
+```
+
+#### Streaming for image content
+
+If your image is stored in Google Cloud Storage, you can use the `from_uri`
+class method to create a Part object.
+
+``` python
+for chunk in client.models.generate_content_stream(
+    model='gemini-1.5-flash',
+    contents=[
+      'What is this image about?',
+      types.Part.from_uri(
+        file_uri='gs://generativeai-downloads/images/scones.jpg',
+        mime_type='image/jpeg'
+      )
+    ],
+):
+  print(chunk.text)
+```
+
+If your image is stored in your local file system, you can read it in as bytes
+data and use the `from_bytes` class method to create a Part object.
+
+``` python
+YOUR_IMAGE_PATH = 'your_image_path'
+YOUR_IMAGE_MIME_TYPE = 'your_image_mime_type'
+with open(YOUR_IMAGE_PATH, 'rb') as f:
+  image_bytes = f.read()
+
+for chunk in client.models.generate_content_stream(
+    model='gemini-1.5-flash',
+    contents=[
+      'What is this image about?',
+      types.Part.from_bytes(
+        data=image_bytes,
+        mime_type=YOUR_IMAGE_MIME_TYPE
+      )
+    ],
 ):
   print(chunk.text)
 ```
