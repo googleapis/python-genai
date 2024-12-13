@@ -456,3 +456,33 @@ def test_invalid_input_for_simple_parameter(client):
         contents='What is your name?',
     )
     assert 'model' in str(e)
+
+
+def test_catch_stack_trace_in_error_handling(client):
+  try:
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents='What is your name?',
+        config={
+            'response_modalities': ['AUDIO']
+        },
+    )
+  except errors.ClientError as e:
+    # Note that the stack trace is truncated in replay file, therefore this is
+    # the best we can do in testing error handling. In api mode, the stack trace
+    # is:
+    # {
+    #     'error': {
+    #         'code': 400,
+    #         'message': 'Multi-modal output is not supported.',
+    #         'status': 'INVALID_ARGUMENT',
+    #         'details': [{
+    #             '@type': 'type.googleapis.com/google.rpc.DebugInfo',
+    #             'detail': '[ORIGINAL ERROR] generic::invalid_argument: '
+    #                      'Multi-modal output is not supported. '
+    #                      '[google.rpc.error_details_ext] '
+    #                      '{ message: "Multi-modal output is not supported." }'
+    #         }]
+    #     }
+    # }
+    assert e.details == {'code': 400, 'message': '', 'status': 'UNKNOWN'}
