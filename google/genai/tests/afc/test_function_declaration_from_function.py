@@ -924,10 +924,38 @@ def test_pydantic_model_with_default_value():
     """test pydantic model with default value."""
     pass
 
+  expected_schema_vertex = types.FunctionDeclaration(
+      description='test pydantic model with default value.',
+      name='func_under_test',
+      parameters=types.Schema(
+          type='OBJECT',
+          properties={
+              'a': types.Schema(
+                  default=MySimplePydanticModel(a_simple=1, b_simple='a'),
+                  type='OBJECT',
+                  properties={
+                      'a_simple': types.Schema(
+                          nullable=True,
+                          type='INTEGER',
+                      ),
+                      'b_simple': types.Schema(
+                          nullable=True,
+                          type='STRING',
+                      ),
+                  },
+              )
+          },
+          required=[],
+      ),
+  )
+
   with pytest.raises(ValueError):
     types.FunctionDeclaration.from_function(mldev_client, func_under_test)
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_function(vertex_client, func_under_test)
+  actual_schema_vertex = types.FunctionDeclaration.from_function(
+      vertex_client, func_under_test
+  )
+
+  assert actual_schema_vertex == expected_schema_vertex
 
 
 def test_custom_class():

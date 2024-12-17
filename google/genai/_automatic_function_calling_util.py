@@ -170,7 +170,6 @@ def _parse_schema_from_parameter(
     ):
       if not _is_default_value_compatible(param.default, param.annotation):
         raise ValueError(default_value_error_msg)
-      # TODO: b/379715133 - handle pydantic model default value
       schema.default = param.default
     _raise_if_schema_unsupported(client, schema)
     return schema
@@ -258,12 +257,11 @@ def _parse_schema_from_parameter(
       # for user defined class, we only support pydantic model
       and issubclass(param.annotation, pydantic.BaseModel)
   ):
-    if param.default is not inspect.Parameter.empty:
-      # TODO: b/379715133 - handle pydantic model default value
-      raise ValueError(
-          f'Default value {param.default} of Pydantic model{param} of function'
-          f' {func_name} is not supported.'
-      )
+    if (
+        param.default is not inspect.Parameter.empty
+        and param.default is not None
+    ):
+      schema.default = param.default
     schema.type = 'OBJECT'
     schema.properties = {}
     for field_name, field_info in param.annotation.model_fields.items():
@@ -294,4 +292,3 @@ def _get_required_fields(schema: types.Schema) -> list[str]:
       for field_name, field_schema in schema.properties.items()
       if not field_schema.nullable and field_schema.default is None
   ]
-

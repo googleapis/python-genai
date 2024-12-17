@@ -558,7 +558,7 @@ def test_from_bytes_image_none(client):
             {'inline_data': {'data': None, 'mimeType': 'image/png'}},
         ],
     )
-    assert 'INVALID_ARGUMENT' in str(e)
+  assert 'INVALID_ARGUMENT' in str(e)
 
 
 def test_from_bytes_video(client):

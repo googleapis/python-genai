@@ -427,8 +427,8 @@ def test_invalid_input_without_transformer(client):
             'input_that_does_not_exist': 'what_ever_value',
         },
     )
-    assert 'input_that_does_not_exist' in str(e)
-    assert 'Extra inputs are not permitted' in str(e)
+  assert 'input_that_does_not_exist' in str(e)
+  assert 'Extra inputs are not permitted' in str(e)
 
 
 def test_invalid_input_with_transformer_dict(client):
@@ -437,7 +437,7 @@ def test_invalid_input_with_transformer_dict(client):
         model='gemini-1.5-flash',
         contents={'invalid_key': 'invalid_value'},
     )
-    assert 'invalid_key' in str(e)
+  assert 'invalid_key' in str(e.value)
 
 
 def test_invalid_input_with_transformer_list(client):
@@ -446,7 +446,7 @@ def test_invalid_input_with_transformer_list(client):
         model='gemini-1.5-flash',
         contents=[{'invalid_key': 'invalid_value'}],
     )
-    assert 'invalid_key' in str(e)
+  assert 'invalid_key' in str(e.value)
 
 
 def test_invalid_input_for_simple_parameter(client):
@@ -455,7 +455,7 @@ def test_invalid_input_for_simple_parameter(client):
         model=5,
         contents='What is your name?',
     )
-    assert 'model' in str(e)
+  assert 'model' in str(e)
 
 
 def test_catch_stack_trace_in_error_handling(client):

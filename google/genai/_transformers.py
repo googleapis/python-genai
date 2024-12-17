@@ -24,6 +24,7 @@ import time
 from typing import Any, Optional, Union
 
 import PIL.Image
+import PIL.PngImagePlugin
 
 from . import _api_client
 from . import types
@@ -296,6 +297,20 @@ def t_speech_config(
     return types.SpeechConfig(
         voice_config=types.VoiceConfig(
             prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=origin)
+        )
+    )
+  if (
+      isinstance(origin, dict)
+      and 'voice_config' in origin
+      and 'prebuilt_voice_config' in origin['voice_config']
+  ):
+    return types.SpeechConfig(
+        voice_config=types.VoiceConfig(
+            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                voice_name=origin['voice_config']['prebuilt_voice_config'].get(
+                    'voice_name'
+                )
+            )
         )
     )
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')

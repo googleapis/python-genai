@@ -52,7 +52,7 @@ async def test_async_delete_tuned_model(client):
   if client._api_client.vertexai:
     with pytest.raises(errors.ClientError) as e:
       await client.aio.models.delete(model='tunedModels/generate-num-888')
-      assert '404' in str(e)
+    assert '404' in str(e)
   else:
     response = await client.aio.models.delete(
         model='tunedModels/generate-num-888'
@@ -68,4 +68,4 @@ async def test_async_delete_model(client):
   else:
     with pytest.raises(errors.ClientError) as e:
       await client.aio.models.delete(model='models/1071206899942162432')
-      assert '404' in str(e)
+    assert '404' in str(e)

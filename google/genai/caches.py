@@ -33,6 +33,9 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']):
     raise ValueError('video_metadata parameter is not supported in Google AI.')
 
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -73,6 +76,9 @@ def _Part_to_vertex(
   to_object = {}
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -638,6 +644,18 @@ def _CreateCachedContentConfig_to_mldev(
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        parent_object,
+        ['contents'],
+        [
+            _Content_to_mldev(api_client, item, to_object)
+            for item in t.t_contents(
+                api_client, getv(from_object, ['contents'])
+            )
+        ],
+    )
+
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
@@ -689,6 +707,18 @@ def _CreateCachedContentConfig_to_vertex(
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        parent_object,
+        ['contents'],
+        [
+            _Content_to_vertex(api_client, item, to_object)
+            for item in t.t_contents(
+                api_client, getv(from_object, ['contents'])
+            )
+        ],
+    )
+
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
@@ -735,18 +765,6 @@ def _CreateCachedContentParameters_to_mldev(
         t.t_caches_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['contents'],
-        [
-            _Content_to_mldev(api_client, item, to_object)
-            for item in t.t_contents(
-                api_client, getv(from_object, ['contents'])
-            )
-        ],
-    )
-
   if getv(from_object, ['config']) is not None:
     setv(
         to_object,
@@ -770,18 +788,6 @@ def _CreateCachedContentParameters_to_vertex(
         to_object,
         ['model'],
         t.t_caches_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['contents'],
-        [
-            _Content_to_vertex(api_client, item, to_object)
-            for item in t.t_contents(
-                api_client, getv(from_object, ['contents'])
-            )
-        ],
     )
 
   if getv(from_object, ['config']) is not None:
@@ -1238,7 +1244,6 @@ class Caches(_common.BaseModule):
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.CreateCachedContentConfigOrDict] = None,
   ) -> types.CachedContent:
     """Creates cached content, this call will initialize the cached
@@ -1264,7 +1269,6 @@ class Caches(_common.BaseModule):
 
     parameter_model = types._CreateCachedContentParameters(
         model=model,
-        contents=contents,
         config=config,
     )
 
@@ -1542,7 +1546,6 @@ class AsyncCaches(_common.BaseModule):
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.CreateCachedContentConfigOrDict] = None,
   ) -> types.CachedContent:
     """Creates cached content, this call will initialize the cached
@@ -1568,7 +1571,6 @@ class AsyncCaches(_common.BaseModule):
 
     parameter_model = types._CreateCachedContentParameters(
         model=model,
-        contents=contents,
         config=config,
     )
 

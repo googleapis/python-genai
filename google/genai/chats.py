@@ -18,7 +18,25 @@ from typing import Union
 
 from . import _transformers as t
 from .models import AsyncModels, Models
-from .types import Content, ContentDict, GenerateContentConfigOrDict, GenerateContentResponse, PartUnionDict
+from .types import Content, ContentDict, GenerateContentConfigOrDict, GenerateContentResponse, Part, PartUnionDict
+
+
+def _validate_response(
+    response: GenerateContentResponse
+) -> bool:
+  if not response.candidates:
+    return False
+  if not response.candidates[0].content:
+    return False
+  if not response.candidates[0].content.parts:
+    return False
+  for part in response.candidates[0].content.parts:
+    if part == Part():
+      return False
+    if part.text is not None and part.text == "":
+      return False
+  return True
+
 
 class _BaseChat:
   """Base chat session."""
@@ -65,7 +83,7 @@ class Chat(_BaseChat):
         contents=self._curated_history + [input_content],
         config=self._config,
     )
-    if response.candidates and response.candidates[0].content:
+    if _validate_response(response):
       if response.automatic_function_calling_history:
         self._curated_history.extend(
             response.automatic_function_calling_history
@@ -75,14 +93,42 @@ class Chat(_BaseChat):
       self._curated_history.append(response.candidates[0].content)
     return response
 
-  def _send_message_stream(self, message: Union[list[ContentDict], str]):
-    for content in t.t_contents(self._modules.api_client, message):
-      self._curated_history.append(content)
+  def send_message_stream(
+      self, message: Union[list[PartUnionDict], PartUnionDict]
+  ):
+    """Sends the conversation history with the additional message and yields the model's response in chunks.
+
+    Args:
+      message: The message to send to the model.
+
+    Yields:
+      The model's response in chunks.
+
+    Usage:
+
+    .. code-block:: python
+
+      chat = client.chats.create(model='gemini-1.5-flash')
+      for chunk in chat.send_message_stream('tell me a story')
+        print(chunk.text)
+    """
+
+    input_content = t.t_content(self._modules.api_client, message)
+    output_contents = []
+    finish_reason = None
     for chunk in self._modules.generate_content_stream(
-        model=self._model, contents=self._curated_history, config=self._config
+        model=self._model,
+        contents=self._curated_history + [input_content],
+        config=self._config,
     ):
-      # TODO(b/381089069): add successful response to history
+      if _validate_response(chunk):
+        output_contents.append(chunk.candidates[0].content)
+      if chunk.candidates and chunk.candidates[0].finish_reason:
+        finish_reason = chunk.candidates[0].finish_reason
       yield chunk
+    if output_contents and finish_reason:
+      self._curated_history.append(input_content)
+      self._curated_history.extend(output_contents)
 
 
 class Chats:
@@ -134,8 +180,8 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.chats.create(model='gemini-1.5-flash')
-      response = chat.send_message('tell me a story')
+      chat = client.aio.chats.create(model='gemini-1.5-flash')
+      response = await chat.send_message('tell me a story')
     """
 
     input_content = t.t_content(self._modules.api_client, message)
@@ -144,7 +190,7 @@ class AsyncChat(_BaseChat):
         contents=self._curated_history + [input_content],
         config=self._config,
     )
-    if response.candidates and response.candidates[0].content:
+    if _validate_response(response):
       if response.automatic_function_calling_history:
         self._curated_history.extend(
             response.automatic_function_calling_history
@@ -154,14 +200,41 @@ class AsyncChat(_BaseChat):
       self._curated_history.append(response.candidates[0].content)
     return response
 
-  async def _send_message_stream(self, message: Union[list[ContentDict], str]):
-    for content in t.t_contents(self._modules.api_client, message):
-      self._curated_history.append(content)
+  async def send_message_stream(
+      self, message: Union[list[PartUnionDict], PartUnionDict]
+  ):
+    """Sends the conversation history with the additional message and yields the model's response in chunks.
+
+    Args:
+      message: The message to send to the model.
+
+    Yields:
+      The model's response in chunks.
+
+    Usage:
+
+    .. code-block:: python
+      chat = client.aio.chats.create(model='gemini-1.5-flash')
+      async for chunk in chat.send_message_stream('tell me a story')
+        print(chunk.text)
+    """
+
+    input_content = t.t_content(self._modules.api_client, message)
+    output_contents = []
+    finish_reason = None
     async for chunk in self._modules.generate_content_stream(
-        model=self._model, contents=self._curated_history, config=self._config
+        model=self._model,
+        contents=self._curated_history + [input_content],
+        config=self._config,
     ):
-      # TODO(b/381089069): add successful response to history
+      if _validate_response(chunk):
+        output_contents.append(chunk.candidates[0].content)
+      if chunk.candidates and chunk.candidates[0].finish_reason:
+        finish_reason = chunk.candidates[0].finish_reason
       yield chunk
+    if output_contents and finish_reason:
+      self._curated_history.append(input_content)
+      self._curated_history.extend(output_contents)
 
 
 class AsyncChats:

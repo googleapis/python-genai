@@ -61,7 +61,7 @@ async def test_async_update_tuned_model(client):
           model='tunedModels/generate-num-8498',
           config={'description': 'My tuned gemini-1.0'},
       )
-      assert '404' in str(e)
+    assert '404' in str(e)
   else:
     response = await client.aio.models.update(
         model='tunedModels/generate-num-8498',
@@ -86,4 +86,4 @@ async def test_async_update_model(client):
               'display_name': 'My tuned gemini-1.0',
           },
       )
-      assert '404' in str(e)
+    assert '404' in str(e)

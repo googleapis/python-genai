@@ -7,6 +7,12 @@
 
 -----
 
+## Installation
+
+``` cmd
+pip install google-genai
+```
+
 ## Imports
 
 ``` python
@@ -427,6 +433,8 @@ response2.generated_images[0].image.show()
 
 #### Edit Image
 
+Edit image uses a separate model from generate and upscale.
+
 Edit image is not supported in Google AI.
 
 ``` python
@@ -447,7 +455,7 @@ mask_ref_image = MaskReferenceImage(
 )
 
 response3 = client.models.edit_image(
-    model='imagen-3.0-capability-preview-0930',
+    model='imagen-3.0-capability-001',
     prompt='Sunlight and clear sky',
     reference_images=[raw_ref_image, mask_ref_image],
     config=types.EditImageConfig(
@@ -514,9 +522,9 @@ cached_content = client.caches.create(
                     file_uri=file_uris[1],
                     mime_type='application/pdf',)])
       ],
+      system_instruction='What is the sum of the two pdfs?',
       config=types.CreateCachedContentConfig(
           display_name='test cache',
-          system_instruction='What is the sum of the two pdfs?',
           ttl='3600s',
       ),
   )

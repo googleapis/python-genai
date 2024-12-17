@@ -1,3 +1,19 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
 import os
 
 import PIL.Image
@@ -58,12 +74,6 @@ def test_parts(client):
   )
 
 
-def test_send_2_messages(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
-  chat.send_message('write a python function to check if a year is a leap year')
-  chat.send_message('write a unit test for the function')
-
-
 def test_image(client):
   chat = client.chats.create(model='gemini-1.5-flash')
   chat.send_message(
@@ -114,6 +124,12 @@ def test_history(client):
   ]
   chat = client.chats.create(model='gemini-1.5-flash', history=history)
   chat.send_message('what is a + b?')
+
+
+def test_send_2_messages(client):
+  chat = client.chats.create(model='gemini-1.5-flash')
+  chat.send_message('write a python function to check if a year is a leap year')
+  chat.send_message('write a unit test for the function')
 
 
 def test_with_afc_history(client):
@@ -232,6 +248,68 @@ async def test_with_afc_disabled_async(client):
   }
 
 
+def test_stream_text(client):
+  chat = client.chats.create(model='gemini-1.5-flash')
+  chunks = 0
+  for chunk in chat.send_message_stream(
+      'tell me a story in 100 words',
+  ):
+    chunks += 1
+
+  assert chunks > 2
+
+
+def test_stream_part(client):
+  chat = client.chats.create(model='gemini-1.5-flash')
+  chunks = 0
+  for chunk in chat.send_message_stream(
+      types.Part.from_text('tell me a story in 100 words'),
+  ):
+    chunks += 1
+
+  assert chunks > 2
+
+
+def test_stream_parts(client):
+  chat = client.chats.create(model='gemini-1.5-flash')
+  chunks = 0
+  for chunk in chat.send_message_stream(
+      [
+          types.Part.from_text('tell me a story in 100 words'),
+          types.Part.from_text('the story is about a car'),
+      ],
+  ):
+    chunks += 1
+
+  assert chunks > 2
+
+
+def test_stream_function_calling(client):
+  chat = client.chats.create(
+      model='gemini-2.0-flash-exp',
+      config={'tools': [divide_intergers_with_customized_math_rule]},
+  )
+  for chunk in chat.send_message_stream(
+      'what is the result of 100/2?',
+  ):
+    pass
+  for chunk in chat.send_message_stream(
+      'what is the result of 50/2?',
+  ):
+    pass
+
+
+def test_stream_send_2_messages(client):
+  chat = client.chats.create(model='gemini-1.5-flash')
+  for chunk in chat.send_message_stream(
+      'write a python function to check if a year is a leap year'
+  ):
+    pass
+
+  for chunk in chat.send_message_stream('write a unit test for the function'):
+    pass
+
+
 @pytest.mark.asyncio
 async def test_async_text(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
@@ -268,3 +346,65 @@ async def test_async_history(client):
   ]
   chat = client.aio.chats.create(model='gemini-1.5-flash', history=history)
   await chat.send_message('what is a + b?')
+
+
+@pytest.mark.asyncio
+async def test_async_stream_text(client):
+  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chunks = 0
+  async for chunk in chat.send_message_stream('tell me a story in 100 words'):
+    chunks += 1
+
+  assert chunks > 2
+
+
+@pytest.mark.asyncio
+async def test_async_stream_part(client):
+  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chunks = 0
+  async for chunk in chat.send_message_stream(
+      types.Part.from_text('tell me a story in 100 words')
+  ):
+    chunks += 1
+
+  assert chunks > 2
+
+
+@pytest.mark.asyncio
+async def test_async_stream_parts(client):
+  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chunks = 0
+  async for chunk in chat.send_message_stream(
+      [
+          types.Part.from_text('tell me a story in 100 words'),
+          types.Part.from_text('the story is about a car'),
+      ],
+  ):
+    chunks += 1
+
+  assert chunks > 2
+
+
+@pytest.mark.asyncio
+async def test_async_stream_function_calling(client):
+  chat = client.aio.chats.create(
+      model='gemini-2.0-flash-exp',
+      config={'tools': [divide_intergers_with_customized_math_rule]},
+  )
+  async for chunk in chat.send_message_stream('what is the result of 100/2?'):
+    pass
+  async for chunk in chat.send_message_stream('what is the result of 50/2?'):
+    pass
+
+
+@pytest.mark.asyncio
+async def test_async_stream_send_2_messages(client):
+  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  async for chunk in chat.send_message_stream(
+      'write a python function to check if a year is a leap year'
+  ):
+    pass
+  async for chunk in chat.send_message_stream(
+      'write a unit test for the function'
+  ):
+    pass

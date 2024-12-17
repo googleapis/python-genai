@@ -23,7 +23,7 @@ import pytest
 from ... import types
 from .. import pytest_helper
 
-MODEL_NAME = 'imagen-3.0-capability-preview-0930'
+MODEL_NAME = 'imagen-3.0-capability-001'
 
 IMAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google.png')

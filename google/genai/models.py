@@ -35,6 +35,9 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']):
     raise ValueError('video_metadata parameter is not supported in Google AI.')
 
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -75,6 +78,9 @@ def _Part_to_vertex(
   to_object = {}
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -2708,6 +2714,9 @@ def _Part_from_mldev(
 ) -> dict:
   to_object = {}
 
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -2748,6 +2757,9 @@ def _Part_from_vertex(
   to_object = {}
   if getv(from_object, ['videoMetadata']) is not None:
     setv(to_object, ['video_metadata'], getv(from_object, ['videoMetadata']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(

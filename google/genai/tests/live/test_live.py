@@ -419,10 +419,7 @@ def test_bidi_setup_to_api_no_config(mock_api_client):
 
 
 def test_bidi_setup_to_api_speech_config(mock_api_client):
-  config = {'speech_config': 'en-default'}
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
-      model='test_model', config=config
-  )
+
   expected_result = {
       'setup': {
           'model': 'test_model',
@@ -435,8 +432,25 @@ def test_bidi_setup_to_api_speech_config(mock_api_client):
           },
       }
   }
+  config_dict = {'speech_config': 'en-default'}
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+      model='test_model', config=config_dict
+  )
   assert result == expected_result
 
+  config = types.LiveConnectConfig(
+      speech_config=types.SpeechConfig(
+          voice_config=types.VoiceConfig(
+              prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                  voice_name='en-default'
+              )
+          )
+      )
+  )
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+      model='test_model', config=config
+  )
+  assert result == expected_result
   result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
       model='test_model', config=config
   )

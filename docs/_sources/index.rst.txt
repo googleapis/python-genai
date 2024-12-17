@@ -14,6 +14,13 @@ integrate Google's generative models into their Python applications. This is an
 early release (version 0.1.0). API is subject to change. Please do not use this
 SDK in production.
 
+Installation
+============
+
+.. code::  console
+
+    pip install google-genai
+
 Imports
 =======
 

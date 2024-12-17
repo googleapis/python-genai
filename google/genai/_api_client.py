@@ -51,7 +51,7 @@ class HttpOptions(TypedDict):
 def _append_library_version_headers(headers: dict[str, str]) -> None:
   """Appends the telemetry header to the headers dict."""
   # TODO: Automate revisions to the SDK library version.
-  library_label = f'google-genai-sdk/0.2.2'
+  library_label = f'google-genai-sdk/0.3.0'
   language_label = 'gl-python/' + sys.version.split()[0]
   version_header_value = f'{library_label} {language_label}'
   if (
@@ -241,7 +241,9 @@ class ApiClient:
   ) -> HttpResponse:
     if self.vertexai:
       if not self._credentials:
-        self._credentials, _ = google.auth.default()
+        self._credentials, _ = google.auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        )
       authed_session = AuthorizedSession(self._credentials)
       authed_session.stream = stream
       response = authed_session.request(
@@ -290,7 +292,9 @@ class ApiClient:
   ):
     if self.vertexai:
       if not self._credentials:
-        self._credentials, _ = google.auth.default()
+        self._credentials, _ = google.auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        )
       return await asyncio.to_thread(
           self._request,
           http_request,

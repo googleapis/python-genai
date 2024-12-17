@@ -22,28 +22,28 @@ from . import constants
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters(
     model='gemini-1.5-pro-002',
-    contents=[
-        types.Content(
-            role='user',
-            parts=[
-                types.Part(
-                    fileData=types.FileData(
-                        fileUri='gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf',
-                        mimeType='application/pdf',
-                    )
-                ),
-                types.Part(
-                    fileData=types.FileData(
-                        fileUri='gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf',
-                        mimeType='application/pdf',
-                    )
-                ),
-            ],
-        )
-    ],
     config={
-        'display_name': 'test cache',
+        'contents': [
+            types.Content(
+                role='user',
+                parts=[
+                    types.Part(
+                        fileData=types.FileData(
+                            fileUri='gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf',
+                            mimeType='application/pdf',
+                        )
+                    ),
+                    types.Part(
+                        fileData=types.FileData(
+                            fileUri='gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf',
+                            mimeType='application/pdf',
+                        )
+                    ),
+                ],
+            )
+        ],
         'system_instruction': 'What is the sum of the two pdfs?',
+        'display_name': 'test cache',
         'ttl': '86400s',
         'http_options': constants.VERTEX_HTTP_OPTIONS,
     },
@@ -51,22 +51,22 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE = types._CreateCachedContentParameters(
     model='gemini-1.5-pro-001',
-    contents=[
-        types.Content(
-            role='user',
-            parts=[
-                types.Part(
-                    fileData=types.FileData(
-                        mimeType='video/mp4',
-                        fileUri='https://generativelanguage.googleapis.com/v1beta/files/tjvltve756aa',
-                    )
-                )
-            ],
-        )
-    ],
     config={
-        'display_name': 'test cache',
+        'contents': [
+            types.Content(
+                role='user',
+                parts=[
+                    types.Part(
+                        fileData=types.FileData(
+                            mimeType='video/mp4',
+                            fileUri='https://generativelanguage.googleapis.com/v1beta/files/v200dhvn15h7',
+                        )
+                    )
+                ],
+            )
+        ],
         'system_instruction': 'What is the sum of the two pdfs?',
+        'display_name': 'test cache',
         'ttl': '86400s',
         'http_options': constants.MLDEV_HTTP_OPTIONS,
     },

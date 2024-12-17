@@ -441,6 +441,10 @@ class Part(_common.BaseModel):
   video_metadata: Optional[VideoMetadata] = Field(
       default=None, description="""Metadata for a given video."""
   )
+  thought: Optional[bool] = Field(
+      default=None,
+      description="""Indicates if the part is thought from the model.""",
+  )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
       description="""Optional. Result of executing the [ExecutableCode].""",
@@ -524,6 +528,9 @@ class PartDict(TypedDict, total=False):
 
   video_metadata: Optional[VideoMetadataDict]
   """Metadata for a given video."""
+
+  thought: Optional[bool]
+  """Indicates if the part is thought from the model."""
 
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
@@ -2430,13 +2437,17 @@ class GenerateContentResponse(_common.BaseModel):
     text = ""
     any_text_part_text = False
     for part in self.candidates[0].content.parts:
-      for field_name, field_value in part.dict(exclude={"text"}).items():
+      for field_name, field_value in part.dict(
+          exclude={"text", "thought"}
+      ).items():
         if field_value is not None:
           raise ValueError(
               "GenerateContentResponse.text only supports text parts, but got"
               f" {field_name} part{part}"
           )
       if isinstance(part.text, str):
+        if isinstance(part.thought, bool) and part.thought:
+          continue
         any_text_part_text = True
         text += part.text
     # part.text == '' is different from part.text is None
@@ -5567,6 +5578,11 @@ class CreateCachedContentConfig(_common.BaseModel):
       description="""The user-generated meaningful display name of the cached content.
       """,
   )
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""The content to cache.
+      """,
+  )
   system_instruction: Optional[ContentUnion] = Field(
       default=None,
       description="""Developer set system instruction.
@@ -5600,6 +5616,10 @@ class CreateCachedContentConfigDict(TypedDict, total=False):
   """The user-generated meaningful display name of the cached content.
       """
 
+  contents: Optional[ContentListUnionDict]
+  """The content to cache.
+      """
+
   system_instruction: Optional[ContentUnionDict]
   """Developer set system instruction.
       """
@@ -5625,11 +5645,6 @@ class _CreateCachedContentParameters(_common.BaseModel):
       default=None,
       description="""ID of the model to use. Example: gemini-1.5-flash""",
   )
-  contents: Optional[ContentListUnion] = Field(
-      default=None,
-      description="""The content to cache.
-      """,
-  )
   config: Optional[CreateCachedContentConfig] = Field(
       default=None,
       description="""Configuration that contains optional parameters.
@@ -5642,10 +5657,6 @@ class _CreateCachedContentParametersDict(TypedDict, total=False):
 
   model: Optional[str]
   """ID of the model to use. Example: gemini-1.5-flash"""
-
-  contents: Optional[ContentListUnionDict]
-  """The content to cache.
-      """
 
   config: Optional[CreateCachedContentConfigDict]
   """Configuration that contains optional parameters.
@@ -7699,6 +7710,8 @@ class LiveServerMessage(_common.BaseModel):
     text = ""
     for part in self.server_content.model_turn.parts:
       if isinstance(part.text, str):
+        if isinstance(part.thought, bool) and part.thought:
+          continue
         text += part.text
     return text if text else None
 

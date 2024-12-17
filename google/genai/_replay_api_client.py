@@ -282,7 +282,7 @@ class ReplayApiClient(ApiClient):
     with open(replay_file_path, 'w') as f:
       f.write(
           json.dumps(
-              self.replay_session.model_dump(), indent=2, cls=RequestJsonEncoder
+              self.replay_session.model_dump(), indent=2, cls=ResponseJsonEncoder
           )
       )
     self.replay_session = None
