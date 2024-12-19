@@ -798,12 +798,14 @@ def _GenerateContentConfig_to_mldev(
     setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
 
   if getv(from_object, ['response_logprobs']) is not None:
-    raise ValueError(
-        'response_logprobs parameter is not supported in Google AI.'
+    setv(
+        to_object,
+        ['responseLogprobs'],
+        getv(from_object, ['response_logprobs']),
     )
 
   if getv(from_object, ['logprobs']) is not None:
-    raise ValueError('logprobs parameter is not supported in Google AI.')
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
 
   if getv(from_object, ['presence_penalty']) is not None:
     setv(
