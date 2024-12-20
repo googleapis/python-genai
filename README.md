@@ -120,7 +120,7 @@ You can pass a python function directly and it will be automatically
 called and responded.
 
 ``` python
-def get_current_weather(location: str,) -> int:
+def get_current_weather(location: str) -> str:
   """Returns the current weather.
 
   Args:
