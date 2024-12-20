@@ -54,8 +54,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'logprobs': 0,
             },
         ),
-        exception_if_mldev='logprobs parameter is not supported in Google AI',
+        exception_if_mldev='response_logprobs is true',
         exception_if_vertex='setting response_logprobs to be true',
+        skip_in_api_mode='it will encounter 400 for api mode',
     ),
     pytest_helper.TestTableItem(
         name='test_logprobs_zero_with_response_logprobs_true',
@@ -67,7 +68,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'logprobs': 0,
             },
         ),
-        exception_if_mldev='response_logprobs parameter is not supported in Google AI',
+        # ML DEV discovery doc supports response_logprobs but the backend
+        # does not.
+        # TODO: update replay test json files when ML Dev backend is updated.
+        exception_if_mldev='INVALID_ARGUMENT',
     ),
     pytest_helper.TestTableItem(
         name='test_presence_penalty_zero',
