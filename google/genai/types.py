@@ -7992,7 +7992,7 @@ class LiveClientMessage(_common.BaseModel):
       default=None,
       description="""Incremental update of the current conversation delivered from the client.""",
   )
-  realtime_update: Optional[LiveClientRealtimeInput] = Field(
+  realtime_input: Optional[LiveClientRealtimeInput] = Field(
       default=None, description="""User input that is sent in real time."""
   )
   tool_response: Optional[LiveClientToolResponse] = Field(
@@ -8010,7 +8010,7 @@ class LiveClientMessageDict(TypedDict, total=False):
   client_content: Optional[LiveClientContentDict]
   """Incremental update of the current conversation delivered from the client."""
 
-  realtime_update: Optional[LiveClientRealtimeInputDict]
+  realtime_input: Optional[LiveClientRealtimeInputDict]
   """User input that is sent in real time."""
 
   tool_response: Optional[LiveClientToolResponseDict]
