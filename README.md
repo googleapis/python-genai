@@ -426,7 +426,11 @@ Upscale image is not supported in Google AI.
 response2 = client.models.upscale_image(
     model='imagen-3.0-generate-001',
     image=response1.generated_images[0].image,
-    config=types.UpscaleImageConfig(upscale_factor="x2")
+    upscale_factor="x2",
+    config=types.UpscaleImageConfig(
+        include_rai_reason= True,
+        output_mime_type= "image/jpeg",
+    ),
 )
 response2.generated_images[0].image.show()
 ```
