@@ -1,3 +1,4 @@
 releaseType: python
 handleGHRelease: true
 bumpMinorPreMajor: true
+manifest: true
