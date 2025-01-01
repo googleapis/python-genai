@@ -164,7 +164,7 @@ class ReplayFile(BaseModel):
 
 
 class ReplayApiClient(ApiClient):
-  """For integration testing, send recorded responese or records a response."""
+  """For integration testing, send recorded response or records a response."""
 
   def __init__(
       self,
