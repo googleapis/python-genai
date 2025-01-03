@@ -23,7 +23,7 @@ import datetime
 import json
 import os
 import sys
-from typing import Any, Optional, TypedDict, Union
+from typing import Any, Optional, Tuple, TypedDict, Union
 from urllib.parse import urlparse, urlunparse
 
 import google.auth
@@ -42,10 +42,12 @@ class HttpOptions(TypedDict):
   """The base URL for the AI platform service endpoint."""
   api_version: str = None
   """Specifies the version of the API to use."""
-  headers: dict[str, dict] = None
+  headers: dict[str, str | list[str]] = None
   """Additional HTTP headers to be sent with the request."""
   response_payload: dict = None
   """If set, the response payload will be returned int the supplied dict."""
+  timeout: Optional[Union[float, Tuple[float, float]]] = None
+  """Timeout for the request in seconds."""
 
 
 def _append_library_version_headers(headers: dict[str, str]) -> None:
@@ -76,15 +78,19 @@ def _patch_http_options(
   # use shallow copy so we don't override the original objects.
   copy_option = HttpOptions()
   copy_option.update(options)
-  for k, v in patch_options.items():
+  for patch_key, patch_value in patch_options.items():
     # if both are dicts, update the copy.
     # This is to handle cases like merging headers.
-    if isinstance(v, dict) and isinstance(copy_option.get(k, None), dict):
-      copy_option[k] = {}
-      copy_option[k].update(options[k])  # shallow copy from original options.
-      copy_option[k].update(v)
-    elif v is not None:  # Accept empty values.
-      copy_option[k] = v
+    if isinstance(patch_value, dict) and isinstance(
+        copy_option.get(patch_key, None), dict
+    ):
+      copy_option[patch_key] = {}
+      copy_option[patch_key].update(
+          options[patch_key]
+      )  # shallow copy from original options.
+      copy_option[patch_key].update(patch_value)
+    elif patch_value is not None:  # Accept empty values.
+      copy_option[patch_key] = patch_value
   _append_library_version_headers(copy_option['headers'])
   return copy_option
 
@@ -102,6 +108,7 @@ class HttpRequest:
   url: str
   method: str
   data: Union[dict[str, object], bytes]
+  timeout: Optional[Union[float, Tuple[float, float]]] = None
 
 
 class HttpResponse:
@@ -232,6 +239,7 @@ class ApiClient:
         url=url,
         headers=patched_http_options['headers'],
         data=request_dict,
+        timeout=patched_http_options.get('timeout', None),
     )
 
   def _request(
@@ -250,10 +258,10 @@ class ApiClient:
           http_request.method.upper(),
           http_request.url,
           headers=http_request.headers,
-          data=json.dumps(http_request.data, cls=RequestJsonEncoder) if http_request.data else None,
-          # TODO: support timeout in RequestOptions so it can be configured
-          # per methods.
-          timeout=None,
+          data=json.dumps(http_request.data, cls=RequestJsonEncoder)
+          if http_request.data
+          else None,
+          timeout=http_request.timeout,
       )
       errors.APIError.raise_for_response(response)
       return HttpResponse(
@@ -275,13 +283,14 @@ class ApiClient:
         data = http_request.data
 
     http_session = requests.Session()
-    request = requests.Request(
+    response = http_session.request(
         method=http_request.method,
         url=http_request.url,
         headers=http_request.headers,
         data=data,
-    ).prepare()
-    response = http_session.send(request, stream=stream)
+        timeout=http_request.timeout,
+        stream=stream,
+    )
     errors.APIError.raise_for_response(response)
     return HttpResponse(
         response.headers, response if stream else [response.text]
