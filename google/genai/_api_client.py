@@ -275,13 +275,13 @@ class ApiClient:
         data = http_request.data
 
     http_session = requests.Session()
-    request = requests.Request(
+    response = http_session.request(
         method=http_request.method,
         url=http_request.url,
         headers=http_request.headers,
         data=data,
-    ).prepare()
-    response = http_session.send(request, stream=stream)
+        stream=stream,
+    )
     errors.APIError.raise_for_response(response)
     return HttpResponse(
         response.headers, response if stream else [response.text]
