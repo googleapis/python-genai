@@ -511,19 +511,19 @@ else:
 
 cached_content = client.caches.create(
       model='gemini-1.5-pro-002',
-      contents=[
-          types.Content(
-              role='user',
-              parts=[
-                types.Part.from_uri(
-                    file_uri=file_uris[0],
-                    mime_type='application/pdf'),
-                types.Part.from_uri(
-                    file_uri=file_uris[1],
-                    mime_type='application/pdf',)])
-      ],
-      system_instruction='What is the sum of the two pdfs?',
       config=types.CreateCachedContentConfig(
+          contents=[
+              types.Content(
+                  role='user',
+                  parts=[
+                    types.Part.from_uri(
+                        file_uri=file_uris[0],
+                        mime_type='application/pdf'),
+                    types.Part.from_uri(
+                        file_uri=file_uris[1],
+                        mime_type='application/pdf',)])
+          ],
+          system_instruction='What is the sum of the two pdfs?',
           display_name='test cache',
           ttl='3600s',
       ),
