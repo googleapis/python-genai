@@ -6540,7 +6540,7 @@ class CreateBatchJobConfig(_common.BaseModel):
   )
   dest: Optional[str] = Field(
       default=None,
-      description="""GCS or Bigquery URI prefix for the output predictions. Example:
+      description="""GCS or BigQuery URI prefix for the output predictions. Example:
       "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
       """,
   )
@@ -6557,7 +6557,7 @@ class CreateBatchJobConfigDict(TypedDict, total=False):
       """
 
   dest: Optional[str]
-  """GCS or Bigquery URI prefix for the output predictions. Example:
+  """GCS or BigQuery URI prefix for the output predictions. Example:
       "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
       """
 
@@ -6577,7 +6577,7 @@ class _CreateBatchJobParameters(_common.BaseModel):
   )
   src: Optional[str] = Field(
       default=None,
-      description="""GCS URI(-s) or Bigquery URI to your input data to run batch job.
+      description="""GCS URI(-s) or BigQuery URI to your input data to run batch job.
       Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
       """,
   )
@@ -6596,7 +6596,7 @@ class _CreateBatchJobParametersDict(TypedDict, total=False):
       """
 
   src: Optional[str]
-  """GCS URI(-s) or Bigquery URI to your input data to run batch job.
+  """GCS URI(-s) or BigQuery URI to your input data to run batch job.
       Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
       """
 
