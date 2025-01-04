@@ -146,6 +146,44 @@ def test_constructor_with_response_payload_in_http_options():
     )
 
 
+def test_constructor_with_invalid_http_options_key():
+  mldev_http_options = {
+      "invalid_version_key": "v1",
+      "base_url": "https://placeholder-fake-url.com/",
+      "headers": {"X-Custom-Header": "custom_value"},
+  }
+  vertexai_http_options = {
+      "api_version": "v1",
+      "base_url": (
+          "https://{self.location}-aiplatform.googleapis.com/{{api_version}}/"
+      ),
+      "invalid_header_key": {"X-Custom-Header": "custom_value"},
+  }
+
+  # Expect value error when HTTPOptions is provided as a dict and contains
+  # an invalid key.
+  try:
+    _ = Client(api_key="google_api_key", http_options=mldev_http_options)
+  except ValueError as e:
+    assert "Invalid http_options key: invalid_version_key" in str(
+        e
+    )
+
+  # Expect value error when HTTPOptions is provided as a dict and contains
+  # an invalid key.
+  try:
+    _ = Client(
+        vertexai=True,
+        project="fake_project_id",
+        location="fake-location",
+        http_options=vertexai_http_options,
+    )
+  except ValueError as e:
+    assert "Invalid http_options key: invalid_header_key" in str(
+        e
+    )
+
+
 def test_vertexai_from_env_1(monkeypatch):
   project_id = "fake_project_id"
   location = "fake-location"

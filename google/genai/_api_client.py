@@ -170,6 +170,17 @@ class ApiClient:
           'Project/location and API key are mutually exclusive in the client initializer.'
       )
 
+    # Validate http_options.
+    if http_options:
+      valid_http_options_keys = [key for key in vars(HttpOptions) if not key.startswith('_')]
+      provided_http_options_keys = http_options.keys()
+      for key in provided_http_options_keys:
+        if key not in valid_http_options_keys:
+          raise ValueError(
+              f'Invalid http_options key: {key}. Valid keys are:'
+              f' {valid_http_options_keys}.'
+          )
+
     self.api_key: Optional[str] = None
     self.project = project or os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     self.location = location or os.environ.get('GOOGLE_CLOUD_LOCATION', None)
