@@ -1256,14 +1256,13 @@ class Caches(_common.BaseModule):
     .. code-block:: python
 
       contents = ... // Initialize the content to cache.
-      response = await client.aio.caches.create(
-          model= ... // The publisher model id
-          contents=contents,
-          config={
-              'display_name': 'test cache',
-              'system_instruction': 'What is the sum of the two pdfs?',
-              'ttl': '86400s',
-          },
+      cached_content = client.caches.create(
+          model=MODEL,
+          config=types.CreateCachedContentConfig(
+              display_name='cache-name',
+              ttl='3600s',
+              contents=contents,
+          ),
       )
     """
 
