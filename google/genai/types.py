@@ -602,7 +602,7 @@ class Schema(_common.BaseModel):
   Represents a select subset of an OpenAPI 3.0 schema object.
   """
 
-  min_items: Optional[str] = Field(
+  min_items: Optional[int] = Field(
       default=None,
       description="""Optional. Minimum number of the elements for Type.ARRAY.""",
   )
@@ -629,22 +629,22 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
   )
-  max_length: Optional[str] = Field(
+  max_length: Optional[int] = Field(
       default=None,
       description="""Optional. Maximum length of the Type.STRING""",
   )
   title: Optional[str] = Field(
       default=None, description="""Optional. The title of the Schema."""
   )
-  min_length: Optional[str] = Field(
+  min_length: Optional[int] = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING""",
   )
-  min_properties: Optional[str] = Field(
+  min_properties: Optional[int] = Field(
       default=None,
       description="""Optional. Minimum number of the properties for Type.OBJECT.""",
   )
-  max_items: Optional[str] = Field(
+  max_items: Optional[int] = Field(
       default=None,
       description="""Optional. Maximum number of the elements for Type.ARRAY.""",
   )
@@ -656,7 +656,7 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. Indicates if the value may be null.""",
   )
-  max_properties: Optional[str] = Field(
+  max_properties: Optional[int] = Field(
       default=None,
       description="""Optional. Maximum number of the properties for Type.OBJECT.""",
   )
@@ -694,7 +694,7 @@ class SchemaDict(TypedDict, total=False):
   Represents a select subset of an OpenAPI 3.0 schema object.
   """
 
-  min_items: Optional[str]
+  min_items: Optional[int]
   """Optional. Minimum number of the elements for Type.ARRAY."""
 
   example: Optional[Any]
@@ -715,19 +715,19 @@ class SchemaDict(TypedDict, total=False):
   any_of: list["SchemaDict"]
   """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
 
-  max_length: Optional[str]
+  max_length: Optional[int]
   """Optional. Maximum length of the Type.STRING"""
 
   title: Optional[str]
   """Optional. The title of the Schema."""
 
-  min_length: Optional[str]
+  min_length: Optional[int]
   """Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"""
 
-  min_properties: Optional[str]
+  min_properties: Optional[int]
   """Optional. Minimum number of the properties for Type.OBJECT."""
 
-  max_items: Optional[str]
+  max_items: Optional[int]
   """Optional. Maximum number of the elements for Type.ARRAY."""
 
   maximum: Optional[float]
@@ -736,7 +736,7 @@ class SchemaDict(TypedDict, total=False):
   nullable: Optional[bool]
   """Optional. Indicates if the value may be null."""
 
-  max_properties: Optional[str]
+  max_properties: Optional[int]
   """Optional. Maximum number of the properties for Type.OBJECT."""
 
   type: Optional[Type]
@@ -2453,7 +2453,10 @@ class GenerateContentResponse(_common.BaseModel):
       default=None, description="""Usage metadata about the response(s)."""
   )
   automatic_function_calling_history: Optional[list[Content]] = None
-  parsed: Union[pydantic.BaseModel, dict] = None
+  parsed: Union[pydantic.BaseModel, dict] = Field(
+      default=None,
+      description="""Parsed response if response_schema is provided. Not available for streaming.""",
+  )
 
   @property
   def text(self) -> Optional[str]:
@@ -2503,12 +2506,21 @@ class GenerateContentResponse(_common.BaseModel):
         response_schema, pydantic.BaseModel
     ):
       # Pydantic schema.
-      result.parsed = response_schema.model_validate_json(result.text)
+      try:
+        result.parsed = response_schema.model_validate_json(result.text)
+      # may not be a valid json per stream response
+      except pydantic.ValidationError:
+        pass
+
     elif isinstance(response_schema, dict) or isinstance(
         response_schema, pydantic.BaseModel
     ):
       # JSON schema.
-      result.parsed = json.loads(result.text)
+      try:
+        result.parsed = json.loads(result.text)
+      # may not be a valid json per stream response
+      except json.decoder.JSONDecodeError:
+        pass
 
     return result
 
@@ -4229,7 +4241,7 @@ class TokensInfo(_common.BaseModel):
       default=None,
       description="""Optional. Optional fields for the role from the corresponding Content.""",
   )
-  token_ids: Optional[list[str]] = Field(
+  token_ids: Optional[list[int]] = Field(
       default=None, description="""A list of token ids from the input."""
   )
   tokens: Optional[list[bytes]] = Field(
@@ -4243,7 +4255,7 @@ class TokensInfoDict(TypedDict, total=False):
   role: Optional[str]
   """Optional. Optional fields for the role from the corresponding Content."""
 
-  token_ids: Optional[list[str]]
+  token_ids: Optional[list[int]]
   """A list of token ids from the input."""
 
   tokens: Optional[list[bytes]]
@@ -4391,7 +4403,7 @@ class SupervisedHyperParameters(_common.BaseModel):
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Optional. Adapter size for tuning."""
   )
-  epoch_count: Optional[str] = Field(
+  epoch_count: Optional[int] = Field(
       default=None,
       description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
   )
@@ -4407,7 +4419,7 @@ class SupervisedHyperParametersDict(TypedDict, total=False):
   adapter_size: Optional[AdapterSize]
   """Optional. Adapter size for tuning."""
 
-  epoch_count: Optional[str]
+  epoch_count: Optional[int]
   """Optional. Number of complete passes the model makes over the entire training dataset during training."""
 
   learning_rate_multiplier: Optional[float]
@@ -4456,7 +4468,7 @@ SupervisedTuningSpecOrDict = Union[
 class DatasetDistributionDistributionBucket(_common.BaseModel):
   """Dataset bucket used to create a histogram for the distribution given a population of values."""
 
-  count: Optional[str] = Field(
+  count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of values in the bucket.""",
   )
@@ -4471,7 +4483,7 @@ class DatasetDistributionDistributionBucket(_common.BaseModel):
 class DatasetDistributionDistributionBucketDict(TypedDict, total=False):
   """Dataset bucket used to create a histogram for the distribution given a population of values."""
 
-  count: Optional[str]
+  count: Optional[int]
   """Output only. Number of values in the bucket."""
 
   left: Optional[float]
@@ -4557,19 +4569,19 @@ DatasetDistributionOrDict = Union[DatasetDistribution, DatasetDistributionDict]
 class DatasetStats(_common.BaseModel):
   """Statistics computed over a tuning dataset."""
 
-  total_billable_character_count: Optional[str] = Field(
+  total_billable_character_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of billable characters in the tuning dataset.""",
   )
-  total_tuning_character_count: Optional[str] = Field(
+  total_tuning_character_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of tuning characters in the tuning dataset.""",
   )
-  tuning_dataset_example_count: Optional[str] = Field(
+  tuning_dataset_example_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of examples in the tuning dataset.""",
   )
-  tuning_step_count: Optional[str] = Field(
+  tuning_step_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of tuning steps for this Tuning Job.""",
   )
@@ -4594,16 +4606,16 @@ class DatasetStats(_common.BaseModel):
 class DatasetStatsDict(TypedDict, total=False):
   """Statistics computed over a tuning dataset."""
 
-  total_billable_character_count: Optional[str]
+  total_billable_character_count: Optional[int]
   """Output only. Number of billable characters in the tuning dataset."""
 
-  total_tuning_character_count: Optional[str]
+  total_tuning_character_count: Optional[int]
   """Output only. Number of tuning characters in the tuning dataset."""
 
-  tuning_dataset_example_count: Optional[str]
+  tuning_dataset_example_count: Optional[int]
   """Output only. Number of examples in the tuning dataset."""
 
-  tuning_step_count: Optional[str]
+  tuning_step_count: Optional[int]
   """Output only. Number of tuning steps for this Tuning Job."""
 
   user_dataset_examples: Optional[list[ContentDict]]
@@ -4682,7 +4694,7 @@ SupervisedTuningDatasetDistributionDatasetBucketOrDict = Union[
 class SupervisedTuningDatasetDistribution(_common.BaseModel):
   """Dataset distribution for Supervised Tuning."""
 
-  billable_sum: Optional[str] = Field(
+  billable_sum: Optional[int] = Field(
       default=None,
       description="""Output only. Sum of a given population of values that are billable.""",
   )
@@ -4716,7 +4728,7 @@ class SupervisedTuningDatasetDistribution(_common.BaseModel):
       default=None,
       description="""Output only. The 95th percentile of the values in the population.""",
   )
-  sum: Optional[str] = Field(
+  sum: Optional[int] = Field(
       default=None,
       description="""Output only. Sum of a given population of values.""",
   )
@@ -4725,7 +4737,7 @@ class SupervisedTuningDatasetDistribution(_common.BaseModel):
 class SupervisedTuningDatasetDistributionDict(TypedDict, total=False):
   """Dataset distribution for Supervised Tuning."""
 
-  billable_sum: Optional[str]
+  billable_sum: Optional[int]
   """Output only. Sum of a given population of values that are billable."""
 
   buckets: Optional[list[SupervisedTuningDatasetDistributionDatasetBucketDict]]
@@ -4749,7 +4761,7 @@ class SupervisedTuningDatasetDistributionDict(TypedDict, total=False):
   p95: Optional[float]
   """Output only. The 95th percentile of the values in the population."""
 
-  sum: Optional[str]
+  sum: Optional[int]
   """Output only. Sum of a given population of values."""
 
 
@@ -4761,31 +4773,31 @@ SupervisedTuningDatasetDistributionOrDict = Union[
 class SupervisedTuningDataStats(_common.BaseModel):
   """Tuning data statistics for Supervised Tuning."""
 
-  total_billable_character_count: Optional[str] = Field(
+  total_billable_character_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of billable characters in the tuning dataset.""",
   )
-  total_billable_token_count: Optional[str] = Field(
+  total_billable_token_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of billable tokens in the tuning dataset.""",
   )
-  total_truncated_example_count: Optional[str] = Field(
+  total_truncated_example_count: Optional[int] = Field(
       default=None,
       description="""The number of examples in the dataset that have been truncated by any amount.""",
   )
-  total_tuning_character_count: Optional[str] = Field(
+  total_tuning_character_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of tuning characters in the tuning dataset.""",
   )
-  truncated_example_indices: Optional[list[str]] = Field(
+  truncated_example_indices: Optional[list[int]] = Field(
       default=None,
       description="""A partial sample of the indices (starting from 1) of the truncated examples.""",
   )
-  tuning_dataset_example_count: Optional[str] = Field(
+  tuning_dataset_example_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of examples in the tuning dataset.""",
   )
-  tuning_step_count: Optional[str] = Field(
+  tuning_step_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of tuning steps for this Tuning Job.""",
   )
@@ -4816,25 +4828,25 @@ class SupervisedTuningDataStats(_common.BaseModel):
 class SupervisedTuningDataStatsDict(TypedDict, total=False):
   """Tuning data statistics for Supervised Tuning."""
 
-  total_billable_character_count: Optional[str]
+  total_billable_character_count: Optional[int]
   """Output only. Number of billable characters in the tuning dataset."""
 
-  total_billable_token_count: Optional[str]
+  total_billable_token_count: Optional[int]
   """Output only. Number of billable tokens in the tuning dataset."""
 
-  total_truncated_example_count: Optional[str]
+  total_truncated_example_count: Optional[int]
   """The number of examples in the dataset that have been truncated by any amount."""
 
-  total_tuning_character_count: Optional[str]
+  total_tuning_character_count: Optional[int]
   """Output only. Number of tuning characters in the tuning dataset."""
 
-  truncated_example_indices: Optional[list[str]]
+  truncated_example_indices: Optional[list[int]]
   """A partial sample of the indices (starting from 1) of the truncated examples."""
 
-  tuning_dataset_example_count: Optional[str]
+  tuning_dataset_example_count: Optional[int]
   """Output only. Number of examples in the tuning dataset."""
 
-  tuning_step_count: Optional[str]
+  tuning_step_count: Optional[int]
   """Output only. Number of tuning steps for this Tuning Job."""
 
   user_dataset_examples: Optional[list[ContentDict]]
@@ -4910,7 +4922,7 @@ class DistillationHyperParameters(_common.BaseModel):
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Optional. Adapter size for distillation."""
   )
-  epoch_count: Optional[str] = Field(
+  epoch_count: Optional[int] = Field(
       default=None,
       description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
   )
@@ -4926,7 +4938,7 @@ class DistillationHyperParametersDict(TypedDict, total=False):
   adapter_size: Optional[AdapterSize]
   """Optional. Adapter size for distillation."""
 
-  epoch_count: Optional[str]
+  epoch_count: Optional[int]
   """Optional. Number of complete passes the model makes over the entire training dataset during training."""
 
   learning_rate_multiplier: Optional[float]
@@ -7691,7 +7703,7 @@ class LiveServerToolCallCancellation(_common.BaseModel):
   server turns.
   """
 
-  ids: Optional[list[int]] = Field(
+  ids: Optional[list[str]] = Field(
       default=None, description="""The ids of the tool calls to be cancelled."""
   )
 
@@ -7704,7 +7716,7 @@ class LiveServerToolCallCancellationDict(TypedDict, total=False):
   server turns.
   """
 
-  ids: Optional[list[int]]
+  ids: Optional[list[str]]
   """The ids of the tool calls to be cancelled."""
 
 
@@ -7992,7 +8004,7 @@ class LiveClientMessage(_common.BaseModel):
       default=None,
       description="""Incremental update of the current conversation delivered from the client.""",
   )
-  realtime_update: Optional[LiveClientRealtimeInput] = Field(
+  realtime_input: Optional[LiveClientRealtimeInput] = Field(
       default=None, description="""User input that is sent in real time."""
   )
   tool_response: Optional[LiveClientToolResponse] = Field(
@@ -8010,7 +8022,7 @@ class LiveClientMessageDict(TypedDict, total=False):
   client_content: Optional[LiveClientContentDict]
   """Incremental update of the current conversation delivered from the client."""
 
-  realtime_update: Optional[LiveClientRealtimeInputDict]
+  realtime_input: Optional[LiveClientRealtimeInputDict]
   """User input that is sent in real time."""
 
   tool_response: Optional[LiveClientToolResponseDict]
