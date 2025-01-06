@@ -3570,10 +3570,6 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
   http_options: Optional[dict[str, Any]] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
-  upscale_factor: Optional[str] = Field(
-      default=None,
-      description="""The factor to which the image will be upscaled.""",
-  )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include a reason for filtered-out images in the
@@ -3601,9 +3597,6 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
 
   http_options: Optional[dict[str, Any]]
   """Used to override HTTP request options."""
-
-  upscale_factor: Optional[str]
-  """The factor to which the image will be upscaled."""
 
   include_rai_reason: Optional[bool]
   """Whether to include a reason for filtered-out images in the
@@ -3637,6 +3630,10 @@ class _UpscaleImageAPIParameters(_common.BaseModel):
   image: Optional[Image] = Field(
       default=None, description="""The input image to upscale."""
   )
+  upscale_factor: Optional[str] = Field(
+      default=None,
+      description="""The factor to upscale the image (x2 or x4).""",
+  )
   config: Optional[_UpscaleImageAPIConfig] = Field(
       default=None, description="""Configuration for upscaling."""
   )
@@ -3650,6 +3647,9 @@ class _UpscaleImageAPIParametersDict(TypedDict, total=False):
 
   image: Optional[ImageDict]
   """The input image to upscale."""
+
+  upscale_factor: Optional[str]
+  """The factor to upscale the image (x2 or x4)."""
 
   config: Optional[_UpscaleImageAPIConfigDict]
   """Configuration for upscaling."""
@@ -7198,10 +7198,6 @@ class UpscaleImageConfig(_common.BaseModel):
   http_options: Optional[dict[str, Any]] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
-  upscale_factor: Optional[str] = Field(
-      default=None,
-      description="""The factor to which the image will be upscaled.""",
-  )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include a reason for filtered-out images in the
@@ -7229,9 +7225,6 @@ class UpscaleImageConfigDict(TypedDict, total=False):
   http_options: Optional[dict[str, Any]]
   """Used to override HTTP request options."""
 
-  upscale_factor: Optional[str]
-  """The factor to which the image will be upscaled."""
-
   include_rai_reason: Optional[bool]
   """Whether to include a reason for filtered-out images in the
       response."""
@@ -7256,6 +7249,10 @@ class UpscaleImageParameters(_common.BaseModel):
   image: Optional[Image] = Field(
       default=None, description="""The input image to upscale."""
   )
+  upscale_factor: Optional[str] = Field(
+      default=None,
+      description="""The factor to upscale the image (x2 or x4).""",
+  )
   config: Optional[UpscaleImageConfig] = Field(
       default=None, description="""Configuration for upscaling."""
   )
@@ -7269,6 +7266,9 @@ class UpscaleImageParametersDict(TypedDict, total=False):
 
   image: Optional[ImageDict]
   """The input image to upscale."""
+
+  upscale_factor: Optional[str]
+  """The factor to upscale the image (x2 or x4)."""
 
   config: Optional[UpscaleImageConfigDict]
   """Configuration for upscaling."""

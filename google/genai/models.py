@@ -2085,13 +2085,6 @@ def _UpscaleImageAPIConfig_to_mldev(
   if getv(from_object, ['http_options']) is not None:
     setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
-  if getv(from_object, ['upscale_factor']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'upscaleConfig', 'upscaleFactor'],
-        getv(from_object, ['upscale_factor']),
-    )
-
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
@@ -2134,13 +2127,6 @@ def _UpscaleImageAPIConfig_to_vertex(
   to_object = {}
   if getv(from_object, ['http_options']) is not None:
     setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  if getv(from_object, ['upscale_factor']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'upscaleConfig', 'upscaleFactor'],
-        getv(from_object, ['upscale_factor']),
-    )
 
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
@@ -2196,6 +2182,13 @@ def _UpscaleImageAPIParameters_to_mldev(
         _Image_to_mldev(api_client, getv(from_object, ['image']), to_object),
     )
 
+  if getv(from_object, ['upscale_factor']) is not None:
+    setv(
+        to_object,
+        ['parameters', 'upscaleConfig', 'upscaleFactor'],
+        getv(from_object, ['upscale_factor']),
+    )
+
   if getv(from_object, ['config']) is not None:
     setv(
         to_object,
@@ -2226,6 +2219,13 @@ def _UpscaleImageAPIParameters_to_vertex(
         to_object,
         ['instances', 'image'],
         _Image_to_vertex(api_client, getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['upscale_factor']) is not None:
+    setv(
+        to_object,
+        ['parameters', 'upscaleConfig', 'upscaleFactor'],
+        getv(from_object, ['upscale_factor']),
     )
 
   if getv(from_object, ['config']) is not None:
@@ -3986,6 +3986,7 @@ class Models(_common.BaseModule):
       *,
       model: str,
       image: types.ImageOrDict,
+      upscale_factor: str,
       config: Optional[types._UpscaleImageAPIConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
     """Upscales an image.
@@ -3993,12 +3994,14 @@ class Models(_common.BaseModule):
     Args:
       model (str): The model to use.
       image (Image): The input image for upscaling.
+      upscale_factor (str): The factor to upscale the image (x2 or x4).
       config (_UpscaleImageAPIConfig): Configuration for upscaling.
     """
 
     parameter_model = types._UpscaleImageAPIParameters(
         model=model,
         image=image,
+        upscale_factor=upscale_factor,
         config=config,
     )
 
@@ -4445,13 +4448,15 @@ class Models(_common.BaseModule):
       *,
       model: str,
       image: types.ImageOrDict,
-      config: types.UpscaleImageConfigOrDict,
+      upscale_factor: str,
+      config: Optional[types.UpscaleImageConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
     """Makes an API request to upscale a provided image.
 
     Args:
       model (str): The model to use.
       image (Image): The input image for upscaling.
+      upscale_factor (str): The factor to upscale the image (x2 or x4).
       config (UpscaleImageConfig): Configuration for upscaling.
 
     Usage:
@@ -4464,9 +4469,7 @@ class Models(_common.BaseModule):
       response=client.models.upscale_image(
           model='imagen-3.0-generate-001',
           image=types.Image.from_file(IMAGE_FILE_PATH),
-                  config={
-                    'upscale_factor': 'x2',
-                  }
+          upscale_factor='x2',
       )
       response.generated_images[0].image.show()
       # Opens my-image.png which is upscaled by a factor of 2.
@@ -4476,10 +4479,12 @@ class Models(_common.BaseModule):
     types.UpscaleImageParameters(
         model=model,
         image=image,
+        upscale_factor=upscale_factor,
         config=config,
     )
 
     # Convert to API config.
+    config = config or {}
     config_dct = config if isinstance(config, dict) else config.dict()
     api_config = types._UpscaleImageAPIConfigDict(**config_dct)  # pylint: disable=protected-access
 
@@ -4487,7 +4492,12 @@ class Models(_common.BaseModule):
     api_config['mode'] = 'upscale'
     api_config['number_of_images'] = 1
 
-    return self._upscale_image(model=model, image=image, config=api_config)
+    return self._upscale_image(
+        model=model,
+        image=image,
+        upscale_factor=upscale_factor,
+        config=api_config,
+    )
 
   def list(
       self,
@@ -4884,6 +4894,7 @@ class AsyncModels(_common.BaseModule):
       *,
       model: str,
       image: types.ImageOrDict,
+      upscale_factor: str,
       config: Optional[types._UpscaleImageAPIConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
     """Upscales an image.
@@ -4891,12 +4902,14 @@ class AsyncModels(_common.BaseModule):
     Args:
       model (str): The model to use.
       image (Image): The input image for upscaling.
+      upscale_factor (str): The factor to upscale the image (x2 or x4).
       config (_UpscaleImageAPIConfig): Configuration for upscaling.
     """
 
     parameter_model = types._UpscaleImageAPIParameters(
         model=model,
         image=image,
+        upscale_factor=upscale_factor,
         config=config,
     )
 
@@ -5373,13 +5386,15 @@ class AsyncModels(_common.BaseModule):
       *,
       model: str,
       image: types.ImageOrDict,
-      config: types.UpscaleImageConfigOrDict,
+      upscale_factor: str,
+      config: Optional[types.UpscaleImageConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
     """Makes an API request to upscale a provided image.
 
     Args:
       model (str): The model to use.
       image (Image): The input image for upscaling.
+      upscale_factor (str): The factor to upscale the image (x2 or x4).
       config (UpscaleImageConfig): Configuration for upscaling.
 
     Usage:
@@ -5390,11 +5405,9 @@ class AsyncModels(_common.BaseModule):
 
       IMAGE_FILE_PATH="my-image.png"
       response = await client.aio.models.upscale_image(
-          model = 'imagen-3.0-generate-001',
-          image = types.Image.from_file(IMAGE_FILE_PATH),
-                  config = {
-                    'upscale_factor': 'x2',
-                  }
+          model='imagen-3.0-generate-001',
+          image=types.Image.from_file(IMAGE_FILE_PATH),
+          upscale_factor='x2',
       )
       response.generated_images[0].image.show()
       # Opens my-image.png which is upscaled by a factor of 2.
@@ -5404,10 +5417,12 @@ class AsyncModels(_common.BaseModule):
     types.UpscaleImageParameters(
         model=model,
         image=image,
+        upscale_factor=upscale_factor,
         config=config,
     )
 
     # Convert to API config.
+    config = config or {}
     config_dct = config if isinstance(config, dict) else config.dict()
     api_config = types._UpscaleImageAPIConfigDict(**config_dct)  # pylint: disable=protected-access
 
@@ -5416,5 +5431,8 @@ class AsyncModels(_common.BaseModule):
     api_config['number_of_images'] = 1
 
     return await self._upscale_image(
-        model=model, image=image, config=api_config
+        model=model,
+        image=image,
+        upscale_factor=upscale_factor,
+        config=api_config,
     )

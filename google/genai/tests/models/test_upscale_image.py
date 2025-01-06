@@ -31,13 +31,22 @@ IMAGE_FILE_PATH = os.path.abspath(
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
+        name='test_upscale_no_config',
+        exception_if_mldev='only supported in the Vertex AI client',
+        parameters=types.UpscaleImageParameters(
+            model='imagen-3.0-generate-001',
+            image=types.Image.from_file(IMAGE_FILE_PATH),
+            upscale_factor='x2',
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_upscale',
         exception_if_mldev='only supported in the Vertex AI client',
         parameters=types.UpscaleImageParameters(
             model='imagen-3.0-generate-001',
             image=types.Image.from_file(IMAGE_FILE_PATH),
+            upscale_factor='x2',
             config={
-                'upscale_factor': 'x2',
                 'include_rai_reason': True,
                 'output_mime_type': 'image/jpeg',
                 'output_compression_quality': 80,
@@ -61,9 +70,9 @@ def test_upscale_extra_config_parameters(client):
     client.models.upscale_image(
         model='imagen-3.0-generate-001',
         image=types.Image.from_file(IMAGE_FILE_PATH),
+        upscale_factor='x2',
         config={
             'mode': 'upscale',
-            'upscale_factor': 'x2',
             'number_of_images': 1,
         }
     )
@@ -80,8 +89,8 @@ async def test_upscale_async(client):
     response = await client.aio.models.upscale_image(
         model='imagen-3.0-generate-001',
         image=types.Image.from_file(IMAGE_FILE_PATH),
+        upscale_factor='x2',
         config={
-            'upscale_factor': 'x2',
             'include_rai_reason': True,
             'output_mime_type': 'image/jpeg',
             'output_compression_quality': 80,
@@ -99,9 +108,9 @@ async def test_upscale_extra_config_parameters_async(client):
     await client.aio.models.upscale_image(
         model='imagen-3.0-generate-001',
         image=types.Image.from_file(IMAGE_FILE_PATH),
+        upscale_factor='x2',
         config={
             'mode': 'upscale',
-            'upscale_factor': 'x2',
             'number_of_images': 1,
         },
     )
