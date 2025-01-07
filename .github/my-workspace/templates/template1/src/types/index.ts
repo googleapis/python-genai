@@ -1,0 +1,1 @@
+// This file exports interfaces or types used throughout template1, providing type definitions for better type safety.

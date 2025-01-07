@@ -1,0 +1,16 @@
+{
+  "name": "template1",
+  "version": "1.0.0",
+  "description": "A template for building applications quickly and efficiently.",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "build": "tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
