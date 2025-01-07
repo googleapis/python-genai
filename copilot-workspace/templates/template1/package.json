@@ -1,0 +1,24 @@
+{
+  "name": "template1",
+  "version": "1.0.0",
+  "description": "A template for new projects in the Copilot Workspace.",
+  "main": "src/app.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.2",
+    "@types/node": "^16.11.7",
+    "@types/express": "^4.17.13"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/copilot-workspace.git"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}

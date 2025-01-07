@@ -1,0 +1,23 @@
+{
+  "name": "project1",
+  "version": "1.0.0",
+  "description": "This is project1, a sample project for the Copilot Workspace.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.2",
+    "ts-node": "^10.4.0",
+    "jest": "^27.0.6",
+    "@types/jest": "^27.0.2",
+    "@types/node": "^16.11.7"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
