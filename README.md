@@ -211,7 +211,8 @@ response = client.models.generate_content(
         tools=[tool],
     ),
 )
-response
+
+print(response.text)
 ```
 
 ### JSON Response Schema
