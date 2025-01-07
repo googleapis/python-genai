@@ -179,7 +179,12 @@ the model.
 The following example shows how to do it for a simple function invocation.
 
 ``` python
-function_call_part = response.candidates[0].content.parts[0]
+user_prompt_content = types.Content(
+    role="user", parts=[types.Part.from_text("What is the weather like in Boston?")]
+)
+function_call_content = response.candidates[0].content
+function_call_part = function_call_content.parts[0]
+
 
 try:
   function_result = get_current_weather(**function_call_part.function_call.args)
@@ -192,15 +197,20 @@ function_response_part = types.Part.from_function_response(
     name=function_call_part.function_call.name,
     response=function_response,
 )
+function_response_content = types.Content(role="tool", parts=[function_response_part])
+
 
 response = client.models.generate_content(
     model='gemini-2.0-flash-exp',
     contents=[
-        types.Part.from_text("What is the weather like in Boston?"),
-        function_call_part,
-        function_response_part,
-    ])
-
+        user_prompt_content,
+        function_call_content,
+        function_response_content,
+    ],
+    config=types.GenerateContentConfig(
+        tools=[tool],
+    ),
+)
 response
 ```
 
