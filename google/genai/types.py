@@ -557,8 +557,6 @@ class PartDict(TypedDict, total=False):
 
 
 PartOrDict = Union[Part, PartDict]
-PartUnion = Union[Part, PIL.Image.Image, str]
-PartUnionDict = Union[PartUnion, PartDict]
 
 
 class Content(_common.BaseModel):
@@ -591,11 +589,6 @@ class ContentDict(TypedDict, total=False):
 
 
 ContentOrDict = Union[Content, ContentDict]
-ContentUnion = Union[Content, list[PartUnion], PartUnion]
-ContentUnionDict = Union[ContentUnion, ContentDict]
-
-ContentListUnion = Union[list[ContentUnion], ContentUnion]
-ContentListUnionDict = Union[list[ContentUnionDict], ContentUnionDict]
 
 
 class Schema(_common.BaseModel):
@@ -764,8 +757,6 @@ class SchemaDict(TypedDict, total=False):
 
 
 SchemaOrDict = Union[Schema, SchemaDict]
-SchemaUnion = Union[dict, type, Schema]
-SchemaUnionDict = Union[SchemaUnion, SchemaDict]
 
 
 class SafetySetting(_common.BaseModel):
@@ -1310,8 +1301,6 @@ class SpeechConfigDict(TypedDict, total=False):
 
 
 SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
-SpeechConfigUnion = Union[SpeechConfig, str]
-SpeechConfigUnionDict = Union[SpeechConfigUnion, SpeechConfigDict]
 
 
 class AutomaticFunctionCallingConfig(_common.BaseModel):
@@ -1371,6 +1360,24 @@ class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
 AutomaticFunctionCallingConfigOrDict = Union[
     AutomaticFunctionCallingConfig, AutomaticFunctionCallingConfigDict
 ]
+
+
+PartUnion = Union[Part, PIL.Image.Image, str]
+
+
+PartUnionDict = Union[PartUnion, PartDict]
+
+
+ContentUnion = Union[Content, list[PartUnion], PartUnion]
+
+
+ContentUnionDict = Union[ContentUnion, ContentDict]
+
+
+SchemaUnion = Union[dict, type, Schema]
+
+
+SchemaUnionDict = Union[SchemaUnion, SchemaDict]
 
 
 class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
@@ -1444,6 +1451,12 @@ class GenerationConfigRoutingConfigDict(TypedDict, total=False):
 GenerationConfigRoutingConfigOrDict = Union[
     GenerationConfigRoutingConfig, GenerationConfigRoutingConfigDict
 ]
+
+
+SpeechConfigUnion = Union[SpeechConfig, str]
+
+
+SpeechConfigUnionDict = Union[SpeechConfigUnion, SpeechConfigDict]
 
 
 class GenerateContentConfig(_common.BaseModel):
@@ -1721,6 +1734,12 @@ class GenerateContentConfigDict(TypedDict, total=False):
 GenerateContentConfigOrDict = Union[
     GenerateContentConfig, GenerateContentConfigDict
 ]
+
+
+ContentListUnion = Union[list[ContentUnion], ContentUnion]
+
+
+ContentListUnionDict = Union[list[ContentUnionDict], ContentUnionDict]
 
 
 class _GenerateContentParameters(_common.BaseModel):
