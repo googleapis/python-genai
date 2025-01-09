@@ -476,3 +476,8 @@ def t_tuning_job_status(
     return 'JOB_STATE_FAILED'
   else:
     return status
+
+
+def t_image_bytes(api_client: _api_client.ApiClient, data: bytes) -> str:
+  return base64.b64encode(data).decode('ascii') if isinstance(data, bytes) else data
+
