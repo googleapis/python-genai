@@ -456,7 +456,7 @@ class ResponseJsonEncoder(json.JSONEncoder):
   """
   def default(self, o):
     if isinstance(o, bytes):
-      # Use base64.b64encode() to encode bytes to string so that the media bytes
+      # Use base64.urlsafe_b64encode() to encode bytes to string so that the media bytes
       # fields are serializable.
       # o.decode(encoding='utf-8', errors='replace') doesn't work because it
       # uses a fixed error string `\ufffd` for all non-utf-8 characters,
@@ -465,8 +465,8 @@ class ResponseJsonEncoder(json.JSONEncoder):
       # Since we use base64.b64encoding() in replay test, a change that breaks
       # native bytes can be captured by
       # test_compute_tokens.py::test_token_bytes_deserialization.
-      return base64.b64encode(o).decode(encoding='utf-8')
-    elif isinstance(o, datetime.datetime):
+      return base64.urlsafe_b64encode(o).decode(encoding='utf-8')
+    if isinstance(o, datetime.datetime):
       # dt.isoformat() prints "2024-11-15T23:27:45.624657+00:00"
       # but replay files want "2024-11-15T23:27:45.624657Z"
       if o.isoformat().endswith('+00:00'):

@@ -198,7 +198,7 @@ async def test_async_session_send_realtime_input(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
   realtime_input = types.LiveClientRealtimeInput(
-      media_chunks=[types.Blob(data='000000', mime_type='audio/pcm')]
+      media_chunks=[types.Blob(data='MDAwMDAw', mime_type='audio/pcm')]
   )
   await session.send(input=realtime_input)
   mock_websocket.send.assert_called_once()

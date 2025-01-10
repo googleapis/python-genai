@@ -1547,7 +1547,11 @@ def _Image_to_mldev(
     raise ValueError('gcs_uri parameter is not supported in Google AI.')
 
   if getv(from_object, ['image_bytes']) is not None:
-    setv(to_object, ['bytesBase64Encoded'], getv(from_object, ['image_bytes']))
+    setv(
+        to_object,
+        ['bytesBase64Encoded'],
+        t.t_image_bytes(api_client, getv(from_object, ['image_bytes'])),
+    )
 
   return to_object
 
@@ -1562,7 +1566,11 @@ def _Image_to_vertex(
     setv(to_object, ['gcsUri'], getv(from_object, ['gcs_uri']))
 
   if getv(from_object, ['image_bytes']) is not None:
-    setv(to_object, ['bytesBase64Encoded'], getv(from_object, ['image_bytes']))
+    setv(
+        to_object,
+        ['bytesBase64Encoded'],
+        t.t_image_bytes(api_client, getv(from_object, ['image_bytes'])),
+    )
 
   return to_object
 
@@ -3193,7 +3201,11 @@ def _Image_from_mldev(
   to_object = {}
 
   if getv(from_object, ['bytesBase64Encoded']) is not None:
-    setv(to_object, ['image_bytes'], getv(from_object, ['bytesBase64Encoded']))
+    setv(
+        to_object,
+        ['image_bytes'],
+        t.t_image_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
+    )
 
   return to_object
 
@@ -3208,7 +3220,11 @@ def _Image_from_vertex(
     setv(to_object, ['gcs_uri'], getv(from_object, ['gcsUri']))
 
   if getv(from_object, ['bytesBase64Encoded']) is not None:
-    setv(to_object, ['image_bytes'], getv(from_object, ['bytesBase64Encoded']))
+    setv(
+        to_object,
+        ['image_bytes'],
+        t.t_image_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
+    )
 
   return to_object
 

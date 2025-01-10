@@ -1,3 +1,4 @@
+import datetime
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,21 +20,26 @@ from ..._api_client import RequestJsonEncoder
 
 
 def test_json_encoder():
-  assert json.dumps({'key': 'value'}, cls=RequestJsonEncoder) == '{"key": "value"}'
-  assert json.dumps({'key': b'value'}, cls=RequestJsonEncoder) == '{"key": "value"}'
-  assert (
-      json.dumps({'nested': {'key': 'value'}}, cls=RequestJsonEncoder)
-      == '{"nested": {"key": "value"}}'
+  date_value = datetime.datetime.fromtimestamp(
+      1736397612, tz=datetime.timezone.utc
   )
   assert (
-      json.dumps({'nested': {'key': b'value'}}, cls=RequestJsonEncoder)
-      == '{"nested": {"key": "value"}}'
+      json.dumps({'key': date_value}, cls=RequestJsonEncoder)
+      == '{"key": "2025-01-09T04:40:12Z"}'
   )
   assert (
-      json.dumps({'list': ['value', 'value']}, cls=RequestJsonEncoder)
-      == '{"list": ["value", "value"]}'
+      json.dumps({'nested': {'key': date_value}}, cls=RequestJsonEncoder)
+      == '{"nested": {"key": "2025-01-09T04:40:12Z"}}'
   )
   assert (
-      json.dumps({'list': [b'value', b'value']}, cls=RequestJsonEncoder)
-      == '{"list": ["value", "value"]}'
+      json.dumps({'nested': {'key': date_value}}, cls=RequestJsonEncoder)
+      == '{"nested": {"key": "2025-01-09T04:40:12Z"}}'
+  )
+  assert (
+      json.dumps({'list': [date_value, date_value]}, cls=RequestJsonEncoder)
+      == '{"list": ["2025-01-09T04:40:12Z", "2025-01-09T04:40:12Z"]}'
+  )
+  assert (
+      json.dumps({'list': [date_value, date_value]}, cls=RequestJsonEncoder)
+      == '{"list": ["2025-01-09T04:40:12Z", "2025-01-09T04:40:12Z"]}'
   )

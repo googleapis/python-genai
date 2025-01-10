@@ -309,9 +309,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ],
         ),
-        # Base64 string is invalid input.
-        exception_if_vertex='400',
-        exception_if_mldev='400',
     ),
     pytest_helper.TestTableItem(
         name='test_union_none_part',
@@ -613,15 +610,14 @@ def test_from_function_call_response(client):
 
 @pytest.mark.asyncio
 async def test_image_base64_stream_async(client):
-  with pytest.raises(errors.ClientError):
-    async for part in client.aio.models.generate_content_stream(
-        model='gemini-1.5-flash-001',
-        contents=[
-            'What is this image about?',
-            {'inline_data': {'data': image_string, 'mimeType': 'image/png'}},
-        ],
-    ):
-      pass
+  async for part in client.aio.models.generate_content_stream(
+      model='gemini-1.5-flash-001',
+      contents=[
+          'What is this image about?',
+          {'inline_data': {'data': image_string, 'mimeType': 'image/png'}},
+      ],
+  ):
+    pass
 
 
 # function_call and function_response are tested in generate_content_tools.py

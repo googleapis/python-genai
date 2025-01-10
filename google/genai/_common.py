@@ -189,6 +189,8 @@ class BaseModel(pydantic.BaseModel):
       extra='forbid',
       # This allows us to use arbitrary types in the model. E.g. PIL.Image.
       arbitrary_types_allowed=True,
+      ser_json_bytes='base64',
+      val_json_bytes='base64',
   )
 
   @classmethod
@@ -200,7 +202,10 @@ class BaseModel(pydantic.BaseModel):
     # We will provide another mechanism to allow users to access these fields.
     _remove_extra_fields(cls, response)
     validated_response = cls.model_validate(response)
-    return apply_base64_decoding_for_model(validated_response)
+    return validated_response
+
+  def to_json_dict(self) -> dict[str, object]:
+    return self.model_dump(exclude_none=True, mode='json')
 
 
 def timestamped_unique_name() -> str:
@@ -216,40 +221,21 @@ def timestamped_unique_name() -> str:
 
 def apply_base64_encoding(data: dict[str, object]) -> dict[str, object]:
   """Applies base64 encoding to bytes values in the given data."""
-  return process_bytes_fields(data, encode=True)
-
-
-def apply_base64_decoding(data: dict[str, object]) -> dict[str, object]:
-  """Applies base64 decoding to bytes values in the given data."""
-  return process_bytes_fields(data, encode=False)
-
-
-def apply_base64_decoding_for_model(data: BaseModel) -> BaseModel:
-  d = data.model_dump(exclude_none=True)
-  d = apply_base64_decoding(d)
-  return data.model_validate(d)
-
-
-def process_bytes_fields(data: dict[str, object], encode=True) -> dict[str, object]:
   processed_data = {}
   if not isinstance(data, dict):
     return data
   for key, value in data.items():
     if isinstance(value, bytes):
-      if encode:
-        processed_data[key] = base64.b64encode(value)
-      else:
-        processed_data[key] = base64.b64decode(value)
+      processed_data[key] = base64.urlsafe_b64encode(value).decode('ascii')
     elif isinstance(value, dict):
-      processed_data[key] = process_bytes_fields(value, encode)
+      processed_data[key] = apply_base64_encoding(value)
     elif isinstance(value, list):
-      if encode and all(isinstance(v, bytes) for v in value):
-        processed_data[key] = [base64.b64encode(v) for v in value]
-      elif all(isinstance(v, bytes) for v in value):
-        processed_data[key] = [base64.b64decode(v) for v in value]
+      if all(isinstance(v, bytes) for v in value):
+        processed_data[key] = [
+            base64.urlsafe_b64encode(v).decode('ascii') for v in value
+        ]
       else:
-        processed_data[key] = [process_bytes_fields(v, encode) for v in value]
+        processed_data[key] = [apply_base64_encoding(v) for v in value]
     else:
       processed_data[key] = value
   return processed_data
-
