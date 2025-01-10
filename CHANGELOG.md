@@ -5,7 +5,6 @@
 
 ### Features
 
-* Go SDK Live module initial implementation for VertexAI. ([22e6b65](https://github.com/googleapis/python-genai/commit/22e6b650aac098f66a2a5afb3890b8df5919f44f))
 * Support list models to return base models ([0f713f1](https://github.com/googleapis/python-genai/commit/0f713f177e84ab7a2071c635ec7231ee4fbf4657))
 * Support parsing 'interrupted' field in Live Python SDK. ([eab2c4a](https://github.com/googleapis/python-genai/commit/eab2c4a9513d4ce58270b82e10698a945c01aaca))
 
