@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.0](https://github.com/googleapis/python-genai/compare/v0.4.0...v0.5.0) (2025-01-10)
+
+
+### Features
+
+* Go SDK Live module initial implementation for VertexAI. ([22e6b65](https://github.com/googleapis/python-genai/commit/22e6b650aac098f66a2a5afb3890b8df5919f44f))
+* Support list models to return base models ([0f713f1](https://github.com/googleapis/python-genai/commit/0f713f177e84ab7a2071c635ec7231ee4fbf4657))
+* Support parsing 'interrupted' field in Live Python SDK. ([eab2c4a](https://github.com/googleapis/python-genai/commit/eab2c4a9513d4ce58270b82e10698a945c01aaca))
+
+
+### Bug Fixes
+
+* Update header type ([62c45f9](https://github.com/googleapis/python-genai/commit/62c45f9ecdb0e7bc539d22a967672762fa6c50a8))
+
+
+### Documentation
+
+* Correct description of path parameter that only path-like object is supported ([336498b](https://github.com/googleapis/python-genai/commit/336498baebee2e064e2f44d9c6d96903bcfd63bf))
+
 ## [0.4.0](https://github.com/googleapis/python-genai/compare/v0.3.0...v0.4.0) (2025-01-08)
 
 
