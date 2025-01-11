@@ -23,12 +23,11 @@ from google.genai import types
 ## Create a client
 
 Please run one of the following code blocks to create a client for
-different services (Google AI or Vertex). Feel free to switch the client
-and run all the examples to see how it behaves under different APIs.
+different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or Vertex).
 
 ``` python
 # Only run this block for Google AI API
-client = genai.Client(api_key='YOUR_API_KEY')
+client = genai.Client(api_key='GEMINI_API_KEY')
 ```
 
 ``` python
