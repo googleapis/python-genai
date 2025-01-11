@@ -1,0 +1,18 @@
+{
+  "name": "template2",
+  "version": "1.0.0",
+  "description": "A template for building applications quickly and efficiently.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "typescript": "^4.5.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.0.0"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "project2",
+  "version": "1.0.0",
+  "description": "This is project2, an application built using TypeScript.",
+  "main": "src/app.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/project2.git"
+  },
+  "keywords": [
+    "typescript",
+    "project2"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    // Add your project dependencies here
+  },
+  "devDependencies": {
+    "typescript": "^4.0.0"
+  }
+}
