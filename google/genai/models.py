@@ -4402,6 +4402,25 @@ class Models(_common.BaseModule):
   ) -> types.GenerateContentResponse:
     """Makes an API request to generate content using a model.
 
+    For the `model` parameter, supported format for Vertex AI API includes:
+    - the Gemini model ID, for example: 'gemini-1.5-flash-002'
+    - the full resource name starts with 'projects/', for example:
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-1.5-flash-002'
+    - the partial resource name with 'publishers/', for example:
+      'publishers/google/models/gemini-1.5-flash-002' or
+      'publishers/meta/models/llama-3.1-405b-instruct-maas'
+    - `/` separated publisher and model name, for example:
+      'google/gemini-1.5-flash-002' or 'meta/llama-3.1-405b-instruct-maas'
+
+    For the `model` parameter, supported format for Gemini API includes:
+    - the Gemini model ID, for example: 'gemini-1.5-flash-002'
+    - the model name starts with 'models/', for example:
+      'models/gemini-1.5-flash-002'
+    - if you would like to use a tuned model, the model name starts with
+      'tunedModels/', for example:
+      'tunedModels/1234567890123456789'
+
+
     Some models support multimodal input and output.
 
     Usage:
