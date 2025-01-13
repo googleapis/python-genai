@@ -17,11 +17,11 @@
 
 import base64
 import copy
+import datetime
 import inspect
 import json
 import os
 import re
-import datetime
 from typing import Any, Literal, Optional, Union
 
 import google.auth
@@ -32,8 +32,8 @@ from ._api_client import ApiClient
 from ._api_client import HttpOptions
 from ._api_client import HttpRequest
 from ._api_client import HttpResponse
-from ._api_client import RequestJsonEncoder
 from ._common import BaseModel
+
 
 def _redact_version_numbers(version_string: str) -> str:
   """Redacts version numbers in the form x.y.z from a string."""
@@ -264,11 +264,7 @@ class ReplayApiClient(ApiClient):
     replay_file_path = self._get_replay_file_path()
     os.makedirs(os.path.dirname(replay_file_path), exist_ok=True)
     with open(replay_file_path, 'w') as f:
-      f.write(
-          json.dumps(
-              self.replay_session.model_dump(mode='json'), indent=2, cls=ResponseJsonEncoder
-          )
-      )
+      f.write(self.replay_session.model_dump_json(exclude_unset=True, indent=2))
     self.replay_session = None
 
   def _record_interaction(
@@ -322,11 +318,7 @@ class ReplayApiClient(ApiClient):
     # so that the comparison is fair.
     _redact_request_body(request_data_copy)
 
-    # Need to call dumps() and loads() to convert dict bytes values to strings.
-    # Because the expected_request_body dict never contains bytes values.
-    actual_request_body = [
-        json.loads(json.dumps(request_data_copy, cls=RequestJsonEncoder))
-    ]
+    actual_request_body = [request_data_copy]
     expected_request_body = interaction.request.body_segments
     assert actual_request_body == expected_request_body, (
         'Request body mismatch:\n'
@@ -368,7 +360,9 @@ class ReplayApiClient(ApiClient):
       response_model = response_model[0]
     print('response_model: ', response_model.model_dump(exclude_none=True))
     actual = response_model.model_dump(exclude_none=True, mode='json')
-    expected = interaction.response.sdk_response_segments[self._sdk_response_index]
+    expected = interaction.response.sdk_response_segments[
+        self._sdk_response_index
+    ]
     assert (
         actual == expected
     ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
@@ -419,19 +413,3 @@ class ReplayApiClient(ApiClient):
       return result
     else:
       return self._build_response_from_replay(request).text
-
-
-# TODO(b/389693448): Cleanup datetime hacks.
-class ResponseJsonEncoder(json.JSONEncoder):
-  """The replay test json encoder for response.
-  """
-  def default(self, o):
-    if isinstance(o, datetime.datetime):
-      # dt.isoformat() prints "2024-11-15T23:27:45.624657+00:00"
-      # but replay files want "2024-11-15T23:27:45.624657Z"
-      if o.isoformat().endswith('+00:00'):
-        return o.isoformat().replace('+00:00', 'Z')
-      else:
-        return o.isoformat()
-    else:
-      return super().default(o)

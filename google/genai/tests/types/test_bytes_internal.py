@@ -36,8 +36,8 @@ def client(use_vertex):
     )
 
 @pytest.fixture
-def apply_base64_encoding_method():
-  with mock.patch.object(common_module, 'apply_base64_encoding', wraps=common_module.apply_base64_encoding) as method:
+def encode_unserializable_types_method():
+  with mock.patch.object(common_module, 'encode_unserializable_types', wraps=common_module.encode_unserializable_types) as method:
     yield method
 
 
@@ -54,10 +54,10 @@ def mock_request_method():
 
 # This test checks if user pass in valid base64 string(url safe base64)
 # via pydantic type, then SDK will return the raw bytes in pydantic type.
-@pytest.mark.usefixtures('client', 'mock_request_method', 'apply_base64_encoding_method')
+@pytest.mark.usefixtures('client', 'mock_request_method', 'encode_unserializable_types_method')
 @pytest.mark.parametrize('bytes_input', [_RAW_BYTES, _BASE64_URL_SAFE])
 def test_base64_pydantic_input_success(
-    client, mock_request_method, apply_base64_encoding_method, bytes_input
+    client, mock_request_method, encode_unserializable_types_method, bytes_input
 ):
   mock_request_method.return_value = {
       'candidates': [
@@ -80,7 +80,7 @@ def test_base64_pydantic_input_success(
       ),
   )
 
-  apply_base64_encoding_method.assert_called()
+  encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
       mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
@@ -96,9 +96,9 @@ def test_base64_pydantic_input_success(
 
 # This test checks if user pass in valid base64 string(url safe base64)
 # via dict type, then SDK will return the raw bytes in pydantic type.
-@pytest.mark.usefixtures('client', 'mock_request_method', 'apply_base64_encoding_method')
+@pytest.mark.usefixtures('client', 'mock_request_method', 'encode_unserializable_types_method')
 @pytest.mark.parametrize('bytes_input', [_RAW_BYTES, _BASE64_URL_SAFE])
-def test_base64_dict_input_success(client, mock_request_method, apply_base64_encoding_method, bytes_input):
+def test_base64_dict_input_success(client, mock_request_method, encode_unserializable_types_method, bytes_input):
   mock_request_method.return_value = {
       'candidates': [
           {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
@@ -120,7 +120,7 @@ def test_base64_dict_input_success(client, mock_request_method, apply_base64_enc
       },
   )
 
-  apply_base64_encoding_method.assert_called()
+  encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
       mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
