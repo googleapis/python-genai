@@ -20,6 +20,7 @@ import asyncio
 import copy
 from dataclasses import dataclass
 import datetime
+import io
 import json
 import logging
 import os
@@ -488,7 +489,7 @@ class ApiClient:
     if http_options and 'response_payload' in http_options:
       response.copy_to_dict(http_options['response_payload'])
 
-  def upload_file(self, file_path: str, upload_url: str, upload_size: int):
+  def upload_file(self, file_path: str | io.IOBase, upload_url: str, upload_size: int):
     """Transfers a file to the given URL.
 
     Args:
@@ -501,39 +502,57 @@ class ApiClient:
     returns:
           The response json object from the finalize request.
     """
+    # Upload the file in chunks
+    if isinstance(file_path, io.IOBase):
+      return self.upload_fd(file_path, upload_url, upload_size)
+    else:
+      with open(file_path, 'rb') as file:
+        return self.upload_fd(file, upload_url, upload_size)
+
+  def upload_fd(self, file: io.IOBase, upload_url: str, upload_size: int):
+    """Transfers a file to the given URL.
+
+    Args:
+      file: A file like object inherited from io.BytesIO.
+      upload_url: The URL to upload the file to.
+      upload_size: The size of file content to be uploaded, this will have to
+        match the size requested in the resumable upload request.
+
+    returns:
+          The response json object from the finalize request.
+    """
     offset = 0
     # Upload the file in chunks
-    with open(file_path, 'rb') as file:
-      while True:
-        file_chunk = file.read(1024 * 1024 * 8)  # 8 MB chunk size
-        chunk_size = 0
-        if file_chunk:
-          chunk_size = len(file_chunk)
-        upload_command = 'upload'
-        # If last chunk, finalize the upload.
-        if chunk_size + offset >= upload_size:
-          upload_command += ', finalize'
+    while True:
+      file_chunk = file.read(1024 * 1024 * 8)  # 8 MB chunk size
+      chunk_size = 0
+      if file_chunk:
+        chunk_size = len(file_chunk)
+      upload_command = 'upload'
+      # If last chunk, finalize the upload.
+      if chunk_size + offset >= upload_size:
+        upload_command += ', finalize'
+      request = HttpRequest(
+          method='POST',
+          url=upload_url,
+          headers={
+              'X-Goog-Upload-Command': upload_command,
+              'X-Goog-Upload-Offset': str(offset),
+              'Content-Length': str(chunk_size),
+          },
+          data=file_chunk,
+      )
 
-        request = HttpRequest(
-            method='POST',
-            url=upload_url,
-            headers={
-                'X-Goog-Upload-Command': upload_command,
-                'X-Goog-Upload-Offset': str(offset),
-                'Content-Length': str(chunk_size),
-            },
-            data=file_chunk,
+      response = self._request_unauthorized(request, stream=False)
+      offset += chunk_size
+      if response.headers['X-Goog-Upload-Status'] != 'active':
+        break  # upload is complete or it has been interrupted.
+
+      if upload_size <= offset:  # Status is not finalized.
+        raise ValueError(
+            'All content has been uploaded, but the upload status is not'
+            f' finalized. {response.headers}, body: {response.text}'
         )
-        response = self._request_unauthorized(request, stream=False)
-        offset += chunk_size
-        if response.headers['X-Goog-Upload-Status'] != 'active':
-          break  # upload is complete or it has been interrupted.
-
-        if upload_size <= offset:  # Status is not finalized.
-          raise ValueError(
-              'All content has been uploaded, but the upload status is not'
-              f' finalized. {response.headers}, body: {response.text}'
-          )
 
     if response.headers['X-Goog-Upload-Status'] != 'final':
       raise ValueError(
@@ -544,7 +563,7 @@ class ApiClient:
 
   async def async_upload_file(
       self,
-      file_path: str,
+      file_path: str | io.IOBase,
       upload_url: str,
       upload_size: int,
   ):
@@ -563,6 +582,31 @@ class ApiClient:
     return await asyncio.to_thread(
         self.upload_file,
         file_path,
+        upload_url,
+        upload_size,
+    )
+
+  async def async_upload_fd(
+      self,
+      file: io.IOBase,
+      upload_url: str,
+      upload_size: int,
+  ):
+    """Transfers a file asynchronously to the given URL.
+
+    Args:
+      file_path: The full path to the file. If the local file path is not found,
+        an error will be raised.
+      upload_url: The URL to upload the file to.
+      upload_size: The size of file content to be uploaded, this will have to
+        match the size requested in the resumable upload request.
+
+    returns:
+          The response json object from the finalize request.
+    """
+    return await asyncio.to_thread(
+        self.upload_fd,
+        file,
         upload_url,
         upload_size,
     )
