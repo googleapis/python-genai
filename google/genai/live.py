@@ -646,7 +646,7 @@ class AsyncLive(_common.BaseModule):
           print(message)
     """
     base_url = self._api_client._websocket_base_url()
-    if self._api_client.api_key:
+    if self._api_client.api_key and not self._api_client.vertexai:
       api_key = self._api_client.api_key
       version = self._api_client._http_options['api_version']
       uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateContent?key={api_key}'
@@ -654,7 +654,20 @@ class AsyncLive(_common.BaseModule):
 
       transformed_model = t.t_model(self._api_client, model)
       request = json.dumps(
-          self._LiveSetup_to_mldev(model=transformed_model, config=config)
+          self._LiveSetup_to_vertex(model=transformed_model, config=config)
+      )
+    elif self._api_client.api_key and self._api_client.vertexai:
+      api_key = self._api_client.api_key
+      version = self._api_client._http_options['api_version']
+      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent?key={api_key}'
+      headers = self._api_client._http_options['headers']
+
+      transformed_model = t.t_model(self._api_client, model)
+      print('uri: ', uri)
+      print('headers: ', headers)
+      print('transformed_model: ', transformed_model)
+      request = json.dumps(
+          self._LiveSetup_to_vertex(model=transformed_model, config=config)
       )
     else:
       # Get bearer token through Application Default Credentials.
