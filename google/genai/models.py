@@ -762,6 +762,34 @@ def _SpeechConfig_to_vertex(
   return to_object
 
 
+def _ThinkingConfig_to_mldev(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  return to_object
+
+
+def _ThinkingConfig_to_vertex(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  return to_object
+
+
 def _GenerateContentConfig_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -903,6 +931,15 @@ def _GenerateContentConfig_to_mldev(
             api_client,
             t.t_speech_config(api_client, getv(from_object, ['speech_config'])),
             to_object,
+        ),
+    )
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        to_object,
+        ['thinkingConfig'],
+        _ThinkingConfig_to_mldev(
+            api_client, getv(from_object, ['thinking_config']), to_object
         ),
     )
 
@@ -1050,6 +1087,15 @@ def _GenerateContentConfig_to_vertex(
             api_client,
             t.t_speech_config(api_client, getv(from_object, ['speech_config'])),
             to_object,
+        ),
+    )
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        to_object,
+        ['thinkingConfig'],
+        _ThinkingConfig_to_vertex(
+            api_client, getv(from_object, ['thinking_config']), to_object
         ),
     )
 
