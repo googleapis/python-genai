@@ -1373,6 +1373,27 @@ AutomaticFunctionCallingConfigOrDict = Union[
 ]
 
 
+class ThinkingConfig(_common.BaseModel):
+  """The thinking features configuration."""
+
+  include_thoughts: Optional[bool] = Field(
+      default=None,
+      description="""Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """,
+  )
+
+
+class ThinkingConfigDict(TypedDict, total=False):
+  """The thinking features configuration."""
+
+  include_thoughts: Optional[bool]
+  """Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """
+
+
+ThinkingConfigOrDict = Union[ThinkingConfig, ThinkingConfigDict]
+
+
 class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
   """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
 
@@ -1592,6 +1613,11 @@ class GenerateContentConfig(_common.BaseModel):
       description="""The configuration for automatic function calling.
       """,
   )
+  thinking_config: Optional[ThinkingConfig] = Field(
+      default=None,
+      description="""The speech generation configuration.
+      """,
+  )
 
 
 class GenerateContentConfigDict(TypedDict, total=False):
@@ -1715,6 +1741,10 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   automatic_function_calling: Optional[AutomaticFunctionCallingConfigDict]
   """The configuration for automatic function calling.
+      """
+
+  thinking_config: Optional[ThinkingConfigDict]
+  """The speech generation configuration.
       """
 
 
