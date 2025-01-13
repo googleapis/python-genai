@@ -21,16 +21,41 @@ from ... import errors
 from ... import types
 from .. import pytest_helper
 
+
+test_http_options = {'api_version': 'v1', 'headers': {'test': 'headers'}}
+
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_get_vertex_tuned_model',
-        parameters=types._GetModelParameters(model='models/7687416965014487040'),
+        parameters=types._GetModelParameters(
+            model='models/7687416965014487040'
+        ),
         exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
         name='test_get_mldev_tuned_model',
         parameters=types._GetModelParameters(
             model='tunedModels/generate-num-1896'
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_get_vertex_tuned_model_with_http_options_in_method',
+        parameters=types._GetModelParameters(
+            model='models/7687416965014487040',
+            config={
+                'http_options': test_http_options,
+            },
+        ),
+        exception_if_mldev='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_get_mldev_base_model_with_http_options_in_method',
+        parameters=types._GetModelParameters(
+            model='gemini-1.5-flash',
+            config={
+                'http_options': test_http_options,
+            },
         ),
         exception_if_vertex='404',
     ),
@@ -69,8 +94,14 @@ async def test_async_get_tuned_model(client):
 @pytest.mark.asyncio
 async def test_async_get_model(client):
   if client._api_client.vertexai:
-    response = await client.aio.models.get(model='models/7687416965014487040')
+    response = await client.aio.models.get(
+        model='models/7687416965014487040',
+        config={'http_options': test_http_options},
+    )
   else:
     with pytest.raises(errors.ClientError) as e:
-      await client.aio.models.get(model='models/7687416965014487040')
+      await client.aio.models.get(
+          model='models/7687416965014487040',
+          config={'http_options': test_http_options},
+      )
     assert '404' in str(e)
