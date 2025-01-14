@@ -17,7 +17,6 @@
 
 import base64
 import datetime
-import json
 import typing
 from typing import Union
 import uuid
@@ -116,7 +115,7 @@ def get_value_by_path(data: object, keys: list[str]):
 class BaseModule:
 
   def __init__(self, api_client_: _api_client.ApiClient):
-    self.api_client = api_client_
+    self._api_client = api_client_
 
 
 def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
@@ -186,10 +185,12 @@ class BaseModel(pydantic.BaseModel):
       alias_generator=alias_generators.to_camel,
       populate_by_name=True,
       from_attributes=True,
-      protected_namespaces={},
+      protected_namespaces=(),
       extra='forbid',
       # This allows us to use arbitrary types in the model. E.g. PIL.Image.
       arbitrary_types_allowed=True,
+      ser_json_bytes='base64',
+      val_json_bytes='base64',
   )
 
   @classmethod
@@ -201,7 +202,10 @@ class BaseModel(pydantic.BaseModel):
     # We will provide another mechanism to allow users to access these fields.
     _remove_extra_fields(cls, response)
     validated_response = cls.model_validate(response)
-    return apply_base64_decoding_for_model(validated_response)
+    return validated_response
+
+  def to_json_dict(self) -> dict[str, object]:
+    return self.model_dump(exclude_none=True, mode='json')
 
 
 def timestamped_unique_name() -> str:
@@ -215,42 +219,39 @@ def timestamped_unique_name() -> str:
   return f'{timestamp}_{unique_id}'
 
 
-def apply_base64_encoding(data: dict[str, object]) -> dict[str, object]:
-  """Applies base64 encoding to bytes values in the given data."""
-  return process_bytes_fields(data, encode=True)
+def encode_unserializable_types(data: dict[str, object]) -> dict[str, object]:
+  """Converts unserializable types in dict to json.dumps() compatible types.
 
+  This function is called in models.py after calling convert_to_dict(). The
+  convert_to_dict() can convert pydantic object to dict. However, the input to
+  convert_to_dict() is dict mixed of pydantic object and nested dict(the output
+  of converters). So they may be bytes in the dict and they are out of
+  `ser_json_bytes` control in model_dump(mode='json') called in
+  `convert_to_dict`, as well as datetime deserialization in Pydantic json mode.
 
-def apply_base64_decoding(data: dict[str, object]) -> dict[str, object]:
-  """Applies base64 decoding to bytes values in the given data."""
-  return process_bytes_fields(data, encode=False)
-
-
-def apply_base64_decoding_for_model(data: BaseModel) -> BaseModel:
-  d = data.model_dump(exclude_none=True)
-  d = apply_base64_decoding(d)
-  return data.model_validate(d)
-
-
-def process_bytes_fields(data: dict[str, object], encode=True) -> dict[str, object]:
+  Returns:
+    A dictionary with json.dumps() incompatible type (e.g. bytes datetime)
+    to compatible type (e.g. base64 encoded string, isoformat date string).
+  """
   processed_data = {}
   if not isinstance(data, dict):
     return data
   for key, value in data.items():
     if isinstance(value, bytes):
-      if encode:
-        processed_data[key] = base64.b64encode(value)
-      else:
-        processed_data[key] = base64.b64decode(value)
+      processed_data[key] = base64.urlsafe_b64encode(value).decode('ascii')
+    elif isinstance(value, datetime.datetime):
+      processed_data[key] = value.isoformat()
     elif isinstance(value, dict):
-      processed_data[key] = process_bytes_fields(value, encode)
+      processed_data[key] = encode_unserializable_types(value)
     elif isinstance(value, list):
-      if encode and all(isinstance(v, bytes) for v in value):
-        processed_data[key] = [base64.b64encode(v) for v in value]
-      elif all(isinstance(v, bytes) for v in value):
-        processed_data[key] = [base64.b64decode(v) for v in value]
+      if all(isinstance(v, bytes) for v in value):
+        processed_data[key] = [
+            base64.urlsafe_b64encode(v).decode('ascii') for v in value
+        ]
+      if all(isinstance(v, datetime.datetime) for v in value):
+        processed_data[key] = [v.isoformat() for v in value]
       else:
-        processed_data[key] = [process_bytes_fields(v, encode) for v in value]
+        processed_data[key] = [encode_unserializable_types(v) for v in value]
     else:
       processed_data[key] = value
   return processed_data
-

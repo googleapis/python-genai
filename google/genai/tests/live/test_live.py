@@ -80,9 +80,9 @@ def test_mldev_from_env(monkeypatch):
 
   client = Client()
 
-  assert not client.aio.live.api_client.vertexai
-  assert client.aio.live.api_client.api_key == api_key
-  assert isinstance(client.aio.live.api_client, api_client.ApiClient)
+  assert not client.aio.live._api_client.vertexai
+  assert client.aio.live._api_client.api_key == api_key
+  assert isinstance(client.aio.live._api_client, api_client.ApiClient)
 
 
 def test_vertex_from_env(monkeypatch):
@@ -94,15 +94,15 @@ def test_vertex_from_env(monkeypatch):
 
   client = Client()
 
-  assert client.aio.live.api_client.vertexai
-  assert client.aio.live.api_client.project == project_id
-  assert isinstance(client.aio.live.api_client, api_client.ApiClient)
+  assert client.aio.live._api_client.vertexai
+  assert client.aio.live._api_client.project == project_id
+  assert isinstance(client.aio.live._api_client, api_client.ApiClient)
 
 
 def test_websocket_base_url():
   base_url = 'https://test.com'
   api_client = gl_client.ApiClient(
-      api_key = 'google_api_key',
+      api_key='google_api_key',
       http_options={'base_url': base_url},
   )
   assert api_client._websocket_base_url() == 'wss://test.com'
@@ -198,7 +198,7 @@ async def test_async_session_send_realtime_input(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
   realtime_input = types.LiveClientRealtimeInput(
-      media_chunks=[types.Blob(data='000000', mime_type='audio/pcm')]
+      media_chunks=[types.Blob(data='MDAwMDAw', mime_type='audio/pcm')]
   )
   await session.send(input=realtime_input)
   mock_websocket.send.assert_called_once()
@@ -217,18 +217,22 @@ async def test_async_session_send_tool_response(
 
   if vertexai:
     tool_response = types.LiveClientToolResponse(
-      function_responses=[types.FunctionResponse(
-          name='get_current_weather',
-          response={'temeperature': 14.5, 'unit': 'C'},
-      )]
+        function_responses=[
+            types.FunctionResponse(
+                name='get_current_weather',
+                response={'temeperature': 14.5, 'unit': 'C'},
+            )
+        ]
     )
   else:
     tool_response = types.LiveClientToolResponse(
-      function_responses=[types.FunctionResponse(
-          name='get_current_weather',
-          response={'temeperature': 14.5, 'unit': 'C'},
-          id='some-id',
-      )]
+        function_responses=[
+            types.FunctionResponse(
+                name='get_current_weather',
+                response={'temeperature': 14.5, 'unit': 'C'},
+                id='some-id',
+            )
+        ]
     )
   await session.send(input=tool_response)
   mock_websocket.send.assert_called_once()
@@ -292,7 +296,7 @@ async def test_async_session_receive_text(
   messages = session.receive()
   messages = await _async_iterator_to_list(messages)
   assert isinstance(messages[0], types.LiveServerMessage)
-  assert messages[0].server_content.model_turn.parts[0].text == "test"
+  assert messages[0].server_content.model_turn.parts[0].text == 'test'
   assert messages[1].server_content.turn_complete == True
 
 
@@ -318,11 +322,11 @@ async def test_async_session_receive_audio(
   assert isinstance(messages[0], types.LiveServerMessage)
   assert (
       messages[0].server_content.model_turn.parts[0].inline_data.mime_type
-      == "audio/pcm"
+      == 'audio/pcm'
   )
   assert (
       messages[0].server_content.model_turn.parts[0].inline_data.data
-      == b"000000"
+      == b'000000'
   )
 
   with pytest.raises(RuntimeError):
@@ -341,7 +345,7 @@ async def test_async_session_receive_tool_call(
               ' "get_current_weather", "args": {"location": "San Francisco",'
               ' "unit": "C"}}]}}'
           ),
-          ('{"serverContent": {"turnComplete": true}}'),
+          '{"serverContent": {"turnComplete": true}}',
       ]
   )
   session = live.AsyncSession(
@@ -350,22 +354,12 @@ async def test_async_session_receive_tool_call(
   messages = session.receive()
   messages = await _async_iterator_to_list(messages)
   assert isinstance(messages[0], types.LiveServerMessage)
+  assert messages[0].tool_call.function_calls[0].name == 'get_current_weather'
   assert (
-      messages[0].tool_call.function_calls[0].name
-      == 'get_current_weather'
-  )
-  assert (
-      messages[0].tool_call.function_calls[0].args[
-          'location'
-      ]
+      messages[0].tool_call.function_calls[0].args['location']
       == 'San Francisco'
   )
-  assert (
-      messages[0].tool_call.function_calls[0].args[
-          'unit'
-      ]
-      == 'C'
-  )
+  assert messages[0].tool_call.function_calls[0].args['unit'] == 'C'
 
   with pytest.raises(RuntimeError):
     await _async_iterator_to_list(session.receive())

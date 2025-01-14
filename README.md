@@ -484,6 +484,42 @@ response3 = client.models.edit_image(
 response3.generated_images[0].image.show()
 ```
 
+## Chats
+
+Create a chat session to start a multi-turn conversations with the model.
+
+### Send Message
+
+```python
+chat = client.chats.create(model='gemini-2.0-flash-exp')
+response = chat.send_message('tell me a story')
+print(response.text)
+```
+
+### Streaming
+
+```python
+chat = client.chats.create(model='gemini-2.0-flash-exp')
+for chunk in chat.send_message_stream('tell me a story'):
+  print(chunk.text)
+```
+
+### Async
+
+```python
+chat = client.aio.chats.create(model='gemini-2.0-flash-exp')
+response = await chat.send_message('tell me a story')
+print(response.text)
+```
+
+### Async Streaming
+
+```python
+chat = client.aio.chats.create(model='gemini-2.0-flash-exp')
+async for chunk in chat.send_message_stream('tell me a story'):
+  print(chunk.text)
+```
+
 ## Files (Only Google AI)
 
 ``` python
@@ -526,19 +562,19 @@ else:
 
 cached_content = client.caches.create(
       model='gemini-1.5-pro-002',
-      contents=[
-          types.Content(
-              role='user',
-              parts=[
-                types.Part.from_uri(
-                    file_uri=file_uris[0],
-                    mime_type='application/pdf'),
-                types.Part.from_uri(
-                    file_uri=file_uris[1],
-                    mime_type='application/pdf',)])
-      ],
-      system_instruction='What is the sum of the two pdfs?',
       config=types.CreateCachedContentConfig(
+          contents=[
+              types.Content(
+                  role='user',
+                  parts=[
+                    types.Part.from_uri(
+                        file_uri=file_uris[0],
+                        mime_type='application/pdf'),
+                    types.Part.from_uri(
+                        file_uri=file_uris[1],
+                        mime_type='application/pdf',)])
+          ],
+          system_instruction='What is the sum of the two pdfs?',
           display_name='test cache',
           ttl='3600s',
       ),

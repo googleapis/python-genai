@@ -21,9 +21,7 @@ from .models import AsyncModels, Models
 from .types import Content, ContentDict, GenerateContentConfigOrDict, GenerateContentResponse, Part, PartUnionDict
 
 
-def _validate_response(
-    response: GenerateContentResponse
-) -> bool:
+def _validate_response(response: GenerateContentResponse) -> bool:
   if not response.candidates:
     return False
   if not response.candidates[0].content:
@@ -77,7 +75,7 @@ class Chat(_BaseChat):
       response = chat.send_message('tell me a story')
     """
 
-    input_content = t.t_content(self._modules.api_client, message)
+    input_content = t.t_content(self._modules._api_client, message)
     response = self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],
@@ -109,11 +107,11 @@ class Chat(_BaseChat):
     .. code-block:: python
 
       chat = client.chats.create(model='gemini-1.5-flash')
-      for chunk in chat.send_message_stream('tell me a story')
+      for chunk in chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
 
-    input_content = t.t_content(self._modules.api_client, message)
+    input_content = t.t_content(self._modules._api_client, message)
     output_contents = []
     finish_reason = None
     for chunk in self._modules.generate_content_stream(
@@ -184,7 +182,7 @@ class AsyncChat(_BaseChat):
       response = await chat.send_message('tell me a story')
     """
 
-    input_content = t.t_content(self._modules.api_client, message)
+    input_content = t.t_content(self._modules._api_client, message)
     response = await self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],
@@ -215,11 +213,11 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
       chat = client.aio.chats.create(model='gemini-1.5-flash')
-      async for chunk in chat.send_message_stream('tell me a story')
+      async for chunk in chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
 
-    input_content = t.t_content(self._modules.api_client, message)
+    input_content = t.t_content(self._modules._api_client, message)
     output_contents = []
     finish_reason = None
     async for chunk in self._modules.generate_content_stream(
@@ -239,7 +237,6 @@ class AsyncChat(_BaseChat):
 
 class AsyncChats:
   """A util class to create async chat sessions."""
-
 
   def __init__(self, modules: AsyncModels):
     self._modules = modules

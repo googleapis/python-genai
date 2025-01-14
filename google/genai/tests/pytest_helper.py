@@ -25,7 +25,6 @@ from .. import _common
 from .. import _replay_api_client
 from .. import types
 from .._api_client import HttpOptions
-from .._replay_api_client import ResponseJsonEncoder
 
 is_api_mode = "config.getoption('--mode') == 'api'"
 
@@ -164,13 +163,7 @@ def setup(
 
     with open(test_table_file_path, 'w') as f:
       f.write(
-          # exclude_unset=True is needed to avoid warnings.
-          # See https://github.com/pydantic/pydantic/issues/6467.
-          json.dumps(
-              test_table_file.model_dump(exclude_unset=True, by_alias=True),
-              indent=2,
-              cls=ResponseJsonEncoder,
-          )
+          test_table_file.model_dump_json(exclude_unset=True, by_alias=True, indent=2),
       )
 
   # Add fixture for requested client option.

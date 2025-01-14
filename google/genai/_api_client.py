@@ -21,6 +21,7 @@ import copy
 from dataclasses import dataclass
 import datetime
 import json
+import logging
 import os
 import sys
 from typing import Any, Optional, Tuple, TypedDict, Union
@@ -33,6 +34,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 import requests
 
 from . import errors
+from . import version
 
 
 class HttpOptions(BaseModel):
@@ -59,6 +61,10 @@ class HttpOptions(BaseModel):
       default=None,
       description="""Timeout for the request in seconds.""",
   )
+  skip_project_and_location_in_path: bool = Field(
+      default=False,
+      description="""If set to True, the project and location will not be appended to the path.""",
+  )
 
 
 class HttpOptionsDict(TypedDict):
@@ -68,21 +74,21 @@ class HttpOptionsDict(TypedDict):
   """The base URL for the AI platform service endpoint."""
   api_version: Optional[str] = None
   """Specifies the version of the API to use."""
-  headers: Optional[dict[str, Union[str, list[str]]]] = None
+  headers: Optional[dict[str, str]] = None
   """Additional HTTP headers to be sent with the request."""
   response_payload: Optional[dict] = None
   """If set, the response payload will be returned int the supplied dict."""
   timeout: Optional[Union[float, Tuple[float, float]]] = None
   """Timeout for the request in seconds."""
-
+  skip_project_and_location_in_path: bool = False
+  """If set to True, the project and location will not be appended to the path."""
 
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
 
 
 def _append_library_version_headers(headers: dict[str, str]) -> None:
   """Appends the telemetry header to the headers dict."""
-  # TODO: Automate revisions to the SDK library version.
-  library_label = f'google-genai-sdk/0.3.0'
+  library_label = f'google-genai-sdk/{version.__version__}'
   language_label = 'gl-python/' + sys.version.split()[0]
   version_header_value = f'{library_label} {language_label}'
   if (
@@ -133,7 +139,7 @@ def _join_url_path(base_url: str, path: str) -> str:
 
 @dataclass
 class HttpRequest:
-  headers: dict[str, Union[str, list[str]]]
+  headers: dict[str, str]
   url: str
   method: str
   data: Union[dict[str, object], bytes]
@@ -195,8 +201,14 @@ class ApiClient:
 
     # Validate explicitly set intializer values.
     if (project or location) and api_key:
+      # API cannot consume both project/location and api_key.
       raise ValueError(
           'Project/location and API key are mutually exclusive in the client initializer.'
+      )
+    elif credentials and api_key:
+      # API cannot consume both credentials and api_key.
+      raise ValueError(
+          'Credentials and API key are mutually exclusive in the client initializer.'
       )
 
     # Validate http_options if a dict is provided.
@@ -208,26 +220,65 @@ class ApiClient:
     elif(isinstance(http_options, HttpOptions)):
       http_options = http_options.model_dump()
 
-    self.api_key: Optional[str] = None
-    self.project = project or os.environ.get('GOOGLE_CLOUD_PROJECT', None)
-    self.location = location or os.environ.get('GOOGLE_CLOUD_LOCATION', None)
+    # Retrieve implicitly set values from the environment.
+    env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
+    env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
+    env_api_key = os.environ.get('GOOGLE_API_KEY', None)
+    self.project = project or env_project
+    self.location = location or env_location
+    self.api_key = api_key or env_api_key
+
     self._credentials = credentials
     self._http_options = HttpOptionsDict()
 
+    # Handle when to use Vertex AI in express mode (api key).
+    # Explicit initializer arguments are already validated above.
     if self.vertexai:
-      if not self.project:
-        self.project = google.auth.default()[1]
-      # Will change this to support EasyGCP in the future.
-      if not self.project or not self.location:
-        raise ValueError(
-            'Project and location must be set when using the Vertex AI API.'
+      if credentials:
+        # Explicit credentials take precedence over implicit api_key.
+        logging.info(
+            'The user provided Google Cloud credentials will take precedence'
+            + ' over the API key from the environment variable.'
         )
-      self._http_options['base_url'] = (
-          f'https://{self.location}-aiplatform.googleapis.com/'
-      )
+        self.api_key = None
+      elif (env_location or env_project) and api_key:
+        # Explicit api_key takes precedence over implicit project/location.
+        logging.info(
+            'The user provided Vertex AI API key will take precedence over the'
+            + ' project/location from the environment variables.'
+        )
+        self.project = None
+        self.location = None
+      elif (project or location) and env_api_key:
+        # Explicit project/location takes precedence over implicit api_key.
+        logging.info(
+            'The user provided project/location will take precedence over the'
+            + ' Vertex AI API key from the environment variable.'
+        )
+        self.api_key = None
+      elif (env_location or env_project) and env_api_key:
+        # Implicit project/location takes precedence over implicit api_key.
+        logging.info(
+            'The project/location from the environment variables will take'
+            + ' precedence over the API key from the environment variables.'
+        )
+        self.api_key = None
+      if not self.project and not self.api_key:
+        self.project = google.auth.default()[1]
+      if not (self.project or self.location) and not self.api_key:
+        raise ValueError(
+            'Project/location or API key must be set when using the Vertex AI API.'
+        )
+      if self.api_key:
+        self._http_options['base_url'] = (
+            f'https://aiplatform.googleapis.com/'
+        )
+      else:
+        self._http_options['base_url'] = (
+            f'https://{self.location}-aiplatform.googleapis.com/'
+        )
       self._http_options['api_version'] = 'v1beta1'
     else:  # ML Dev API
-      self.api_key = api_key or os.environ.get('GOOGLE_API_KEY', None)
       if not self.api_key:
         raise ValueError('API key must be set when using the Google AI API.')
       self._http_options['base_url'] = (
@@ -236,7 +287,7 @@ class ApiClient:
       self._http_options['api_version'] = 'v1beta'
     # Default options for both clients.
     self._http_options['headers'] = {'Content-Type': 'application/json'}
-    if self.api_key:
+    if self.api_key and not self.vertexai:
       self._http_options['headers']['x-goog-api-key'] = self.api_key
     # Update the http options with the user provided http options.
     if http_options:
@@ -266,8 +317,18 @@ class ApiClient:
       )
     else:
       patched_http_options = self._http_options
-    if self.vertexai and not path.startswith('projects/'):
+    skip_project_and_location_in_path_val = patched_http_options.get(
+        'skip_project_and_location_in_path', False
+    )
+    if (
+        self.vertexai
+        and not path.startswith('projects/')
+        and not skip_project_and_location_in_path_val
+        and not self.api_key
+    ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
+    elif self.vertexai and self.api_key:
+      path = f'{path}?key={self.api_key}'
     url = _join_url_path(
         patched_http_options['base_url'],
         patched_http_options['api_version'] + '/' + path,
@@ -285,7 +346,7 @@ class ApiClient:
       http_request: HttpRequest,
       stream: bool = False,
   ) -> HttpResponse:
-    if self.vertexai:
+    if self.vertexai and not self.api_key:
       if not self._credentials:
         self._credentials, _ = google.auth.default(
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
@@ -296,7 +357,7 @@ class ApiClient:
           http_request.method.upper(),
           http_request.url,
           headers=http_request.headers,
-          data=json.dumps(http_request.data, cls=RequestJsonEncoder)
+          data=json.dumps(http_request.data)
           if http_request.data
           else None,
           timeout=http_request.timeout,
@@ -316,7 +377,7 @@ class ApiClient:
     data = None
     if http_request.data:
       if not isinstance(http_request.data, bytes):
-        data = json.dumps(http_request.data, cls=RequestJsonEncoder)
+        data = json.dumps(http_request.data)
       else:
         data = http_request.data
 
@@ -512,17 +573,3 @@ class ApiClient:
   def _verify_response(self, response_model: BaseModel):
     pass
 
-
-class RequestJsonEncoder(json.JSONEncoder):
-  """Encode bytes as strings without modify its content."""
-
-  def default(self, o):
-    if isinstance(o, bytes):
-      return o.decode()
-    elif isinstance(o, datetime.datetime):
-      # This Zulu time format is used by the Vertex AI API and the test recorder
-      # Using strftime works well, but we want to align with the replay encoder.
-      # o.astimezone(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-      return o.isoformat().replace('+00:00', 'Z')
-    else:
-      return super().default(o)
