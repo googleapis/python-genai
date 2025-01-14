@@ -14,12 +14,12 @@
 #
 
 import os
-from typing import Optional
+from typing import Optional, Union
 
 import google.auth
 import pydantic
 
-from ._api_client import ApiClient, HttpOptions
+from ._api_client import ApiClient, HttpOptions, HttpOptionsDict
 from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
@@ -145,7 +145,7 @@ class Client:
       project: Optional[str] = None,
       location: Optional[str] = None,
       debug_config: Optional[DebugConfig] = None,
-      http_options: Optional[HttpOptions] = None,
+      http_options: Optional[Union[HttpOptions, HttpOptionsDict]] = None,
   ):
     """Initializes the client.
 
@@ -179,6 +179,9 @@ class Client:
           debug_config (DebugConfig):
               Config settings that control network
               behavior of the client. This is typically used when running test code.
+          http_options (Union[HttpOptions, HttpOptionsDict]):
+              Http options to use for the client. Response_payload can't be
+              set when passing to the client constructor.
     """
 
     self._debug_config = debug_config or DebugConfig()

@@ -142,6 +142,30 @@ def t_model(client: _api_client.ApiClient, model: str):
     else:
       return f'models/{model}'
 
+def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
+  if api_client.vertexai:
+    if base_models:
+      return 'publishers/google/models'
+    else:
+      return 'models'
+  else:
+    if base_models:
+      return 'models'
+    else:
+      return 'tunedModels'
+
+
+def t_extract_models(api_client: _api_client.ApiClient, response: dict) -> list[types.Model]:
+  if response.get('models') is not None:
+    return response.get('models')
+  elif response.get('tunedModels') is not None:
+    return response.get('tunedModels')
+  elif response.get('publisherModels') is not None:
+    return response.get('publisherModels')
+  else:
+    raise ValueError('Cannot determine the models type.')
+
+
 def t_caches_model(api_client: _api_client.ApiClient, model: str):
   model = t_model(api_client, model)
   if not model:
@@ -452,3 +476,17 @@ def t_tuning_job_status(
     return 'JOB_STATE_FAILED'
   else:
     return status
+
+
+# Some fields don't accept url safe base64 encoding.
+# We shouldn't use this transformer if the backend adhere to Cloud Type
+# format https://cloud.google.com/docs/discovery/type-format.
+# TODO(b/389133914): Remove the hack after Vertex backend fix the issue.
+def t_bytes(api_client: _api_client.ApiClient, data: bytes) -> str:
+  if not isinstance(data, bytes):
+    return data
+  if api_client.vertexai:
+    return base64.b64encode(data).decode('ascii')
+  else:
+    return base64.urlsafe_encode(data).decode('ascii')
+

@@ -241,6 +241,8 @@ class AsyncSession:
       )
     if getv(from_object, ['turnComplete']) is not None:
       setv(to_object, ['turn_complete'], getv(from_object, ['turnComplete']))
+    if getv(from_object, ['interrupted']) is not None:
+      setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
     return to_object
 
   def _LiveToolCall_from_mldev(
@@ -312,6 +314,8 @@ class AsyncSession:
       )
     if getv(from_object, ['turnComplete']) is not None:
       setv(to_object, ['turn_complete'], getv(from_object, ['turnComplete']))
+    if getv(from_object, ['interrupted']) is not None:
+      setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
     return to_object
 
   def _LiveServerMessage_from_vertex(
@@ -358,7 +362,7 @@ class AsyncSession:
   ) -> dict:
     if isinstance(input, str):
       input = [input]
-    elif (isinstance(input, dict) and 'data' in input):
+    elif isinstance(input, dict) and 'data' in input:
       if isinstance(input['data'], bytes):
         decoded_data = base64.b64encode(input['data']).decode('utf-8')
         input['data'] = decoded_data
@@ -425,7 +429,9 @@ class AsyncSession:
       client_message = {'client_content': input.model_dump(exclude_none=True)}
     elif isinstance(input, types.LiveClientToolResponse):
       # ToolResponse.FunctionResponse
-      if not (self._api_client.vertexai) and not (input.function_responses[0].id):
+      if not (self._api_client.vertexai) and not (
+          input.function_responses[0].id
+      ):
         raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
       client_message = {'tool_response': input.model_dump(exclude_none=True)}
     elif isinstance(input, types.FunctionResponse):
@@ -477,7 +483,7 @@ class AsyncLive(_common.BaseModule):
           to_object,
           ['generationConfig'],
           _GenerateContentConfig_to_mldev(
-              self.api_client,
+              self._api_client,
               getv(from_object, ['generation_config']),
               to_object,
           ),
@@ -494,17 +500,18 @@ class AsyncLive(_common.BaseModule):
     if getv(from_object, ['speech_config']) is not None:
       if getv(to_object, ['generationConfig']) is not None:
         to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_mldev(
-            self.api_client,
+            self._api_client,
             t.t_speech_config(
-                self.api_client, getv(from_object, ['speech_config'])),
+                self._api_client, getv(from_object, ['speech_config'])
+            ),
             to_object,
         )
       else:
         to_object['generationConfig'] = {
             'speechConfig': _SpeechConfig_to_mldev(
-                self.api_client,
+                self._api_client,
                 t.t_speech_config(
-                    self.api_client, getv(from_object, ['speech_config'])
+                    self._api_client, getv(from_object, ['speech_config'])
                 ),
                 to_object,
             )
@@ -515,9 +522,9 @@ class AsyncLive(_common.BaseModule):
           to_object,
           ['systemInstruction'],
           _Content_to_mldev(
-              self.api_client,
+              self._api_client,
               t.t_content(
-                  self.api_client, getv(from_object, ['system_instruction'])
+                  self._api_client, getv(from_object, ['system_instruction'])
               ),
               to_object,
           ),
@@ -527,7 +534,7 @@ class AsyncLive(_common.BaseModule):
           to_object,
           ['tools'],
           [
-              _Tool_to_mldev(self.api_client, item, to_object)
+              _Tool_to_mldev(self._api_client, item, to_object)
               for item in getv(from_object, ['tools'])
           ],
       )
@@ -551,7 +558,7 @@ class AsyncLive(_common.BaseModule):
           to_object,
           ['generationConfig'],
           _GenerateContentConfig_to_vertex(
-              self.api_client,
+              self._api_client,
               getv(from_object, ['generation_config']),
               to_object,
           ),
@@ -576,17 +583,18 @@ class AsyncLive(_common.BaseModule):
     if getv(from_object, ['speech_config']) is not None:
       if getv(to_object, ['generationConfig']) is not None:
         to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_vertex(
-            self.api_client,
+            self._api_client,
             t.t_speech_config(
-                self.api_client, getv(from_object, ['speech_config'])),
+                self._api_client, getv(from_object, ['speech_config'])
+            ),
             to_object,
         )
       else:
         to_object['generationConfig'] = {
             'speechConfig': _SpeechConfig_to_vertex(
-                self.api_client,
+                self._api_client,
                 t.t_speech_config(
-                    self.api_client, getv(from_object, ['speech_config'])
+                    self._api_client, getv(from_object, ['speech_config'])
                 ),
                 to_object,
             )
@@ -596,9 +604,9 @@ class AsyncLive(_common.BaseModule):
           to_object,
           ['systemInstruction'],
           _Content_to_vertex(
-              self.api_client,
+              self._api_client,
               t.t_content(
-                  self.api_client, getv(from_object, ['system_instruction'])
+                  self._api_client, getv(from_object, ['system_instruction'])
               ),
               to_object,
           ),
@@ -608,7 +616,7 @@ class AsyncLive(_common.BaseModule):
           to_object,
           ['tools'],
           [
-              _Tool_to_vertex(self.api_client, item, to_object)
+              _Tool_to_vertex(self._api_client, item, to_object)
               for item in getv(from_object, ['tools'])
           ],
       )
@@ -637,14 +645,14 @@ class AsyncLive(_common.BaseModule):
         async for message in session.receive():
           print(message)
     """
-    base_url = self.api_client._websocket_base_url()
-    if self.api_client.api_key:
-      api_key = self.api_client.api_key
-      version = self.api_client._http_options['api_version']
+    base_url = self._api_client._websocket_base_url()
+    if self._api_client.api_key:
+      api_key = self._api_client.api_key
+      version = self._api_client._http_options['api_version']
       uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateContent?key={api_key}'
-      headers = self.api_client._http_options['headers']
+      headers = self._api_client._http_options['headers']
 
-      transformed_model = t.t_model(self.api_client, model)
+      transformed_model = t.t_model(self._api_client, model)
       request = json.dumps(
           self._LiveSetup_to_mldev(model=transformed_model, config=config)
       )
@@ -663,11 +671,11 @@ class AsyncLive(_common.BaseModule):
           'Content-Type': 'application/json',
           'Authorization': 'Bearer {}'.format(bearer_token),
       }
-      version = self.api_client._http_options['api_version']
+      version = self._api_client._http_options['api_version']
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      location = self.api_client.location
-      project = self.api_client.project
-      transformed_model = t.t_model(self.api_client, model)
+      location = self._api_client.location
+      project = self._api_client.project
+      transformed_model = t.t_model(self._api_client, model)
       if transformed_model.startswith('publishers/'):
         transformed_model = (
             f'projects/{project}/locations/{location}/' + transformed_model
@@ -681,4 +689,4 @@ class AsyncLive(_common.BaseModule):
       await ws.send(request)
       logging.info(await ws.recv(decode=False))
 
-      yield AsyncSession(api_client=self.api_client, websocket=ws)
+      yield AsyncSession(api_client=self._api_client, websocket=ws)

@@ -16,6 +16,8 @@
 
 """Test files upload method."""
 
+
+import pathlib
 import pytest
 from ... import types
 from .. import pytest_helper
@@ -35,6 +37,14 @@ def test_image_png_upload(client):
     file = client.files.upload(path='tests/data/google.png')
     assert file.name.startswith('files/')
 
+def test_image_png_upload_with_path(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    p = pathlib.Path('tests/data/google.png')
+    file = client.files.upload(
+        path=p,
+        config=types.UploadFileConfig(display_name='test_image_png_path'),
+    )
+    assert file.name.startswith('files/')
 
 def test_image_png_upload_with_config(client):
   with pytest_helper.exception_if_vertex(client, ValueError):

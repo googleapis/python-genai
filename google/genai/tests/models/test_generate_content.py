@@ -170,6 +170,48 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev='400',
     ),
+    pytest_helper.TestTableItem(
+        name='test_google_search_tool',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents(None, 'Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())]
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_speech_with_config',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents(
+                None, 'Produce a speech response saying "Cheese"'
+            ),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='charon'
+                        )
+                        )
+                    )
+                ),
+        ),
+        exception_if_vertex='400',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_union_speech_string_config',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents='Say hello!',
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'], speech_config='charon'
+            ),
+        ),
+        exception_if_vertex='400',
+        has_union=True,
+    ),
 ]
 
 pytestmark = pytest_helper.setup(

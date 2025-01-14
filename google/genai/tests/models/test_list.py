@@ -24,11 +24,15 @@ from .. import pytest_helper
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name='test_list_models',
+        name='test_tuned_models',
         parameters=types._ListModelsParameters(),
     ),
     pytest_helper.TestTableItem(
-        name='test_list_models_with_config',
+        name='test_base_models',
+        parameters=types._ListModelsParameters(config={'query_base': True}),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_with_config',
         parameters=types._ListModelsParameters(config={'page_size': 3}),
     ),
 ]
@@ -40,30 +44,44 @@ pytestmark = pytest_helper.setup(
 )
 
 
-def test_pager(client):
-  models = client.models.list(config={'page_size': 10})
+def test_tuned_models_pager(client):
+  pager = client.models.list(config={'page_size': 10})
 
-  assert models.name == 'models'
-  assert models.page_size == 10
-  assert len(models) <= 10
+  assert pager.name == 'models'
+  assert pager.page_size == 10
+  assert len(pager) <= 10
 
   # Iterate through all the pages. Then next_page() should raise an exception.
-  for _ in models:
+  for _ in pager:
     pass
   with pytest.raises(IndexError, match='No more pages to fetch.'):
-    models.next_page()
+    pager.next_page()
+
+
+def test_base_models_pager(client):
+  pager = client.models.list(config={'page_size': 10, 'query_base': True})
+
+  assert pager.name == 'models'
+  assert pager.page_size == 10
+  assert len(pager) <= 10
+
+  # Iterate through all the pages. Then next_page() should raise an exception.
+  for _ in pager:
+    pass
+  with pytest.raises(IndexError, match='No more pages to fetch.'):
+    pager.next_page()
 
 
 @pytest.mark.asyncio
 async def test_async_pager(client):
-  models = await client.aio.models.list(config={'page_size': 10})
+  pager = await client.aio.models.list(config={'page_size': 10})
 
-  assert models.name == 'models'
-  assert models.page_size == 10
-  assert len(models) <= 10
+  assert pager.name == 'models'
+  assert pager.page_size == 10
+  assert len(pager) <= 10
 
   # Iterate through all the pages. Then next_page() should raise an exception.
-  async for _ in models:
+  async for _ in pager:
     pass
   with pytest.raises(IndexError, match='No more pages to fetch.'):
-    await models.next_page()
+    await pager.next_page()

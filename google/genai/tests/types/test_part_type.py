@@ -224,3 +224,113 @@ def test_non_text_part_and_text_part_text():
 
   with pytest.raises(ValueError):
     response.text
+
+
+def test_candidates_none_function_calls():
+  response = types.GenerateContentResponse()
+  assert response.function_calls is None
+
+
+def test_candidates_empty_function_calls():
+  response = types.GenerateContentResponse(candidates=[])
+  assert response.function_calls is None
+
+
+def test_content_none_function_calls():
+  response = types.GenerateContentResponse(candidates=[types.Candidate()])
+  assert response.function_calls is None
+
+
+def test_parts_none_function_calls():
+  response = types.GenerateContentResponse(
+      candidates=[types.Candidate(content=types.Content())]
+  )
+  assert response.function_calls is None
+
+
+def test_parts_empty_function_calls():
+  response = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(content=types.Content(parts=[])),
+      ]
+  )
+  assert response.function_calls is None
+
+
+def test_multiple_candidates_function_calls():
+  response = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[
+                      types.Part(
+                          function_call=types.FunctionCall.model_validate({
+                              'args': {'key1': 'value1'},
+                              'name': 'funcCall1',
+                          })
+                      )
+                  ]
+              )
+          ),
+          types.Candidate(
+              content=types.Content(
+                  parts=[
+                      types.Part(
+                          function_call=types.FunctionCall.model_validate({
+                              'args': {'key2': 'value2'},
+                              'name': 'funcCall2',
+                          })
+                      )
+                  ]
+              )
+          ),
+      ]
+  )
+  assert response.function_calls == [
+      types.FunctionCall(name='funcCall1', args={'key1': 'value1'})
+  ]
+
+
+def test_multiple_function_calls():
+  response = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[
+                      types.Part(
+                          function_call=types.FunctionCall.model_validate({
+                              'args': {'key1': 'value1'},
+                              'name': 'funcCall1',
+                          })
+                      ),
+                      types.Part(
+                          function_call=types.FunctionCall.model_validate({
+                              'args': {'key2': 'value2'},
+                              'name': 'funcCall2',
+                          })
+                      ),
+                  ]
+              )
+          ),
+      ]
+  )
+  assert response.function_calls == [
+      types.FunctionCall(name='funcCall1', args={'key1': 'value1'}),
+      types.FunctionCall(name='funcCall2', args={'key2': 'value2'}),
+  ]
+
+
+def test_no_function_calls():
+  response = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[
+                      types.Part(text='Hello1'),
+                      types.Part(text='World1'),
+                  ]
+              )
+          ),
+      ]
+  )
+  assert response.function_calls is None
