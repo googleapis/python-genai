@@ -1547,7 +1547,11 @@ def _Image_to_mldev(
     raise ValueError('gcs_uri parameter is not supported in Google AI.')
 
   if getv(from_object, ['image_bytes']) is not None:
-    setv(to_object, ['bytesBase64Encoded'], getv(from_object, ['image_bytes']))
+    setv(
+        to_object,
+        ['bytesBase64Encoded'],
+        t.t_bytes(api_client, getv(from_object, ['image_bytes'])),
+    )
 
   return to_object
 
@@ -1562,7 +1566,11 @@ def _Image_to_vertex(
     setv(to_object, ['gcsUri'], getv(from_object, ['gcs_uri']))
 
   if getv(from_object, ['image_bytes']) is not None:
-    setv(to_object, ['bytesBase64Encoded'], getv(from_object, ['image_bytes']))
+    setv(
+        to_object,
+        ['bytesBase64Encoded'],
+        t.t_bytes(api_client, getv(from_object, ['image_bytes'])),
+    )
 
   return to_object
 
@@ -2539,7 +2547,7 @@ def _CountTokensConfig_to_vertex(
 
   if getv(from_object, ['system_instruction']) is not None:
     setv(
-        to_object,
+        parent_object,
         ['systemInstruction'],
         _Content_to_vertex(
             api_client,
@@ -2550,7 +2558,7 @@ def _CountTokensConfig_to_vertex(
 
   if getv(from_object, ['tools']) is not None:
     setv(
-        to_object,
+        parent_object,
         ['tools'],
         [
             _Tool_to_vertex(api_client, item, to_object)
@@ -3193,7 +3201,11 @@ def _Image_from_mldev(
   to_object = {}
 
   if getv(from_object, ['bytesBase64Encoded']) is not None:
-    setv(to_object, ['image_bytes'], getv(from_object, ['bytesBase64Encoded']))
+    setv(
+        to_object,
+        ['image_bytes'],
+        t.t_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
+    )
 
   return to_object
 
@@ -3208,7 +3220,11 @@ def _Image_from_vertex(
     setv(to_object, ['gcs_uri'], getv(from_object, ['gcsUri']))
 
   if getv(from_object, ['bytesBase64Encoded']) is not None:
-    setv(to_object, ['image_bytes'], getv(from_object, ['bytesBase64Encoded']))
+    setv(
+        to_object,
+        ['image_bytes'],
+        t.t_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
+    )
 
   return to_object
 
@@ -3690,7 +3706,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -3745,7 +3761,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     for response_dict in self._api_client.request_streamed(
         'post', path, request_dict, http_options
@@ -3819,7 +3835,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -3893,7 +3909,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -3986,7 +4002,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -4046,7 +4062,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -4089,7 +4105,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'get', path, request_dict, http_options
@@ -4128,7 +4144,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'get', path, request_dict, http_options
@@ -4177,7 +4193,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'patch', path, request_dict, http_options
@@ -4214,7 +4230,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'delete', path, request_dict, http_options
@@ -4285,7 +4301,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -4356,7 +4372,7 @@ class Models(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -4605,7 +4621,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -4660,7 +4676,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     async for response_dict in self._api_client.async_request_streamed(
         'post', path, request_dict, http_options
@@ -4734,7 +4750,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -4808,7 +4824,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -4901,7 +4917,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -4961,7 +4977,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -5004,7 +5020,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'get', path, request_dict, http_options
@@ -5043,7 +5059,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'get', path, request_dict, http_options
@@ -5092,7 +5108,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'patch', path, request_dict, http_options
@@ -5129,7 +5145,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'delete', path, request_dict, http_options
@@ -5200,7 +5216,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -5271,7 +5287,7 @@ class AsyncModels(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options

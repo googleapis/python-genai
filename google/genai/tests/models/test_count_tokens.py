@@ -16,19 +16,21 @@
 
 import copy
 import pytest
+from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 from . import constants
 
 _COUNT_TOKENS_PARAMS = types._CountTokensParameters(
-    model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+    model='gemini-1.5-flash',
+    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
 )
 
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION = copy.deepcopy(
     _COUNT_TOKENS_PARAMS
 )
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION.config = {
-    'system_instruction': 'you are a chatbot.'
+    'system_instruction': t.t_content(None, 'you are a chatbot.')
 }
 
 _COUNT_TOKENS_PARAMS_WITH_TOOLS = copy.deepcopy(_COUNT_TOKENS_PARAMS)
@@ -51,6 +53,7 @@ _COUNT_TOKENS_PARAMS_MLDEV_CUSTOM_URL = copy.deepcopy(_COUNT_TOKENS_PARAMS)
 _COUNT_TOKENS_PARAMS_MLDEV_CUSTOM_URL.config = {
     'http_options': constants.MLDEV_HTTP_OPTIONS
 }
+
 
 # TODO(b/378952792): MLDev count_tokens needs to merge contents and model
 # param into generateContentRequest field.

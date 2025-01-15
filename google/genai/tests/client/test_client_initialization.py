@@ -16,6 +16,10 @@
 
 """Tests for client initialization."""
 
+import google.auth
+from google.auth import credentials
+import pytest
+
 from ... import _api_client as api_client
 from ... import _replay_api_client as replay_api_client
 from ... import Client
@@ -299,7 +303,25 @@ def test_vertexai_from_constructor():
   assert isinstance(client.models._api_client, api_client.ApiClient)
 
 
-def test_invalid_vertexai_constructor():
+def test_invalid_vertexai_constructor_empty(monkeypatch):
+  with pytest.raises(ValueError):
+    monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+    monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+    monkeypatch.setenv("GOOGLE_API_KEY", "")
+    def mock_auth_default():
+      return None, None
+
+    monkeypatch.setattr(google.auth, "default", mock_auth_default)
+    Client(vertexai=True)
+
+
+def test_invalid_mldev_constructor_empty(monkeypatch):
+  with pytest.raises(ValueError):
+    monkeypatch.setenv("GOOGLE_API_KEY", "")
+    Client()
+
+
+def test_invalid_vertexai_constructor1():
   project_id = "fake_project_id"
   location = "fake-location"
   api_key = "fake-api_key"
@@ -314,6 +336,57 @@ def test_invalid_vertexai_constructor():
     assert isinstance(e, ValueError)
 
 
+def test_invalid_vertexai_constructor2():
+  creds = credentials.AnonymousCredentials()
+  api_key = "fake-api_key"
+  with pytest.raises(ValueError):
+    Client(
+        vertexai=True,
+        credentials=creds,
+        api_key=api_key,
+    )
+
+
+def test_vertexai_explicit_arg_precedence1(monkeypatch):
+  project_id = "constructor_project_id"
+  location = "constructor-location"
+
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "env_project_id")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "env_location")
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
+
+  client = Client(
+      vertexai=True,
+      project=project_id,
+      location=location,
+  )
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.project == project_id
+  assert client.models._api_client.location == location
+  assert not client.models._api_client.api_key
+  assert isinstance(client.models._api_client, api_client.ApiClient)
+
+
+def test_vertexai_explicit_arg_precedence2(monkeypatch):
+  api_key = "constructor_apikey"
+
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_API_KEY", "env_api_key")
+
+  client = Client(
+      vertexai=True,
+      api_key=api_key,
+  )
+
+  assert client.models._api_client.vertexai
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert client.models._api_client.api_key == api_key
+  assert isinstance(client.models._api_client, api_client.ApiClient)
+
+
 def test_invalid_mldev_constructor():
   project_id = "fake_project_id"
   location = "fake-location"
@@ -326,6 +399,18 @@ def test_invalid_mldev_constructor():
     )
   except Exception as e:
     assert isinstance(e, ValueError)
+
+
+def test_mldev_explicit_arg_precedence(monkeypatch):
+  api_key = "constructor_api_key"
+
+  monkeypatch.setenv("GOOGLE_API_KEY", "env_api_key")
+
+  client = Client(api_key=api_key)
+
+  assert not client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert isinstance(client.models._api_client, api_client.ApiClient)
 
 
 def test_replay_client_ml_dev_from_env(monkeypatch, use_vertex: bool):
@@ -380,3 +465,117 @@ def test_change_client_mode_from_env(monkeypatch, use_vertex: bool):
 
   client2 = Client()
   assert isinstance(client2.models._api_client, api_client.ApiClient)
+
+
+def test_vertexai_apikey_from_constructor(monkeypatch):
+  # Vertex AI Express mode uses API key on Vertex AI.
+  api_key = "vertexai_api_key"
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client(api_key=api_key, vertexai=True)
+
+  assert client.models._api_client.vertexai
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert client.models._api_client.api_key == api_key
+  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert isinstance(client.models._api_client, api_client.ApiClient)
+
+
+def test_vertexai_apikey_from_env(monkeypatch):
+  # Vertex AI Express mode uses API key on Vertex AI.
+  api_key = "vertexai_api_key"
+  monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client(vertexai=True)
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert isinstance(client.models._api_client, api_client.ApiClient)
+
+
+def test_vertexai_apikey_invalid_constructor1():
+  # Vertex AI Express mode uses API key on Vertex AI.
+  api_key = "vertexai_api_key"
+  project_id = "fake_project_id"
+  location = "fake-location"
+
+  with pytest.raises(ValueError):
+    Client(
+        api_key=api_key,
+        project=project_id,
+        location=location,
+        vertexai=True,
+    )
+
+
+def test_vertexai_apikey_combo1(monkeypatch):
+  # Vertex AI Express mode uses API key on Vertex AI.
+  api_key = "vertexai_api_key"
+  project_id = "fake_project_id"
+  location = "fake-location"
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", location)
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
+
+  # Explicit api_key takes precedence over implicit project/location.
+  client = Client(vertexai=True, api_key=api_key)
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert isinstance(client.models._api_client, api_client.ApiClient)
+
+
+def test_vertexai_apikey_combo2(monkeypatch):
+  # Vertex AI Express mode uses API key on Vertex AI.
+  api_key = "vertexai_api_key"
+  project_id = "fake_project_id"
+  location = "fake-location"
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+
+  # Explicit project/location takes precedence over implicit api_key.
+  client = Client(vertexai=True, project=project_id, location=location)
+
+  assert client.models._api_client.vertexai
+  assert not client.models._api_client.api_key
+  assert client.models._api_client.project == project_id
+  assert client.models._api_client.location == location
+  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert isinstance(client.models._api_client, api_client.ApiClient)
+
+
+def test_vertexai_apikey_combo3(monkeypatch):
+  # Vertex AI Express mode uses API key on Vertex AI.
+  project_id = "fake_project_id"
+  location = "fake-location"
+  api_key = "vertexai_api_key"
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", location)
+  monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+
+  # Implicit project/location takes precedence over implicit api_key.
+  client = Client(vertexai=True)
+
+  assert client.models._api_client.vertexai
+  assert not client.models._api_client.api_key
+  assert client.models._api_client.project == project_id
+  assert client.models._api_client.location == location
+  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert isinstance(client.models._api_client, api_client.ApiClient)

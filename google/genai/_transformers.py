@@ -476,3 +476,17 @@ def t_tuning_job_status(
     return 'JOB_STATE_FAILED'
   else:
     return status
+
+
+# Some fields don't accept url safe base64 encoding.
+# We shouldn't use this transformer if the backend adhere to Cloud Type
+# format https://cloud.google.com/docs/discovery/type-format.
+# TODO(b/389133914): Remove the hack after Vertex backend fix the issue.
+def t_bytes(api_client: _api_client.ApiClient, data: bytes) -> str:
+  if not isinstance(data, bytes):
+    return data
+  if api_client.vertexai:
+    return base64.b64encode(data).decode('ascii')
+  else:
+    return base64.urlsafe_encode(data).decode('ascii')
+

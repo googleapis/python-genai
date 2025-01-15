@@ -15,51 +15,52 @@
 
 
 import pytest
+from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 from . import constants
 
 _COMPUTE_TOKENS_PARAMS = types._ComputeTokensParameters(
-    model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+    model='gemini-1.5-flash',
+    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
 )
 _COMPUTE_TOKENS_PARAMS_VERTEX_CUSTOM_URL = types._ComputeTokensParameters(
-    model='gemini-1.5-flash', contents='Tell me a story in 300 words.',
-    config={
-        'http_options': constants.VERTEX_HTTP_OPTIONS
-    }
+    model='gemini-1.5-flash',
+    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    config={'http_options': constants.VERTEX_HTTP_OPTIONS},
 )
 _COMPUTE_TOKENS_PARAMS_MLDEV_CUSTOM_URL = types._ComputeTokensParameters(
-    model='gemini-1.5-flash', contents='Tell me a story in 300 words.',
-    config={
-        'http_options': constants.MLDEV_HTTP_OPTIONS
-    }
+    model='gemini-1.5-flash',
+    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    config={'http_options': constants.MLDEV_HTTP_OPTIONS},
 )
 _UNICODE_STRING = '这是一条unicode测试🤪❤★'
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_compute_tokens',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='only supported in',
         parameters=types._ComputeTokensParameters(
-            model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+            model='gemini-1.5-flash',
+            contents=[t.t_content(None, 'Tell me a story in 300 words.')],
         ),
     ),
     pytest_helper.TestTableItem(
         name='test_compute_tokens_vertex_custom_url',
         parameters=_COMPUTE_TOKENS_PARAMS_VERTEX_CUSTOM_URL,
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='only supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_compute_tokens_mldev_custom_url',
         parameters=_COMPUTE_TOKENS_PARAMS_MLDEV_CUSTOM_URL,
         exception_if_vertex='404',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='only supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_compute_tokens_unicode',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='only supported in',
         parameters=types._ComputeTokensParameters(
-            model='gemini-1.5-flash', contents=_UNICODE_STRING
+            model='gemini-1.5-flash', contents=[t.t_content(None, _UNICODE_STRING)]
         ),
     ),
 ]

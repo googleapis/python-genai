@@ -731,7 +731,7 @@ class Batches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -787,7 +787,7 @@ class Batches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'get', path, request_dict, http_options
@@ -830,7 +830,7 @@ class Batches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'post', path, request_dict, http_options
@@ -858,7 +858,7 @@ class Batches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'get', path, request_dict, http_options
@@ -916,7 +916,7 @@ class Batches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = self._api_client.request(
         'delete', path, request_dict, http_options
@@ -1027,7 +1027,7 @@ class AsyncBatches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -1083,7 +1083,7 @@ class AsyncBatches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'get', path, request_dict, http_options
@@ -1126,7 +1126,7 @@ class AsyncBatches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'post', path, request_dict, http_options
@@ -1154,7 +1154,7 @@ class AsyncBatches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'get', path, request_dict, http_options
@@ -1212,7 +1212,7 @@ class AsyncBatches(_common.BaseModule):
     config = request_dict.pop('config', None)
     http_options = config.pop('httpOptions', None) if config else None
     request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.apply_base64_encoding(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
 
     response_dict = await self._api_client.async_request(
         'delete', path, request_dict, http_options
