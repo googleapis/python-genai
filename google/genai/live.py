@@ -74,7 +74,6 @@ class AsyncSession:
           types.ContentListUnionDict,
           types.LiveClientContentOrDict,
           types.LiveClientRealtimeInputOrDict,
-          types.LiveClientRealtimeInputOrDict,
           types.LiveClientToolResponseOrDict,
           types.FunctionResponseOrDict,
           Sequence[types.FunctionResponseOrDict],
