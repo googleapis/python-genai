@@ -762,6 +762,34 @@ def _SpeechConfig_to_vertex(
   return to_object
 
 
+def _ThinkingConfig_to_mldev(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  return to_object
+
+
+def _ThinkingConfig_to_vertex(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  return to_object
+
+
 def _GenerateContentConfig_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -903,6 +931,18 @@ def _GenerateContentConfig_to_mldev(
             api_client,
             t.t_speech_config(api_client, getv(from_object, ['speech_config'])),
             to_object,
+        ),
+    )
+
+  if getv(from_object, ['audio_timestamp']) is not None:
+    raise ValueError('audio_timestamp parameter is not supported in Google AI.')
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        to_object,
+        ['thinkingConfig'],
+        _ThinkingConfig_to_mldev(
+            api_client, getv(from_object, ['thinking_config']), to_object
         ),
     )
 
@@ -1050,6 +1090,18 @@ def _GenerateContentConfig_to_vertex(
             api_client,
             t.t_speech_config(api_client, getv(from_object, ['speech_config'])),
             to_object,
+        ),
+    )
+
+  if getv(from_object, ['audio_timestamp']) is not None:
+    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        to_object,
+        ['thinkingConfig'],
+        _ThinkingConfig_to_vertex(
+            api_client, getv(from_object, ['thinking_config']), to_object
         ),
     )
 
@@ -4546,9 +4598,14 @@ class Models(_common.BaseModule):
       *,
       config: Optional[types.ListModelsConfigOrDict] = None,
   ) -> Pager[types.Model]:
-    """Makes an API request to list the tuned models available to your project.
+    """Makes an API request to list the avaiable models.
 
-    This method only lists tuned models for the Vertex AI API.
+    If `query_base` is set to True in the config, the API will return all
+    available base models. If set to False or not set (default), it will return
+    all tuned models.
+
+    Args:
+      config (ListModelsConfigOrDict): Configuration for retrieving models.
 
     Usage:
 
@@ -4557,6 +4614,10 @@ class Models(_common.BaseModule):
       response=client.models.list(config={'page_size': 5})
       print(response.page)
       # [Model(name='projects/./locations/./models/123', display_name='my_model'
+
+      response=client.models.list(config={'page_size': 5, 'query_base': True})
+      print(response.page)
+      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
     """
 
     config = (
@@ -5396,9 +5457,14 @@ class AsyncModels(_common.BaseModule):
       *,
       config: Optional[types.ListModelsConfigOrDict] = None,
   ) -> AsyncPager[types.Model]:
-    """Makes an API request to list the tuned models available to your project.
+    """Makes an API request to list the avaiable models.
 
-    This method only lists tuned models for the Vertex AI API.
+    If `query_base` is set to True in the config, the API will return all
+    available base models. If set to False or not set (default), it will return
+    all tuned models.
+
+    Args:
+      config (ListModelsConfigOrDict): Configuration for retrieving models.
 
     Usage:
 
@@ -5407,6 +5473,12 @@ class AsyncModels(_common.BaseModule):
       response = await client.aio.models.list(config={'page_size': 5})
       print(response.page)
       # [Model(name='projects/./locations/./models/123', display_name='my_model'
+
+      response = await client.aio.models.list(
+          config={'page_size': 5, 'query_base': True}
+        )
+      print(response.page)
+      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
     """
 
     config = (

@@ -176,7 +176,7 @@ def test_unknown_pydantic_model_argument():
 
   original_args = {'x': {'key3_simple': 1, 'key2_simple': 1.0}}
 
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args(original_args, func_under_test)
 
 
@@ -194,7 +194,7 @@ def test_unknown_pydantic_model_argument_with_union_type():
 
   original_args = {'x': {'key5_simple': 1, 'key4_simple': 1.0}}
 
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args(original_args, func_under_test)
 
 
@@ -208,7 +208,7 @@ def test_unknown_pydantic_model_argument_with_union_type_and_builtin_type():
 
   original_args = {'x': {'key5_simple': 1, 'key4_simple': 1.0}}
 
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args(original_args, func_under_test)
 
 
@@ -216,15 +216,15 @@ def test_incompatible_value_and_annotation():
   def func_under_test(x: int):
     return x + 1
 
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args({'x': {'k': 'v'}}, func_under_test)
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args({'x': 'a'}, func_under_test)
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args({'x': []}, func_under_test)
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args({'x': 1.0}, func_under_test)
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args({'x': {}}, func_under_test)
 
 

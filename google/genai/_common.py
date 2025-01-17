@@ -144,7 +144,7 @@ def _remove_extra_fields(
 ) -> None:
   """Removes extra fields from the response that are not in the model.
 
-  Muates the response in place.
+  Mutates the response in place.
   """
 
   key_values = list(response.items())

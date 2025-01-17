@@ -519,6 +519,36 @@ def test_video_audio_uri(client):
     )
 
 
+def test_file(client):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+    file = types.File(
+        uri='https://generativelanguage.googleapis.com/v1beta/files/cmpqbqoptyaa',
+        mime_type='text/plain',
+    )
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=[
+            'Summarize this file',
+            file,
+        ],
+    )
+
+
+def test_file_error(client):
+  # missing mime_type
+  with pytest.raises(ValueError):
+    file = types.File(
+        uri='https://generativelanguage.googleapis.com/v1beta/files/cmpqbqoptyaa',
+    )
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=[
+            'Summarize this file',
+            file,
+        ],
+    )
+
+
 def test_from_text(client):
   client.models.generate_content(
       model='gemini-1.5-flash',

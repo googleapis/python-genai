@@ -114,7 +114,7 @@ class ServerError(APIError):
   pass
 
 
-class UnkownFunctionCallArgumentError(ValueError):
+class UnknownFunctionCallArgumentError(ValueError):
   """Raised when the function call argument cannot be converted to the parameter annotation."""
 
   pass

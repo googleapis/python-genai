@@ -35,7 +35,7 @@ def _resource_name(
     resource_name: str,
     *,
     collection_identifier: str,
-    collection_hirearchy_depth: int = 2,
+    collection_hierarchy_depth: int = 2,
 ):
   # pylint: disable=line-too-long
   """Prepends resource name with project, location, collection_identifier if needed.
@@ -99,7 +99,7 @@ def _resource_name(
       # Check if prepending the collection identifier won't violate the
       # collection hierarchy depth.
       and f'{collection_identifier}/{resource_name}'.count('/') + 1
-      == collection_hirearchy_depth
+      == collection_hierarchy_depth
   )
   if client.vertexai:
     if resource_name.startswith('projects/'):
@@ -156,7 +156,9 @@ def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
 
 
 def t_extract_models(api_client: _api_client.ApiClient, response: dict) -> list[types.Model]:
-  if response.get('models') is not None:
+  if not response:
+    return []
+  elif response.get('models') is not None:
     return response.get('models')
   elif response.get('tunedModels') is not None:
     return response.get('tunedModels')
@@ -204,6 +206,10 @@ def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
     return types.Part(text=part)
   if isinstance(part, PIL.Image.Image):
     return types.Part(inline_data=pil_to_blob(part))
+  if isinstance(part, types.File):
+    if not part.uri or not part.mime_type:
+      raise ValueError('file uri and mime_type are required.')
+    return types.Part.from_uri(part.uri, part.mime_type)
   else:
     return part
 
@@ -343,10 +349,10 @@ def t_speech_config(
 def t_tool(client: _api_client.ApiClient, origin) -> types.Tool:
   if not origin:
     return None
-  if inspect.isfunction(origin):
+  if inspect.isfunction(origin) or inspect.ismethod(origin):
     return types.Tool(
         function_declarations=[
-            types.FunctionDeclaration.from_function(client, origin)
+            types.FunctionDeclaration.from_callable(client, origin)
         ]
     )
   else:
@@ -457,7 +463,7 @@ def t_resolve_operation(api_client: _api_client.ApiClient, struct: dict):
 
 
 def t_file_name(api_client: _api_client.ApiClient, name: str):
-  # Remove the files/ prefx since it's added to the url path.
+  # Remove the files/ prefix since it's added to the url path.
   if name.startswith('files/'):
     return name.split('files/')[1]
   return name
@@ -488,5 +494,5 @@ def t_bytes(api_client: _api_client.ApiClient, data: bytes) -> str:
   if api_client.vertexai:
     return base64.b64encode(data).decode('ascii')
   else:
-    return base64.urlsafe_encode(data).decode('ascii')
+    return base64.urlsafe_b64encode(data).decode('ascii')
 

@@ -220,7 +220,7 @@ async def test_async_session_send_tool_response(
         function_responses=[
             types.FunctionResponse(
                 name='get_current_weather',
-                response={'temeperature': 14.5, 'unit': 'C'},
+                response={'temperature': 14.5, 'unit': 'C'},
             )
         ]
     )
@@ -229,7 +229,7 @@ async def test_async_session_send_tool_response(
         function_responses=[
             types.FunctionResponse(
                 name='get_current_weather',
-                response={'temeperature': 14.5, 'unit': 'C'},
+                response={'temperature': 14.5, 'unit': 'C'},
                 id='some-id',
             )
         ]

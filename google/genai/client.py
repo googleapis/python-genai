@@ -187,7 +187,8 @@ class Client:
     self._debug_config = debug_config or DebugConfig()
 
     # Throw ValueError if response_payload is set in http_options due to
-    # unpredical behavior when running multiple coroutines through client.aio.
+    # unpredictable behavior when running multiple coroutines through
+    # client.aio.
     if http_options and 'response_payload' in http_options:
       raise ValueError(
           'Setting response_payload in http_options is not supported.'

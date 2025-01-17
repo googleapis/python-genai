@@ -108,7 +108,7 @@ class AsyncSession:
 
     The method will yield the model responses from the server. The returned
     responses will represent a complete model turn. When the returned message
-    is fuction call, user must call `send` with the function response to
+    is function call, user must call `send` with the function response to
     continue the turn.
 
     Yields:

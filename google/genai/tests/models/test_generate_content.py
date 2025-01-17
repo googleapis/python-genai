@@ -198,7 +198,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                     )
                 ),
         ),
-        exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
         name='test_union_speech_string_config',
@@ -209,9 +208,27 @@ test_table: list[pytest_helper.TestTableItem] = [
                 response_modalities=['audio'], speech_config='charon'
             ),
         ),
-        exception_if_vertex='400',
         has_union=True,
     ),
+    pytest_helper.TestTableItem(
+        name='test_audio_timestamp',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=[types.Content(
+                role='user',
+                parts=[
+                    types.Part(
+                        file_data=types.FileData(
+                            file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
+                            mime_type='audio/mpeg')),
+                    types.Part(text="""Can you transcribe this interview, in the
+                           format of timecode, speaker, caption. Use speaker A, 
+                           speaker B, etc. to identify speakers."""),]
+            )],
+            config=types.GenerateContentConfig(audio_timestamp=True),
+        ),
+        exception_if_mldev='not supported',
+    )
 ]
 
 pytestmark = pytest_helper.setup(
@@ -396,7 +413,7 @@ def test_safety_settings_on_difference_stream(client):
 def test_pydantic_schema(client):
   class CountryInfo(BaseModel):
     name: str
-    pupulation: int
+    population: int
     capital: str
     continent: str
     gdp: int
@@ -423,7 +440,7 @@ def test_json_schema(client):
           'response_schema': {
               'required': [
                   'name',
-                  'pupulation',
+                  'population',
                   'capital',
                   'continent',
                   'gdp',
@@ -432,7 +449,7 @@ def test_json_schema(client):
               ],
               'properties': {
                   'name': {'type': 'STRING'},
-                  'pupulation': {'type': 'INTEGER'},
+                  'population': {'type': 'INTEGER'},
                   'capital': {'type': 'STRING'},
                   'continent': {'type': 'STRING'},
                   'gdp': {'type': 'INTEGER'},

@@ -19,6 +19,7 @@ import datetime
 import pytest
 from ... import types
 from .. import pytest_helper
+from ... import _transformers as t
 
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters(
@@ -43,7 +44,7 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters
                 ],
             )
         ],
-        'system_instruction': 'What is the sum of the two pdfs?',
+        'system_instruction': t.t_content(None, 'What is the sum of the two pdfs?'),
         'display_name': 'test cache',
         'ttl': '86400s',
     },
@@ -65,7 +66,7 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE = types._CreateCachedContentPara
                 ],
             )
         ],
-        'system_instruction': 'What is the sum of the two pdfs?',
+        'system_instruction': t.t_content(None, 'What is the sum of the two pdfs?'),
         'display_name': 'test cache',
         'ttl': '86400s',
     },

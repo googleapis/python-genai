@@ -833,3 +833,31 @@ async def test_2_function_with_history_async(client):
   ).model_dump_json(
       exclude_none=True
   )
+
+
+class FunctionHolder:
+  NAME = 'FunctionHolder'
+
+  def is_a_duck(self, number: int) -> str:
+    return self.NAME + 'says isOdd: ' + str(number % 2 == 1)
+
+  def is_a_rabbit(self, number: int) -> str:
+    return self.NAME + 'says isEven: ' + str(number % 2 == 0)
+
+
+def test_class_method_tools(client):
+  # This test is to make sure that class method tools can be used in
+  # the generate_content request.
+
+  function_holder = FunctionHolder()
+  response = client.models.generate_content(
+      model='gemini-2.0-flash-exp',
+      contents=(
+          'Print the verbatim output of is_a_duck and is_a_rabbit for the'
+          ' number 100.'
+      ),
+      config={
+          'tools': [function_holder.is_a_duck, function_holder.is_a_rabbit],
+      },
+  )
+  assert 'FunctionHolder' in response.text

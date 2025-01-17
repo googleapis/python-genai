@@ -175,7 +175,7 @@ def test_constructor_error_in_json_status_outside_error():
 
     def json(self):
       return {
-          'status': 'OUTTER_INVALID_ARGUMENT_STATUS',
+          'status': 'OUTER_INVALID_ARGUMENT_STATUS',
           'error': {
               'code': 400,
               'message': 'error message',
@@ -190,9 +190,9 @@ def test_constructor_error_in_json_status_outside_error():
 
   assert actual_error.code == 400
   assert actual_error.message == 'error message'
-  assert actual_error.status == 'OUTTER_INVALID_ARGUMENT_STATUS'
+  assert actual_error.status == 'OUTER_INVALID_ARGUMENT_STATUS'
   assert actual_error.details == {
-      'status': 'OUTTER_INVALID_ARGUMENT_STATUS',
+      'status': 'OUTER_INVALID_ARGUMENT_STATUS',
       'error': {
           'code': 400,
           'message': 'error message',
@@ -233,7 +233,7 @@ def test_constructor_error_in_json_message_outside_error():
 
     def json(self):
       return {
-          'message': 'OUTTER_ERROR_MESSAGE',
+          'message': 'OUTER_ERROR_MESSAGE',
           'error': {
               'code': 400,
               'message': 'INNER_ERROR_MESSAGE',
@@ -247,10 +247,10 @@ def test_constructor_error_in_json_message_outside_error():
   )
 
   assert actual_error.code == 400
-  assert actual_error.message == 'OUTTER_ERROR_MESSAGE'
+  assert actual_error.message == 'OUTER_ERROR_MESSAGE'
   assert actual_error.status == 'INVALID_ARGUMENT'
   assert actual_error.details == {
-      'message': 'OUTTER_ERROR_MESSAGE',
+      'message': 'OUTER_ERROR_MESSAGE',
       'error': {
           'code': 400,
           'message': 'INNER_ERROR_MESSAGE',

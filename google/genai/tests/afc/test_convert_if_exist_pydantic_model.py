@@ -159,7 +159,7 @@ def test_unknown_pydantic_model_argument_error():
   annotation = inspect.signature(foo).parameters['_'].annotation
   original_args = {'key3_simple': 1, 'key2_simple': 1.0}
 
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         original_args, annotation, 'param_name', 'func_name'
     )
@@ -180,7 +180,7 @@ def test_unknown_pydantic_model_argument_error_with_union_type():
   annotation = inspect.signature(foo).parameters['_'].annotation
   original_args = {'key5_simple': 1, 'key4_simple': 1.0}
 
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         original_args, annotation, 'param_name', 'func_name'
     )
@@ -197,63 +197,63 @@ def test_unknown_pydantic_model_argument_error_with_union_type_and_builtin_type(
   annotation = inspect.signature(foo).parameters['_'].annotation
   original_args = {'key5_simple': 1, 'key4_simple': 1.0}
 
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         original_args, annotation, 'param_name', 'func_name'
     )
 
 
 def test_incompatible_value_and_annotation():
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         {'key1_simple': 1, 'key2_simple': 1.0},
         int,
         'param_name',
         'func_name',
     )
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         {'key1_simple': 1, 'key2_simple': 1.0},
         float,
         'param_name',
         'func_name',
     )
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         1,
         str,
         'param_name',
         'func_name',
     )
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         1.0,
         str,
         'param_name',
         'func_name',
     )
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         True,
         str,
         'param_name',
         'func_name',
     )
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         [1],
         str,
         'param_name',
         'func_name',
     )
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         {'key1': 1},
         str,
         'param_name',
         'func_name',
     )
-  with pytest.raises(errors.UnkownFunctionCallArgumentError):
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
     convert_if_exist_pydantic_model(
         {'key1': 1, 'key2': 2},
         str,

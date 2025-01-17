@@ -430,7 +430,7 @@ called and responded.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">function_call_part</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="n">function_reponse</span> <span class="o">=</span> <span class="n">get_current_weather</span><span class="p">(</span><span class="o">**</span><span class="n">function_call_part</span><span class="o">.</span><span class="n">function_call</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+<span class="n">function_response</span> <span class="o">=</span> <span class="n">get_current_weather</span><span class="p">(</span><span class="o">**</span><span class="n">function_call_part</span><span class="o">.</span><span class="n">function_call</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
 
 
 <span class="n">function_response_part</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_response</span><span class="p">(</span>
@@ -883,7 +883,7 @@ tuning through <code class="docutils literal notranslate"><span class="pre">tune
 <span class="n">distillation_job</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tcompleted_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">completed_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span>
     <span class="s2">&quot;JOB_STATE_SUCCEEDED&quot;</span><span class="p">,</span>
     <span class="s2">&quot;JOB_STATE_FAILED&quot;</span><span class="p">,</span>
     <span class="s2">&quot;JOB_STATE_CANCELLED&quot;</span><span class="p">,</span>

@@ -116,7 +116,7 @@ def convert_if_exist_pydantic_model(
     try:
       return annotation(**value)
     except pydantic.ValidationError as e:
-      raise errors.UnkownFunctionCallArgumentError(
+      raise errors.UnknownFunctionCallArgumentError(
           f'Failed to parse parameter {param_name} for function'
           f' {func_name} from function call part because function call argument'
           f' value {value} is not compatible with parameter annotation'
@@ -150,7 +150,7 @@ def convert_if_exist_pydantic_model(
         except pydantic.ValidationError:
           continue
     # if none of the union type is matched, raise error
-    raise errors.UnkownFunctionCallArgumentError(
+    raise errors.UnknownFunctionCallArgumentError(
         f'Failed to parse parameter {param_name} for function'
         f' {func_name} from function call part because function call argument'
         f' value {value} cannot be converted to parameter annotation'
@@ -161,7 +161,7 @@ def convert_if_exist_pydantic_model(
   if isinstance(value, int) and annotation is float:
     return value
   if not isinstance(value, annotation):
-    raise errors.UnkownFunctionCallArgumentError(
+    raise errors.UnknownFunctionCallArgumentError(
         f'Failed to parse parameter {param_name} for function {func_name} from'
         f' function call part because function call argument value {value} is'
         f' not compatible with parameter annotation {annotation}.'

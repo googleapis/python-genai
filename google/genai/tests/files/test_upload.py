@@ -17,6 +17,7 @@
 """Test files upload method."""
 
 
+import io
 import pathlib
 import pytest
 from ... import types
@@ -44,6 +45,27 @@ def test_image_png_upload_with_path(client):
         path=p,
         config=types.UploadFileConfig(display_name='test_image_png_path'),
     )
+    assert file.name.startswith('files/')
+
+def test_image_png_upload_with_bytesio(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    with open('tests/data/google.png', 'rb') as f:
+      with io.BytesIO(f.read()) as buffer:
+        file = client.files.upload(
+            path=buffer,
+            config=types.UploadFileConfig(mime_type='image/png'),
+        )
+
+        assert file.name.startswith('files/')
+
+def test_image_png_upload_with_fd(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    with open('tests/data/google.png', 'rb') as f:
+      file = client.files.upload(
+          path=f,
+          config=types.UploadFileConfig(mime_type='image/png'),
+      )
+
     assert file.name.startswith('files/')
 
 def test_image_png_upload_with_config(client):
@@ -184,6 +206,18 @@ async def test_image_upload_with_config_dict_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = await client.aio.files.upload(
         path='tests/data/google.png', config={'display_name': 'test_image'}
+    )
+    assert file.name.startswith('files/')
+
+@pytest.mark.asyncio
+async def test_image_upload_with_bytesio_async(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    with open('tests/data/google.png', 'rb') as f:
+      buffer = io.BytesIO(f.read())
+    file = await client.aio.files.upload(
+        path=buffer,
+        config=types.UploadFileConfig(
+            mime_type='image/png'),
     )
     assert file.name.startswith('files/')
 

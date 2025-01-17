@@ -19,6 +19,7 @@ import base64
 import copy
 import datetime
 import inspect
+import io
 import json
 import os
 import re
@@ -396,10 +397,21 @@ class ReplayApiClient(ApiClient):
     else:
       return self._build_response_from_replay(http_request)
 
-  def upload_file(self, file_path: str, upload_url: str, upload_size: int):
-    request = HttpRequest(
-        method='POST', url='', data={'file_path': file_path}, headers={}
-    )
+  def upload_file(self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int):
+    if isinstance(file_path, io.IOBase):
+      offset = file_path.tell()
+      content = file_path.read()
+      file_path.seek(offset, os.SEEK_SET)
+      request = HttpRequest(
+          method='POST',
+          url='',
+          data={'bytes': base64.b64encode(content).decode('utf-8')},
+          headers={}
+      )
+    else:
+      request = HttpRequest(
+          method='POST', url='', data={'file_path': file_path}, headers={}
+      )
     if self._should_call_api():
       try:
         result = super().upload_file(file_path, upload_url, upload_size)
