@@ -288,31 +288,36 @@ def t_contents(
     return [t_content(client, contents)]
 
 
-def process_schema(data: dict):
+def process_schema(data: dict[str, Any],
+                   client: Optional[_api_client.ApiClient]=None):
   if isinstance(data, dict):
     # Iterate over a copy of keys to allow deletion
     for key in list(data.keys()):
-      if key == 'title':
+      # Only delete 'title'for the Gemini API
+      if client and not client.vertexai and key == 'title':
         del data[key]
-      elif key == 'type':
-        data[key] = data[key].upper()
       else:
-        process_schema(data[key])
+        process_schema(data[key], client)
   elif isinstance(data, list):
     for item in data:
-      process_schema(item)
+      process_schema(item, client)
 
   return data
 
 
 def t_schema(
-    _: _api_client.ApiClient, origin: Union[types.SchemaDict, Any]
+    client: _api_client.ApiClient, origin: Union[types.SchemaUnionDict, Any]
 ) -> Optional[types.Schema]:
   if not origin:
     return None
   if isinstance(origin, dict):
-    return origin
-  schema = process_schema(origin.model_json_schema())
+    return process_schema(origin, client)
+  if isinstance(origin, types.Schema):
+    schema = process_schema(origin.model_dump(exclude_unset=True), client)
+  else:
+    # user passed a their own pydantic.BaseModel
+    schema = process_schema(origin.model_json_schema(), client)
+
   return types.Schema.model_validate(schema)
 
 

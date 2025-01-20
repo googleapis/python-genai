@@ -26,199 +26,280 @@ from pydantic import Field
 from . import _common
 
 
-Outcome = Literal[
-    "OUTCOME_UNSPECIFIED",
-    "OUTCOME_OK",
-    "OUTCOME_FAILED",
-    "OUTCOME_DEADLINE_EXCEEDED",
-]
+class Outcome(_common.CaseInSensitiveEnum):
+  """Required. Outcome of the code execution."""
+
+  OUTCOME_UNSPECIFIED = 'OUTCOME_UNSPECIFIED'
+  OUTCOME_OK = 'OUTCOME_OK'
+  OUTCOME_FAILED = 'OUTCOME_FAILED'
+  OUTCOME_DEADLINE_EXCEEDED = 'OUTCOME_DEADLINE_EXCEEDED'
 
 
-Language = Literal["LANGUAGE_UNSPECIFIED", "PYTHON"]
+class Language(_common.CaseInSensitiveEnum):
+  """Required. Programming language of the `code`."""
+
+  LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
+  PYTHON = 'PYTHON'
 
 
-Type = Literal[
-    "TYPE_UNSPECIFIED",
-    "STRING",
-    "NUMBER",
-    "INTEGER",
-    "BOOLEAN",
-    "ARRAY",
-    "OBJECT",
-]
+class Type(_common.CaseInSensitiveEnum):
+  """A basic data type."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  STRING = 'STRING'
+  NUMBER = 'NUMBER'
+  INTEGER = 'INTEGER'
+  BOOLEAN = 'BOOLEAN'
+  ARRAY = 'ARRAY'
+  OBJECT = 'OBJECT'
 
 
-HarmCategory = Literal[
-    "HARM_CATEGORY_UNSPECIFIED",
-    "HARM_CATEGORY_HATE_SPEECH",
-    "HARM_CATEGORY_DANGEROUS_CONTENT",
-    "HARM_CATEGORY_HARASSMENT",
-    "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-    "HARM_CATEGORY_CIVIC_INTEGRITY",
-]
+class HarmCategory(_common.CaseInSensitiveEnum):
+  """Required. Harm category."""
+
+  HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
+  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
+  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
+  HARM_CATEGORY_HARASSMENT = 'HARM_CATEGORY_HARASSMENT'
+  HARM_CATEGORY_SEXUALLY_EXPLICIT = 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
+  HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
 
 
-HarmBlockMethod = Literal[
-    "HARM_BLOCK_METHOD_UNSPECIFIED", "SEVERITY", "PROBABILITY"
-]
+class HarmBlockMethod(_common.CaseInSensitiveEnum):
+  """Optional.
+
+  Specify if the threshold is used for probability or severity score. If not
+  specified, the threshold is used for probability score.
+  """
+
+  HARM_BLOCK_METHOD_UNSPECIFIED = 'HARM_BLOCK_METHOD_UNSPECIFIED'
+  SEVERITY = 'SEVERITY'
+  PROBABILITY = 'PROBABILITY'
 
 
-HarmBlockThreshold = Literal[
-    "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
-    "BLOCK_LOW_AND_ABOVE",
-    "BLOCK_MEDIUM_AND_ABOVE",
-    "BLOCK_ONLY_HIGH",
-    "BLOCK_NONE",
-    "OFF",
-]
+class HarmBlockThreshold(_common.CaseInSensitiveEnum):
+  """Required. The harm block threshold."""
+
+  HARM_BLOCK_THRESHOLD_UNSPECIFIED = 'HARM_BLOCK_THRESHOLD_UNSPECIFIED'
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
+  OFF = 'OFF'
 
 
-Mode = Literal["MODE_UNSPECIFIED", "MODE_DYNAMIC"]
+class Mode(_common.CaseInSensitiveEnum):
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
 
 
-State = Literal["STATE_UNSPECIFIED", "ACTIVE", "ERROR"]
+class State(_common.CaseInSensitiveEnum):
+  """Output only. RagFile state."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  ACTIVE = 'ACTIVE'
+  ERROR = 'ERROR'
 
 
-FinishReason = Literal[
-    "FINISH_REASON_UNSPECIFIED",
-    "STOP",
-    "MAX_TOKENS",
-    "SAFETY",
-    "RECITATION",
-    "OTHER",
-    "BLOCKLIST",
-    "PROHIBITED_CONTENT",
-    "SPII",
-    "MALFORMED_FUNCTION_CALL",
-]
+class FinishReason(_common.CaseInSensitiveEnum):
+  """Output only.
+
+  The reason why the model stopped generating tokens. If empty, the model has
+  not stopped generating the tokens.
+  """
+
+  FINISH_REASON_UNSPECIFIED = 'FINISH_REASON_UNSPECIFIED'
+  STOP = 'STOP'
+  MAX_TOKENS = 'MAX_TOKENS'
+  SAFETY = 'SAFETY'
+  RECITATION = 'RECITATION'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+  SPII = 'SPII'
+  MALFORMED_FUNCTION_CALL = 'MALFORMED_FUNCTION_CALL'
 
 
-HarmProbability = Literal[
-    "HARM_PROBABILITY_UNSPECIFIED", "NEGLIGIBLE", "LOW", "MEDIUM", "HIGH"
-]
+class HarmProbability(_common.CaseInSensitiveEnum):
+  """Output only. Harm probability levels in the content."""
+
+  HARM_PROBABILITY_UNSPECIFIED = 'HARM_PROBABILITY_UNSPECIFIED'
+  NEGLIGIBLE = 'NEGLIGIBLE'
+  LOW = 'LOW'
+  MEDIUM = 'MEDIUM'
+  HIGH = 'HIGH'
 
 
-HarmSeverity = Literal[
-    "HARM_SEVERITY_UNSPECIFIED",
-    "HARM_SEVERITY_NEGLIGIBLE",
-    "HARM_SEVERITY_LOW",
-    "HARM_SEVERITY_MEDIUM",
-    "HARM_SEVERITY_HIGH",
-]
+class HarmSeverity(_common.CaseInSensitiveEnum):
+  """Output only. Harm severity levels in the content."""
+
+  HARM_SEVERITY_UNSPECIFIED = 'HARM_SEVERITY_UNSPECIFIED'
+  HARM_SEVERITY_NEGLIGIBLE = 'HARM_SEVERITY_NEGLIGIBLE'
+  HARM_SEVERITY_LOW = 'HARM_SEVERITY_LOW'
+  HARM_SEVERITY_MEDIUM = 'HARM_SEVERITY_MEDIUM'
+  HARM_SEVERITY_HIGH = 'HARM_SEVERITY_HIGH'
 
 
-BlockedReason = Literal[
-    "BLOCKED_REASON_UNSPECIFIED",
-    "SAFETY",
-    "OTHER",
-    "BLOCKLIST",
-    "PROHIBITED_CONTENT",
-]
+class BlockedReason(_common.CaseInSensitiveEnum):
+  """Output only. Blocked reason."""
+
+  BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
+  SAFETY = 'SAFETY'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
 
 
-DeploymentResourcesType = Literal[
-    "DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED",
-    "DEDICATED_RESOURCES",
-    "AUTOMATIC_RESOURCES",
-    "SHARED_RESOURCES",
-]
+class DeploymentResourcesType(_common.CaseInSensitiveEnum):
+  """"""
+
+  DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED = (
+      'DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED'
+  )
+  DEDICATED_RESOURCES = 'DEDICATED_RESOURCES'
+  AUTOMATIC_RESOURCES = 'AUTOMATIC_RESOURCES'
+  SHARED_RESOURCES = 'SHARED_RESOURCES'
 
 
-JobState = Literal[
-    "JOB_STATE_UNSPECIFIED",
-    "JOB_STATE_QUEUED",
-    "JOB_STATE_PENDING",
-    "JOB_STATE_RUNNING",
-    "JOB_STATE_SUCCEEDED",
-    "JOB_STATE_FAILED",
-    "JOB_STATE_CANCELLING",
-    "JOB_STATE_CANCELLED",
-    "JOB_STATE_PAUSED",
-    "JOB_STATE_EXPIRED",
-    "JOB_STATE_UPDATING",
-    "JOB_STATE_PARTIALLY_SUCCEEDED",
-]
+class JobState(_common.CaseInSensitiveEnum):
+  """Config class for the job state."""
+
+  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
+  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
+  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
+  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
+  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
+  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
+  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
+  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
+  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
+  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
+  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
+  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
 
 
-AdapterSize = Literal[
-    "ADAPTER_SIZE_UNSPECIFIED",
-    "ADAPTER_SIZE_ONE",
-    "ADAPTER_SIZE_FOUR",
-    "ADAPTER_SIZE_EIGHT",
-    "ADAPTER_SIZE_SIXTEEN",
-    "ADAPTER_SIZE_THIRTY_TWO",
-]
+class AdapterSize(_common.CaseInSensitiveEnum):
+  """Optional. Adapter size for tuning."""
+
+  ADAPTER_SIZE_UNSPECIFIED = 'ADAPTER_SIZE_UNSPECIFIED'
+  ADAPTER_SIZE_ONE = 'ADAPTER_SIZE_ONE'
+  ADAPTER_SIZE_FOUR = 'ADAPTER_SIZE_FOUR'
+  ADAPTER_SIZE_EIGHT = 'ADAPTER_SIZE_EIGHT'
+  ADAPTER_SIZE_SIXTEEN = 'ADAPTER_SIZE_SIXTEEN'
+  ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
 
 
-DynamicRetrievalConfigMode = Literal["MODE_UNSPECIFIED", "MODE_DYNAMIC"]
+class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
+  """Config class for the dynamic retrieval config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
 
 
-FunctionCallingConfigMode = Literal["MODE_UNSPECIFIED", "AUTO", "ANY", "NONE"]
+class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
+  """Config class for the function calling config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  AUTO = 'AUTO'
+  ANY = 'ANY'
+  NONE = 'NONE'
 
 
-MediaResolution = Literal[
-    "MEDIA_RESOLUTION_UNSPECIFIED",
-    "MEDIA_RESOLUTION_LOW",
-    "MEDIA_RESOLUTION_MEDIUM",
-    "MEDIA_RESOLUTION_HIGH",
-]
+class MediaResolution(_common.CaseInSensitiveEnum):
+  """The media resolution to use."""
+
+  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
 
 
-SafetyFilterLevel = Literal[
-    "BLOCK_LOW_AND_ABOVE",
-    "BLOCK_MEDIUM_AND_ABOVE",
-    "BLOCK_ONLY_HIGH",
-    "BLOCK_NONE",
-]
+class SafetyFilterLevel(_common.CaseInSensitiveEnum):
+  """Enum that controls the safety filter level for objectionable content."""
+
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
 
 
-PersonGeneration = Literal["DONT_ALLOW", "ALLOW_ADULT", "ALLOW_ALL"]
+class PersonGeneration(_common.CaseInSensitiveEnum):
+  """Enum that controls the generation of people."""
+
+  DONT_ALLOW = 'DONT_ALLOW'
+  ALLOW_ADULT = 'ALLOW_ADULT'
+  ALLOW_ALL = 'ALLOW_ALL'
 
 
-ImagePromptLanguage = Literal["auto", "en", "ja", "ko", "hi"]
+class ImagePromptLanguage(_common.CaseInSensitiveEnum):
+  """Enum that specifies the language of the text in the prompt."""
+
+  auto = 'auto'
+  en = 'en'
+  ja = 'ja'
+  ko = 'ko'
+  hi = 'hi'
 
 
-MaskReferenceMode = Literal[
-    "MASK_MODE_DEFAULT",
-    "MASK_MODE_USER_PROVIDED",
-    "MASK_MODE_BACKGROUND",
-    "MASK_MODE_FOREGROUND",
-    "MASK_MODE_SEMANTIC",
-]
+class MaskReferenceMode(_common.CaseInSensitiveEnum):
+  """Enum representing the mask mode of a mask reference image."""
+
+  MASK_MODE_DEFAULT = 'MASK_MODE_DEFAULT'
+  MASK_MODE_USER_PROVIDED = 'MASK_MODE_USER_PROVIDED'
+  MASK_MODE_BACKGROUND = 'MASK_MODE_BACKGROUND'
+  MASK_MODE_FOREGROUND = 'MASK_MODE_FOREGROUND'
+  MASK_MODE_SEMANTIC = 'MASK_MODE_SEMANTIC'
 
 
-ControlReferenceType = Literal[
-    "CONTROL_TYPE_DEFAULT",
-    "CONTROL_TYPE_CANNY",
-    "CONTROL_TYPE_SCRIBBLE",
-    "CONTROL_TYPE_FACE_MESH",
-]
+class ControlReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the control type of a control reference image."""
+
+  CONTROL_TYPE_DEFAULT = 'CONTROL_TYPE_DEFAULT'
+  CONTROL_TYPE_CANNY = 'CONTROL_TYPE_CANNY'
+  CONTROL_TYPE_SCRIBBLE = 'CONTROL_TYPE_SCRIBBLE'
+  CONTROL_TYPE_FACE_MESH = 'CONTROL_TYPE_FACE_MESH'
 
 
-SubjectReferenceType = Literal[
-    "SUBJECT_TYPE_DEFAULT",
-    "SUBJECT_TYPE_PERSON",
-    "SUBJECT_TYPE_ANIMAL",
-    "SUBJECT_TYPE_PRODUCT",
-]
+class SubjectReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the subject type of a subject reference image."""
+
+  SUBJECT_TYPE_DEFAULT = 'SUBJECT_TYPE_DEFAULT'
+  SUBJECT_TYPE_PERSON = 'SUBJECT_TYPE_PERSON'
+  SUBJECT_TYPE_ANIMAL = 'SUBJECT_TYPE_ANIMAL'
+  SUBJECT_TYPE_PRODUCT = 'SUBJECT_TYPE_PRODUCT'
 
 
-EditMode = Literal[
-    "EDIT_MODE_DEFAULT",
-    "EDIT_MODE_INPAINT_REMOVAL",
-    "EDIT_MODE_INPAINT_INSERTION",
-    "EDIT_MODE_OUTPAINT",
-    "EDIT_MODE_CONTROLLED_EDITING",
-    "EDIT_MODE_STYLE",
-    "EDIT_MODE_BGSWAP",
-    "EDIT_MODE_PRODUCT_IMAGE",
-]
+class EditMode(_common.CaseInSensitiveEnum):
+  """Enum representing the Imagen 3 Edit mode."""
+
+  EDIT_MODE_DEFAULT = 'EDIT_MODE_DEFAULT'
+  EDIT_MODE_INPAINT_REMOVAL = 'EDIT_MODE_INPAINT_REMOVAL'
+  EDIT_MODE_INPAINT_INSERTION = 'EDIT_MODE_INPAINT_INSERTION'
+  EDIT_MODE_OUTPAINT = 'EDIT_MODE_OUTPAINT'
+  EDIT_MODE_CONTROLLED_EDITING = 'EDIT_MODE_CONTROLLED_EDITING'
+  EDIT_MODE_STYLE = 'EDIT_MODE_STYLE'
+  EDIT_MODE_BGSWAP = 'EDIT_MODE_BGSWAP'
+  EDIT_MODE_PRODUCT_IMAGE = 'EDIT_MODE_PRODUCT_IMAGE'
 
 
-FileState = Literal["STATE_UNSPECIFIED", "PROCESSING", "ACTIVE", "FAILED"]
+class FileState(_common.CaseInSensitiveEnum):
+  """State for the lifecycle of a File."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  PROCESSING = 'PROCESSING'
+  ACTIVE = 'ACTIVE'
+  FAILED = 'FAILED'
 
 
-Modality = Literal["MODALITY_UNSPECIFIED", "TEXT", "IMAGE", "AUDIO"]
+class Modality(_common.CaseInSensitiveEnum):
+  """Config class for the server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  TEXT = 'TEXT'
+  IMAGE = 'IMAGE'
+  AUDIO = 'AUDIO'
 
 
 class VideoMetadata(_common.BaseModel):
@@ -477,16 +558,16 @@ class Part(_common.BaseModel):
   )
 
   @classmethod
-  def from_uri(cls, file_uri: str, mime_type: str) -> "Part":
+  def from_uri(cls, file_uri: str, mime_type: str) -> 'Part':
     file_data = FileData(file_uri=file_uri, mime_type=mime_type)
     return cls(file_data=file_data)
 
   @classmethod
-  def from_text(cls, text: str) -> "Part":
+  def from_text(cls, text: str) -> 'Part':
     return cls(text=text)
 
   @classmethod
-  def from_bytes(cls, data: bytes, mime_type: str) -> "Part":
+  def from_bytes(cls, data: bytes, mime_type: str) -> 'Part':
     inline_data = Blob(
         data=data,
         mime_type=mime_type,
@@ -494,31 +575,31 @@ class Part(_common.BaseModel):
     return cls(inline_data=inline_data)
 
   @classmethod
-  def from_function_call(cls, name: str, args: dict[str, Any]) -> "Part":
+  def from_function_call(cls, name: str, args: dict[str, Any]) -> 'Part':
     function_call = FunctionCall(name=name, args=args)
     return cls(function_call=function_call)
 
   @classmethod
   def from_function_response(
       cls, name: str, response: dict[str, Any]
-  ) -> "Part":
+  ) -> 'Part':
     function_response = FunctionResponse(name=name, response=response)
     return cls(function_response=function_response)
 
   @classmethod
-  def from_video_metadata(cls, end_offset: str, start_offset: str) -> "Part":
+  def from_video_metadata(cls, end_offset: str, start_offset: str) -> 'Part':
     video_metadata = VideoMetadata(
         end_offset=end_offset, start_offset=start_offset
     )
     return cls(video_metadata=video_metadata)
 
   @classmethod
-  def from_executable_code(cls, code: str, language: Language) -> "Part":
+  def from_executable_code(cls, code: str, language: Language) -> 'Part':
     executable_code = ExecutableCode(code=code, language=language)
     return cls(executable_code=executable_code)
 
   @classmethod
-  def from_code_execution_result(cls, outcome: Outcome, output: str) -> "Part":
+  def from_code_execution_result(cls, outcome: Outcome, output: str) -> 'Part':
     code_execution_result = CodeExecutionResult(outcome=outcome, output=output)
     return cls(code_execution_result=code_execution_result)
 
@@ -623,7 +704,7 @@ class Schema(_common.BaseModel):
   default: Optional[Any] = Field(
       default=None, description="""Optional. Default value of the data."""
   )
-  any_of: list["Schema"] = Field(
+  any_of: list['Schema'] = Field(
       default=None,
       description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
   )
@@ -672,11 +753,11 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
   )
-  items: "Schema" = Field(
+  items: 'Schema' = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
   )
-  properties: dict[str, "Schema"] = Field(
+  properties: dict[str, 'Schema'] = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
   )
@@ -710,7 +791,7 @@ class SchemaDict(TypedDict, total=False):
   default: Optional[Any]
   """Optional. Default value of the data."""
 
-  any_of: list["SchemaDict"]
+  any_of: list['SchemaDict']
   """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
 
   max_length: Optional[int]
@@ -749,10 +830,10 @@ class SchemaDict(TypedDict, total=False):
   format: Optional[str]
   """Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc"""
 
-  items: "SchemaDict"
+  items: 'SchemaDict'
   """Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY."""
 
-  properties: dict[str, "SchemaDict"]
+  properties: dict[str, 'SchemaDict']
   """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
 
   required: Optional[list[str]]
@@ -824,27 +905,27 @@ class FunctionDeclaration(_common.BaseModel):
   def _get_variant(cls, client) -> str:
     """Returns the function variant based on the provided client object."""
     if client.vertexai:
-      return "VERTEX_AI"
+      return 'VERTEX_AI'
     else:
-      return "GOOGLE_AI"
+      return 'GOOGLE_AI'
 
   @classmethod
   def from_function_with_options(
       cls,
       func: Callable,
-      variant: Literal["GOOGLE_AI", "VERTEX_AI", "DEFAULT"] = "GOOGLE_AI",
-  ) -> "FunctionDeclaration":
+      variant: Literal['GOOGLE_AI', 'VERTEX_AI', 'DEFAULT'] = 'GOOGLE_AI',
+  ) -> 'FunctionDeclaration':
     """Converts a function to a FunctionDeclaration based on an API endpoint.
 
     Supported endpoints are: 'GOOGLE_AI', 'VERTEX_AI', or 'DEFAULT'.
     """
     from . import _automatic_function_calling_util
 
-    supported_variants = ["GOOGLE_AI", "VERTEX_AI", "DEFAULT"]
+    supported_variants = ['GOOGLE_AI', 'VERTEX_AI', 'DEFAULT']
     if variant not in supported_variants:
       raise ValueError(
-          f"Unsupported variant: {variant}. Supported variants are:"
-          f" {', '.join(supported_variants)}"
+          f'Unsupported variant: {variant}. Supported variants are:'
+          f' {", ".join(supported_variants)}'
       )
 
     # TODO: b/382524014 - Add support for DEFAULT API endpoint.
@@ -866,16 +947,16 @@ class FunctionDeclaration(_common.BaseModel):
     )
     if parameters_properties:
       declaration.parameters = Schema(
-          type="OBJECT",
+          type='OBJECT',
           properties=parameters_properties,
       )
-      if variant == "VERTEX_AI":
+      if variant == 'VERTEX_AI':
         declaration.parameters.required = (
             _automatic_function_calling_util._get_required_fields(
                 declaration.parameters
             )
         )
-    if not variant == "VERTEX_AI":
+    if not variant == 'VERTEX_AI':
       return declaration
 
     return_annotation = inspect.signature(func).return_annotation
@@ -886,7 +967,7 @@ class FunctionDeclaration(_common.BaseModel):
         _automatic_function_calling_util._parse_schema_from_parameter(
             variant,
             inspect.Parameter(
-                "return_value",
+                'return_value',
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 annotation=return_annotation,
             ),
@@ -896,7 +977,7 @@ class FunctionDeclaration(_common.BaseModel):
     return declaration
 
   @classmethod
-  def from_callable(cls, client, func: Callable) -> "FunctionDeclaration":
+  def from_callable(cls, client, func: Callable) -> 'FunctionDeclaration':
     """Converts a function to a FunctionDeclaration."""
     return cls.from_function_with_options(
         variant=cls._get_variant(client),
@@ -1531,7 +1612,7 @@ class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
   """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
 
   model_routing_preference: Optional[
-      Literal["UNKNOWN", "PRIORITIZE_QUALITY", "BALANCED", "PRIORITIZE_COST"]
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
   ] = Field(default=None, description="""The model routing preference.""")
 
 
@@ -1539,7 +1620,7 @@ class GenerationConfigRoutingConfigAutoRoutingModeDict(TypedDict, total=False):
   """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
 
   model_routing_preference: Optional[
-      Literal["UNKNOWN", "PRIORITIZE_QUALITY", "BALANCED", "PRIORITIZE_COST"]
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
   ]
   """The model routing preference."""
 
@@ -2657,20 +2738,20 @@ class GenerateContentResponse(_common.BaseModel):
       return None
     if len(self.candidates) > 1:
       logging.warning(
-          f"there are {len(self.candidates)} candidates, returning text from"
-          " the first candidate.Access response.candidates directly to get"
-          " text from other candidates."
+          f'there are {len(self.candidates)} candidates, returning text from'
+          ' the first candidate.Access response.candidates directly to get'
+          ' text from other candidates.'
       )
-    text = ""
+    text = ''
     any_text_part_text = False
     for part in self.candidates[0].content.parts:
       for field_name, field_value in part.dict(
-          exclude={"text", "thought"}
+          exclude={'text', 'thought'}
       ).items():
         if field_value is not None:
           raise ValueError(
-              "GenerateContentResponse.text only supports text parts, but got"
-              f" {field_name} part{part}"
+              'GenerateContentResponse.text only supports text parts, but got'
+              f' {field_name} part{part}'
           )
       if isinstance(part.text, str):
         if isinstance(part.thought, bool) and part.thought:
@@ -2691,8 +2772,8 @@ class GenerateContentResponse(_common.BaseModel):
       return None
     if len(self.candidates) > 1:
       logging.warning(
-          "Warning: there are multiple candidates in the response, returning"
-          " function calls from the first one."
+          'Warning: there are multiple candidates in the response, returning'
+          ' function calls from the first one.'
       )
     function_calls = [
         part.function_call
@@ -2710,7 +2791,7 @@ class GenerateContentResponse(_common.BaseModel):
 
     # Handles response schema.
     response_schema = _common.get_value_by_path(
-        kwargs, ["config", "response_schema"]
+        kwargs, ['config', 'response_schema']
     )
     if inspect.isclass(response_schema) and issubclass(
         response_schema, pydantic.BaseModel
@@ -3214,7 +3295,7 @@ class Image(_common.BaseModel):
   """Image."""
 
   @staticmethod
-  def from_file(location: str) -> "Image":
+  def from_file(location: str) -> 'Image':
     """Lazy-loads an image from a local file or Google Cloud Storage.
 
     Args:
@@ -3229,17 +3310,17 @@ class Image(_common.BaseModel):
 
     parsed_url = urllib.parse.urlparse(location)
     if (
-        parsed_url.scheme == "https"
-        and parsed_url.netloc == "storage.googleapis.com"
+        parsed_url.scheme == 'https'
+        and parsed_url.netloc == 'storage.googleapis.com'
     ):
       parsed_url = parsed_url._replace(
-          scheme="gs",
-          netloc="",
-          path=f"/{urllib.parse.unquote(parsed_url.path)}",
+          scheme='gs',
+          netloc='',
+          path=f'/{urllib.parse.unquote(parsed_url.path)}',
       )
       location = urllib.parse.urlunparse(parsed_url)
 
-    if parsed_url.scheme == "gs":
+    if parsed_url.scheme == 'gs':
       return Image(gcs_uri=location)
 
     # Load image from local path
@@ -3265,7 +3346,7 @@ class Image(_common.BaseModel):
       IPython_display.display(self._pil_image)
 
   @property
-  def _pil_image(self) -> "PIL_Image.Image":
+  def _pil_image(self) -> 'PIL_Image.Image':
     try:
       from PIL import Image as PIL_Image
     except ImportError:
@@ -3275,8 +3356,8 @@ class Image(_common.BaseModel):
     if self._loaded_image is None:
       if not PIL_Image:
         raise RuntimeError(
-            "The PIL module is not available. Please install the Pillow"
-            " package."
+            'The PIL module is not available. Please install the Pillow'
+            ' package.'
         )
       self._loaded_image = PIL_Image.open(io.BytesIO(self.image_bytes))
     return self._loaded_image
@@ -3293,26 +3374,26 @@ class Image(_common.BaseModel):
 
 
 JOB_STATES_SUCCEEDED_VERTEX = [
-    "JOB_STATE_SUCCEEDED",
+    'JOB_STATE_SUCCEEDED',
 ]
 
 JOB_STATES_SUCCEEDED_MLDEV = [
-    "ACTIVE",
+    'ACTIVE',
 ]
 
 JOB_STATES_SUCCEEDED = JOB_STATES_SUCCEEDED_VERTEX + JOB_STATES_SUCCEEDED_MLDEV
 
 
 JOB_STATES_ENDED_VERTEX = [
-    "JOB_STATE_SUCCEEDED",
-    "JOB_STATE_FAILED",
-    "JOB_STATE_CANCELLED",
-    "JOB_STATE_EXPIRED",
+    'JOB_STATE_SUCCEEDED',
+    'JOB_STATE_FAILED',
+    'JOB_STATE_CANCELLED',
+    'JOB_STATE_EXPIRED',
 ]
 
 JOB_STATES_ENDED_MLDEV = [
-    "ACTIVE",
-    "FAILED",
+    'ACTIVE',
+    'FAILED',
 ]
 
 JOB_STATES_ENDED = JOB_STATES_ENDED_VERTEX + JOB_STATES_ENDED_MLDEV
@@ -7404,7 +7485,7 @@ class RawReferenceImage(_common.BaseModel):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_RAW",
+        reference_type='REFERENCE_TYPE_RAW',
     )
 
 
@@ -7456,7 +7537,7 @@ class MaskReferenceImage(_common.BaseModel):
       description="""Configuration for the mask reference image.""",
   )
   """Re-map config to mask_reference_config to send to API."""
-  mask_image_config: Optional["MaskReferenceConfig"] = Field(
+  mask_image_config: Optional['MaskReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7464,12 +7545,12 @@ class MaskReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["MaskReferenceConfig"] = None,
+      config: Optional['MaskReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_MASK",
+        reference_type='REFERENCE_TYPE_MASK',
     )
     self.mask_image_config = config
 
@@ -7529,7 +7610,7 @@ class ControlReferenceImage(_common.BaseModel):
       description="""Configuration for the control reference image.""",
   )
   """Re-map config to control_reference_config to send to API."""
-  control_image_config: Optional["ControlReferenceConfig"] = Field(
+  control_image_config: Optional['ControlReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7537,12 +7618,12 @@ class ControlReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["ControlReferenceConfig"] = None,
+      config: Optional['ControlReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_CONTROL",
+        reference_type='REFERENCE_TYPE_CONTROL',
     )
     self.control_image_config = config
 
@@ -7602,7 +7683,7 @@ class StyleReferenceImage(_common.BaseModel):
       description="""Configuration for the style reference image.""",
   )
   """Re-map config to style_reference_config to send to API."""
-  style_image_config: Optional["StyleReferenceConfig"] = Field(
+  style_image_config: Optional['StyleReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7610,12 +7691,12 @@ class StyleReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["StyleReferenceConfig"] = None,
+      config: Optional['StyleReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_STYLE",
+        reference_type='REFERENCE_TYPE_STYLE',
     )
     self.style_image_config = config
 
@@ -7671,7 +7752,7 @@ class SubjectReferenceImage(_common.BaseModel):
       description="""Configuration for the subject reference image.""",
   )
   """Re-map config to subject_reference_config to send to API."""
-  subject_image_config: Optional["SubjectReferenceConfig"] = Field(
+  subject_image_config: Optional['SubjectReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7679,12 +7760,12 @@ class SubjectReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["SubjectReferenceConfig"] = None,
+      config: Optional['SubjectReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_SUBJECT",
+        reference_type='REFERENCE_TYPE_SUBJECT',
     )
     self.subject_image_config = config
 
@@ -7853,7 +7934,7 @@ class LiveServerMessage(_common.BaseModel):
         or not self.server_content.model_turn.parts
     ):
       return None
-    text = ""
+    text = ''
     for part in self.server_content.model_turn.parts:
       if isinstance(part.text, str):
         if isinstance(part.thought, bool) and part.thought:
@@ -7871,7 +7952,7 @@ class LiveServerMessage(_common.BaseModel):
         or not self.server_content.model_turn.parts
     ):
       return None
-    concatenated_data = b""
+    concatenated_data = b''
     for part in self.server_content.model_turn.parts:
       if part.inline_data and isinstance(part.inline_data.data, bytes):
         concatenated_data += part.inline_data.data

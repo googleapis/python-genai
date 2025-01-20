@@ -410,6 +410,41 @@ def test_safety_settings_on_difference_stream(client):
     assert 'method' in str(e)
 
 
+def test_safety_settings_on_difference_stream_with_lower_enum(client):
+  safety_settings = [
+      {
+          'category': 'harm_category_hate_speech',
+          'threshold': 'block_only_high',
+          'method': 'severity',
+      },
+      {
+          'category': 'harm_category_dangerous_content',
+          'threshold': 'block_low_and_above',
+          'method': 'probability',
+      },
+  ]
+  if client._api_client.vertexai:
+    for part in client.models.generate_content_stream(
+        model='gemini-1.5-flash',
+        contents='What is your name?',
+        config={
+            'safety_settings': safety_settings,
+        },
+    ):
+      pass
+  else:
+    with pytest.raises(ValueError) as e:
+      for part in client.models.generate_content_stream(
+          model='gemini-1.5-flash',
+          contents='What is your name?',
+          config={
+              'safety_settings': safety_settings,
+          },
+      ):
+        pass
+    assert 'method' in str(e)
+
+
 def test_pydantic_schema(client):
   class CountryInfo(BaseModel):
     name: str
@@ -429,6 +464,32 @@ def test_pydantic_schema(client):
       },
   )
   assert isinstance(response.parsed, CountryInfo)
+
+
+def test_pydantic_schema_from_json(client):
+  class CountryInfo(BaseModel):
+    name: str
+    pupulation: int
+    capital: str
+    continent: str
+    gdp: int
+    official_language: str
+    total_area_sq_mi: int
+
+  schema = types.Schema.model_validate(CountryInfo.model_json_schema())
+
+  print(schema)
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me information of the United States.',
+      config=types.GenerateContentConfig(
+          response_mime_type='application/json',
+          response_schema=schema,
+      ),
+  )
+
+  print(response.text)
 
 
 def test_json_schema(client):
@@ -455,6 +516,38 @@ def test_json_schema(client):
                   'gdp': {'type': 'INTEGER'},
                   'official_language': {'type': 'STRING'},
                   'total_area_sq_mi': {'type': 'INTEGER'},
+              },
+              'type': 'OBJECT',
+          },
+      },
+  )
+  assert isinstance(response.parsed, dict)
+
+
+def test_json_schema_with_lower_enum(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me information of the United States.',
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': {
+              'required': [
+                  'name',
+                  'pupulation',
+                  'capital',
+                  'continent',
+                  'gdp',
+                  'official_language',
+                  'total_area_sq_mi',
+              ],
+              'properties': {
+                  'name': {'type': 'string'},
+                  'pupulation': {'type': 'integer'},
+                  'capital': {'type': 'string'},
+                  'continent': {'type': 'string'},
+                  'gdp': {'type': 'integer'},
+                  'official_language': {'type': 'string'},
+                  'total_area_sq_mi': {'type': 'integer'},
               },
               'type': 'OBJECT',
           },
@@ -515,6 +608,46 @@ def test_pydantic_schema_with_streaming(client):
     parts = r.candidates[0].content.parts
     for p in parts:
       print(p.text)
+
+
+def test_schema_from_json(client):
+
+  class Foo(BaseModel):
+    bar: str
+    baz: int
+    qux: list[str]
+
+  schema = types.Schema.model_validate(Foo.model_json_schema())
+
+  response = client.models.generate_content(
+      model='gemini-2.0-flash-exp',
+      contents='Fill in the Foo.',
+      config=types.GenerateContentConfig(
+          response_mime_type='application/json',
+          response_schema=schema
+      ),
+  )
+
+  print(response.text)
+
+
+def test_schema_from_model_schema(client):
+
+  class Foo(BaseModel):
+    bar: str
+    baz: int
+    qux: list[str]
+
+  response = client.models.generate_content(
+      model='gemini-2.0-flash-exp',
+      contents='Fill in the Foo.',
+      config=types.GenerateContentConfig(
+          response_mime_type='application/json',
+          response_schema=Foo.model_json_schema(),
+      ),
+  )
+
+  print(response.text)
 
 
 def test_function(client):

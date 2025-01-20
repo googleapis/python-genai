@@ -830,7 +830,7 @@ class Files(_common.BaseModule):
         an IOBase object, it must be opened in blocking mode and binary mode. In
         other words, do not use non-blocking mode or text mode. The given stream
         must be seekable, that is, it must be able to call seek() on 'path'.
-      config: Optional parameters to set `display_name`, `mime_type`, and `name`.
+      config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -1166,7 +1166,7 @@ class AsyncFiles(_common.BaseModule):
         an IOBase object, it must be opened in blocking mode and binary mode. In
         other words, do not use non-blocking mode or text mode. The given stream
         must be seekable, that is, it must be able to call seek() on 'path'.
-      config: Optional parameters to set `display_name`, `mime_type`, and `name`.
+      config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
     """
     if self._api_client.vertexai:
       raise ValueError(

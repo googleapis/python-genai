@@ -17,6 +17,7 @@
 
 import base64
 import datetime
+import enum
 import typing
 from typing import Union
 import uuid
@@ -206,6 +207,20 @@ class BaseModel(pydantic.BaseModel):
 
   def to_json_dict(self) -> dict[str, object]:
     return self.model_dump(exclude_none=True, mode='json')
+
+
+class CaseInSensitiveEnum(str, enum.Enum):
+  """Case insensitive enum."""
+
+  @classmethod
+  def _missing_(cls, value):
+    try:
+      return cls[value.upper()]  # Try to access directly with uppercase
+    except KeyError:
+      try:
+        return cls[value.lower()]  # Try to access directly with lowercase
+      except KeyError as e:
+        raise ValueError(f"{value} is not a valid {cls.__name__}") from e
 
 
 def timestamped_unique_name() -> str:

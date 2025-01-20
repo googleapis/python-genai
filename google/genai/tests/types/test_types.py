@@ -1676,3 +1676,16 @@ def test_function_with_options_invalid_variant():
     types.FunctionDeclaration.from_function_with_options(
         func_under_test, 'UNKNOWN'
     )
+
+
+def test_case_insensitive_enum():
+  assert types.Type('STRING') == types.Type.STRING
+  assert types.Type('string') == types.Type.STRING
+
+
+def test_case_insensitive_enum_with_pydantic_model():
+  class TestModel(pydantic.BaseModel):
+    test_enum: types.Type
+
+  assert TestModel(test_enum='STRING').test_enum == types.Type.STRING
+  assert TestModel(test_enum='string').test_enum == types.Type.STRING

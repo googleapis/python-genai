@@ -4598,7 +4598,7 @@ class Models(_common.BaseModule):
       *,
       config: Optional[types.ListModelsConfigOrDict] = None,
   ) -> Pager[types.Model]:
-    """Makes an API request to list the avaiable models.
+    """Makes an API request to list the available models.
 
     If `query_base` is set to True in the config, the API will return all
     available base models. If set to False or not set (default), it will return
@@ -5457,7 +5457,7 @@ class AsyncModels(_common.BaseModule):
       *,
       config: Optional[types.ListModelsConfigOrDict] = None,
   ) -> AsyncPager[types.Model]:
-    """Makes an API request to list the avaiable models.
+    """Makes an API request to list the available models.
 
     If `query_base` is set to True in the config, the API will return all
     available base models. If set to False or not set (default), it will return
