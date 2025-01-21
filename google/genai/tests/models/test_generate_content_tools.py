@@ -143,6 +143,34 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
+        name='test_rag_model',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=t.t_contents(
+                None,
+                'How much gain or loss did Google get in the Motorola Mobile'
+                ' deal in 2014?',
+            ),
+            config={
+                'tools': [
+                    types.Tool(
+                        retrieval=types.Retrieval(
+                            vertex_rag_store=types.VertexRagStore(
+                                rag_resources=[
+                                    types.VertexRagStoreRagResource(
+                                        rag_corpus='projects/964831358985/locations/us-central1/ragCorpora/3379951520341557248'
+                                    )
+                                ],
+                                similarity_top_k=3,
+                            )
+                        ),
+                    ),
+                ]
+            },
+        ),
+        exception_if_mldev='retrieval',
+    ),
+    pytest_helper.TestTableItem(
         name='test_function_call',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',

@@ -544,3 +544,29 @@ def test_bidi_setup_to_api_with_config_tools_function_declaration(
       model='test_model', config=config
   )
   assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
+
+
+def test_bidi_setup_to_api_with_config_tools_code_execution(
+    mock_api_client,
+):
+  config = {
+      'tools': [{'code_execution': {}}],
+  }
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'tools': [{
+              'codeExecution': {},
+          }],
+      }
+  }
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+      model='test_model', config=config
+  )
+
+  assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
+
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
+      model='test_model', config=config
+  )
+  assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]

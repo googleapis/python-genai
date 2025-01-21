@@ -380,6 +380,10 @@ class AsyncSession:
         isinstance(c, dict) and 'name' in c and 'response' in c for c in input
     ):
       # ToolResponse.FunctionResponse
+      if not (self._api_client.vertexai):
+        for item in input:
+          if 'id' not in item:
+            raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
       client_message = {'tool_response': {'function_responses': input}}
     elif isinstance(input, Sequence) and any(isinstance(c, str) for c in input):
       to_object = {}
