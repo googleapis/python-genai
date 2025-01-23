@@ -5699,7 +5699,7 @@ TuningExampleOrDict = Union[TuningExample, TuningExampleDict]
 
 
 class TuningDataset(_common.BaseModel):
-  """Supervised fune-tuning training dataset."""
+  """Supervised fine-tuning training dataset."""
 
   gcs_uri: Optional[str] = Field(
       default=None,
@@ -5712,7 +5712,7 @@ class TuningDataset(_common.BaseModel):
 
 
 class TuningDatasetDict(TypedDict, total=False):
-  """Supervised fune-tuning training dataset."""
+  """Supervised fine-tuning training dataset."""
 
   gcs_uri: Optional[str]
   """GCS URI of the file containing training dataset in JSONL format."""
@@ -6181,7 +6181,7 @@ class CachedContent(_common.BaseModel):
       description="""The name of the publisher model to use for cached content.""",
   )
   create_time: Optional[datetime.datetime] = Field(
-      default=None, description="""Creatation time of the cache entry."""
+      default=None, description="""Creation time of the cache entry."""
   )
   update_time: Optional[datetime.datetime] = Field(
       default=None,
@@ -6209,7 +6209,7 @@ class CachedContentDict(TypedDict, total=False):
   """The name of the publisher model to use for cached content."""
 
   create_time: Optional[datetime.datetime]
-  """Creatation time of the cache entry."""
+  """Creation time of the cache entry."""
 
   update_time: Optional[datetime.datetime]
   """When the cache entry was last updated in UTC time."""
