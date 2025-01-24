@@ -17,6 +17,7 @@
 
 from typing import Optional, Union
 from urllib.parse import urlencode
+from . import _api_module
 from . import _common
 from . import _extra_utils
 from . import _transformers as t
@@ -34,13 +35,13 @@ def _BatchJobSource_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['format']) is not None:
-    raise ValueError('format parameter is not supported in Google AI.')
+    raise ValueError('format parameter is not supported in Gemini API.')
 
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['bigquery_uri']) is not None:
-    raise ValueError('bigquery_uri parameter is not supported in Google AI.')
+    raise ValueError('bigquery_uri parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -74,13 +75,13 @@ def _BatchJobDestination_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['format']) is not None:
-    raise ValueError('format parameter is not supported in Google AI.')
+    raise ValueError('format parameter is not supported in Gemini API.')
 
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['bigquery_uri']) is not None:
-    raise ValueError('bigquery_uri parameter is not supported in Google AI.')
+    raise ValueError('bigquery_uri parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -117,14 +118,12 @@ def _CreateBatchJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['dest']) is not None:
-    raise ValueError('dest parameter is not supported in Google AI.')
+    raise ValueError('dest parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -135,8 +134,6 @@ def _CreateBatchJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
@@ -162,10 +159,10 @@ def _CreateBatchJobParameters_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['model']) is not None:
-    raise ValueError('model parameter is not supported in Google AI.')
+    raise ValueError('model parameter is not supported in Gemini API.')
 
   if getv(from_object, ['src']) is not None:
-    raise ValueError('src parameter is not supported in Google AI.')
+    raise ValueError('src parameter is not supported in Gemini API.')
 
   if getv(from_object, ['config']) is not None:
     setv(
@@ -215,30 +212,6 @@ def _CreateBatchJobParameters_to_vertex(
   return to_object
 
 
-def _GetBatchJobConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _GetBatchJobConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
 def _GetBatchJobParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -246,16 +219,10 @@ def _GetBatchJobParameters_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['name']) is not None:
-    raise ValueError('name parameter is not supported in Google AI.')
+    raise ValueError('name parameter is not supported in Gemini API.')
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GetBatchJobConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -274,37 +241,7 @@ def _GetBatchJobParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GetBatchJobConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _CancelBatchJobConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _CancelBatchJobConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -316,16 +253,10 @@ def _CancelBatchJobParameters_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['name']) is not None:
-    raise ValueError('name parameter is not supported in Google AI.')
+    raise ValueError('name parameter is not supported in Gemini API.')
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CancelBatchJobConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -344,13 +275,7 @@ def _CancelBatchJobParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CancelBatchJobConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -361,8 +286,6 @@ def _ListBatchJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['page_size']) is not None:
     setv(
@@ -377,7 +300,7 @@ def _ListBatchJobConfig_to_mldev(
     )
 
   if getv(from_object, ['filter']) is not None:
-    raise ValueError('filter parameter is not supported in Google AI.')
+    raise ValueError('filter parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -388,8 +311,6 @@ def _ListBatchJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['page_size']) is not None:
     setv(
@@ -416,7 +337,7 @@ def _ListBatchJobParameters_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Google AI.')
+    raise ValueError('config parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -446,7 +367,10 @@ def _DeleteBatchJobParameters_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['name']) is not None:
-    raise ValueError('name parameter is not supported in Google AI.')
+    raise ValueError('name parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -463,6 +387,9 @@ def _DeleteBatchJobParameters_to_vertex(
         ['_url', 'name'],
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -701,7 +628,7 @@ def _DeleteResourceJob_from_vertex(
   return to_object
 
 
-class Batches(_common.BaseModule):
+class Batches(_api_module.BaseModule):
 
   def _create(
       self,
@@ -728,8 +655,14 @@ class Batches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -742,7 +675,9 @@ class Batches(_common.BaseModule):
     else:
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
-    return_value = types.BatchJob._from_response(response_dict, parameter_model)
+    return_value = types.BatchJob._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -784,8 +719,14 @@ class Batches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -798,7 +739,9 @@ class Batches(_common.BaseModule):
     else:
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
-    return_value = types.BatchJob._from_response(response_dict, parameter_model)
+    return_value = types.BatchJob._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -808,6 +751,22 @@ class Batches(_common.BaseModule):
       name: str,
       config: Optional[types.CancelBatchJobConfigOrDict] = None,
   ) -> None:
+    """Cancels a batch job.
+
+    Only available for batch jobs that are running or pending.
+
+    Args:
+      name (str): A fully-qualified BatchJob resource name or ID.
+        Example: "projects/.../locations/.../batchPredictionJobs/123456789" or
+          "123456789" when project and location are initialized in the client.
+
+    Usage:
+
+    .. code-block:: python
+
+      client.batches.cancel(name='123456789')
+    """
+
     parameter_model = types._CancelBatchJobParameters(
         name=name,
         config=config,
@@ -827,8 +786,14 @@ class Batches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -855,8 +820,14 @@ class Batches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -874,12 +845,17 @@ class Batches(_common.BaseModule):
       )
 
     return_value = types.ListBatchJobResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
 
-  def delete(self, *, name: str) -> types.DeleteResourceJob:
+  def delete(
+      self,
+      *,
+      name: str,
+      config: Optional[types.DeleteBatchJobConfigOrDict] = None,
+  ) -> types.DeleteResourceJob:
     """Deletes a batch job.
 
     Args:
@@ -899,6 +875,7 @@ class Batches(_common.BaseModule):
 
     parameter_model = types._DeleteBatchJobParameters(
         name=name,
+        config=config,
     )
 
     if not self._api_client.vertexai:
@@ -913,8 +890,14 @@ class Batches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -932,7 +915,7 @@ class Batches(_common.BaseModule):
       )
 
     return_value = types.DeleteResourceJob._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -997,7 +980,7 @@ class Batches(_common.BaseModule):
     )
 
 
-class AsyncBatches(_common.BaseModule):
+class AsyncBatches(_api_module.BaseModule):
 
   async def _create(
       self,
@@ -1024,8 +1007,14 @@ class AsyncBatches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1038,7 +1027,9 @@ class AsyncBatches(_common.BaseModule):
     else:
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
-    return_value = types.BatchJob._from_response(response_dict, parameter_model)
+    return_value = types.BatchJob._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -1080,8 +1071,14 @@ class AsyncBatches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1094,7 +1091,9 @@ class AsyncBatches(_common.BaseModule):
     else:
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
-    return_value = types.BatchJob._from_response(response_dict, parameter_model)
+    return_value = types.BatchJob._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -1104,6 +1103,22 @@ class AsyncBatches(_common.BaseModule):
       name: str,
       config: Optional[types.CancelBatchJobConfigOrDict] = None,
   ) -> None:
+    """Cancels a batch job.
+
+    Only available for batch jobs that are running or pending.
+
+    Args:
+      name (str): A fully-qualified BatchJob resource name or ID.
+        Example: "projects/.../locations/.../batchPredictionJobs/123456789" or
+          "123456789" when project and location are initialized in the client.
+
+    Usage:
+
+    .. code-block:: python
+
+      client.batches.cancel(name='123456789')
+    """
+
     parameter_model = types._CancelBatchJobParameters(
         name=name,
         config=config,
@@ -1123,8 +1138,14 @@ class AsyncBatches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1151,8 +1172,14 @@ class AsyncBatches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1170,12 +1197,17 @@ class AsyncBatches(_common.BaseModule):
       )
 
     return_value = types.ListBatchJobResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def delete(self, *, name: str) -> types.DeleteResourceJob:
+  async def delete(
+      self,
+      *,
+      name: str,
+      config: Optional[types.DeleteBatchJobConfigOrDict] = None,
+  ) -> types.DeleteResourceJob:
     """Deletes a batch job.
 
     Args:
@@ -1195,6 +1227,7 @@ class AsyncBatches(_common.BaseModule):
 
     parameter_model = types._DeleteBatchJobParameters(
         name=name,
+        config=config,
     )
 
     if not self._api_client.vertexai:
@@ -1209,8 +1242,14 @@ class AsyncBatches(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1228,7 +1267,7 @@ class AsyncBatches(_common.BaseModule):
       )
 
     return_value = types.DeleteResourceJob._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value

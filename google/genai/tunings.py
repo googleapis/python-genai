@@ -17,6 +17,7 @@
 
 from typing import Optional, Union
 from urllib.parse import urlencode
+from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import types
@@ -24,30 +25,6 @@ from ._api_client import ApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
-
-
-def _GetTuningJobConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _GetTuningJobConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
 
 
 def _GetTuningJobParameters_to_mldev(
@@ -60,13 +37,7 @@ def _GetTuningJobParameters_to_mldev(
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GetTuningJobConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -81,13 +52,7 @@ def _GetTuningJobParameters_to_vertex(
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GetTuningJobConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -98,6 +63,7 @@ def _ListTuningJobsConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['page_size']) is not None:
     setv(
         parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
@@ -122,6 +88,7 @@ def _ListTuningJobsConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['page_size']) is not None:
     setv(
         parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
@@ -213,7 +180,7 @@ def _TuningDataset_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['examples']) is not None:
     setv(
@@ -254,7 +221,7 @@ def _TuningValidationDataset_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -277,12 +244,10 @@ def _CreateTuningJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     raise ValueError(
-        'validation_dataset parameter is not supported in Google AI.'
+        'validation_dataset parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['tuned_model_display_name']) is not None:
@@ -293,7 +258,7 @@ def _CreateTuningJobConfig_to_mldev(
     )
 
   if getv(from_object, ['description']) is not None:
-    raise ValueError('description parameter is not supported in Google AI.')
+    raise ValueError('description parameter is not supported in Gemini API.')
 
   if getv(from_object, ['epoch_count']) is not None:
     setv(
@@ -310,7 +275,7 @@ def _CreateTuningJobConfig_to_mldev(
     )
 
   if getv(from_object, ['adapter_size']) is not None:
-    raise ValueError('adapter_size parameter is not supported in Google AI.')
+    raise ValueError('adapter_size parameter is not supported in Gemini API.')
 
   if getv(from_object, ['batch_size']) is not None:
     setv(
@@ -335,8 +300,6 @@ def _CreateTuningJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     setv(
@@ -454,7 +417,7 @@ def _DistillationDataset_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -482,7 +445,7 @@ def _DistillationValidationDataset_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -505,12 +468,10 @@ def _CreateDistillationJobConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     raise ValueError(
-        'validation_dataset parameter is not supported in Google AI.'
+        'validation_dataset parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['tuned_model_display_name']) is not None:
@@ -535,11 +496,11 @@ def _CreateDistillationJobConfig_to_mldev(
     )
 
   if getv(from_object, ['adapter_size']) is not None:
-    raise ValueError('adapter_size parameter is not supported in Google AI.')
+    raise ValueError('adapter_size parameter is not supported in Gemini API.')
 
   if getv(from_object, ['pipeline_root_directory']) is not None:
     raise ValueError(
-        'pipeline_root_directory parameter is not supported in Google AI.'
+        'pipeline_root_directory parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -551,8 +512,6 @@ def _CreateDistillationJobConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['validation_dataset']) is not None:
     setv(
@@ -608,10 +567,10 @@ def _CreateDistillationJobParameters_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['student_model']) is not None:
-    raise ValueError('student_model parameter is not supported in Google AI.')
+    raise ValueError('student_model parameter is not supported in Gemini API.')
 
   if getv(from_object, ['teacher_model']) is not None:
-    raise ValueError('teacher_model parameter is not supported in Google AI.')
+    raise ValueError('teacher_model parameter is not supported in Gemini API.')
 
   if getv(from_object, ['training_dataset']) is not None:
     setv(
@@ -950,7 +909,7 @@ def _TuningJobOrOperation_from_vertex(
   return to_object
 
 
-class Tunings(_common.BaseModule):
+class Tunings(_api_module.BaseModule):
 
   def _get(
       self,
@@ -986,8 +945,14 @@ class Tunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1001,7 +966,7 @@ class Tunings(_common.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1036,8 +1001,14 @@ class Tunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1055,7 +1026,7 @@ class Tunings(_common.BaseModule):
       )
 
     return_value = types.ListTuningJobsResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1098,8 +1069,14 @@ class Tunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1117,7 +1094,7 @@ class Tunings(_common.BaseModule):
       )
 
     return_value = types.TuningJobOrOperation._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     ).tuning_job
     self._api_client._verify_response(return_value)
     return return_value
@@ -1161,8 +1138,14 @@ class Tunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1176,7 +1159,7 @@ class Tunings(_common.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1222,7 +1205,7 @@ class Tunings(_common.BaseModule):
     return result
 
 
-class AsyncTunings(_common.BaseModule):
+class AsyncTunings(_api_module.BaseModule):
 
   async def _get(
       self,
@@ -1258,8 +1241,14 @@ class AsyncTunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1273,7 +1262,7 @@ class AsyncTunings(_common.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1308,8 +1297,14 @@ class AsyncTunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1327,7 +1322,7 @@ class AsyncTunings(_common.BaseModule):
       )
 
     return_value = types.ListTuningJobsResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1370,8 +1365,14 @@ class AsyncTunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1389,7 +1390,7 @@ class AsyncTunings(_common.BaseModule):
       )
 
     return_value = types.TuningJobOrOperation._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     ).tuning_job
     self._api_client._verify_response(return_value)
     return return_value
@@ -1433,8 +1434,14 @@ class AsyncTunings(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -1448,7 +1455,7 @@ class AsyncTunings(_common.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value

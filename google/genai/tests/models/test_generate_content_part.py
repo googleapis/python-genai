@@ -392,7 +392,8 @@ def test_from_uri(client):
         contents=[
             'What is this image about?',
             types.Part.from_uri(
-                'gs://generativeai-downloads/images/scones.jpg', 'image/jpeg'
+                file_uri='gs://generativeai-downloads/images/scones.jpg',
+                mime_type='image/jpeg',
             ),
         ],
     )
@@ -405,8 +406,8 @@ def test_from_uploaded_file_uri(client):
         contents=[
             'Summarize this file',
             types.Part.from_uri(
-                'https://generativelanguage.googleapis.com/v1beta/files/w1l20sq33nwn',
-                'text/plain',
+                file_uri='https://generativelanguage.googleapis.com/v1beta/files/w1l20sq33nwn',
+                mime_type='text/plain',
             ),
         ],
     )
@@ -420,7 +421,7 @@ def test_from_uri_error(client):
         contents=[
             'What is this image about?',
             types.Part.from_uri(
-                'gs://generativeai-downloads/images/scones.jpg'
+                file_uri='gs://generativeai-downloads/images/scones.jpg'
             ),
         ],
     )
@@ -437,8 +438,8 @@ def test_audio_uri(client):
         Do not make up any information that is not part of the audio.
         """,
             types.Part.from_uri(
-                'gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
-                'audio/mpeg',
+                file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
+                mime_type='audio/mpeg',
             ),
         ],
         config={
@@ -456,8 +457,8 @@ def test_pdf_uri(client):
         contents=[
             'summarize the pdf in concise and professional tone',
             types.Part.from_uri(
-                'gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf',
-                'application/pdf',
+                file_uri='gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf',
+                mime_type='application/pdf',
             ),
         ],
         config={
@@ -478,8 +479,8 @@ def test_video_uri(client):
             the summary should include all important information said in the video.
             """,
             types.Part.from_uri(
-                'gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
-                'video/mp4',
+                file_uri='gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
+                mime_type='video/mp4',
             ),
         ],
         config={
@@ -502,12 +503,12 @@ def test_video_audio_uri(client):
             What are the different emphases?
             """,
             types.Part.from_uri(
-                'gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
-                'video/mp4',
+                file_uri='gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
+                mime_type='video/mp4',
             ),
             types.Part.from_uri(
-                'gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
-                'audio/mpeg',
+                file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
+                mime_type='audio/mpeg',
             ),
         ],
         config={
@@ -519,10 +520,40 @@ def test_video_audio_uri(client):
     )
 
 
+def test_file(client):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+    file = types.File(
+        uri='https://generativelanguage.googleapis.com/v1beta/files/cmpqbqoptyaa',
+        mime_type='text/plain',
+    )
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=[
+            'Summarize this file',
+            file,
+        ],
+    )
+
+
+def test_file_error(client):
+  # missing mime_type
+  with pytest.raises(ValueError):
+    file = types.File(
+        uri='https://generativelanguage.googleapis.com/v1beta/files/cmpqbqoptyaa',
+    )
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=[
+            'Summarize this file',
+            file,
+        ],
+    )
+
+
 def test_from_text(client):
   client.models.generate_content(
       model='gemini-1.5-flash',
-      contents=[types.Part.from_text('What is your name?')],
+      contents=[types.Part.from_text(text='What is your name?')],
   )
 
 
@@ -531,7 +562,7 @@ def test_from_bytes_image(client):
       model='gemini-1.5-flash',
       contents=[
           'What is this image about?',
-          types.Part.from_bytes(image_bytes, 'image/png'),
+          types.Part.from_bytes(data=image_bytes, mime_type='image/png'),
       ],
   )
 
@@ -563,7 +594,7 @@ def test_from_bytes_video(client):
       model='gemini-1.5-flash',
       contents=[
           'What is this video about?',
-          types.Part.from_bytes(video_bytes, 'video/mp4'),
+          types.Part.from_bytes(data=video_bytes, mime_type='video/mp4'),
       ],
   )
 
@@ -573,7 +604,7 @@ def test_from_bytes_audio(client):
       model='gemini-1.5-flash',
       contents=[
           'What is this audio about?',
-          types.Part.from_bytes(audio_bytes, 'audio/mpeg'),
+          types.Part.from_bytes(data=audio_bytes, mime_type='audio/mpeg'),
       ],
   )
 
@@ -583,17 +614,17 @@ def test_from_bytes_pdf(client):
       model='gemini-1.5-flash',
       contents=[
           'What is this pdf about?',
-          types.Part.from_bytes(pdf_bytes, 'application/pdf'),
+          types.Part.from_bytes(data=pdf_bytes, mime_type='application/pdf'),
       ],
   )
 
 
 def test_from_function_call_response(client):
   function_call = types.Part.from_function_call(
-      'get_weather', {'location': 'Boston'}
+      name='get_weather', args={'location': 'Boston'}
   )
   function_response = types.Part.from_function_response(
-      'get_weather', {'weather': 'sunny'}
+      name='get_weather', response={'weather': 'sunny'}
   )
   response = client.models.generate_content(
       model='gemini-1.5-flash',

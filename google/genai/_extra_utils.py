@@ -13,12 +13,11 @@
 # limitations under the License.
 #
 
-"""Extra utils depending on types that are shared between sync and async modules.
-"""
+"""Extra utils depending on types that are shared between sync and async modules."""
 
 import inspect
 import logging
-from typing import Any, Callable, Dict, get_args, get_origin, Optional, types as typing_types, Union
+from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin, types as typing_types
 
 import pydantic
 
@@ -78,8 +77,8 @@ def get_function_map(
         if inspect.iscoroutinefunction(tool):
           raise errors.UnsupportedFunctionError(
               f'Function {tool.__name__} is a coroutine function, which is not'
-              ' supported for automatic function calling. Please manually invoke'
-              f' {tool.__name__} to get the function response.'
+              ' supported for automatic function calling. Please manually'
+              f' invoke {tool.__name__} to get the function response.'
           )
         function_map[tool.__name__] = tool
   return function_map
@@ -116,7 +115,7 @@ def convert_if_exist_pydantic_model(
     try:
       return annotation(**value)
     except pydantic.ValidationError as e:
-      raise errors.UnkownFunctionCallArgumentError(
+      raise errors.UnknownFunctionCallArgumentError(
           f'Failed to parse parameter {param_name} for function'
           f' {func_name} from function call part because function call argument'
           f' value {value} is not compatible with parameter annotation'
@@ -138,8 +137,10 @@ def convert_if_exist_pydantic_model(
   # example 2: int | float equivalent to typing.types.UnionType[int, float]
   if get_origin(annotation) in (Union, typing_types.UnionType):
     for arg in get_args(annotation):
-      if isinstance(value, arg) or (
-          isinstance(value, dict) and _is_annotation_pydantic_model(arg)
+      if (
+          (get_args(arg) and get_origin(arg) is list)
+          or isinstance(value, arg)
+          or (isinstance(value, dict) and _is_annotation_pydantic_model(arg))
       ):
         try:
           return convert_if_exist_pydantic_model(
@@ -150,7 +151,7 @@ def convert_if_exist_pydantic_model(
         except pydantic.ValidationError:
           continue
     # if none of the union type is matched, raise error
-    raise errors.UnkownFunctionCallArgumentError(
+    raise errors.UnknownFunctionCallArgumentError(
         f'Failed to parse parameter {param_name} for function'
         f' {func_name} from function call part because function call argument'
         f' value {value} cannot be converted to parameter annotation'
@@ -161,7 +162,7 @@ def convert_if_exist_pydantic_model(
   if isinstance(value, int) and annotation is float:
     return value
   if not isinstance(value, annotation):
-    raise errors.UnkownFunctionCallArgumentError(
+    raise errors.UnknownFunctionCallArgumentError(
         f'Failed to parse parameter {param_name} for function {func_name} from'
         f' function call part because function call argument value {value} is'
         f' not compatible with parameter annotation {annotation}.'
@@ -209,7 +210,9 @@ def get_function_response_parts(
       response = {'result': invoke_function_from_dict_args(args, func)}
     except Exception as e:  # pylint: disable=broad-except
       response = {'error': str(e)}
-    func_response = types.Part.from_function_response(func_name, response)
+    func_response = types.Part.from_function_response(
+        name=func_name, response=response
+    )
 
     func_response_parts.append(func_response)
   return func_response_parts
@@ -231,8 +234,7 @@ def should_disable_afc(
       and config_model.automatic_function_calling
       and config_model.automatic_function_calling.maximum_remote_calls
       is not None
-      and int(config_model.automatic_function_calling.maximum_remote_calls)
-      <= 0
+      and int(config_model.automatic_function_calling.maximum_remote_calls) <= 0
   ):
     logging.warning(
         'max_remote_calls in automatic_function_calling_config'
@@ -294,6 +296,7 @@ def get_max_remote_calls_afc(
     return _DEFAULT_MAX_REMOTE_CALLS_AFC
   return int(config_model.automatic_function_calling.maximum_remote_calls)
 
+
 def should_append_afc_history(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:
@@ -302,9 +305,6 @@ def should_append_afc_history(
       if config and isinstance(config, dict)
       else config
   )
-  if (
-      not config_model
-      or not config_model.automatic_function_calling
-  ):
+  if not config_model or not config_model.automatic_function_calling:
     return True
   return not config_model.automatic_function_calling.ignore_call_history

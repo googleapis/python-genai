@@ -16,11 +16,15 @@
 
 """Tests for models.list."""
 
+from unittest import mock
+
 import pytest
 
+from ... import client as genai_client
 from ... import types
 from .. import pytest_helper
 
+test_http_options = {'headers': {'test': 'headers'}}
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
@@ -32,8 +36,18 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._ListModelsParameters(config={'query_base': True}),
     ),
     pytest_helper.TestTableItem(
+        name='test_base_models_with_config',
+        parameters=types._ListModelsParameters(config={'query_base': True, 'page_size': 10}),
+    ),
+    pytest_helper.TestTableItem(
         name='test_with_config',
         parameters=types._ListModelsParameters(config={'page_size': 3}),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_list_models_with_http_options_in_method',
+        parameters=types._ListModelsParameters(
+            config={'page_size': 3, 'http_options': test_http_options}
+        ),
     ),
 ]
 pytestmark = pytest_helper.setup(
@@ -42,6 +56,16 @@ pytestmark = pytest_helper.setup(
     test_method='models.list',
     test_table=test_table,
 )
+
+
+@pytest.fixture()
+def mock_api_client():
+  api_client = mock.MagicMock(spec=genai_client.ApiClient)
+  api_client.api_key = 'fake_api_key'
+  api_client._host = lambda: 'fake_host'
+  api_client._http_options = {'headers': {}}
+  api_client.vertexai = False
+  return api_client
 
 
 def test_tuned_models_pager(client):
@@ -70,6 +94,21 @@ def test_base_models_pager(client):
     pass
   with pytest.raises(IndexError, match='No more pages to fetch.'):
     pager.next_page()
+
+
+def test_empty_tuned_models(mock_api_client, client):
+  with mock.patch.object(
+      genai_client.Client, '_get_api_client'
+  ) as patch_api_client:
+    patch_api_client.return_value = mock_api_client
+    mock_client = genai_client.Client()
+    with mock.patch.object(
+        mock_api_client, 'request', return_value={}
+    ) as patch_request:
+      patch_request.return_value = {}
+      pager = mock_client.models.list()
+
+      assert len(pager) == 0
 
 
 @pytest.mark.asyncio

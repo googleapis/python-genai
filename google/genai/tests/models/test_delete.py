@@ -22,13 +22,27 @@ from ... import errors
 from ... import types
 from .. import pytest_helper
 
-
+TEST_API_VERSION = 'test_api_version'
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_delete_model',
         parameters=types._DeleteModelParameters(
             model='models/8533706666867163136'
         ),
+        exception_if_mldev='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_delete_model_with_http_options_in_method',
+        parameters=types._DeleteModelParameters(
+            model='tmodels/8533706666867163136',
+            config={
+                'http_options': {
+                    'api_version': TEST_API_VERSION,
+                    'headers': {'test': 'headers'},
+                },
+            },
+        ),
+        exception_if_vertex=TEST_API_VERSION,
         exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
@@ -45,6 +59,25 @@ pytestmark = pytest_helper.setup(
     test_method='models.delete',
     test_table=test_table,
 )
+
+
+@pytest.mark.asyncio
+async def test_async_delete_model_with_http_options_in_method(client):
+
+  with pytest.raises(errors.ClientError) as e:
+    await client.aio.models.delete(
+        model='tunedModels/generate-num-888',
+        config={
+            'http_options': {
+                'api_version': TEST_API_VERSION,
+                'headers': {'test': 'headers'},
+            },
+        },
+    )
+  if client._api_client.vertexai:
+    assert TEST_API_VERSION in e.value.args[0]
+  else:
+    assert '404' in str(e)
 
 
 @pytest.mark.asyncio

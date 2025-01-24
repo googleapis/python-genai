@@ -42,7 +42,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'task_type': 'RETRIEVAL_DOCUMENT',
                 'http_options': {
                     'headers': {'test': 'headers'},
-                    'uri': 'test_uri',
                 },
             },
         ),

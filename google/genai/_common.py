@@ -17,6 +17,7 @@
 
 import base64
 import datetime
+import enum
 import typing
 from typing import Union
 import uuid
@@ -112,12 +113,6 @@ def get_value_by_path(data: object, keys: list[str]):
   return data
 
 
-class BaseModule:
-
-  def __init__(self, api_client_: _api_client.ApiClient):
-    self._api_client = api_client_
-
-
 def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
   """Recursively converts a given object to a dictionary.
 
@@ -144,7 +139,7 @@ def _remove_extra_fields(
 ) -> None:
   """Removes extra fields from the response that are not in the model.
 
-  Muates the response in place.
+  Mutates the response in place.
   """
 
   key_values = list(response.items())
@@ -206,6 +201,20 @@ class BaseModel(pydantic.BaseModel):
 
   def to_json_dict(self) -> dict[str, object]:
     return self.model_dump(exclude_none=True, mode='json')
+
+
+class CaseInSensitiveEnum(str, enum.Enum):
+  """Case insensitive enum."""
+
+  @classmethod
+  def _missing_(cls, value):
+    try:
+      return cls[value.upper()]  # Try to access directly with uppercase
+    except KeyError:
+      try:
+        return cls[value.lower()]  # Try to access directly with lowercase
+      except KeyError as e:
+        raise ValueError(f"{value} is not a valid {cls.__name__}") from e
 
 
 def timestamped_unique_name() -> str:

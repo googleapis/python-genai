@@ -32,7 +32,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=genai_types.CreateDistillationJobConfig(
                 # TODO(b/379909693): Replace with automatic scratch bucket dir.
                 pipeline_root_directory=(
-                    "gs://cloud-llm-preview1/tmp/distillation_pipeline_root"
+                    "gs://some-bucket/tmp/distillation_pipeline_root"
                 ),
             ),
 
@@ -50,7 +50,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=genai_types.CreateDistillationJobConfig(
                 # TODO(b/379909693): Replace with automatic scratch bucket dir.
                 pipeline_root_directory=(
-                    "gs://cloud-llm-preview1/tmp/distillation_pipeline_root"
+                    "gs://some-bucket/tmp/distillation_pipeline_root"
                 ),
                 tuned_model_display_name="Model display name",
                 epoch_count=1,

@@ -26,7 +26,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 types.Content(
                     role='user',
                     parts=[types.Part.from_text(
-                        'Is the audio related to the video? '
+                        text='Is the audio related to the video? '
                         'If so, how? '
                         'What are the common themes? '
                         'What are the different emphases?'
@@ -35,15 +35,15 @@ test_table: list[pytest_helper.TestTableItem] = [
                 types.Content(
                     role='user',
                     parts=[types.Part.from_uri(
-                        'gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
-                        'video/mp4',
+                        file_uri='gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
+                        mime_type='video/mp4',
                     )],
                 ),
                 types.Content(
                     role='user',
                     parts=[types.Part.from_uri(
-                        'gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
-                        'audio/mpeg',
+                        file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
+                        mime_type='audio/mpeg',
                     )],
                 ),
             ],
@@ -51,8 +51,8 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'system_instruction': types.Content(
                     role='user',
                     parts=[types.Part.from_text(
-                        'you are a helpful assistant for people with visual '
-                        'and hearing disabilities.'
+                        text='you are a helpful assistant for people with '
+                        'visual and hearing disabilities.'
                     )],
                 ),
               'media_resolution': 'MEDIA_RESOLUTION_LOW',
@@ -69,33 +69,3 @@ pytestmark = pytest_helper.setup(
     test_method='models.generate_content',
     test_table=test_table,
 )
-
-
-def test_video_audio_uri_with_media_resolution(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    client.models.generate_content(
-        model='gemini-2.0-flash-exp',
-        contents=[
-            """
-                 Is the audio related to the video?
-                 If so, how?
-                 What are the common themes?
-                 What are the different emphases?
-                 """,
-            types.Part.from_uri(
-                'gs://cloud-samples-data/generative-ai/video/pixel8.mp4',
-                'video/mp4',
-            ),
-            types.Part.from_uri(
-                'gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
-                'audio/mpeg',
-            ),
-        ],
-        config={
-            'system_instruction': (
-                'you are a helpful assistant for people with visual and hearing'
-                ' disabilities.'
-            ),
-            'media_resolution': 'MEDIA_RESOLUTION_LOW',
-        },
-    )

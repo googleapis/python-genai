@@ -220,7 +220,7 @@ async def test_async_session_send_tool_response(
         function_responses=[
             types.FunctionResponse(
                 name='get_current_weather',
-                response={'temeperature': 14.5, 'unit': 'C'},
+                response={'temperature': 14.5, 'unit': 'C'},
             )
         ]
     )
@@ -229,7 +229,7 @@ async def test_async_session_send_tool_response(
         function_responses=[
             types.FunctionResponse(
                 name='get_current_weather',
-                response={'temeperature': 14.5, 'unit': 'C'},
+                response={'temperature': 14.5, 'unit': 'C'},
                 id='some-id',
             )
         ]
@@ -531,6 +531,32 @@ def test_bidi_setup_to_api_with_config_tools_function_declaration(
                   'name': 'get_current_weather',
                   'description': 'Get the current weather in a city',
               }],
+          }],
+      }
+  }
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+      model='test_model', config=config
+  )
+
+  assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
+
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
+      model='test_model', config=config
+  )
+  assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
+
+
+def test_bidi_setup_to_api_with_config_tools_code_execution(
+    mock_api_client,
+):
+  config = {
+      'tools': [{'code_execution': {}}],
+  }
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'tools': [{
+              'codeExecution': {},
           }],
       }
   }

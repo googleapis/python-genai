@@ -13,11 +13,9 @@
 # limitations under the License.
 #
 
-
-from ... import _transformers as t
 from ... import errors
-from ... import types
 from .. import pytest_helper
+from ... import _api_client
 
 # TODO: b/372730941 - Re-enable this test once HTTP options are supported for
 # all languages.
@@ -44,28 +42,64 @@ pytestmark = pytest_helper.setup(
     file=__file__,
     globals_for_file=globals(),
     test_method='models.generate_content',
-    http_options={
-        'api_version': 'v1alpha',
-    },
 )
 
 
-def test_generate_content_has_thought(client):
-  contents = 'What is the sum of natural numbers from 1 to 100?'
-  config = types.GenerateContentConfig()
+def test_has_thought_with_include_thoughts_v1alpha(client):
+  # Thinking config currently only works in v1alpha for Gemini AI API.
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-thinking-exp',
+        contents='What is the sum of natural numbers from 1 to 100?',
+        config={
+            'thinking_config': {'include_thoughts': True},
+            'http_options': {'api_version': 'v1alpha'},
+        },
+    )
+    has_thought = False
+    thought = ''
+    if response.candidates:
+      for candidate in response.candidates:
+        for part in candidate.content.parts:
+          if part.thought:
+            has_thought = True
+            thought = part.text
+            break
+    assert has_thought
+    assert thought not in response.text
+
+
+def test_has_thought_with_include_thoughts(client):
+  with pytest_helper.exception_if_mldev(client, errors.ClientError):
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-thinking-exp-1219',
+        contents='What is the sum of natural numbers from 1 to 100?',
+        config={
+            'thinking_config': {'include_thoughts': True},
+        },
+    )
+    has_thought = False
+    thought = ''
+    if response.candidates:
+      for candidate in response.candidates:
+        for part in candidate.content.parts:
+          if part.thought:
+            has_thought = True
+            thought = part.text
+            break
+    assert has_thought
+    assert thought not in response.text
+
+
+def test_no_thought_with_default_config(client):
   response = client.models.generate_content(
-      model='gemini-2.0-flash-thinking-exp',
-      contents=contents,
-      config=config,
+      model='gemini-2.0-flash-thinking-exp-1219',
+      contents='What is the sum of natural numbers from 1 to 100?',
   )
   has_thought = False
-  thought = ''
-  if response.candidates:
-    for candidate in response.candidates:
-      for part in candidate.content.parts:
-        if part.thought:
-          has_thought = True
-          thought = part.text
-          break
-  assert has_thought
-  assert thought not in response.text
+  for candidate in response.candidates:
+    for part in candidate.content.parts:
+      if part.thought:
+        has_thought = True
+        break
+  assert not has_thought

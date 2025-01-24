@@ -18,6 +18,7 @@
 import logging
 from typing import AsyncIterator, Iterator, Optional, Union
 from urllib.parse import urlencode
+from . import _api_module
 from . import _common
 from . import _extra_utils
 from . import _transformers as t
@@ -35,7 +36,7 @@ def _Part_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['video_metadata']) is not None:
-    raise ValueError('video_metadata parameter is not supported in Google AI.')
+    raise ValueError('video_metadata parameter is not supported in Gemini API.')
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -167,51 +168,51 @@ def _Schema_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['min_items']) is not None:
-    raise ValueError('min_items parameter is not supported in Google AI.')
+    raise ValueError('min_items parameter is not supported in Gemini API.')
 
   if getv(from_object, ['example']) is not None:
-    raise ValueError('example parameter is not supported in Google AI.')
+    raise ValueError('example parameter is not supported in Gemini API.')
 
   if getv(from_object, ['property_ordering']) is not None:
     raise ValueError(
-        'property_ordering parameter is not supported in Google AI.'
+        'property_ordering parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['pattern']) is not None:
-    raise ValueError('pattern parameter is not supported in Google AI.')
+    raise ValueError('pattern parameter is not supported in Gemini API.')
 
   if getv(from_object, ['minimum']) is not None:
-    raise ValueError('minimum parameter is not supported in Google AI.')
+    raise ValueError('minimum parameter is not supported in Gemini API.')
 
   if getv(from_object, ['default']) is not None:
-    raise ValueError('default parameter is not supported in Google AI.')
+    raise ValueError('default parameter is not supported in Gemini API.')
 
   if getv(from_object, ['any_of']) is not None:
-    raise ValueError('any_of parameter is not supported in Google AI.')
+    raise ValueError('any_of parameter is not supported in Gemini API.')
 
   if getv(from_object, ['max_length']) is not None:
-    raise ValueError('max_length parameter is not supported in Google AI.')
+    raise ValueError('max_length parameter is not supported in Gemini API.')
 
   if getv(from_object, ['title']) is not None:
-    raise ValueError('title parameter is not supported in Google AI.')
+    raise ValueError('title parameter is not supported in Gemini API.')
 
   if getv(from_object, ['min_length']) is not None:
-    raise ValueError('min_length parameter is not supported in Google AI.')
+    raise ValueError('min_length parameter is not supported in Gemini API.')
 
   if getv(from_object, ['min_properties']) is not None:
-    raise ValueError('min_properties parameter is not supported in Google AI.')
+    raise ValueError('min_properties parameter is not supported in Gemini API.')
 
   if getv(from_object, ['max_items']) is not None:
-    raise ValueError('max_items parameter is not supported in Google AI.')
+    raise ValueError('max_items parameter is not supported in Gemini API.')
 
   if getv(from_object, ['maximum']) is not None:
-    raise ValueError('maximum parameter is not supported in Google AI.')
+    raise ValueError('maximum parameter is not supported in Gemini API.')
 
   if getv(from_object, ['nullable']) is not None:
-    raise ValueError('nullable parameter is not supported in Google AI.')
+    raise ValueError('nullable parameter is not supported in Gemini API.')
 
   if getv(from_object, ['max_properties']) is not None:
-    raise ValueError('max_properties parameter is not supported in Google AI.')
+    raise ValueError('max_properties parameter is not supported in Gemini API.')
 
   if getv(from_object, ['type']) is not None:
     setv(to_object, ['type'], getv(from_object, ['type']))
@@ -323,7 +324,7 @@ def _SafetySetting_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['method']) is not None:
-    raise ValueError('method parameter is not supported in Google AI.')
+    raise ValueError('method parameter is not supported in Gemini API.')
 
   if getv(from_object, ['category']) is not None:
     setv(to_object, ['category'], getv(from_object, ['category']))
@@ -359,7 +360,7 @@ def _FunctionDeclaration_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['response']) is not None:
-    raise ValueError('response parameter is not supported in Google AI.')
+    raise ValueError('response parameter is not supported in Gemini API.')
 
   if getv(from_object, ['description']) is not None:
     setv(to_object, ['description'], getv(from_object, ['description']))
@@ -515,7 +516,7 @@ def _Tool_to_mldev(
     )
 
   if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Google AI.')
+    raise ValueError('retrieval parameter is not supported in Gemini API.')
 
   if getv(from_object, ['google_search']) is not None:
     setv(
@@ -762,12 +763,41 @@ def _SpeechConfig_to_vertex(
   return to_object
 
 
+def _ThinkingConfig_to_mldev(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  return to_object
+
+
+def _ThinkingConfig_to_vertex(
+    api_client: ApiClient,
+    from_object: Union[dict, object],
+    parent_object: dict = None,
+) -> dict:
+  to_object = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  return to_object
+
+
 def _GenerateContentConfig_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
@@ -843,7 +873,7 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['routing_config']) is not None:
-    raise ValueError('routing_config parameter is not supported in Google AI.')
+    raise ValueError('routing_config parameter is not supported in Gemini API.')
 
   if getv(from_object, ['safety_settings']) is not None:
     setv(
@@ -892,7 +922,7 @@ def _GenerateContentConfig_to_mldev(
 
   if getv(from_object, ['media_resolution']) is not None:
     raise ValueError(
-        'media_resolution parameter is not supported in Google AI.'
+        'media_resolution parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['speech_config']) is not None:
@@ -906,6 +936,20 @@ def _GenerateContentConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['audio_timestamp']) is not None:
+    raise ValueError(
+        'audio_timestamp parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        to_object,
+        ['thinkingConfig'],
+        _ThinkingConfig_to_mldev(
+            api_client, getv(from_object, ['thinking_config']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -915,6 +959,7 @@ def _GenerateContentConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
@@ -1053,6 +1098,18 @@ def _GenerateContentConfig_to_vertex(
         ),
     )
 
+  if getv(from_object, ['audio_timestamp']) is not None:
+    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        to_object,
+        ['thinkingConfig'],
+        _ThinkingConfig_to_vertex(
+            api_client, getv(from_object, ['thinking_config']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -1136,8 +1193,6 @@ def _EmbedContentConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['task_type']) is not None:
     setv(
@@ -1157,10 +1212,10 @@ def _EmbedContentConfig_to_mldev(
     )
 
   if getv(from_object, ['mime_type']) is not None:
-    raise ValueError('mime_type parameter is not supported in Google AI.')
+    raise ValueError('mime_type parameter is not supported in Gemini API.')
 
   if getv(from_object, ['auto_truncate']) is not None:
-    raise ValueError('auto_truncate parameter is not supported in Google AI.')
+    raise ValueError('auto_truncate parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -1171,8 +1226,6 @@ def _EmbedContentConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['task_type']) is not None:
     setv(
@@ -1277,17 +1330,15 @@ def _EmbedContentParameters_to_vertex(
   return to_object
 
 
-def _GenerateImageConfig_to_mldev(
+def _GenerateImagesConfig_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError('output_gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['negative_prompt']) is not None:
     setv(
@@ -1311,7 +1362,7 @@ def _GenerateImageConfig_to_mldev(
     )
 
   if getv(from_object, ['seed']) is not None:
-    raise ValueError('seed parameter is not supported in Google AI.')
+    raise ValueError('seed parameter is not supported in Gemini API.')
 
   if getv(from_object, ['safety_filter_level']) is not None:
     setv(
@@ -1363,7 +1414,7 @@ def _GenerateImageConfig_to_mldev(
     )
 
   if getv(from_object, ['add_watermark']) is not None:
-    raise ValueError('add_watermark parameter is not supported in Google AI.')
+    raise ValueError('add_watermark parameter is not supported in Gemini API.')
 
   if getv(from_object, ['aspect_ratio']) is not None:
     setv(
@@ -1375,14 +1426,12 @@ def _GenerateImageConfig_to_mldev(
   return to_object
 
 
-def _GenerateImageConfig_to_vertex(
+def _GenerateImagesConfig_to_vertex(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['output_gcs_uri']) is not None:
     setv(
@@ -1481,7 +1530,7 @@ def _GenerateImageConfig_to_vertex(
   return to_object
 
 
-def _GenerateImageParameters_to_mldev(
+def _GenerateImagesParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -1501,7 +1550,7 @@ def _GenerateImageParameters_to_mldev(
     setv(
         to_object,
         ['config'],
-        _GenerateImageConfig_to_mldev(
+        _GenerateImagesConfig_to_mldev(
             api_client, getv(from_object, ['config']), to_object
         ),
     )
@@ -1509,7 +1558,7 @@ def _GenerateImageParameters_to_mldev(
   return to_object
 
 
-def _GenerateImageParameters_to_vertex(
+def _GenerateImagesParameters_to_vertex(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -1529,7 +1578,7 @@ def _GenerateImageParameters_to_vertex(
     setv(
         to_object,
         ['config'],
-        _GenerateImageConfig_to_vertex(
+        _GenerateImagesConfig_to_vertex(
             api_client, getv(from_object, ['config']), to_object
         ),
     )
@@ -1544,7 +1593,7 @@ def _Image_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['image_bytes']) is not None:
     setv(
@@ -1552,6 +1601,9 @@ def _Image_to_mldev(
         ['bytesBase64Encoded'],
         t.t_bytes(api_client, getv(from_object, ['image_bytes'])),
     )
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -1572,6 +1624,9 @@ def _Image_to_vertex(
         t.t_bytes(api_client, getv(from_object, ['image_bytes'])),
     )
 
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
   return to_object
 
 
@@ -1582,15 +1637,15 @@ def _MaskReferenceConfig_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['mask_mode']) is not None:
-    raise ValueError('mask_mode parameter is not supported in Google AI.')
+    raise ValueError('mask_mode parameter is not supported in Gemini API.')
 
   if getv(from_object, ['segmentation_classes']) is not None:
     raise ValueError(
-        'segmentation_classes parameter is not supported in Google AI.'
+        'segmentation_classes parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['mask_dilation']) is not None:
-    raise ValueError('mask_dilation parameter is not supported in Google AI.')
+    raise ValueError('mask_dilation parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -1622,12 +1677,12 @@ def _ControlReferenceConfig_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['control_type']) is not None:
-    raise ValueError('control_type parameter is not supported in Google AI.')
+    raise ValueError('control_type parameter is not supported in Gemini API.')
 
   if getv(from_object, ['enable_control_image_computation']) is not None:
     raise ValueError(
-        'enable_control_image_computation parameter is not supported in'
-        ' Google AI.'
+        'enable_control_image_computation parameter is not supported in Gemini'
+        ' API.'
     )
 
   return to_object
@@ -1660,7 +1715,7 @@ def _StyleReferenceConfig_to_mldev(
   to_object = {}
   if getv(from_object, ['style_description']) is not None:
     raise ValueError(
-        'style_description parameter is not supported in Google AI.'
+        'style_description parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -1689,11 +1744,11 @@ def _SubjectReferenceConfig_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['subject_type']) is not None:
-    raise ValueError('subject_type parameter is not supported in Google AI.')
+    raise ValueError('subject_type parameter is not supported in Gemini API.')
 
   if getv(from_object, ['subject_description']) is not None:
     raise ValueError(
-        'subject_description parameter is not supported in Google AI.'
+        'subject_description parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -1725,32 +1780,34 @@ def _ReferenceImageAPI_to_mldev(
 ) -> dict:
   to_object = {}
   if getv(from_object, ['reference_image']) is not None:
-    raise ValueError('reference_image parameter is not supported in Google AI.')
+    raise ValueError(
+        'reference_image parameter is not supported in Gemini API.'
+    )
 
   if getv(from_object, ['reference_id']) is not None:
-    raise ValueError('reference_id parameter is not supported in Google AI.')
+    raise ValueError('reference_id parameter is not supported in Gemini API.')
 
   if getv(from_object, ['reference_type']) is not None:
-    raise ValueError('reference_type parameter is not supported in Google AI.')
+    raise ValueError('reference_type parameter is not supported in Gemini API.')
 
   if getv(from_object, ['mask_image_config']) is not None:
     raise ValueError(
-        'mask_image_config parameter is not supported in Google AI.'
+        'mask_image_config parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['control_image_config']) is not None:
     raise ValueError(
-        'control_image_config parameter is not supported in Google AI.'
+        'control_image_config parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['style_image_config']) is not None:
     raise ValueError(
-        'style_image_config parameter is not supported in Google AI.'
+        'style_image_config parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['subject_image_config']) is not None:
     raise ValueError(
-        'subject_image_config parameter is not supported in Google AI.'
+        'subject_image_config parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -1822,11 +1879,9 @@ def _EditImageConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError('output_gcs_uri parameter is not supported in Google AI.')
+    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['negative_prompt']) is not None:
     setv(
@@ -1850,7 +1905,7 @@ def _EditImageConfig_to_mldev(
     )
 
   if getv(from_object, ['seed']) is not None:
-    raise ValueError('seed parameter is not supported in Google AI.')
+    raise ValueError('seed parameter is not supported in Gemini API.')
 
   if getv(from_object, ['safety_filter_level']) is not None:
     setv(
@@ -1917,8 +1972,6 @@ def _EditImageConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['output_gcs_uri']) is not None:
     setv(
@@ -2092,8 +2145,6 @@ def _UpscaleImageAPIConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
@@ -2135,8 +2186,6 @@ def _UpscaleImageAPIConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
@@ -2263,6 +2312,9 @@ def _GetModelParameters_to_mldev(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
   return to_object
 
 
@@ -2279,6 +2331,9 @@ def _GetModelParameters_to_vertex(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
   return to_object
 
 
@@ -2288,8 +2343,6 @@ def _ListModelsConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['page_size']) is not None:
     setv(
@@ -2322,8 +2375,6 @@ def _ListModelsConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['page_size']) is not None:
     setv(
@@ -2392,6 +2443,7 @@ def _UpdateModelConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
@@ -2407,6 +2459,7 @@ def _UpdateModelConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
@@ -2479,6 +2532,9 @@ def _DeleteModelParameters_to_mldev(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
   return to_object
 
 
@@ -2495,6 +2551,9 @@ def _DeleteModelParameters_to_vertex(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
   return to_object
 
 
@@ -2504,8 +2563,6 @@ def _CountTokensConfig_to_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['system_instruction']) is not None:
     setv(
@@ -2530,7 +2587,7 @@ def _CountTokensConfig_to_mldev(
 
   if getv(from_object, ['generation_config']) is not None:
     raise ValueError(
-        'generation_config parameter is not supported in Google AI.'
+        'generation_config parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -2542,8 +2599,6 @@ def _CountTokensConfig_to_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
 
   if getv(from_object, ['system_instruction']) is not None:
     setv(
@@ -2650,30 +2705,6 @@ def _CountTokensParameters_to_vertex(
   return to_object
 
 
-def _ComputeTokensConfig_to_mldev(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
-def _ComputeTokensConfig_to_vertex(
-    api_client: ApiClient,
-    from_object: Union[dict, object],
-    parent_object: dict = None,
-) -> dict:
-  to_object = {}
-  if getv(from_object, ['http_options']) is not None:
-    setv(to_object, ['httpOptions'], getv(from_object, ['http_options']))
-
-  return to_object
-
-
 def _ComputeTokensParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -2688,16 +2719,10 @@ def _ComputeTokensParameters_to_mldev(
     )
 
   if getv(from_object, ['contents']) is not None:
-    raise ValueError('contents parameter is not supported in Google AI.')
+    raise ValueError('contents parameter is not supported in Gemini API.')
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ComputeTokensConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -2728,13 +2753,7 @@ def _ComputeTokensParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ComputeTokensConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -3207,6 +3226,9 @@ def _Image_from_mldev(
         t.t_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
     )
 
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
   return to_object
 
 
@@ -3225,6 +3247,9 @@ def _Image_from_vertex(
         ['image_bytes'],
         t.t_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
     )
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
 
   return to_object
 
@@ -3275,7 +3300,7 @@ def _GeneratedImage_from_vertex(
   return to_object
 
 
-def _GenerateImageResponse_from_mldev(
+def _GenerateImagesResponse_from_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -3294,7 +3319,7 @@ def _GenerateImageResponse_from_mldev(
   return to_object
 
 
-def _GenerateImageResponse_from_vertex(
+def _GenerateImagesResponse_from_vertex(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -3674,7 +3699,7 @@ def _ComputeTokensResponse_from_vertex(
   return to_object
 
 
-class Models(_common.BaseModule):
+class Models(_api_module.BaseModule):
 
   def _generate_content(
       self,
@@ -3703,8 +3728,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -3722,7 +3753,7 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.GenerateContentResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -3758,8 +3789,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -3777,7 +3814,7 @@ class Models(_common.BaseModule):
         )
 
       return_value = types.GenerateContentResponse._from_response(
-          response_dict, parameter_model
+          response=response_dict, kwargs=parameter_model
       )
       self._api_client._verify_response(return_value)
       yield return_value
@@ -3832,8 +3869,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -3851,33 +3894,33 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.EmbedContentResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
 
-  def generate_image(
+  def generate_images(
       self,
       *,
       model: str,
       prompt: str,
-      config: Optional[types.GenerateImageConfigOrDict] = None,
-  ) -> types.GenerateImageResponse:
-    """Generates an image based on a text description and configuration.
+      config: Optional[types.GenerateImagesConfigOrDict] = None,
+  ) -> types.GenerateImagesResponse:
+    """Generates images based on a text description and configuration.
 
     Args:
       model (str): The model to use.
-      prompt (str): A text description of the image to generate.
-      config (GenerateImageConfig): Configuration for generation.
+      prompt (str): A text description of the images to generate.
+      config (GenerateImagesConfig): Configuration for generation.
 
     Usage:
 
     .. code-block:: python
 
-      response = client.models.generate_image(
+      response = client.models.generate_images(
         model='imagen-3.0-generate-001',
         prompt='Man with a dog',
-        config=types.GenerateImageConfig(
+        config=types.GenerateImagesConfig(
             number_of_images= 1,
             include_rai_reason= True,
         )
@@ -3886,19 +3929,19 @@ class Models(_common.BaseModule):
       # Shows a man with a dog.
     """
 
-    parameter_model = types._GenerateImageParameters(
+    parameter_model = types._GenerateImagesParameters(
         model=model,
         prompt=prompt,
         config=config,
     )
 
     if self._api_client.vertexai:
-      request_dict = _GenerateImageParameters_to_vertex(
+      request_dict = _GenerateImagesParameters_to_vertex(
           self._api_client, parameter_model
       )
       path = '{model}:predict'.format_map(request_dict.get('_url'))
     else:
-      request_dict = _GenerateImageParameters_to_mldev(
+      request_dict = _GenerateImagesParameters_to_mldev(
           self._api_client, parameter_model
       )
       path = '{model}:predict'.format_map(request_dict.get('_url'))
@@ -3906,8 +3949,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -3916,16 +3965,16 @@ class Models(_common.BaseModule):
     )
 
     if self._api_client.vertexai:
-      response_dict = _GenerateImageResponse_from_vertex(
+      response_dict = _GenerateImagesResponse_from_vertex(
           self._api_client, response_dict
       )
     else:
-      response_dict = _GenerateImageResponse_from_mldev(
+      response_dict = _GenerateImagesResponse_from_mldev(
           self._api_client, response_dict
       )
 
-    return_value = types.GenerateImageResponse._from_response(
-        response_dict, parameter_model
+    return_value = types.GenerateImagesResponse._from_response(
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -3999,8 +4048,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4018,7 +4073,7 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.EditImageResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4059,8 +4114,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4078,14 +4139,17 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.UpscaleImageResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
 
-  def get(self, *, model: str) -> types.Model:
+  def get(
+      self, *, model: str, config: Optional[types.GetModelConfigOrDict] = None
+  ) -> types.Model:
     parameter_model = types._GetModelParameters(
         model=model,
+        config=config,
     )
 
     if self._api_client.vertexai:
@@ -4102,8 +4166,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4116,7 +4186,9 @@ class Models(_common.BaseModule):
     else:
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
-    return_value = types.Model._from_response(response_dict, parameter_model)
+    return_value = types.Model._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -4141,8 +4213,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4160,7 +4238,7 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.ListModelsResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4190,8 +4268,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4204,13 +4288,21 @@ class Models(_common.BaseModule):
     else:
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
-    return_value = types.Model._from_response(response_dict, parameter_model)
+    return_value = types.Model._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
-  def delete(self, *, model: str) -> types.DeleteModelResponse:
+  def delete(
+      self,
+      *,
+      model: str,
+      config: Optional[types.DeleteModelConfigOrDict] = None,
+  ) -> types.DeleteModelResponse:
     parameter_model = types._DeleteModelParameters(
         model=model,
+        config=config,
     )
 
     if self._api_client.vertexai:
@@ -4227,8 +4319,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4246,7 +4344,7 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.DeleteModelResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4298,8 +4396,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4317,7 +4421,7 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.CountTokensResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4369,8 +4473,14 @@ class Models(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4388,7 +4498,7 @@ class Models(_common.BaseModule):
       )
 
     return_value = types.ComputeTokensResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4546,9 +4656,14 @@ class Models(_common.BaseModule):
       *,
       config: Optional[types.ListModelsConfigOrDict] = None,
   ) -> Pager[types.Model]:
-    """Makes an API request to list the tuned models available to your project.
+    """Makes an API request to list the available models.
 
-    This method only lists tuned models for the Vertex AI API.
+    If `query_base` is set to True in the config, the API will return all
+    available base models. If set to False or not set (default), it will return
+    all tuned models.
+
+    Args:
+      config (ListModelsConfigOrDict): Configuration for retrieving models.
 
     Usage:
 
@@ -4557,6 +4672,10 @@ class Models(_common.BaseModule):
       response=client.models.list(config={'page_size': 5})
       print(response.page)
       # [Model(name='projects/./locations/./models/123', display_name='my_model'
+
+      response=client.models.list(config={'page_size': 5, 'query_base': True})
+      print(response.page)
+      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
     """
 
     config = (
@@ -4565,13 +4684,7 @@ class Models(_common.BaseModule):
     )
     if self._api_client.vertexai:
       config = config.copy()
-      if config.query_base:
-        http_options = (
-            config.http_options if config.http_options else HttpOptionsDict()
-        )
-        http_options['skip_project_and_location_in_path'] = True
-        config.http_options = http_options
-      else:
+      if not config.query_base:
         # Filter for tuning jobs artifacts by labels.
         filter_value = config.filter
         config.filter = (
@@ -4589,7 +4702,7 @@ class Models(_common.BaseModule):
     )
 
 
-class AsyncModels(_common.BaseModule):
+class AsyncModels(_api_module.BaseModule):
 
   async def _generate_content(
       self,
@@ -4618,8 +4731,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4637,7 +4756,7 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.GenerateContentResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4673,8 +4792,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4692,7 +4817,7 @@ class AsyncModels(_common.BaseModule):
         )
 
       return_value = types.GenerateContentResponse._from_response(
-          response_dict, parameter_model
+          response=response_dict, kwargs=parameter_model
       )
       self._api_client._verify_response(return_value)
       yield return_value
@@ -4747,8 +4872,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4766,33 +4897,33 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.EmbedContentResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def generate_image(
+  async def generate_images(
       self,
       *,
       model: str,
       prompt: str,
-      config: Optional[types.GenerateImageConfigOrDict] = None,
-  ) -> types.GenerateImageResponse:
-    """Generates an image based on a text description and configuration.
+      config: Optional[types.GenerateImagesConfigOrDict] = None,
+  ) -> types.GenerateImagesResponse:
+    """Generates images based on a text description and configuration.
 
     Args:
       model (str): The model to use.
-      prompt (str): A text description of the image to generate.
-      config (GenerateImageConfig): Configuration for generation.
+      prompt (str): A text description of the images to generate.
+      config (GenerateImagesConfig): Configuration for generation.
 
     Usage:
 
     .. code-block:: python
 
-      response = client.models.generate_image(
+      response = client.models.generate_images(
         model='imagen-3.0-generate-001',
         prompt='Man with a dog',
-        config=types.GenerateImageConfig(
+        config=types.GenerateImagesConfig(
             number_of_images= 1,
             include_rai_reason= True,
         )
@@ -4801,19 +4932,19 @@ class AsyncModels(_common.BaseModule):
       # Shows a man with a dog.
     """
 
-    parameter_model = types._GenerateImageParameters(
+    parameter_model = types._GenerateImagesParameters(
         model=model,
         prompt=prompt,
         config=config,
     )
 
     if self._api_client.vertexai:
-      request_dict = _GenerateImageParameters_to_vertex(
+      request_dict = _GenerateImagesParameters_to_vertex(
           self._api_client, parameter_model
       )
       path = '{model}:predict'.format_map(request_dict.get('_url'))
     else:
-      request_dict = _GenerateImageParameters_to_mldev(
+      request_dict = _GenerateImagesParameters_to_mldev(
           self._api_client, parameter_model
       )
       path = '{model}:predict'.format_map(request_dict.get('_url'))
@@ -4821,8 +4952,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4831,16 +4968,16 @@ class AsyncModels(_common.BaseModule):
     )
 
     if self._api_client.vertexai:
-      response_dict = _GenerateImageResponse_from_vertex(
+      response_dict = _GenerateImagesResponse_from_vertex(
           self._api_client, response_dict
       )
     else:
-      response_dict = _GenerateImageResponse_from_mldev(
+      response_dict = _GenerateImagesResponse_from_mldev(
           self._api_client, response_dict
       )
 
-    return_value = types.GenerateImageResponse._from_response(
-        response_dict, parameter_model
+    return_value = types.GenerateImagesResponse._from_response(
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4914,8 +5051,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4933,7 +5076,7 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.EditImageResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4974,8 +5117,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -4993,14 +5142,17 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.UpscaleImageResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def get(self, *, model: str) -> types.Model:
+  async def get(
+      self, *, model: str, config: Optional[types.GetModelConfigOrDict] = None
+  ) -> types.Model:
     parameter_model = types._GetModelParameters(
         model=model,
+        config=config,
     )
 
     if self._api_client.vertexai:
@@ -5017,8 +5169,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -5031,7 +5189,9 @@ class AsyncModels(_common.BaseModule):
     else:
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
-    return_value = types.Model._from_response(response_dict, parameter_model)
+    return_value = types.Model._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5056,8 +5216,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -5075,7 +5241,7 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.ListModelsResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5105,8 +5271,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -5119,13 +5291,21 @@ class AsyncModels(_common.BaseModule):
     else:
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
-    return_value = types.Model._from_response(response_dict, parameter_model)
+    return_value = types.Model._from_response(
+        response=response_dict, kwargs=parameter_model
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def delete(self, *, model: str) -> types.DeleteModelResponse:
+  async def delete(
+      self,
+      *,
+      model: str,
+      config: Optional[types.DeleteModelConfigOrDict] = None,
+  ) -> types.DeleteModelResponse:
     parameter_model = types._DeleteModelParameters(
         model=model,
+        config=config,
     )
 
     if self._api_client.vertexai:
@@ -5142,8 +5322,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -5161,7 +5347,7 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.DeleteModelResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5213,8 +5399,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -5232,7 +5424,7 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.CountTokensResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5284,8 +5476,14 @@ class AsyncModels(_common.BaseModule):
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
-    config = request_dict.pop('config', None)
-    http_options = config.pop('httpOptions', None) if config else None
+    request_dict.pop('config', None)
+
+    http_options = None
+    if isinstance(config, dict):
+      http_options = config.get('http_options', None)
+    elif hasattr(config, 'http_options'):
+      http_options = config.http_options
+
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
@@ -5303,7 +5501,7 @@ class AsyncModels(_common.BaseModule):
       )
 
     return_value = types.ComputeTokensResponse._from_response(
-        response_dict, parameter_model
+        response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5396,9 +5594,14 @@ class AsyncModels(_common.BaseModule):
       *,
       config: Optional[types.ListModelsConfigOrDict] = None,
   ) -> AsyncPager[types.Model]:
-    """Makes an API request to list the tuned models available to your project.
+    """Makes an API request to list the available models.
 
-    This method only lists tuned models for the Vertex AI API.
+    If `query_base` is set to True in the config, the API will return all
+    available base models. If set to False or not set (default), it will return
+    all tuned models.
+
+    Args:
+      config (ListModelsConfigOrDict): Configuration for retrieving models.
 
     Usage:
 
@@ -5407,6 +5610,12 @@ class AsyncModels(_common.BaseModule):
       response = await client.aio.models.list(config={'page_size': 5})
       print(response.page)
       # [Model(name='projects/./locations/./models/123', display_name='my_model'
+
+      response = await client.aio.models.list(
+          config={'page_size': 5, 'query_base': True}
+        )
+      print(response.page)
+      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
     """
 
     config = (

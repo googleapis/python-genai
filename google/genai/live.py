@@ -25,6 +25,7 @@ from typing import AsyncIterator, Optional, Sequence, Union
 import google.auth
 from websockets import ConnectionClosed
 
+from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import client
@@ -107,7 +108,7 @@ class AsyncSession:
 
     The method will yield the model responses from the server. The returned
     responses will represent a complete model turn. When the returned message
-    is fuction call, user must call `send` with the function response to
+    is function call, user must call `send` with the function response to
     continue the turn.
 
     Yields:
@@ -379,6 +380,10 @@ class AsyncSession:
         isinstance(c, dict) and 'name' in c and 'response' in c for c in input
     ):
       # ToolResponse.FunctionResponse
+      if not (self._api_client.vertexai):
+        for item in input:
+          if 'id' not in item:
+            raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
       client_message = {'tool_response': {'function_responses': input}}
     elif isinstance(input, Sequence) and any(isinstance(c, str) for c in input):
       to_object = {}
@@ -465,7 +470,7 @@ class AsyncSession:
     await self._ws.close()
 
 
-class AsyncLive(_common.BaseModule):
+class AsyncLive(_api_module.BaseModule):
   """AsyncLive."""
 
   def _LiveSetup_to_mldev(

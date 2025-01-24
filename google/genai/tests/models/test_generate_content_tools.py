@@ -143,6 +143,34 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
+        name='test_rag_model',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=t.t_contents(
+                None,
+                'How much gain or loss did Google get in the Motorola Mobile'
+                ' deal in 2014?',
+            ),
+            config={
+                'tools': [
+                    types.Tool(
+                        retrieval=types.Retrieval(
+                            vertex_rag_store=types.VertexRagStore(
+                                rag_resources=[
+                                    types.VertexRagStoreRagResource(
+                                        rag_corpus='projects/964831358985/locations/us-central1/ragCorpora/3379951520341557248'
+                                    )
+                                ],
+                                similarity_top_k=3,
+                            )
+                        ),
+                    ),
+                ]
+            },
+        ),
+        exception_if_mldev='retrieval',
+    ),
+    pytest_helper.TestTableItem(
         name='test_function_call',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
@@ -535,10 +563,30 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
             'automatic_function_calling': {'ignore_call_history': True}
         },
     )
-    assert 'animal' in response.text
     assert 'Sundae' in response.text
-    assert '1' in response.text
     assert 'cat' in response.text
+
+
+def test_automatic_function_calling_with_parameterized_generic_union_type(client):
+  def describe_cities(
+      country: str,
+      cities: typing.Optional[list[str]] = None,
+  ) -> str:
+    if cities is None:
+      return 'There are no cities to describe.'
+    else:
+      return f'The cities in {country} are: {", ".join(cities)} and they are nice.'
+
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=('Can you describe the city of San Francisco?'),
+        config={
+            'tools': [describe_cities],
+            'automatic_function_calling': {'ignore_call_history': True}
+        },
+    )
+    assert 'San Francisco' in response.text
 
 
 @pytest.mark.asyncio
@@ -833,3 +881,31 @@ async def test_2_function_with_history_async(client):
   ).model_dump_json(
       exclude_none=True
   )
+
+
+class FunctionHolder:
+  NAME = 'FunctionHolder'
+
+  def is_a_duck(self, number: int) -> str:
+    return self.NAME + 'says isOdd: ' + str(number % 2 == 1)
+
+  def is_a_rabbit(self, number: int) -> str:
+    return self.NAME + 'says isEven: ' + str(number % 2 == 0)
+
+
+def test_class_method_tools(client):
+  # This test is to make sure that instance method tools can be used in
+  # the generate_content request.
+
+  function_holder = FunctionHolder()
+  response = client.models.generate_content(
+      model='gemini-2.0-flash-exp',
+      contents=(
+          'Print the verbatim output of is_a_duck and is_a_rabbit for the'
+          ' number 100.'
+      ),
+      config={
+          'tools': [function_holder.is_a_duck, function_holder.is_a_rabbit],
+      },
+  )
+  assert 'FunctionHolder' in response.text

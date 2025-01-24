@@ -1,6 +1,7 @@
 import base64
-from typing import Optional, Any
 from datetime import datetime
+from typing import Any, Optional
+
 import pytest
 
 from ... import _common
@@ -14,7 +15,7 @@ _RAW_BYTES = (
     b' \x92\x8b0\xd3\x8fA\x14\x93QU\x97a\x9d5\xdb~9\xeb\xbf='
 )
 # 64 distinct chars in normal base64.
-_BASE64 = '+/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789==='
+_BASE64 = '+/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 assert base64.b64decode(_BASE64) == _RAW_BYTES
 
 
@@ -64,9 +65,32 @@ def test_raw_bytes_input_success():
 
 # This test shows that if user pass in invalid base64 string(normal base64 but
 # not url safe) to a bytes field, then SDK will raise ValueError.
-def test_base64_input_failure():
+def test_invalid_base64_pydantic_input_failure():
   with pytest.raises(ValueError, match='Data should be valid base64'):
-    MyBytesModel(image_data=_BASE64)
+    MyBytesModel(image_data=_BASE64+'=')  # invalid base64
+
+
+# This test shows that if user pass in invalid base64 string(normal base64 but
+# not url safe) to a bytes field, then SDK will raise ValueError.
+def test_invalid_base64_dict_input_failure():
+  with pytest.raises(ValueError, match='Data should be valid base64'):
+    MyBytesModel.model_validate({'image_data': _BASE64+'='})  # invalid base64
+
+
+# This test shows that if user pass in normal base64 string(
+# not url safe) to a bytes field, then Pydantic can correctly parse the normal
+# base64 string to bytes.
+def test_normal_base64_pydantic_input_success():
+  data = MyBytesModel(image_data=_BASE64)
+  assert data.image_data == _RAW_BYTES
+
+
+# This test shows that if user pass in normal base64 string via(
+# not url safe) via dict input with model_validate(), then Pydantic can
+# correctly parse the normal base64 string to bytes.
+def test_normal_base64_dict_input_success():
+  data = MyBytesModel.model_validate({'image_data': _BASE64})
+  assert data.image_data == _RAW_BYTES
 
 
 class MyAnyModel(_common.BaseModel):
@@ -109,5 +133,4 @@ def test_any_type_urlsafe_base64_input():
   assert isinstance(my_data.data, str)
 
   # Check print(my_data) will output the bytes string, not the base64 string.
-  assert str(my_data) == 'data=\'' + str(_URL_SAFE_BASE64) + '\''
-
+  assert str(my_data) == "data='" + str(_URL_SAFE_BASE64) + "'"

@@ -60,7 +60,7 @@ def test_text(client):
 def test_part(client):
   chat = client.chats.create(model='gemini-1.5-flash')
   chat.send_message(
-      types.Part.from_text('tell me a story in 100 words'),
+      types.Part.from_text(text='tell me a story in 100 words'),
   )
 
 
@@ -68,8 +68,8 @@ def test_parts(client):
   chat = client.chats.create(model='gemini-1.5-flash')
   chat.send_message(
       [
-          types.Part.from_text('tell me a US city'),
-          types.Part.from_text('the city is in west coast'),
+          types.Part.from_text(text='tell me a US city'),
+          types.Part.from_text(text='the city is in west coast'),
       ],
   )
 
@@ -91,8 +91,8 @@ def test_google_cloud_storage_uri(client):
         [
             'what is the image about?',
             types.Part.from_uri(
-                'gs://unified-genai-dev/imagen-inputs/google_small.png',
-                'image/png',
+                file_uri='gs://unified-genai-dev/imagen-inputs/google_small.png',
+                mime_type='image/png',
             ),
         ],
     )
@@ -105,8 +105,8 @@ def test_uploaded_file_uri(client):
         [
             'what is the image about?',
             types.Part.from_uri(
-                'https://generativelanguage.googleapis.com/v1beta/files/9w04rxmcgsp8',
-                'image/png',
+                file_uri='https://generativelanguage.googleapis.com/v1beta/files/9w04rxmcgsp8',
+                mime_type='image/png',
             ),
         ],
     )
@@ -116,10 +116,10 @@ def test_history(client):
   history = [
       types.Content(
           role='model',
-          parts=[types.Part.from_text('Hello there! how can I help you?')],
+          parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
       types.Content(
-          role='user', parts=[types.Part.from_text('define a=5, b=10')]
+          role='user', parts=[types.Part.from_text(text='define a=5, b=10')]
       ),
   ]
   chat = client.chats.create(model='gemini-1.5-flash', history=history)
@@ -263,7 +263,7 @@ def test_stream_part(client):
   chat = client.chats.create(model='gemini-1.5-flash')
   chunks = 0
   for chunk in chat.send_message_stream(
-      types.Part.from_text('tell me a story in 100 words'),
+      types.Part.from_text(text='tell me a story in 100 words'),
   ):
     chunks += 1
 
@@ -275,8 +275,8 @@ def test_stream_parts(client):
   chunks = 0
   for chunk in chat.send_message_stream(
       [
-          types.Part.from_text('tell me a story in 100 words'),
-          types.Part.from_text('the story is about a car'),
+          types.Part.from_text(text='tell me a story in 100 words'),
+          types.Part.from_text(text='the story is about a car'),
       ],
   ):
     chunks += 1
@@ -319,7 +319,7 @@ async def test_async_text(client):
 @pytest.mark.asyncio
 async def test_async_part(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
-  await chat.send_message(types.Part.from_text('tell me a story in 100 words'))
+  await chat.send_message(types.Part.from_text(text='tell me a story in 100 words'))
 
 
 @pytest.mark.asyncio
@@ -327,8 +327,8 @@ async def test_async_parts(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
   await chat.send_message(
       [
-          types.Part.from_text('tell me a US city'),
-          types.Part.from_text('the city is in west coast'),
+          types.Part.from_text(text='tell me a US city'),
+          types.Part.from_text(text='the city is in west coast'),
       ],
   )
 
@@ -338,10 +338,10 @@ async def test_async_history(client):
   history = [
       types.Content(
           role='model',
-          parts=[types.Part.from_text('Hello there! how can I help you?')],
+          parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
       types.Content(
-          role='user', parts=[types.Part.from_text('define a=5, b=10')]
+          role='user', parts=[types.Part.from_text(text='define a=5, b=10')]
       ),
   ]
   chat = client.aio.chats.create(model='gemini-1.5-flash', history=history)
@@ -363,7 +363,7 @@ async def test_async_stream_part(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
   chunks = 0
   async for chunk in chat.send_message_stream(
-      types.Part.from_text('tell me a story in 100 words')
+      types.Part.from_text(text='tell me a story in 100 words')
   ):
     chunks += 1
 
@@ -376,8 +376,8 @@ async def test_async_stream_parts(client):
   chunks = 0
   async for chunk in chat.send_message_stream(
       [
-          types.Part.from_text('tell me a story in 100 words'),
-          types.Part.from_text('the story is about a car'),
+          types.Part.from_text(text='tell me a story in 100 words'),
+          types.Part.from_text(text='the story is about a car'),
       ],
   ):
     chunks += 1

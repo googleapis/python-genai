@@ -17,14 +17,17 @@
 
 import base64
 from collections.abc import Iterable, Mapping
+from enum import Enum, EnumMeta
 import inspect
 import io
 import re
 import time
-from typing import Any, Optional, Union
+import typing
+from typing import Any, GenericAlias, Optional, Union
 
 import PIL.Image
 import PIL.PngImagePlugin
+import pydantic
 
 from . import _api_client
 from . import types
@@ -35,7 +38,7 @@ def _resource_name(
     resource_name: str,
     *,
     collection_identifier: str,
-    collection_hirearchy_depth: int = 2,
+    collection_hierarchy_depth: int = 2,
 ):
   # pylint: disable=line-too-long
   """Prepends resource name with project, location, collection_identifier if needed.
@@ -48,13 +51,13 @@ def _resource_name(
   Args:
     client: The API client.
     resource_name: The user input resource name to be completed.
-    collection_identifier: The collection identifier to be prepended.
-        See collection identifiers in https://google.aip.dev/122.
-    collection_hirearchy_depth: The collection hierarchy depth.
-        Only set this field when the resource has nested collections.
-        For example, `users/vhugo1802/events/birthday-dinner-226`, the
-        collection_identifier is `users` and collection_hirearchy_depth is 4.
-        See nested collections in https://google.aip.dev/122.
+    collection_identifier: The collection identifier to be prepended. See
+      collection identifiers in https://google.aip.dev/122.
+    collection_hierarchy_depth: The collection hierarchy depth. Only set this
+      field when the resource has nested collections. For example,
+      `users/vhugo1802/events/birthday-dinner-226`, the collection_identifier is
+      `users` and collection_hierarchy_depth is 4. See nested collections in
+      https://google.aip.dev/122.
 
   Example:
 
@@ -62,7 +65,8 @@ def _resource_name(
     client.vertexai = True
     client.project = 'bar'
     client.location = 'us-west1'
-    _resource_name(client, 'cachedContents/123', collection_identifier='cachedContents')
+    _resource_name(client, 'cachedContents/123',
+      collection_identifier='cachedContents')
     returns: 'projects/bar/locations/us-west1/cachedContents/123'
 
   Example:
@@ -72,7 +76,8 @@ def _resource_name(
     client.vertexai = True
     client.project = 'bar'
     client.location = 'us-west1'
-    _resource_name(client, resource_name, collection_identifier='cachedContents')
+    _resource_name(client, resource_name,
+      collection_identifier='cachedContents')
     returns: 'projects/foo/locations/us-central1/cachedContents/123'
 
   Example:
@@ -80,7 +85,8 @@ def _resource_name(
     resource_name = '123'
     # resource_name = 'cachedContents/123'
     client.vertexai = False
-    _resource_name(client, resource_name, collection_identifier='cachedContents')
+    _resource_name(client, resource_name,
+      collection_identifier='cachedContents')
     returns 'cachedContents/123'
 
   Example:
@@ -88,7 +94,8 @@ def _resource_name(
     resource_prefix = 'cachedContents'
     client.vertexai = False
     # client.vertexai = True
-    _resource_name(client, resource_name, collection_identifier='cachedContents')
+    _resource_name(client, resource_name,
+      collection_identifier='cachedContents')
     returns: 'some/wrong/cachedContents/resource/name/123'
 
   Returns:
@@ -99,7 +106,7 @@ def _resource_name(
       # Check if prepending the collection identifier won't violate the
       # collection hierarchy depth.
       and f'{collection_identifier}/{resource_name}'.count('/') + 1
-      == collection_hirearchy_depth
+      == collection_hierarchy_depth
   )
   if client.vertexai:
     if resource_name.startswith('projects/'):
@@ -142,6 +149,7 @@ def t_model(client: _api_client.ApiClient, model: str):
     else:
       return f'models/{model}'
 
+
 def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
   if api_client.vertexai:
     if base_models:
@@ -155,8 +163,12 @@ def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
       return 'tunedModels'
 
 
-def t_extract_models(api_client: _api_client.ApiClient, response: dict) -> list[types.Model]:
-  if response.get('models') is not None:
+def t_extract_models(
+    api_client: _api_client.ApiClient, response: dict
+) -> list[types.Model]:
+  if not response:
+    return []
+  elif response.get('models') is not None:
     return response.get('models')
   elif response.get('tunedModels') is not None:
     return response.get('tunedModels')
@@ -204,6 +216,10 @@ def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
     return types.Part(text=part)
   if isinstance(part, PIL.Image.Image):
     return types.Part(inline_data=pil_to_blob(part))
+  if isinstance(part, types.File):
+    if not part.uri or not part.mime_type:
+      raise ValueError('file uri and mime_type are required.')
+    return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)
   else:
     return part
 
@@ -282,32 +298,222 @@ def t_contents(
     return [t_content(client, contents)]
 
 
-def process_schema(data: dict):
-  if isinstance(data, dict):
-    # Iterate over a copy of keys to allow deletion
-    for key in list(data.keys()):
-      if key == 'title':
-        del data[key]
-      elif key == 'type':
-        data[key] = data[key].upper()
-      else:
-        process_schema(data[key])
-  elif isinstance(data, list):
-    for item in data:
-      process_schema(item)
+def handle_null_fields(data: dict[str, Any]):
+  """Process null fields in the schema so it is compatible with OpenAPI.
+
+  The OpenAPI spec does not support 'type: 'null' in the schema. This function
+  handles this case by adding 'nullable: True' to the null field and removing
+  the {'type': 'null'} entry.
+
+  https://swagger.io/docs/specification/v3_0/data-models/data-types/#null
+
+  Example of schema properties before and after handling null fields:
+    Before:
+      {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "total_area_sq_mi": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Area Sq Mi"
+        }
+      }
+
+    After:
+      {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "total_area_sq_mi": {
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "title": "Total Area Sq Mi"
+        }
+      }
+  """
+
+  for field in list(data.keys()):
+    field_info = data[field]
+    if (
+        isinstance(field_info, dict)
+        and 'type' in field_info
+        and field_info['type'] == 'null'
+    ):
+      data[field]['nullable'] = True
+      del data[field]['type']
+    elif 'anyOf' in field_info:
+      for item in field_info['anyOf']:
+        if 'type' in item and item['type'] == 'null':
+          data[field]['nullable'] = True
+          data[field]['anyOf'].remove({'type': 'null'})
+          if len(data[field]['anyOf']) == 1:
+            # If there is only one type left after removing null, remove the anyOf field.
+            field_type = data[field]['anyOf'][0]['type']
+            data[field]['type'] = field_type
+            del data[field]['anyOf']
 
   return data
 
 
+def process_schema(
+    data: dict[str, Any], client: Optional[_api_client.ApiClient] = None
+):
+  if isinstance(data, dict):
+    # Iterate over a copy of keys to allow deletion
+    for key in list(data.keys()):
+      if key == 'properties':
+        data[key] = handle_null_fields(data[key])
+      # Only delete 'title'for the Gemini API
+      if client and not client.vertexai and key == 'title':
+        del data[key]
+      else:
+        process_schema(data[key], client)
+  elif isinstance(data, list):
+    for item in data:
+      process_schema(item, client)
+
+  return data
+
+
+def _build_schema(fname: str, fields_dict: dict[str, Any]) -> dict[str, Any]:
+  parameters = pydantic.create_model(fname, **fields_dict).model_json_schema()
+  defs = parameters.pop('$defs', {})
+
+  for _, value in defs.items():
+    unpack_defs(value, defs)
+
+  unpack_defs(parameters, defs)
+  return parameters['properties']['dummy']
+
+
+def unpack_defs(schema: dict[str, Any], defs: dict[str, Any]):
+  """Unpacks the $defs values in the schema generated by pydantic so they can be understood by the API.
+
+  Example of a schema before and after unpacking:
+    Before:
+
+    `schema`
+
+    {'properties': {
+        'dummy': {
+            'items': {
+                '$ref': '#/$defs/CountryInfo'
+            },
+            'title': 'Dummy',
+            'type': 'array'
+            }
+        },
+        'required': ['dummy'],
+        'title': 'dummy',
+        'type': 'object'}
+
+    `defs`
+
+    {'CountryInfo': {'properties': {'continent': {'title': 'Continent', 'type':
+    'string'}, 'gdp': {'title': 'Gdp', 'type': 'integer'}}, 'required':
+    ['continent', 'gdp'], 'title': 'CountryInfo', 'type': 'object'}}
+
+    After:
+
+    `schema`
+    {'properties': {
+        'continent': {'title': 'Continent', 'type': 'string'},
+        'gdp': {'title': 'Gdp', 'type': 'integer'}
+      },
+      'required': ['continent', 'gdp'],
+      'title': 'CountryInfo',
+      'type': 'object'
+    }
+  """
+  properties = schema.get('properties', None)
+  if properties is None:
+    return
+
+  for name, value in properties.items():
+    ref_key = value.get('$ref', None)
+    if ref_key is not None:
+      ref = defs[ref_key.split('defs/')[-1]]
+      unpack_defs(ref, defs)
+      properties[name] = ref
+      continue
+
+    anyof = value.get('anyOf', None)
+    if anyof is not None:
+      for i, atype in enumerate(anyof):
+        ref_key = atype.get('$ref', None)
+        if ref_key is not None:
+          ref = defs[ref_key.split('defs/')[-1]]
+          unpack_defs(ref, defs)
+          anyof[i] = ref
+      continue
+
+    items = value.get('items', None)
+    if items is not None:
+      ref_key = items.get('$ref', None)
+      if ref_key is not None:
+        ref = defs[ref_key.split('defs/')[-1]]
+        unpack_defs(ref, defs)
+        value['items'] = ref
+        continue
+
+
+def _process_enum(
+    enum: EnumMeta, client: Optional[_api_client.ApiClient] = None
+) -> types.Schema:
+  for member in enum:
+    if not isinstance(member.value, str):
+      raise TypeError(
+          f'Enum member {member.name} value must be a string, got'
+          f' {type(member.value)}'
+      )
+  enum_schema = _build_schema(
+      enum.__name__, {'dummy': (enum, pydantic.Field())}
+  )
+  enum_schema = process_schema(enum_schema, client)
+  return types.Schema.model_validate(enum_schema)
+
+
 def t_schema(
-    _: _api_client.ApiClient, origin: Union[types.SchemaDict, Any]
+    client: _api_client.ApiClient, origin: Union[types.SchemaUnionDict, Any]
 ) -> Optional[types.Schema]:
   if not origin:
     return None
   if isinstance(origin, dict):
-    return origin
-  schema = process_schema(origin.model_json_schema())
-  return types.Schema.model_validate(schema)
+    return process_schema(origin, client)
+  if isinstance(origin, EnumMeta):
+    return _process_enum(origin, client)
+  if isinstance(origin, types.Schema):
+    if dict(origin) == dict(types.Schema()):
+      # response_schema value was coerced to an empty Schema instance because it
+      # did not adhere to the Schema field annotation
+      raise ValueError('Empty schema is not supported.')
+    schema = process_schema(origin.model_dump(exclude_unset=True), client)
+    return types.Schema.model_validate(schema)
+  if isinstance(origin, GenericAlias):
+    if origin.__origin__ is list and inspect.isclass(origin.__args__[0]):
+      if issubclass(origin.__args__[0], pydantic.BaseModel):
+        # Handle cases where response schema is `list[pydantic.BaseModel]`
+        list_schema = _build_schema(
+            'dummy', {'dummy': (origin, pydantic.Field())}
+        )
+        list_schema = process_schema(list_schema, client)
+        return types.Schema.model_validate(list_schema)
+    raise ValueError(f'Unsupported schema type: GenericAlias {origin}')
+  if issubclass(origin, pydantic.BaseModel):
+    schema = process_schema(origin.model_json_schema(), client)
+    return types.Schema.model_validate(schema)
+  raise ValueError(f'Unsupported schema type: {origin}')
 
 
 def t_speech_config(
@@ -343,10 +549,12 @@ def t_speech_config(
 def t_tool(client: _api_client.ApiClient, origin) -> types.Tool:
   if not origin:
     return None
-  if inspect.isfunction(origin):
+  if inspect.isfunction(origin) or inspect.ismethod(origin):
     return types.Tool(
         function_declarations=[
-            types.FunctionDeclaration.from_function(client, origin)
+            types.FunctionDeclaration.from_callable(
+                client=client, callable=origin
+            )
         ]
     )
   else:
@@ -456,10 +664,25 @@ def t_resolve_operation(api_client: _api_client.ApiClient, struct: dict):
     return struct
 
 
-def t_file_name(api_client: _api_client.ApiClient, name: str):
-  # Remove the files/ prefx since it's added to the url path.
-  if name.startswith('files/'):
-    return name.split('files/')[1]
+def t_file_name(
+    api_client: _api_client.ApiClient, name: Union[str, types.File]
+):
+  # Remove the files/ prefix since it's added to the url path.
+  if isinstance(name, types.File):
+    name = name.name
+
+  if name is None:
+    raise ValueError('File name is required.')
+
+  if name.startswith('https://'):
+    suffix = name.split('files/')[1]
+    match = re.match('[a-z0-9]+', suffix)
+    if match is None:
+      raise ValueError(f'Could not extract file name from URI: {name}')
+    name = match.group(0)
+  elif name.startswith('files/'):
+    name = name.split('files/')[1]
+
   return name
 
 
@@ -481,12 +704,8 @@ def t_tuning_job_status(
 # Some fields don't accept url safe base64 encoding.
 # We shouldn't use this transformer if the backend adhere to Cloud Type
 # format https://cloud.google.com/docs/discovery/type-format.
-# TODO(b/389133914): Remove the hack after Vertex backend fix the issue.
+# TODO(b/389133914,b/390320301): Remove the hack after backend fix the issue.
 def t_bytes(api_client: _api_client.ApiClient, data: bytes) -> str:
   if not isinstance(data, bytes):
     return data
-  if api_client.vertexai:
-    return base64.b64encode(data).decode('ascii')
-  else:
-    return base64.urlsafe_encode(data).decode('ascii')
-
+  return base64.b64encode(data).decode('ascii')

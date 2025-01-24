@@ -50,7 +50,7 @@ def test_constructor_with_http_options():
       "api_version": "v1main",
       "base_url": "https://placeholder-fake-url.com/",
       "headers": {"X-Custom-Header": "custom_value_mldev"},
-      "timeout": 10.0,
+      "timeout": 10000,
   }
   vertexai_http_options = {
       "api_version": "v1",
@@ -58,7 +58,7 @@ def test_constructor_with_http_options():
           "https://{self.location}-aiplatform.googleapis.com/{{api_version}}/"
       ),
       "headers": {"X-Custom-Header": "custom_value_vertexai"},
-      "timeout": 11.0,
+      "timeout": 11000,
   }
 
   mldev_client = Client(
@@ -85,7 +85,7 @@ def test_constructor_with_http_options():
 
   assert (
       mldev_client.models._api_client.get_read_only_http_options()["timeout"]
-      == 10.0
+      == 10000
   )
 
   vertexai_client = Client(
@@ -116,7 +116,7 @@ def test_constructor_with_http_options():
 
   assert (
       vertexai_client.models._api_client.get_read_only_http_options()["timeout"]
-      == 11.0
+      == 11000
   )
 
 
@@ -345,6 +345,18 @@ def test_invalid_vertexai_constructor2():
         credentials=creds,
         api_key=api_key,
     )
+
+
+def test_invalid_vertexai_constructor3(monkeypatch):
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    project_id = "fake_project_id"
+    with pytest.raises(ValueError):
+      Client(
+          vertexai=True,
+          project=project_id
+      )
 
 
 def test_vertexai_explicit_arg_precedence1(monkeypatch):

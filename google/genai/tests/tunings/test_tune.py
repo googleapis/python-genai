@@ -29,7 +29,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
             ),
         ),
-        exception_if_mldev="gcs_uri parameter is not supported in Google AI.",
+        exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri_all_parameters",
@@ -51,7 +51,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 # learning_rate=0.01,
             ),
         ),
-        exception_if_mldev="gcs_uri parameter is not supported in Google AI.",
+        exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri_parameters_unsupported_by_vertex",
@@ -67,7 +67,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_vertex="batch_size parameter is not supported in Vertex AI.",
-        exception_if_mldev="gcs_uri parameter is not supported in Google AI.",
+        exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_examples",
@@ -153,10 +153,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 # ),
             ),
         ),
-        exception_if_mldev="adapter_size parameter is not supported in Google AI.",
+        exception_if_mldev="adapter_size parameter is not supported in Gemini API.",
         exception_if_vertex="examples parameter is not supported in Vertex AI.",
     ),
-    # # Only supported in Google AI API v1alpha
+    # # Only supported in Gemini API v1alpha
     # TestTableItem(
     #     name="test_dataset_multiturn_examples",
     #     parameters=genai_types.CreateSftTuningJobRequest(

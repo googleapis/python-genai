@@ -19,206 +19,295 @@ import datetime
 import inspect
 import json
 import logging
-from typing import Any, Callable, Literal, Optional, TypedDict, Union
+from typing import Any, Callable, GenericAlias, Literal, Optional, TypedDict, Union
 import PIL.Image
 import pydantic
 from pydantic import Field
 from . import _common
 
 
-Outcome = Literal[
-    "OUTCOME_UNSPECIFIED",
-    "OUTCOME_OK",
-    "OUTCOME_FAILED",
-    "OUTCOME_DEADLINE_EXCEEDED",
-]
+class Outcome(_common.CaseInSensitiveEnum):
+  """Required. Outcome of the code execution."""
+
+  OUTCOME_UNSPECIFIED = 'OUTCOME_UNSPECIFIED'
+  OUTCOME_OK = 'OUTCOME_OK'
+  OUTCOME_FAILED = 'OUTCOME_FAILED'
+  OUTCOME_DEADLINE_EXCEEDED = 'OUTCOME_DEADLINE_EXCEEDED'
 
 
-Language = Literal["LANGUAGE_UNSPECIFIED", "PYTHON"]
+class Language(_common.CaseInSensitiveEnum):
+  """Required. Programming language of the `code`."""
+
+  LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
+  PYTHON = 'PYTHON'
 
 
-Type = Literal[
-    "TYPE_UNSPECIFIED",
-    "STRING",
-    "NUMBER",
-    "INTEGER",
-    "BOOLEAN",
-    "ARRAY",
-    "OBJECT",
-]
+class Type(_common.CaseInSensitiveEnum):
+  """A basic data type."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  STRING = 'STRING'
+  NUMBER = 'NUMBER'
+  INTEGER = 'INTEGER'
+  BOOLEAN = 'BOOLEAN'
+  ARRAY = 'ARRAY'
+  OBJECT = 'OBJECT'
 
 
-HarmCategory = Literal[
-    "HARM_CATEGORY_UNSPECIFIED",
-    "HARM_CATEGORY_HATE_SPEECH",
-    "HARM_CATEGORY_DANGEROUS_CONTENT",
-    "HARM_CATEGORY_HARASSMENT",
-    "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-    "HARM_CATEGORY_CIVIC_INTEGRITY",
-]
+class HarmCategory(_common.CaseInSensitiveEnum):
+  """Required. Harm category."""
+
+  HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
+  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
+  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
+  HARM_CATEGORY_HARASSMENT = 'HARM_CATEGORY_HARASSMENT'
+  HARM_CATEGORY_SEXUALLY_EXPLICIT = 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
+  HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
 
 
-HarmBlockMethod = Literal[
-    "HARM_BLOCK_METHOD_UNSPECIFIED", "SEVERITY", "PROBABILITY"
-]
+class HarmBlockMethod(_common.CaseInSensitiveEnum):
+  """Optional.
+
+  Specify if the threshold is used for probability or severity score. If not
+  specified, the threshold is used for probability score.
+  """
+
+  HARM_BLOCK_METHOD_UNSPECIFIED = 'HARM_BLOCK_METHOD_UNSPECIFIED'
+  SEVERITY = 'SEVERITY'
+  PROBABILITY = 'PROBABILITY'
 
 
-HarmBlockThreshold = Literal[
-    "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
-    "BLOCK_LOW_AND_ABOVE",
-    "BLOCK_MEDIUM_AND_ABOVE",
-    "BLOCK_ONLY_HIGH",
-    "BLOCK_NONE",
-    "OFF",
-]
+class HarmBlockThreshold(_common.CaseInSensitiveEnum):
+  """Required. The harm block threshold."""
+
+  HARM_BLOCK_THRESHOLD_UNSPECIFIED = 'HARM_BLOCK_THRESHOLD_UNSPECIFIED'
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
+  OFF = 'OFF'
 
 
-Mode = Literal["MODE_UNSPECIFIED", "MODE_DYNAMIC"]
+class Mode(_common.CaseInSensitiveEnum):
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
 
 
-FinishReason = Literal[
-    "FINISH_REASON_UNSPECIFIED",
-    "STOP",
-    "MAX_TOKENS",
-    "SAFETY",
-    "RECITATION",
-    "OTHER",
-    "BLOCKLIST",
-    "PROHIBITED_CONTENT",
-    "SPII",
-    "MALFORMED_FUNCTION_CALL",
-]
+class State(_common.CaseInSensitiveEnum):
+  """Output only. RagFile state."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  ACTIVE = 'ACTIVE'
+  ERROR = 'ERROR'
 
 
-HarmProbability = Literal[
-    "HARM_PROBABILITY_UNSPECIFIED", "NEGLIGIBLE", "LOW", "MEDIUM", "HIGH"
-]
+class FinishReason(_common.CaseInSensitiveEnum):
+  """Output only.
+
+  The reason why the model stopped generating tokens. If empty, the model has
+  not stopped generating the tokens.
+  """
+
+  FINISH_REASON_UNSPECIFIED = 'FINISH_REASON_UNSPECIFIED'
+  STOP = 'STOP'
+  MAX_TOKENS = 'MAX_TOKENS'
+  SAFETY = 'SAFETY'
+  RECITATION = 'RECITATION'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+  SPII = 'SPII'
+  MALFORMED_FUNCTION_CALL = 'MALFORMED_FUNCTION_CALL'
 
 
-HarmSeverity = Literal[
-    "HARM_SEVERITY_UNSPECIFIED",
-    "HARM_SEVERITY_NEGLIGIBLE",
-    "HARM_SEVERITY_LOW",
-    "HARM_SEVERITY_MEDIUM",
-    "HARM_SEVERITY_HIGH",
-]
+class HarmProbability(_common.CaseInSensitiveEnum):
+  """Output only. Harm probability levels in the content."""
+
+  HARM_PROBABILITY_UNSPECIFIED = 'HARM_PROBABILITY_UNSPECIFIED'
+  NEGLIGIBLE = 'NEGLIGIBLE'
+  LOW = 'LOW'
+  MEDIUM = 'MEDIUM'
+  HIGH = 'HIGH'
 
 
-BlockedReason = Literal[
-    "BLOCKED_REASON_UNSPECIFIED",
-    "SAFETY",
-    "OTHER",
-    "BLOCKLIST",
-    "PROHIBITED_CONTENT",
-]
+class HarmSeverity(_common.CaseInSensitiveEnum):
+  """Output only. Harm severity levels in the content."""
+
+  HARM_SEVERITY_UNSPECIFIED = 'HARM_SEVERITY_UNSPECIFIED'
+  HARM_SEVERITY_NEGLIGIBLE = 'HARM_SEVERITY_NEGLIGIBLE'
+  HARM_SEVERITY_LOW = 'HARM_SEVERITY_LOW'
+  HARM_SEVERITY_MEDIUM = 'HARM_SEVERITY_MEDIUM'
+  HARM_SEVERITY_HIGH = 'HARM_SEVERITY_HIGH'
 
 
-DeploymentResourcesType = Literal[
-    "DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED",
-    "DEDICATED_RESOURCES",
-    "AUTOMATIC_RESOURCES",
-    "SHARED_RESOURCES",
-]
+class BlockedReason(_common.CaseInSensitiveEnum):
+  """Output only. Blocked reason."""
+
+  BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
+  SAFETY = 'SAFETY'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
 
 
-JobState = Literal[
-    "JOB_STATE_UNSPECIFIED",
-    "JOB_STATE_QUEUED",
-    "JOB_STATE_PENDING",
-    "JOB_STATE_RUNNING",
-    "JOB_STATE_SUCCEEDED",
-    "JOB_STATE_FAILED",
-    "JOB_STATE_CANCELLING",
-    "JOB_STATE_CANCELLED",
-    "JOB_STATE_PAUSED",
-    "JOB_STATE_EXPIRED",
-    "JOB_STATE_UPDATING",
-    "JOB_STATE_PARTIALLY_SUCCEEDED",
-]
+class DeploymentResourcesType(_common.CaseInSensitiveEnum):
+  """"""
+
+  DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED = (
+      'DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED'
+  )
+  DEDICATED_RESOURCES = 'DEDICATED_RESOURCES'
+  AUTOMATIC_RESOURCES = 'AUTOMATIC_RESOURCES'
+  SHARED_RESOURCES = 'SHARED_RESOURCES'
 
 
-AdapterSize = Literal[
-    "ADAPTER_SIZE_UNSPECIFIED",
-    "ADAPTER_SIZE_ONE",
-    "ADAPTER_SIZE_FOUR",
-    "ADAPTER_SIZE_EIGHT",
-    "ADAPTER_SIZE_SIXTEEN",
-    "ADAPTER_SIZE_THIRTY_TWO",
-]
+class JobState(_common.CaseInSensitiveEnum):
+  """Config class for the job state."""
+
+  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
+  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
+  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
+  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
+  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
+  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
+  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
+  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
+  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
+  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
+  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
+  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
 
 
-State = Literal["STATE_UNSPECIFIED", "ACTIVE", "ERROR"]
+class AdapterSize(_common.CaseInSensitiveEnum):
+  """Optional. Adapter size for tuning."""
+
+  ADAPTER_SIZE_UNSPECIFIED = 'ADAPTER_SIZE_UNSPECIFIED'
+  ADAPTER_SIZE_ONE = 'ADAPTER_SIZE_ONE'
+  ADAPTER_SIZE_FOUR = 'ADAPTER_SIZE_FOUR'
+  ADAPTER_SIZE_EIGHT = 'ADAPTER_SIZE_EIGHT'
+  ADAPTER_SIZE_SIXTEEN = 'ADAPTER_SIZE_SIXTEEN'
+  ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
 
 
-DynamicRetrievalConfigMode = Literal["MODE_UNSPECIFIED", "MODE_DYNAMIC"]
+class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
+  """Config class for the dynamic retrieval config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
 
 
-FunctionCallingConfigMode = Literal["MODE_UNSPECIFIED", "AUTO", "ANY", "NONE"]
+class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
+  """Config class for the function calling config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  AUTO = 'AUTO'
+  ANY = 'ANY'
+  NONE = 'NONE'
 
 
-MediaResolution = Literal[
-    "MEDIA_RESOLUTION_UNSPECIFIED",
-    "MEDIA_RESOLUTION_LOW",
-    "MEDIA_RESOLUTION_MEDIUM",
-    "MEDIA_RESOLUTION_HIGH",
-]
+class MediaResolution(_common.CaseInSensitiveEnum):
+  """The media resolution to use."""
+
+  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
 
 
-SafetyFilterLevel = Literal[
-    "BLOCK_LOW_AND_ABOVE",
-    "BLOCK_MEDIUM_AND_ABOVE",
-    "BLOCK_ONLY_HIGH",
-    "BLOCK_NONE",
-]
+class SafetyFilterLevel(_common.CaseInSensitiveEnum):
+  """Enum that controls the safety filter level for objectionable content."""
+
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
 
 
-PersonGeneration = Literal["DONT_ALLOW", "ALLOW_ADULT", "ALLOW_ALL"]
+class PersonGeneration(_common.CaseInSensitiveEnum):
+  """Enum that controls the generation of people."""
+
+  DONT_ALLOW = 'DONT_ALLOW'
+  ALLOW_ADULT = 'ALLOW_ADULT'
+  ALLOW_ALL = 'ALLOW_ALL'
 
 
-ImagePromptLanguage = Literal["auto", "en", "ja", "ko", "hi"]
+class ImagePromptLanguage(_common.CaseInSensitiveEnum):
+  """Enum that specifies the language of the text in the prompt."""
+
+  auto = 'auto'
+  en = 'en'
+  ja = 'ja'
+  ko = 'ko'
+  hi = 'hi'
 
 
-MaskReferenceMode = Literal[
-    "MASK_MODE_DEFAULT",
-    "MASK_MODE_USER_PROVIDED",
-    "MASK_MODE_BACKGROUND",
-    "MASK_MODE_FOREGROUND",
-    "MASK_MODE_SEMANTIC",
-]
+class MaskReferenceMode(_common.CaseInSensitiveEnum):
+  """Enum representing the mask mode of a mask reference image."""
+
+  MASK_MODE_DEFAULT = 'MASK_MODE_DEFAULT'
+  MASK_MODE_USER_PROVIDED = 'MASK_MODE_USER_PROVIDED'
+  MASK_MODE_BACKGROUND = 'MASK_MODE_BACKGROUND'
+  MASK_MODE_FOREGROUND = 'MASK_MODE_FOREGROUND'
+  MASK_MODE_SEMANTIC = 'MASK_MODE_SEMANTIC'
 
 
-ControlReferenceType = Literal[
-    "CONTROL_TYPE_DEFAULT",
-    "CONTROL_TYPE_CANNY",
-    "CONTROL_TYPE_SCRIBBLE",
-    "CONTROL_TYPE_FACE_MESH",
-]
+class ControlReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the control type of a control reference image."""
+
+  CONTROL_TYPE_DEFAULT = 'CONTROL_TYPE_DEFAULT'
+  CONTROL_TYPE_CANNY = 'CONTROL_TYPE_CANNY'
+  CONTROL_TYPE_SCRIBBLE = 'CONTROL_TYPE_SCRIBBLE'
+  CONTROL_TYPE_FACE_MESH = 'CONTROL_TYPE_FACE_MESH'
 
 
-SubjectReferenceType = Literal[
-    "SUBJECT_TYPE_DEFAULT",
-    "SUBJECT_TYPE_PERSON",
-    "SUBJECT_TYPE_ANIMAL",
-    "SUBJECT_TYPE_PRODUCT",
-]
+class SubjectReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the subject type of a subject reference image."""
+
+  SUBJECT_TYPE_DEFAULT = 'SUBJECT_TYPE_DEFAULT'
+  SUBJECT_TYPE_PERSON = 'SUBJECT_TYPE_PERSON'
+  SUBJECT_TYPE_ANIMAL = 'SUBJECT_TYPE_ANIMAL'
+  SUBJECT_TYPE_PRODUCT = 'SUBJECT_TYPE_PRODUCT'
 
 
-EditMode = Literal[
-    "EDIT_MODE_DEFAULT",
-    "EDIT_MODE_INPAINT_REMOVAL",
-    "EDIT_MODE_INPAINT_INSERTION",
-    "EDIT_MODE_OUTPAINT",
-    "EDIT_MODE_CONTROLLED_EDITING",
-    "EDIT_MODE_STYLE",
-    "EDIT_MODE_BGSWAP",
-    "EDIT_MODE_PRODUCT_IMAGE",
-]
+class EditMode(_common.CaseInSensitiveEnum):
+  """Enum representing the Imagen 3 Edit mode."""
+
+  EDIT_MODE_DEFAULT = 'EDIT_MODE_DEFAULT'
+  EDIT_MODE_INPAINT_REMOVAL = 'EDIT_MODE_INPAINT_REMOVAL'
+  EDIT_MODE_INPAINT_INSERTION = 'EDIT_MODE_INPAINT_INSERTION'
+  EDIT_MODE_OUTPAINT = 'EDIT_MODE_OUTPAINT'
+  EDIT_MODE_CONTROLLED_EDITING = 'EDIT_MODE_CONTROLLED_EDITING'
+  EDIT_MODE_STYLE = 'EDIT_MODE_STYLE'
+  EDIT_MODE_BGSWAP = 'EDIT_MODE_BGSWAP'
+  EDIT_MODE_PRODUCT_IMAGE = 'EDIT_MODE_PRODUCT_IMAGE'
 
 
-FileState = Literal["STATE_UNSPECIFIED", "PROCESSING", "ACTIVE", "FAILED"]
+class FileState(_common.CaseInSensitiveEnum):
+  """State for the lifecycle of a File."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  PROCESSING = 'PROCESSING'
+  ACTIVE = 'ACTIVE'
+  FAILED = 'FAILED'
 
 
-Modality = Literal["MODALITY_UNSPECIFIED", "TEXT", "IMAGE", "AUDIO"]
+class FileSource(_common.CaseInSensitiveEnum):
+  """Source of the File."""
+
+  SOURCE_UNSPECIFIED = 'SOURCE_UNSPECIFIED'
+  UPLOADED = 'UPLOADED'
+  GENERATED = 'GENERATED'
+
+
+class Modality(_common.CaseInSensitiveEnum):
+  """Config class for the server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  TEXT = 'TEXT'
+  IMAGE = 'IMAGE'
+  AUDIO = 'AUDIO'
 
 
 class VideoMetadata(_common.BaseModel):
@@ -405,10 +494,7 @@ FunctionResponseOrDict = Union[FunctionResponse, FunctionResponseDict]
 
 
 class Blob(_common.BaseModel):
-  """Content blob.
-
-  It's preferred to send as text directly rather than raw bytes.
-  """
+  """Content blob."""
 
   data: Optional[bytes] = Field(
       default=None, description="""Required. Raw bytes."""
@@ -420,10 +506,7 @@ class Blob(_common.BaseModel):
 
 
 class BlobDict(TypedDict, total=False):
-  """Content blob.
-
-  It's preferred to send as text directly rather than raw bytes.
-  """
+  """Content blob."""
 
   data: Optional[bytes]
   """Required. Raw bytes."""
@@ -477,16 +560,16 @@ class Part(_common.BaseModel):
   )
 
   @classmethod
-  def from_uri(cls, file_uri: str, mime_type: str) -> "Part":
+  def from_uri(cls, *, file_uri: str, mime_type: str) -> 'Part':
     file_data = FileData(file_uri=file_uri, mime_type=mime_type)
     return cls(file_data=file_data)
 
   @classmethod
-  def from_text(cls, text: str) -> "Part":
+  def from_text(cls, *, text: str) -> 'Part':
     return cls(text=text)
 
   @classmethod
-  def from_bytes(cls, data: bytes, mime_type: str) -> "Part":
+  def from_bytes(cls, *, data: bytes, mime_type: str) -> 'Part':
     inline_data = Blob(
         data=data,
         mime_type=mime_type,
@@ -494,31 +577,33 @@ class Part(_common.BaseModel):
     return cls(inline_data=inline_data)
 
   @classmethod
-  def from_function_call(cls, name: str, args: dict[str, Any]) -> "Part":
+  def from_function_call(cls, *, name: str, args: dict[str, Any]) -> 'Part':
     function_call = FunctionCall(name=name, args=args)
     return cls(function_call=function_call)
 
   @classmethod
   def from_function_response(
-      cls, name: str, response: dict[str, Any]
-  ) -> "Part":
+      cls, *, name: str, response: dict[str, Any]
+  ) -> 'Part':
     function_response = FunctionResponse(name=name, response=response)
     return cls(function_response=function_response)
 
   @classmethod
-  def from_video_metadata(cls, end_offset: str, start_offset: str) -> "Part":
+  def from_video_metadata(cls, *, start_offset: str, end_offset: str) -> 'Part':
     video_metadata = VideoMetadata(
         end_offset=end_offset, start_offset=start_offset
     )
     return cls(video_metadata=video_metadata)
 
   @classmethod
-  def from_executable_code(cls, code: str, language: Language) -> "Part":
+  def from_executable_code(cls, *, code: str, language: Language) -> 'Part':
     executable_code = ExecutableCode(code=code, language=language)
     return cls(executable_code=executable_code)
 
   @classmethod
-  def from_code_execution_result(cls, outcome: Outcome, output: str) -> "Part":
+  def from_code_execution_result(
+      cls, *, outcome: Outcome, output: str
+  ) -> 'Part':
     code_execution_result = CodeExecutionResult(outcome=outcome, output=output)
     return cls(code_execution_result=code_execution_result)
 
@@ -594,6 +679,51 @@ class ContentDict(TypedDict, total=False):
 ContentOrDict = Union[Content, ContentDict]
 
 
+class HttpOptions(_common.BaseModel):
+  """HTTP options to be used in each of the requests."""
+
+  base_url: Optional[str] = Field(
+      default=None,
+      description="""The base URL for the AI platform service endpoint.""",
+  )
+  api_version: Optional[str] = Field(
+      default=None, description="""Specifies the version of the API to use."""
+  )
+  headers: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Additional HTTP headers to be sent with the request.""",
+  )
+  timeout: Optional[int] = Field(
+      default=None, description="""Timeout for the request in milliseconds."""
+  )
+  response_payload: Optional[dict[str, any]] = Field(
+      default=None,
+      description="""If set, the response payload will be returned int the supplied dict.""",
+  )
+
+
+class HttpOptionsDict(TypedDict, total=False):
+  """HTTP options to be used in each of the requests."""
+
+  base_url: Optional[str]
+  """The base URL for the AI platform service endpoint."""
+
+  api_version: Optional[str]
+  """Specifies the version of the API to use."""
+
+  headers: Optional[dict[str, str]]
+  """Additional HTTP headers to be sent with the request."""
+
+  timeout: Optional[int]
+  """Timeout for the request in milliseconds."""
+
+  response_payload: Optional[dict[str, any]]
+  """If set, the response payload will be returned int the supplied dict."""
+
+
+HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
+
+
 class Schema(_common.BaseModel):
   """Schema that defines the format of input and output data.
 
@@ -623,7 +753,7 @@ class Schema(_common.BaseModel):
   default: Optional[Any] = Field(
       default=None, description="""Optional. Default value of the data."""
   )
-  any_of: list["Schema"] = Field(
+  any_of: list['Schema'] = Field(
       default=None,
       description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
   )
@@ -672,11 +802,11 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
   )
-  items: "Schema" = Field(
+  items: 'Schema' = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
   )
-  properties: dict[str, "Schema"] = Field(
+  properties: dict[str, 'Schema'] = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
   )
@@ -710,7 +840,7 @@ class SchemaDict(TypedDict, total=False):
   default: Optional[Any]
   """Optional. Default value of the data."""
 
-  any_of: list["SchemaDict"]
+  any_of: list['SchemaDict']
   """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
 
   max_length: Optional[int]
@@ -749,10 +879,10 @@ class SchemaDict(TypedDict, total=False):
   format: Optional[str]
   """Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc"""
 
-  items: "SchemaDict"
+  items: 'SchemaDict'
   """Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY."""
 
-  properties: dict[str, "SchemaDict"]
+  properties: dict[str, 'SchemaDict']
   """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
 
   required: Optional[list[str]]
@@ -821,87 +951,60 @@ class FunctionDeclaration(_common.BaseModel):
   )
 
   @classmethod
-  def _get_variant(cls, client) -> str:
-    """Returns the function variant based on the provided client object."""
-    if client.vertexai:
-      return "VERTEX_AI"
-    else:
-      return "GOOGLE_AI"
-
-  @classmethod
-  def from_function_with_options(
+  def from_callable(
       cls,
-      func: Callable,
-      variant: Literal["GOOGLE_AI", "VERTEX_AI", "DEFAULT"] = "GOOGLE_AI",
-  ) -> "FunctionDeclaration":
-    """Converts a function to a FunctionDeclaration based on an API endpoint.
-
-    Supported endpoints are: 'GOOGLE_AI', 'VERTEX_AI', or 'DEFAULT'.
-    """
+      *,
+      client,
+      callable: Callable,
+  ) -> 'FunctionDeclaration':
+    """Converts a Callable to a FunctionDeclaration based on the client."""
     from . import _automatic_function_calling_util
 
-    supported_variants = ["GOOGLE_AI", "VERTEX_AI", "DEFAULT"]
-    if variant not in supported_variants:
-      raise ValueError(
-          f"Unsupported variant: {variant}. Supported variants are:"
-          f" {', '.join(supported_variants)}"
-      )
-
-    # TODO: b/382524014 - Add support for DEFAULT API endpoint.
-
     parameters_properties = {}
-    for name, param in inspect.signature(func).parameters.items():
+    for name, param in inspect.signature(callable).parameters.items():
       if param.kind in (
           inspect.Parameter.POSITIONAL_OR_KEYWORD,
           inspect.Parameter.KEYWORD_ONLY,
           inspect.Parameter.POSITIONAL_ONLY,
       ):
         schema = _automatic_function_calling_util._parse_schema_from_parameter(
-            variant, param, func.__name__
+            client, param, callable.__name__
         )
         parameters_properties[name] = schema
     declaration = FunctionDeclaration(
-        name=func.__name__,
-        description=func.__doc__,
+        name=callable.__name__,
+        description=callable.__doc__,
     )
     if parameters_properties:
       declaration.parameters = Schema(
-          type="OBJECT",
+          type='OBJECT',
           properties=parameters_properties,
       )
-      if variant == "VERTEX_AI":
+      if client.vertexai:
         declaration.parameters.required = (
             _automatic_function_calling_util._get_required_fields(
                 declaration.parameters
             )
         )
-    if not variant == "VERTEX_AI":
+    if not client.vertexai:
       return declaration
 
-    return_annotation = inspect.signature(func).return_annotation
+    return_annotation = inspect.signature(callable).return_annotation
     if return_annotation is inspect._empty:
       return declaration
 
     declaration.response = (
         _automatic_function_calling_util._parse_schema_from_parameter(
-            variant,
+            client,
             inspect.Parameter(
-                "return_value",
+                'return_value',
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 annotation=return_annotation,
             ),
-            func.__name__,
+            callable.__name__,
         )
     )
     return declaration
-
-  @classmethod
-  def from_function(cls, client, func: Callable) -> "FunctionDeclaration":
-    """Converts a function to a FunctionDeclaration."""
-    return cls.from_function_with_options(
-        variant=cls._get_variant(client),
-        func=func,
-    )
 
 
 class FunctionDeclarationDict(TypedDict, total=False):
@@ -1365,7 +1468,164 @@ AutomaticFunctionCallingConfigOrDict = Union[
 ]
 
 
-PartUnion = Union[Part, PIL.Image.Image, str]
+class ThinkingConfig(_common.BaseModel):
+  """The thinking features configuration."""
+
+  include_thoughts: Optional[bool] = Field(
+      default=None,
+      description="""Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """,
+  )
+
+
+class ThinkingConfigDict(TypedDict, total=False):
+  """The thinking features configuration."""
+
+  include_thoughts: Optional[bool]
+  """Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """
+
+
+ThinkingConfigOrDict = Union[ThinkingConfig, ThinkingConfigDict]
+
+
+class FileStatus(_common.BaseModel):
+  """Status of a File that uses a common error model."""
+
+  details: Optional[list[dict[str, Any]]] = Field(
+      default=None,
+      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
+  )
+  message: Optional[str] = Field(
+      default=None,
+      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
+  )
+  code: Optional[int] = Field(
+      default=None, description="""The status code. 0 for OK, 1 for CANCELLED"""
+  )
+
+
+class FileStatusDict(TypedDict, total=False):
+  """Status of a File that uses a common error model."""
+
+  details: Optional[list[dict[str, Any]]]
+  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
+
+  message: Optional[str]
+  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
+
+  code: Optional[int]
+  """The status code. 0 for OK, 1 for CANCELLED"""
+
+
+FileStatusOrDict = Union[FileStatus, FileStatusDict]
+
+
+class File(_common.BaseModel):
+  """A file uploaded to the API."""
+
+  name: Optional[str] = Field(
+      default=None,
+      description="""The `File` resource name. The ID (name excluding the "files/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be generated. Example: `files/123-456`""",
+  )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'""",
+  )
+  mime_type: Optional[str] = Field(
+      default=None, description="""Output only. MIME type of the file."""
+  )
+  size_bytes: Optional[int] = Field(
+      default=None, description="""Output only. Size of the file in bytes."""
+  )
+  create_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Output only. The timestamp of when the `File` was created.""",
+  )
+  expiration_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'""",
+  )
+  update_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Output only. The timestamp of when the `File` was last updated.""",
+  )
+  sha256_hash: Optional[str] = Field(
+      default=None,
+      description="""Output only. SHA-256 hash of the uploaded bytes.""",
+  )
+  uri: Optional[str] = Field(
+      default=None, description="""Output only. The URI of the `File`."""
+  )
+  download_uri: Optional[str] = Field(
+      default=None,
+      description="""Output only. The URI of the `File`, only set for downloadable (generated) files.""",
+  )
+  state: Optional[FileState] = Field(
+      default=None, description="""Output only. Processing state of the File."""
+  )
+  source: Optional[FileSource] = Field(
+      default=None, description="""Output only. The source of the `File`."""
+  )
+  video_metadata: Optional[dict[str, Any]] = Field(
+      default=None, description="""Output only. Metadata for a video."""
+  )
+  error: Optional[FileStatus] = Field(
+      default=None,
+      description="""Output only. Error status if File processing failed.""",
+  )
+
+
+class FileDict(TypedDict, total=False):
+  """A file uploaded to the API."""
+
+  name: Optional[str]
+  """The `File` resource name. The ID (name excluding the "files/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be generated. Example: `files/123-456`"""
+
+  display_name: Optional[str]
+  """Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'"""
+
+  mime_type: Optional[str]
+  """Output only. MIME type of the file."""
+
+  size_bytes: Optional[int]
+  """Output only. Size of the file in bytes."""
+
+  create_time: Optional[datetime.datetime]
+  """Output only. The timestamp of when the `File` was created."""
+
+  expiration_time: Optional[datetime.datetime]
+  """Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'"""
+
+  update_time: Optional[datetime.datetime]
+  """Output only. The timestamp of when the `File` was last updated."""
+
+  sha256_hash: Optional[str]
+  """Output only. SHA-256 hash of the uploaded bytes."""
+
+  uri: Optional[str]
+  """Output only. The URI of the `File`."""
+
+  download_uri: Optional[str]
+  """Output only. The URI of the `File`, only set for downloadable (generated) files."""
+
+  state: Optional[FileState]
+  """Output only. Processing state of the File."""
+
+  source: Optional[FileSource]
+  """Output only. The source of the `File`."""
+
+  video_metadata: Optional[dict[str, Any]]
+  """Output only. Metadata for a video."""
+
+  error: Optional[FileStatusDict]
+  """Output only. Error status if File processing failed."""
+
+
+FileOrDict = Union[File, FileDict]
+
+
+PartUnion = Union[File, Part, PIL.Image.Image, str]
 
 
 PartUnionDict = Union[PartUnion, PartDict]
@@ -1377,7 +1637,7 @@ ContentUnion = Union[Content, list[PartUnion], PartUnion]
 ContentUnionDict = Union[ContentUnion, ContentDict]
 
 
-SchemaUnion = Union[dict, type, Schema]
+SchemaUnion = Union[dict, type, Schema, GenericAlias]
 
 
 SchemaUnionDict = Union[SchemaUnion, SchemaDict]
@@ -1387,7 +1647,7 @@ class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
   """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
 
   model_routing_preference: Optional[
-      Literal["UNKNOWN", "PRIORITIZE_QUALITY", "BALANCED", "PRIORITIZE_COST"]
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
   ] = Field(default=None, description="""The model routing preference.""")
 
 
@@ -1395,7 +1655,7 @@ class GenerationConfigRoutingConfigAutoRoutingModeDict(TypedDict, total=False):
   """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
 
   model_routing_preference: Optional[
-      Literal["UNKNOWN", "PRIORITIZE_QUALITY", "BALANCED", "PRIORITIZE_COST"]
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
   ]
   """The model routing preference."""
 
@@ -1469,6 +1729,9 @@ class GenerateContentConfig(_common.BaseModel):
   <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
   """
 
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   system_instruction: Optional[ContentUnion] = Field(
       default=None,
       description="""Instructions for the model to steer it toward better performance.
@@ -1603,9 +1866,20 @@ class GenerateContentConfig(_common.BaseModel):
       description="""The speech generation configuration.
       """,
   )
+  audio_timestamp: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, audio timestamp will be included in the request to the
+       model.
+      """,
+  )
   automatic_function_calling: Optional[AutomaticFunctionCallingConfig] = Field(
       default=None,
       description="""The configuration for automatic function calling.
+      """,
+  )
+  thinking_config: Optional[ThinkingConfig] = Field(
+      default=None,
+      description="""The thinking features configuration.
       """,
   )
 
@@ -1616,6 +1890,9 @@ class GenerateContentConfigDict(TypedDict, total=False):
   For more information, see `Content generation parameters
   <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
   """
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
 
   system_instruction: Optional[ContentUnionDict]
   """Instructions for the model to steer it toward better performance.
@@ -1729,8 +2006,17 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """The speech generation configuration.
       """
 
+  audio_timestamp: Optional[bool]
+  """If enabled, audio timestamp will be included in the request to the
+       model.
+      """
+
   automatic_function_calling: Optional[AutomaticFunctionCallingConfigDict]
   """The configuration for automatic function calling.
+      """
+
+  thinking_config: Optional[ThinkingConfigDict]
+  """The thinking features configuration.
       """
 
 
@@ -2493,20 +2779,20 @@ class GenerateContentResponse(_common.BaseModel):
       return None
     if len(self.candidates) > 1:
       logging.warning(
-          f"there are {len(self.candidates)} candidates, returning text from"
-          " the first candidate.Access response.candidates directly to get"
-          " text from other candidates."
+          f'there are {len(self.candidates)} candidates, returning text from'
+          ' the first candidate.Access response.candidates directly to get'
+          ' text from other candidates.'
       )
-    text = ""
+    text = ''
     any_text_part_text = False
     for part in self.candidates[0].content.parts:
       for field_name, field_value in part.dict(
-          exclude={"text", "thought"}
+          exclude={'text', 'thought'}
       ).items():
         if field_value is not None:
           raise ValueError(
-              "GenerateContentResponse.text only supports text parts, but got"
-              f" {field_name} part{part}"
+              'GenerateContentResponse.text only supports text parts, but got'
+              f' {field_name} part{part}'
           )
       if isinstance(part.text, str):
         if isinstance(part.thought, bool) and part.thought:
@@ -2527,8 +2813,8 @@ class GenerateContentResponse(_common.BaseModel):
       return None
     if len(self.candidates) > 1:
       logging.warning(
-          "Warning: there are multiple candidates in the response, returning"
-          " function calls from the first one."
+          'Warning: there are multiple candidates in the response, returning'
+          ' function calls from the first one.'
       )
     function_calls = [
         part.function_call
@@ -2540,16 +2826,20 @@ class GenerateContentResponse(_common.BaseModel):
 
   @classmethod
   def _from_response(
-      cls, response: dict[str, object], kwargs: dict[str, object]
+      cls, *, response: dict[str, object], kwargs: dict[str, object]
   ):
     result = super()._from_response(response, kwargs)
 
     # Handles response schema.
     response_schema = _common.get_value_by_path(
-        kwargs, ["config", "response_schema"]
+        kwargs, ['config', 'response_schema']
     )
-    if inspect.isclass(response_schema) and issubclass(
-        response_schema, pydantic.BaseModel
+    if (
+        inspect.isclass(response_schema)
+        and not (
+            isinstance(response_schema, GenericAlias)
+        )  # Needed for Python 3.9 and 3.10
+        and issubclass(response_schema, pydantic.BaseModel)
     ):
       # Pydantic schema.
       try:
@@ -2557,6 +2847,23 @@ class GenerateContentResponse(_common.BaseModel):
       # may not be a valid json per stream response
       except pydantic.ValidationError:
         pass
+
+    elif isinstance(response_schema, GenericAlias) and issubclass(
+        response_schema.__args__[0], pydantic.BaseModel
+    ):
+      # Handle cases where `list[pydantic.BaseModel]` was provided.
+      result.parsed = []
+      pydantic_model_class = response_schema.__args__[0]
+      response_list_json = json.loads(result.text)
+      for json_instance in response_list_json:
+        try:
+          pydantic_model_instance = pydantic_model_class.model_validate_json(
+              json.dumps(json_instance)
+          )
+          result.parsed.append(pydantic_model_instance)
+        # may not be a valid json per stream response
+        except pydantic.ValidationError:
+          pass
 
     elif isinstance(response_schema, dict) or isinstance(
         response_schema, pydantic.BaseModel
@@ -2596,7 +2903,7 @@ GenerateContentResponseOrDict = Union[
 class EmbedContentConfig(_common.BaseModel):
   """Class for configuring optional parameters for the embed_content method."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   task_type: Optional[str] = Field(
@@ -2635,7 +2942,7 @@ class EmbedContentConfig(_common.BaseModel):
 class EmbedContentConfigDict(TypedDict, total=False):
   """Class for configuring optional parameters for the embed_content method."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   task_type: Optional[str]
@@ -2834,10 +3141,10 @@ EmbedContentResponseOrDict = Union[
 ]
 
 
-class GenerateImageConfig(_common.BaseModel):
-  """Class that represents the config for generating an image."""
+class GenerateImagesConfig(_common.BaseModel):
+  """Class that represents the config for generating images."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   output_gcs_uri: Optional[str] = Field(
@@ -2907,20 +3214,20 @@ class GenerateImageConfig(_common.BaseModel):
   )
   add_watermark: Optional[bool] = Field(
       default=None,
-      description="""Whether to add a watermark to the generated image.
+      description="""Whether to add a watermark to the generated images.
       """,
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
-      description="""Aspect ratio of the generated image.
+      description="""Aspect ratio of the generated images.
       """,
   )
 
 
-class GenerateImageConfigDict(TypedDict, total=False):
-  """Class that represents the config for generating an image."""
+class GenerateImagesConfigDict(TypedDict, total=False):
+  """Class that represents the config for generating images."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   output_gcs_uri: Optional[str]
@@ -2977,19 +3284,21 @@ class GenerateImageConfigDict(TypedDict, total=False):
       """
 
   add_watermark: Optional[bool]
-  """Whether to add a watermark to the generated image.
+  """Whether to add a watermark to the generated images.
       """
 
   aspect_ratio: Optional[str]
-  """Aspect ratio of the generated image.
+  """Aspect ratio of the generated images.
       """
 
 
-GenerateImageConfigOrDict = Union[GenerateImageConfig, GenerateImageConfigDict]
+GenerateImagesConfigOrDict = Union[
+    GenerateImagesConfig, GenerateImagesConfigDict
+]
 
 
-class _GenerateImageParameters(_common.BaseModel):
-  """Class that represents the parameters for generating an image."""
+class _GenerateImagesParameters(_common.BaseModel):
+  """Class that represents the parameters for generating images."""
 
   model: Optional[str] = Field(
       default=None,
@@ -2998,34 +3307,34 @@ class _GenerateImageParameters(_common.BaseModel):
   )
   prompt: Optional[str] = Field(
       default=None,
-      description="""Text prompt that typically describes the image to output.
+      description="""Text prompt that typically describes the images to output.
       """,
   )
-  config: Optional[GenerateImageConfig] = Field(
+  config: Optional[GenerateImagesConfig] = Field(
       default=None,
-      description="""Configuration for generating an image.
+      description="""Configuration for generating images.
       """,
   )
 
 
-class _GenerateImageParametersDict(TypedDict, total=False):
-  """Class that represents the parameters for generating an image."""
+class _GenerateImagesParametersDict(TypedDict, total=False):
+  """Class that represents the parameters for generating images."""
 
   model: Optional[str]
   """ID of the model to use. For a list of models, see `Google models
     <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
 
   prompt: Optional[str]
-  """Text prompt that typically describes the image to output.
+  """Text prompt that typically describes the images to output.
       """
 
-  config: Optional[GenerateImageConfigDict]
-  """Configuration for generating an image.
+  config: Optional[GenerateImagesConfigDict]
+  """Configuration for generating images.
       """
 
 
-_GenerateImageParametersOrDict = Union[
-    _GenerateImageParameters, _GenerateImageParametersDict
+_GenerateImagesParametersOrDict = Union[
+    _GenerateImagesParameters, _GenerateImagesParametersDict
 ]
 
 
@@ -3044,13 +3353,16 @@ class Image(_common.BaseModel):
       or the ``gcs_uri`` field but not both.
       """,
   )
+  mime_type: Optional[str] = Field(
+      default=None, description="""The MIME type of the image."""
+  )
 
   _loaded_image = None
 
   """Image."""
 
-  @staticmethod
-  def from_file(location: str) -> "Image":
+  @classmethod
+  def from_file(cls, *, location: str) -> 'Image':
     """Lazy-loads an image from a local file or Google Cloud Storage.
 
     Args:
@@ -3065,22 +3377,22 @@ class Image(_common.BaseModel):
 
     parsed_url = urllib.parse.urlparse(location)
     if (
-        parsed_url.scheme == "https"
-        and parsed_url.netloc == "storage.googleapis.com"
+        parsed_url.scheme == 'https'
+        and parsed_url.netloc == 'storage.googleapis.com'
     ):
       parsed_url = parsed_url._replace(
-          scheme="gs",
-          netloc="",
-          path=f"/{urllib.parse.unquote(parsed_url.path)}",
+          scheme='gs',
+          netloc='',
+          path=f'/{urllib.parse.unquote(parsed_url.path)}',
       )
       location = urllib.parse.urlunparse(parsed_url)
 
-    if parsed_url.scheme == "gs":
-      return Image(gcs_uri=location)
+    if parsed_url.scheme == 'gs':
+      return cls(gcs_uri=location)
 
     # Load image from local path
     image_bytes = pathlib.Path(location).read_bytes()
-    image = Image(image_bytes=image_bytes)
+    image = cls(image_bytes=image_bytes)
     return image
 
   def show(self):
@@ -3101,7 +3413,7 @@ class Image(_common.BaseModel):
       IPython_display.display(self._pil_image)
 
   @property
-  def _pil_image(self) -> "PIL_Image.Image":
+  def _pil_image(self) -> 'PIL_Image.Image':
     try:
       from PIL import Image as PIL_Image
     except ImportError:
@@ -3111,8 +3423,8 @@ class Image(_common.BaseModel):
     if self._loaded_image is None:
       if not PIL_Image:
         raise RuntimeError(
-            "The PIL module is not available. Please install the Pillow"
-            " package."
+            'The PIL module is not available. Please install the Pillow'
+            ' package.'
         )
       self._loaded_image = PIL_Image.open(io.BytesIO(self.image_bytes))
     return self._loaded_image
@@ -3129,26 +3441,26 @@ class Image(_common.BaseModel):
 
 
 JOB_STATES_SUCCEEDED_VERTEX = [
-    "JOB_STATE_SUCCEEDED",
+    'JOB_STATE_SUCCEEDED',
 ]
 
 JOB_STATES_SUCCEEDED_MLDEV = [
-    "ACTIVE",
+    'ACTIVE',
 ]
 
 JOB_STATES_SUCCEEDED = JOB_STATES_SUCCEEDED_VERTEX + JOB_STATES_SUCCEEDED_MLDEV
 
 
 JOB_STATES_ENDED_VERTEX = [
-    "JOB_STATE_SUCCEEDED",
-    "JOB_STATE_FAILED",
-    "JOB_STATE_CANCELLED",
-    "JOB_STATE_EXPIRED",
+    'JOB_STATE_SUCCEEDED',
+    'JOB_STATE_FAILED',
+    'JOB_STATE_CANCELLED',
+    'JOB_STATE_EXPIRED',
 ]
 
 JOB_STATES_ENDED_MLDEV = [
-    "ACTIVE",
-    "FAILED",
+    'ACTIVE',
+    'FAILED',
 ]
 
 JOB_STATES_ENDED = JOB_STATES_ENDED_VERTEX + JOB_STATES_ENDED_MLDEV
@@ -3166,6 +3478,9 @@ class ImageDict(TypedDict, total=False):
   """The image bytes data. ``Image`` can contain a value for this field
       or the ``gcs_uri`` field but not both.
       """
+
+  mime_type: Optional[str]
+  """The MIME type of the image."""
 
 
 ImageOrDict = Union[Image, ImageDict]
@@ -3203,8 +3518,8 @@ class GeneratedImageDict(TypedDict, total=False):
 GeneratedImageOrDict = Union[GeneratedImage, GeneratedImageDict]
 
 
-class GenerateImageResponse(_common.BaseModel):
-  """Class that represents the output image response."""
+class GenerateImagesResponse(_common.BaseModel):
+  """Class that represents the output images response."""
 
   generated_images: Optional[list[GeneratedImage]] = Field(
       default=None,
@@ -3213,16 +3528,16 @@ class GenerateImageResponse(_common.BaseModel):
   )
 
 
-class GenerateImageResponseDict(TypedDict, total=False):
-  """Class that represents the output image response."""
+class GenerateImagesResponseDict(TypedDict, total=False):
+  """Class that represents the output images response."""
 
   generated_images: Optional[list[GeneratedImageDict]]
   """List of generated images.
       """
 
 
-GenerateImageResponseOrDict = Union[
-    GenerateImageResponse, GenerateImageResponseDict
+GenerateImagesResponseOrDict = Union[
+    GenerateImagesResponse, GenerateImagesResponseDict
 ]
 
 
@@ -3407,7 +3722,7 @@ _ReferenceImageAPIOrDict = Union[_ReferenceImageAPI, _ReferenceImageAPIDict]
 class EditImageConfig(_common.BaseModel):
   """Configuration for editing an image."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   output_gcs_uri: Optional[str] = Field(
@@ -3484,7 +3799,7 @@ class EditImageConfig(_common.BaseModel):
 class EditImageConfigDict(TypedDict, total=False):
   """Configuration for editing an image."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   output_gcs_uri: Optional[str]
@@ -3611,7 +3926,7 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
   to be modifiable or exposed to users in the SDK method.
   """
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   include_rai_reason: Optional[bool] = Field(
@@ -3639,7 +3954,7 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
   to be modifiable or exposed to users in the SDK method.
   """
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   include_rai_reason: Optional[bool]
@@ -3722,15 +4037,39 @@ UpscaleImageResponseOrDict = Union[
 ]
 
 
+class GetModelConfig(_common.BaseModel):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class GetModelConfigDict(TypedDict, total=False):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+
+GetModelConfigOrDict = Union[GetModelConfig, GetModelConfigDict]
+
+
 class _GetModelParameters(_common.BaseModel):
 
   model: Optional[str] = Field(default=None, description="""""")
+  config: Optional[GetModelConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
 
 
 class _GetModelParametersDict(TypedDict, total=False):
 
   model: Optional[str]
   """"""
+
+  config: Optional[GetModelConfigDict]
+  """Optional parameters for the request."""
 
 
 _GetModelParametersOrDict = Union[_GetModelParameters, _GetModelParametersDict]
@@ -3883,7 +4222,7 @@ ModelOrDict = Union[Model, ModelDict]
 
 class ListModelsConfig(_common.BaseModel):
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   page_size: Optional[int] = Field(default=None, description="""""")
@@ -3897,7 +4236,7 @@ class ListModelsConfig(_common.BaseModel):
 
 class ListModelsConfigDict(TypedDict, total=False):
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   page_size: Optional[int]
@@ -3952,11 +4291,17 @@ ListModelsResponseOrDict = Union[ListModelsResponse, ListModelsResponseDict]
 
 class UpdateModelConfig(_common.BaseModel):
 
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   display_name: Optional[str] = Field(default=None, description="""""")
   description: Optional[str] = Field(default=None, description="""""")
 
 
 class UpdateModelConfigDict(TypedDict, total=False):
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
 
   display_name: Optional[str]
   """"""
@@ -3988,15 +4333,37 @@ _UpdateModelParametersOrDict = Union[
 ]
 
 
+class DeleteModelConfig(_common.BaseModel):
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class DeleteModelConfigDict(TypedDict, total=False):
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+
+DeleteModelConfigOrDict = Union[DeleteModelConfig, DeleteModelConfigDict]
+
+
 class _DeleteModelParameters(_common.BaseModel):
 
   model: Optional[str] = Field(default=None, description="""""")
+  config: Optional[DeleteModelConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
 
 
 class _DeleteModelParametersDict(TypedDict, total=False):
 
   model: Optional[str]
   """"""
+
+  config: Optional[DeleteModelConfigDict]
+  """Optional parameters for the request."""
 
 
 _DeleteModelParametersOrDict = Union[
@@ -4129,7 +4496,7 @@ GenerationConfigOrDict = Union[GenerationConfig, GenerationConfigDict]
 class CountTokensConfig(_common.BaseModel):
   """Config for the count_tokens method."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   system_instruction: Optional[ContentUnion] = Field(
@@ -4154,7 +4521,7 @@ class CountTokensConfig(_common.BaseModel):
 class CountTokensConfigDict(TypedDict, total=False):
   """Config for the count_tokens method."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   system_instruction: Optional[ContentUnionDict]
@@ -4238,7 +4605,7 @@ CountTokensResponseOrDict = Union[CountTokensResponse, CountTokensResponseDict]
 class ComputeTokensConfig(_common.BaseModel):
   """Optional parameters for computing tokens."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -4246,7 +4613,7 @@ class ComputeTokensConfig(_common.BaseModel):
 class ComputeTokensConfigDict(TypedDict, total=False):
   """Optional parameters for computing tokens."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -4346,7 +4713,7 @@ ComputeTokensResponseOrDict = Union[
 class GetTuningJobConfig(_common.BaseModel):
   """Optional parameters for tunings.get method."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -4354,7 +4721,7 @@ class GetTuningJobConfig(_common.BaseModel):
 class GetTuningJobConfigDict(TypedDict, total=False):
   """Optional parameters for tunings.get method."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -5144,7 +5511,7 @@ class TuningJob(_common.BaseModel):
   )
   tuned_model: Optional[TunedModel] = Field(
       default=None,
-      description="""Output only. The tuned model resources assiociated with this TuningJob.""",
+      description="""Output only. The tuned model resources associated with this TuningJob.""",
   )
   supervised_tuning_spec: Optional[SupervisedTuningSpec] = Field(
       default=None, description="""Tuning Spec for Supervised Fine Tuning."""
@@ -5223,7 +5590,7 @@ class TuningJobDict(TypedDict, total=False):
   """The base model that is being tuned, e.g., "gemini-1.0-pro-002". ."""
 
   tuned_model: Optional[TunedModelDict]
-  """Output only. The tuned model resources assiociated with this TuningJob."""
+  """Output only. The tuned model resources associated with this TuningJob."""
 
   supervised_tuning_spec: Optional[SupervisedTuningSpecDict]
   """Tuning Spec for Supervised Fine Tuning."""
@@ -5259,6 +5626,9 @@ TuningJobOrDict = Union[TuningJob, TuningJobDict]
 class ListTuningJobsConfig(_common.BaseModel):
   """Configuration for the list tuning jobs method."""
 
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   page_size: Optional[int] = Field(default=None, description="""""")
   page_token: Optional[str] = Field(default=None, description="""""")
   filter: Optional[str] = Field(default=None, description="""""")
@@ -5266,6 +5636,9 @@ class ListTuningJobsConfig(_common.BaseModel):
 
 class ListTuningJobsConfigDict(TypedDict, total=False):
   """Configuration for the list tuning jobs method."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
 
   page_size: Optional[int]
   """"""
@@ -5352,7 +5725,7 @@ TuningExampleOrDict = Union[TuningExample, TuningExampleDict]
 
 
 class TuningDataset(_common.BaseModel):
-  """Supervised fune-tuning training dataset."""
+  """Supervised fine-tuning training dataset."""
 
   gcs_uri: Optional[str] = Field(
       default=None,
@@ -5365,7 +5738,7 @@ class TuningDataset(_common.BaseModel):
 
 
 class TuningDatasetDict(TypedDict, total=False):
-  """Supervised fune-tuning training dataset."""
+  """Supervised fine-tuning training dataset."""
 
   gcs_uri: Optional[str]
   """GCS URI of the file containing training dataset in JSONL format."""
@@ -5399,7 +5772,7 @@ TuningValidationDatasetOrDict = Union[
 class CreateTuningJobConfig(_common.BaseModel):
   """Supervised fine-tuning job creation request - optional fields."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
@@ -5437,7 +5810,7 @@ class CreateTuningJobConfig(_common.BaseModel):
 class CreateTuningJobConfigDict(TypedDict, total=False):
   """Supervised fine-tuning job creation request - optional fields."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
@@ -5565,7 +5938,7 @@ DistillationValidationDatasetOrDict = Union[
 class CreateDistillationJobConfig(_common.BaseModel):
   """Distillation job creation request - optional fields."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   validation_dataset: Optional[DistillationValidationDataset] = Field(
@@ -5596,7 +5969,7 @@ class CreateDistillationJobConfig(_common.BaseModel):
 class CreateDistillationJobConfigDict(TypedDict, total=False):
   """Distillation job creation request - optional fields."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   validation_dataset: Optional[DistillationValidationDatasetDict]
@@ -5667,7 +6040,7 @@ _CreateDistillationJobParametersOrDict = Union[
 class CreateCachedContentConfig(_common.BaseModel):
   """Class for configuring optional cached content creation parameters."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   ttl: Optional[str] = Field(
@@ -5708,7 +6081,7 @@ class CreateCachedContentConfig(_common.BaseModel):
 class CreateCachedContentConfigDict(TypedDict, total=False):
   """Class for configuring optional cached content creation parameters."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   ttl: Optional[str]
@@ -5834,7 +6207,7 @@ class CachedContent(_common.BaseModel):
       description="""The name of the publisher model to use for cached content.""",
   )
   create_time: Optional[datetime.datetime] = Field(
-      default=None, description="""Creatation time of the cache entry."""
+      default=None, description="""Creation time of the cache entry."""
   )
   update_time: Optional[datetime.datetime] = Field(
       default=None,
@@ -5862,7 +6235,7 @@ class CachedContentDict(TypedDict, total=False):
   """The name of the publisher model to use for cached content."""
 
   create_time: Optional[datetime.datetime]
-  """Creatation time of the cache entry."""
+  """Creation time of the cache entry."""
 
   update_time: Optional[datetime.datetime]
   """When the cache entry was last updated in UTC time."""
@@ -5880,7 +6253,7 @@ CachedContentOrDict = Union[CachedContent, CachedContentDict]
 class GetCachedContentConfig(_common.BaseModel):
   """Optional parameters for caches.get method."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -5888,7 +6261,7 @@ class GetCachedContentConfig(_common.BaseModel):
 class GetCachedContentConfigDict(TypedDict, total=False):
   """Optional parameters for caches.get method."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -5932,7 +6305,7 @@ _GetCachedContentParametersOrDict = Union[
 class DeleteCachedContentConfig(_common.BaseModel):
   """Optional parameters for caches.delete method."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -5940,7 +6313,7 @@ class DeleteCachedContentConfig(_common.BaseModel):
 class DeleteCachedContentConfigDict(TypedDict, total=False):
   """Optional parameters for caches.delete method."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -6001,7 +6374,7 @@ DeleteCachedContentResponseOrDict = Union[
 class UpdateCachedContentConfig(_common.BaseModel):
   """Optional parameters for caches.update method."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   ttl: Optional[str] = Field(
@@ -6017,7 +6390,7 @@ class UpdateCachedContentConfig(_common.BaseModel):
 class UpdateCachedContentConfigDict(TypedDict, total=False):
   """Optional parameters for caches.update method."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   ttl: Optional[str]
@@ -6065,12 +6438,18 @@ _UpdateCachedContentParametersOrDict = Union[
 class ListCachedContentsConfig(_common.BaseModel):
   """Config for caches.list method."""
 
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   page_size: Optional[int] = Field(default=None, description="""""")
   page_token: Optional[str] = Field(default=None, description="""""")
 
 
 class ListCachedContentsConfigDict(TypedDict, total=False):
   """Config for caches.list method."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
 
   page_size: Optional[int]
   """"""
@@ -6135,7 +6514,7 @@ ListCachedContentsResponseOrDict = Union[
 class ListFilesConfig(_common.BaseModel):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   page_size: Optional[int] = Field(default=None, description="""""")
@@ -6145,7 +6524,7 @@ class ListFilesConfig(_common.BaseModel):
 class ListFilesConfigDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   page_size: Optional[int]
@@ -6179,129 +6558,6 @@ _ListFilesParametersOrDict = Union[
 ]
 
 
-class FileStatus(_common.BaseModel):
-  """Status of a File that uses a common error model."""
-
-  details: Optional[list[dict[str, Any]]] = Field(
-      default=None,
-      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
-  )
-  message: Optional[str] = Field(
-      default=None,
-      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
-  )
-  code: Optional[int] = Field(
-      default=None, description="""The status code. 0 for OK, 1 for CANCELLED"""
-  )
-
-
-class FileStatusDict(TypedDict, total=False):
-  """Status of a File that uses a common error model."""
-
-  details: Optional[list[dict[str, Any]]]
-  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
-
-  message: Optional[str]
-  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
-
-  code: Optional[int]
-  """The status code. 0 for OK, 1 for CANCELLED"""
-
-
-FileStatusOrDict = Union[FileStatus, FileStatusDict]
-
-
-class File(_common.BaseModel):
-  """A file uploaded to the API."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The `File` resource name. The ID (name excluding the "files/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be generated. Example: `files/123-456`""",
-  )
-  display_name: Optional[str] = Field(
-      default=None,
-      description="""Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'""",
-  )
-  mime_type: Optional[str] = Field(
-      default=None, description="""Output only. MIME type of the file."""
-  )
-  size_bytes: Optional[int] = Field(
-      default=None, description="""Output only. Size of the file in bytes."""
-  )
-  create_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Output only. The timestamp of when the `File` was created.""",
-  )
-  expiration_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'""",
-  )
-  update_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Output only. The timestamp of when the `File` was last updated.""",
-  )
-  sha256_hash: Optional[bytes] = Field(
-      default=None,
-      description="""Output only. SHA-256 hash of the uploaded bytes.""",
-  )
-  uri: Optional[str] = Field(
-      default=None, description="""Output only. The URI of the `File`."""
-  )
-  state: Optional[FileState] = Field(
-      default=None, description="""Output only. Processing state of the File."""
-  )
-  video_metadata: Optional[dict[str, Any]] = Field(
-      default=None, description="""Output only. Metadata for a video."""
-  )
-  error: Optional[FileStatus] = Field(
-      default=None,
-      description="""Output only. Error status if File processing failed.""",
-  )
-
-
-class FileDict(TypedDict, total=False):
-  """A file uploaded to the API."""
-
-  name: Optional[str]
-  """The `File` resource name. The ID (name excluding the "files/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be generated. Example: `files/123-456`"""
-
-  display_name: Optional[str]
-  """Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'"""
-
-  mime_type: Optional[str]
-  """Output only. MIME type of the file."""
-
-  size_bytes: Optional[int]
-  """Output only. Size of the file in bytes."""
-
-  create_time: Optional[datetime.datetime]
-  """Output only. The timestamp of when the `File` was created."""
-
-  expiration_time: Optional[datetime.datetime]
-  """Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'"""
-
-  update_time: Optional[datetime.datetime]
-  """Output only. The timestamp of when the `File` was last updated."""
-
-  sha256_hash: Optional[bytes]
-  """Output only. SHA-256 hash of the uploaded bytes."""
-
-  uri: Optional[str]
-  """Output only. The URI of the `File`."""
-
-  state: Optional[FileState]
-  """Output only. Processing state of the File."""
-
-  video_metadata: Optional[dict[str, Any]]
-  """Output only. Metadata for a video."""
-
-  error: Optional[FileStatusDict]
-  """Output only. Error status if File processing failed."""
-
-
-FileOrDict = Union[File, FileDict]
-
-
 class ListFilesResponse(_common.BaseModel):
   """Response for the list files method."""
 
@@ -6329,7 +6585,7 @@ ListFilesResponseOrDict = Union[ListFilesResponse, ListFilesResponseDict]
 class CreateFileConfig(_common.BaseModel):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -6337,7 +6593,7 @@ class CreateFileConfig(_common.BaseModel):
 class CreateFileConfigDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -6400,7 +6656,7 @@ CreateFileResponseOrDict = Union[CreateFileResponse, CreateFileResponseDict]
 class GetFileConfig(_common.BaseModel):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -6408,7 +6664,7 @@ class GetFileConfig(_common.BaseModel):
 class GetFileConfigDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -6444,7 +6700,7 @@ _GetFileParametersOrDict = Union[_GetFileParameters, _GetFileParametersDict]
 class DeleteFileConfig(_common.BaseModel):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -6452,7 +6708,7 @@ class DeleteFileConfig(_common.BaseModel):
 class DeleteFileConfigDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -6587,7 +6843,7 @@ BatchJobDestinationOrDict = Union[BatchJobDestination, BatchJobDestinationDict]
 class CreateBatchJobConfig(_common.BaseModel):
   """Config class for optional parameters."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   display_name: Optional[str] = Field(
@@ -6606,7 +6862,7 @@ class CreateBatchJobConfig(_common.BaseModel):
 class CreateBatchJobConfigDict(TypedDict, total=False):
   """Config class for optional parameters."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   display_name: Optional[str]
@@ -6793,7 +7049,7 @@ BatchJobOrDict = Union[BatchJob, BatchJobDict]
 class GetBatchJobConfig(_common.BaseModel):
   """Optional parameters."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -6801,7 +7057,7 @@ class GetBatchJobConfig(_common.BaseModel):
 class GetBatchJobConfigDict(TypedDict, total=False):
   """Optional parameters."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -6844,7 +7100,7 @@ _GetBatchJobParametersOrDict = Union[
 class CancelBatchJobConfig(_common.BaseModel):
   """Optional parameters."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
 
@@ -6852,7 +7108,7 @@ class CancelBatchJobConfig(_common.BaseModel):
 class CancelBatchJobConfigDict(TypedDict, total=False):
   """Optional parameters."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
 
@@ -6897,7 +7153,7 @@ _CancelBatchJobParametersOrDict = Union[
 class ListBatchJobConfig(_common.BaseModel):
   """Config class for optional parameters."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   page_size: Optional[int] = Field(default=None, description="""""")
@@ -6908,7 +7164,7 @@ class ListBatchJobConfig(_common.BaseModel):
 class ListBatchJobConfigDict(TypedDict, total=False):
   """Config class for optional parameters."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   page_size: Optional[int]
@@ -6964,6 +7220,26 @@ ListBatchJobResponseOrDict = Union[
 ]
 
 
+class DeleteBatchJobConfig(_common.BaseModel):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class DeleteBatchJobConfigDict(TypedDict, total=False):
+  """Optional parameters for models.get method."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+
+DeleteBatchJobConfigOrDict = Union[
+    DeleteBatchJobConfig, DeleteBatchJobConfigDict
+]
+
+
 class _DeleteBatchJobParameters(_common.BaseModel):
   """Config class for batches.delete parameters."""
 
@@ -6973,6 +7249,9 @@ class _DeleteBatchJobParameters(_common.BaseModel):
     Example: "projects/.../locations/.../batchPredictionJobs/456"
     or "456" when project and location are initialized in the client.
     """,
+  )
+  config: Optional[DeleteBatchJobConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
   )
 
 
@@ -6984,6 +7263,9 @@ class _DeleteBatchJobParametersDict(TypedDict, total=False):
     Example: "projects/.../locations/.../batchPredictionJobs/456"
     or "456" when project and location are initialized in the client.
     """
+
+  config: Optional[DeleteBatchJobConfigDict]
+  """Optional parameters for the request."""
 
 
 _DeleteBatchJobParametersOrDict = Union[
@@ -7209,7 +7491,7 @@ ReplayFileOrDict = Union[ReplayFile, ReplayFileDict]
 class UploadFileConfig(_common.BaseModel):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   name: Optional[str] = Field(
@@ -7228,7 +7510,7 @@ class UploadFileConfig(_common.BaseModel):
 class UploadFileConfigDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   name: Optional[str]
@@ -7244,6 +7526,24 @@ class UploadFileConfigDict(TypedDict, total=False):
 UploadFileConfigOrDict = Union[UploadFileConfig, UploadFileConfigDict]
 
 
+class DownloadFileConfig(_common.BaseModel):
+  """Used to override the default configuration."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class DownloadFileConfigDict(TypedDict, total=False):
+  """Used to override the default configuration."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+
+DownloadFileConfigOrDict = Union[DownloadFileConfig, DownloadFileConfigDict]
+
+
 class UpscaleImageConfig(_common.BaseModel):
   """Configuration for upscaling an image.
 
@@ -7252,7 +7552,7 @@ class UpscaleImageConfig(_common.BaseModel):
   <https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api>`_.
   """
 
-  http_options: Optional[dict[str, Any]] = Field(
+  http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   include_rai_reason: Optional[bool] = Field(
@@ -7279,7 +7579,7 @@ class UpscaleImageConfigDict(TypedDict, total=False):
   <https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api>`_.
   """
 
-  http_options: Optional[dict[str, Any]]
+  http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
   include_rai_reason: Optional[bool]
@@ -7363,7 +7663,7 @@ class RawReferenceImage(_common.BaseModel):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_RAW",
+        reference_type='REFERENCE_TYPE_RAW',
     )
 
 
@@ -7415,7 +7715,7 @@ class MaskReferenceImage(_common.BaseModel):
       description="""Configuration for the mask reference image.""",
   )
   """Re-map config to mask_reference_config to send to API."""
-  mask_image_config: Optional["MaskReferenceConfig"] = Field(
+  mask_image_config: Optional['MaskReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7423,12 +7723,12 @@ class MaskReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["MaskReferenceConfig"] = None,
+      config: Optional['MaskReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_MASK",
+        reference_type='REFERENCE_TYPE_MASK',
     )
     self.mask_image_config = config
 
@@ -7488,7 +7788,7 @@ class ControlReferenceImage(_common.BaseModel):
       description="""Configuration for the control reference image.""",
   )
   """Re-map config to control_reference_config to send to API."""
-  control_image_config: Optional["ControlReferenceConfig"] = Field(
+  control_image_config: Optional['ControlReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7496,12 +7796,12 @@ class ControlReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["ControlReferenceConfig"] = None,
+      config: Optional['ControlReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_CONTROL",
+        reference_type='REFERENCE_TYPE_CONTROL',
     )
     self.control_image_config = config
 
@@ -7561,7 +7861,7 @@ class StyleReferenceImage(_common.BaseModel):
       description="""Configuration for the style reference image.""",
   )
   """Re-map config to style_reference_config to send to API."""
-  style_image_config: Optional["StyleReferenceConfig"] = Field(
+  style_image_config: Optional['StyleReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7569,12 +7869,12 @@ class StyleReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["StyleReferenceConfig"] = None,
+      config: Optional['StyleReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_STYLE",
+        reference_type='REFERENCE_TYPE_STYLE',
     )
     self.style_image_config = config
 
@@ -7630,7 +7930,7 @@ class SubjectReferenceImage(_common.BaseModel):
       description="""Configuration for the subject reference image.""",
   )
   """Re-map config to subject_reference_config to send to API."""
-  subject_image_config: Optional["SubjectReferenceConfig"] = Field(
+  subject_image_config: Optional['SubjectReferenceConfig'] = Field(
       default=None, description=""""""
   )
 
@@ -7638,12 +7938,12 @@ class SubjectReferenceImage(_common.BaseModel):
       self,
       reference_image: Optional[Image] = None,
       reference_id: Optional[int] = None,
-      config: Optional["SubjectReferenceConfig"] = None,
+      config: Optional['SubjectReferenceConfig'] = None,
   ):
     super().__init__(
         reference_image=reference_image,
         reference_id=reference_id,
-        reference_type="REFERENCE_TYPE_SUBJECT",
+        reference_type='REFERENCE_TYPE_SUBJECT',
     )
     self.subject_image_config = config
 
@@ -7812,7 +8112,7 @@ class LiveServerMessage(_common.BaseModel):
         or not self.server_content.model_turn.parts
     ):
       return None
-    text = ""
+    text = ''
     for part in self.server_content.model_turn.parts:
       if isinstance(part.text, str):
         if isinstance(part.thought, bool) and part.thought:
@@ -7830,7 +8130,7 @@ class LiveServerMessage(_common.BaseModel):
         or not self.server_content.model_turn.parts
     ):
       return None
-    concatenated_data = b""
+    concatenated_data = b''
     for part in self.server_content.model_turn.parts:
       if part.inline_data and isinstance(part.inline_data.data, bytes):
         concatenated_data += part.inline_data.data

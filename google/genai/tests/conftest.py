@@ -44,13 +44,13 @@ def pytest_addoption(parser):
   )
 
 
-# Overriden via parameterized test.
+# Overridden via parameterized test.
 @pytest.fixture
 def use_vertex():
   return False
 
 
-# Overriden at the module level for each test file.
+# Overridden at the module level for each test file.
 @pytest.fixture
 def replays_prefix():
   return 'test'
@@ -83,7 +83,7 @@ def client(use_vertex, replays_prefix,http_options, request):
       raise ValueError(f"""
         {test_function_name}:
         You should never ever include api types in the file name (mldev or vertex).
-        All tests should run agains all apis.
+        All tests should run against all apis.
         Assert an exception if the test is not supported in an API.""")
   replay_id = _get_replay_id(use_vertex, replays_prefix)
 

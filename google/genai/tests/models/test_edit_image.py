@@ -39,7 +39,7 @@ BRIDGE_IMAGE_FILE_PATH = os.path.abspath(
 
 raw_ref_image = types.RawReferenceImage(
     reference_id=1,
-    reference_image=types.Image.from_file(IMAGE_FILE_PATH),
+    reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
 )
 
 mask_ref_image = types.MaskReferenceImage(
@@ -52,7 +52,7 @@ mask_ref_image = types.MaskReferenceImage(
 
 mask_ref_image_user_provided = types.MaskReferenceImage(
     reference_id=2,
-    reference_image=types.Image.from_file(MASK_FILE_PATH),
+    reference_image=types.Image.from_file(location=MASK_FILE_PATH),
     config=types.MaskReferenceConfig(
         mask_mode='MASK_MODE_USER_PROVIDED',
         mask_dilation=0.06,
@@ -61,7 +61,7 @@ mask_ref_image_user_provided = types.MaskReferenceImage(
 
 control_ref_image = types.ControlReferenceImage(
     reference_id=2,
-    reference_image=types.Image.from_file(MASK_FILE_PATH),
+    reference_image=types.Image.from_file(location=MASK_FILE_PATH),
     config=types.ControlReferenceConfig(
         control_type='CONTROL_TYPE_SCRIBBLE',
         # Backend creates the control image if this is set to True.
@@ -71,7 +71,7 @@ control_ref_image = types.ControlReferenceImage(
 
 style_ref_image_customization = types.StyleReferenceImage(
     reference_id=1,
-    reference_image=types.Image.from_file(IMAGE_FILE_PATH),
+    reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
     config=types.StyleReferenceConfig(
         style_description='glowing style',
     ),
@@ -79,7 +79,7 @@ style_ref_image_customization = types.StyleReferenceImage(
 
 subject_ref_image_customization = types.SubjectReferenceImage(
     reference_id=1,
-    reference_image=types.Image.from_file(IMAGE_FILE_PATH),
+    reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
     config=types.SubjectReferenceConfig(
         subject_type='SUBJECT_TYPE_PRODUCT',
         subject_description='A product logo that is a multi-colored letter G',
