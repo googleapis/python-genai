@@ -26,8 +26,9 @@ import typing
 from typing import Any, GenericAlias, Optional, Union
 import sys
 
-import PIL.Image
-import PIL.PngImagePlugin
+if typing.TYPE_CHECKING:
+  import PIL.Image
+
 import pydantic
 
 from . import _api_client
@@ -199,9 +200,15 @@ def t_caches_model(api_client: _api_client.ApiClient, model: str):
     return model
 
 
-def pil_to_blob(img):
+def pil_to_blob(img) -> types.Blob:
+  try:
+    import PIL.PngImagePlugin
+    PngImagePlugin = PIL.PngImagePlugin
+  except ImportError:
+    PngImagePlugin = None
+
   bytesio = io.BytesIO()
-  if isinstance(img, PIL.PngImagePlugin.PngImageFile) or img.mode == 'RGBA':
+  if PngImagePlugin is not None and isinstance(img, PngImagePlugin.PngImageFile) or img.mode == 'RGBA':
     img.save(bytesio, format='PNG')
     mime_type = 'image/png'
   else:
@@ -212,15 +219,21 @@ def pil_to_blob(img):
   return types.Blob(mime_type=mime_type, data=data)
 
 
-PartType = Union[types.Part, types.PartDict, str, PIL.Image.Image]
+PartType = Union[types.Part, types.PartDict, str, 'PIL.Image.Image']
 
 
 def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
+  try:
+    import PIL.Image
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
   if not part:
     raise ValueError('content part is required.')
   if isinstance(part, str):
     return types.Part(text=part)
-  if isinstance(part, PIL.Image.Image):
+  if PIL_Image is not None and isinstance(part, PIL_Image):
     return types.Part(inline_data=pil_to_blob(part))
   if isinstance(part, types.File):
     if not part.uri or not part.mime_type:
