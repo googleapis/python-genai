@@ -16,6 +16,7 @@
 
 """Tests schema processing methods in the _transformers module."""
 
+import enum
 import copy
 import pydantic
 
@@ -110,6 +111,34 @@ def test_t_schema_for_pydantic_schema():
     assert isinstance(
         transformed_schema.properties[schema_property], types.Schema
     )
+    
+def test_t_schema_for_int():
+  """Tests t_schema when pydantic.BaseModel is passed to response_schema."""
+  transformed_schema = _transformers.t_schema(None, int)
+  assert types.Schema(type=types.Type.INTEGER) == transformed_schema
+  
+def test_t_schema_for_list_of_int():
+  """Tests t_schema when pydantic.BaseModel is passed to response_schema."""
+  transformed_schema = _transformers.t_schema(None, list[int])
+
+  assert types.Schema(
+      type=types.Type.ARRAY,
+      items=types.Schema(type=types.Type.INTEGER)
+  ) == transformed_schema
+  
+def test_t_schema_for_enum():
+  """Tests t_schema when pydantic.BaseModel is passed to response_schema."""
+  class Choices(enum.Enum):
+    CHOICE_1 = 'choice_1'
+    CHOICE_2 = 'choice_2'
+
+  transformed_schema = _transformers.t_schema(None, Choices)
+
+  assert types.Schema(
+      type=types.Type.STRING,
+      title="Choices",
+      enum=['choice_1', 'choice_2']) == transformed_schema
+
 
 
 def test_t_schema_for_list_of_pydantic_schema():

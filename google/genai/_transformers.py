@@ -529,6 +529,7 @@ def t_schema(
     schema = Placeholder.model_json_schema()
     process_schema(schema, client)
     schema = schema['properties']['placeholder']
+    schema.pop('title', None)
     return types.Schema.model_validate(schema)
 
   raise ValueError(f'Unsupported schema type: {origin}')
