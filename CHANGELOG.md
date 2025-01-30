@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.8.0](https://github.com/googleapis/python-genai/compare/v0.7.0...v0.8.0) (2025-01-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rename files.upload argument to "file" instead of "path".
+
+### Features
+
+* Add enhanced_prompt to GeneratedImage class ([76c810b](https://github.com/googleapis/python-genai/commit/76c810b6bb82bde4cc4fe9754e0bbcc85e10a4c4))
+* Added Operation and PredictOperation (internal module) ([309dd26](https://github.com/googleapis/python-genai/commit/309dd26cb3aa761bfae7070ffa5eab23b2a5a75c))
+* Support global endpoint natively in Vertex ([f4530b0](https://github.com/googleapis/python-genai/commit/f4530b0af972d0b5e376e7463af235b8378e0694))
+* Support unknown enum values ([da448b3](https://github.com/googleapis/python-genai/commit/da448b3cb2bf5d6cba6fdefa8d15365253fe0384))
+
+
+### Bug Fixes
+
+* Streaming in Vertex AI Express ([ff78b7b](https://github.com/googleapis/python-genai/commit/ff78b7b0277800e2b4b9e9958a87688383422d29))
+
+
+### Documentation
+
+* Correct generate content with uploaded file example ([8cea052](https://github.com/googleapis/python-genai/commit/8cea052ac148890a343f14b7185e394646802b41))
+
+
+### Miscellaneous Chores
+
+* Rename files.upload argument to "file" instead of "path". ([f68aa1f](https://github.com/googleapis/python-genai/commit/f68aa1f63f04629f9eb8629c5b1359f500f89a47))
+
 ## [0.7.0](https://github.com/googleapis/python-genai/compare/v0.6.0...v0.7.0) (2025-01-28)
 
 
