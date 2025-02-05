@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/python-genai/compare/v0.8.0...v1.0.0) (2025-02-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove deprecated field: `deprecated_response_payload`
+
+### Features
+
+* Add labels for GenerateContent requests ([3e3b82d](https://github.com/googleapis/python-genai/commit/3e3b82dcdc8d50852a9fdd452c8e0957bb4493de))
+* Add Union support to response_schema ([eedf4f1](https://github.com/googleapis/python-genai/commit/eedf4f12aea9f5a0d4056d6f14a91b14db1903cf))
+* Support automatic function calling in models.generate_content_stream and send_message_stream, sync and async mode ([7c9f8b5](https://github.com/googleapis/python-genai/commit/7c9f8b5833e393e5879fd267abf3a34d122a5d1d))
+
+
+### Bug Fixes
+
+* Avoid false test failure by skipping incompatible test case for python 3.13 ([7f10e55](https://github.com/googleapis/python-genai/commit/7f10e550db4767ab172f5f5b00eda484cb0141d6))
+* Default to list base models (instead of tuned models) ([ef48f0d](https://github.com/googleapis/python-genai/commit/ef48f0dfcae1811ddc3160e368a5ef25a535ee25))
+* Handle pydantic model type recognition gracefully for python 3.9 and 3.10 ([4a38fdf](https://github.com/googleapis/python-genai/commit/4a38fdf53fd689fdab611dbcaebc9570c7d46bd5))
+* Raise error when Gemini API response_schema has 'default' or 'anyof' fields ([c50bca0](https://github.com/googleapis/python-genai/commit/c50bca00c814b39a98fc6aacba0c4c429fed0570))
+* Remove redundant contents in Automatic Function Calling history ([5510595](https://github.com/googleapis/python-genai/commit/5510595eb18ad0a0af34ce63df1685b49e03ce10))
+* Remove unsupported parameter from Gemini API ([f8addb5](https://github.com/googleapis/python-genai/commit/f8addb544e545100ae7342621910a2338072ddc6))
+
+
+### Documentation
+
+* Remove experimental classification from description. ([b14ac57](https://github.com/googleapis/python-genai/commit/b14ac57b07d4e7794d83f2b2123a4df80890f772))
+* Remove thoughts examples and update tests ([af3b339](https://github.com/googleapis/python-genai/commit/af3b339a9d58e25cb3baa6fd3d0b1d078c620f9d))
+* Update documentation on how to set api version using genai client ([6fd4425](https://github.com/googleapis/python-genai/commit/6fd442520d1b59003fd5fcd24d395b9790caec6f))
+* Update instruction on function calling experience in `ANY` mode. ([451cf98](https://github.com/googleapis/python-genai/commit/451cf989e2a917884475cf66fce1d809a7495b53))
+
+
+### Code Refactoring
+
+* Remove deprecated field: `deprecated_response_payload` ([197fa46](https://github.com/googleapis/python-genai/commit/197fa46c9639799b8d71ddf92ab372140dc5b65b))
+
 ## [0.8.0](https://github.com/googleapis/python-genai/compare/v0.7.0...v0.8.0) (2025-01-30)
 
 
