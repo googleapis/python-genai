@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-from typing import Optional
+from typing import AsyncIterator, Awaitable, Optional
 from typing import Union
 
 from . import _transformers as t
@@ -200,7 +200,7 @@ class AsyncChat(_BaseChat):
 
   async def send_message_stream(
       self, message: Union[list[PartUnionDict], PartUnionDict]
-  ):
+  ) -> Awaitable[AsyncIterator[GenerateContentResponse]]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
     Args:
@@ -213,26 +213,30 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
       chat = client.aio.chats.create(model='gemini-1.5-flash')
-      async for chunk in chat.send_message_stream('tell me a story'):
+      async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
 
     input_content = t.t_content(self._modules._api_client, message)
-    output_contents = []
-    finish_reason = None
-    async for chunk in self._modules.generate_content_stream(
-        model=self._model,
-        contents=self._curated_history + [input_content],
-        config=self._config,
-    ):
-      if _validate_response(chunk):
-        output_contents.append(chunk.candidates[0].content)
-      if chunk.candidates and chunk.candidates[0].finish_reason:
-        finish_reason = chunk.candidates[0].finish_reason
-      yield chunk
-    if output_contents and finish_reason:
-      self._curated_history.append(input_content)
-      self._curated_history.extend(output_contents)
+
+    async def async_generator():
+      output_contents = []
+      finish_reason = None
+      async for chunk in await self._modules.generate_content_stream(
+          model=self._model,
+          contents=self._curated_history + [input_content],
+          config=self._config,
+      ):
+        if _validate_response(chunk):
+          output_contents.append(chunk.candidates[0].content)
+        if chunk.candidates and chunk.candidates[0].finish_reason:
+          finish_reason = chunk.candidates[0].finish_reason
+        yield chunk
+
+      if output_contents and finish_reason:
+        self._curated_history.append(input_content)
+        self._curated_history.extend(output_contents)
+    return async_generator()
 
 
 class AsyncChats:

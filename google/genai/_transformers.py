@@ -24,13 +24,22 @@ import re
 import time
 import typing
 from typing import Any, GenericAlias, Optional, Union
+import sys
 
-import PIL.Image
-import PIL.PngImagePlugin
+if typing.TYPE_CHECKING:
+  import PIL.Image
+
 import pydantic
 
 from . import _api_client
 from . import types
+
+if sys.version_info >= (3, 10):
+  VersionedUnionType = typing.types.UnionType
+  _UNION_TYPES = (typing.Union, typing.types.UnionType)
+else:
+  VersionedUnionType = typing._UnionGenericAlias
+  _UNION_TYPES = (typing.Union,)
 
 
 def _resource_name(
@@ -193,9 +202,15 @@ def t_caches_model(api_client: _api_client.ApiClient, model: str):
     return model
 
 
-def pil_to_blob(img):
+def pil_to_blob(img) -> types.Blob:
+  try:
+    import PIL.PngImagePlugin
+    PngImagePlugin = PIL.PngImagePlugin
+  except ImportError:
+    PngImagePlugin = None
+
   bytesio = io.BytesIO()
-  if isinstance(img, PIL.PngImagePlugin.PngImageFile) or img.mode == 'RGBA':
+  if PngImagePlugin is not None and isinstance(img, PngImagePlugin.PngImageFile) or img.mode == 'RGBA':
     img.save(bytesio, format='PNG')
     mime_type = 'image/png'
   else:
@@ -206,15 +221,22 @@ def pil_to_blob(img):
   return types.Blob(mime_type=mime_type, data=data)
 
 
-PartType = Union[types.Part, types.PartDict, str, PIL.Image.Image]
+PartType = Union[types.Part, types.PartDict, str, 'PIL.Image.Image']
 
 
 def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
   if not part:
     raise ValueError('content part is required.')
   if isinstance(part, str):
     return types.Part(text=part)
-  if isinstance(part, PIL.Image.Image):
+  if PIL_Image is not None and isinstance(part, PIL_Image):
     return types.Part(inline_data=pil_to_blob(part))
   if isinstance(part, types.File):
     if not part.uri or not part.mime_type:
@@ -298,7 +320,7 @@ def t_contents(
     return [t_content(client, contents)]
 
 
-def handle_null_fields(data: dict[str, Any]):
+def handle_null_fields(schema: dict[str, Any]):
   """Process null fields in the schema so it is compatible with OpenAPI.
 
   The OpenAPI spec does not support 'type: 'null' in the schema. This function
@@ -323,7 +345,7 @@ def handle_null_fields(data: dict[str, Any]):
               "type": "null"
             }
           ],
-          "default": null,
+          "default": None,
           "title": "Total Area Sq Mi"
         }
       }
@@ -337,136 +359,148 @@ def handle_null_fields(data: dict[str, Any]):
         "total_area_sq_mi": {
           "type": "integer",
           "nullable": true,
-          "default": null,
+          "default": None,
           "title": "Total Area Sq Mi"
         }
       }
   """
-
-  for field in list(data.keys()):
-    field_info = data[field]
-    if (
-        isinstance(field_info, dict)
-        and 'type' in field_info
-        and field_info['type'] == 'null'
-    ):
-      data[field]['nullable'] = True
-      del data[field]['type']
-    elif 'anyOf' in field_info:
-      for item in field_info['anyOf']:
-        if 'type' in item and item['type'] == 'null':
-          data[field]['nullable'] = True
-          data[field]['anyOf'].remove({'type': 'null'})
-          if len(data[field]['anyOf']) == 1:
-            # If there is only one type left after removing null, remove the anyOf field.
-            field_type = data[field]['anyOf'][0]['type']
-            data[field]['type'] = field_type
-            del data[field]['anyOf']
-
-  return data
+  if schema.get('type', None) == 'null':
+    schema['nullable'] = True
+    del schema['type']
+  elif 'anyOf' in schema:
+    for item in schema['anyOf']:
+      if 'type' in item and item['type'] == 'null':
+        schema['nullable'] = True
+        schema['anyOf'].remove({'type': 'null'})
+        if len(schema['anyOf']) == 1:
+          # If there is only one type left after removing null, remove the anyOf field.
+          field_type = schema['anyOf'][0]['type']
+          schema['type'] = field_type
+          del schema['anyOf']
 
 
 def process_schema(
-    data: dict[str, Any], client: Optional[_api_client.ApiClient] = None
-):
-  if isinstance(data, dict):
-    # Iterate over a copy of keys to allow deletion
-    for key in list(data.keys()):
-      if key == 'properties':
-        data[key] = handle_null_fields(data[key])
-      # Only delete 'title'for the Gemini API
-      if client and not client.vertexai and key == 'title':
-        del data[key]
-      else:
-        process_schema(data[key], client)
-  elif isinstance(data, list):
-    for item in data:
-      process_schema(item, client)
+    schema: dict[str, Any],
+    client: Optional[_api_client.ApiClient] = None,
+    defs: Optional[dict[str, Any]]=None):
+  """Updates the schema and each sub-schema inplace to be API-compatible.
 
-  return data
+  - Removes the `title` field from the schema if the client is not vertexai.
+  - Inlines the $defs.
 
-
-def _build_schema(fname: str, fields_dict: dict[str, Any]) -> dict[str, Any]:
-  parameters = pydantic.create_model(fname, **fields_dict).model_json_schema()
-  defs = parameters.pop('$defs', {})
-
-  for _, value in defs.items():
-    unpack_defs(value, defs)
-
-  unpack_defs(parameters, defs)
-  return parameters['properties']['dummy']
-
-
-def unpack_defs(schema: dict[str, Any], defs: dict[str, Any]):
-  """Unpacks the $defs values in the schema generated by pydantic so they can be understood by the API.
-
-  Example of a schema before and after unpacking:
+  Example of a schema before and after (with mldev):
     Before:
 
     `schema`
 
-    {'properties': {
-        'dummy': {
-            'items': {
-                '$ref': '#/$defs/CountryInfo'
-            },
-            'title': 'Dummy',
-            'type': 'array'
-            }
+    {
+        'items': {
+            '$ref': '#/$defs/CountryInfo'
         },
-        'required': ['dummy'],
-        'title': 'dummy',
-        'type': 'object'}
+        'title': 'Placeholder',
+        'type': 'array'
+    }
+
 
     `defs`
 
-    {'CountryInfo': {'properties': {'continent': {'title': 'Continent', 'type':
-    'string'}, 'gdp': {'title': 'Gdp', 'type': 'integer'}}, 'required':
-    ['continent', 'gdp'], 'title': 'CountryInfo', 'type': 'object'}}
+    {
+      'CountryInfo': {
+        'properties': {
+          'continent': {
+              'title': 'Continent',
+              'type': 'string'
+          },
+          'gdp': {
+              'title': 'Gdp',
+              'type': 'integer'}
+          },
+        }
+        'required':['continent', 'gdp'],
+        'title': 'CountryInfo',
+        'type': 'object'
+      }
+    }
 
     After:
 
     `schema`
-    {'properties': {
-        'continent': {'title': 'Continent', 'type': 'string'},
-        'gdp': {'title': 'Gdp', 'type': 'integer'}
-      },
-      'required': ['continent', 'gdp'],
-      'title': 'CountryInfo',
-      'type': 'object'
+     {
+        'items': {
+          'properties': {
+            'continent': {
+                'type': 'string'
+            },
+            'gdp': {
+                'type': 'integer'}
+            },
+          }
+          'required':['continent', 'gdp'],
+          'type': 'object'
+        },
+        'type': 'array'
     }
   """
-  properties = schema.get('properties', None)
-  if properties is None:
+  if client and not client.vertexai:
+    schema.pop('title', None)
+
+    if schema.get('default') is not None:
+      raise ValueError(
+          'Default value is not supported in the response schema for the Gemmini API.'
+      )
+
+  if defs is None:
+    defs = schema.pop('$defs', {})
+    for _, sub_schema in defs.items():
+      process_schema(sub_schema, client, defs)
+
+  handle_null_fields(schema)
+
+  any_of = schema.get('anyOf', None)
+  if any_of is not None:
+    if not client.vertexai:
+      raise ValueError(
+          'AnyOf is not supported in the response schema for the Gemini API.'
+      )
+    for sub_schema in any_of:
+      # $ref is present in any_of if the schema is a union of Pydantic classes
+      ref_key = sub_schema.get('$ref', None)
+      if ref_key is None:
+        process_schema(sub_schema, client, defs)
+      else:
+        ref = defs[ref_key.split('defs/')[-1]]
+        any_of.append(ref)
+    schema['anyOf'] = [item for item in any_of if '$ref' not in item]
     return
 
-  for name, value in properties.items():
-    ref_key = value.get('$ref', None)
-    if ref_key is not None:
-      ref = defs[ref_key.split('defs/')[-1]]
-      unpack_defs(ref, defs)
-      properties[name] = ref
-      continue
+  schema_type = schema.get('type', None)
+  if isinstance(schema_type, Enum):
+    schema_type = schema_type.value
+  schema_type = schema_type.upper()
 
-    anyof = value.get('anyOf', None)
-    if anyof is not None:
-      for i, atype in enumerate(anyof):
-        ref_key = atype.get('$ref', None)
-        if ref_key is not None:
-          ref = defs[ref_key.split('defs/')[-1]]
-          unpack_defs(ref, defs)
-          anyof[i] = ref
-      continue
-
-    items = value.get('items', None)
-    if items is not None:
-      ref_key = items.get('$ref', None)
-      if ref_key is not None:
+  if schema_type == 'OBJECT':
+    properties = schema.get('properties', None)
+    if properties is None:
+      return
+    for name, sub_schema in properties.items():
+      ref_key = sub_schema.get('$ref', None)
+      if ref_key is None:
+        process_schema(sub_schema, client, defs)
+      else:
         ref = defs[ref_key.split('defs/')[-1]]
-        unpack_defs(ref, defs)
-        value['items'] = ref
-        continue
-
+        process_schema(ref, client, defs)
+        properties[name] = ref
+  elif schema_type == 'ARRAY':
+    sub_schema = schema.get('items', None)
+    if sub_schema is None:
+      return
+    ref_key = sub_schema.get('$ref', None)
+    if ref_key is None:
+      process_schema(sub_schema, client, defs)
+    else:
+      ref = defs[ref_key.split('defs/')[-1]]
+      process_schema(ref, client, defs)
+      schema['items'] = ref
 
 def _process_enum(
     enum: EnumMeta, client: Optional[_api_client.ApiClient] = None
@@ -477,10 +511,12 @@ def _process_enum(
           f'Enum member {member.name} value must be a string, got'
           f' {type(member.value)}'
       )
-  enum_schema = _build_schema(
-      enum.__name__, {'dummy': (enum, pydantic.Field())}
-  )
-  enum_schema = process_schema(enum_schema, client)
+  class Placeholder(pydantic.BaseModel):
+    placeholder: enum
+
+  enum_schema = Placeholder.model_json_schema()
+  process_schema(enum_schema, client)
+  enum_schema = enum_schema['properties']['placeholder']
   return types.Schema.model_validate(enum_schema)
 
 
@@ -490,29 +526,42 @@ def t_schema(
   if not origin:
     return None
   if isinstance(origin, dict):
-    return process_schema(origin, client)
+    process_schema(origin, client)
+    return types.Schema.model_validate(origin)
   if isinstance(origin, EnumMeta):
     return _process_enum(origin, client)
   if isinstance(origin, types.Schema):
     if dict(origin) == dict(types.Schema()):
-      # response_schema value was coerced to an empty Schema instance because it
-      # did not adhere to the Schema field annotation
-      raise ValueError('Empty schema is not supported.')
-    schema = process_schema(origin.model_dump(exclude_unset=True), client)
+      # response_schema value was coerced to an empty Schema instance because it did not adhere to the Schema field annotation
+      raise ValueError(f'Unsupported schema type.')
+    schema = origin.model_dump(exclude_unset=True)
+    process_schema(schema, client)
     return types.Schema.model_validate(schema)
-  if isinstance(origin, GenericAlias):
-    if origin.__origin__ is list and inspect.isclass(origin.__args__[0]):
-      if issubclass(origin.__args__[0], pydantic.BaseModel):
-        # Handle cases where response schema is `list[pydantic.BaseModel]`
-        list_schema = _build_schema(
-            'dummy', {'dummy': (origin, pydantic.Field())}
-        )
-        list_schema = process_schema(list_schema, client)
-        return types.Schema.model_validate(list_schema)
-    raise ValueError(f'Unsupported schema type: GenericAlias {origin}')
-  if issubclass(origin, pydantic.BaseModel):
-    schema = process_schema(origin.model_json_schema(), client)
+
+  if (
+      # in Python 3.9 Generic alias list[int] counts as a type,
+      # and breaks issubclass because it's not a class.
+      not isinstance(origin, GenericAlias) and
+      isinstance(origin, type) and
+      issubclass(origin, pydantic.BaseModel)
+  ):
+    schema = origin.model_json_schema()
+    process_schema(schema, client)
     return types.Schema.model_validate(schema)
+  elif (
+      isinstance(origin, GenericAlias)
+      or isinstance(origin, type)
+      or isinstance(origin, VersionedUnionType)
+      or typing.get_origin(origin) in _UNION_TYPES
+  ):
+    class Placeholder(pydantic.BaseModel):
+      placeholder: origin
+
+    schema = Placeholder.model_json_schema()
+    process_schema(schema, client)
+    schema = schema['properties']['placeholder']
+    return types.Schema.model_validate(schema)
+
   raise ValueError(f'Unsupported schema type: {origin}')
 
 

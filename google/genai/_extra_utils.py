@@ -17,7 +17,9 @@
 
 import inspect
 import logging
-from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin, types as typing_types
+import typing
+from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
+import sys
 
 import pydantic
 
@@ -25,6 +27,10 @@ from . import _common
 from . import errors
 from . import types
 
+if sys.version_info >= (3, 10):
+  from types import UnionType
+else:
+  UnionType = typing._UnionGenericAlias
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -102,16 +108,22 @@ def convert_number_values_for_function_call_args(
   return args
 
 
-def _is_annotation_pydantic_model(annotation: Any) -> bool:
-  return inspect.isclass(annotation) and issubclass(
-      annotation, pydantic.BaseModel
-  )
+def is_annotation_pydantic_model(annotation: Any) -> bool:
+  try:
+    return inspect.isclass(annotation) and issubclass(
+        annotation, pydantic.BaseModel
+    )
+  # for python 3.10 and below, inspect.isclass(annotation) has inconsistent
+  # results with versions above. for example, inspect.isclass(dict[str, int]) is
+  # True in 3.10 and below but False in 3.11 and above.
+  except TypeError:
+    return False
 
 
 def convert_if_exist_pydantic_model(
     value: Any, annotation: Any, param_name: str, func_name: str
 ) -> Any:
-  if isinstance(value, dict) and _is_annotation_pydantic_model(annotation):
+  if isinstance(value, dict) and is_annotation_pydantic_model(annotation):
     try:
       return annotation(**value)
     except pydantic.ValidationError as e:
@@ -134,13 +146,13 @@ def convert_if_exist_pydantic_model(
         for k, v in value.items()
     }
   # example 1: typing.Union[int, float]
-  # example 2: int | float equivalent to typing.types.UnionType[int, float]
-  if get_origin(annotation) in (Union, typing_types.UnionType):
+  # example 2: int | float equivalent to UnionType[int, float]
+  if get_origin(annotation) in (Union, UnionType):
     for arg in get_args(annotation):
       if (
           (get_args(arg) and get_origin(arg) is list)
           or isinstance(value, arg)
-          or (isinstance(value, dict) and _is_annotation_pydantic_model(arg))
+          or (isinstance(value, dict) and is_annotation_pydantic_model(arg))
       ):
         try:
           return convert_if_exist_pydantic_model(

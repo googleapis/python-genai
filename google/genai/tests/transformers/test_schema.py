@@ -16,10 +16,14 @@
 
 """Tests schema processing methods in the _transformers module."""
 
+import copy
+from typing import Union
 
 import pydantic
+import pytest
 
 from ... import _transformers
+from ... import client as google_genai_client_module
 from ... import types
 
 
@@ -61,15 +65,36 @@ nested_country_info_fields = CountryInfoWithCurrency.model_fields
 
 class CountryInfoWithNullFields(pydantic.BaseModel):
   name: str
-  population: int | None = None
+  population: Union[int, None] = None
+
+
+class CountryInfoWithDefaultValue(pydantic.BaseModel):
+  name: str
+  population: int = 0
+
+
+class CountryInfoWithAnyOf(pydantic.BaseModel):
+  name: str
+  restaurants_per_capita: Union[int, float]
+
+
+@pytest.fixture
+@pytest.mark.parametrize('use_vertex', [True, False])
+def client(use_vertex):
+  if use_vertex:
+    yield google_genai_client_module.Client(
+        vertexai=use_vertex, project='test-project', location='test-location'
+    )
+  else:
+    yield google_genai_client_module.Client(
+        vertexai=use_vertex, api_key='test-api-key'
+    )
 
 
 def test_build_schema_for_list_of_pydantic_schema():
   """Tests _build_schema() when list[pydantic.BaseModel] is provided to response_schema."""
 
-  list_schema = _transformers._build_schema(
-      'dummy', {'dummy': (CountryInfo, pydantic.Field())}
-  )
+  list_schema = _transformers.t_schema(None, CountryInfo).model_dump()
 
   assert isinstance(list_schema, dict)
 
@@ -78,8 +103,10 @@ def test_build_schema_for_list_of_pydantic_schema():
     assert 'type' in list_schema['properties'][field_name]
     assert field_name in country_info_fields
     field_type_str = country_info_fields[field_name].annotation.__name__
-    assert list_schema['properties'][field_name]['type'].startswith(
-        field_type_str
+    assert (
+        list_schema['properties'][field_name]['type']
+        .lower()
+        .startswith(field_type_str.lower())
     )
     assert 'required' in list_schema
     assert list_schema['required'] == list(country_info_fields.keys())
@@ -87,9 +114,9 @@ def test_build_schema_for_list_of_pydantic_schema():
 
 def test_build_schema_for_list_of_nested_pydantic_schema():
   """Tests _build_schema() when list[pydantic.BaseModel] is provided to response_schema and the pydantic.BaseModel has nested pydantic fields."""
-  list_schema = _transformers._build_schema(
-      'dummy', {'dummy': (CountryInfoWithCurrency, pydantic.Field())}
-  )
+  list_schema = _transformers.t_schema(
+      None, CountryInfoWithCurrency
+  ).model_dump()
 
   assert isinstance(list_schema, dict)
 
@@ -147,5 +174,70 @@ def test_schema_with_no_null_fields_is_unchanged():
       },
   }
 
-  transformed_properties = _transformers.handle_null_fields(test_properties)
-  assert transformed_properties == test_properties
+  for _, schema in test_properties.items():
+    schema_before = copy.deepcopy(schema)
+    _transformers.handle_null_fields(schema)
+    assert schema_before == schema
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_schema_with_default_value_raises_for_mldev(client):
+
+  if not client.vertexai:
+    with pytest.raises(ValueError) as e:
+      _transformers.t_schema(client._api_client, CountryInfoWithDefaultValue)
+    assert 'Default value is not supported' in str(e)
+  else:
+    transformed_schema_vertex = _transformers.t_schema(
+        client._api_client, CountryInfoWithDefaultValue
+    )
+    expected_schema_vertex = types.Schema(
+        properties={
+            'name': types.Schema(
+                type='STRING',
+                title='Name',
+            ),
+            'population': types.Schema(
+                type='INTEGER',
+                default=0,
+                title='Population',
+            ),
+        },
+        type='OBJECT',
+        required=['name'],
+        title='CountryInfoWithDefaultValue',
+    )
+
+    assert transformed_schema_vertex == expected_schema_vertex
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_schema_with_any_of_raises_for_mldev(client):
+  if not client.vertexai:
+    with pytest.raises(ValueError) as e:
+      _transformers.t_schema(client._api_client, CountryInfoWithAnyOf)
+    assert 'AnyOf is not supported' in str(e)
+  else:
+    transformed_schema_vertex = _transformers.t_schema(
+        client._api_client, CountryInfoWithAnyOf
+    )
+    expected_schema_vertex = types.Schema(
+        properties={
+            'name': types.Schema(
+                type='STRING',
+                title='Name',
+            ),
+            'restaurants_per_capita': types.Schema(
+                any_of=[
+                    types.Schema(type='INTEGER'),
+                    types.Schema(type='NUMBER'),
+                ],
+                title='Restaurants Per Capita',
+            ),
+        },
+        type='OBJECT',
+        required=['name', 'restaurants_per_capita'],
+        title='CountryInfoWithAnyOf',
+    )
+
+    assert transformed_schema_vertex == expected_schema_vertex

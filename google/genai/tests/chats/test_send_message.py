@@ -15,6 +15,7 @@
 
 
 import os
+import sys
 
 import PIL.Image
 from pydantic import BaseModel, ValidationError
@@ -49,6 +50,33 @@ def divide_intergers_with_customized_math_rule(
 def square_integer(given_integer: int) -> int:
   return given_integer*given_integer
 
+
+def power_disco_ball(power: bool) -> bool:
+    """Powers the spinning disco ball."""
+    print(f"Disco ball is {'spinning!' if power else 'stopped.'}")
+    return True
+
+def start_music(energetic: bool, loud: bool, bpm: int) -> str:
+    """Play some music matching the specified parameters.
+
+    Args:
+      energetic: Whether the music is energetic or not.
+      loud: Whether the music is loud or not.
+      bpm: The beats per minute of the music.
+
+    Returns: The name of the song being played.
+    """
+    print(f"Starting music! {energetic=} {loud=}, {bpm=}")
+    return "Never gonna give you up."
+
+def dim_lights(brightness: float) -> bool:
+    """Dim the lights.
+
+    Args:
+      brightness: The brightness of the lights, 0.0 is off, 1.0 is full.
+    """
+    print(f"Lights are now set to {brightness:.0%}")
+    return True
 
 def test_text(client):
   chat = client.chats.create(model='gemini-1.5-flash')
@@ -163,6 +191,114 @@ def test_with_afc_history(client):
 
   assert chat_history[3].role == 'model'
   assert '51' in chat_history[3].parts[0].text
+
+
+@pytest.mark.skipif(
+    sys.version_info >= (3, 13),
+    reason=(
+        'object type is dumped as <Type.OBJECT: "OBJECT"> as opposed to'
+        ' "OBJECT" in Python 3.13'
+    ),
+)
+def test_with_afc_multiple_remote_calls(client):
+
+  house_fns = [power_disco_ball, start_music, dim_lights]
+  config = {
+      'tools': house_fns,
+      # Force the model to act (call 'any' function), instead of chatting.
+      'tool_config': {
+          'function_calling_config': {
+              'mode': 'ANY',
+          }
+      },
+      'automatic_function_calling': {
+          'maximum_remote_calls': 3,
+      }
+  }
+  chat = client.chats.create(model='gemini-1.5-flash', config=config)
+  chat.send_message('Turn this place into a party!')
+  curated_history = chat._curated_history
+
+  assert len(curated_history) == 8
+  assert curated_history[0].role == 'user'
+  assert curated_history[0].parts[0].text == 'Turn this place into a party!'
+  assert curated_history[1].role == 'model'
+  assert len(curated_history[1].parts) == 3
+  for part in curated_history[1].parts:
+    assert part.function_call
+  assert curated_history[2].role == 'user'
+  assert len(curated_history[2].parts) == 3
+  for part in curated_history[2].parts:
+    assert part.function_response
+  assert curated_history[3].role == 'model'
+  assert len(curated_history[3].parts) == 1
+  assert curated_history[3].parts[0].function_call
+  assert curated_history[4].role == 'user'
+  assert len(curated_history[4].parts) == 1
+  assert curated_history[4].parts[0].function_response
+  assert curated_history[5].role == 'model'
+  assert len(curated_history[5].parts) == 1
+  assert curated_history[5].parts[0].function_call
+  assert curated_history[6].role == 'user'
+  assert len(curated_history[6].parts) == 1
+  assert curated_history[6].parts[0].function_response
+  assert curated_history[7].role == 'model'
+  assert len(curated_history[7].parts) == 1
+  assert curated_history[7].parts[0].function_call
+
+
+@pytest.mark.skipif(
+    sys.version_info >= (3, 13),
+    reason=(
+        'object type is dumped as <Type.OBJECT: "OBJECT"> as opposed to'
+        ' "OBJECT" in Python 3.13'
+    ),
+)
+def test_with_afc_multiple_remote_calls_async(client):
+
+  house_fns = [power_disco_ball, start_music, dim_lights]
+  config = {
+      'tools': house_fns,
+      # Force the model to act (call 'any' function), instead of chatting.
+      'tool_config': {
+          'function_calling_config': {
+              'mode': 'ANY',
+          }
+      },
+      'automatic_function_calling': {
+          'maximum_remote_calls': 3,
+      }
+  }
+  chat = client.chats.create(model='gemini-1.5-flash', config=config)
+  chat.send_message('Turn this place into a party!')
+  curated_history = chat._curated_history
+
+  assert len(curated_history) == 8
+  assert curated_history[0].role == 'user'
+  assert curated_history[0].parts[0].text == 'Turn this place into a party!'
+  assert curated_history[1].role == 'model'
+  assert len(curated_history[1].parts) == 3
+  for part in curated_history[1].parts:
+    assert part.function_call
+  assert curated_history[2].role == 'user'
+  assert len(curated_history[2].parts) == 3
+  for part in curated_history[2].parts:
+    assert part.function_response
+  assert curated_history[3].role == 'model'
+  assert len(curated_history[3].parts) == 1
+  assert curated_history[3].parts[0].function_call
+  assert curated_history[4].role == 'user'
+  assert len(curated_history[4].parts) == 1
+  assert curated_history[4].parts[0].function_response
+  assert curated_history[5].role == 'model'
+  assert len(curated_history[5].parts) == 1
+  assert curated_history[5].parts[0].function_call
+  assert curated_history[6].role == 'user'
+  assert len(curated_history[6].parts) == 1
+  assert curated_history[6].parts[0].function_response
+  assert curated_history[7].role == 'model'
+  assert len(curated_history[7].parts) == 1
+  assert curated_history[7].parts[0].function_call
 
 
 def test_with_afc_disabled(client):
@@ -289,6 +425,7 @@ def test_stream_function_calling(client):
       model='gemini-2.0-flash-exp',
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
+  # Now we support AFC.
   for chunk in chat.send_message_stream(
       'what is the result of 100/2?',
   ):
@@ -297,6 +434,15 @@ def test_stream_function_calling(client):
       'what is the result of 50/2?',
   ):
     pass
+  chat_history = chat._curated_history
+
+  assert chat_history[0].role == 'user'
+  assert chat_history[0].parts[0].text == 'what is the result of 100/2?'
+
+  assert chat_history[1].role == 'model'
+  # TODO(b/393189004): AFC is supported in the streaming mode. But AFC history
+  # is not converted to _curated_history yet.
+  assert 'The' in chat_history[1].parts[0].text
 
 
 def test_stream_send_2_messages(client):
@@ -352,7 +498,7 @@ async def test_async_history(client):
 async def test_async_stream_text(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
   chunks = 0
-  async for chunk in chat.send_message_stream('tell me a story in 100 words'):
+  async for chunk in await chat.send_message_stream('tell me a story in 100 words'):
     chunks += 1
 
   assert chunks > 2
@@ -362,7 +508,7 @@ async def test_async_stream_text(client):
 async def test_async_stream_part(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
   chunks = 0
-  async for chunk in chat.send_message_stream(
+  async for chunk in await chat.send_message_stream(
       types.Part.from_text(text='tell me a story in 100 words')
   ):
     chunks += 1
@@ -374,7 +520,7 @@ async def test_async_stream_part(client):
 async def test_async_stream_parts(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
   chunks = 0
-  async for chunk in chat.send_message_stream(
+  async for chunk in await chat.send_message_stream(
       [
           types.Part.from_text(text='tell me a story in 100 words'),
           types.Part.from_text(text='the story is about a car'),
@@ -391,20 +537,30 @@ async def test_async_stream_function_calling(client):
       model='gemini-2.0-flash-exp',
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
-  async for chunk in chat.send_message_stream('what is the result of 100/2?'):
+  # Now we support AFC.
+  async for chunk in await chat.send_message_stream('what is the result of 100/2?'):
     pass
-  async for chunk in chat.send_message_stream('what is the result of 50/2?'):
+  async for chunk in await chat.send_message_stream('what is the result of 50/2?'):
     pass
+  chat_history = chat._curated_history
+
+  assert chat_history[0].role == 'user'
+  assert chat_history[0].parts[0].text == 'what is the result of 100/2?'
+
+  assert chat_history[1].role == 'model'
+  # TODO(b/393189004): AFC is supported in the streaming mode. But AFC history
+  # is not converted to _curated_history yet.
+  assert 'The' in chat_history[1].parts[0].text
 
 
 @pytest.mark.asyncio
 async def test_async_stream_send_2_messages(client):
   chat = client.aio.chats.create(model='gemini-1.5-flash')
-  async for chunk in chat.send_message_stream(
+  async for chunk in await chat.send_message_stream(
       'write a python function to check if a year is a leap year'
   ):
     pass
-  async for chunk in chat.send_message_stream(
+  async for chunk in await chat.send_message_stream(
       'write a unit test for the function'
   ):
     pass

@@ -35,14 +35,14 @@ pytestmark = pytest_helper.setup(
 
 def test_image_png_upload(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
-    file = client.files.upload(path='tests/data/google.png')
+    file = client.files.upload(file='tests/data/google.png')
     assert file.name.startswith('files/')
 
 def test_image_png_upload_with_path(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     p = pathlib.Path('tests/data/google.png')
     file = client.files.upload(
-        path=p,
+        file=p,
         config=types.UploadFileConfig(display_name='test_image_png_path'),
     )
     assert file.name.startswith('files/')
@@ -52,7 +52,7 @@ def test_image_png_upload_with_bytesio(client):
     with open('tests/data/google.png', 'rb') as f:
       with io.BytesIO(f.read()) as buffer:
         file = client.files.upload(
-            path=buffer,
+            file=buffer,
             config=types.UploadFileConfig(mime_type='image/png'),
         )
 
@@ -62,7 +62,7 @@ def test_image_png_upload_with_fd(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     with open('tests/data/google.png', 'rb') as f:
       file = client.files.upload(
-          path=f,
+          file=f,
           config=types.UploadFileConfig(mime_type='image/png'),
       )
 
@@ -71,7 +71,7 @@ def test_image_png_upload_with_fd(client):
 def test_image_png_upload_with_config(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/google.png',
+        file='tests/data/google.png',
         config=types.UploadFileConfig(display_name='test_image_png'),
     )
     assert file.name.startswith('files/')
@@ -80,21 +80,21 @@ def test_image_png_upload_with_config(client):
 def test_image_png_upload_with_config_dict(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/google.png', config={'display_name': 'test_image_png'}
+        file='tests/data/google.png', config={'display_name': 'test_image_png'}
     )
     assert file.name.startswith('files/')
 
 
 def test_image_jpg_upload(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
-    file = client.files.upload(path='tests/data/google.jpg')
+    file = client.files.upload(file='tests/data/google.jpg')
     assert file.name.startswith('files/')
 
 
 def test_image_jpg_upload_with_config(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/google.jpg',
+        file='tests/data/google.jpg',
         config=types.UploadFileConfig(display_name='test_image_jpg'),
     )
     assert file.name.startswith('files/')
@@ -103,21 +103,21 @@ def test_image_jpg_upload_with_config(client):
 def test_image_jpg_upload_with_config_dict(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/google.jpg', config={'display_name': 'test_image_jpg'}
+        file='tests/data/google.jpg', config={'display_name': 'test_image_jpg'}
     )
     assert file.name.startswith('files/')
 
 
 def test_application_pdf_file_upload(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
-    file = client.files.upload(path='tests/data/story.pdf')
+    file = client.files.upload(file='tests/data/story.pdf')
     assert file.name.startswith('files/')
 
 
 def test_application_pdf_upload_with_config(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/story.pdf',
+        file='tests/data/story.pdf',
         config=types.UploadFileConfig(display_name='test_application_pdf'),
     )
     assert file.name.startswith('files/')
@@ -126,7 +126,7 @@ def test_application_pdf_upload_with_config(client):
 def test_application_pdf_upload_with_config_dict(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/story.pdf',
+        file='tests/data/story.pdf',
         config={'display_name': 'test_application_pdf'},
     )
     assert file.name.startswith('files/')
@@ -134,14 +134,14 @@ def test_application_pdf_upload_with_config_dict(client):
 
 def test_video_mp4_file_upload(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
-    file = client.files.upload(path='tests/data/animal.mp4')
+    file = client.files.upload(file='tests/data/animal.mp4')
     assert file.name.startswith('files/')
 
 
 def test_video_mp4_upload_with_config(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/animal.mp4',
+        file='tests/data/animal.mp4',
         config=types.UploadFileConfig(display_name='test_video_mp4'),
     )
     assert file.name.startswith('files/')
@@ -150,7 +150,7 @@ def test_video_mp4_upload_with_config(client):
 def test_video_mp4_upload_with_config_dict(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/animal.mp4', config={'display_name': 'test_video_mp4'}
+        file='tests/data/animal.mp4', config={'display_name': 'test_video_mp4'}
     )
     assert file.name.startswith('files/')
 
@@ -158,7 +158,7 @@ def test_video_mp4_upload_with_config_dict(client):
 def test_audio_m4a_file_upload(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/pixel.m4a',
+        file='tests/data/pixel.m4a',
         config=types.UploadFileConfig(mime_type='audio/mp4'),
     )
     assert file.name.startswith('files/')
@@ -167,7 +167,7 @@ def test_audio_m4a_file_upload(client):
 def test_audio_m4a_upload_with_config(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/pixel.m4a',
+        file='tests/data/pixel.m4a',
         config=types.UploadFileConfig(
             display_name='test_audio_m4a', mime_type='audio/mp4'
         ),
@@ -178,7 +178,7 @@ def test_audio_m4a_upload_with_config(client):
 def test_audio_m4a_upload_with_config_dict(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(
-        path='tests/data/pixel.m4a',
+        file='tests/data/pixel.m4a',
         config={'display_name': 'test_audio_m4a', 'mime_type': 'audio/mp4'},
     )
     assert file.name.startswith('files/')
@@ -187,7 +187,7 @@ def test_audio_m4a_upload_with_config_dict(client):
 @pytest.mark.asyncio
 async def test_image_upload_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
-    file = await client.aio.files.upload(path='tests/data/google.png')
+    file = await client.aio.files.upload(file='tests/data/google.png')
     assert file.name.startswith('files/')
 
 
@@ -195,7 +195,7 @@ async def test_image_upload_async(client):
 async def test_image_upload_with_config_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = await client.aio.files.upload(
-        path='tests/data/google.png',
+        file='tests/data/google.png',
         config=types.UploadFileConfig(display_name='test_image'),
     )
     assert file.name.startswith('files/')
@@ -205,7 +205,7 @@ async def test_image_upload_with_config_async(client):
 async def test_image_upload_with_config_dict_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = await client.aio.files.upload(
-        path='tests/data/google.png', config={'display_name': 'test_image'}
+        file='tests/data/google.png', config={'display_name': 'test_image'}
     )
     assert file.name.startswith('files/')
 
@@ -215,7 +215,7 @@ async def test_image_upload_with_bytesio_async(client):
     with open('tests/data/google.png', 'rb') as f:
       buffer = io.BytesIO(f.read())
     file = await client.aio.files.upload(
-        path=buffer,
+        file=buffer,
         config=types.UploadFileConfig(
             mime_type='image/png'),
     )
@@ -226,6 +226,6 @@ async def test_image_upload_with_bytesio_async(client):
 async def test_unknown_path_upload_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     try:
-      await client.aio.files.upload(path='unknown_path')
+      await client.aio.files.upload(file='unknown_path')
     except FileNotFoundError as e:
       assert 'is not a valid file path' in str(e)

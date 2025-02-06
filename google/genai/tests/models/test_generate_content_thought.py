@@ -45,8 +45,8 @@ pytestmark = pytest_helper.setup(
 )
 
 
-def test_has_thought_with_include_thoughts_v1alpha(client):
-  # Thinking config currently only works in v1alpha for Gemini AI API.
+def test_no_thought_with_include_thoughts_v1alpha(client):
+  # Thoughts have been disabled in the API.
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     response = client.models.generate_content(
         model='gemini-2.0-flash-thinking-exp',
@@ -57,49 +57,25 @@ def test_has_thought_with_include_thoughts_v1alpha(client):
         },
     )
     has_thought = False
-    thought = ''
     if response.candidates:
       for candidate in response.candidates:
         for part in candidate.content.parts:
           if part.thought:
             has_thought = True
-            thought = part.text
             break
-    assert has_thought
-    assert thought not in response.text
-
-
-def test_has_thought_with_include_thoughts(client):
-  with pytest_helper.exception_if_mldev(client, errors.ClientError):
-    response = client.models.generate_content(
-        model='gemini-2.0-flash-thinking-exp-1219',
-        contents='What is the sum of natural numbers from 1 to 100?',
-        config={
-            'thinking_config': {'include_thoughts': True},
-        },
-    )
-    has_thought = False
-    thought = ''
-    if response.candidates:
-      for candidate in response.candidates:
-        for part in candidate.content.parts:
-          if part.thought:
-            has_thought = True
-            thought = part.text
-            break
-    assert has_thought
-    assert thought not in response.text
+    assert not has_thought
 
 
 def test_no_thought_with_default_config(client):
-  response = client.models.generate_content(
-      model='gemini-2.0-flash-thinking-exp-1219',
-      contents='What is the sum of natural numbers from 1 to 100?',
-  )
-  has_thought = False
-  for candidate in response.candidates:
-    for part in candidate.content.parts:
-      if part.thought:
-        has_thought = True
-        break
-  assert not has_thought
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-thinking-exp',
+        contents='What is the sum of natural numbers from 1 to 100?',
+    )
+    has_thought = False
+    for candidate in response.candidates:
+      for part in candidate.content.parts:
+        if part.thought:
+          has_thought = True
+          break
+    assert not has_thought

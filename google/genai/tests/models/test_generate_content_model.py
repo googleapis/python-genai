@@ -146,7 +146,7 @@ async def test_start_with_models_stream_async(client):
   # vertex ai require publishers/ prefix for gemini
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     chunks = 0
-    async for chunk in client.aio.models.generate_content_stream(
+    async for chunk in await client.aio.models.generate_content_stream(
         model='models/gemini-1.5-flash',
         contents='Tell me a story in 300 words.',
     ):

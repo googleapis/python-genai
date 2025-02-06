@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-
+import sys
 import typing
 import pydantic
 import pytest
@@ -252,6 +252,13 @@ def test_google_search_retrieval_stream(client):
     pass
 
 
+@pytest.mark.skipif(
+    sys.version_info >= (3, 13),
+    reason=(
+        'object type is dumped as <Type.OBJECT: "OBJECT"> as opposed to'
+        ' "OBJECT" in Python 3.13'
+    ),
+)
 def test_function_calling_without_implementation(client):
   response = client.models.generate_content(
       model='gemini-1.5-flash',
@@ -318,6 +325,37 @@ def test_automatic_function_calling(client):
   )
 
   assert '500' in response.text
+
+
+def test_automatic_function_calling_stream(client):
+  response = client.models.generate_content_stream(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config={
+          'tools': [divide_integers],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  chunks = 0
+  for part in response:
+    chunks += 1
+    assert part.text is not None or part.candidates[0].finish_reason
+
+
+@pytest.mark.asyncio
+async def test_automatic_function_calling_stream_async(client):
+  response = await client.aio.models.generate_content_stream(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config={
+          'tools': [divide_integers],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  chunks = 0
+  async for part in response:
+    chunks += 1
+    assert part.text is not None or part.candidates[0].finish_reason
 
 
 def test_callable_tools_user_disable_afc(client):
@@ -577,16 +615,15 @@ def test_automatic_function_calling_with_parameterized_generic_union_type(client
     else:
       return f'The cities in {country} are: {", ".join(cities)} and they are nice.'
 
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    response = client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents=('Can you describe the city of San Francisco?'),
-        config={
-            'tools': [describe_cities],
-            'automatic_function_calling': {'ignore_call_history': True}
-        },
-    )
-    assert 'San Francisco' in response.text
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=('Can you describe the city of San Francisco?'),
+      config={
+          'tools': [describe_cities],
+          'automatic_function_calling': {'ignore_call_history': True}
+      },
+  )
+  assert 'San Francisco' in response.text
 
 
 @pytest.mark.asyncio
@@ -625,7 +662,7 @@ def test_with_1_empty_tool(client):
 
 @pytest.mark.asyncio
 async def test_google_search_retrieval_stream_async(client):
-  async for part in client.aio.models.generate_content_stream(
+  async for part in await client.aio.models.generate_content_stream(
       model='gemini-1.5-flash',
       contents='Why is the sky blue?',
       config={'tools': [{'google_search_retrieval': {}}]},
@@ -636,7 +673,7 @@ async def test_google_search_retrieval_stream_async(client):
 @pytest.mark.asyncio
 async def test_vai_search_stream_async(client):
   if client._api_client.vertexai:
-    async for part in client.aio.models.generate_content_stream(
+    async for part in await client.aio.models.generate_content_stream(
         model='gemini-1.5-flash',
         contents='what is vertex ai search?',
         config={
@@ -652,7 +689,7 @@ async def test_vai_search_stream_async(client):
       pass
   else:
     with pytest.raises(ValueError) as e:
-      async for part in client.aio.models.generate_content_stream(
+      async for part in await client.aio.models.generate_content_stream(
           model='gemini-1.5-flash',
           contents='Why is the sky blue?',
           config={
@@ -909,3 +946,35 @@ def test_class_method_tools(client):
       },
   )
   assert 'FunctionHolder' in response.text
+
+
+def test_disable_afc_in_any_mode(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config=types.GenerateContentConfig(
+          tools=[divide_integers],
+          automatic_function_calling=types.AutomaticFunctionCallingConfig(
+              disable=True
+          ),
+          tool_config=types.ToolConfig(
+              function_calling_config=types.FunctionCallingConfig(mode='ANY')
+          ),
+      ),
+  )
+
+
+def test_afc_once_in_any_mode(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config=types.GenerateContentConfig(
+          tools=[divide_integers],
+          automatic_function_calling=types.AutomaticFunctionCallingConfig(
+              maximum_remote_calls=2
+          ),
+          tool_config=types.ToolConfig(
+              function_calling_config=types.FunctionCallingConfig(mode='ANY')
+          ),
+      ),
+  )

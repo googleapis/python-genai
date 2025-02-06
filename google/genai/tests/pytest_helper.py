@@ -18,7 +18,7 @@ import contextlib
 import json
 import os
 import pathlib
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel, Field, SerializeAsAny
 import pytest
 from .. import _common
@@ -85,7 +85,7 @@ def create_test_for_table_item(
 
 
 def create_test_for_table(
-    globals_for_file: dict[str, any],
+    globals_for_file: dict[str, Any],
     test_method: str,
     test_table: list[TestTableItem],
 ):
@@ -115,7 +115,7 @@ def create_test_for_table(
 def setup(
     *,
     file: str,
-    globals_for_file: Optional[dict[str, any]] = None,
+    globals_for_file: Optional[dict[str, Any]] = None,
     test_method: Optional[str] = None,
     test_table: Optional[list[TestTableItem]] = None,
     http_options: Optional[HttpOptions] = None,

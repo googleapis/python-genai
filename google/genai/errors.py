@@ -128,3 +128,7 @@ class FunctionInvocationError(ValueError):
   """Raised when the function cannot be invoked with the given arguments."""
 
   pass
+
+
+class ExperimentalWarning(Warning):
+  """Warning for experimental features."""

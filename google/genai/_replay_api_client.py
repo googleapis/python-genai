@@ -79,6 +79,11 @@ def _redact_request_url(url: str) -> str:
       result,
   )
   result = re.sub(
+      r'.*aiplatform.googleapis.com/[^/]+/',
+      '{VERTEX_URL_PREFIX}/',
+      result,
+  )
+  result = re.sub(
       r'https://generativelanguage.googleapis.com/[^/]+',
       '{MLDEV_URL_PREFIX}',
       result,
@@ -357,6 +362,8 @@ class ReplayApiClient(ApiClient):
     if self._should_update_replay():
       if isinstance(response_model, list):
         response_model = response_model[0]
+      if response_model and 'http_headers' in response_model.model_fields:
+        response_model.http_headers.pop('Date', None)
       interaction.response.sdk_response_segments.append(
           response_model.model_dump(exclude_none=True)
       )
@@ -397,7 +404,7 @@ class ReplayApiClient(ApiClient):
         # segments since the stream has been consumed.
       else:
         self._record_interaction(http_request, result)
-      _debug_print('api mode result: %s' % result.text)
+      _debug_print('api mode result: %s' % result.json)
       return result
     else:
       return self._build_response_from_replay(http_request)
@@ -429,7 +436,7 @@ class ReplayApiClient(ApiClient):
       self._record_interaction(request, HttpResponse({}, [json.dumps(result)]))
       return result
     else:
-      return self._build_response_from_replay(request).text
+      return self._build_response_from_replay(request).json
 
   def _download_file_request(self, request):
     self._initialize_replay_session_if_not_loaded()

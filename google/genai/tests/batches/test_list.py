@@ -26,13 +26,13 @@ from .. import pytest_helper
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_list_batch_jobs',
-        parameters=types._ListBatchJobParameters(),
+        parameters=types._ListBatchJobsParameters(),
         exception_if_mldev='only supported in the Vertex AI client',
     ),
     pytest_helper.TestTableItem(
         name='test_list_batch_jobs_with_config',
-        parameters=types._ListBatchJobParameters(
-            config=types.ListBatchJobConfig(
+        parameters=types._ListBatchJobsParameters(
+            config=types.ListBatchJobsConfig(
                 filter='display_name:"genai_*"',
                 page_size=5,
             ),

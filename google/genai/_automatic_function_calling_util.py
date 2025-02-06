@@ -14,10 +14,21 @@
 #
 
 import inspect
-import types as typing_types
-from typing import Any, Callable, Literal, Union, _GenericAlias, get_args, get_origin
+import sys
+import types as builtin_types
+import typing
+from typing import _GenericAlias, Any, Callable, get_args, get_origin, Literal, Union
+
 import pydantic
+
+from . import _extra_utils
 from . import types
+
+
+if sys.version_info >= (3, 10):
+  VersionedUnionType = builtin_types.UnionType
+else:
+  VersionedUnionType = typing._UnionGenericAlias
 
 _py_builtin_type_to_schema_type = {
     str: 'STRING',
@@ -38,7 +49,8 @@ def _is_builtin_primitive_or_compound(
 def _raise_for_any_of_if_mldev(schema: types.Schema):
   if schema.any_of:
     raise ValueError(
-        'AnyOf is not supported in function declaration schema for Google AI.'
+        'AnyOf is not supported in function declaration schema for'
+        ' the Gemini API.'
     )
 
 
@@ -46,15 +58,7 @@ def _raise_for_default_if_mldev(schema: types.Schema):
   if schema.default is not None:
     raise ValueError(
         'Default value is not supported in function declaration schema for'
-        ' Google AI.'
-    )
-
-
-def _raise_for_nullable_if_mldev(schema: types.Schema):
-  if schema.nullable:
-    raise ValueError(
-        'Nullable is not supported in function declaration schema for'
-        ' Google AI.'
+        ' the Gemini API.'
     )
 
 
@@ -62,7 +66,6 @@ def _raise_if_schema_unsupported(client, schema: types.Schema):
   if not client.vertexai:
     _raise_for_any_of_if_mldev(schema)
     _raise_for_default_if_mldev(schema)
-    _raise_for_nullable_if_mldev(schema)
 
 
 def _is_default_value_compatible(
@@ -74,11 +77,11 @@ def _is_default_value_compatible(
 
   if (
       isinstance(annotation, _GenericAlias)
-      or isinstance(annotation, typing_types.GenericAlias)
-      or isinstance(annotation, typing_types.UnionType)
+      or isinstance(annotation, builtin_types.GenericAlias)
+      or isinstance(annotation, VersionedUnionType)
   ):
     origin = get_origin(annotation)
-    if origin in (Union, typing_types.UnionType):
+    if origin in (Union, VersionedUnionType):
       return any(
           _is_default_value_compatible(default_value, arg)
           for arg in get_args(annotation)
@@ -134,9 +137,9 @@ def _parse_schema_from_parameter(
     _raise_if_schema_unsupported(client, schema)
     return schema
   if (
-      isinstance(param.annotation, typing_types.UnionType)
+      isinstance(param.annotation, VersionedUnionType)
       # only parse simple UnionType, example int | str | float | bool
-      # complex types.UnionType will be invoked in raise branch
+      # complex UnionType will be invoked in raise branch
       and all(
           (_is_builtin_primitive_or_compound(arg) or arg is type(None))
           for arg in get_args(param.annotation)
@@ -175,7 +178,7 @@ def _parse_schema_from_parameter(
     _raise_if_schema_unsupported(client, schema)
     return schema
   if isinstance(param.annotation, _GenericAlias) or isinstance(
-      param.annotation, typing_types.GenericAlias
+      param.annotation, builtin_types.GenericAlias
   ):
     origin = get_origin(param.annotation)
     args = get_args(param.annotation)
@@ -222,7 +225,11 @@ def _parse_schema_from_parameter(
       schema.type = 'OBJECT'
       unique_types = set()
       for arg in args:
-        if arg.__name__ == 'NoneType':  # Optional type
+        # The first check is for NoneType in Python 3.9, since the __name__
+        # attribute is not available in Python 3.9
+        if type(arg) is type(None) or (
+            hasattr(arg, '__name__') and arg.__name__ == 'NoneType'
+        ):  # Optional type
           schema.nullable = True
           continue
         schema_in_any_of = _parse_schema_from_parameter(
@@ -265,9 +272,8 @@ def _parse_schema_from_parameter(
       return schema
       # all other generic alias will be invoked in raise branch
   if (
-      inspect.isclass(param.annotation)
       # for user defined class, we only support pydantic model
-      and issubclass(param.annotation, pydantic.BaseModel)
+      _extra_utils.is_annotation_pydantic_model(param.annotation)
   ):
     if (
         param.default is not inspect.Parameter.empty
@@ -286,6 +292,8 @@ def _parse_schema_from_parameter(
           ),
           func_name,
       )
+    if client.vertexai:
+      schema.required = _get_required_fields(schema)
     _raise_if_schema_unsupported(client, schema)
     return schema
   raise ValueError(

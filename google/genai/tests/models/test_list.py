@@ -29,11 +29,11 @@ test_http_options = {'headers': {'test': 'headers'}}
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_tuned_models',
-        parameters=types._ListModelsParameters(),
+        parameters=types._ListModelsParameters(config={'query_base': False}),
     ),
     pytest_helper.TestTableItem(
         name='test_base_models',
-        parameters=types._ListModelsParameters(config={'query_base': True}),
+        parameters=types._ListModelsParameters(),
     ),
     pytest_helper.TestTableItem(
         name='test_base_models_with_config',
@@ -114,6 +114,21 @@ def test_empty_tuned_models(mock_api_client, client):
 @pytest.mark.asyncio
 async def test_async_pager(client):
   pager = await client.aio.models.list(config={'page_size': 10})
+
+  assert pager.name == 'models'
+  assert pager.page_size == 10
+  assert len(pager) <= 10
+
+  # Iterate through all the pages. Then next_page() should raise an exception.
+  async for _ in pager:
+    pass
+  with pytest.raises(IndexError, match='No more pages to fetch.'):
+    await pager.next_page()
+
+
+@pytest.mark.asyncio
+async def test_base_models_async_pager(client):
+  pager = await client.aio.models.list(config={'page_size': 10, 'query_base': True})
 
   assert pager.name == 'models'
   assert pager.page_size == 10

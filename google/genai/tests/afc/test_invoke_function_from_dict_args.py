@@ -19,6 +19,7 @@
 from typing import Union
 import pydantic
 import pytest
+import sys
 from ... import errors
 from ..._extra_utils import invoke_function_from_dict_args
 
@@ -52,6 +53,10 @@ def test_builtin_primitive_types():
   assert actual_response == expected_response
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason='| is only supported in Python 3.9 and above.',
+)
 def test_builtin_compound_types():
   def func_under_test(x: list[int], y: dict[str, float]):
     return {

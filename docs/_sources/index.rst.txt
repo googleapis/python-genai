@@ -11,7 +11,7 @@ Google Gen AI SDK
 :strong:`google-genai` is an initial Python client library for interacting with
 Google's Generative AI APIs.
 
-Google Gen AI Python SDK provides an interface for developers to integrate Google's generative models into their Python applications. It supports the `Gemini Developer API <https://ai.google.dev/gemini-api/docs>`_ and `Vertex AI <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview>`_ APIs. This is an early release. API is subject to change. Please do not use this SDK in production environments at this stage.
+Google Gen AI Python SDK provides an interface for developers to integrate Google's generative models into their Python applications. It supports the `Gemini Developer API <https://ai.google.dev/gemini-api/docs>`_ and `Vertex AI <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview>`_ APIs.
 
 Installation
 ------------
@@ -47,6 +47,24 @@ run all the examples to see how it behaves under different APIs.
         vertexai=True, project="your-project-id", location="us-central1"
     )
 
+To set the API version use ``http_options``. For example, to set the API version to ``v1`` for Vertex AI:
+
+.. code:: python
+
+    client = genai.Client(
+        vertexai=True, project='your-project-id', location='us-central1',
+        http_options={'api_version': 'v1'}
+    )
+
+To set the API version to `v1alpha` for the Gemini API:
+
+.. code:: python
+
+    # Only run this block for Gemini Developer API
+    client = genai.Client(api_key='GEMINI_API_KEY',
+                          http_options={'api_version': 'v1alpha'})
+
+
 Types
 -----
 
@@ -68,11 +86,11 @@ with text content
 .. code:: python
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash-exp", contents="What is your name?"
+        model="gemini-2.0-flash-exp", contents="Why is the sky blue?"
     )
     print(response.text)
 
-with uploaded file (Google AI only)
+with uploaded file (Gemini API only)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 download the file in console.
@@ -85,9 +103,10 @@ python code.
 
 .. code:: python
 
-    file = client.files.upload(path='a11.text')
+    file = client.files.upload(path='a11.txt')
     response = client.models.generate_content(
-        model='gemini-2.0-flash-exp', contents=['Summarize this file', file]
+        model='gemini-2.0-flash-exp',
+        contents=['Could you summarize this file?', file]
     )
     print(response.text)
 
@@ -117,7 +136,7 @@ dictionaries. You can get the type from ``google.genai.types``.
 
     response = client.models.generate_content(
         model="gemini-2.0-flash-exp",
-        contents=types.Part.from_text("Why is the sky blue?"),
+        contents=types.Part.from_text(text="Why is the sky blue?"),
         config=types.GenerateContentConfig(
             temperature=0,
             top_p=0.95,
@@ -131,7 +150,7 @@ dictionaries. You can get the type from ``google.genai.types``.
         ),
     )
 
-    response
+    print(response.text)
 
 List Base Models
 ----------------
@@ -140,12 +159,12 @@ To retrieve tuned models, see: :ref:`List Tuned Models`
 
 .. code:: python
 
-    for model in client.models.list(config={'query_base':True}):
+    for model in client.models.list():
         print(model)
 
 .. code:: python
 
-    pager = client.models.list(config={"page_size": 10, 'query_base':True})
+    pager = client.models.list(config={"page_size": 10})
     print(pager.page_size)
     print(pager[0])
     pager.next_page()
@@ -156,12 +175,12 @@ Async
 
 .. code:: python
 
-    async for job in await client.aio.models.list(config={'query_base':True}):
+    async for job in await client.aio.models.list():
         print(job)
 
 .. code:: python
 
-    async_pager = await client.aio.models.list(config={"page_size": 10, 'query_base':True})
+    async_pager = await client.aio.models.list(config={"page_size": 10})
     print(async_pager.page_size)
     print(async_pager[0])
     await async_pager.next_page()
@@ -230,10 +249,10 @@ Then you will receive a function call part in the response.
     function = types.FunctionDeclaration(
         name="get_current_weather",
         description="Get the current weather in a given location",
-        parameters=types.FunctionParameters(
+        parameters=types.Schema(
             type="OBJECT",
             properties={
-                "location": types.ParameterType(
+                "location": types.Schema(
                     type="STRING",
                     description="The city and state, e.g. San Francisco, CA",
                 ),
@@ -262,10 +281,9 @@ The following example shows how to do it for a simple function invocation.
 
     user_prompt_content = types.Content(
         role="user",
-        parts=[types.Part.from_text("What is the weather like in Boston?")],
+        parts=[types.Part.from_text(text="What is the weather like in Boston?")],
     )
-    function_call_content = response.candidates[0].content
-    function_call_part = function_call_content.parts[0]
+    function_call_part = response.function_calls[0]
 
 
     try:
@@ -300,6 +318,69 @@ The following example shows how to do it for a simple function invocation.
     )
 
     print(response.text)
+
+
+Function calling with ``ANY`` tools config mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you configure function calling mode to be `ANY`, then the model will always
+return function call parts. If you also pass a python function as a tool, by
+default the SDK will perform automatic function calling until the remote calls
+exceed the maximum remote call for automatic function calling (default to 10 times).
+
+If you'd like to disable automatic function calling in `ANY` mode:
+
+.. code-block:: python
+
+   def get_current_weather(location: str) -> str:
+       """Returns the current weather.
+
+       Args:
+         location: The city and state, e.g. San Francisco, CA
+       """
+       return "sunny"
+
+   response = client.models.generate_content(
+       model="gemini-2.0-flash-exp",
+       contents="What is the weather like in Boston?",
+       config=types.GenerateContentConfig(
+           tools=[get_current_weather],
+           automatic_function_calling=types.AutomaticFunctionCallingConfig(
+               disable=True
+           ),
+           tool_config=types.ToolConfig(
+               function_calling_config=types.FunctionCallingConfig(mode='ANY')
+           ),
+       ),
+   )
+
+If you'd like to set ``x`` number of automatic function call turns, you can
+configure the maximum remote calls to be ``x + 1``.
+Assuming you prefer ``1`` turn for automatic function calling:
+
+.. code-block:: python
+
+   def get_current_weather(location: str) -> str:
+       """Returns the current weather.
+
+       Args:
+         location: The city and state, e.g. San Francisco, CA
+       """
+       return "sunny"
+
+   response = client.models.generate_content(
+       model="gemini-2.0-flash-exp",
+       contents="What is the weather like in Boston?",
+       config=types.GenerateContentConfig(
+           tools=[get_current_weather],
+           automatic_function_calling=types.AutomaticFunctionCallingConfig(
+               maximum_remote_calls=2
+           ),
+           tool_config=types.ToolConfig(
+               function_calling_config=types.FunctionCallingConfig(mode='ANY')
+           ),
+       ),
+   )
 
 JSON Response Schema
 --------------------
@@ -366,6 +447,60 @@ Schemas can be provided as Pydantic Models.
     )
     print(response.text)
 
+Enum Response Schema
+--------------------
+
+Text Response
+~~~~~~~~~~~~~
+
+You can set response_mime_type to 'text/x.enum' to return one of those enum 
+values as the response.
+
+.. code:: python
+
+    from enum import Enum
+
+    class InstrumentEnum(Enum):
+        PERCUSSION = 'Percussion'
+        STRING = 'String'
+        WOODWIND = 'Woodwind'
+        BRASS = 'Brass'
+        KEYBOARD = 'Keyboard'
+
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-exp',
+        contents='What instrument plays multiple notes at once?',
+        config={
+            'response_mime_type': 'text/x.enum',
+            'response_schema': InstrumentEnum,
+        },
+    )
+    print(response.text)
+
+JSON Response
+~~~~~~~~~~~~~
+
+You can also set response_mime_type to 'application/json', the response will be 
+identical but in quotes.
+
+.. code:: python
+
+    class InstrumentEnum(Enum):
+        PERCUSSION = 'Percussion'
+        STRING = 'String'
+        WOODWIND = 'Woodwind'
+        BRASS = 'Brass'
+        KEYBOARD = 'Keyboard'
+
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-exp',
+        contents='What instrument plays multiple notes at once?',
+        config={
+            'response_mime_type': 'application/json',
+            'response_schema': InstrumentEnum,
+        },
+    )
+    print(response.text)
 
 Streaming
 ---------
@@ -439,10 +574,10 @@ Streaming
 
 .. code:: python
 
-    async for response in client.aio.models.generate_content_stream(
+    async for chunk in await client.aio.models.generate_content_stream(
         model="gemini-2.0-flash-exp", contents="Tell me a story in 300 words."
     ):
-        print(response.text, end="")
+        print(chunk.text, end="")
 
 Count Tokens and Compute Tokens
 -------------------------------
@@ -451,7 +586,7 @@ Count Tokens and Compute Tokens
 
     response = client.models.count_tokens(
         model="gemini-2.0-flash-exp",
-        contents="What is your name?",
+        contents="why is the sky blue?",
     )
     print(response)
 
@@ -464,7 +599,7 @@ Compute tokens is only supported in Vertex AI.
 
     response = client.models.compute_tokens(
         model="gemini-2.0-flash-exp",
-        contents="What is your name?",
+        contents="why is the sky blue?",
     )
     print(response)
 
@@ -475,7 +610,7 @@ Async
 
     response = await client.aio.models.count_tokens(
         model="gemini-2.0-flash-exp",
-        contents="What is your name?",
+        contents="why is the sky blue?",
     )
     print(response)
 
@@ -486,7 +621,7 @@ Embed Content
 
     response = client.models.embed_content(
         model="text-embedding-004",
-        contents="What is your name?",
+        contents="why is the sky blue?",
     )
     print(response)
 
@@ -495,7 +630,7 @@ Embed Content
     # multiple contents with config
     response = client.models.embed_content(
         model="text-embedding-004",
-        contents=["What is your name?", "What is your age?"],
+        contents=["why is the sky blue?", "What is your age?"],
         config=types.EmbedContentConfig(output_dimensionality=10),
     )
 
@@ -512,10 +647,10 @@ Support for generate image in Gemini Developer API is behind an allowlist
 .. code:: python
 
     # Generate Image
-    response1 = client.models.generate_image(
-        model="imagen-3.0-generate-001",
+    response1 = client.models.generate_images(
+        model="imagen-3.0-generate-002",
         prompt="An umbrella in the foreground, and a rainy night sky in the background",
-        config=types.GenerateImageConfig(
+        config=types.GenerateImagesConfig(
             negative_prompt="human",
             number_of_images=1,
             include_rai_reason=True,
@@ -533,7 +668,7 @@ Upscale image is only supported in Vertex AI.
 
     # Upscale the generated image from above
     response2 = client.models.upscale_image(
-        model="imagen-3.0-generate-001",
+        model="imagen-3.0-generate-002",
         image=response1.generated_images[0].image,
         upscale_factor="x2",
         config=types.UpscaleImageConfig(
@@ -621,7 +756,7 @@ Async Streaming
 .. code:: python
 
     chat = client.aio.chats.create(model="gemini-2.0-flash-exp")
-    async for chunk in chat.send_message_stream("tell me a story"):
+    async for chunk in await chat.send_message_stream("tell me a story"):
         print(chunk.text, end="")
 
 Files
@@ -720,7 +855,7 @@ Tunings
 =======
 
 ``client.tunings`` contains tuning job APIs and supports supervised fine
-tuning through ``tune`` and distillation through ``distill``
+tuning through ``tune``.
 
 Tune
 ----
@@ -789,7 +924,7 @@ Use Tuned Model
 
     response = client.models.generate_content(
         model=tuning_job.tuned_model.endpoint,
-        contents="What is your name?",
+        contents="why is the sky blue?",
     )
 
     print(response.text)
@@ -809,12 +944,12 @@ To retrieve base models, see: :ref:`List Base Models`
 
 .. code:: python
 
-    for model in client.models.list(config={"page_size": 10}):
+    for model in client.models.list(config={"page_size": 10, "query_base": False}}):
         print(model)
 
 .. code:: python
 
-    pager = client.models.list(config={"page_size": 10})
+    pager = client.models.list(config={"page_size": 10, "query_base": False}})
     print(pager.page_size)
     print(pager[0])
     pager.next_page()
@@ -825,12 +960,12 @@ Async
 
 .. code:: python
 
-    async for job in await client.aio.models.list(config={"page_size": 10}):
+    async for job in await client.aio.models.list(config={"page_size": 10, "query_base": False}}):
         print(job)
 
 .. code:: python
 
-    async_pager = await client.aio.models.list(config={"page_size": 10})
+    async_pager = await client.aio.models.list(config={"page_size": 10, "query_base": False}})
     print(async_pager.page_size)
     print(async_pager[0])
     await async_pager.next_page()
@@ -852,49 +987,6 @@ Update Tuned Model
 
     print(model)
 
-Distillation
-------------
-
-Only supported in Vertex AI. Requires allowlist.
-
-.. code:: python
-
-    distillation_job = client.tunings.distill(
-        student_model="gemma-2b-1.1-it",
-        teacher_model="gemini-1.5-pro-002",
-        training_dataset=genai.types.DistillationDataset(
-            gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
-        ),
-        config=genai.types.CreateDistillationJobConfig(
-            epoch_count=1,
-            pipeline_root_directory=(
-                "gs://vertex-sdk-dev-staging-us-central1/tmp/distillation_pipeline_root"
-            ),
-        ),
-    )
-    print(distillation_job)
-
-.. code:: python
-
-    completed_states = set(
-        [
-            "JOB_STATE_SUCCEEDED",
-            "JOB_STATE_FAILED",
-            "JOB_STATE_CANCELLED",
-            "JOB_STATE_PAUSED",
-        ]
-    )
-
-    while distillation_job.state not in completed_states:
-        print(distillation_job.state)
-        distillation_job = client.tunings.get(name=distillation_job.name)
-        time.sleep(10)
-
-    print(distillation_job)
-
-.. code:: python
-
-    distillation_job
 
 List Tuning Jobs
 ----------------
@@ -976,12 +1068,12 @@ List
 
 .. code:: python
 
-    for job in client.batches.list(config=types.ListBatchJobConfig(page_size=10)):
+    for job in client.batches.list(config=types.ListBatchJobsConfig(page_size=10)):
         print(job)
 
 .. code:: python
 
-    pager = client.batches.list(config=types.ListBatchJobConfig(page_size=10))
+    pager = client.batches.list(config=types.ListBatchJobsConfig(page_size=10))
     print(pager.page_size)
     print(pager[0])
     pager.next_page()
@@ -993,14 +1085,14 @@ Async
 .. code:: python
 
     async for job in await client.aio.batches.list(
-        config=types.ListBatchJobConfig(page_size=10)
+        config=types.ListBatchJobsConfig(page_size=10)
     ):
         print(job)
 
 .. code:: python
 
     async_pager = await client.aio.batches.list(
-        config=types.ListBatchJobConfig(page_size=10)
+        config=types.ListBatchJobsConfig(page_size=10)
     )
     print(async_pager.page_size)
     print(async_pager[0])

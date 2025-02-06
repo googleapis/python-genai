@@ -149,49 +149,43 @@ class Client:
   ):
     """Initializes the client.
 
-       Args:
-          vertexai (bool):
-              Indicates whether the client should use the Vertex AI
-              API endpoints. Defaults to False (uses Gemini Developer API
-              endpoints). Applies to the Vertex AI API only.
-          api_key (str):
-              The `API key
-              <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
-              authentication. Applies to the Gemini Developer API only.
-          credentials (google.auth.credentials.Credentials):
-              The credentials to
-              use for authentication when calling the Vertex AI APIs. Credentials
-              can be obtained from environment variables and default credentials.
-              For more information, see `Set up Application Default Credentials
-              <https://cloud.google.com/docs/authentication/provide-credentials-adc>`_.
-              Applies to the Vertex AI API only.
-          project (str):
-              The `Google Cloud project ID
-              <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to
-              use for quota. Can be obtained from environment variables (for
-              example, ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
-          location (str):
-              The `location
-              <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
-              to send API requests to (for example, ``us-central1``). Can be
-              obtained from environment variables. Applies to the Vertex AI API
-              only.
-          debug_config (DebugConfig):
-              Config settings that control network
-              behavior of the client. This is typically used when running test code.
-          http_options (Union[HttpOptions, HttpOptionsDict]):
-              Http options to use for the client. Response_payload can't be
-              set when passing to the client constructor.
+    Args:
+       vertexai (bool): Indicates whether the client should use the Vertex AI
+         API endpoints. Defaults to False (uses Gemini Developer API endpoints).
+         Applies to the Vertex AI API only.
+       api_key (str): The `API key
+         <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
+         authentication. Applies to the Gemini Developer API only.
+       credentials (google.auth.credentials.Credentials): The credentials to use
+         for authentication when calling the Vertex AI APIs. Credentials can be
+         obtained from environment variables and default credentials. For more
+         information, see `Set up Application Default Credentials
+         <https://cloud.google.com/docs/authentication/provide-credentials-adc>`_.
+         Applies to the Vertex AI API only.
+       project (str): The `Google Cloud project ID
+         <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to
+         use for quota. Can be obtained from environment variables (for example,
+         ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
+       location (str): The `location
+         <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
+         to send API requests to (for example, ``us-central1``). Can be obtained
+         from environment variables. Applies to the Vertex AI API only.
+       debug_config (DebugConfig): Config settings that control network behavior
+         of the client. This is typically used when running test code.
+       http_options (Union[HttpOptions, HttpOptionsDict]): Http options to use
+         for the client. The field deprecated_response_payload should not be set
+         in http_options.
     """
 
     self._debug_config = debug_config or DebugConfig()
 
-    # Throw ValueError if response_payload is set in http_options due to
-    # unpredictable behavior when running multiple coroutines through
+    # Throw ValueError if deprecated_response_payload is set in http_options
+    # due to unpredictable behavior when running multiple coroutines through
     # client.aio.
-    if http_options and 'response_payload' in http_options:
+    if http_options and 'deprecated_response_payload' in http_options:
       raise ValueError(
-          'Setting response_payload in http_options is not supported.'
+          'Setting deprecated_response_payload in http_options is not'
+          ' supported.'
       )
 
     self._api_client = self._get_api_client(

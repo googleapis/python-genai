@@ -18,14 +18,17 @@
 import base64
 import datetime
 import enum
+import functools
 import typing
 from typing import Union
 import uuid
+import warnings
 
 import pydantic
 from pydantic import alias_generators
 
 from . import _api_client
+from . import errors
 
 
 def set_value_by_path(data, keys, value):
@@ -213,8 +216,16 @@ class CaseInSensitiveEnum(str, enum.Enum):
     except KeyError:
       try:
         return cls[value.lower()]  # Try to access directly with lowercase
-      except KeyError as e:
-        raise ValueError(f"{value} is not a valid {cls.__name__}") from e
+      except KeyError:
+        warnings.warn(f"{value} is not a valid {cls.__name__}")
+        try:
+          # Creating a enum instance based on the value
+          unknown_enum_val = cls._new_member_(cls)  # pylint: disable=protected-access,attribute-error
+          unknown_enum_val._name_ = str(value)  # pylint: disable=protected-access
+          unknown_enum_val._value_ = value  # pylint: disable=protected-access
+          return unknown_enum_val
+        except:
+          return None
 
 
 def timestamped_unique_name() -> str:
@@ -264,3 +275,23 @@ def encode_unserializable_types(data: dict[str, object]) -> dict[str, object]:
     else:
       processed_data[key] = value
   return processed_data
+
+
+def experimental_warning(message: str):
+  """Experimental warning, only warns once."""
+  def decorator(func):
+    warning_done = False
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+      nonlocal warning_done
+      if not warning_done:
+        warning_done = True
+        warnings.warn(
+            message=message,
+            category=errors.ExperimentalWarning,
+            stacklevel=2,
+        )
+      return func(*args, **kwargs)
+    return wrapper
+  return decorator
+

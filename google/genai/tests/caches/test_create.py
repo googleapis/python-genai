@@ -17,6 +17,7 @@
 from copy import deepcopy
 import datetime
 import pytest
+import sys
 from ... import types
 from .. import pytest_helper
 from ... import _transformers as t
@@ -92,8 +93,11 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE_PARTIAL_MODEL_1.model = (
     'models/gemini-1.5-pro-001'
 )
 
+if sys.version_info >= (3, 11):
+  _EXPIRE_TIME = datetime.datetime.fromisoformat('2024-12-20T00:00:00Z')
+else:
+  _EXPIRE_TIME = datetime.datetime.fromisoformat('2024-12-20T00:00:00+00:00')
 
-_EXPIRE_TIME = datetime.datetime.fromisoformat('2024-12-20T00:00:00Z')
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_EXPIRE_TIME = deepcopy(
     _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI
 )

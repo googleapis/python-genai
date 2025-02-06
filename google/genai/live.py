@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-"""Live client."""
+"""Live client. The live module is experimental."""
 
 import asyncio
 import base64
@@ -29,8 +29,10 @@ from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import client
+from . import errors
 from . import types
 from ._api_client import ApiClient
+from ._common import experimental_warning
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .models import _Content_from_mldev
@@ -61,7 +63,7 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 
 
 class AsyncSession:
-  """AsyncSession."""
+  """AsyncSession. The live module is experimental."""
 
   def __init__(self, api_client: client.ApiClient, websocket: ClientConnection):
     self._api_client = api_client
@@ -111,6 +113,8 @@ class AsyncSession:
     is function call, user must call `send` with the function response to
     continue the turn.
 
+    The live module is experimental.
+
     Yields:
       The model responses from the server.
 
@@ -141,6 +145,8 @@ class AsyncSession:
     This method will start two async tasks. One task will be used to send the
     input stream to the model and the other task will be used to receive the
     responses from the model.
+
+    The live module is experimental.
 
     Args:
       stream: An iterator that yields the model response.
@@ -471,7 +477,7 @@ class AsyncSession:
 
 
 class AsyncLive(_api_module.BaseModule):
-  """AsyncLive."""
+  """AsyncLive. The live module is experimental."""
 
   def _LiveSetup_to_mldev(
       self, model: str, config: Optional[types.LiveConnectConfigOrDict] = None
@@ -629,6 +635,9 @@ class AsyncLive(_api_module.BaseModule):
     return_value['setup'].update(to_object)
     return return_value
 
+  @experimental_warning(
+      "The live API is experimental and may change in future versions.",
+  )
   @contextlib.asynccontextmanager
   async def connect(
       self,
@@ -637,6 +646,8 @@ class AsyncLive(_api_module.BaseModule):
       config: Optional[types.LiveConnectConfigOrDict] = None,
   ) -> AsyncSession:
     """Connect to the live server.
+
+    The live module is experimental.
 
     Usage:
 

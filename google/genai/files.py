@@ -19,7 +19,7 @@ import io
 import mimetypes
 import os
 import pathlib
-from typing import Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import urlencode
 from . import _api_module
 from . import _common
@@ -351,6 +351,16 @@ def _DeleteFileParameters_to_vertex(
   return to_object
 
 
+def _FileState_to_vertex_enum_validate(enum_value: Any):
+  if enum_value in set(['STATE_UNSPECIFIED', 'PROCESSING', 'ACTIVE', 'FAILED']):
+    raise ValueError(f'{enum_value} enum value is not supported in Vertex AI.')
+
+
+def _FileSource_to_vertex_enum_validate(enum_value: Any):
+  if enum_value in set(['SOURCE_UNSPECIFIED', 'UPLOADED', 'GENERATED']):
+    raise ValueError(f'{enum_value} enum value is not supported in Vertex AI.')
+
+
 def _FileStatus_from_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
@@ -484,6 +494,8 @@ def _CreateFileResponse_from_mldev(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+  if getv(from_object, ['httpHeaders']) is not None:
+    setv(to_object, ['http_headers'], getv(from_object, ['httpHeaders']))
 
   return to_object
 
@@ -494,6 +506,8 @@ def _CreateFileResponse_from_vertex(
     parent_object: dict = None,
 ) -> dict:
   to_object = {}
+  if getv(from_object, ['httpHeaders']) is not None:
+    setv(to_object, ['http_headers'], getv(from_object, ['httpHeaders']))
 
   return to_object
 
@@ -771,16 +785,17 @@ class Files(_api_module.BaseModule):
   def upload(
       self,
       *,
-      path: Union[str, pathlib.Path, os.PathLike, io.IOBase],
+      file: Union[str, pathlib.Path, os.PathLike, io.IOBase],
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file using a supported file service.
 
     Args:
-      path: The path to the file or an `IOBase` object to be uploaded. If it's
-        an IOBase object, it must be opened in blocking mode and binary mode. In
-        other words, do not use non-blocking mode or text mode. The given stream
-        must be seekable, that is, it must be able to call seek() on 'path'.
+      file: A path to the file or an `IOBase` object to be uploaded. If it's an
+        IOBase object, it must be opened in blocking (the default) mode and
+        binary mode. In other words, do not use non-blocking mode or text mode.
+        The given stream must be seekable, that is, it must be able to call
+        `seek()` on 'path'.
       config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
     """
     if self._api_client.vertexai:
@@ -794,42 +809,42 @@ class Files(_api_module.BaseModule):
         config_model = types.UploadFileConfig(**config)
       else:
         config_model = config
-      file = types.File(
+      file_obj = types.File(
           mime_type=config_model.mime_type,
           name=config_model.name,
           display_name=config_model.display_name,
       )
     else:  # if not config
-      file = types.File()
-    if file.name is not None and not file.name.startswith('files/'):
-      file.name = f'files/{file.name}'
+      file_obj = types.File()
+    if file_obj.name is not None and not file_obj.name.startswith('files/'):
+      file_obj.name = f'files/{file_obj.name}'
 
-    if isinstance(path, io.IOBase):
-      if file.mime_type is None:
+    if isinstance(file, io.IOBase):
+      if file_obj.mime_type is None:
         raise ValueError(
             'Unknown mime type: Could not determine the mimetype for your'
             ' file\n please set the `mime_type` argument'
         )
-      if hasattr(path, 'mode'):
-        if 'b' not in path.mode:
+      if hasattr(file, 'mode'):
+        if 'b' not in file.mode:
           raise ValueError('The file must be opened in binary mode.')
-      offset = path.tell()
-      path.seek(0, os.SEEK_END)
-      file.size_bytes = path.tell() - offset
-      path.seek(offset, os.SEEK_SET)
+      offset = file.tell()
+      file.seek(0, os.SEEK_END)
+      file_obj.size_bytes = file.tell() - offset
+      file.seek(offset, os.SEEK_SET)
     else:
-      fs_path = os.fspath(path)
+      fs_path = os.fspath(file)
       if not fs_path or not os.path.isfile(fs_path):
-        raise FileNotFoundError(f'{path} is not a valid file path.')
-      file.size_bytes = os.path.getsize(fs_path)
-      if file.mime_type is None:
-        file.mime_type, _ = mimetypes.guess_type(fs_path)
-      if file.mime_type is None:
+        raise FileNotFoundError(f'{file} is not a valid file path.')
+      file_obj.size_bytes = os.path.getsize(fs_path)
+      if file_obj.mime_type is None:
+        file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
+      if file_obj.mime_type is None:
         raise ValueError(
             'Unknown mime type: Could not determine the mimetype for your'
             ' file\n    please set the `mime_type` argument'
         )
-    response = {}
+
     if config_model and config_model.http_options:
       http_options = config_model.http_options
     else:
@@ -839,30 +854,31 @@ class Files(_api_module.BaseModule):
               'Content-Type': 'application/json',
               'X-Goog-Upload-Protocol': 'resumable',
               'X-Goog-Upload-Command': 'start',
-              'X-Goog-Upload-Header-Content-Length': f'{file.size_bytes}',
-              'X-Goog-Upload-Header-Content-Type': f'{file.mime_type}',
+              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
           },
-          'response_payload': response,
       }
-    self._create(file=file, config={'http_options': http_options})
+    response = self._create(
+        file=file_obj, config={'http_options': http_options}
+    )
 
     if (
-        'headers' not in response
-        or 'X-Goog-Upload-URL' not in response['headers']
+        response.http_headers is None
+        or 'X-Goog-Upload-URL' not in response.http_headers
     ):
       raise KeyError(
           'Failed to create file. Upload URL did not returned from the create'
           ' file request.'
       )
-    upload_url = response['headers']['X-Goog-Upload-URL']
+    upload_url = response.http_headers['X-Goog-Upload-URL']
 
-    if isinstance(path, io.IOBase):
+    if isinstance(file, io.IOBase):
       return_file = self._api_client.upload_file(
-          path, upload_url, file.size_bytes
+          file, upload_url, file_obj.size_bytes
       )
     else:
       return_file = self._api_client.upload_file(
-          fs_path, upload_url, file.size_bytes
+          fs_path, upload_url, file_obj.size_bytes
       )
 
     return types.File._from_response(
@@ -1201,16 +1217,17 @@ class AsyncFiles(_api_module.BaseModule):
   async def upload(
       self,
       *,
-      path: Union[str, pathlib.Path, os.PathLike, io.IOBase],
+      file: Union[str, pathlib.Path, os.PathLike, io.IOBase],
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file asynchronously using a supported file service.
 
     Args:
-      path:  The path to the file or an `IOBase` object to be uploaded. If it's
-        an IOBase object, it must be opened in blocking mode and binary mode. In
-        other words, do not use non-blocking mode or text mode. The given stream
-        must be seekable, that is, it must be able to call seek() on 'path'.
+      file: A path to the file or an `IOBase` object to be uploaded. If it's an
+        IOBase object, it must be opened in blocking (the default) mode and
+        binary mode. In other words, do not use non-blocking mode or text mode.
+        The given stream must be seekable, that is, it must be able to call
+        `seek()` on 'path'.
       config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
     """
     if self._api_client.vertexai:
@@ -1224,43 +1241,42 @@ class AsyncFiles(_api_module.BaseModule):
         config_model = types.UploadFileConfig(**config)
       else:
         config_model = config
-      file = types.File(
+      file_obj = types.File(
           mime_type=config_model.mime_type,
           name=config_model.name,
           display_name=config_model.display_name,
       )
     else:  # if not config
-      file = types.File()
-    if file.name is not None and not file.name.startswith('files/'):
-      file.name = f'files/{file.name}'
+      file_obj = types.File()
+    if file_obj.name is not None and not file_obj.name.startswith('files/'):
+      file_obj.name = f'files/{file_obj.name}'
 
-    if isinstance(path, io.IOBase):
-      if file.mime_type is None:
+    if isinstance(file, io.IOBase):
+      if file_obj.mime_type is None:
         raise ValueError(
             'Unknown mime type: Could not determine the mimetype for your'
             ' file\n    please set the `mime_type` argument'
         )
-      if hasattr(path, 'mode'):
-        if 'b' not in path.mode:
+      if hasattr(file, 'mode'):
+        if 'b' not in file.mode:
           raise ValueError('The file must be opened in binary mode.')
-      offset = path.tell()
-      path.seek(0, os.SEEK_END)
-      file.size_bytes = path.tell() - offset
-      path.seek(offset, os.SEEK_SET)
+      offset = file.tell()
+      file.seek(0, os.SEEK_END)
+      file_obj.size_bytes = file.tell() - offset
+      file.seek(offset, os.SEEK_SET)
     else:
-      fs_path = os.fspath(path)
+      fs_path = os.fspath(file)
       if not fs_path or not os.path.isfile(fs_path):
-        raise FileNotFoundError(f'{path} is not a valid file path.')
-      file.size_bytes = os.path.getsize(fs_path)
-      if file.mime_type is None:
-        file.mime_type, _ = mimetypes.guess_type(fs_path)
-      if file.mime_type is None:
+        raise FileNotFoundError(f'{file} is not a valid file path.')
+      file_obj.size_bytes = os.path.getsize(fs_path)
+      if file_obj.mime_type is None:
+        file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
+      if file_obj.mime_type is None:
         raise ValueError(
             'Unknown mime type: Could not determine the mimetype for your'
             ' file\n    please set the `mime_type` argument'
         )
 
-    response = {}
     if config_model and config_model.http_options:
       http_options = config_model.http_options
     else:
@@ -1270,29 +1286,31 @@ class AsyncFiles(_api_module.BaseModule):
               'Content-Type': 'application/json',
               'X-Goog-Upload-Protocol': 'resumable',
               'X-Goog-Upload-Command': 'start',
-              'X-Goog-Upload-Header-Content-Length': f'{file.size_bytes}',
-              'X-Goog-Upload-Header-Content-Type': f'{file.mime_type}',
+              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
           },
-          'response_payload': response,
       }
-    await self._create(file=file, config={'http_options': http_options})
+    response = await self._create(
+        file=file_obj, config={'http_options': http_options}
+    )
+
     if (
-        'headers' not in response
-        or 'X-Goog-Upload-URL' not in response['headers']
+        response.http_headers is None
+        or 'X-Goog-Upload-URL' not in response.http_headers
     ):
       raise KeyError(
           'Failed to create file. Upload URL did not returned from the create'
           ' file request.'
       )
-    upload_url = response['headers']['X-Goog-Upload-URL']
+    upload_url = response.http_headers['X-Goog-Upload-URL']
 
-    if isinstance(path, io.IOBase):
+    if isinstance(file, io.IOBase):
       return_file = await self._api_client.async_upload_file(
-          path, upload_url, file.size_bytes
+          file, upload_url, file_obj.size_bytes
       )
     else:
       return_file = await self._api_client.async_upload_file(
-          fs_path, upload_url, file.size_bytes
+          fs_path, upload_url, file_obj.size_bytes
       )
 
     return types.File._from_response(

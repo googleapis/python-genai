@@ -280,7 +280,7 @@ def _CancelBatchJobParameters_to_vertex(
   return to_object
 
 
-def _ListBatchJobConfig_to_mldev(
+def _ListBatchJobsConfig_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -305,7 +305,7 @@ def _ListBatchJobConfig_to_mldev(
   return to_object
 
 
-def _ListBatchJobConfig_to_vertex(
+def _ListBatchJobsConfig_to_vertex(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -330,7 +330,7 @@ def _ListBatchJobConfig_to_vertex(
   return to_object
 
 
-def _ListBatchJobParameters_to_mldev(
+def _ListBatchJobsParameters_to_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -342,7 +342,7 @@ def _ListBatchJobParameters_to_mldev(
   return to_object
 
 
-def _ListBatchJobParameters_to_vertex(
+def _ListBatchJobsParameters_to_vertex(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -352,7 +352,7 @@ def _ListBatchJobParameters_to_vertex(
     setv(
         to_object,
         ['config'],
-        _ListBatchJobConfig_to_vertex(
+        _ListBatchJobsConfig_to_vertex(
             api_client, getv(from_object, ['config']), to_object
         ),
     )
@@ -560,7 +560,7 @@ def _BatchJob_from_vertex(
   return to_object
 
 
-def _ListBatchJobResponse_from_mldev(
+def _ListBatchJobsResponse_from_mldev(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -572,7 +572,7 @@ def _ListBatchJobResponse_from_mldev(
   return to_object
 
 
-def _ListBatchJobResponse_from_vertex(
+def _ListBatchJobsResponse_from_vertex(
     api_client: ApiClient,
     from_object: Union[dict, object],
     parent_object: dict = None,
@@ -802,16 +802,16 @@ class Batches(_api_module.BaseModule):
     )
 
   def _list(
-      self, *, config: types.ListBatchJobConfigOrDict
-  ) -> types.ListBatchJobResponse:
-    parameter_model = types._ListBatchJobParameters(
+      self, *, config: types.ListBatchJobsConfigOrDict
+  ) -> types.ListBatchJobsResponse:
+    parameter_model = types._ListBatchJobsParameters(
         config=config,
     )
 
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _ListBatchJobParameters_to_vertex(
+      request_dict = _ListBatchJobsParameters_to_vertex(
           self._api_client, parameter_model
       )
       path = 'batchPredictionJobs'.format_map(request_dict.get('_url'))
@@ -836,15 +836,15 @@ class Batches(_api_module.BaseModule):
     )
 
     if self._api_client.vertexai:
-      response_dict = _ListBatchJobResponse_from_vertex(
+      response_dict = _ListBatchJobsResponse_from_vertex(
           self._api_client, response_dict
       )
     else:
-      response_dict = _ListBatchJobResponse_from_mldev(
+      response_dict = _ListBatchJobsResponse_from_mldev(
           self._api_client, response_dict
       )
 
-    return_value = types.ListBatchJobResponse._from_response(
+    return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
@@ -953,12 +953,12 @@ class Batches(_api_module.BaseModule):
     return self._create(model=model, src=src, config=config)
 
   def list(
-      self, *, config: Optional[types.ListBatchJobConfigOrDict] = None
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
   ) -> Pager[types.BatchJob]:
     """Lists batch jobs.
 
     Args:
-      config (ListBatchJobConfig): Optional configuration for the list request.
+      config (ListBatchJobsConfig): Optional configuration for the list request.
 
     Returns:
       A Pager object that contains one page of batch jobs. When iterating over
@@ -1154,16 +1154,16 @@ class AsyncBatches(_api_module.BaseModule):
     )
 
   async def _list(
-      self, *, config: types.ListBatchJobConfigOrDict
-  ) -> types.ListBatchJobResponse:
-    parameter_model = types._ListBatchJobParameters(
+      self, *, config: types.ListBatchJobsConfigOrDict
+  ) -> types.ListBatchJobsResponse:
+    parameter_model = types._ListBatchJobsParameters(
         config=config,
     )
 
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _ListBatchJobParameters_to_vertex(
+      request_dict = _ListBatchJobsParameters_to_vertex(
           self._api_client, parameter_model
       )
       path = 'batchPredictionJobs'.format_map(request_dict.get('_url'))
@@ -1188,15 +1188,15 @@ class AsyncBatches(_api_module.BaseModule):
     )
 
     if self._api_client.vertexai:
-      response_dict = _ListBatchJobResponse_from_vertex(
+      response_dict = _ListBatchJobsResponse_from_vertex(
           self._api_client, response_dict
       )
     else:
-      response_dict = _ListBatchJobResponse_from_mldev(
+      response_dict = _ListBatchJobsResponse_from_mldev(
           self._api_client, response_dict
       )
 
-    return_value = types.ListBatchJobResponse._from_response(
+    return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model
     )
     self._api_client._verify_response(return_value)
@@ -1304,12 +1304,12 @@ class AsyncBatches(_api_module.BaseModule):
     return await self._create(model=model, src=src, config=config)
 
   async def list(
-      self, *, config: Optional[types.ListBatchJobConfigOrDict] = None
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
   ) -> AsyncPager[types.BatchJob]:
     """Lists batch jobs asynchronously.
 
     Args:
-      config (ListBatchJobConfig): Optional configuration for the list request.
+      config (ListBatchJobsConfig): Optional configuration for the list request.
 
     Returns:
       A Pager object that contains one page of batch jobs. When iterating over

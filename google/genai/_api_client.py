@@ -99,6 +99,19 @@ class HttpRequest:
   timeout: Optional[float] = None
 
 
+# TODO(b/394358912): Update this class to use a SDKResponse class that can be
+# generated and used for all languages.
+@dataclass
+class BaseResponse:
+  http_headers: dict[str, str]
+
+  @property
+  def dict(self) -> dict[str, Any]:
+    if isinstance(self, dict):
+      return self
+    return {'httpHeaders': self.http_headers}
+
+
 class HttpResponse:
 
   def __init__(
@@ -111,9 +124,20 @@ class HttpResponse:
     self.headers = headers
     self.response_stream = response_stream
     self.byte_stream = byte_stream
+    self.segment_iterator = self.segments()
+
+  # Async iterator for async streaming.
+  def __aiter__(self):
+    return self
+
+  async def __anext__(self):
+    try:
+      return next(self.segment_iterator)
+    except StopIteration:
+      raise StopAsyncIteration
 
   @property
-  def text(self) -> str:
+  def json(self) -> Any:
     if not self.response_stream[0]:  # Empty response
       return ''
     return json.loads(self.response_stream[0])
@@ -146,7 +170,9 @@ class HttpResponse:
           'Byte segments are not supported for streaming responses.'
       )
 
-  def copy_to_dict(self, response_payload: dict[str, object]):
+  def _copy_to_dict(self, response_payload: dict[str, object]):
+    # Cannot pickle 'generator' object.
+    delattr(self, 'segment_iterator')
     for attribute in dir(self):
       response_payload[attribute] = copy.deepcopy(getattr(self, attribute))
 
@@ -242,7 +268,7 @@ class ApiClient:
             'Project and location or API key must be set when using the Vertex '
             'AI API.'
         )
-      if self.api_key:
+      if self.api_key or self.location == 'global':
         self._http_options['base_url'] = (
             f'https://aiplatform.googleapis.com/'
         )
@@ -260,7 +286,7 @@ class ApiClient:
       self._http_options['api_version'] = 'v1beta'
     # Default options for both clients.
     self._http_options['headers'] = {'Content-Type': 'application/json'}
-    if self.api_key and not self.vertexai:
+    if self.api_key:
       self._http_options['headers']['x-goog-api-key'] = self.api_key
     # Update the http options with the user provided http options.
     if http_options:
@@ -310,8 +336,6 @@ class ApiClient:
         and not self.api_key
     ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
-    elif self.vertexai and self.api_key:
-      path = f'{path}?key={self.api_key}'
     url = _join_url_path(
         patched_http_options['base_url'],
         patched_http_options['api_version'] + '/' + path,
@@ -423,17 +447,12 @@ class ApiClient:
         http_method, path, request_dict, http_options
     )
     response = self._request(http_request, stream=False)
-    if http_options:
-      if (
-          isinstance(http_options, HttpOptions)
-          and http_options.response_payload is not None
-      ):
-        response.copy_to_dict(http_options.response_payload)
-      elif (
-          isinstance(http_options, dict) and 'response_payload' in http_options
-      ):
-        response.copy_to_dict(http_options['response_payload'])
-    return response.text
+    json_response = response.json
+    if not json_response:
+      base_response = BaseResponse(response.headers).dict
+      return base_response
+
+    return json_response
 
   def request_streamed(
       self,
@@ -447,8 +466,6 @@ class ApiClient:
     )
 
     session_response = self._request(http_request, stream=True)
-    if http_options and 'response_payload' in http_options:
-      session_response.copy_to_dict(http_options['response_payload'])
     for chunk in session_response.segments():
       yield chunk
 
@@ -464,9 +481,11 @@ class ApiClient:
     )
 
     result = await self._async_request(http_request=http_request, stream=False)
-    if http_options and 'response_payload' in http_options:
-      result.copy_to_dict(http_options['response_payload'])
-    return result.text
+    json_response = result.json
+    if not json_response:
+      base_response = BaseResponse(result.headers).dict
+      return base_response
+    return json_response
 
   async def async_request_streamed(
       self,
@@ -481,10 +500,10 @@ class ApiClient:
 
     response = await self._async_request(http_request=http_request, stream=True)
 
-    for chunk in response.segments():
-      yield chunk
-    if http_options and 'response_payload' in http_options:
-      response.copy_to_dict(http_options['response_payload'])
+    async def async_generator():
+      async for chunk in response:
+        yield chunk
+    return async_generator()
 
   def upload_file(
       self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int
@@ -552,15 +571,15 @@ class ApiClient:
       if upload_size <= offset:  # Status is not finalized.
         raise ValueError(
             'All content has been uploaded, but the upload status is not'
-            f' finalized. {response.headers}, body: {response.text}'
+            f' finalized. {response.headers}, body: {response.json}'
         )
 
     if response.headers['X-Goog-Upload-Status'] != 'final':
       raise ValueError(
           'Failed to upload file: Upload status is not finalized. headers:'
-          f' {response.headers}, body: {response.text}'
+          f' {response.headers}, body: {response.json}'
       )
-    return response.text
+    return response.json
 
   def download_file(self, path: str, http_options):
     """Downloads the file data.

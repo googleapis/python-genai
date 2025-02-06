@@ -641,7 +641,7 @@ def test_from_function_call_response(client):
 
 @pytest.mark.asyncio
 async def test_image_base64_stream_async(client):
-  async for part in client.aio.models.generate_content_stream(
+  async for part in await client.aio.models.generate_content_stream(
       model='gemini-1.5-flash-001',
       contents=[
           'What is this image about?',

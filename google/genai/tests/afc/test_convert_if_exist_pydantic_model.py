@@ -20,6 +20,7 @@ import inspect
 from typing import Optional, Union
 import pydantic
 import pytest
+import sys
 from ... import errors
 from ..._extra_utils import convert_if_exist_pydantic_model
 
@@ -81,10 +82,13 @@ def test_union_types():
       )
       is True
   )
-  assert (
-      convert_if_exist_pydantic_model(1, int | float, 'param_name', 'func_name')
-      == 1
-  )
+
+  # | in 3.10+
+  if sys.version_info >= (3, 10):
+    assert (
+        convert_if_exist_pydantic_model(1, int | float, 'param_name', 'func_name')
+        == 1
+    )
 
 
 def test_nested_pydantic_model():
@@ -166,6 +170,7 @@ def test_generic_list_type():
   assert converted_args[0] == original_args[0]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason='need python 3.10+')
 def test_pydantic_model_with_union_and_generic_type():
   class Model1(pydantic.BaseModel):
     arg1: Union[int, float]

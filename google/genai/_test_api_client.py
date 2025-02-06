@@ -132,7 +132,7 @@ async def test_async_request_streamed_non_blocking(
 
   chunks = []
   start_time = time.time()
-  async for chunk in api_client.async_request_streamed(
+  async for chunk in await api_client.async_request_streamed(
       http_method, path, request_dict
   ):
     chunks.append(chunk)
