@@ -33,7 +33,7 @@ class _BasePager(Generic[T]):
   def __init__(
       self,
       name: PagedItem,
-      request: Callable[Any, Any],
+      request: Callable[[Any], Any],
       response: Any,
       config: Any,
   ):
