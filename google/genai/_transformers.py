@@ -478,6 +478,14 @@ def process_schema(
     schema_type = schema_type.value
   schema_type = schema_type.upper()
 
+  enum = schema.get('enum', None)
+  if enum is not None:
+    if schema_type != 'STRING':
+      raise TypeError(
+          f'Enums can only contain strings. For schema: {schema}'
+      )
+    return
+
   if schema_type == 'OBJECT':
     properties = schema.get('properties', None)
     if properties is None:
@@ -502,23 +510,6 @@ def process_schema(
       process_schema(ref, client, defs)
       schema['items'] = ref
 
-def _process_enum(
-    enum: EnumMeta, client: Optional[_api_client.ApiClient] = None
-) -> types.Schema:
-  for member in enum:
-    if not isinstance(member.value, str):
-      raise TypeError(
-          f'Enum member {member.name} value must be a string, got'
-          f' {type(member.value)}'
-      )
-  class Placeholder(pydantic.BaseModel):
-    placeholder: enum
-
-  enum_schema = Placeholder.model_json_schema()
-  process_schema(enum_schema, client)
-  enum_schema = enum_schema['properties']['placeholder']
-  return types.Schema.model_validate(enum_schema)
-
 
 def t_schema(
     client: _api_client.ApiClient, origin: Union[types.SchemaUnionDict, Any]
@@ -528,38 +519,21 @@ def t_schema(
   if isinstance(origin, dict):
     process_schema(origin, client)
     return types.Schema.model_validate(origin)
-  if isinstance(origin, EnumMeta):
-    return _process_enum(origin, client)
   if isinstance(origin, types.Schema):
     if dict(origin) == dict(types.Schema()):
-      # response_schema value was coerced to an empty Schema instance because it did not adhere to the Schema field annotation
-      raise ValueError(f'Unsupported schema type.')
+      # response_schema value was coerced to an empty Schema instance because
+      # it did not adhere to the Schema field annotation
+      raise TypeError(f'Unsupported schema type.')
     schema = origin.model_dump(exclude_unset=True)
     process_schema(schema, client)
     return types.Schema.model_validate(schema)
 
   if (
-      # in Python 3.9 Generic alias list[int] counts as a type,
-      # and breaks issubclass because it's not a class.
-      not isinstance(origin, GenericAlias) and
-      isinstance(origin, type) and
-      issubclass(origin, pydantic.BaseModel)
-  ):
-    schema = origin.model_json_schema()
-    process_schema(schema, client)
-    return types.Schema.model_validate(schema)
-  elif (
-      isinstance(origin, GenericAlias)
-      or isinstance(origin, type)
-      or isinstance(origin, VersionedUnionType)
+      isinstance(origin, (GenericAlias, type, EnumMeta))
       or typing.get_origin(origin) in _UNION_TYPES
   ):
-    class Placeholder(pydantic.BaseModel):
-      placeholder: origin
-
-    schema = Placeholder.model_json_schema()
+    schema = pydantic.TypeAdapter(origin).json_schema()
     process_schema(schema, client)
-    schema = schema['properties']['placeholder']
     return types.Schema.model_validate(schema)
 
   raise ValueError(f'Unsupported schema type: {origin}')

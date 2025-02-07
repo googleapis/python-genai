@@ -2891,42 +2891,24 @@ class GenerateContentResponse(_common.BaseModel):
     response_schema = _common.get_value_by_path(
         kwargs, ['config', 'response_schema']
     )
-    if (
-        inspect.isclass(response_schema)
-        and not (
-            isinstance(response_schema, GenericAlias)
-        )  # Needed for Python 3.9 and 3.10
-        and issubclass(response_schema, pydantic.BaseModel)
-    ):
-      # Pydantic schema.
-      try:
-        result.parsed = response_schema.model_validate_json(result.text)
-      # may not be a valid json per stream response
-      except pydantic.ValidationError:
-        pass
-      except json.decoder.JSONDecodeError:
-        pass
-    elif isinstance(response_schema, EnumMeta):
-      # Enum with "application/json" returns response in double quotes.
+    if isinstance(response_schema, EnumMeta):
+      # "TypeAdapter" can handle Enums, but the 'text/x.enum' mime type leaves
+      # out the double quotes, so handle both here.
       enum_value = result.text.replace('"', '')
       try:
         result.parsed = response_schema(enum_value)
       except ValueError:
         pass
-    elif isinstance(response_schema, GenericAlias) or isinstance(
-        response_schema, type
+    elif (
+        isinstance(response_schema, (GenericAlias, type))
+        or typing.get_origin(response_schema) in _UNION_TYPES
     ):
-
-      class Placeholder(pydantic.BaseModel):
-        placeholder: response_schema
-
+      ta = pydantic.TypeAdapter(response_schema)
       try:
-        parsed = {'placeholder': json.loads(result.text)}
-        placeholder = Placeholder.model_validate(parsed)
-        result.parsed = placeholder.placeholder
-      except json.decoder.JSONDecodeError:
-        pass
+        result.parsed = ta.validate_json(result.text)
       except pydantic.ValidationError:
+        pass
+      except json.decoder.JSONDecodeError:
         pass
 
     elif isinstance(response_schema, dict) or isinstance(
