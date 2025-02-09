@@ -87,7 +87,7 @@ download the file in console.
 python code.
 
 ```python
-file = client.files.upload(path='a11.txt')
+file = client.files.upload(file='a11.txt')
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents=['Could you summarize this file?', file]
