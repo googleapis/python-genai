@@ -87,6 +87,8 @@ class AsyncSession:
 
     The method will send the input request to the server.
 
+    At this time, only audio and video inputs are supported.
+
     Args:
       input: The input request to the model.
       end_of_turn: Whether the input is the last message in a turn.
