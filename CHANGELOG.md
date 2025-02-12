@@ -5,7 +5,6 @@
 
 ### Features
 
-* Added py.typed file so MyPy correctly interprets the library as a typed library ([6ff10db](https://github.com/googleapis/python-genai/commit/6ff10db5d8c12e32c891ed3b9041c31ea088b22f))
 * Enable Media resolution for Gemini API. ([6cdf61d](https://github.com/googleapis/python-genai/commit/6cdf61d09f0dec0b27f2be6a0487ec5f4792d62f))
 * Support property_ordering in response_schema (fixes [#236](https://github.com/googleapis/python-genai/issues/236)) ([01b15e3](https://github.com/googleapis/python-genai/commit/01b15e32d3823a58d25534bb6eea93f30bf82219))
 
