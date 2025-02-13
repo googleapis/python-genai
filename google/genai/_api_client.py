@@ -32,6 +32,8 @@ import google.auth.credentials
 from google.auth.transport.requests import AuthorizedSession
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 import requests
+import httpx
+import aiofiles
 from . import errors
 from . import _common
 from . import version
@@ -416,22 +418,29 @@ class ApiClient:
   async def _async_request(
       self, http_request: HttpRequest, stream: bool = False
   ):
-    if self.vertexai:
-      if not self._credentials:
-        self._credentials, _ = google.auth.default(
-            scopes=['https://www.googleapis.com/auth/cloud-platform'],
-        )
-      return await asyncio.to_thread(
-          self._request,
-          http_request,
+    async with httpx.AsyncClient(timeout=http_request.timeout) as client:
+      headers = http_request.headers.copy()
+      if self.vertexai:
+        if not self._credentials:
+          self._credentials, _ = google.auth.default(
+              scopes=['https://www.googleapis.com/auth/cloud-platform'],
+          )
+        headers["Authorization"] = f"Bearer {self._credentials.token}"
+      data = (
+          json.dumps(http_request.data)
+          if http_request.data and not isinstance(http_request.data, bytes)
+          else http_request.data
+      )
+      response = await client.request(
+          http_request.method.upper(),
+          http_request.url,
+          headers=headers,
+          data=data,
+          timeout=http_request.timeout,
           stream=stream,
       )
-    else:
-      return await asyncio.to_thread(
-          self._request,
-          http_request,
-          stream=stream,
-      )
+      errors.APIError.raise_for_response(response)
+      return response
 
   def get_read_only_http_options(self) -> HttpOptionsDict:
     copied = HttpOptionsDict()
@@ -485,7 +494,7 @@ class ApiClient:
     )
 
     result = await self._async_request(http_request=http_request, stream=False)
-    json_response = result.json
+    json_response = result.json()
     if not json_response:
       return BaseResponse(http_headers=result.headers).model_dump(by_alias=True)
     return json_response
@@ -504,8 +513,9 @@ class ApiClient:
     response = await self._async_request(http_request=http_request, stream=True)
 
     async def async_generator():
-      async for chunk in response:
-        yield chunk
+      async for line in response.aiter_lines():
+        if line:
+          yield json.loads(line)
 
     return async_generator()
 
@@ -585,45 +595,6 @@ class ApiClient:
       )
     return response.json
 
-  def download_file(self, path: str, http_options):
-    """Downloads the file data.
-
-    Args:
-      path: The request path with query params.
-      http_options: The http options to use for the request.
-
-    returns:
-          The file bytes
-    """
-    http_request = self._build_request(
-        'get', path=path, request_dict={}, http_options=http_options
-    )
-    return self._download_file_request(http_request).byte_stream[0]
-
-  def _download_file_request(
-      self,
-      http_request: HttpRequest,
-  ) -> HttpResponse:
-    data = None
-    if http_request.data:
-      if not isinstance(http_request.data, bytes):
-        data = json.dumps(http_request.data, cls=RequestJsonEncoder)
-      else:
-        data = http_request.data
-
-    http_session = requests.Session()
-    response = http_session.request(
-        method=http_request.method,
-        url=http_request.url,
-        headers=http_request.headers,
-        data=data,
-        timeout=http_request.timeout,
-        stream=False,
-    )
-
-    errors.APIError.raise_for_response(response)
-    return HttpResponse(response.headers, byte_stream=[response.content])
-
   async def async_upload_file(
       self,
       file_path: Union[str, io.IOBase],
@@ -642,12 +613,11 @@ class ApiClient:
     returns:
           The response json object from the finalize request.
     """
-    return await asyncio.to_thread(
-        self.upload_file,
-        file_path,
-        upload_url,
-        upload_size,
-    )
+    if isinstance(file_path, io.IOBase):
+      return await self._async_upload_fd(file_path, upload_url, upload_size)
+    else:
+      async with aiofiles.open(file_path, "rb") as file:
+        return await self._async_upload_fd(file, upload_url, upload_size)
 
   async def _async_upload_fd(
       self,
@@ -666,12 +636,41 @@ class ApiClient:
     returns:
           The response json object from the finalize request.
     """
-    return await asyncio.to_thread(
-        self._upload_fd,
-        file,
-        upload_url,
-        upload_size,
-    )
+    offset = 0
+    async with httpx.AsyncClient() as client:
+      # Upload the file in chunks
+      while True:
+        file_chunk = await file.read(1024 * 1024 * 8)  # 8 MB chunk size
+        chunk_size = 0
+        if file_chunk:
+          chunk_size = len(file_chunk)
+        upload_command = "upload"
+        # If last chunk, finalize the upload.
+        if chunk_size + offset >= upload_size:
+          upload_command += ", finalize"
+        headers = {
+            "X-Goog-Upload-Command": upload_command,
+            "X-Goog-Upload-Offset": str(offset),
+            "Content-Length": str(chunk_size),
+        }
+        response = await client.request(
+            "POST", upload_url, headers=headers, data=file_chunk
+        )
+        errors.APIError.raise_for_response(response)
+        offset += chunk_size
+        if response.headers.get("X-Goog-Upload-Status") != "active":
+          break  # upload is complete or it has been interrupted.
+        if upload_size <= offset:
+          raise ValueError(
+              'All content has been uploaded, but the upload status is not'
+              f' finalized. {response.headers}, body: {response.text}'
+          )
+      if response.headers.get("X-Goog-Upload-Status") != "final":
+        raise ValueError(
+            'Failed to upload file: Upload status is not finalized. headers:'
+            f' {response.headers}, body: {response.text}'
+        )
+      return response.json()
 
   async def async_download_file(self, path: str, http_options):
     """Downloads the file data.
@@ -683,11 +682,18 @@ class ApiClient:
     returns:
           The file bytes
     """
-    return await asyncio.to_thread(
-        self.download_file,
-        path,
-        http_options,
+    http_request = self._build_request(
+        'get', path=path, request_dict={}, http_options=http_options
     )
+    async with httpx.AsyncClient(timeout=http_request.timeout) as client:
+      response = await client.request(
+          method=http_request.method,
+          url=http_request.url,
+          headers=http_request.headers,
+          timeout=http_request.timeout,
+      )
+      errors.APIError.raise_for_response(response)
+      return response.content
 
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the
