@@ -519,6 +519,68 @@ class ApiClient:
 
     return async_generator()
 
+  def download_file(self, path: str, http_options):
+    """Downloads the file data.
+
+    Args:
+      path: The request path with query params.
+      http_options: The http options to use for the request.
+
+    returns:
+          The file bytes
+    """
+    http_request = self._build_request(
+        'get', path=path, request_dict={}, http_options=http_options
+    )
+    return self._download_file_request(http_request).byte_stream[0]
+
+  def _download_file_request(
+      self,
+      http_request: HttpRequest,
+  ) -> HttpResponse:
+    data = None
+    if http_request.data:
+      if not isinstance(http_request.data, bytes):
+        data = json.dumps(http_request.data, cls=RequestJsonEncoder)
+      else:
+        data = http_request.data
+
+    http_session = requests.Session()
+    response = http_session.request(
+        method=http_request.method,
+        url=http_request.url,
+        headers=http_request.headers,
+        data=data,
+        timeout=http_request.timeout,
+        stream=False,
+    )
+
+    errors.APIError.raise_for_response(response)
+    return HttpResponse(response.headers, byte_stream=[response.content])
+
+  async def async_download_file(self, path: str, http_options):
+    """Downloads the file data.
+
+    Args:
+      path: The request path with query params.
+      http_options: The http options to use for the request.
+
+    returns:
+          The file bytes
+    """
+    http_request = self._build_request(
+        "get", path=path, request_dict={}, http_options=http_options
+    )
+    async with httpx.AsyncClient(timeout=http_request.timeout) as client:
+      response = await client.request(
+          method=http_request.method,
+          url=http_request.url,
+          headers=http_request.headers,
+          timeout=http_request.timeout,
+      )
+      errors.APIError.raise_for_response(response)
+      return response.content
+
   def upload_file(
       self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int
   ) -> str:
@@ -671,29 +733,6 @@ class ApiClient:
             f' {response.headers}, body: {response.text}'
         )
       return response.json()
-
-  async def async_download_file(self, path: str, http_options):
-    """Downloads the file data.
-
-    Args:
-      path: The request path with query params.
-      http_options: The http options to use for the request.
-
-    returns:
-          The file bytes
-    """
-    http_request = self._build_request(
-        'get', path=path, request_dict={}, http_options=http_options
-    )
-    async with httpx.AsyncClient(timeout=http_request.timeout) as client:
-      response = await client.request(
-          method=http_request.method,
-          url=http_request.url,
-          headers=http_request.headers,
-          timeout=http_request.timeout,
-      )
-      errors.APIError.raise_for_response(response)
-      return response.content
 
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the
