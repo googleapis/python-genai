@@ -25,7 +25,7 @@ import re
 import sys
 import time
 import typing
-from typing import Any, GenericAlias, Optional, Union
+from typing import Any, GenericAlias, Optional, Union, cast
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -236,10 +236,10 @@ def pil_to_blob(img) -> types.Blob:
   return types.Blob(mime_type=mime_type, data=data)
 
 
-PartType = Union[types.Part, types.PartDict, str, 'PIL.Image.Image']
+PartType = Union[types.Part, types.PartDict, types.File, str, 'PIL.Image.Image']
 
 
-def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
+def t_part(client: _api_client.ApiClient, part: types.PartUnionDict) -> types.Part:
   try:
     import PIL.Image
 
@@ -257,12 +257,17 @@ def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
     if not part.uri or not part.mime_type:
       raise ValueError('file uri and mime_type are required.')
     return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)
-  else:
+  if isinstance(part, types.Part):
     return part
+  if isinstance(part, dict):
+    return types.Part.model_validate(part)
+  else:
+    raise ValueError(f'Unsupported part type: {type(part)}')
 
 
 def t_parts(
-    client: _api_client.ApiClient, parts: Union[list, PartType]
+    client: _api_client.ApiClient,
+    parts: Union[list[types.PartUnionDict], types.PartUnionDict],
 ) -> list[types.Part]:
   if not parts:
     raise ValueError('content parts are required.')
@@ -304,8 +309,11 @@ def t_content(
   if isinstance(content, types.Content):
     return content
   if isinstance(content, dict):
-    return types.Content.model_validate(content)
-  return types.Content(role='user', parts=t_parts(client, content))
+    try:
+      return types.Content.model_validate(content)
+    except pydantic.ValidationError:
+      return types.UserContent(parts=content)
+  return types.UserContent(parts=content)
 
 
 def t_contents_for_embed(
@@ -325,14 +333,56 @@ def t_contents_for_embed(
 
 def t_contents(
     client: _api_client.ApiClient,
-    contents: Union[list[types.Content], list[types.ContentDict], ContentType],
-):
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+) -> list[types.Content]:
+  def _append_concecutive_parts(result, concecutive_parts) -> list:
+    if concecutive_parts:
+      result.append(
+          types.UserContent(parts=concecutive_parts)
+      )
+      return []
+    return concecutive_parts
+
   if not contents:
     raise ValueError('contents are required.')
-  if isinstance(contents, list):
-    return [t_content(client, content) for content in contents]
-  else:
+  if not isinstance(contents, list):
     return [t_content(client, contents)]
+  result = []
+  # iterate over the list, if item is content, append to result
+  # if item is part type, group concecutive parts into a content, append to result
+  # if item is a list, recursively call t_contents and extend to result
+  concecutive_parts = []
+  for content in contents:
+    if isinstance(content, types.Content):
+      concecutive_parts = _append_concecutive_parts(result, concecutive_parts)
+      result.append(content)
+    elif isinstance(content, dict):
+      try:
+        possible_part = types.Part.model_validate(content)
+        if possible_part.function_call:
+          # function call role is model
+          concecutive_parts = _append_concecutive_parts(
+              result, concecutive_parts
+          )
+          result.append(types.ModelContent(parts=possible_part))
+        else:
+          concecutive_parts.append(possible_part)
+      except pydantic.ValidationError:
+        possible_content = types.Content.model_validate(content)
+        concecutive_parts = _append_concecutive_parts(result, concecutive_parts)
+        result.append(possible_content)
+    elif isinstance(content, list):
+      concecutive_parts = _append_concecutive_parts(result, concecutive_parts)
+      result.extend(t_contents(client, content))
+    elif isinstance(content, types.Part) and content.function_call:
+      concecutive_parts = _append_concecutive_parts(result, concecutive_parts)
+      result.append(types.ModelContent(parts=content))
+    else:
+      concecutive_parts.append(content)
+
+  _append_concecutive_parts(result, concecutive_parts)
+
+  return result
 
 
 def handle_null_fields(schema: dict[str, Any]):

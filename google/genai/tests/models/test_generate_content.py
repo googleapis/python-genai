@@ -25,6 +25,7 @@ from ... import errors
 from ... import types
 from .. import pytest_helper
 from enum import Enum
+import pydantic
 
 
 safety_settings_with_method = [
@@ -1671,3 +1672,51 @@ def test_catch_stack_trace_in_error_handling(client):
     #     }
     # }
     assert e.details == {'code': 400, 'message': '', 'status': 'UNKNOWN'}
+
+
+def test_multiple_strings(client):
+  class SummaryResponses(BaseModel):
+    summary: str
+    person: str
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=[
+          "Summarize Shakespeare's life work in a few sentences",
+          "Summarize Hemingway's life work",
+      ],
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': list[SummaryResponses],
+      },
+  )
+
+  assert 'Shakespeare' in response.text
+  assert 'Hemingway' in response.text
+  assert 'Shakespeare' == response.parsed[0].person
+  assert 'Hemingway' == response.parsed[1].person
+
+
+def test_multiple_parts(client):
+  class SummaryResponses(BaseModel):
+    summary: str
+    person: str
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=[
+          types.Part(
+              text="Summarize Shakespeare's life work in a few sentences"
+          ),
+          types.Part(text="Summarize Hemingway's life work"),
+      ],
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': list[SummaryResponses],
+      },
+  )
+
+  assert 'Shakespeare' in response.text
+  assert 'Hemingway' in response.text
+  assert 'Shakespeare' == response.parsed[0].person
+  assert 'Hemingway' == response.parsed[1].person
