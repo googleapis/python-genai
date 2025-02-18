@@ -672,7 +672,6 @@ response1 = client.models.generate_images(
     model='imagen-3.0-generate-002',
     prompt='An umbrella in the foreground, and a rainy night sky in the background',
     config=types.GenerateImagesConfig(
-        negative_prompt='human',
         number_of_images=1,
         include_rai_reason=True,
         output_mime_type='image/jpeg',
@@ -730,7 +729,6 @@ response3 = client.models.edit_image(
     config=types.EditImageConfig(
         edit_mode='EDIT_MODE_INPAINT_INSERTION',
         number_of_images=1,
-        negative_prompt='human',
         include_rai_reason=True,
         output_mime_type='image/jpeg',
     ),

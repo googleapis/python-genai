@@ -4900,7 +4900,7 @@ class Models(_api_module.BaseModule):
 
     # Convert to API config.
     config = config or {}
-    config_dct = config if isinstance(config, dict) else config.dict()
+    config_dct = config if isinstance(config, dict) else config.model_dump()
     api_config = types._UpscaleImageAPIConfigDict(**config_dct)  # pylint: disable=protected-access
 
     # Provide default values through API config.
