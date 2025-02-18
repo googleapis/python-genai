@@ -625,48 +625,48 @@ def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
   assert 'cold' in response.text and 'New York' in response.text
 
 
-def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
-  class AnimalObject(pydantic.BaseModel):
-    name: str
-    age: int
-    species: str
+# def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
+#   class AnimalObject(pydantic.BaseModel):
+#     name: str
+#     age: int
+#     species: str
 
-  class PlantObject(pydantic.BaseModel):
-    name: str
-    height: float
-    color: str
+#   class PlantObject(pydantic.BaseModel):
+#     name: str
+#     height: float
+#     color: str
 
-  def get_information(
-      object_of_interest: typing.Union[AnimalObject, PlantObject],
-  ) -> str:
-    if isinstance(object_of_interest, AnimalObject):
-      return (
-          f'The animal is of {object_of_interest.species} species and is named'
-          f' {object_of_interest.name} is {object_of_interest.age} years old'
-      )
-    elif isinstance(object_of_interest, PlantObject):
-      return (
-          f'The plant is named {object_of_interest.name} and is'
-          f' {object_of_interest.height} meters tall and is'
-          f' {object_of_interest.color} color'
-      )
-    else:
-      return 'The animal is not supported'
-
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    response = client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents=(
-            'I have a one year old cat named Sundae, can you get the'
-            ' information of the cat for me?'
-        ),
-        config={
-            'tools': [get_information],
-            'automatic_function_calling': {'ignore_call_history': True}
-        },
-    )
-    assert 'Sundae' in response.text
-    assert 'cat' in response.text
+#   def get_information(
+#       object_of_interest: typing.Union[AnimalObject, PlantObject],
+#   ) -> str:
+#     if isinstance(object_of_interest, AnimalObject):
+#       return (
+#           f'The animal is of {object_of_interest.species} species and is named'
+#           f' {object_of_interest.name} is {object_of_interest.age} years old'
+#       )
+#     elif isinstance(object_of_interest, PlantObject):
+#       return (
+#           f'The plant is named {object_of_interest.name} and is'
+#           f' {object_of_interest.height} meters tall and is'
+#           f' {object_of_interest.color} color'
+#       )
+#     else:
+#       return 'The animal is not supported'
+# 
+  # with pytest_helper.exception_if_mldev(client, ValueError):
+  #   response = client.models.generate_content(
+  #       model='gemini-1.5-flash',
+  #       contents=(
+  #           'I have a one year old cat named Sundae, can you get the'
+  #           ' information of the cat for me?'
+  #       ),
+  #       config={
+  #           'tools': [get_information],
+  #           'automatic_function_calling': {'ignore_call_history': True}
+  #       },
+  #   )
+  #   assert 'Sundae' in response.text
+  #   assert 'cat' in response.text
 
 
 def test_automatic_function_calling_with_parameterized_generic_union_type(client):

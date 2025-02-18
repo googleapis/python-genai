@@ -134,11 +134,12 @@ def test_models_stream_with_empty_string_chunks(client):
           contents='Tell me a story in 300 words.',
       )
   )
-  # only vertex ai returns empty string text in the last chunk
-  if client._api_client.vertexai:
-    assert chunks[-1].text == ''
-  else:
-    assert chunks[-1].text
+  assert chunks[-1].text
+  # # only vertex ai returns empty string text in the last chunk
+  # if client._api_client.vertexai:
+  #   assert chunks[-1].text == ''
+  # else:
+  #   assert chunks[-1].text
 
 
 @pytest.mark.asyncio

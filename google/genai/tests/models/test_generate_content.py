@@ -409,6 +409,21 @@ def test_simple_config(client):
   assert response.text
 
 
+def test_response_create_time_and_response_id(client):
+  if client.vertexai:
+    response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents='What is your name?',
+        config={
+            'max_output_tokens': 3,
+            'top_k': 2,
+        },
+    )
+    # create_time and response_id are not supported in mldev
+    assert response.create_time
+    assert response.response_id
+
+
 def test_safety_settings(client):
   response = client.models.generate_content(
       model='gemini-1.5-flash',

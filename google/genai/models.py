@@ -3146,6 +3146,12 @@ def _GenerateContentResponse_from_vertex(
         ],
     )
 
+  if getv(from_object, ['createTime']) is not None:
+    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
+
+  if getv(from_object, ['responseId']) is not None:
+    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
+
   if getv(from_object, ['modelVersion']) is not None:
     setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
 
