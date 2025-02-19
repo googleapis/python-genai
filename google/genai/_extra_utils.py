@@ -34,6 +34,8 @@ else:
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
+logger = logging.getLogger('google_genai.models')
+
 
 def format_destination(
     src: str,
@@ -248,7 +250,7 @@ def should_disable_afc(
       is not None
       and int(config_model.automatic_function_calling.maximum_remote_calls) <= 0
   ):
-    logging.warning(
+    logger.warning(
         'max_remote_calls in automatic_function_calling_config'
         f' {config_model.automatic_function_calling.maximum_remote_calls} is'
         ' less than or equal to 0. Disabling automatic function calling.'
@@ -268,9 +270,12 @@ def should_disable_afc(
       config_model.automatic_function_calling.disable
       and config_model.automatic_function_calling.maximum_remote_calls
       is not None
+      # exclude the case where max_remote_calls is set to 10 by default.
+      and 'maximum_remote_calls'
+      in config_model.automatic_function_calling.model_fields_set
       and int(config_model.automatic_function_calling.maximum_remote_calls) > 0
   ):
-    logging.warning(
+    logger.warning(
         '`automatic_function_calling.disable` is set to `True`. And'
         ' `automatic_function_calling.maximum_remote_calls` is a'
         ' positive number'

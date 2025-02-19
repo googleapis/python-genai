@@ -55,6 +55,7 @@ except ModuleNotFoundError:
   from websockets.client import ClientConnection
   from websockets.client import connect
 
+logger = logging.getLogger('google_genai.live')
 
 _FUNCTION_RESPONSE_REQUIRES_ID = (
     'FunctionResponse request must have an `id` field from the'
@@ -724,6 +725,6 @@ class AsyncLive(_api_module.BaseModule):
 
     async with connect(uri, additional_headers=headers) as ws:
       await ws.send(request)
-      logging.info(await ws.recv(decode=False))
+      logger.info(await ws.recv(decode=False))
 
       yield AsyncSession(api_client=self._api_client, websocket=ws)

@@ -18,6 +18,7 @@
 
 import google.auth
 from google.auth import credentials
+import logging
 import pytest
 
 from ... import _api_client as api_client
@@ -571,3 +572,18 @@ def test_vertexai_global_endpoint(monkeypatch):
       "https://aiplatform.googleapis.com/"
   )
   assert isinstance(client.models._api_client, api_client.ApiClient)
+
+
+def test_client_logs_to_logger_instance(monkeypatch, caplog):
+  caplog.set_level(logging.DEBUG, logger='google_genai._api_client')
+
+  project_id = "fake_project_id"
+  location = "fake-location"
+  api_key = "vertexai_api_key"
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", location)
+
+  _ = Client(vertexai=True, api_key=api_key)
+
+  assert 'INFO' in caplog.text
+  assert 'The user provided Vertex AI API key will take precedence' in caplog.text

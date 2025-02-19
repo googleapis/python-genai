@@ -39,6 +39,8 @@ from . import _common
 from . import version
 from .types import HttpOptions, HttpOptionsDict, HttpOptionsOrDict
 
+logger = logging.getLogger('google_genai._api_client')
+
 
 def _append_library_version_headers(headers: dict[str, str]) -> None:
   """Appends the telemetry header to the headers dict."""
@@ -240,14 +242,14 @@ class ApiClient:
     if self.vertexai:
       if credentials:
         # Explicit credentials take precedence over implicit api_key.
-        logging.info(
+        logger.info(
             'The user provided Google Cloud credentials will take precedence'
             + ' over the API key from the environment variable.'
         )
         self.api_key = None
       elif (env_location or env_project) and api_key:
         # Explicit api_key takes precedence over implicit project/location.
-        logging.info(
+        logger.info(
             'The user provided Vertex AI API key will take precedence over the'
             + ' project/location from the environment variables.'
         )
@@ -255,14 +257,14 @@ class ApiClient:
         self.location = None
       elif (project or location) and env_api_key:
         # Explicit project/location takes precedence over implicit api_key.
-        logging.info(
+        logger.info(
             'The user provided project/location will take precedence over the'
             + ' Vertex AI API key from the environment variable.'
         )
         self.api_key = None
       elif (env_location or env_project) and env_api_key:
         # Implicit project/location takes precedence over implicit api_key.
-        logging.info(
+        logger.info(
             'The project/location from the environment variables will take'
             + ' precedence over the API key from the environment variables.'
         )

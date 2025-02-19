@@ -255,7 +255,7 @@ print(response.text)
 #### Automatic Python function Support
 
 You can pass a Python function directly and it will be automatically
-called and responded.
+called and responded by default.
 
 ```python
 def get_current_weather(location: str) -> str:
@@ -274,6 +274,30 @@ response = client.models.generate_content(
 )
 
 print(response.text)
+```
+#### Disabling automatic function calling
+If you pass in a python function as a tool directly, and do not want
+automatic function calling, you can disable automatic function calling
+as follows:
+
+```python
+response = client.models.generate_content(
+  model='gemini-2.0-flash-001',
+  contents='What is the weather like in Boston?',
+  config=types.GenerateContentConfig(
+    tools=[get_current_weather],
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(
+      disable=True
+    ),
+  ),
+)
+```
+
+With automatic function calling disabled, you will get a list of function call
+parts in the response:
+
+```python
+function_calls: Optional[List[types.FunctionCall]] = response.function_calls
 ```
 
 #### Manually declare and invoke a function for function calling

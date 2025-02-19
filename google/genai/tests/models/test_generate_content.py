@@ -19,6 +19,7 @@ from pydantic import BaseModel, ValidationError, Field
 from typing import Literal, List, Optional, Union
 import pytest
 import json
+import logging
 import sys
 from ... import _transformers as t
 from ... import errors
@@ -407,6 +408,22 @@ def test_simple_config(client):
       },
   )
   assert response.text
+
+
+def test_sdk_logger_logs_warnings(client, caplog):
+  caplog.set_level(logging.DEBUG, logger='gemini_sdk_logger')
+  sdk_logger = logging.getLogger('gemini_sdk_logger')
+  sdk_logger.setLevel(logging.WARNING)
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a 50 word story about cheese.',
+      config={
+        'candidate_count': 2,
+      }
+  )
+  assert response.text
+  assert 'WARNING' in caplog.text
+  assert 'there are 2 candidates' in caplog.text
 
 
 def test_safety_settings(client):

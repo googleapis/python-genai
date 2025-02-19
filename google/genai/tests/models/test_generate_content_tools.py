@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import logging
 import sys
 import typing
 import pydantic
@@ -1058,3 +1059,46 @@ def test_code_execution_tool(client):
 
   assert 'def is_prime' in response.executable_code
   assert 'primes=' in response.code_execution_result
+
+
+def test_afc_logs_to_logger_instance(client, caplog):
+  caplog.set_level(logging.DEBUG, logger='google_genai.models')
+  client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config={
+          'tools': [divide_integers],
+          'automatic_function_calling': {
+              'disable': False,
+              'maximum_remote_calls': 2,
+              'ignore_call_history': True,
+          },
+      },
+  )
+  for log in caplog.records:
+    assert log.levelname == 'INFO'
+    assert log.name == 'google_genai.models'
+
+  assert 'AFC is enabled with max remote calls: 2' in caplog.text
+  assert 'remote call 1 is done' in caplog.text
+  assert 'remote call 2 is done' in caplog.text
+  assert 'Reached max remote calls' in caplog.text
+
+
+def test_suppress_logs_with_sdk_logger(client, caplog):
+  caplog.set_level(logging.DEBUG, logger='google_genai.models')
+  sdk_logger = logging.getLogger('google_genai.models')
+  sdk_logger.setLevel(logging.ERROR)
+  client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config={
+          'tools': [divide_integers],
+          'automatic_function_calling': {
+              'disable': False,
+              'maximum_remote_calls': 2,
+              'ignore_call_history': True,
+          },
+      },
+  )
+  assert not caplog.text

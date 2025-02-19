@@ -28,6 +28,8 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
+logger = logging.getLogger('google_genai.models')
+
 
 def _Part_to_mldev(
     api_client: ApiClient,
@@ -4663,7 +4665,7 @@ class Models(_api_module.BaseModule):
           model=model, contents=contents, config=config
       )
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
-    logging.info(
+    logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
     automatic_function_calling_history = []
@@ -4674,10 +4676,10 @@ class Models(_api_module.BaseModule):
       response = self._generate_content(
           model=model, contents=contents, config=config
       )
-      logging.info(f'AFC remote call {i} is done.')
+      logger.info(f'AFC remote call {i} is done.')
       remaining_remote_calls_afc -= 1
       if remaining_remote_calls_afc == 0:
-        logging.info('Reached max remote calls for automatic function calling.')
+        logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(config)
       if not function_map:
@@ -4784,7 +4786,7 @@ class Models(_api_module.BaseModule):
       return
 
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
-    logging.info(
+    logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
     automatic_function_calling_history = []
@@ -4796,10 +4798,10 @@ class Models(_api_module.BaseModule):
       response = self._generate_content_stream(
           model=model, contents=contents, config=config
       )
-      logging.info(f'AFC remote call {i} is done.')
+      logger.info(f'AFC remote call {i} is done.')
       remaining_remote_calls_afc -= 1
       if remaining_remote_calls_afc == 0:
-        logging.info('Reached max remote calls for automatic function calling.')
+        logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(config)
 
@@ -5817,7 +5819,7 @@ class AsyncModels(_api_module.BaseModule):
           model=model, contents=contents, config=config
       )
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
-    logging.info(
+    logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
     automatic_function_calling_history = []
@@ -5828,7 +5830,7 @@ class AsyncModels(_api_module.BaseModule):
       )
       remaining_remote_calls_afc -= 1
       if remaining_remote_calls_afc == 0:
-        logging.info('Reached max remote calls for automatic function calling.')
+        logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(config)
       if not function_map:
@@ -5942,7 +5944,7 @@ class AsyncModels(_api_module.BaseModule):
 
     async def async_generator(model, contents, config):
       remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
-      logging.info(
+      logger.info(
           f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
       )
       automatic_function_calling_history = []
@@ -5953,10 +5955,10 @@ class AsyncModels(_api_module.BaseModule):
         response = await self._generate_content_stream(
             model=model, contents=contents, config=config
         )
-        logging.info(f'AFC remote call {i} is done.')
+        logger.info(f'AFC remote call {i} is done.')
         remaining_remote_calls_afc -= 1
         if remaining_remote_calls_afc == 0:
-          logging.info(
+          logger.info(
               'Reached max remote calls for automatic function calling.'
           )
 

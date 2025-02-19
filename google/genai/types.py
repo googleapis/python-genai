@@ -53,6 +53,8 @@ else:
   except ImportError:
     PIL_Image = None
 
+logger = logging.getLogger('google_genai.types')
+
 
 class Outcome(_common.CaseInSensitiveEnum):
   """Required. Outcome of the code execution."""
@@ -2909,7 +2911,7 @@ class GenerateContentResponse(_common.BaseModel):
     ):
       return None
     if len(self.candidates) > 1:
-      logging.warning(
+      logger.warning(
           f'there are {len(self.candidates)} candidates, returning text from'
           ' the first candidate.Access response.candidates directly to get'
           ' text from other candidates.'
@@ -2943,7 +2945,7 @@ class GenerateContentResponse(_common.BaseModel):
     ):
       return None
     if len(self.candidates) > 1:
-      logging.warning(
+      logger.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' function calls from the first one.'
       )
