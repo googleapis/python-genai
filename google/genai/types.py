@@ -3895,7 +3895,8 @@ class _ReferenceImageAPI(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   mask_image_config: Optional[MaskReferenceConfig] = Field(
       default=None,
@@ -3925,7 +3926,7 @@ class _ReferenceImageAPIDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   mask_image_config: Optional[MaskReferenceConfigDict]
   """Configuration for the mask reference image."""
@@ -8195,19 +8196,17 @@ class RawReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_RAW',
-    )
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_RAW'
+    return values
 
 
 class RawReferenceImageDict(TypedDict, total=False):
@@ -8225,7 +8224,7 @@ class RawReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
 
 RawReferenceImageOrDict = Union[RawReferenceImage, RawReferenceImageDict]
@@ -8251,7 +8250,8 @@ class MaskReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[MaskReferenceConfig] = Field(
       default=None,
@@ -8262,18 +8262,15 @@ class MaskReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['MaskReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_MASK',
-    )
-    self.mask_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['mask_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_MASK'
+    return values
 
 
 class MaskReferenceImageDict(TypedDict, total=False):
@@ -8295,7 +8292,7 @@ class MaskReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[MaskReferenceConfigDict]
   """Configuration for the mask reference image."""
@@ -8324,7 +8321,8 @@ class ControlReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[ControlReferenceConfig] = Field(
       default=None,
@@ -8335,18 +8333,15 @@ class ControlReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['ControlReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_CONTROL',
-    )
-    self.control_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['control_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_CONTROL'
+    return values
 
 
 class ControlReferenceImageDict(TypedDict, total=False):
@@ -8368,7 +8363,7 @@ class ControlReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[ControlReferenceConfigDict]
   """Configuration for the control reference image."""
@@ -8397,7 +8392,8 @@ class StyleReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[StyleReferenceConfig] = Field(
       default=None,
@@ -8408,18 +8404,15 @@ class StyleReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['StyleReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_STYLE',
-    )
-    self.style_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['style_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_STYLE'
+    return values
 
 
 class StyleReferenceImageDict(TypedDict, total=False):
@@ -8439,7 +8432,7 @@ class StyleReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[StyleReferenceConfigDict]
   """Configuration for the style reference image."""
@@ -8466,7 +8459,8 @@ class SubjectReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[SubjectReferenceConfig] = Field(
       default=None,
@@ -8477,18 +8471,15 @@ class SubjectReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['SubjectReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_SUBJECT',
-    )
-    self.subject_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['subject_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_SUBJECT'
+    return values
 
 
 class SubjectReferenceImageDict(TypedDict, total=False):
@@ -8508,7 +8499,7 @@ class SubjectReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[SubjectReferenceConfigDict]
   """Configuration for the subject reference image."""

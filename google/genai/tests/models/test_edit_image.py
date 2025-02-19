@@ -18,6 +18,7 @@
 
 import os
 
+import pydantic
 import pytest
 
 from ... import types
@@ -170,6 +171,19 @@ pytestmark = pytest_helper.setup(
     test_method='models.edit_image',
     test_table=test_table,
 )
+
+
+def test_setting_reference_type_raises(client):
+  with pytest.raises(pydantic.ValidationError):
+    types._ReferenceImageAPI(
+        reference_id=1,
+        reference_type='REFERENCE_TYPE_SUBJECT',  # user can't set reference_type
+        reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
+        config=types.SubjectReferenceConfig(
+            subject_type='SUBJECT_TYPE_PRODUCT',
+            subject_description='A product logo that is a multi-colored letter G',
+        ),
+    )
 
 
 @pytest.mark.asyncio
