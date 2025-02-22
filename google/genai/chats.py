@@ -136,6 +136,15 @@ class Chat(_BaseChat):
       self._curated_history.append(input_content)
       self._curated_history.extend(output_contents)
 
+  @property
+  def history(self) -> list[Content]:
+    """Returns the conversation history.
+    
+    
+    Returns:
+        list[Content]: The conversation history.
+    """
+    return self._curated_history
 
 class Chats:
   """A util class to create chat sessions."""
