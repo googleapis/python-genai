@@ -28,12 +28,12 @@ Please run one of the following code blocks to create a client for
 different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)).
 
 ```python
-# Only run this block for Gemini Developer API
+# Run this block for Gemini Developer API
 client = genai.Client(api_key='GEMINI_API_KEY')
 ```
 
 ```python
-# Only run this block for Vertex AI API
+# Run this block for Vertex AI API
 client = genai.Client(
     vertexai=True, project='your-project-id', location='us-central1'
 )
@@ -42,13 +42,13 @@ client = genai.Client(
 **(Optional) Using environment variables:**
 
 You can create a client by configuring the necessary environment variables.
-Configuration setup instructions depends on whether you're using the Gemini API
-on Vertex AI or the ML Dev Gemini API.
+Configuration setup instructions depends on whether you're using Gemini
+on Vertex AI or the Gemini Developer API.
 
-**ML Dev Gemini API:** Set `GOOGLE_API_KEY` as shown below:
+**Gemini Developer API:** Set `GEMINI_API_KEY` as shown below:
 
 ```bash
-export GOOGLE_API_KEY='your-api-key'
+export GEMINI_API_KEY='your-api-key'
 ```
 
 **Vertex AI API:** Set `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`
@@ -68,26 +68,15 @@ client = genai.Client()
 
 By default, the SDK uses the beta API endpoints provided by Google to support
 preview features in the APIs. The stable API endpoints can be selected by
-setting the API version to `v1`.
+setting the API version to `v1`. The alpah API endpints can be selected by
+setting the API version to `v1alpha`.
 
-To set the API version use `http_options`. For example, to set the API version
-to `v1` for Vertex AI:
-
-```python
-client = genai.Client(
-    vertexai=True,
-    project='your-project-id',
-    location='us-central1',
-    http_options=types.HttpOptions(api_version='v1')
-)
-```
-
-To set the API version to `v1alpha` for the Gemini Developer API:
+To set the API version in either use API, use `http_options`:
 
 ```python
 client = genai.Client(
     api_key='GEMINI_API_KEY',
-    http_options=types.HttpOptions(api_version='v1alpha')
+    http_options=types.HttpOptions(api_version='v1')
 )
 ```
 
@@ -113,16 +102,9 @@ print(response.text)
 ```
 
 #### with uploaded file (Gemini API only)
-download the file in console.
-
-```sh
-!wget -q https://storage.googleapis.com/generativeai-downloads/data/a11.txt
-```
-
-python code.
 
 ```python
-file = client.files.upload(file='a11.txt')
+file = client.files.upload(file='path/to/your/file/a11.txt')
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents=['Could you summarize this file?', file]
