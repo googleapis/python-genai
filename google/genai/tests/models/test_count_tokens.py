@@ -74,12 +74,12 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_system_instruction',
-        exception_if_mldev='INVALID_ARGUMENT',
+        exception_if_mldev='not supported',
         parameters=_COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION,
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_tools',
-        exception_if_mldev='INVALID_ARGUMENT',
+        exception_if_mldev='not supported',
         parameters=_COUNT_TOKENS_PARAMS_WITH_TOOLS,
     ),
     pytest_helper.TestTableItem(

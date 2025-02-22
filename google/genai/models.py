@@ -2598,25 +2598,12 @@ def _CountTokensConfig_to_mldev(
   to_object = {}
 
   if getv(from_object, ['system_instruction']) is not None:
-    setv(
-        parent_object,
-        ['generateContentRequest', 'systemInstruction'],
-        _Content_to_mldev(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
-        ),
+    raise ValueError(
+        'system_instruction parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['tools']) is not None:
-    setv(
-        parent_object,
-        ['generateContentRequest', 'tools'],
-        [
-            _Tool_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['tools'])
-        ],
-    )
+    raise ValueError('tools parameter is not supported in Gemini API.')
 
   if getv(from_object, ['generation_config']) is not None:
     raise ValueError(
