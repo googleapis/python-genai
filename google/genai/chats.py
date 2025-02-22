@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-from typing import AsyncIterator, Awaitable, Optional
+from typing import AsyncGenerator, Optional
 from typing import Union
 
 from . import _transformers as t
@@ -214,7 +214,7 @@ class AsyncChat(_BaseChat):
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
       config: Optional[GenerateContentConfigOrDict] = None,
-  ) -> Awaitable[AsyncIterator[GenerateContentResponse]]:
+  ) -> AsyncGenerator[GenerateContentResponse, None]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
     Args:
