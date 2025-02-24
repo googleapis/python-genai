@@ -202,7 +202,7 @@ class AsyncPager(_BasePager[T]):
     self._idx = 0
     return self
 
-  async def __anext__(self) -> Awaitable[T]:
+  async def __anext__(self) -> T:
     """Returns the next item asynchronously."""
     if self._idx >= len(self):
       try:
