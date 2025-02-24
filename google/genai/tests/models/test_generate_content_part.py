@@ -675,10 +675,8 @@ def test_from_bytes_pdf(client):
 
 
 def test_from_function_call_response(client):
-  function_call = types.ModelContent(
-      parts=types.Part.from_function_call(
-          name='get_weather', args={'location': 'Boston'}
-      )
+  function_call = types.Part.from_function_call(
+      name='get_weather', args={'location': 'Boston'}
   )
   function_response = types.Part.from_function_response(
       name='get_weather', response={'weather': 'sunny'}

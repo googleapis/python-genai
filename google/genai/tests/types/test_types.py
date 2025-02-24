@@ -2570,18 +2570,6 @@ def test_user_content_modify_role():
     user_content.role = 'model'
 
 
-def test_user_content_string_parts():
-  expected_user_content = types.Content(
-      role='user',
-      parts=[types.Part(text='hello')],
-  )
-  user_content = types.UserContent(parts='hello')
-
-  assert expected_user_content.model_dump_json(
-      exclude_none=True
-  ) == user_content.model_dump_json(exclude_none=True)
-
-
 def test_user_content_modify_parts():
   expected_user_content = types.Content(
       role='user',
