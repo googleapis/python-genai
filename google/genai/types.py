@@ -3436,7 +3436,8 @@ class GenerateImagesConfig(_common.BaseModel):
   )
   include_safety_attributes: Optional[bool] = Field(
       default=None,
-      description="""Whether to report the safety scores of each image in the response.
+      description="""Whether to report the safety scores of each generated image and
+      the positive prompt in the response.
       """,
   )
   include_rai_reason: Optional[bool] = Field(
@@ -3515,7 +3516,8 @@ class GenerateImagesConfigDict(TypedDict, total=False):
       """
 
   include_safety_attributes: Optional[bool]
-  """Whether to report the safety scores of each image in the response.
+  """Whether to report the safety scores of each generated image and
+      the positive prompt in the response.
       """
 
   include_rai_reason: Optional[bool]
@@ -3761,6 +3763,11 @@ class SafetyAttributes(_common.BaseModel):
       description="""List of scores of each categories.
       """,
   )
+  content_type: Optional[str] = Field(
+      default=None,
+      description="""Internal use only.
+      """,
+  )
 
 
 class SafetyAttributesDict(TypedDict, total=False):
@@ -3772,6 +3779,10 @@ class SafetyAttributesDict(TypedDict, total=False):
 
   scores: Optional[list[float]]
   """List of scores of each categories.
+      """
+
+  content_type: Optional[str]
+  """Internal use only.
       """
 
 
@@ -3840,6 +3851,12 @@ class GenerateImagesResponse(_common.BaseModel):
       description="""List of generated images.
       """,
   )
+  positive_prompt_safety_attributes: Optional[SafetyAttributes] = Field(
+      default=None,
+      description="""Safety attributes of the positive prompt. Only populated if
+      ``include_safety_attributes`` is set to True.
+      """,
+  )
 
 
 class GenerateImagesResponseDict(TypedDict, total=False):
@@ -3847,6 +3864,11 @@ class GenerateImagesResponseDict(TypedDict, total=False):
 
   generated_images: Optional[list[GeneratedImageDict]]
   """List of generated images.
+      """
+
+  positive_prompt_safety_attributes: Optional[SafetyAttributesDict]
+  """Safety attributes of the positive prompt. Only populated if
+      ``include_safety_attributes`` is set to True.
       """
 
 
@@ -4085,7 +4107,8 @@ class EditImageConfig(_common.BaseModel):
   )
   include_safety_attributes: Optional[bool] = Field(
       default=None,
-      description="""Whether to report the safety scores of each image in the response.
+      description="""Whether to report the safety scores of each generated image and
+      the positive prompt in the response.
       """,
   )
   include_rai_reason: Optional[bool] = Field(
@@ -4163,7 +4186,8 @@ class EditImageConfigDict(TypedDict, total=False):
       """
 
   include_safety_attributes: Optional[bool]
-  """Whether to report the safety scores of each image in the response.
+  """Whether to report the safety scores of each generated image and
+      the positive prompt in the response.
       """
 
   include_rai_reason: Optional[bool]

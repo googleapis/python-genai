@@ -3585,6 +3585,9 @@ def _SafetyAttributes_from_mldev(
         to_object, ['scores'], getv(from_object, ['safetyAttributes', 'scores'])
     )
 
+  if getv(from_object, ['contentType']) is not None:
+    setv(to_object, ['content_type'], getv(from_object, ['contentType']))
+
   return to_object
 
 
@@ -3605,6 +3608,9 @@ def _SafetyAttributes_from_vertex(
     setv(
         to_object, ['scores'], getv(from_object, ['safetyAttributes', 'scores'])
     )
+
+  if getv(from_object, ['contentType']) is not None:
+    setv(to_object, ['content_type'], getv(from_object, ['contentType']))
 
   return to_object
 
@@ -3692,6 +3698,17 @@ def _GenerateImagesResponse_from_mldev(
         ],
     )
 
+  if getv(from_object, ['positivePromptSafetyAttributes']) is not None:
+    setv(
+        to_object,
+        ['positive_prompt_safety_attributes'],
+        _SafetyAttributes_from_mldev(
+            api_client,
+            getv(from_object, ['positivePromptSafetyAttributes']),
+            to_object,
+        ),
+    )
+
   return to_object
 
 
@@ -3709,6 +3726,17 @@ def _GenerateImagesResponse_from_vertex(
             _GeneratedImage_from_vertex(api_client, item, to_object)
             for item in getv(from_object, ['predictions'])
         ],
+    )
+
+  if getv(from_object, ['positivePromptSafetyAttributes']) is not None:
+    setv(
+        to_object,
+        ['positive_prompt_safety_attributes'],
+        _SafetyAttributes_from_vertex(
+            api_client,
+            getv(from_object, ['positivePromptSafetyAttributes']),
+            to_object,
+        ),
     )
 
   return to_object
@@ -4515,7 +4543,7 @@ class Models(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  def generate_images(
+  def _generate_images(
       self,
       *,
       model: str,
@@ -4528,21 +4556,6 @@ class Models(_api_module.BaseModule):
       model (str): The model to use.
       prompt (str): A text description of the images to generate.
       config (GenerateImagesConfig): Configuration for generation.
-
-    Usage:
-
-    .. code-block:: python
-
-      response = client.models.generate_images(
-        model='imagen-3.0-generate-002',
-        prompt='Man with a dog',
-        config=types.GenerateImagesConfig(
-            number_of_images= 1,
-            include_rai_reason= True,
-        )
-      )
-      response.generated_images[0].image.show()
-      # Shows a man with a dog.
     """
 
     parameter_model = types._GenerateImagesParameters(
@@ -5558,6 +5571,61 @@ class Models(_api_module.BaseModule):
       automatic_function_calling_history.append(func_call_content)
       automatic_function_calling_history.append(func_response_content)
 
+  def generate_images(
+      self,
+      *,
+      model: str,
+      prompt: str,
+      config: Optional[types.GenerateImagesConfigOrDict] = None,
+  ) -> types.GenerateImagesResponse:
+    """Generates images based on a text description and configuration.
+
+    Args:
+      model (str): The model to use.
+      prompt (str): A text description of the images to generate.
+      config (GenerateImagesConfig): Configuration for generation.
+
+    Usage:
+
+    .. code-block:: python
+
+      response = client.models.generate_images(
+        model='imagen-3.0-generate-002',
+        prompt='Man with a dog',
+        config=types.GenerateImagesConfig(
+            number_of_images= 1,
+            include_rai_reason= True,
+        )
+      )
+      response.generated_images[0].image.show()
+      # Shows a man with a dog.
+    """
+    api_response = self._generate_images(
+        model=model,
+        prompt=prompt,
+        config=config,
+    )
+    positive_prompt_safety_attributes = None
+    generated_images = []
+    if not api_response or not api_response.generated_images:
+      return api_response
+
+    for generated_image in api_response.generated_images:
+      if (
+          generated_image.safety_attributes
+          and generated_image.safety_attributes.content_type
+          == 'Positive Prompt'
+      ):
+        positive_prompt_safety_attributes = generated_image.safety_attributes
+      else:
+        generated_images.append(generated_image)
+
+    response = types.GenerateImagesResponse(
+        generated_images=generated_images,
+        positive_prompt_safety_attributes=positive_prompt_safety_attributes,
+    )
+    return response
+
   def edit_image(
       self,
       *,
@@ -5956,7 +6024,7 @@ class AsyncModels(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def generate_images(
+  async def _generate_images(
       self,
       *,
       model: str,
@@ -5969,21 +6037,6 @@ class AsyncModels(_api_module.BaseModule):
       model (str): The model to use.
       prompt (str): A text description of the images to generate.
       config (GenerateImagesConfig): Configuration for generation.
-
-    Usage:
-
-    .. code-block:: python
-
-      response = await client.aio.models.generate_images(
-        model='imagen-3.0-generate-002',
-        prompt='Man with a dog',
-        config=types.GenerateImagesConfig(
-            number_of_images= 1,
-            include_rai_reason= True,
-        )
-      )
-      response.generated_images[0].image.show()
-      # Shows a man with a dog.
     """
 
     parameter_model = types._GenerateImagesParameters(
@@ -7086,6 +7139,61 @@ class AsyncModels(_api_module.BaseModule):
         await self._list(config=config),
         config,
     )
+
+  async def generate_images(
+      self,
+      *,
+      model: str,
+      prompt: str,
+      config: Optional[types.GenerateImagesConfigOrDict] = None,
+  ) -> types.GenerateImagesResponse:
+    """Generates images based on a text description and configuration.
+
+    Args:
+      model (str): The model to use.
+      prompt (str): A text description of the images to generate.
+      config (GenerateImagesConfig): Configuration for generation.
+
+    Usage:
+
+    .. code-block:: python
+
+      response = await client.aio.models.generate_images(
+        model='imagen-3.0-generate-002',
+        prompt='Man with a dog',
+        config=types.GenerateImagesConfig(
+            number_of_images= 1,
+            include_rai_reason= True,
+        )
+      )
+      response.generated_images[0].image.show()
+      # Shows a man with a dog.
+    """
+    api_response = await self._generate_images(
+        model=model,
+        prompt=prompt,
+        config=config,
+    )
+    positive_prompt_safety_attributes = None
+    generated_images = []
+    if not api_response or not api_response.generated_images:
+      return api_response
+
+    for generated_image in api_response.generated_images:
+      if (
+          generated_image.safety_attributes
+          and generated_image.safety_attributes.content_type
+          == 'Positive Prompt'
+      ):
+        positive_prompt_safety_attributes = generated_image.safety_attributes
+      else:
+        generated_images.append(generated_image)
+
+    response = types.GenerateImagesResponse(
+        generated_images=generated_images,
+        positive_prompt_safety_attributes=positive_prompt_safety_attributes,
+    )
+    return response
 
   async def upscale_image(
       self,
