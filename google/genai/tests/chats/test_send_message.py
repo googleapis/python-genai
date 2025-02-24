@@ -157,15 +157,17 @@ def test_config_override(client):
 def test_history(client):
   history = [
       types.Content(
-          role='model',
-          parts=[types.Part.from_text(text='Hello there! how can I help you?')],
+          role='user', parts=[types.Part.from_text(text='define a=5, b=10')]
       ),
       types.Content(
-          role='user', parts=[types.Part.from_text(text='define a=5, b=10')]
+          role='model',
+          parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
   ]
   chat = client.chats.create(model='gemini-1.5-flash', history=history)
   chat.send_message('what is a + b?')
+
+  assert len(chat.get_history()) > 2
 
 
 def test_send_2_messages(client):
@@ -180,7 +182,7 @@ def test_with_afc_history(client):
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
   _ = chat.send_message('what is the result of 100/2?')
-  chat_history = chat._curated_history
+  chat_history = chat.get_history()
 
   assert len(chat_history) == 4
   assert chat_history[0].role == 'user'
@@ -231,7 +233,7 @@ def test_with_afc_multiple_remote_calls(client):
   }
   chat = client.chats.create(model='gemini-1.5-flash', config=config)
   chat.send_message('Turn this place into a party!')
-  curated_history = chat._curated_history
+  curated_history = chat.get_history()
 
   assert len(curated_history) == 8
   assert curated_history[0].role == 'user'
@@ -285,7 +287,7 @@ def test_with_afc_multiple_remote_calls_async(client):
   }
   chat = client.chats.create(model='gemini-1.5-flash', config=config)
   chat.send_message('Turn this place into a party!')
-  curated_history = chat._curated_history
+  curated_history = chat.get_history()
 
   assert len(curated_history) == 8
   assert curated_history[0].role == 'user'
@@ -326,7 +328,7 @@ def test_with_afc_disabled(client):
   chat.send_message(
       'Do the square of 3.',
   )
-  chat_history = chat._curated_history
+  chat_history = chat.get_history()
 
   assert len(chat_history) == 2
   assert chat_history[0].role == 'user'
@@ -346,7 +348,7 @@ async def test_with_afc_history_async(client):
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
   _ = await chat.send_message('what is the result of 100/2?')
-  chat_history = chat._curated_history
+  chat_history = chat.get_history()
 
   assert len(chat_history) == 4
   assert chat_history[0].role == 'user'
@@ -385,7 +387,7 @@ async def test_with_afc_disabled_async(client):
   await chat.send_message(
       'Do the square of 3.',
   )
-  chat_history = chat._curated_history
+  chat_history = chat.get_history()
 
   assert len(chat_history) == 2
   assert chat_history[0].role == 'user'
@@ -466,7 +468,7 @@ def test_stream_function_calling(client):
       'what is the result of 50/2?',
   ):
     pass
-  chat_history = chat._curated_history
+  chat_history = chat.get_history()
 
   assert chat_history[0].role == 'user'
   assert chat_history[0].parts[0].text == 'what is the result of 100/2?'
@@ -529,16 +531,18 @@ async def test_async_config_override(client):
 @pytest.mark.asyncio
 async def test_async_history(client):
   history = [
+       types.Content(
+          role='user', parts=[types.Part.from_text(text='define a=5, b=10')]
+      ),
       types.Content(
           role='model',
           parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
-      types.Content(
-          role='user', parts=[types.Part.from_text(text='define a=5, b=10')]
-      ),
   ]
   chat = client.aio.chats.create(model='gemini-1.5-flash', history=history)
   await chat.send_message('what is a + b?')
+
+  assert len(chat.get_history()) > 2
 
 
 @pytest.mark.asyncio
@@ -608,7 +612,7 @@ async def test_async_stream_function_calling(client):
     pass
   async for chunk in await chat.send_message_stream('what is the result of 50/2?'):
     pass
-  chat_history = chat._curated_history
+  chat_history = chat.get_history()
 
   assert chat_history[0].role == 'user'
   assert chat_history[0].parts[0].text == 'what is the result of 100/2?'
