@@ -2931,20 +2931,24 @@ class GenerateContentResponse(_common.BaseModel):
       )
     text = ''
     any_text_part_text = False
+    non_text_parts = []
     for part in self.candidates[0].content.parts:
       for field_name, field_value in part.model_dump(
           exclude={'text', 'thought'}
       ).items():
         if field_value is not None:
-          raise ValueError(
-              'GenerateContentResponse.text only supports text parts, but got'
-              f' {field_name} part'
-          )
+          non_text_parts.append(field_name)
       if isinstance(part.text, str):
         if isinstance(part.thought, bool) and part.thought:
           continue
         any_text_part_text = True
         text += part.text
+    if non_text_parts:
+      logger.warning(
+          'Warning: there are non-text parts in the response:'
+          f' {non_text_parts},returning concatenated text from text parts,check'
+          ' out the non text parts for full response from model.'
+      )
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
 
