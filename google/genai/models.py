@@ -4267,7 +4267,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.GenerateContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4338,7 +4338,7 @@ class Models(_api_module.BaseModule):
         )
 
       return_value = types.GenerateContentResponse._from_response(
-          response=response_dict, kwargs=parameter_model
+          response=response_dict, kwargs=parameter_model.model_dump()
       )
       self._api_client._verify_response(return_value)
       yield return_value
@@ -4428,7 +4428,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.EmbedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4518,7 +4518,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.GenerateImagesResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4622,7 +4622,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.EditImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4693,7 +4693,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.UpscaleImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4751,7 +4751,7 @@ class Models(_api_module.BaseModule):
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4812,7 +4812,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.ListModelsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4873,7 +4873,7 @@ class Models(_api_module.BaseModule):
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -4938,7 +4938,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.DeleteModelResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5026,7 +5026,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.CountTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5109,7 +5109,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.ComputeTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5201,7 +5201,7 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5643,7 +5643,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.GenerateContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5717,7 +5717,7 @@ class AsyncModels(_api_module.BaseModule):
           )
 
         return_value = types.GenerateContentResponse._from_response(
-            response=response_dict, kwargs=parameter_model
+            response=response_dict, kwargs=parameter_model.model_dump()
         )
         self._api_client._verify_response(return_value)
         yield return_value
@@ -5809,7 +5809,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.EmbedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5899,7 +5899,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.GenerateImagesResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6003,7 +6003,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.EditImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6074,7 +6074,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.UpscaleImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6132,7 +6132,7 @@ class AsyncModels(_api_module.BaseModule):
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6193,7 +6193,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.ListModelsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6254,7 +6254,7 @@ class AsyncModels(_api_module.BaseModule):
       response_dict = _Model_from_mldev(self._api_client, response_dict)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6319,7 +6319,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.DeleteModelResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6407,7 +6407,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.CountTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6490,7 +6490,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.ComputeTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6582,7 +6582,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value

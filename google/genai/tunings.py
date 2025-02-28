@@ -773,7 +773,7 @@ class Tunings(_api_module.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -843,7 +843,7 @@ class Tunings(_api_module.BaseModule):
       )
 
     return_value = types.ListTuningJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -910,7 +910,7 @@ class Tunings(_api_module.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -977,7 +977,7 @@ class Tunings(_api_module.BaseModule):
       response_dict = _Operation_from_mldev(self._api_client, response_dict)
 
     return_value = types.Operation._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1112,7 +1112,7 @@ class AsyncTunings(_api_module.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1182,7 +1182,7 @@ class AsyncTunings(_api_module.BaseModule):
       )
 
     return_value = types.ListTuningJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1249,7 +1249,7 @@ class AsyncTunings(_api_module.BaseModule):
       response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1316,7 +1316,7 @@ class AsyncTunings(_api_module.BaseModule):
       response_dict = _Operation_from_mldev(self._api_client, response_dict)
 
     return_value = types.Operation._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
