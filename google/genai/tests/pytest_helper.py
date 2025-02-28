@@ -163,7 +163,7 @@ def setup(
 
     with open(test_table_file_path, 'w') as f:
       f.write(
-          test_table_file.model_dump_json(exclude_none=True, exclude_unset=True, by_alias=True, indent=2),
+          test_table_file.model_dump_json(exclude_none=True, by_alias=True, indent=2),
       )
 
   # Add fixture for requested client option.

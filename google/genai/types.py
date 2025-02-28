@@ -715,13 +715,12 @@ class UserContent(Content):
   """
 
   role: Literal['user'] = Field(default='user', init=False, frozen=True)
-  parts: list[Part] = Field(init=False)
+  parts: list[Part] = Field()
 
-  @pydantic.field_validator('parts', mode='before')
-  def validate_parts(cls, value):
+  def __init__(self, parts: Union['PartUnionDict', list['PartUnionDict']]):
     from . import _transformers as t
 
-    return t.t_parts(None, parts=value)
+    super().__init__(parts=t.t_parts(None, parts=parts))
 
 
 class ModelContent(Content):
@@ -744,13 +743,12 @@ class ModelContent(Content):
   """
 
   role: Literal['model'] = Field(default='model', init=False, frozen=True)
-  parts: list[Part] = Field(init=False)
+  parts: list[Part] = Field()
 
-  @pydantic.field_validator('parts', mode='before')
-  def validate_parts(cls, value):
+  def __init__(self, parts: Union['PartUnionDict', list['PartUnionDict']]):
     from . import _transformers as t
 
-    return t.t_parts(None, parts=value)
+    super().__init__(parts=t.t_parts(None, parts=parts))
 
 
 class ContentDict(TypedDict, total=False):
