@@ -240,10 +240,9 @@ def pil_to_blob(img) -> types.Blob:
   return types.Blob(mime_type=mime_type, data=data)
 
 
-PartType = Union[types.Part, types.PartDict, str, 'PIL.Image.Image']
-
-
-def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
+def t_part(
+    client: _api_client.ApiClient, part: types.PartUnionDict
+) -> types.Part:
   try:
     import PIL.Image
 
@@ -251,7 +250,7 @@ def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
   except ImportError:
     PIL_Image = None
 
-  if not part:
+  if part is None:
     raise ValueError('content part is required.')
   if isinstance(part, str):
     return types.Part(text=part)
@@ -261,14 +260,19 @@ def t_part(client: _api_client.ApiClient, part: PartType) -> types.Part:
     if not part.uri or not part.mime_type:
       raise ValueError('file uri and mime_type are required.')
     return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)
-  else:
+  if isinstance(part, dict):
+    return types.Part.model_validate(part)
+  if isinstance(part, types.Part):
     return part
+  raise ValueError(f'Unsupported content part type: {type(part)}')
 
 
 def t_parts(
-    client: _api_client.ApiClient, parts: Union[list, PartType]
+    client: _api_client.ApiClient,
+    parts: Union[list[types.PartUnionDict], types.PartUnionDict],
 ) -> list[types.Part]:
-  if not parts:
+  #
+  if parts is None or (isinstance(parts, list) and not parts):
     raise ValueError('content parts are required.')
   if isinstance(parts, list):
     return [t_part(client, part) for part in parts]
@@ -296,20 +300,34 @@ def t_image_predictions(
   return images
 
 
-ContentType = Union[types.Content, types.ContentDict, PartType]
+ContentType = Union[types.Content, types.ContentDict, types.PartUnionDict]
 
 
 def t_content(
     client: _api_client.ApiClient,
     content: ContentType,
 ):
-  if not content:
+  if content is None:
     raise ValueError('content is required.')
   if isinstance(content, types.Content):
     return content
   if isinstance(content, dict):
-    return types.Content.model_validate(content)
-  return types.Content(role='user', parts=t_parts(client, content))
+    try:
+      return types.Content.model_validate(content)
+    except pydantic.ValidationError:
+      possible_part = types.Part.model_validate(content)
+      return (
+          types.ModelContent(parts=[possible_part])
+          if possible_part.function_call
+          else types.UserContent(parts=[possible_part])
+      )
+  if isinstance(content, types.Part):
+    return (
+        types.ModelContent(parts=[content])
+        if content.function_call
+        else types.UserContent(parts=[content])
+    )
+  return types.UserContent(parts=content)
 
 
 def t_contents_for_embed(
@@ -329,14 +347,110 @@ def t_contents_for_embed(
 
 def t_contents(
     client: _api_client.ApiClient,
-    contents: Union[list[types.Content], list[types.ContentDict], ContentType],
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
 ):
-  if not contents:
+  if contents is None or (isinstance(contents, list) and not contents):
     raise ValueError('contents are required.')
-  if isinstance(contents, list):
-    return [t_content(client, content) for content in contents]
-  else:
+  if not isinstance(contents, list):
     return [t_content(client, contents)]
+
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
+  result: list[types.Content] = []
+  accumulated_parts: list[types.PartUnionDict] = []
+
+  def _is_user_part(part: types.PartUnionDict) -> bool:
+
+    return (
+        isinstance(part, str)
+        or isinstance(part, types.File)
+        or (PIL_Image is not None and isinstance(part, PIL_Image))
+        or (isinstance(part, types.Part) and not part.function_call)
+        or (isinstance(part, dict) and not part.get('function_call', None))
+    )
+
+  def _are_user_parts(parts: list[types.PartUnionDict]) -> bool:
+    if not parts:
+      return True
+    result = _is_user_part(parts[0])
+    for part in parts[1:]:
+      # since this function is scoped within t_contents,
+      # this branch should never be reached
+      if result != _is_user_part(part):
+        raise ValueError('All parts must be homogeneously user or model parts.')
+    return result
+
+  def _append_accumulated_parts_as_content(
+      result: list[types.Content],
+      accumulated_parts: list[types.PartUnionDict],
+  ):
+    if not accumulated_parts:
+      return
+    result.append(
+        types.UserContent(parts=accumulated_parts)
+        if _are_user_parts(accumulated_parts)
+        else types.ModelContent(parts=accumulated_parts)
+    )
+    accumulated_parts[:] = []
+
+  def _handle_current_part(
+      result: list[types.Content],
+      accumulated_parts: list[types.PartUnionDict],
+      current_part: types.PartUnionDict,
+  ):
+    if _is_user_part(current_part) and _are_user_parts(accumulated_parts):
+      accumulated_parts.append(current_part)
+    elif _is_user_part(current_part) and not _are_user_parts(accumulated_parts):
+      _append_accumulated_parts_as_content(result, accumulated_parts)
+      accumulated_parts[:] = [current_part]
+    elif not _is_user_part(current_part) and _are_user_parts(accumulated_parts):
+      _append_accumulated_parts_as_content(result, accumulated_parts)
+      accumulated_parts[:] = [current_part]
+    else:
+      accumulated_parts.append(current_part)
+
+  # iterator over contents
+  # if content type or content dict, append to result
+  # if consecutive part(s),
+  #   group consecutive user part(s) to a UserContent
+  #   group consecutive model part(s) to a ModelContent
+  #   append to result
+  # if list, we only accept a list of types.PartUnion
+  for content in contents:
+    if isinstance(content, types.Content):
+      _append_accumulated_parts_as_content(result, accumulated_parts)
+      result.append(content)
+    elif isinstance(content, dict):
+      try:
+        possible_content = types.Content.model_validate(content)
+        _append_accumulated_parts_as_content(result, accumulated_parts)
+        result.append(possible_content)
+      except pydantic.ValidationError:
+        possible_part = types.Part.model_validate(content)
+        _handle_current_part(result, accumulated_parts, possible_part)
+    elif isinstance(content, types.Part):
+      _handle_current_part(result, accumulated_parts, content)
+    elif isinstance(content, str) or isinstance(content, types.File):
+      _handle_current_part(result, accumulated_parts, content)
+    elif PIL_Image is not None and isinstance(content, PIL_Image):
+      _handle_current_part(result, accumulated_parts, content)
+    elif isinstance(content, list):
+      # if there're consecutive user parts before the list,
+      # convert to UserContent and append to result
+      _append_accumulated_parts_as_content(result, accumulated_parts)
+      # convert the list of parts to a UserContent and append to result
+      result.append(types.UserContent(parts=content))
+    else:
+      raise ValueError(f'Unsupported content type: {type(content)}')
+
+  _append_accumulated_parts_as_content(result, accumulated_parts)
+
+  return result
 
 
 def handle_null_fields(schema: dict[str, Any]):
