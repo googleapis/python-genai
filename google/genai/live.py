@@ -20,7 +20,7 @@ import base64
 import contextlib
 import json
 import logging
-from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union
+from typing import Any, AsyncIterator, Dict, Mapping, Optional, Sequence, Union
 
 import google.auth
 from websockets import ConnectionClosed
@@ -62,6 +62,46 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
     'FunctionResponse request must have an `id` field from the'
     ' response of a ToolCall.FunctionalCalls in Google AI.'
 )
+
+def _ClientContent_to_mldev(
+    api_client: ApiClient,
+    from_object: types.LiveClientContent,
+) -> dict:
+  client_content = from_object.model_dump(exclude_none=True, mode='json')
+  client_content['turns'] = [
+      _Content_to_mldev(api_client=api_client, from_object=item)
+      for item in client_content['turns']]
+  return client_content
+
+def _ClientContent_to_vertex(
+    api_client: ApiClient,
+    from_object: types.LiveClientContent,
+) -> dict:
+  client_content = from_object.model_dump(exclude_none=True, mode='json')
+  if 'turns' in client_content:
+    client_content['turns'] = [
+        _Content_to_vertex(api_client=api_client, from_object=item)
+        for item in client_content['turns']] 
+  return client_content
+
+def _ToolResponse_to_mldev(
+    api_client: ApiClient,
+    from_object: types.LiveClientToolResponse,
+) -> dict:
+  tool_response = from_object.model_dump(exclude_none=True, mode='json')
+
+  for item in tool_response['function_responses']:
+    if 'id' not in item:
+      raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
+
+  return tool_response
+
+def _ToolResponse_to_vertex(
+    api_client: ApiClient,
+    from_object: types.LiveClientToolResponse,
+) -> dict:
+  tool_response = from_object.model_dump(exclude_none=True, mode='json')
+  return tool_response
 
 
 class AsyncSession:
@@ -108,6 +148,66 @@ class AsyncSession:
     """
     client_message = self._parse_client_message(input, end_of_turn)
     await self._ws.send(json.dumps(client_message))
+
+
+  async def send_client_content(
+      self,
+      *,
+      input: Union[
+          types.ContentListUnion,
+          types.ContentListUnionDict,
+          types.LiveClientContentOrDict,
+      ],
+  ):
+    """Send client content to the session."""
+    client_content = self._to_client_content(input)
+
+    if self._api_client.vertexai:
+      client_content = _ClientContent_to_vertex(
+          api_client=self._api_client, from_object=client_content
+      )
+    else:
+      client_content = _ClientContent_to_mldev(
+          api_client=self._api_client, from_object=client_content
+      )
+
+    await self._ws.send(json.dumps({"client_content": client_content}))
+
+  async def send_realtime_input(
+      self,
+      *,
+      input: Union[
+          t.BlobListUnion,
+          types.LiveClientRealtimeInputOrDict,
+      ]
+  ):
+    """Send realtime input to the session"""
+    realtime_input = self._to_realtime_input(input)
+    realtime_input = realtime_input.model_dump(exclude_none=True, mode='json')
+    await self._ws.send(json.dumps({"realtime_input": realtime_input}))
+
+  async def send_tool_response(
+      self,
+      *,
+      input: Union[
+          types.FunctionResponseOrDict,
+          Sequence[types.FunctionResponseOrDict],
+          types.LiveClientToolResponseOrDict,
+      ]
+  ):
+    """Send tool response to the session."""
+    tool_response = self._to_tool_response(input)
+    if self._api_client.vertexai:
+      tool_response = _ToolResponse_to_vertex(
+          api_client=self._api_client, from_object=tool_response
+      )
+    else:
+      tool_response = _ToolResponse_to_mldev(
+          api_client=self._api_client, from_object=tool_response
+      )
+    await self._ws.send(json.dumps({"tool_response": tool_response}))
+
+
 
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
     """Receive model responses from the server.
@@ -356,6 +456,7 @@ class AsyncSession:
       )
     return to_object
 
+
   def _parse_client_message(
       self,
       input: Optional[
@@ -494,6 +595,96 @@ class AsyncSession:
       )
 
     return client_message
+
+
+  def _to_client_content(
+      self,
+      input: Optional[
+        Union[
+          types.ContentListUnion,
+          types.ContentListUnionDict,
+          types.LiveClientContentOrDict,
+        ]
+      ],
+  ) -> types.LiveClientContent:
+    if not input:
+      logging.info('No input provided. Assume it is the end of turn.')
+      return types.LiveClientContent(turn_complete=True)
+
+    if isinstance(input, types.LiveClientContent):
+      return input
+
+    if isinstance(input, Mapping):
+      if 'turns' in input or 'turn_complete' in input:
+        return types.LiveClientContent.model_validate(input)
+
+    try:
+      return types.LiveClientContent(
+          turns=t.t_contents(
+              client=self._api_client, contents=input
+          )
+      )
+    except Exception as e:
+      if hasattr(e, 'add_note'):
+        e.add_note(
+          f'Could not convert input (type "{type(input)}") to '
+          f'`types.LiveClientContent`, value: {str(input)[100:]}'
+        )
+      raise e
+
+  def _to_realtime_input(
+      self,
+      input: Union[
+          t.BlobListUnion,
+          types.LiveClientRealtimeInput,
+      ],
+  ) -> types.LiveClientRealtimeInput:
+    if not input:
+      raise ValueError(f'A realtime input is required, got \n{input}')
+
+    if isinstance(input, types.LiveClientRealtimeInput):
+      return input
+
+    if isinstance(input, Mapping):
+      if 'media_chunks' in input:
+        return types.LiveClientRealtimeInput.model_validate(input)
+
+    try:
+      return types.LiveClientRealtimeInput(
+          media_chunks=t.t_blobs(client=self._api_client, blobs=input)
+      )
+    except Exception as e:
+      if hasattr(e, 'add_note'):
+        e.add_note(
+          f'Could not convert input (type "{type(input)}") to '
+          f'`types.LiveClientRealtimeInput`, value: {str(input)[100:]}'
+        )
+      raise e
+
+  def _to_tool_response(
+      self,
+      input: Union[
+          types.FunctionResponseOrDict,
+          Sequence[types.FunctionResponseOrDict],
+          types.LiveClientToolResponseOrDict,
+      ],
+  ) -> types.LiveClientToolResponse:
+    if not input:
+      raise ValueError(f'A tool response is required, got: \n{input}')
+
+    if isinstance(input, types.LiveClientToolResponse):
+      return input
+
+    if isinstance(input, Mapping):
+      if 'function_responses' in input:
+        return types.LiveClientToolResponse.model_validate(input)
+
+    return types.LiveClientToolResponse(
+        function_responses=t.t_function_responses(
+            client=self._api_client, function_responses=input
+        )
+    )
+
 
   async def close(self):
     # Close the websocket connection.

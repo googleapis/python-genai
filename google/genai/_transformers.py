@@ -26,7 +26,7 @@ import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, Optional, Union
+from typing import Any, GenericAlias, Optional, Sequence, Union
 
 import types as builtin_types
 
@@ -239,6 +239,65 @@ def pil_to_blob(img) -> types.Blob:
   data = bytesio.read()
   return types.Blob(mime_type=mime_type, data=data)
 
+
+def t_function_response(
+    client: _api_client.ApiClient,
+    function_response: types.FunctionResponseOrDict,
+) -> types.FunctionResponse:
+  if not function_response:
+    raise ValueError('function_response is required.')
+  return types.FunctionResponse.model_validate(function_response)
+
+def t_function_responses(
+    client: _api_client.ApiClient,
+    function_responses: Union[
+        types.FunctionResponseOrDict,
+        Sequence[types.FunctionResponseOrDict],
+    ],
+) -> list[types.FunctionResponse]:
+  if not function_responses:
+    raise ValueError('function_responses are required.')
+  if isinstance(function_responses, Sequence):
+    return [t_function_response(client, response) for response in function_responses]
+  else:
+    return [t_function_response(client, function_responses)]
+
+BlobUnion = Union[types.Blob, types.BlobDict, 'PIL.Image.Image']
+
+BlobListUnion = Union[BlobUnion, Sequence[BlobUnion]]
+
+def t_blob(client: _api_client.ApiClient, blob: BlobUnion) -> types.Blob:
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
+  if not blob:
+    raise ValueError('blob is required.')
+
+  if isinstance(blob, types.Blob):
+    return blob
+
+  if isinstance(blob, dict):
+    return types.Blob.model_validate(blob)
+
+  if PIL_Image is not None and isinstance(blob, PIL_Image):
+    return pil_to_blob(blob)
+
+  raise TypeError(f'Could not parse input as Blob. Unsupported blob type: {type(blob)}')
+
+
+def t_blobs(
+    client: _api_client.ApiClient, blobs: BlobListUnion
+) -> list[types.Blob]:
+  if not blobs:
+    raise ValueError('blobs are required.')
+  if isinstance(blobs, Sequence):
+    return [t_blob(client, blob) for blob in blobs]
+  else:
+    return [t_blob(client, blobs)]
 
 PartType = Union[types.Part, types.PartDict, str, 'PIL.Image.Image']
 
