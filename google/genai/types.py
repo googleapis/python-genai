@@ -701,12 +701,12 @@ class UserContent(Content):
 
 
   - Create a user Content object with a string:
-    user_content = UserContent("Why is the sky blue?")
+    user_content = UserContent(part="Why is the sky blue?")
   - Create a user Content object with a file data Part object:
-    user_content = UserContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    user_content = UserContent(part=Part.from_uri(file_uril="gs://bucket/file.txt",
     mime_type="text/plain"))
   - Create a user Content object with byte data Part object:
-    user_content = UserContent(Part.from_bytes(data=b"Hello, World!",
+    user_content = UserContent(part=Part.from_bytes(data=b"Hello, World!",
     mime_type="text/plain"))
 
     You can create a user Content object using other classmethods in the Part
@@ -730,12 +730,12 @@ class ModelContent(Content):
   Example usages:
 
   - Create a model Content object with a string:
-    model_content = ModelContent("Why is the sky blue?")
+    model_content = ModelContent(part="Why is the sky blue?")
   - Create a model Content object with a file data Part object:
-    model_content = ModelContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    model_content = ModelContent(part=Part.from_uri(file_uril="gs://bucket/file.txt",
     mime_type="text/plain"))
   - Create a model Content object with byte data Part object:
-    model_content = ModelContent(Part.from_bytes(data=b"Hello, World!",
+    model_content = ModelContent(part=Part.from_bytes(data=b"Hello, World!",
     mime_type="text/plain"))
 
     You can create a model Content object using other classmethods in the Part
