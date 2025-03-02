@@ -278,7 +278,7 @@ def test_chat_with_invalid_content(mock_generate_content_invalid_content):
   chat.send_message('Hello')
 
   expected_comprehensive_history = [
-      types.Content(role='user', parts=[types.Part.from_text(text='Hello')]),
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
       types.Content(
           parts=[types.Part(text='')],
           role='model',
@@ -296,7 +296,7 @@ def test_chat_with_empty_content(mock_generate_content_empty_content):
   chat.send_message('Hello')
 
   expected_comprehensive_history = [
-      types.Content(role='user', parts=[types.Part.from_text(text='Hello')]),
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
       types.Content(
           parts=[],
           role='model',
@@ -316,7 +316,7 @@ def test_chat_stream_with_invalid_content(mock_generate_content_stream_invalid_c
     pass
 
   expected_comprehensive_history = [
-      types.Content(role='user', parts=[types.Part.from_text(text='Hello')]),
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
       types.Content(
           parts=[types.Part(text='')],
           role='model',
@@ -336,7 +336,7 @@ def test_chat_stream_with_empty_content(mock_generate_content_stream_empty_conte
     pass
 
   expected_comprehensive_history = [
-      types.Content(role='user', parts=[types.Part.from_text(text='Hello')]),
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
       types.Content(
           parts=[],
           role='model',
