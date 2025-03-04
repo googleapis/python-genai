@@ -579,7 +579,7 @@ class ApiClient:
       http_method: str,
       path: str,
       request_dict: dict[str, object],
-      http_options: Optional[HttpOptionsDict] = None,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> dict[str, object]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options

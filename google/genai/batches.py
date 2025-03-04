@@ -684,7 +684,7 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -753,7 +753,7 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -866,7 +866,7 @@ class Batches(_api_module.BaseModule):
       )
 
     return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -941,7 +941,7 @@ class Batches(_api_module.BaseModule):
       )
 
     return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1059,7 +1059,7 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1128,7 +1128,7 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1241,7 +1241,7 @@ class AsyncBatches(_api_module.BaseModule):
       )
 
     return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1316,7 +1316,7 @@ class AsyncBatches(_api_module.BaseModule):
       )
 
     return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value

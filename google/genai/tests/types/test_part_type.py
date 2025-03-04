@@ -18,6 +18,11 @@ import pytest
 from ... import types
 
 
+@pytest.fixture
+def generate_content_response():
+  return types.GenerateContentResponse()
+
+
 def test_candidate_empty_text():
   response = types.GenerateContentResponse()
   assert response.text is None
@@ -46,29 +51,33 @@ def test_content_empty_parts_text():
   assert response.text is None
 
 
-def test_two_candidates_text():
-  response = types.GenerateContentResponse(
-      candidates=[
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(text='Hello1'),
-                      types.Part(text='World1'),
-                  ]
-              )
-          ),
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(text='Hello2'),
-                      types.Part(text='World2'),
-                  ]
-              )
-          ),
-      ]
-  )
+def test_two_candidates_text(caplog, generate_content_response):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(text='Hello1'),
+                  types.Part(text='World1'),
+              ]
+          )
+      ),
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(text='Hello2'),
+                  types.Part(text='World2'),
+              ]
+          )
+      ),
+  ]
 
-  assert response.text == 'Hello1World1'
+  assert generate_content_response.text == 'Hello1World1'
+  assert any(
+      record.levelname == 'WARNING'
+      and 'there are 2 candidates' in record.message
+      for record in caplog.records
+  )
+  generate_content_response.candidates = None
 
 
 def test_1_candidate_text():
@@ -191,39 +200,45 @@ def test_none_empty_text():
   assert response.text == ''
 
 
-def test_non_text_part_text():
-  response = types.GenerateContentResponse(
-      candidates=[
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(function_call=types.FunctionCall()),
-                  ]
-              )
-          ),
-      ]
+def test_non_text_part_text(caplog, generate_content_response):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(function_call=types.FunctionCall()),
+              ]
+          )
+      ),
+  ]
+
+  assert generate_content_response.text is None
+  assert any(
+      record.levelname == 'WARNING'
+      and 'there are non-text parts in the response' in record.message
+      for record in caplog.records
   )
-
-  with pytest.raises(ValueError):
-    response.text
+  generate_content_response.candidates = None
 
 
-def test_non_text_part_and_text_part_text():
-  response = types.GenerateContentResponse(
-      candidates=[
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(function_call=types.FunctionCall()),
-                      types.Part(text='World1'),
-                  ]
-              )
-          ),
-      ]
+def test_non_text_part_and_text_part_text(caplog, generate_content_response):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(function_call=types.FunctionCall()),
+                  types.Part(text='World1'),
+              ]
+          )
+      ),
+  ]
+
+  assert generate_content_response.text == 'World1'
+  assert not any(
+      record.levelname == 'WARNING'
+      and 'there are no text parts in the response' in record.message
+      for record in caplog.records
   )
-
-  with pytest.raises(ValueError):
-    response.text
+  generate_content_response.candidates = None
 
 
 def test_candidates_none_function_calls():
@@ -257,38 +272,42 @@ def test_parts_empty_function_calls():
   assert response.function_calls is None
 
 
-def test_multiple_candidates_function_calls():
-  response = types.GenerateContentResponse(
-      candidates=[
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(
-                          function_call=types.FunctionCall.model_validate({
-                              'args': {'key1': 'value1'},
-                              'name': 'funcCall1',
-                          })
-                      )
-                  ]
-              )
-          ),
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(
-                          function_call=types.FunctionCall.model_validate({
-                              'args': {'key2': 'value2'},
-                              'name': 'funcCall2',
-                          })
-                      )
-                  ]
-              )
-          ),
-      ]
-  )
-  assert response.function_calls == [
+def test_multiple_candidates_function_calls(caplog, generate_content_response):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(
+                      function_call=types.FunctionCall.model_validate({
+                          'args': {'key1': 'value1'},
+                          'name': 'funcCall1',
+                      })
+                  )
+              ]
+          )
+      ),
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(
+                      function_call=types.FunctionCall.model_validate({
+                          'args': {'key2': 'value2'},
+                          'name': 'funcCall2',
+                      })
+                  )
+              ]
+          )
+      ),
+  ]
+  assert generate_content_response.function_calls == [
       types.FunctionCall(name='funcCall1', args={'key1': 'value1'})
   ]
+  assert any(
+      record.levelname == 'WARNING'
+      and 'there are multiple candidates in the response' in record.message
+      for record in caplog.records
+  )
+  generate_content_response.candidates = None
 
 
 def test_multiple_function_calls():
@@ -356,36 +375,39 @@ def test_executable_code_empty_parts():
   assert response.executable_code is None
 
 
-def test_executable_code_two_candidates():
-  response = types.GenerateContentResponse(
-      candidates=[
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(
-                          executable_code=types.ExecutableCode(
-                              code='print("hello")', language='PYTHON'
-                          )
+def test_executable_code_two_candidates(caplog, generate_content_response):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(
+                      executable_code=types.ExecutableCode(
+                          code='print("hello")', language='PYTHON'
                       )
-                  ]
-              )
-          ),
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(
-                          executable_code=types.ExecutableCode(
-                              code='print("world")', language='PYTHON'
-                          )
+                  )
+              ]
+          )
+      ),
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(
+                      executable_code=types.ExecutableCode(
+                          code='print("world")', language='PYTHON'
                       )
-                  ]
-              )
-          ),
-      ]
+                  )
+              ]
+          )
+      ),
+  ]
+
+  assert generate_content_response.executable_code == 'print("hello")'
+  assert any(
+      record.levelname == 'WARNING'
+      and 'there are multiple candidates in the response' in record.message
+      for record in caplog.records
   )
-
-  assert response.executable_code == 'print("hello")'
-
+  generate_content_response.candidates = None
 
 def test_executable_code_one_candidate():
   response = types.GenerateContentResponse(
@@ -427,35 +449,39 @@ def test_code_execution_result_empty_parts():
   assert response.code_execution_result is None
 
 
-def test_code_execution_result_two_candidates():
-  response = types.GenerateContentResponse(
-      candidates=[
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(
-                          code_execution_result=types.CodeExecutionResult(
-                              outcome='OUTCOME_OK', output='"hello"'
-                          )
+def test_code_execution_result_two_candidates(caplog, generate_content_response):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(
+                      code_execution_result=types.CodeExecutionResult(
+                          outcome='OUTCOME_OK', output='"hello"'
                       )
-                  ]
-              )
-          ),
-          types.Candidate(
-              content=types.Content(
-                  parts=[
-                      types.Part(
-                          code_execution_result=types.CodeExecutionResult(
-                              outcome='OUTCOME_ERROR', output='"world"'
-                          )
+                  )
+              ]
+          )
+      ),
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(
+                      code_execution_result=types.CodeExecutionResult(
+                          outcome='OUTCOME_ERROR', output='"world"'
                       )
-                  ]
-              )
-          ),
-      ]
-  )
+                  )
+              ]
+          )
+      ),
+  ]
 
-  assert response.code_execution_result == '"hello"'
+  assert generate_content_response.code_execution_result == '"hello"'
+  assert any (
+      record.levelname == 'WARNING'
+      and 'there are multiple candidates in the response' in record.message
+      for record in caplog.records
+  )
+  generate_content_response.candidates = None
 
 
 def test_code_execution_result_one_candidate():

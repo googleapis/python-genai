@@ -1249,7 +1249,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1319,7 +1319,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1393,7 +1393,7 @@ class Caches(_api_module.BaseModule):
       )
 
     return_value = types.DeleteCachedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1468,7 +1468,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1538,7 +1538,7 @@ class Caches(_api_module.BaseModule):
       )
 
     return_value = types.ListCachedContentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1635,7 +1635,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1706,7 +1706,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1781,7 +1781,7 @@ class AsyncCaches(_api_module.BaseModule):
       )
 
     return_value = types.DeleteCachedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1856,7 +1856,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -1926,7 +1926,7 @@ class AsyncCaches(_api_module.BaseModule):
       )
 
     return_value = types.ListCachedContentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model
+        response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
     return return_value

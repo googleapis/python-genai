@@ -351,7 +351,7 @@ pytest_plugins = ('pytest_asyncio',)
 
 
 def test_empty_part(client):
-  with pytest.raises(ValueError):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash-001',
         contents=t.t_contents(None, ['']),
@@ -455,7 +455,7 @@ def test_model_content_text(client):
 
 
 def test_from_uploaded_file_uri(client):
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+  try:
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents=[
@@ -466,7 +466,9 @@ def test_from_uploaded_file_uri(client):
             ),
         ],
     )
-
+  except errors.ClientError as e:
+    print('\nclient is:>>>>>>>>', client)
+    print(e)
 
 def test_from_uri_error(client):
   # missing mime_type

@@ -2513,7 +2513,7 @@ def test_model_content_from_string():
       parts=[types.Part(text='why is the sky blue?')],
   )
 
-  actual_model_content = types.ModelContent(parts='why is the sky blue?')
+  actual_model_content = types.ModelContent('why is the sky blue?')
 
   assert expected_model_content.model_dump_json(
       exclude_none=True
@@ -2522,26 +2522,26 @@ def test_model_content_from_string():
 
 def test_model_content_unsupported_type():
   with pytest.raises(ValueError):
-    types.ModelContent(parts=123)
+    types.ModelContent(123)
 
 
 def test_model_content_empty_list():
   with pytest.raises(ValueError):
-    types.ModelContent(parts=[])
+    types.ModelContent([])
 
 
 def test_model_content_unsupported_type_in_list():
   with pytest.raises(ValueError):
-    types.ModelContent(parts=['hi', 123])
+    types.ModelContent(['hi', 123])
 
 
 def test_model_content_unsupported_role():
-  with pytest.raises(ValueError):
+  with pytest.raises(TypeError):
     types.ModelContent(role='user', parts=['hi'])
 
 
 def test_model_content_modify_role():
-  model_content = types.ModelContent(parts=['hi'])
+  model_content = types.ModelContent(['hi'])
   with pytest.raises(pydantic.ValidationError):
     model_content.role = 'user'
 
@@ -2551,7 +2551,7 @@ def test_model_content_modify_parts():
       role='model',
       parts=[types.Part(text='hello')],
   )
-  model_content = types.ModelContent(parts=['hi'])
+  model_content = types.ModelContent(['hi'])
   model_content.parts = [types.Part(text='hello')]
 
   assert expected_model_content.model_dump_json(
@@ -2561,11 +2561,11 @@ def test_model_content_modify_parts():
 
 def test_user_content_unsupported_type():
   with pytest.raises(ValueError):
-    types.UserContent(part=123)
+    types.UserContent(123)
 
 
 def test_user_content_modify_role():
-  user_content = types.UserContent(parts=['hi'])
+  user_content = types.UserContent(['hi'])
   with pytest.raises(pydantic.ValidationError):
     user_content.role = 'model'
 
@@ -2575,7 +2575,7 @@ def test_user_content_modify_parts():
       role='user',
       parts=[types.Part(text='hello')],
   )
-  user_content = types.UserContent(parts=['hi'])
+  user_content = types.UserContent(['hi'])
   user_content.parts = [types.Part(text='hello')]
 
   assert expected_user_content.model_dump_json(
@@ -2585,14 +2585,14 @@ def test_user_content_modify_parts():
 
 def test_user_content_empty_list():
   with pytest.raises(ValueError):
-    types.UserContent(parts=[])
+    types.UserContent([])
 
 
 def test_user_content_unsupported_type_in_list():
   with pytest.raises(ValueError):
-    types.UserContent(parts=['hi', 123])
+    types.UserContent(['hi', 123])
 
 
 def test_user_content_unsupported_role():
-  with pytest.raises(ValueError):
+  with pytest.raises(TypeError):
     types.UserContent(role='model', parts=['hi'])

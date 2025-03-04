@@ -1705,3 +1705,114 @@ def test_catch_stack_trace_in_error_handling(client):
     #     }
     # }
     assert e.details == {'code': 400, 'message': '', 'status': 'UNKNOWN'}
+
+
+def test_multiple_strings(client):
+  class SummaryResponses(BaseModel):
+    summary: str
+    person: str
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=[
+          "Summarize Shakespeare's life work in a few sentences",
+          "Summarize Hemingway's life work",
+      ],
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': list[SummaryResponses],
+      },
+  )
+
+  assert 'Shakespeare' in response.text
+  assert 'Hemingway' in response.text
+  assert 'Shakespeare' == response.parsed[0].person
+  assert 'Hemingway' == response.parsed[1].person
+
+
+def test_multiple_parts(client):
+  class SummaryResponses(BaseModel):
+    summary: str
+    person: str
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=[
+          types.Part(
+              text="Summarize Shakespeare's life work in a few sentences"
+          ),
+          types.Part(text="Summarize Hemingway's life work"),
+      ],
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': list[SummaryResponses],
+      },
+  )
+
+  assert 'Shakespeare' in response.text
+  assert 'Hemingway' in response.text
+  assert 'Shakespeare' == response.parsed[0].person
+  assert 'Hemingway' == response.parsed[1].person
+
+
+def test_multiple_function_calls(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=[
+          'What is the weather in Boston?',
+          'What is the stock price of GOOG?',
+          types.Part.from_function_call(
+              name='get_weather',
+              args={'location': 'Boston'},
+          ),
+          types.Part.from_function_call(
+              name='get_stock_price',
+              args={'symbol': 'GOOG'},
+          ),
+          types.Part.from_function_response(
+              name='get_weather',
+              response={'response': 'It is sunny and 100 degrees.'},
+          ),
+          types.Part.from_function_response(
+              name='get_stock_price',
+              response={'response': 'The stock price is $100.'},
+          ),
+      ],
+      config=types.GenerateContentConfig(
+          tools=[
+              types.Tool(
+                  function_declarations=[
+                      types.FunctionDeclaration(
+                          name='get_weather',
+                          description='Get the weather in a city.',
+                          parameters=types.Schema(
+                              type=types.Type.OBJECT,
+                              properties={
+                                  'location': types.Schema(
+                                      type=types.Type.STRING
+                                  )
+                              },
+                          ),
+                      ),
+                      types.FunctionDeclaration(
+                          name='get_stock_price',
+                          description='Get the stock price of a symbol.',
+                          parameters=types.Schema(
+                              type=types.Type.OBJECT,
+                              properties={
+                                  'symbol': types.Schema(
+                                      type=types.Type.STRING
+                                  )
+                              },
+                          ),
+                      ),
+                  ]
+              ),
+          ]
+      ),
+  )
+
+  assert 'Boston' in response.text
+  assert 'sunny' in response.text
+  assert '100 degrees' in response.text
+  assert '$100' in response.text
