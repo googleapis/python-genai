@@ -703,7 +703,7 @@ class UserContent(Content):
   - Create a user Content object with a string:
     user_content = UserContent(parts="Why is the sky blue?")
   - Create a user Content object with a file data Part object:
-    user_content = UserContent(parts=Part.from_uri(file_uril="gs://bucket/file.txt",
+    user_content = UserContent(parts=Part.from_uri(file_uri="gs://bucket/file.txt",
     mime_type="text/plain"))
   - Create a user Content object with byte data Part object:
     user_content = UserContent(parts=Part.from_bytes(data=b"Hello, World!",
