@@ -23,526 +23,71 @@ from ... import types
 
 
 def test_none():
-  with pytest.raises(ValueError) as e:
+  with pytest.raises(ValueError):
     t.t_contents(None, None)
-  assert 'contents are required' in str(e)
 
 
 def test_empty_list():
-  with pytest.raises(ValueError) as e:
+  with pytest.raises(ValueError):
     t.t_contents(None, [])
-  assert 'contents are required' in str(e)
-
-
-def test_string():
-  assert t.t_contents(None, 'hello world') == [
-      types.UserContent(parts=[types.Part(text='hello world')])
-  ]
-
-
-def test_list_of_strings():
-  assert t.t_contents(None, ['hello', 'world']) == [
-      types.UserContent(
-          parts=[
-              types.Part(text='hello'),
-              types.Part(text='world'),
-          ],
-      ),
-  ]
-
-
-def test_part():
-  assert t.t_contents(None, types.Part(text='hello world')) == [
-      types.UserContent(parts=[types.Part(text='hello world')])
-  ]
-
-
-def test_list_of_parts():
-  assert t.t_contents(None, [
-      types.Part(text='hello'),
-      types.Part(text='world'),
-  ]) == [
-      types.UserContent(parts=[
-          types.Part(text='hello'),
-          types.Part(text='world'),
-      ]),
-  ]
 
 
 def test_content():
-  assert t.t_contents(None, types.Content(role='user', parts=[
-      types.Part(text='hello'),
-      types.Part(text='world'),
-  ])) == [
-      types.Content(role='user', parts=[
-          types.Part(text='hello'),
-          types.Part(text='world'),
-      ]),
-  ]
-
-
-def test_list_of_contents():
-  assert t.t_contents(None, [
-      types.Content(role='user', parts=[
-          types.Part(text='hello'),
-      ]),
-      types.Content(role='user', parts=[
-          types.Part(text='world'),
-      ]),
-  ]) == [
-      types.Content(role='user', parts=[
-          types.Part(text='hello'),
-      ]),
-      types.Content(role='user', parts=[
-          types.Part(text='world'),
-      ]),
-  ]
-
-
-def test_part_dict():
-  assert t.t_contents(None, {'text': 'hello world'}) == [
-      types.UserContent(parts=[types.Part(text='hello world')])
-  ]
-
-
-def test_list_of_part_dicts():
   assert t.t_contents(
-      None,
-      [
-          {'text': 'hello'},
-          {'text': 'world'},
-      ],
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(text='hello'),
-              types.Part(text='world'),
-          ]
-      ),
-  ]
+      None, [types.Content(parts=[types.Part(text='test')])]
+  ) == [types.Content(parts=[types.Part(text='test')])]
 
 
 def test_content_dict():
   assert t.t_contents(
-      None,
-      {
-          'role': 'user',
-          'parts': [
-              {'text': 'hello'},
-              {'text': 'world'},
-          ],
-      },
-  ) == [
-      types.Content(
-          role='user',
-          parts=[
-              types.Part(text='hello'),
-              types.Part(text='world'),
-          ],
-      ),
-  ]
+      None, [{'role': 'user', 'parts': [{'text': 'test'}]}]
+  ) == [types.Content(parts=[types.Part(text='test')], role='user')]
 
 
-def test_list_of_content_dicts():
-  assert t.t_contents(
-      None,
-      [
-          {
-              'role': 'user',
-              'parts': [
-                  {'text': 'hello'},
-              ],
-          },
-          {
-              'role': 'user',
-              'parts': [
-                  {'text': 'world'},
-              ],
-          },
-      ],
-  ) == [
-      types.Content(
-          role='user',
-          parts=[
-              types.Part(text='hello'),
-          ],
-      ),
-      types.Content(
-          role='user',
-          parts=[
-              types.Part(text='world'),
-          ],
-      ),
-  ]
+def test_empty_dict():
+  assert t.t_contents(None, {}) == [types.Content()]
 
 
-def test_list_of_part_content_dicts():
-  assert t.t_contents(
-      None,
-      [
-          {'text': 'hello'},
-          {
-              'role': 'user',
-              'parts': [
-                  {'text': 'world'},
-              ],
-          },
-      ],
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(text='hello'),
-          ]
-      ),
-      types.Content(
-          role='user',
-          parts=[
-              types.Part(text='world'),
-          ],
-      ),
-  ]
+def test_invalid_dict():
+  with pytest.raises(pydantic.ValidationError):
+    t.t_contents(None, {'invalid_key': 'test'})
 
 
-def test_list_of_list_of_part_content_dicts():
-  assert t.t_contents(
-      None,
-      [
-          'why is the sky blue?',
-          [
-              'hello',
-              {'text': 'world'},
-          ],
-          [
-              {'text': 'foo'},
-              {'text': 'bar'},
-          ],
-          'what is the weather in Boston?',
-      ],
-  ) == [
-      types.UserContent(parts=[types.Part(text='why is the sky blue?')]),
-      types.UserContent(
-          parts=[
-              types.Part(text='hello'),
-              types.Part(text='world'),
-          ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(text='foo'),
-              types.Part(text='bar'),
-          ]
-      ),
-      types.UserContent(
-          parts=[types.Part(text='what is the weather in Boston?')]
-      ),
-  ]
-
-
-def test_mix_types():
-  assert t.t_contents(
-      None,
-      [
-          'hello',
-          'Gemini',
-          {'role': 'model', 'parts': [{'text': 'hello human'}]},
-          [{'text': 'how do I call you?'}, 'My name is Jack.'],
-          {
-              'role': 'model',
-              'parts': [{'text': 'Hi Jack! You can call me Gemini.'}],
-          },
-          'Hi Gemini, nice to meet you.',
-      ],
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(text='hello'),
-              types.Part(text='Gemini'),
-          ],
-      ),
-      types.Content(
-          role='model',
-          parts=[
-              types.Part(text='hello human'),
-          ],
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(text='how do I call you?'),
-              types.Part(text='My name is Jack.'),
-          ],
-      ),
-      types.Content(
-          role='model',
-          parts=[
-              types.Part(text='Hi Jack! You can call me Gemini.'),
-          ],
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(text='Hi Gemini, nice to meet you.'),
-          ],
-      ),
+def test_text_part():
+  assert t.t_contents(None, [types.Part(text='test')]) == [
+      types.UserContent(parts=[types.Part(text='test')])
   ]
 
 
 def test_function_call_part():
+  function_call = types.FunctionCall(name='test_func', args={'arg1': 'value1'})
   assert t.t_contents(
-      None,
-      [
-          'what is the weather in Boston?',
-          types.UserContent(
-              parts=[
-                  types.Part.from_function_call(
-                      name='get_weather', args={'location': 'Boston'}
-                  ),
-              ]
-          ),
-          types.Part.from_function_response(
-              name='get_weather',
-              response={'weather': 'sunny'},
-          ),
-      ],
+      None, [types.Part(function_call=function_call)]
   ) == [
-      types.UserContent(
+      types.ModelContent(
           parts=[
-              types.Part(text='what is the weather in Boston?'),
+              types.Part(function_call=function_call)
           ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'Boston'}, name='get_weather'
-                  )
-              )
-          ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_response={
-                      'response': {'weather': 'sunny'},
-                      'name': 'get_weather',
-                  }
-              )
-          ]
-      ),
+      )
   ]
 
 
-def test_multiple_function_call_parts():
-  assert t.t_contents(
-      None,
-      [
-          'what is the weather in Boston and New York?',
-          [
-              types.Part.from_function_call(
-                  name='get_weather', args={'location': 'Boston'}
-              ),
-              types.Part.from_function_call(
-                  name='get_weather', args={'location': 'New York'}
-              )
-          ],
-          types.Part.from_function_response(
-              name='get_weather',
-              response={'weather': 'sunny'},
-          ),
-          types.Part.from_function_response(
-              name='get_weather',
-              response={'weather': 'sunny'},
-          ),
-      ],
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(text='what is the weather in Boston and New York?'),
-          ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'Boston'}, name='get_weather'
-                  )
-              ),
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'New York'}, name='get_weather'
-                  )
-              ),
-          ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_response=types.FunctionResponse(
-                      name='get_weather',
-                      response={'weather': 'sunny'},
-                  )
-              ),
-              types.Part(
-                  function_response=types.FunctionResponse(
-                      name='get_weather',
-                      response={'weather': 'sunny'},
-                  )
-              ),
-          ]
-      ),
-  ]
-
-
-def test_multiple_function_call_part_dicts():
-  assert t.t_contents(
-      None,
-      [
-          'what is the weather in Boston and New York?',
-          [
-              {
-                  'function_call': {
-                      'name': 'get_weather',
-                      'args': {'location': 'Boston'},
-                  }
-              },
-              {
-                  'function_call': {
-                      'name': 'get_weather',
-                      'args': {'location': 'New York'},
-                  }
-              },
-          ],
-          {
-              'function_response': {
-                  'name': 'get_weather',
-                  'response': {'weather': 'sunny'},
-              }
-          },
-          {
-              'function_response': {
-                  'name': 'get_weather',
-                  'response': {'weather': 'sunny'},
-              }
-          },
-      ],
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(text='what is the weather in Boston and New York?'),
-          ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args = {'location': 'Boston'}, name='get_weather'
-                  )
-              ),
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'New York'}, name='get_weather'
-                  )
-              ),
-          ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_response=types.FunctionResponse(
-                      name='get_weather',
-                      response={'weather': 'sunny'},
-                  )
-              ),
-              types.Part(
-                  function_response=types.FunctionResponse(
-                      name='get_weather',
-                      response={'weather': 'sunny'},
-                  )
-              ),
-          ]
-        ),
+def test_text_part_dict():
+  assert t.t_contents(None, [{'text': 'test'}]) == [
+      types.UserContent(parts=[types.Part(text='test')])
   ]
 
 
 def test_function_call_part_dict():
   assert t.t_contents(
       None,
-      [
-          'what is the weather in Boston?',
-          [
-              {
-                  'function_call': {
-                      'name': 'get_weather',
-                      'args': {'location': 'Boston'},
-                  }
-              },
-          ],
-          {
-              'function_response': {
-                  'name': 'get_weather',
-                  'response': {'weather': 'sunny'},
-              }
-          },
-      ],
-  ) == [
-      types.UserContent(
-          parts=[types.Part(text='what is the weather in Boston?')]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'Boston'}, name='get_weather'
-                  )
-              )
-          ]
-      ),
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_response=types.FunctionResponse(
-                      name='get_weather',
-                      response={'weather': 'sunny'},
-                  )
-              ),
-          ]
-      ),
-  ]
-
-
-def test_user_content():
-  assert t.t_contents(
-      None,
-      types.UserContent(
-          parts=[
-              types.Part(text='what is the weather in Boston?'),
-          ]
-      ),
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(text='what is the weather in Boston?'),
-          ]
-      ),
-  ]
-
-
-def test_model_content():
-  assert t.t_contents(
-      None,
-      types.ModelContent(
-          parts=[
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'Boston'}, name='get_weather'
-                  )
-              )
-          ]
-      ),
+      [{'function_call': {'name': 'test_func', 'args': {'arg1': 'value1'}}}]
   ) == [
       types.ModelContent(
           parts=[
               types.Part(
                   function_call=types.FunctionCall(
-                      args={'location': 'Boston'}, name='get_weather'
+                      name='test_func', args={'arg1': 'value1'}
                   )
               )
           ]
@@ -550,121 +95,285 @@ def test_model_content():
   ]
 
 
-def test_single_function_call_part():
-  assert t.t_contents(
-      None,
-      types.Part.from_function_call(
-          name='get_weather', args={'location': 'Boston'}
-      ),
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'Boston'}, name='get_weather'
-                  )
-              )
-          ]
-      )
+def test_empty_string():
+  assert t.t_contents(None, '') == [
+      types.UserContent(parts=[types.Part(text='')])
   ]
 
 
-def test_single_function_call_part_dict():
-  assert t.t_contents(
-      None,
-      {
-          'function_call': {
-              'name': 'get_weather',
-              'args': {'location': 'Boston'},
-          }
-      },
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_call=types.FunctionCall(
-                      args={'location': 'Boston'}, name='get_weather'
-                  )
-              )
-          ]
-      )
+def test_string():
+  assert t.t_contents(None, 'test') == [
+      types.UserContent(parts=[types.Part(text='test')])
   ]
 
 
-def test_single_function_response_part():
+def test_file():
   assert t.t_contents(
-      None,
-      types.Part.from_function_response(
-          name='get_weather',
-          response={'weather': 'sunny'},
-      ),
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_response=types.FunctionResponse(
-                      name='get_weather',
-                      response={'weather': 'sunny'},
-                  )
-              ),
-          ]
-      ),
-  ]
-
-
-def test_single_function_response_part_dict():
-  assert t.t_contents(
-      None,
-      {
-          'function_response': {
-              'name': 'get_weather',
-              'response': {'weather': 'sunny'},
-          }
-      },
-  ) == [
-      types.UserContent(
-          parts=[
-              types.Part(
-                  function_response=types.FunctionResponse(
-                      name='get_weather',
-                      response={'weather': 'sunny'},
-                  )
-              ),
-          ]
-      ),
-  ]
-
-
-def test_single_file_part():
-  assert t.t_contents(
-      None,
-      types.File(
-          name='file.txt', mime_type='text/plain', uri='gs://bucket/file.txt'
-      ),
+      None, types.File(uri='gs://test', mime_type='image/png')
   ) == [
       types.UserContent(
           parts=[
               types.Part(
                   file_data=types.FileData(
-                      mime_type='text/plain',
-                      file_uri='gs://bucket/file.txt',
+                      file_uri='gs://test', mime_type='image/png'
+                  )
+              )
+          ]
+      )
+  ]
+
+
+def test_file_no_uri():
+  with pytest.raises(ValueError):
+    t.t_contents(None, types.File(mime_type='image/png'))
+
+
+def test_file_no_mime_type():
+  with pytest.raises(ValueError):
+    t.t_contents(None, types.File(uri='gs://test'))
+
+
+def test_string_list():
+  assert t.t_contents(None, ['test1', 'test2']) == [
+      types.UserContent(parts=[
+          types.Part(text='test1'),
+          types.Part(text='test2'),
+      ])
+  ]
+
+
+def test_file_list():
+  assert t.t_contents(
+      None,
+      [
+          types.File(uri='gs://test1', mime_type='image/png'),
+          types.File(uri='gs://test2', mime_type='image/png'),
+      ],
+  ) == [
+      types.UserContent(
+          parts=[
+              types.Part(
+                  file_data=types.FileData(
+                      file_uri='gs://test1', mime_type='image/png'
                   )
               ),
+              types.Part(
+                  file_data=types.FileData(
+                      file_uri='gs://test2', mime_type='image/png'
+                  )
+              ),
+          ]
+      )
+  ]
+
+
+def test_string_file_list():
+  assert t.t_contents(
+      None,
+      ['test1', types.File(uri='gs://test2', mime_type='image/png')],
+  ) == [
+      types.UserContent(
+          parts=[
+              types.Part(text='test1'),
+              types.Part(
+                  file_data=types.FileData(
+                      file_uri='gs://test2', mime_type='image/png'
+                  )
+              ),
+          ]
+      )
+  ]
+
+
+def test_function_call_list():
+  function_call1 = types.FunctionCall(
+      name='test_func1', args={'arg1': 'value1'}
+  )
+  function_call2 = types.FunctionCall(
+      name='test_func2', args={'arg2': 'value2'}
+  )
+
+  assert t.t_contents(
+      None,
+      [
+          types.Part(function_call=function_call1),
+          types.Part(function_call=function_call2),
+      ],
+  ) == [
+      types.ModelContent(
+          parts=[
+              types.Part(function_call=function_call1),
+              types.Part(function_call=function_call2),
+          ]
+      )
+  ]
+
+
+def test_function_call_function_response_list():
+  question1 = 'question1'
+  question2 = 'question2'
+  function_call1 = types.FunctionCall(
+      name='test_func1', args={'arg1': 'value1'}
+  )
+  function_call2 = types.FunctionCall(
+      name='test_func2', args={'arg2': 'value2'}
+  )
+  function_response1 = types.FunctionResponse(
+      name='test_func1',
+      response={
+          'answer': 'answer1',
+      },
+  )
+  function_response2 = types.FunctionResponse(
+      name='test_func2',
+      response={
+          'answer': 'answer2',
+      },
+  )
+
+  assert t.t_contents(
+      None,
+      [
+          question1,
+          question2,
+          types.Part(function_call=function_call1),
+          {'function_call': function_call2},
+          {'function_response': function_response1},
+          types.Part(function_response=function_response2),
+      ],
+  ) == [
+      types.UserContent(
+          parts=[
+              types.Part(text=question1),
+              types.Part(text=question2),
+          ]
+      ),
+      types.ModelContent(
+          parts=[
+              types.Part(function_call=function_call1),
+              types.Part(function_call=function_call2),
+          ]
+      ),
+      types.UserContent(
+          parts=[
+              types.Part(function_response=function_response1),
+              types.Part(function_response=function_response2),
           ]
       ),
   ]
 
 
-def test_unsupported_int_type():
-  with pytest.raises(pydantic.ValidationError):
-    t.t_contents(None, 123)
+def test_content_list():
+  assert t.t_contents(
+      None,
+      [
+          types.Content(parts=[types.Part(text='test1')]),
+          types.Content(parts=[types.Part(text='test2')]),
+      ],
+  ) == [
+      types.Content(parts=[types.Part(text='test1')]),
+      types.Content(parts=[types.Part(text='test2')]),
+  ]
 
 
-def test_unsupported_dict_type():
-  with pytest.raises(pydantic.ValidationError):
-      t.t_contents(None, 123)
+def test_content_text_part_list():
+  assert t.t_contents(
+      None,
+      [
+          types.Part(text='test1'),
+          types.Part(text='test2'),
+          types.Content(parts=[types.Part(text='test3')]),
+          types.Part(text='test4'),
+      ],
+  ) == [
+      types.UserContent(
+          parts=[
+              types.Part(text='test1'),
+              types.Part(text='test2'),
+          ]
+      ),
+      types.Content(parts=[types.Part(text='test3')]),
+      types.UserContent(parts=[types.Part(text='test4')]),
+  ]
 
 
-def test_unsupported_dict_type():
-  with pytest.raises(pydantic.ValidationError):
-    t.t_contents(None, {'key': 'value'})
+def test_list_of_text_part_list():
+  contents = [
+      'question1',
+      {'function_call': {'name': 'test_func1', 'args': {'arg1': 'value1'}}},
+      types.Part(
+          function_response=types.FunctionResponse(
+              name='test_func1',
+              response={
+                  'answer': 'answer1',
+              },
+          )
+      ),
+      ['context2_1', 'context2_2', types.Part(text='context2_3')],
+      'question2',
+      types.Part(
+          function_call={'name': 'test_func2', 'args': {'arg2': 'value2'}}
+      ),
+      {
+          'function_response': types.FunctionResponse(
+              name='test_func2',
+              response={
+                  'answer': 'answer2',
+              },
+          )
+      },
+  ]
+
+  assert t.t_contents(None, contents) == [
+      types.UserContent(parts='question1'),
+      types.ModelContent(
+          parts=[
+              types.Part(
+                  function_call=types.FunctionCall(
+                      name='test_func1', args={'arg1': 'value1'}
+                  )
+              )
+          ]
+      ),
+      types.UserContent(
+          parts=[
+              types.Part(
+                  function_response=types.FunctionResponse(
+                      name='test_func1',
+                      response={
+                          'answer': 'answer1',
+                      },
+                  )
+              )
+          ]
+      ),
+      types.UserContent(
+          parts=[
+              types.Part(text='context2_1'),
+              types.Part(text='context2_2'),
+              types.Part(text='context2_3'),
+          ]
+      ),
+      types.UserContent(parts=[types.Part(text='question2')]),
+      types.ModelContent(
+          parts=[
+              types.Part(
+                  function_call=types.FunctionCall(
+                      name='test_func2', args={'arg2': 'value2'}
+                  )
+              )
+          ]
+      ),
+      types.UserContent(
+          parts=[
+              types.Part(
+                  function_response=types.FunctionResponse(
+                      name='test_func2',
+                      response={
+                          'answer': 'answer2',
+                      },
+                  )
+              )
+          ]
+      ),
+  ]

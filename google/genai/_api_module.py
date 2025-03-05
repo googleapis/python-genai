@@ -21,7 +21,7 @@ from . import _api_client
 
 class BaseModule:
 
-  def __init__(self, api_client_: _api_client.ApiClient):
+  def __init__(self, api_client_: _api_client.BaseApiClient):
     self._api_client = api_client_
 
   @property

@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,11 @@ import logging
 import re
 import sys
 import time
+import types as builtin_types
 import typing
 from typing import Any, GenericAlias, Optional, Union
+
+import types as builtin_types
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -38,15 +41,15 @@ from . import types
 logger = logging.getLogger('google_genai._transformers')
 
 if sys.version_info >= (3, 10):
-  VersionedUnionType = typing.types.UnionType
-  _UNION_TYPES = (typing.Union, typing.types.UnionType)
+  VersionedUnionType = builtin_types.UnionType
+  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
 else:
   VersionedUnionType = typing._UnionGenericAlias
   _UNION_TYPES = (typing.Union,)
 
 
 def _resource_name(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     resource_name: str,
     *,
     collection_identifier: str,
@@ -138,7 +141,7 @@ def _resource_name(
       return resource_name
 
 
-def t_model(client: _api_client.ApiClient, model: str):
+def t_model(client: _api_client.BaseApiClient, model: str):
   if not model:
     raise ValueError('model is required.')
   if client.vertexai:
@@ -162,7 +165,7 @@ def t_model(client: _api_client.ApiClient, model: str):
       return f'models/{model}'
 
 
-def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
+def t_models_url(api_client: _api_client.BaseApiClient, base_models: bool) -> str:
   if api_client.vertexai:
     if base_models:
       return 'publishers/google/models'
@@ -176,7 +179,7 @@ def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
 
 
 def t_extract_models(
-    api_client: _api_client.ApiClient, response: dict
+    api_client: _api_client.BaseApiClient, response: dict
 ) -> list[types.Model]:
   if not response:
     return []
@@ -197,7 +200,7 @@ def t_extract_models(
     return []
 
 
-def t_caches_model(api_client: _api_client.ApiClient, model: str):
+def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
   model = t_model(api_client, model)
   if not model:
     return None
@@ -213,6 +216,7 @@ def t_caches_model(api_client: _api_client.ApiClient, model: str):
 
 
 def pil_to_blob(img) -> types.Blob:
+  PngImagePlugin: Optional[builtin_types.ModuleType]
   try:
     import PIL.PngImagePlugin
 
@@ -237,7 +241,7 @@ def pil_to_blob(img) -> types.Blob:
 
 
 def t_part(
-    client: _api_client.ApiClient, part: types.PartUnionDict
+    client: _api_client.BaseApiClient, part: Optional[types.PartUnionDict]
 ) -> types.Part:
   try:
     import PIL.Image
@@ -246,7 +250,7 @@ def t_part(
   except ImportError:
     PIL_Image = None
 
-  if not part:
+  if part is None:
     raise ValueError('content part is required.')
   if isinstance(part, str):
     return types.Part(text=part)
@@ -256,19 +260,19 @@ def t_part(
     if not part.uri or not part.mime_type:
       raise ValueError('file uri and mime_type are required.')
     return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)
-  if isinstance(part, types.Part):
-    return part
   if isinstance(part, dict):
     return types.Part.model_validate(part)
-  else:
-    raise ValueError(f'Unsupported part type: {type(part)}')
+  if isinstance(part, types.Part):
+    return part
+  raise ValueError(f'Unsupported content part type: {type(part)}')
 
 
 def t_parts(
-    client: _api_client.ApiClient,
-    parts: Union[list[types.PartUnionDict], types.PartUnionDict],
+    client: _api_client.BaseApiClient,
+    parts: Optional[Union[list[types.PartUnionDict], types.PartUnionDict]],
 ) -> list[types.Part]:
-  if not parts:
+  #
+  if parts is None or (isinstance(parts, list) and not parts):
     raise ValueError('content parts are required.')
   if isinstance(parts, list):
     return [t_part(client, part) for part in parts]
@@ -277,7 +281,7 @@ def t_parts(
 
 
 def t_image_predictions(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     predictions: Optional[Iterable[Mapping[str, Any]]],
 ) -> list[types.GeneratedImage]:
   if not predictions:
@@ -300,10 +304,10 @@ ContentType = Union[types.Content, types.ContentDict, types.PartUnionDict]
 
 
 def t_content(
-    client: _api_client.ApiClient,
-    content: ContentType,
-):
-  if not content:
+    client: _api_client.BaseApiClient,
+    content: Optional[ContentType],
+) -> types.Content:
+  if content is None:
     raise ValueError('content is required.')
   if isinstance(content, types.Content):
     return content
@@ -311,14 +315,23 @@ def t_content(
     try:
       return types.Content.model_validate(content)
     except pydantic.ValidationError:
-      # PartDict
-      return types.UserContent(parts=content)
-  # str, File, Image, Part
+      possible_part = types.Part.model_validate(content)
+      return (
+          types.ModelContent(parts=[possible_part])
+          if possible_part.function_call
+          else types.UserContent(parts=[possible_part])
+      )
+  if isinstance(content, types.Part):
+    return (
+        types.ModelContent(parts=[content])
+        if content.function_call
+        else types.UserContent(parts=[content])
+    )
   return types.UserContent(parts=content)
 
 
 def t_contents_for_embed(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     contents: Union[list[types.Content], list[types.ContentDict], ContentType],
 ):
   if client.vertexai and isinstance(contents, list):
@@ -333,58 +346,102 @@ def t_contents_for_embed(
 
 
 def t_contents(
-    client: _api_client.ApiClient,
-    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+    client: _api_client.BaseApiClient,
+    contents: Optional[
+        Union[types.ContentListUnion, types.ContentListUnionDict]
+    ],
 ) -> list[types.Content]:
-  if not contents:
+  if contents is None or (isinstance(contents, list) and not contents):
     raise ValueError('contents are required.')
   if not isinstance(contents, list):
     return [t_content(client, contents)]
 
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
   result: list[types.Content] = []
-  accumulated_parts: list[types.PartUnionDict] = []
+  accumulated_parts: list[types.Part] = []
+
+  def _is_part(part: types.PartUnionDict) -> bool:
+    if (
+        isinstance(part, str)
+        or isinstance(part, types.File)
+        or (PIL_Image is not None and isinstance(part, PIL_Image))
+        or isinstance(part, types.Part)
+    ):
+      return True
+
+    if isinstance(part, dict):
+      try:
+        types.Part.model_validate(part)
+        return True
+      except pydantic.ValidationError:
+        return False
+
+    return False
+
+  def _is_user_part(part: types.Part) -> bool:
+    return not part.function_call
+
+  def _are_user_parts(parts: list[types.Part]) -> bool:
+    return all(_is_user_part(part) for part in parts)
 
   def _append_accumulated_parts_as_content(
-      result: list[types.Content], accumulated_parts: list[types.PartUnionDict]
+      result: list[types.Content],
+      accumulated_parts: list[types.Part],
   ):
     if not accumulated_parts:
       return
-    result.append(types.UserContent(parts=accumulated_parts))
+    result.append(
+        types.UserContent(parts=accumulated_parts)
+        if _are_user_parts(accumulated_parts)
+        else types.ModelContent(parts=accumulated_parts)
+    )
     accumulated_parts[:] = []
 
-  # iterate over the list, if item is content, append to result
-  # if item is PartUnionDict type, group consecutive PartUnionDict into
-  # a UserContent and append to result.
-  # if item is a list, it can only be a list of PartUnionDict
-  # convert to UserContent and append to result.
-  for content in contents:
-    if isinstance(content, types.Content):
-      _append_accumulated_parts_as_content(
-          result, accumulated_parts
-      )
-      result.append(content)
-    elif isinstance(content, dict):
-      try:
-        possible_part = types.Part.model_validate(content)
-        accumulated_parts.append(possible_part)
-      except pydantic.ValidationError:
-        possible_content = types.Content.model_validate(content)
-        _append_accumulated_parts_as_content(result, accumulated_parts)
-        result.append(possible_content)
-    elif isinstance(content, types.Part):
-      accumulated_parts.append(content)
-    # second level of list can only contain PartUnionDict
-    elif isinstance(content, list):
-      _append_accumulated_parts_as_content(
-          result, accumulated_parts
-      )
-      result.append(types.UserContent(parts=content))
+  def _handle_current_part(
+      result: list[types.Content],
+      accumulated_parts: list[types.Part],
+      current_part: types.PartUnionDict,
+  ):
+    current_part = t_part(client, current_part)
+    if _is_user_part(current_part) == _are_user_parts(accumulated_parts):
+      accumulated_parts.append(current_part)
     else:
-      accumulated_parts.append(content)
+      _append_accumulated_parts_as_content(result, accumulated_parts)
+      accumulated_parts[:] = [current_part]
 
-  _append_accumulated_parts_as_content(
-      result, accumulated_parts
-  )
+  # iterator over contents
+  # if content type or content dict, append to result
+  # if consecutive part(s),
+  #   group consecutive user part(s) to a UserContent
+  #   group consecutive model part(s) to a ModelContent
+  #   append to result
+  # if list, we only accept a list of types.PartUnion
+  for content in contents:
+    if (
+        isinstance(content, types.Content)
+        # only allowed inner list is a list of types.PartUnion
+        or isinstance(content, list)
+    ):
+      _append_accumulated_parts_as_content(result, accumulated_parts)
+      if isinstance(content, list):
+        result.append(types.UserContent(parts=content))
+      else:
+        result.append(content)
+    elif (_is_part(content)): # type: ignore
+      _handle_current_part(result, accumulated_parts, content) # type: ignore
+    elif isinstance(content, dict):
+      # PactDict is already handled in _is_part
+      result.append(types.Content.model_validate(content))
+    else:
+      raise ValueError(f'Unsupported content type: {type(content)}')
+
+  _append_accumulated_parts_as_content(result, accumulated_parts)
 
   return result
 
@@ -450,7 +507,7 @@ def handle_null_fields(schema: dict[str, Any]):
 
 def process_schema(
     schema: dict[str, Any],
-    client: Optional[_api_client.ApiClient] = None,
+    client: Optional[_api_client.BaseApiClient] = None,
     defs: Optional[dict[str, Any]] = None,
     *,
     order_properties: bool = True,
@@ -613,9 +670,9 @@ def process_schema(
 
 
 def _process_enum(
-    enum: EnumMeta, client: Optional[_api_client.ApiClient] = None
+    enum: EnumMeta, client: Optional[_api_client.BaseApiClient] = None  # type: ignore
 ) -> types.Schema:
-  for member in enum:
+  for member in enum:  # type: ignore
     if not isinstance(member.value, str):
       raise TypeError(
           f'Enum member {member.name} value must be a string, got'
@@ -632,7 +689,7 @@ def _process_enum(
 
 
 def t_schema(
-    client: _api_client.ApiClient, origin: Union[types.SchemaUnionDict, Any]
+    client: _api_client.BaseApiClient, origin: Union[types.SchemaUnionDict, Any]
 ) -> Optional[types.Schema]:
   if not origin:
     return None
@@ -678,7 +735,7 @@ def t_schema(
 
 
 def t_speech_config(
-    _: _api_client.ApiClient, origin: Union[types.SpeechConfigUnionDict, Any]
+    _: _api_client.BaseApiClient, origin: Union[types.SpeechConfigUnionDict, Any]
 ) -> Optional[types.SpeechConfig]:
   if not origin:
     return None
@@ -707,7 +764,7 @@ def t_speech_config(
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
 
 
-def t_tool(client: _api_client.ApiClient, origin) -> types.Tool:
+def t_tool(client: _api_client.BaseApiClient, origin) -> types.Tool:
   if not origin:
     return None
   if inspect.isfunction(origin) or inspect.ismethod(origin):
@@ -724,7 +781,7 @@ def t_tool(client: _api_client.ApiClient, origin) -> types.Tool:
 
 # Only support functions now.
 def t_tools(
-    client: _api_client.ApiClient, origin: list[Any]
+    client: _api_client.BaseApiClient, origin: list[Any]
 ) -> list[types.Tool]:
   if not origin:
     return []
@@ -744,11 +801,11 @@ def t_tools(
   return tools
 
 
-def t_cached_content_name(client: _api_client.ApiClient, name: str):
+def t_cached_content_name(client: _api_client.BaseApiClient, name: str):
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(client: _api_client.ApiClient, src: str):
+def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
   if src.startswith('gs://'):
     return types.BatchJobSource(
         format='jsonl',
@@ -763,7 +820,7 @@ def t_batch_job_source(client: _api_client.ApiClient, src: str):
     raise ValueError(f'Unsupported source: {src}')
 
 
-def t_batch_job_destination(client: _api_client.ApiClient, dest: str):
+def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
   if dest.startswith('gs://'):
     return types.BatchJobDestination(
         format='jsonl',
@@ -778,7 +835,7 @@ def t_batch_job_destination(client: _api_client.ApiClient, dest: str):
     raise ValueError(f'Unsupported destination: {dest}')
 
 
-def t_batch_job_name(client: _api_client.ApiClient, name: str):
+def t_batch_job_name(client: _api_client.BaseApiClient, name: str):
   if not client.vertexai:
     return name
 
@@ -797,7 +854,7 @@ LRO_POLLING_TIMEOUT_SECONDS = 900.0
 LRO_POLLING_MULTIPLIER = 1.5
 
 
-def t_resolve_operation(api_client: _api_client.ApiClient, struct: dict):
+def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
   if (name := struct.get('name')) and '/operations/' in name:
     operation: dict[str, Any] = struct
     total_seconds = 0.0
@@ -806,7 +863,7 @@ def t_resolve_operation(api_client: _api_client.ApiClient, struct: dict):
       if total_seconds > LRO_POLLING_TIMEOUT_SECONDS:
         raise RuntimeError(f'Operation {name} timed out.\n{operation}')
       # TODO(b/374433890): Replace with LRO module once it's available.
-      operation: dict[str, Any] = api_client.request(
+      operation = api_client.request(
           http_method='GET', path=name, request_dict={}
       )
       time.sleep(delay_seconds)
@@ -826,7 +883,7 @@ def t_resolve_operation(api_client: _api_client.ApiClient, struct: dict):
 
 
 def t_file_name(
-    api_client: _api_client.ApiClient, name: Union[str, types.File]
+    api_client: _api_client.BaseApiClient, name: Optional[Union[str, types.File]]
 ):
   # Remove the files/ prefix since it's added to the url path.
   if isinstance(name, types.File):
@@ -848,7 +905,7 @@ def t_file_name(
 
 
 def t_tuning_job_status(
-    api_client: _api_client.ApiClient, status: str
+    api_client: _api_client.BaseApiClient, status: str
 ) -> types.JobState:
   if status == 'STATE_UNSPECIFIED':
     return 'JOB_STATE_UNSPECIFIED'
@@ -866,7 +923,7 @@ def t_tuning_job_status(
 # We shouldn't use this transformer if the backend adhere to Cloud Type
 # format https://cloud.google.com/docs/discovery/type-format.
 # TODO(b/389133914,b/390320301): Remove the hack after backend fix the issue.
-def t_bytes(api_client: _api_client.ApiClient, data: bytes) -> str:
+def t_bytes(api_client: _api_client.BaseApiClient, data: bytes) -> str:
   if not isinstance(data, bytes):
     return data
   return base64.b64encode(data).decode('ascii')

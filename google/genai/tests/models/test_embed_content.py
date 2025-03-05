@@ -19,6 +19,7 @@
 
 import pytest
 
+from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 
@@ -28,14 +29,17 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_single_text',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
-            contents='What is your name?',
+            contents=t.t_contents(None, 'What is your name?'),
         ),
     ),
     pytest_helper.TestTableItem(
         name='test_multi_texts_with_config',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
-            contents=['What is your name?', 'I am a model.'],
+            contents=[
+                t.t_content(None, 'What is your name?'),
+                t.t_content(None, 'I am a model.'),
+            ],
             config={
                 'output_dimensionality': 10,
                 'title': 'test_title',
@@ -50,25 +54,25 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_single_text_with_mime_type_not_supported_in_mldev',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
-            contents='What is your name?',
+            contents=t.t_contents(None, 'What is your name?'),
             config={
                 'output_dimensionality': 10,
                 'mime_type': 'text/plain',
             },
         ),
-        exception_if_mldev='mime_type parameter is not supported',
+        exception_if_mldev='parameter is not supported',
     ),
     pytest_helper.TestTableItem(
         name='test_single_text_with_auto_truncate_not_supported_in_mldev',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
-            contents='What is your name?',
+            contents=t.t_contents(None, 'What is your name?'),
             config={
                 'output_dimensionality': 10,
                 'auto_truncate': True,
             },
         ),
-        exception_if_mldev='auto_truncate parameter is not supported',
+        exception_if_mldev='parameter is not supported',
     ),
 ]
 

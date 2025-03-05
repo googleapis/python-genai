@@ -163,12 +163,18 @@ contents=[
 
 ### System Instructions and Other Configs
 
+The output of the model can be influenced by several optional settings
+available in generate_content's config parameter. For example, the
+variability and length of the output can be influenced by the temperature
+and max_output_tokens respectively.
+
 ```python
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='high',
     config=types.GenerateContentConfig(
         system_instruction='I say high, you say low',
+        max_output_tokens=3,
         temperature=0.3,
     ),
 )

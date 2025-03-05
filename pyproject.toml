@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "google-genai"
-version = "1.2.0"
+version = "1.4.0"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -42,3 +42,4 @@ packages = [
     "google",
     "google.genai",
 ]
+include-package-data = true

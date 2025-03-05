@@ -31,12 +31,12 @@ else:
   VersionedUnionType = typing._UnionGenericAlias
 
 _py_builtin_type_to_schema_type = {
-    str: 'STRING',
-    int: 'INTEGER',
-    float: 'NUMBER',
-    bool: 'BOOLEAN',
-    list: 'ARRAY',
-    dict: 'OBJECT',
+    str: types.Type.STRING,
+    int: types.Type.INTEGER,
+    float: types.Type.NUMBER,
+    bool: types.Type.BOOLEAN,
+    list: types.Type.ARRAY,
+    dict: types.Type.OBJECT,
 }
 
 
@@ -145,7 +145,7 @@ def _parse_schema_from_parameter(
           for arg in get_args(param.annotation)
       )
   ):
-    schema.type = 'OBJECT'
+    schema.type = _py_builtin_type_to_schema_type[dict]
     schema.any_of = []
     unique_types = set()
     for arg in get_args(param.annotation):
@@ -183,7 +183,7 @@ def _parse_schema_from_parameter(
     origin = get_origin(param.annotation)
     args = get_args(param.annotation)
     if origin is dict:
-      schema.type = 'OBJECT'
+      schema.type = _py_builtin_type_to_schema_type[dict]
       if param.default is not inspect.Parameter.empty:
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
@@ -195,7 +195,7 @@ def _parse_schema_from_parameter(
         raise ValueError(
             f'Literal type {param.annotation} must be a list of strings.'
         )
-      schema.type = 'STRING'
+      schema.type = _py_builtin_type_to_schema_type[str]
       schema.enum = list(args)
       if param.default is not inspect.Parameter.empty:
         if not _is_default_value_compatible(param.default, param.annotation):
@@ -204,7 +204,7 @@ def _parse_schema_from_parameter(
       _raise_if_schema_unsupported(api_option, schema)
       return schema
     if origin is list:
-      schema.type = 'ARRAY'
+      schema.type = _py_builtin_type_to_schema_type[list]
       schema.items = _parse_schema_from_parameter(
           api_option,
           inspect.Parameter(
@@ -222,7 +222,7 @@ def _parse_schema_from_parameter(
       return schema
     if origin is Union:
       schema.any_of = []
-      schema.type = 'OBJECT'
+      schema.type = _py_builtin_type_to_schema_type[dict]
       unique_types = set()
       for arg in args:
         # The first check is for NoneType in Python 3.9, since the __name__
@@ -280,7 +280,7 @@ def _parse_schema_from_parameter(
         and param.default is not None
     ):
       schema.default = param.default
-    schema.type = 'OBJECT'
+    schema.type = _py_builtin_type_to_schema_type[dict]
     schema.properties = {}
     for field_name, field_info in param.annotation.model_fields.items():
       schema.properties[field_name] = _parse_schema_from_parameter(

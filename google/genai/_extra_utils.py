@@ -76,7 +76,7 @@ def get_function_map(
       if config and isinstance(config, dict)
       else config
   )
-  function_map = {}
+  function_map: dict[str, object] = {}
   if not config_model:
     return function_map
   if config_model.tools:
@@ -220,15 +220,16 @@ def get_function_response_parts(
     func_name = part.function_call.name
     func = function_map[func_name]
     args = convert_number_values_for_function_call_args(part.function_call.args)
+    func_response: dict[str, Any]
     try:
-      response = {'result': invoke_function_from_dict_args(args, func)}
+      func_response = {'result': invoke_function_from_dict_args(args, func)}
     except Exception as e:  # pylint: disable=broad-except
-      response = {'error': str(e)}
-    func_response = types.Part.from_function_response(
-        name=func_name, response=response
+      func_response = {'error': str(e)}
+    func_response_part = types.Part.from_function_response(
+        name=func_name, response=func_response
     )
 
-    func_response_parts.append(func_response)
+    func_response_parts.append(func_response_part)
   return func_response_parts
 
 

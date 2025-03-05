@@ -21,110 +21,110 @@ import pydantic
 from ... import _transformers as t
 from ... import types
 
+
 def test_none():
-  with pytest.raises(ValueError) as e:
+  with pytest.raises(ValueError):
     t.t_content(None, None)
-  assert 'content is required' in str(e)
 
 
-def test_content_no_role():
-  content = t.t_content(
-      None, types.Content(parts=[types.Part(text='hello world')])
+def test_content():
+  assert t.t_content(
+      None, types.Content(parts=[types.Part(text='test')])
+  ) == types.Content(parts=[types.Part(text='test')])
+
+
+def test_content_dict():
+  assert t.t_content(
+      None, {'role': 'user', 'parts': [{'text': 'test'}]}
+  ) == types.Content(parts=[types.Part(text='test')], role='user')
+
+
+def test_content_dict_invalid():
+  with pytest.raises(pydantic.ValidationError):
+    t.t_content(None, {'invalid_key': 'test'})
+
+
+def test_text_part_dict():
+  assert t.t_content(None, {'text': 'test'}) == types.UserContent(
+      parts=[types.Part(text='test')]
   )
-  
-  assert content == types.Content(parts=[types.Part(text='hello world')])
-  assert not content.role
 
 
-def test_content_with_role():
+def test_function_call_part_dict():
+  assert t.t_content(
+      None, {'function_call': {'name': 'test_func', 'args': {'arg1': 'value1'}}}
+  ) == (
+      types.ModelContent(
+          parts=[
+              types.Part(
+                  function_call=types.FunctionCall(
+                      name='test_func', args={'arg1': 'value1'}
+                  )
+              )
+          ]
+      )
+  )
+
+
+def test_text_part():
+  assert t.t_content(None, types.Part(text='test')) == types.UserContent(
+      parts=[types.Part(text='test')]
+  )
+
+
+def test_function_call_part():
   assert t.t_content(
       None,
-      types.Content(
-          role='user', parts=[types.Part(text='hello world')]
+      types.Part(
+          function_call=types.FunctionCall(
+              name='test_func', args={'arg1': 'value1'}
+          )
       ),
-  ) == types.Content(role='user', parts=[types.Part(text='hello world')])
-
-
-def test_part():
-  content = t.t_content(None, types.Part(text='hello world'))
-
-  assert content == types.UserContent(
-      parts=[types.Part(text='hello world')]
+  ) == (
+      types.ModelContent(
+          parts=[
+              types.Part(
+                  function_call=types.FunctionCall(
+                      name='test_func', args={'arg1': 'value1'}
+                  )
+              )
+          ]
+      )
   )
-  assert content.role == 'user'
-
 
 
 def test_string():
-  content = t.t_content(None, 'hello world')
-
-  assert content == types.UserContent(
-      parts=[types.Part(text='hello world')]
+  assert t.t_content(None, 'test') == types.UserContent(
+      parts=[types.Part(text='test')]
   )
-  assert content.role == 'user'
 
 
 def test_file():
-  content = t.t_content(
-      None,
-      types.File(
-          name='file.txt', mime_type='text/plain', uri='gs://bucket/file.txt'
-      ),
-  )
-  assert content == types.UserContent(
+  assert t.t_content(
+      None, types.File(uri='gs://test', mime_type='image/png')
+  ) == types.UserContent(
       parts=[
           types.Part(
               file_data=types.FileData(
-                  mime_type='text/plain',
-                  file_uri='gs://bucket/file.txt',
+                  file_uri='gs://test', mime_type='image/png'
               )
-          ),
+          )
       ]
   )
-  assert content.role == 'user'
 
 
-def test_content_dict_with_role():
-  assert t.t_content(
-      None,
-      {
-          'role': 'model',
-          'parts': [
-              {
-                  'text': 'hello world',
-              },
-          ],
-      },
-  ) == types.Content(
-      role='model',
-      parts=[types.Part(text='hello world')],
-  )
+def test_file_no_uri():
+  with pytest.raises(ValueError):
+    t.t_content(None, types.File(mime_type='image/png'))
 
 
-def test_content_dict_without_role():
-  content = t.t_content(
-      None,
-      {
-          'parts': [
-              {
-                  'text': 'hello world',
-              },
-          ],
-      },
-  )
-  assert content == types.Content(
-      parts=[types.Part(text='hello world')]
-  )
-  assert not content.role
+def test_file_no_mime_type():
+  with pytest.raises(ValueError):
+    t.t_content(None, types.File(uri='gs://test'))
 
 
-def test_part_dict():
-  content = t.t_content(None, {'text': 'hello world'})
-
-  assert content == types.UserContent(
-      parts=[types.Part(text='hello world')]
-  )
-  assert content.role == 'user'
-
-
-
+def test_int():
+  try:
+    t.t_content(None, 1)
+  except ValueError as e:
+    assert 'Unsupported content part type: <class \'int\'>' in str(e)

@@ -18,6 +18,7 @@
 
 import os
 
+import pydantic
 import pytest
 
 from ... import types
@@ -98,6 +99,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'edit_mode': 'EDIT_MODE_INPAINT_INSERTION',
                 'number_of_images': 1,
                 # Test comprehensive configs
+                # aspect_ratio is not supported for mask editing
                 'negative_prompt': 'human',
                 'guidance_scale': 15.0,
                 'safety_filter_level': 'BLOCK_MEDIUM_AND_ABOVE',
@@ -118,6 +120,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             reference_images=[raw_ref_image, mask_ref_image_user_provided],
             config={
                 'edit_mode': 'EDIT_MODE_INPAINT_INSERTION',
+                # aspect_ratio is not supported for mask editing
                 'number_of_images': 1,
                 'include_rai_reason': True,
             },
@@ -132,6 +135,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             reference_images=[raw_ref_image, control_ref_image],
             config={
                 'number_of_images': 1,
+                'aspect_ratio': '9:16',
                 'include_rai_reason': True,
             },
         ),
@@ -145,6 +149,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             reference_images=[style_ref_image_customization],
             config={
                 'number_of_images': 1,
+                'aspect_ratio': '9:16',
                 'include_rai_reason': True,
             },
         ),
@@ -158,6 +163,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             reference_images=[subject_ref_image_customization],
             config={
                 'number_of_images': 1,
+                'aspect_ratio': '9:16',
                 'include_rai_reason': True,
             },
         ),
@@ -170,6 +176,19 @@ pytestmark = pytest_helper.setup(
     test_method='models.edit_image',
     test_table=test_table,
 )
+
+
+def test_setting_reference_type_raises(client):
+  with pytest.raises(pydantic.ValidationError):
+    types._ReferenceImageAPI(
+        reference_id=1,
+        reference_type='REFERENCE_TYPE_SUBJECT',  # user can't set reference_type
+        reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
+        config=types.SubjectReferenceConfig(
+            subject_type='SUBJECT_TYPE_PRODUCT',
+            subject_description='A product logo that is a multi-colored letter G',
+        ),
+    )
 
 
 @pytest.mark.asyncio

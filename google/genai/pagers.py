@@ -18,7 +18,7 @@
 # pylint: disable=protected-access
 
 import copy
-from typing import Any, AsyncIterator, Awaitable, Callable, Generic, Iterator, Literal, TypeVar
+from typing import Any, Awaitable, Callable, Generic, Iterator, Literal, TypeVar
 
 T = TypeVar('T')
 
@@ -33,7 +33,7 @@ class _BasePager(Generic[T]):
   def __init__(
       self,
       name: PagedItem,
-      request: Callable[Any, Any],
+      request: Callable[..., Any],
       response: Any,
       config: Any,
   ):
@@ -191,13 +191,13 @@ class AsyncPager(_BasePager[T]):
   def __init__(
       self,
       name: PagedItem,
-      request: Callable[Any, Awaitable[Any]],
+      request: Callable[..., Awaitable[Any]],
       response: Any,
       config: Any,
   ):
     super().__init__(name, request, response, config)
 
-  def __aiter__(self) -> AsyncIterator[T]:
+  def __aiter__(self) -> T:
     """Returns an async iterator over the items."""
     self._idx = 0
     return self

@@ -16,7 +16,8 @@
 import enum
 
 from pydantic import BaseModel, ValidationError, Field
-from typing import List, Literal, Optional, Union
+from typing import Literal, List, Optional, Union
+from datetime import datetime
 import pytest
 import json
 import logging
@@ -26,7 +27,6 @@ from ... import errors
 from ... import types
 from .. import pytest_helper
 from enum import Enum
-import pydantic
 
 
 safety_settings_with_method = [
@@ -425,6 +425,22 @@ def test_sdk_logger_logs_warnings(client, caplog):
   assert response.text
   assert 'WARNING' in caplog.text
   assert 'there are 2 candidates' in caplog.text
+
+
+def test_response_create_time_and_response_id(client):
+  if client.vertexai:
+    response = client.models.generate_content(
+        model='gemini-2.0-flash',
+        contents='What is your name?',
+        config={
+            'max_output_tokens': 3,
+            'top_k': 2,
+        },
+    )
+    # create_time and response_id are not supported in mldev
+    assert response.create_time
+    assert response.response_id
+    assert isinstance(response.create_time, datetime)
 
 
 def test_safety_settings(client):
@@ -1740,68 +1756,63 @@ def test_multiple_parts(client):
 
 
 def test_multiple_function_calls(client):
-  with pytest_helper.exception_if_mldev(client, errors.ClientError):
-    response = client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents=[
-            'What is the weather in Boston?',
-            'What is the stock price of GOOG?',
-            types.UserContent(
-                parts=[
-                    types.Part.from_function_call(
-                        name='get_weather',
-                        args={'location': 'Boston'},
-                    ),
-                    types.Part.from_function_call(
-                        name='get_stock_price',
-                        args={'symbol': 'GOOG'},
-                    ),
-                ]
-            ),
-            types.Part.from_function_response(
-                name='get_weather',
-                response={'response': 'It is sunny and 100 degrees.'},
-            ),
-            types.Part.from_function_response(
-                name='get_stock_price',
-                response={'response': 'The stock price is $100.'},
-            ),
-        ],
-        config=types.GenerateContentConfig(
-            tools=[
-                types.Tool(
-                    function_declarations=[
-                        types.FunctionDeclaration(
-                            name='get_weather',
-                            description='Get the weather in a city.',
-                            parameters=types.Schema(
-                                type=types.Type.OBJECT,
-                                properties={
-                                    'location': types.Schema(
-                                        type=types.Type.STRING
-                                    )
-                                },
-                            ),
-                        ),
-                        types.FunctionDeclaration(
-                            name='get_stock_price',
-                            description='Get the stock price of a symbol.',
-                            parameters=types.Schema(
-                                type=types.Type.OBJECT,
-                                properties={
-                                    'symbol': types.Schema(
-                                        type=types.Type.STRING
-                                    )
-                                },
-                            ),
-                        ),
-                    ]
-                ),
-            ]
-        ),
-    )
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=[
+          'What is the weather in Boston?',
+          'What is the stock price of GOOG?',
+          types.Part.from_function_call(
+              name='get_weather',
+              args={'location': 'Boston'},
+          ),
+          types.Part.from_function_call(
+              name='get_stock_price',
+              args={'symbol': 'GOOG'},
+          ),
+          types.Part.from_function_response(
+              name='get_weather',
+              response={'response': 'It is sunny and 100 degrees.'},
+          ),
+          types.Part.from_function_response(
+              name='get_stock_price',
+              response={'response': 'The stock price is $100.'},
+          ),
+      ],
+      config=types.GenerateContentConfig(
+          tools=[
+              types.Tool(
+                  function_declarations=[
+                      types.FunctionDeclaration(
+                          name='get_weather',
+                          description='Get the weather in a city.',
+                          parameters=types.Schema(
+                              type=types.Type.OBJECT,
+                              properties={
+                                  'location': types.Schema(
+                                      type=types.Type.STRING
+                                  )
+                              },
+                          ),
+                      ),
+                      types.FunctionDeclaration(
+                          name='get_stock_price',
+                          description='Get the stock price of a symbol.',
+                          parameters=types.Schema(
+                              type=types.Type.OBJECT,
+                              properties={
+                                  'symbol': types.Schema(
+                                      type=types.Type.STRING
+                                  )
+                              },
+                          ),
+                      ),
+                  ]
+              ),
+          ]
+      ),
+  )
 
-    assert 'Boston' in response.text
-    assert 'sunny' in response.text
-    assert '100 degrees' in response.text
-    assert '$100' in response.text
+  assert 'Boston' in response.text
+  assert 'sunny' in response.text
+  assert '100 degrees' in response.text
+  assert '$100' in response.text

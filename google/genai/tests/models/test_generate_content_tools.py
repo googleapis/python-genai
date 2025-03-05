@@ -626,6 +626,7 @@ def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
   assert 'cold' in response.text and 'New York' in response.text
 
 
+# TODO(b/397404656): modify this test to pass in api mode
 def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
   class AnimalObject(pydantic.BaseModel):
     name: str

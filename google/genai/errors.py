@@ -28,11 +28,10 @@ if TYPE_CHECKING:
 class APIError(Exception):
   """General errors raised by the GenAI API."""
   code: int
-  response: requests.Response
+  response: Union[requests.Response, 'ReplayResponse', httpx.Response]
 
   status: Optional[str] = None
   message: Optional[str] = None
-  response: Optional[Any] = None
 
   def __init__(
       self,

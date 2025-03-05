@@ -127,18 +127,14 @@ def test_start_with_models_stream(client):
     assert chunks > 2
 
 
-def test_models_stream_with_empty_string_chunks(client):
+def test_models_stream_with_non_empty_last_chunk(client):
   chunks = list(
       client.models.generate_content_stream(
           model='gemini-1.5-flash',
           contents='Tell me a story in 300 words.',
       )
   )
-  # only vertex ai returns empty string text in the last chunk
-  if client._api_client.vertexai:
-    assert chunks[-1].text == ''
-  else:
-    assert chunks[-1].text
+  assert chunks[-1].text
 
 
 @pytest.mark.asyncio

@@ -21,8 +21,9 @@ import inspect
 import json
 import logging
 import sys
+import types as builtin_types
 import typing
-from typing import Any, Callable, GenericAlias, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union, _UnionGenericAlias
 import pydantic
 from pydantic import Field
 from typing_extensions import TypedDict
@@ -30,11 +31,11 @@ from . import _common
 
 if sys.version_info >= (3, 10):
   # Supports both Union[t1, t2] and t1 | t2
-  VersionedUnionType = Union[typing.types.UnionType, typing._UnionGenericAlias]
-  _UNION_TYPES = (typing.Union, typing.types.UnionType)
+  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
 else:
   # Supports only Union[t1, t2]
-  VersionedUnionType = typing._UnionGenericAlias
+  VersionedUnionType = _UnionGenericAlias
   _UNION_TYPES = (typing.Union,)
 
 _is_pillow_image_imported = False
@@ -73,7 +74,7 @@ class Language(_common.CaseInSensitiveEnum):
 
 
 class Type(_common.CaseInSensitiveEnum):
-  """A basic data type."""
+  """Optional. The type of the data."""
 
   TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
   STRING = 'STRING'
@@ -714,13 +715,12 @@ class UserContent(Content):
   """
 
   role: Literal['user'] = Field(default='user', init=False, frozen=True)
-  parts: list[Part] = Field(init=False)
+  parts: list[Part] = Field()
 
-  @pydantic.field_validator('parts', mode='before')
-  def validate_parts(cls, value):
+  def __init__(self, parts: Union['PartUnionDict', list['PartUnionDict']]):
     from . import _transformers as t
 
-    return t.t_parts(None, parts=value)
+    super().__init__(parts=t.t_parts(None, parts=parts))
 
 
 class ModelContent(Content):
@@ -743,13 +743,12 @@ class ModelContent(Content):
   """
 
   role: Literal['model'] = Field(default='model', init=False, frozen=True)
-  parts: list[Part] = Field(init=False)
+  parts: list[Part] = Field()
 
-  @pydantic.field_validator('parts', mode='before')
-  def validate_parts(cls, value):
+  def __init__(self, parts: Union['PartUnionDict', list['PartUnionDict']]):
     from . import _transformers as t
 
-    return t.t_parts(None, parts=value)
+    super().__init__(parts=t.t_parts(None, parts=parts))
 
 
 class ContentDict(TypedDict, total=False):
@@ -812,17 +811,9 @@ class Schema(_common.BaseModel):
   Represents a select subset of an OpenAPI 3.0 schema object.
   """
 
-  min_items: Optional[int] = Field(
-      default=None,
-      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
-  )
   example: Optional[Any] = Field(
       default=None,
       description="""Optional. Example of the object. Will only populated when the object is the root.""",
-  )
-  property_ordering: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
   )
   pattern: Optional[str] = Field(
       default=None,
@@ -835,7 +826,7 @@ class Schema(_common.BaseModel):
   default: Optional[Any] = Field(
       default=None, description="""Optional. Default value of the data."""
   )
-  any_of: list['Schema'] = Field(
+  any_of: Optional[list['Schema']] = Field(
       default=None,
       description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
   )
@@ -854,24 +845,13 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. Minimum number of the properties for Type.OBJECT.""",
   )
-  max_items: Optional[int] = Field(
-      default=None,
-      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
-  )
   maximum: Optional[float] = Field(
       default=None,
       description="""Optional. Maximum value of the Type.INTEGER and Type.NUMBER""",
   )
-  nullable: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Indicates if the value may be null.""",
-  )
   max_properties: Optional[int] = Field(
       default=None,
       description="""Optional. Maximum number of the properties for Type.OBJECT.""",
-  )
-  type: Optional[Type] = Field(
-      default=None, description="""Optional. The type of the data."""
   )
   description: Optional[str] = Field(
       default=None, description="""Optional. The description of the data."""
@@ -884,17 +864,36 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
   )
-  items: 'Schema' = Field(
+  items: Optional['Schema'] = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
   )
-  properties: dict[str, 'Schema'] = Field(
+  max_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
+  )
+  min_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
+  )
+  nullable: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Indicates if the value may be null.""",
+  )
+  properties: Optional[dict[str, 'Schema']] = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
+  )
+  property_ordering: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
   )
   required: Optional[list[str]] = Field(
       default=None,
       description="""Optional. Required properties of Type.OBJECT.""",
+  )
+  type: Optional[Type] = Field(
+      default=None, description="""Optional. The type of the data."""
   )
 
 
@@ -904,14 +903,8 @@ class SchemaDict(TypedDict, total=False):
   Represents a select subset of an OpenAPI 3.0 schema object.
   """
 
-  min_items: Optional[int]
-  """Optional. Minimum number of the elements for Type.ARRAY."""
-
   example: Optional[Any]
   """Optional. Example of the object. Will only populated when the object is the root."""
-
-  property_ordering: Optional[list[str]]
-  """Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties."""
 
   pattern: Optional[str]
   """Optional. Pattern of the Type.STRING to restrict a string to a regular expression."""
@@ -922,7 +915,7 @@ class SchemaDict(TypedDict, total=False):
   default: Optional[Any]
   """Optional. Default value of the data."""
 
-  any_of: list['SchemaDict']
+  any_of: Optional[list['SchemaDict']]
   """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
 
   max_length: Optional[int]
@@ -937,20 +930,11 @@ class SchemaDict(TypedDict, total=False):
   min_properties: Optional[int]
   """Optional. Minimum number of the properties for Type.OBJECT."""
 
-  max_items: Optional[int]
-  """Optional. Maximum number of the elements for Type.ARRAY."""
-
   maximum: Optional[float]
   """Optional. Maximum value of the Type.INTEGER and Type.NUMBER"""
 
-  nullable: Optional[bool]
-  """Optional. Indicates if the value may be null."""
-
   max_properties: Optional[int]
   """Optional. Maximum number of the properties for Type.OBJECT."""
-
-  type: Optional[Type]
-  """Optional. The type of the data."""
 
   description: Optional[str]
   """Optional. The description of the data."""
@@ -961,14 +945,29 @@ class SchemaDict(TypedDict, total=False):
   format: Optional[str]
   """Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc"""
 
-  items: 'SchemaDict'
+  items: Optional['SchemaDict']
   """Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY."""
 
-  properties: dict[str, 'SchemaDict']
+  max_items: Optional[int]
+  """Optional. Maximum number of the elements for Type.ARRAY."""
+
+  min_items: Optional[int]
+  """Optional. Minimum number of the elements for Type.ARRAY."""
+
+  nullable: Optional[bool]
+  """Optional. Indicates if the value may be null."""
+
+  properties: Optional[dict[str, 'SchemaDict']]
   """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
+
+  property_ordering: Optional[list[str]]
+  """Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties."""
 
   required: Optional[list[str]]
   """Optional. Required properties of Type.OBJECT."""
+
+  type: Optional[Type]
+  """Optional. The type of the data."""
 
 
 SchemaOrDict = Union[Schema, SchemaDict]
@@ -1749,7 +1748,9 @@ ContentUnion = Union[Content, list[PartUnion], PartUnion]
 ContentUnionDict = Union[ContentUnion, ContentDict]
 
 
-SchemaUnion = Union[dict, type, Schema, GenericAlias, VersionedUnionType]
+SchemaUnion = Union[
+    dict, type, Schema, builtin_types.GenericAlias, VersionedUnionType
+]
 
 
 SchemaUnionDict = Union[SchemaUnion, SchemaDict]
@@ -2884,6 +2885,16 @@ class GenerateContentResponse(_common.BaseModel):
       description="""Response variations returned by the model.
       """,
   )
+  create_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Timestamp when the request is made to the server.
+      """,
+  )
+  response_id: Optional[str] = Field(
+      default=None,
+      description="""Identifier for each response.
+      """,
+  )
   model_version: Optional[str] = Field(
       default=None,
       description="""Output only. The model version used to generate the response.""",
@@ -2896,7 +2907,7 @@ class GenerateContentResponse(_common.BaseModel):
       default=None, description="""Usage metadata about the response(s)."""
   )
   automatic_function_calling_history: Optional[list[Content]] = None
-  parsed: Union[pydantic.BaseModel, dict, Enum] = Field(
+  parsed: Optional[Union[pydantic.BaseModel, dict, Enum]] = Field(
       default=None,
       description="""Parsed response if response_schema is provided. Not available for streaming.""",
   )
@@ -2918,20 +2929,24 @@ class GenerateContentResponse(_common.BaseModel):
       )
     text = ''
     any_text_part_text = False
+    non_text_parts = []
     for part in self.candidates[0].content.parts:
       for field_name, field_value in part.model_dump(
           exclude={'text', 'thought'}
       ).items():
         if field_value is not None:
-          raise ValueError(
-              'GenerateContentResponse.text only supports text parts, but got'
-              f' {field_name} part'
-          )
+          non_text_parts.append(field_name)
       if isinstance(part.text, str):
         if isinstance(part.thought, bool) and part.thought:
           continue
         any_text_part_text = True
         text += part.text
+    if non_text_parts:
+      logger.warning(
+          'Warning: there are non-text parts in the response:'
+          f' {non_text_parts},returning concatenated text from text parts,check'
+          ' out the non text parts for full response from model.'
+      )
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
 
@@ -2998,8 +3013,8 @@ class GenerateContentResponse(_common.BaseModel):
   @classmethod
   def _from_response(
       cls, *, response: dict[str, object], kwargs: dict[str, object]
-  ):
-    result = super()._from_response(response, kwargs)
+  ) -> _common.BaseModel:
+    result = super()._from_response(response=response, kwargs=kwargs)
 
     # Handles response schema.
     response_schema = _common.get_value_by_path(
@@ -3008,7 +3023,7 @@ class GenerateContentResponse(_common.BaseModel):
     if (
         inspect.isclass(response_schema)
         and not (
-            isinstance(response_schema, GenericAlias)
+            isinstance(response_schema, builtin_types.GenericAlias)
         )  # Needed for Python 3.9 and 3.10
         and issubclass(response_schema, pydantic.BaseModel)
     ):
@@ -3032,7 +3047,7 @@ class GenerateContentResponse(_common.BaseModel):
           result.parsed = str(response_schema(enum_value).name)
       except ValueError:
         pass
-    elif isinstance(response_schema, GenericAlias) or isinstance(
+    elif isinstance(response_schema, builtin_types.GenericAlias) or isinstance(
         response_schema, type
     ):
 
@@ -3066,7 +3081,7 @@ class GenerateContentResponse(_common.BaseModel):
         if issubclass(union_type, pydantic.BaseModel):
           try:
 
-            class Placeholder(pydantic.BaseModel):
+            class Placeholder(pydantic.BaseModel):  # type: ignore[no-redef]
               placeholder: response_schema
 
             parsed = {'placeholder': json.loads(result.text)}
@@ -3091,6 +3106,14 @@ class GenerateContentResponseDict(TypedDict, total=False):
 
   candidates: Optional[list[CandidateDict]]
   """Response variations returned by the model.
+      """
+
+  create_time: Optional[datetime.datetime]
+  """Timestamp when the request is made to the server.
+      """
+
+  response_id: Optional[str]
+  """Identifier for each response.
       """
 
   model_version: Optional[str]
@@ -3370,6 +3393,11 @@ class GenerateImagesConfig(_common.BaseModel):
       description="""Number of images to generate.
       """,
   )
+  aspect_ratio: Optional[str] = Field(
+      default=None,
+      description="""Aspect ratio of the generated images.
+      """,
+  )
   guidance_scale: Optional[float] = Field(
       default=None,
       description="""Controls how much the model adheres to the text prompt. Large
@@ -3425,11 +3453,6 @@ class GenerateImagesConfig(_common.BaseModel):
       description="""Whether to add a watermark to the generated images.
       """,
   )
-  aspect_ratio: Optional[str] = Field(
-      default=None,
-      description="""Aspect ratio of the generated images.
-      """,
-  )
   enhance_prompt: Optional[bool] = Field(
       default=None,
       description="""Whether to use the prompt rewriting logic.
@@ -3453,6 +3476,10 @@ class GenerateImagesConfigDict(TypedDict, total=False):
 
   number_of_images: Optional[int]
   """Number of images to generate.
+      """
+
+  aspect_ratio: Optional[str]
+  """Aspect ratio of the generated images.
       """
 
   guidance_scale: Optional[float]
@@ -3498,10 +3525,6 @@ class GenerateImagesConfigDict(TypedDict, total=False):
 
   add_watermark: Optional[bool]
   """Whether to add a watermark to the generated images.
-      """
-
-  aspect_ratio: Optional[str]
-  """Aspect ratio of the generated images.
       """
 
   enhance_prompt: Optional[bool]
@@ -3626,7 +3649,8 @@ class Image(_common.BaseModel):
       IPython_display.display(self._pil_image)
 
   @property
-  def _pil_image(self) -> 'PIL_Image.Image':
+  def _pil_image(self) -> 'PIL_Image':
+    PIL_Image: Optional[builtin_types.ModuleType]
     try:
       from PIL import Image as PIL_Image
     except ImportError:
@@ -3895,7 +3919,8 @@ class _ReferenceImageAPI(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   mask_image_config: Optional[MaskReferenceConfig] = Field(
       default=None,
@@ -3925,7 +3950,7 @@ class _ReferenceImageAPIDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   mask_image_config: Optional[MaskReferenceConfigDict]
   """Configuration for the mask reference image."""
@@ -3962,6 +3987,11 @@ class EditImageConfig(_common.BaseModel):
   number_of_images: Optional[int] = Field(
       default=None,
       description="""Number of images to generate.
+      """,
+  )
+  aspect_ratio: Optional[str] = Field(
+      default=None,
+      description="""Aspect ratio of the generated images.
       """,
   )
   guidance_scale: Optional[float] = Field(
@@ -4036,6 +4066,10 @@ class EditImageConfigDict(TypedDict, total=False):
 
   number_of_images: Optional[int]
   """Number of images to generate.
+      """
+
+  aspect_ratio: Optional[str]
+  """Aspect ratio of the generated images.
       """
 
   guidance_scale: Optional[float]
@@ -5080,8 +5114,6 @@ class Video(_common.BaseModel):
   def save(
       self,
       path: str,
-      # *,
-      # client: Optional[ApiClient] = None,
   ) -> None:
     """Saves the video to a file.
 
@@ -5090,15 +5122,10 @@ class Video(_common.BaseModel):
     """
     import pathlib  # pylint: disable=g-import-not-at-top
 
-    if not self.data:
+    if not self.video_bytes:
       raise NotImplementedError('Saving remote videos is not supported.')
-      if not self.uri:
-        raise ValueError('No data or uri provided.')
-      if not client:
-        raise ValueError('Client is required to save remote videos.')
-      self.data = client.files.download(self.uri)
 
-    pathlib.Path(path).write_bytes(self.data)
+    pathlib.Path(path).write_bytes(self.video_bytes)
 
   def show(self):
     """Shows the video.
@@ -8195,19 +8222,17 @@ class RawReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_RAW',
-    )
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_RAW'
+    return values
 
 
 class RawReferenceImageDict(TypedDict, total=False):
@@ -8225,7 +8250,7 @@ class RawReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
 
 RawReferenceImageOrDict = Union[RawReferenceImage, RawReferenceImageDict]
@@ -8251,7 +8276,8 @@ class MaskReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[MaskReferenceConfig] = Field(
       default=None,
@@ -8262,18 +8288,15 @@ class MaskReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['MaskReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_MASK',
-    )
-    self.mask_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['mask_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_MASK'
+    return values
 
 
 class MaskReferenceImageDict(TypedDict, total=False):
@@ -8295,7 +8318,7 @@ class MaskReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[MaskReferenceConfigDict]
   """Configuration for the mask reference image."""
@@ -8324,7 +8347,8 @@ class ControlReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[ControlReferenceConfig] = Field(
       default=None,
@@ -8335,18 +8359,15 @@ class ControlReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['ControlReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_CONTROL',
-    )
-    self.control_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['control_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_CONTROL'
+    return values
 
 
 class ControlReferenceImageDict(TypedDict, total=False):
@@ -8368,7 +8389,7 @@ class ControlReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[ControlReferenceConfigDict]
   """Configuration for the control reference image."""
@@ -8397,7 +8418,8 @@ class StyleReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[StyleReferenceConfig] = Field(
       default=None,
@@ -8408,18 +8430,15 @@ class StyleReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['StyleReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_STYLE',
-    )
-    self.style_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['style_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_STYLE'
+    return values
 
 
 class StyleReferenceImageDict(TypedDict, total=False):
@@ -8439,7 +8458,7 @@ class StyleReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[StyleReferenceConfigDict]
   """Configuration for the style reference image."""
@@ -8466,7 +8485,8 @@ class SubjectReferenceImage(_common.BaseModel):
       default=None, description="""The id of the reference image."""
   )
   reference_type: Optional[str] = Field(
-      default=None, description="""The type of the reference image."""
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
   )
   config: Optional[SubjectReferenceConfig] = Field(
       default=None,
@@ -8477,18 +8497,15 @@ class SubjectReferenceImage(_common.BaseModel):
       default=None, description=""""""
   )
 
-  def __init__(
-      self,
-      reference_image: Optional[Image] = None,
-      reference_id: Optional[int] = None,
-      config: Optional['SubjectReferenceConfig'] = None,
-  ):
-    super().__init__(
-        reference_image=reference_image,
-        reference_id=reference_id,
-        reference_type='REFERENCE_TYPE_SUBJECT',
-    )
-    self.subject_image_config = config
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values):
+    config = values.get('config', None)
+    values['subject_image_config'] = config
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_SUBJECT'
+    return values
 
 
 class SubjectReferenceImageDict(TypedDict, total=False):
@@ -8508,7 +8525,7 @@ class SubjectReferenceImageDict(TypedDict, total=False):
   """The id of the reference image."""
 
   reference_type: Optional[str]
-  """The type of the reference image."""
+  """The type of the reference image. Only set by the SDK."""
 
   config: Optional[SubjectReferenceConfigDict]
   """Configuration for the subject reference image."""
@@ -8729,7 +8746,7 @@ The following fields are supported:
       Note: only text should be used in parts and content in each part will be
       in a separate paragraph.""",
   )
-  tools: Optional[list[Tool]] = Field(
+  tools: Optional[ToolListUnion] = Field(
       default=None,
       description=""" A list of `Tools` the model may use to generate the next response.
 
@@ -8766,7 +8783,7 @@ The following fields are supported:
       Note: only text should be used in parts and content in each part will be
       in a separate paragraph."""
 
-  tools: Optional[list[ToolDict]]
+  tools: Optional[ToolListUnionDict]
   """ A list of `Tools` the model may use to generate the next response.
 
       A `Tool` is a piece of code that enables the system to interact with
@@ -8978,7 +8995,7 @@ class LiveConnectConfig(_common.BaseModel):
       Note: only text should be used in parts and content in each part will be
       in a separate paragraph.""",
   )
-  tools: Optional[list[Tool]] = Field(
+  tools: Optional[ToolListUnion] = Field(
       default=None,
       description="""A list of `Tools` the model may use to generate the next response.
 
@@ -9008,7 +9025,7 @@ class LiveConnectConfigDict(TypedDict, total=False):
       Note: only text should be used in parts and content in each part will be
       in a separate paragraph."""
 
-  tools: Optional[list[ToolDict]]
+  tools: Optional[ToolListUnionDict]
   """A list of `Tools` the model may use to generate the next response.
 
       A `Tool` is a piece of code that enables the system to interact with

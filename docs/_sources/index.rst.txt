@@ -54,7 +54,7 @@ You can create a client by configuring the necessary environmental variables.
 Configuration setup instructions depends on whether the user is using the ML Dev
 Gemini API or the Vertex AI Gemini API.
 
-**ML Dev API:** Set `GOOGLE_API_KEY` as shown below:
+**Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
 
 .. code:: bash
 
@@ -66,34 +66,41 @@ and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 .. code:: bash
 
-    export GOOGLE_GENAI_USE_VERTEXAI=false
+    export GOOGLE_GENAI_USE_VERTEXAI=true
     export GOOGLE_CLOUD_PROJECT='your-project-id'
     export GOOGLE_CLOUD_LOCATION='us-central1'
 
 
-```python
-client = genai.Client()
-```
+.. code:: python
+    
+    client = genai.Client()
+
 
 API Selection
 ^^^^^^^^^^^^^
+
+By default, the SDK uses the beta API endpoints provided by Google to support preview features in the APIs. The stable API endpoints can be selected by setting the API version to `v1`.
 
 To set the API version use ``http_options``. For example, to set the API version to ``v1`` for Vertex AI:
 
 .. code:: python
 
     client = genai.Client(
-        vertexai=True, project='your-project-id', location='us-central1',
-        http_options={'api_version': 'v1'}
+        vertexai=True,
+        project='your-project-id',
+        location='us-central1',
+        http_options=types.HttpOptions(api_version='v1')
     )
 
-To set the API version to `v1alpha` for the Gemini API:
+To set the API version to `v1alpha` for the Gemini Developer API:
 
 .. code:: python
 
     # Only run this block for Gemini Developer API
-    client = genai.Client(api_key='GEMINI_API_KEY',
-                          http_options={'api_version': 'v1alpha'})
+    client = genai.Client(
+        api_key='GEMINI_API_KEY',
+        http_options=types.HttpOptions(api_version='v1alpha')
+    )
 
 
 Types
@@ -180,6 +187,11 @@ instances:
 System Instructions and Other Configs
 -------------------------------------
 
+The output of the model can be influenced by several optional settings
+available in generate_content's config parameter. For example, the
+variability and length of the output can be influenced by the temperature
+and max_output_tokens respectively.
+
 .. code:: python
 
     response = client.models.generate_content(
@@ -187,6 +199,7 @@ System Instructions and Other Configs
         contents='high',
         config=types.GenerateContentConfig(
             system_instruction='I say high, you say low',
+            max_output_tokens=3,
             temperature=0.3,
         ),
     )
@@ -300,6 +313,31 @@ called and responded.
     )
 
     print(response.text)
+
+Disabling automatic function calling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you pass in a python function as a tool directly, and do not want
+automatic function calling, you can disable automatic function calling
+as follows:
+
+.. code:: python
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-001',
+        contents='What is the weather like in Boston?',
+        config=types.GenerateContentConfig(
+            tools=[get_current_weather],
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                disable=True
+            ),
+        ),
+    )
+
+With automatic function calling disabled, you will get a list of function call
+parts in the response:
+
+.. code:: python
+    function_calls: Optional[List[types.FunctionCall]] = response.function_calls
+
 
 Manually declare and invoke a function for function calling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -719,7 +757,6 @@ Support for generate image in Gemini Developer API is behind an allowlist
         model='imagen-3.0-generate-002',
         prompt='An umbrella in the foreground, and a rainy night sky in the background',
         config=types.GenerateImagesConfig(
-            negative_prompt='human',
             number_of_images=1,
             include_rai_reason=True,
             output_mime_type='image/jpeg',
@@ -779,12 +816,41 @@ Edit image is only supported in Vertex AI.
         config=types.EditImageConfig(
             edit_mode='EDIT_MODE_INPAINT_INSERTION',
             number_of_images=1,
-            negative_prompt='human',
             include_rai_reason=True,
             output_mime_type='image/jpeg',
         ),
     )
     response3.generated_images[0].image.show()
+
+Veo
+------
+
+Generate Videos
+~~~~~~~~~~~~~~
+
+Support for generate videos in Vertex and Gemini Developer API is behind an allowlist
+
+.. code:: python
+
+    # Create operation
+    operation = client.models.generate_videos(
+        model='veo-2.0-generate-001',
+        prompt='A neon hologram of a cat driving at top speed',
+        config=types.GenerateVideosConfig(
+            number_of_videos=1,
+            fps=24,
+            duration_seconds=5,
+            enhance_prompt=True,
+        ),
+    )
+
+    # Poll operation
+    while not operation.done:
+        time.sleep(20)
+        operation = client.operations.get(operation)
+
+    video = operation.result.generated_videos[0].video
+    video.show()
 
 Chats
 =====
@@ -1186,6 +1252,21 @@ Delete
 
     delete_job
 
+Error Handling
+==============
+
+To handle errors raised by the model, the SDK provides this [APIError](https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py) class.
+
+.. code:: python
+
+    try:
+        client.models.generate_content(
+            model="invalid-model-name",
+            contents="What is your name?",
+        )
+    except errors.APIError as e:
+        print(e.code) # 404
+        print(e.message)
 
 Reference
 =========
