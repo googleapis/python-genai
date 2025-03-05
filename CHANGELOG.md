@@ -11,7 +11,6 @@
 * Enable minItem, maxItem, nullable for Schema type when calling Gemini API. ([867ce70](https://github.com/googleapis/python-genai/commit/867ce70cf4a7ebd52554af3d494f73fd3cd4f6b6))
 * Implement get history to return comprehensive or curated chat history ([92deda1](https://github.com/googleapis/python-genai/commit/92deda1b86c27c4f93691d4f4056ed64ba84d6a8))
 * Support aspect ratio for edit_image ([5423a58](https://github.com/googleapis/python-genai/commit/5423a58f3abea2b468973c0c071ced6547f6cef1))
-* Support Models.EmbedContent function ([0d689fd](https://github.com/googleapis/python-genai/commit/0d689fd78f7211ea811a5537630f2b2ea19d2807))
 
 
 ### Bug Fixes
