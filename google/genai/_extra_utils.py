@@ -37,6 +37,15 @@ _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 logger = logging.getLogger('google_genai.models')
 
 
+def _create_generate_content_config_model(
+    config: types.GenerateContentConfigOrDict
+) -> types.GenerateContentConfig:
+  if isinstance(config, dict):
+    return types.GenerateContentConfig(**config)
+  else:
+    return config
+
+
 def format_destination(
     src: str,
     config: Optional[types.CreateBatchJobConfigOrDict] = None,
@@ -71,14 +80,10 @@ def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> dict[str, object]:
   """Returns a function map from the config."""
-  config_model = (
-      types.GenerateContentConfig(**config)
-      if config and isinstance(config, dict)
-      else config
-  )
   function_map: dict[str, object] = {}
-  if not config_model:
+  if not config:
     return function_map
+  config_model = _create_generate_content_config_model(config)
   if config_model.tools:
     for tool in config_model.tools:
       if callable(tool):
@@ -214,22 +219,23 @@ def get_function_response_parts(
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []
-  for part in response.candidates[0].content.parts:
-    if not part.function_call:
-      continue
-    func_name = part.function_call.name
-    func = function_map[func_name]
-    args = convert_number_values_for_function_call_args(part.function_call.args)
-    func_response: dict[str, Any]
-    try:
-      func_response = {'result': invoke_function_from_dict_args(args, func)}
-    except Exception as e:  # pylint: disable=broad-except
-      func_response = {'error': str(e)}
-    func_response_part = types.Part.from_function_response(
-        name=func_name, response=func_response
-    )
+  if response.candidates is not None and isinstance(response.candidates[0].content, types.Content) and response.candidates[0].content.parts is not None:
+    for part in response.candidates[0].content.parts:
+      if not part.function_call:
+        continue
+      func_name = part.function_call.name
+      func = function_map[func_name]
+      args = convert_number_values_for_function_call_args(part.function_call.args)
+      func_response: dict[str, Any]
+      try:
+        func_response = {'result': invoke_function_from_dict_args(args, func)}
+      except Exception as e:  # pylint: disable=broad-except
+        func_response = {'error': str(e)}
+      func_response_part = types.Part.from_function_response(
+          name=func_name, response=func_response
+      )
 
-    func_response_parts.append(func_response_part)
+      func_response_parts.append(func_response_part)
   return func_response_parts
 
 
@@ -237,12 +243,9 @@ def should_disable_afc(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:
   """Returns whether automatic function calling is enabled."""
-  config_model = (
-      types.GenerateContentConfig(**config)
-      if config and isinstance(config, dict)
-      else config
-  )
-
+  if not config:
+    return False
+  config_model = _create_generate_content_config_model(config)
   # If max_remote_calls is less or equal to 0, warn and disable AFC.
   if (
       config_model
@@ -261,8 +264,7 @@ def should_disable_afc(
 
   # Default to enable AFC if not specified.
   if (
-      not config_model
-      or not config_model.automatic_function_calling
+      not config_model.automatic_function_calling
       or config_model.automatic_function_calling.disable is None
   ):
     return False
@@ -295,20 +297,17 @@ def should_disable_afc(
 def get_max_remote_calls_afc(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> int:
+  if not config:
+    return _DEFAULT_MAX_REMOTE_CALLS_AFC
   """Returns the remaining remote calls for automatic function calling."""
   if should_disable_afc(config):
     raise ValueError(
         'automatic function calling is not enabled, but SDK is trying to get'
         ' max remote calls.'
     )
-  config_model = (
-      types.GenerateContentConfig(**config)
-      if config and isinstance(config, dict)
-      else config
-  )
+  config_model = _create_generate_content_config_model(config)
   if (
-      not config_model
-      or not config_model.automatic_function_calling
+      not config_model.automatic_function_calling
       or config_model.automatic_function_calling.maximum_remote_calls is None
   ):
     return _DEFAULT_MAX_REMOTE_CALLS_AFC
@@ -318,11 +317,9 @@ def get_max_remote_calls_afc(
 def should_append_afc_history(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:
-  config_model = (
-      types.GenerateContentConfig(**config)
-      if config and isinstance(config, dict)
-      else config
-  )
-  if not config_model or not config_model.automatic_function_calling:
+  if not config:
+    return True
+  config_model = _create_generate_content_config_model(config)
+  if not config_model.automatic_function_calling:
     return True
   return not config_model.automatic_function_calling.ignore_call_history

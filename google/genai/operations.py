@@ -22,7 +22,7 @@ from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import types
-from ._api_client import ApiClient
+from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
@@ -30,7 +30,7 @@ logger = logging.getLogger('google_genai.operations')
 
 
 def _GetOperationParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -49,7 +49,7 @@ def _GetOperationParameters_to_mldev(
 
 
 def _GetOperationParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -68,7 +68,7 @@ def _GetOperationParameters_to_vertex(
 
 
 def _FetchPredictOperationParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -86,7 +86,7 @@ def _FetchPredictOperationParameters_to_mldev(
 
 
 def _FetchPredictOperationParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -108,19 +108,19 @@ def _FetchPredictOperationParameters_to_vertex(
 
 
 def _Video_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
+  if getv(from_object, ['video', 'uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
 
-  if getv(from_object, ['encodedVideo']) is not None:
+  if getv(from_object, ['video', 'encodedVideo']) is not None:
     setv(
         to_object,
         ['video_bytes'],
-        t.t_bytes(api_client, getv(from_object, ['encodedVideo'])),
+        t.t_bytes(api_client, getv(from_object, ['video', 'encodedVideo'])),
     )
 
   if getv(from_object, ['encoding']) is not None:
@@ -130,7 +130,7 @@ def _Video_from_mldev(
 
 
 def _Video_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -152,7 +152,7 @@ def _Video_from_vertex(
 
 
 def _GeneratedVideo_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -168,7 +168,7 @@ def _GeneratedVideo_from_mldev(
 
 
 def _GeneratedVideo_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -184,18 +184,18 @@ def _GeneratedVideo_from_vertex(
 
 
 def _GenerateVideosResponse_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['videos']) is not None:
+  if getv(from_object, ['generatedSamples']) is not None:
     setv(
         to_object,
         ['generated_videos'],
         [
             _GeneratedVideo_from_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['videos'])
+            for item in getv(from_object, ['generatedSamples'])
         ],
     )
 
@@ -217,7 +217,7 @@ def _GenerateVideosResponse_from_mldev(
 
 
 def _GenerateVideosResponse_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -250,7 +250,7 @@ def _GenerateVideosResponse_from_vertex(
 
 
 def _GenerateVideosOperation_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -285,7 +285,7 @@ def _GenerateVideosOperation_from_mldev(
 
 
 def _GenerateVideosOperation_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -359,7 +359,7 @@ class Operations(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -421,7 +421,7 @@ class Operations(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -519,7 +519,7 @@ class AsyncOperations(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -581,7 +581,7 @@ class AsyncOperations(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)

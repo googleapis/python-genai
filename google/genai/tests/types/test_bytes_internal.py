@@ -47,7 +47,7 @@ pytestmark = [pytest.mark.parametrize('use_vertex', [True, False])]
 @pytest.fixture
 def mock_request_method():
   with mock.patch.object(
-      google_genai_api_client_module.ApiClient, 'request'
+      google_genai_api_client_module.BaseApiClient, 'request'
   ) as request_method:
     yield request_method
 

@@ -61,7 +61,7 @@ pytestmark = pytest_helper.setup(
 
 @pytest.fixture()
 def mock_api_client():
-  api_client = mock.MagicMock(spec=genai_client.ApiClient)
+  api_client = mock.MagicMock(spec=genai_client.BaseApiClient)
   api_client.api_key = 'fake_api_key'
   api_client._host = lambda: 'fake_host'
   api_client._http_options = {'headers': {}}

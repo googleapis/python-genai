@@ -56,7 +56,7 @@ def get_current_weather(location: str, unit: str):
 
 @pytest.fixture
 def mock_api_client(vertexai=False):
-  api_client = mock.MagicMock(spec=gl_client.ApiClient)
+  api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
   api_client._host = lambda: 'test_host'
   api_client._http_options = {'headers': {}}  # Ensure headers exist
@@ -87,7 +87,7 @@ def test_mldev_from_env(monkeypatch):
 
   assert not client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.api_key == api_key
-  assert isinstance(client.aio.live._api_client, api_client.ApiClient)
+  assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
 
 
 def test_vertex_from_env(monkeypatch):
@@ -101,12 +101,12 @@ def test_vertex_from_env(monkeypatch):
 
   assert client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.project == project_id
-  assert isinstance(client.aio.live._api_client, api_client.ApiClient)
+  assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
 
 
 def test_websocket_base_url():
   base_url = 'https://test.com'
-  api_client = gl_client.ApiClient(
+  api_client = gl_client.BaseApiClient(
       api_key='google_api_key',
       http_options={'base_url': base_url},
   )

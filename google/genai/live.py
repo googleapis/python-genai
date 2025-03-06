@@ -31,7 +31,7 @@ from . import _transformers as t
 from . import client
 from . import errors
 from . import types
-from ._api_client import ApiClient
+from ._api_client import BaseApiClient
 from ._common import experimental_warning
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
@@ -67,7 +67,9 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 class AsyncSession:
   """AsyncSession. The live module is experimental."""
 
-  def __init__(self, api_client: client.ApiClient, websocket: ClientConnection):
+  def __init__(
+      self, api_client: client.BaseApiClient, websocket: ClientConnection
+  ):
     self._api_client = api_client
     self._ws = websocket
 

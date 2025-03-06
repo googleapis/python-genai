@@ -32,9 +32,6 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=VEO_MODEL_LATEST,
             prompt="Man with a dog",
         ),
-        # MLDev bug: b/388626369
-        # exception_if_mldev="No struct value found",
-        exception_if_mldev="404",  # Mldev temporarily not working.
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_vertex",
@@ -47,7 +44,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                     "gs://unified-genai-tests/tmp/genai/video/outputs"
                 ),
                 fps=30,
-                duration_seconds=5,
+                duration_seconds=6,
                 seed=1,
                 aspect_ratio="16:9",
                 resolution="720p",
@@ -63,12 +60,12 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_mldev",
-        exception_if_mldev="404", # Mldev temporarily not working.
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="A neon hologram of a cat driving at top speed",
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
+                duration_seconds=6,
                 aspect_ratio="16:9",
                 person_generation="allow_adult",
                 negative_prompt="ugly, low quality",
@@ -86,9 +83,6 @@ pytestmark = pytest_helper.setup(
 
 
 def test_text_to_video_poll(client):
-  if not client.vertexai:
-    # Temporarily skip mldev tests.
-    return
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
       prompt="A neon hologram of a cat driving at top speed",
@@ -96,8 +90,6 @@ def test_text_to_video_poll(client):
           output_gcs_uri="gs://unified-genai-tests/tmp/genai/video/outputs"
           if client.vertexai
           else None,
-          # MLDev fails when no parameters are set. See b/388626369.
-          number_of_videos=None if client.vertexai else 1,
       ),
   )
   while not operation.done:
@@ -165,12 +157,14 @@ def test_text_and_image_to_video_poll(client):
 
 
 def test_create_operation_to_poll(client):
-  if not client.vertexai:
-    # Temporarily skip mldev tests.
-    return
-  # Fill in project and location for record mode
+  if client.vertexai:
+    # Fill in project and location for record mode
+    operation_name = "projects/<project>/locations/<location>/publishers/google/models/veo-2.0-generate-001/operations/ce4324d0-1a9f-4fd0-98de-0c54e2ca5798"
+  else:
+    operation_name = "models/veo-2.0-generate-001/operations/s421ckxsogje"
+
   operation = types.GenerateVideosOperation(
-      name="projects/<project>/locations/<location>/publishers/google/models/veo-2.0-generate-001/operations/ce4324d0-1a9f-4fd0-98de-0c54e2ca5798"
+      name=operation_name,
   )
   while not operation.done:
     # Skip the sleep when in replay mode.
@@ -183,9 +177,6 @@ def test_create_operation_to_poll(client):
 
 @pytest.mark.asyncio
 async def test_text_to_video_poll_async(client):
-  if not client.vertexai:
-    # Temporarily skip mldev tests.
-    return
   operation = await client.aio.models.generate_videos(
       model=VEO_MODEL_LATEST,
       prompt="A neon hologram of a cat driving at top speed",
@@ -193,8 +184,6 @@ async def test_text_to_video_poll_async(client):
           output_gcs_uri="gs://unified-genai-tests/tmp/genai/video/outputs"
           if client.vertexai
           else None,
-          # MLDev fails when no parameters are set. See b/388626369.
-          number_of_videos=None if client.vertexai else 1,
       ),
   )
   while not operation.done:
