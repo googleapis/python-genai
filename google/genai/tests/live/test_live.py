@@ -123,7 +123,7 @@ async def test_async_session_send_text(
   )
   await session.send(input='test')
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'client_content' in sent_data
 
 
@@ -141,7 +141,7 @@ async def test_async_session_send_content_dict(
   }
   await session.send(input=client_content)
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'client_content' in sent_data
 
 
@@ -158,7 +158,7 @@ async def test_async_session_send_content(
   )
   await session.send(input=client_content)
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'client_content' in sent_data
 
 
@@ -174,7 +174,7 @@ async def test_async_session_send_bytes(
 
   await session.send(input=realtime_input)
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'realtime_input' in sent_data
 
 
@@ -190,7 +190,7 @@ async def test_async_session_send_blob(
 
   await session.send(input=realtime_input)
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'realtime_input' in sent_data
 
 
@@ -207,7 +207,7 @@ async def test_async_session_send_realtime_input(
   )
   await session.send(input=realtime_input)
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'realtime_input' in sent_data
 
 
@@ -241,7 +241,7 @@ async def test_async_session_send_tool_response(
     )
   await session.send(input=tool_response)
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'tool_response' in sent_data
 
 
@@ -255,7 +255,7 @@ async def test_async_session_send_input_none(
   )
   await session.send(input=None)
   mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_data = mock_websocket.send.call_args[0][0]
   assert 'client_content' in sent_data
   assert sent_data['client_content']['turn_complete']
 
@@ -664,6 +664,9 @@ def test_parse_client_message_str(mock_api_client, mock_websocket, vertexai):
           'turns': [{'role': 'user', 'parts': [{'text': 'test'}]}],
       }
   }
+  # _parse_client_message returns a TypedDict, so we should be able to
+  # construct a LiveClientMessage from it
+  assert types.LiveClientMessage(**result)
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -871,6 +874,66 @@ def test_parse_client_message_tool_response(
           )
       ]
   )
+  result = session._parse_client_message(input)
+  assert 'tool_response' in result
+  assert result == {
+      'tool_response': {
+          'function_responses': [
+              {
+                  'id': 'test_id',
+                  'name': 'test_name',
+                  'response': {
+                      'result': 'test_response',
+                  },
+              },
+          ],
+      }
+  }
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+def test_parse_client_message_function_response(
+    mock_api_client, mock_websocket, vertexai
+):
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  input = types.FunctionResponse(
+    id='test_id',
+    name='test_name',
+    response={'result': 'test_response'},
+  )
+  result = session._parse_client_message(input)
+  assert 'tool_response' in result
+  assert result == {
+      'tool_response': {
+          'function_responses': [
+              {
+                  'id': 'test_id',
+                  'name': 'test_name',
+                  'response': {
+                      'result': 'test_response',
+                  },
+              },
+          ],
+      }
+  }
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+def test_parse_client_message_tool_response_dict_with_only_response(
+    mock_api_client, mock_websocket, vertexai
+):
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  input = {
+    'id': 'test_id',
+    'name': 'test_name',
+    'response': {
+        'result': 'test_response',
+    }
+  }
   result = session._parse_client_message(input)
   assert 'tool_response' in result
   assert result == {
