@@ -49,7 +49,7 @@ else:
 
 
 def _resource_name(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     resource_name: str,
     *,
     collection_identifier: str,
@@ -141,7 +141,7 @@ def _resource_name(
       return resource_name
 
 
-def t_model(client: _api_client.ApiClient, model: str):
+def t_model(client: _api_client.BaseApiClient, model: str):
   if not model:
     raise ValueError('model is required.')
   if client.vertexai:
@@ -165,7 +165,7 @@ def t_model(client: _api_client.ApiClient, model: str):
       return f'models/{model}'
 
 
-def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
+def t_models_url(api_client: _api_client.BaseApiClient, base_models: bool) -> str:
   if api_client.vertexai:
     if base_models:
       return 'publishers/google/models'
@@ -179,7 +179,7 @@ def t_models_url(api_client: _api_client.ApiClient, base_models: bool) -> str:
 
 
 def t_extract_models(
-    api_client: _api_client.ApiClient, response: dict
+    api_client: _api_client.BaseApiClient, response: dict
 ) -> list[types.Model]:
   if not response:
     return []
@@ -200,7 +200,7 @@ def t_extract_models(
     return []
 
 
-def t_caches_model(api_client: _api_client.ApiClient, model: str):
+def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
   model = t_model(api_client, model)
   if not model:
     return None
@@ -241,7 +241,7 @@ def pil_to_blob(img) -> types.Blob:
 
 
 def t_part(
-    client: _api_client.ApiClient, part: Optional[types.PartUnionDict]
+    client: _api_client.BaseApiClient, part: Optional[types.PartUnionDict]
 ) -> types.Part:
   try:
     import PIL.Image
@@ -268,7 +268,7 @@ def t_part(
 
 
 def t_parts(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     parts: Optional[Union[list[types.PartUnionDict], types.PartUnionDict]],
 ) -> list[types.Part]:
   #
@@ -281,7 +281,7 @@ def t_parts(
 
 
 def t_image_predictions(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     predictions: Optional[Iterable[Mapping[str, Any]]],
 ) -> list[types.GeneratedImage]:
   if not predictions:
@@ -304,7 +304,7 @@ ContentType = Union[types.Content, types.ContentDict, types.PartUnionDict]
 
 
 def t_content(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     content: Optional[ContentType],
 ) -> types.Content:
   if content is None:
@@ -331,7 +331,7 @@ def t_content(
 
 
 def t_contents_for_embed(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     contents: Union[list[types.Content], list[types.ContentDict], ContentType],
 ):
   if client.vertexai and isinstance(contents, list):
@@ -346,7 +346,7 @@ def t_contents_for_embed(
 
 
 def t_contents(
-    client: _api_client.ApiClient,
+    client: _api_client.BaseApiClient,
     contents: Optional[
         Union[types.ContentListUnion, types.ContentListUnionDict]
     ],
@@ -507,7 +507,7 @@ def handle_null_fields(schema: dict[str, Any]):
 
 def process_schema(
     schema: dict[str, Any],
-    client: Optional[_api_client.ApiClient] = None,
+    client: _api_client.BaseApiClient,
     defs: Optional[dict[str, Any]] = None,
     *,
     order_properties: bool = True,
@@ -570,7 +570,7 @@ def process_schema(
         'type': 'array'
     }
   """
-  if client and not client.vertexai:
+  if not client.vertexai:
     schema.pop('title', None)
 
     if schema.get('default') is not None:
@@ -596,15 +596,16 @@ def process_schema(
   # After removing null fields, Optional fields with only one possible type
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
-  if schema.get('$ref', None):
-    ref = defs[schema.get('$ref').split('defs/')[-1]]
+  schema_ref = schema.get('$ref', None)
+  if schema_ref is not None:
+    ref = defs[schema_ref.split('defs/')[-1]]
     for schema_key in list(ref.keys()):
       schema[schema_key] = ref[schema_key]
     del schema['$ref']
 
   any_of = schema.get('anyOf', None)
   if any_of is not None:
-    if not client.vertexai:
+    if client and not client.vertexai:
       raise ValueError(
           'AnyOf is not supported in the response schema for the Gemini API.'
       )
@@ -670,7 +671,7 @@ def process_schema(
 
 
 def _process_enum(
-    enum: EnumMeta, client: Optional[_api_client.ApiClient] = None  # type: ignore
+    enum: EnumMeta, client: Optional[_api_client.BaseApiClient] = None  # type: ignore
 ) -> types.Schema:
   for member in enum:  # type: ignore
     if not isinstance(member.value, str):
@@ -689,7 +690,7 @@ def _process_enum(
 
 
 def t_schema(
-    client: _api_client.ApiClient, origin: Union[types.SchemaUnionDict, Any]
+    client: _api_client.BaseApiClient, origin: Union[types.SchemaUnionDict, Any]
 ) -> Optional[types.Schema]:
   if not origin:
     return None
@@ -735,7 +736,7 @@ def t_schema(
 
 
 def t_speech_config(
-    _: _api_client.ApiClient, origin: Union[types.SpeechConfigUnionDict, Any]
+    _: _api_client.BaseApiClient, origin: Union[types.SpeechConfigUnionDict, Any]
 ) -> Optional[types.SpeechConfig]:
   if not origin:
     return None
@@ -750,7 +751,10 @@ def t_speech_config(
   if (
       isinstance(origin, dict)
       and 'voice_config' in origin
+      and origin['voice_config'] is not None
       and 'prebuilt_voice_config' in origin['voice_config']
+      and origin['voice_config']['prebuilt_voice_config'] is not None
+      and 'voice_name' in origin['voice_config']['prebuilt_voice_config']
   ):
     return types.SpeechConfig(
         voice_config=types.VoiceConfig(
@@ -764,7 +768,7 @@ def t_speech_config(
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
 
 
-def t_tool(client: _api_client.ApiClient, origin) -> types.Tool:
+def t_tool(client: _api_client.BaseApiClient, origin) -> types.Tool:
   if not origin:
     return None
   if inspect.isfunction(origin) or inspect.ismethod(origin):
@@ -781,7 +785,7 @@ def t_tool(client: _api_client.ApiClient, origin) -> types.Tool:
 
 # Only support functions now.
 def t_tools(
-    client: _api_client.ApiClient, origin: list[Any]
+    client: _api_client.BaseApiClient, origin: list[Any]
 ) -> list[types.Tool]:
   if not origin:
     return []
@@ -801,11 +805,11 @@ def t_tools(
   return tools
 
 
-def t_cached_content_name(client: _api_client.ApiClient, name: str):
+def t_cached_content_name(client: _api_client.BaseApiClient, name: str):
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(client: _api_client.ApiClient, src: str):
+def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
   if src.startswith('gs://'):
     return types.BatchJobSource(
         format='jsonl',
@@ -820,7 +824,7 @@ def t_batch_job_source(client: _api_client.ApiClient, src: str):
     raise ValueError(f'Unsupported source: {src}')
 
 
-def t_batch_job_destination(client: _api_client.ApiClient, dest: str):
+def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
   if dest.startswith('gs://'):
     return types.BatchJobDestination(
         format='jsonl',
@@ -835,7 +839,7 @@ def t_batch_job_destination(client: _api_client.ApiClient, dest: str):
     raise ValueError(f'Unsupported destination: {dest}')
 
 
-def t_batch_job_name(client: _api_client.ApiClient, name: str):
+def t_batch_job_name(client: _api_client.BaseApiClient, name: str):
   if not client.vertexai:
     return name
 
@@ -854,7 +858,7 @@ LRO_POLLING_TIMEOUT_SECONDS = 900.0
 LRO_POLLING_MULTIPLIER = 1.5
 
 
-def t_resolve_operation(api_client: _api_client.ApiClient, struct: dict):
+def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
   if (name := struct.get('name')) and '/operations/' in name:
     operation: dict[str, Any] = struct
     total_seconds = 0.0
@@ -883,7 +887,7 @@ def t_resolve_operation(api_client: _api_client.ApiClient, struct: dict):
 
 
 def t_file_name(
-    api_client: _api_client.ApiClient, name: Optional[Union[str, types.File]]
+    api_client: _api_client.BaseApiClient, name: Optional[Union[str, types.File]]
 ):
   # Remove the files/ prefix since it's added to the url path.
   if isinstance(name, types.File):
@@ -905,7 +909,7 @@ def t_file_name(
 
 
 def t_tuning_job_status(
-    api_client: _api_client.ApiClient, status: str
+    api_client: _api_client.BaseApiClient, status: str
 ) -> types.JobState:
   if status == 'STATE_UNSPECIFIED':
     return 'JOB_STATE_UNSPECIFIED'
@@ -923,7 +927,7 @@ def t_tuning_job_status(
 # We shouldn't use this transformer if the backend adhere to Cloud Type
 # format https://cloud.google.com/docs/discovery/type-format.
 # TODO(b/389133914,b/390320301): Remove the hack after backend fix the issue.
-def t_bytes(api_client: _api_client.ApiClient, data: bytes) -> str:
+def t_bytes(api_client: _api_client.BaseApiClient, data: bytes) -> str:
   if not isinstance(data, bytes):
     return data
   return base64.b64encode(data).decode('ascii')

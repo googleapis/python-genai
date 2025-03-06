@@ -17,13 +17,13 @@ import asyncio
 import time
 from unittest.mock import MagicMock, patch
 import pytest
-from .api_client import ApiClient
+from .api_client import BaseApiClient
 
 
-@patch('genai.api_client.ApiClient._build_request')
-@patch('genai.api_client.ApiClient._request')
+@patch('genai.api_client.BaseApiClient._build_request')
+@patch('genai.api_client.BaseApiClient._request')
 def test_request_streamed_non_blocking(mock_request, mock_build_request):
-  api_client = ApiClient(api_key='test_api_key')
+  api_client = BaseApiClient(api_key='test_api_key')
   http_method = 'GET'
   path = 'test/path'
   request_dict = {'key': 'value'}
@@ -56,8 +56,8 @@ def test_request_streamed_non_blocking(mock_request, mock_build_request):
   assert end_time - start_time > 0.3
 
 
-@patch('genai.api_client.ApiClient._build_request')
-@patch('genai.api_client.ApiClient._async_request')
+@patch('genai.api_client.BaseApiClient._build_request')
+@patch('genai.api_client.BaseApiClient._async_request')
 @pytest.mark.asyncio
 async def test_async_request(mock_async_request, mock_build_request):
   api_client = ApiClient(api_key='test_api_key')
@@ -99,8 +99,8 @@ async def test_async_request(mock_async_request, mock_build_request):
   assert 0.1 <= end_time - start_time < 0.15
 
 
-@patch('genai.api_client.ApiClient._build_request')
-@patch('genai.api_client.ApiClient._async_request')
+@patch('genai.api_client.BaseApiClient._build_request')
+@patch('genai.api_client.BaseApiClient._async_request')
 @pytest.mark.asyncio
 async def test_async_request_streamed_non_blocking(
     mock_async_request, mock_build_request

@@ -91,10 +91,10 @@ def client(use_vertex):
     )
 
 
-def test_build_schema_for_list_of_pydantic_schema():
+def test_build_schema_for_list_of_pydantic_schema(client):
   """Tests _build_schema() when list[pydantic.BaseModel] is provided to response_schema."""
 
-  list_schema = _transformers.t_schema(None, CountryInfo).model_dump()
+  list_schema = _transformers.t_schema(client, CountryInfo).model_dump()
 
   assert isinstance(list_schema, dict)
 
@@ -112,10 +112,10 @@ def test_build_schema_for_list_of_pydantic_schema():
     assert list_schema['required'] == list(country_info_fields.keys())
 
 
-def test_build_schema_for_list_of_nested_pydantic_schema():
+def test_build_schema_for_list_of_nested_pydantic_schema(client):
   """Tests _build_schema() when list[pydantic.BaseModel] is provided to response_schema and the pydantic.BaseModel has nested pydantic fields."""
   list_schema = _transformers.t_schema(
-      None, CountryInfoWithCurrency
+      client, CountryInfoWithCurrency
   ).model_dump()
 
   assert isinstance(list_schema, dict)
@@ -132,9 +132,9 @@ def test_build_schema_for_list_of_nested_pydantic_schema():
     assert field_name in currency_info_fields
 
 
-def test_t_schema_for_pydantic_schema():
+def test_t_schema_for_pydantic_schema(client):
   """Tests t_schema when pydantic.BaseModel is passed to response_schema."""
-  transformed_schema = _transformers.t_schema(None, CountryInfo)
+  transformed_schema = _transformers.t_schema(client, CountryInfo)
   assert isinstance(transformed_schema, types.Schema)
   for schema_property in transformed_schema.properties:
     assert schema_property in country_info_fields
@@ -143,9 +143,9 @@ def test_t_schema_for_pydantic_schema():
     )
 
 
-def test_t_schema_for_list_of_pydantic_schema():
+def test_t_schema_for_list_of_pydantic_schema(client):
   """Tests t_schema when list[pydantic.BaseModel] is passed to response_schema."""
-  transformed_schema = _transformers.t_schema(None, list[CountryInfo])
+  transformed_schema = _transformers.t_schema(client, list[CountryInfo])
   assert isinstance(transformed_schema, types.Schema)
   assert isinstance(transformed_schema.items, types.Schema)
 
@@ -156,9 +156,9 @@ def test_t_schema_for_list_of_pydantic_schema():
     )
 
 
-def test_t_schema_for_null_fields():
+def test_t_schema_for_null_fields(client):
   """Tests t_schema when null fields are present."""
-  transformed_schema = _transformers.t_schema(None, CountryInfoWithNullFields)
+  transformed_schema = _transformers.t_schema(client, CountryInfoWithNullFields)
   assert isinstance(transformed_schema, types.Schema)
   assert transformed_schema.properties['population'].nullable
 
@@ -212,15 +212,14 @@ def test_schema_with_default_value_raises_for_mldev(client):
     assert transformed_schema_vertex == expected_schema_vertex
 
 
-@pytest.mark.parametrize('use_vertex', [True, False])
 def test_schema_with_any_of_raises_for_mldev(client):
   if not client.vertexai:
     with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client._api_client, CountryInfoWithAnyOf)
+      _transformers.t_schema(client, CountryInfoWithAnyOf)
     assert 'AnyOf is not supported' in str(e)
   else:
     transformed_schema_vertex = _transformers.t_schema(
-        client._api_client, CountryInfoWithAnyOf
+        client, CountryInfoWithAnyOf
     )
     expected_schema_vertex = types.Schema(
         properties={
@@ -312,27 +311,27 @@ def test_complex_dict_schema_with_anyof_is_unchanged(client):
     assert schema_before == dict_schema
 
 
-def test_t_schema_does_not_change_property_ordering_if_set():
+def test_t_schema_does_not_change_property_ordering_if_set(client):
   """Tests t_schema doesn't overwrite the property_ordering field if already set."""
 
   schema = CountryInfo.model_json_schema()
   custom_property_ordering = ['code', 'symbol', 'name']
   schema['property_ordering'] = custom_property_ordering
 
-  transformed_schema = _transformers.t_schema(None, schema)
+  transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering == custom_property_ordering
 
 
-def test_t_schema_does_not_set_property_ordering_for_json_schema():
+def test_t_schema_does_not_set_property_ordering_for_json_schema(client):
   """Tests t_schema doesn't set the property_ordering field for json schemas."""
 
   schema = CountryInfo.model_json_schema()
 
-  transformed_schema = _transformers.t_schema(None, schema)
+  transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering is None
 
 
-def test_t_schema_does_not_set_property_ordering_for_schema_type():
+def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
   """Tests t_schema doesn't set the property_ordering field for Schema types."""
 
   schema = types.Schema(
@@ -352,5 +351,10 @@ def test_t_schema_does_not_set_property_ordering_for_schema_type():
       title='CountryInfoWithDefaultValue',
   )
 
-  transformed_schema = _transformers.t_schema(None, schema)
-  assert transformed_schema.property_ordering is None
+  if client.vertexai:
+    transformed_schema = _transformers.t_schema(client, schema)
+    assert transformed_schema.property_ordering is None
+  else:
+    with pytest.raises(ValueError) as e:
+      _transformers.t_schema(client, schema)
+    assert 'Default value is not supported' in str(e)

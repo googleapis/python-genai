@@ -74,7 +74,7 @@ class Language(_common.CaseInSensitiveEnum):
 
 
 class Type(_common.CaseInSensitiveEnum):
-  """A basic data type."""
+  """Optional. The type of the data."""
 
   TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
   STRING = 'STRING'
@@ -811,17 +811,9 @@ class Schema(_common.BaseModel):
   Represents a select subset of an OpenAPI 3.0 schema object.
   """
 
-  min_items: Optional[int] = Field(
-      default=None,
-      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
-  )
   example: Optional[Any] = Field(
       default=None,
       description="""Optional. Example of the object. Will only populated when the object is the root.""",
-  )
-  property_ordering: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
   )
   pattern: Optional[str] = Field(
       default=None,
@@ -853,24 +845,13 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. Minimum number of the properties for Type.OBJECT.""",
   )
-  max_items: Optional[int] = Field(
-      default=None,
-      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
-  )
   maximum: Optional[float] = Field(
       default=None,
       description="""Optional. Maximum value of the Type.INTEGER and Type.NUMBER""",
   )
-  nullable: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Indicates if the value may be null.""",
-  )
   max_properties: Optional[int] = Field(
       default=None,
       description="""Optional. Maximum number of the properties for Type.OBJECT.""",
-  )
-  type: Optional[Type] = Field(
-      default=None, description="""Optional. The type of the data."""
   )
   description: Optional[str] = Field(
       default=None, description="""Optional. The description of the data."""
@@ -887,13 +868,32 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
   )
+  max_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
+  )
+  min_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
+  )
+  nullable: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Indicates if the value may be null.""",
+  )
   properties: Optional[dict[str, 'Schema']] = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
   )
+  property_ordering: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
+  )
   required: Optional[list[str]] = Field(
       default=None,
       description="""Optional. Required properties of Type.OBJECT.""",
+  )
+  type: Optional[Type] = Field(
+      default=None, description="""Optional. The type of the data."""
   )
 
 
@@ -903,14 +903,8 @@ class SchemaDict(TypedDict, total=False):
   Represents a select subset of an OpenAPI 3.0 schema object.
   """
 
-  min_items: Optional[int]
-  """Optional. Minimum number of the elements for Type.ARRAY."""
-
   example: Optional[Any]
   """Optional. Example of the object. Will only populated when the object is the root."""
-
-  property_ordering: Optional[list[str]]
-  """Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties."""
 
   pattern: Optional[str]
   """Optional. Pattern of the Type.STRING to restrict a string to a regular expression."""
@@ -936,20 +930,11 @@ class SchemaDict(TypedDict, total=False):
   min_properties: Optional[int]
   """Optional. Minimum number of the properties for Type.OBJECT."""
 
-  max_items: Optional[int]
-  """Optional. Maximum number of the elements for Type.ARRAY."""
-
   maximum: Optional[float]
   """Optional. Maximum value of the Type.INTEGER and Type.NUMBER"""
 
-  nullable: Optional[bool]
-  """Optional. Indicates if the value may be null."""
-
   max_properties: Optional[int]
   """Optional. Maximum number of the properties for Type.OBJECT."""
-
-  type: Optional[Type]
-  """Optional. The type of the data."""
 
   description: Optional[str]
   """Optional. The description of the data."""
@@ -963,11 +948,26 @@ class SchemaDict(TypedDict, total=False):
   items: Optional['SchemaDict']
   """Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY."""
 
+  max_items: Optional[int]
+  """Optional. Maximum number of the elements for Type.ARRAY."""
+
+  min_items: Optional[int]
+  """Optional. Minimum number of the elements for Type.ARRAY."""
+
+  nullable: Optional[bool]
+  """Optional. Indicates if the value may be null."""
+
   properties: Optional[dict[str, 'SchemaDict']]
   """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
 
+  property_ordering: Optional[list[str]]
+  """Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties."""
+
   required: Optional[list[str]]
   """Optional. Required properties of Type.OBJECT."""
+
+  type: Optional[Type]
+  """Optional. The type of the data."""
 
 
 SchemaOrDict = Union[Schema, SchemaDict]
@@ -3602,18 +3602,23 @@ class Image(_common.BaseModel):
   """Image."""
 
   @classmethod
-  def from_file(cls, *, location: str) -> 'Image':
+  def from_file(
+      cls, *, location: str, mime_type: Optional[str] = None
+  ) -> 'Image':
     """Lazy-loads an image from a local file or Google Cloud Storage.
 
     Args:
         location: The local path or Google Cloud Storage URI from which to load
           the image.
+        mime_type: The MIME type of the image. If not provided, the MIME type
+          will be automatically determined.
 
     Returns:
         A loaded image as an `Image` object.
     """
     import urllib
     import pathlib
+    import mimetypes
 
     parsed_url = urllib.parse.urlparse(location)
     if (
@@ -3632,7 +3637,10 @@ class Image(_common.BaseModel):
 
     # Load image from local path
     image_bytes = pathlib.Path(location).read_bytes()
-    image = cls(image_bytes=image_bytes)
+
+    if not mime_type:
+      mime_type, _ = mimetypes.guess_type(location)
+    image = cls(image_bytes=image_bytes, mime_type=mime_type)
     return image
 
   def show(self):

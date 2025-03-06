@@ -22,7 +22,7 @@ from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import types
-from ._api_client import ApiClient
+from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
@@ -31,7 +31,7 @@ logger = logging.getLogger('google_genai.tunings')
 
 
 def _GetTuningJobParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -46,7 +46,7 @@ def _GetTuningJobParameters_to_mldev(
 
 
 def _GetTuningJobParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -61,7 +61,7 @@ def _GetTuningJobParameters_to_vertex(
 
 
 def _ListTuningJobsConfig_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -86,7 +86,7 @@ def _ListTuningJobsConfig_to_mldev(
 
 
 def _ListTuningJobsConfig_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -111,7 +111,7 @@ def _ListTuningJobsConfig_to_vertex(
 
 
 def _ListTuningJobsParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -129,7 +129,7 @@ def _ListTuningJobsParameters_to_mldev(
 
 
 def _ListTuningJobsParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -147,7 +147,7 @@ def _ListTuningJobsParameters_to_vertex(
 
 
 def _TuningExample_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -162,7 +162,7 @@ def _TuningExample_to_mldev(
 
 
 def _TuningExample_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -177,7 +177,7 @@ def _TuningExample_to_vertex(
 
 
 def _TuningDataset_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -199,7 +199,7 @@ def _TuningDataset_to_mldev(
 
 
 def _TuningDataset_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -218,7 +218,7 @@ def _TuningDataset_to_vertex(
 
 
 def _TuningValidationDataset_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -230,7 +230,7 @@ def _TuningValidationDataset_to_mldev(
 
 
 def _TuningValidationDataset_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -242,7 +242,7 @@ def _TuningValidationDataset_to_vertex(
 
 
 def _CreateTuningJobConfig_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -298,7 +298,7 @@ def _CreateTuningJobConfig_to_mldev(
 
 
 def _CreateTuningJobConfig_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -354,7 +354,7 @@ def _CreateTuningJobConfig_to_vertex(
 
 
 def _CreateTuningJobParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -384,7 +384,7 @@ def _CreateTuningJobParameters_to_mldev(
 
 
 def _CreateTuningJobParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -414,7 +414,7 @@ def _CreateTuningJobParameters_to_vertex(
 
 
 def _TunedModel_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -429,7 +429,7 @@ def _TunedModel_from_mldev(
 
 
 def _TunedModel_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -444,7 +444,7 @@ def _TunedModel_from_vertex(
 
 
 def _TuningJob_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -521,7 +521,7 @@ def _TuningJob_from_mldev(
 
 
 def _TuningJob_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -615,7 +615,7 @@ def _TuningJob_from_vertex(
 
 
 def _ListTuningJobsResponse_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -637,7 +637,7 @@ def _ListTuningJobsResponse_from_mldev(
 
 
 def _ListTuningJobsResponse_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -659,7 +659,7 @@ def _ListTuningJobsResponse_from_vertex(
 
 
 def _Operation_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -683,7 +683,7 @@ def _Operation_from_mldev(
 
 
 def _Operation_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -757,7 +757,7 @@ class Tunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -823,7 +823,7 @@ class Tunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -894,7 +894,7 @@ class Tunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -961,7 +961,7 @@ class Tunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1096,7 +1096,7 @@ class AsyncTunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1162,7 +1162,7 @@ class AsyncTunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1233,7 +1233,7 @@ class AsyncTunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1300,7 +1300,7 @@ class AsyncTunings(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)

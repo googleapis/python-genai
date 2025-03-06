@@ -23,7 +23,7 @@ from . import _common
 from . import _extra_utils
 from . import _transformers as t
 from . import types
-from ._api_client import ApiClient
+from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
@@ -32,7 +32,7 @@ logger = logging.getLogger('google_genai.batches')
 
 
 def _BatchJobSource_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -50,7 +50,7 @@ def _BatchJobSource_to_mldev(
 
 
 def _BatchJobSource_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -72,7 +72,7 @@ def _BatchJobSource_to_vertex(
 
 
 def _BatchJobDestination_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -90,7 +90,7 @@ def _BatchJobDestination_to_mldev(
 
 
 def _BatchJobDestination_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -116,7 +116,7 @@ def _BatchJobDestination_to_vertex(
 
 
 def _CreateBatchJobConfig_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -132,7 +132,7 @@ def _CreateBatchJobConfig_to_mldev(
 
 
 def _CreateBatchJobConfig_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -156,7 +156,7 @@ def _CreateBatchJobConfig_to_vertex(
 
 
 def _CreateBatchJobParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -180,7 +180,7 @@ def _CreateBatchJobParameters_to_mldev(
 
 
 def _CreateBatchJobParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -216,7 +216,7 @@ def _CreateBatchJobParameters_to_vertex(
 
 
 def _GetBatchJobParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -231,7 +231,7 @@ def _GetBatchJobParameters_to_mldev(
 
 
 def _GetBatchJobParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -250,7 +250,7 @@ def _GetBatchJobParameters_to_vertex(
 
 
 def _CancelBatchJobParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -265,7 +265,7 @@ def _CancelBatchJobParameters_to_mldev(
 
 
 def _CancelBatchJobParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -284,7 +284,7 @@ def _CancelBatchJobParameters_to_vertex(
 
 
 def _ListBatchJobsConfig_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -309,7 +309,7 @@ def _ListBatchJobsConfig_to_mldev(
 
 
 def _ListBatchJobsConfig_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -334,7 +334,7 @@ def _ListBatchJobsConfig_to_vertex(
 
 
 def _ListBatchJobsParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -346,7 +346,7 @@ def _ListBatchJobsParameters_to_mldev(
 
 
 def _ListBatchJobsParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -364,7 +364,7 @@ def _ListBatchJobsParameters_to_vertex(
 
 
 def _DeleteBatchJobParameters_to_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -379,7 +379,7 @@ def _DeleteBatchJobParameters_to_mldev(
 
 
 def _DeleteBatchJobParameters_to_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -398,7 +398,7 @@ def _DeleteBatchJobParameters_to_vertex(
 
 
 def _JobError_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -408,7 +408,7 @@ def _JobError_from_mldev(
 
 
 def _JobError_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -426,7 +426,7 @@ def _JobError_from_vertex(
 
 
 def _BatchJobSource_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -436,7 +436,7 @@ def _BatchJobSource_from_mldev(
 
 
 def _BatchJobSource_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -458,7 +458,7 @@ def _BatchJobSource_from_vertex(
 
 
 def _BatchJobDestination_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -468,7 +468,7 @@ def _BatchJobDestination_from_mldev(
 
 
 def _BatchJobDestination_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -494,7 +494,7 @@ def _BatchJobDestination_from_vertex(
 
 
 def _BatchJob_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -504,7 +504,7 @@ def _BatchJob_from_mldev(
 
 
 def _BatchJob_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -564,7 +564,7 @@ def _BatchJob_from_vertex(
 
 
 def _ListBatchJobsResponse_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -576,7 +576,7 @@ def _ListBatchJobsResponse_from_mldev(
 
 
 def _ListBatchJobsResponse_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -598,7 +598,7 @@ def _ListBatchJobsResponse_from_vertex(
 
 
 def _DeleteResourceJob_from_mldev(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -608,7 +608,7 @@ def _DeleteResourceJob_from_mldev(
 
 
 def _DeleteResourceJob_from_vertex(
-    api_client: ApiClient,
+    api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
@@ -668,7 +668,7 @@ class Batches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -737,7 +737,7 @@ class Batches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -807,7 +807,7 @@ class Batches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -846,7 +846,7 @@ class Batches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -921,7 +921,7 @@ class Batches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1043,7 +1043,7 @@ class AsyncBatches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1112,7 +1112,7 @@ class AsyncBatches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1182,7 +1182,7 @@ class AsyncBatches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1221,7 +1221,7 @@ class AsyncBatches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
@@ -1296,7 +1296,7 @@ class AsyncBatches(_api_module.BaseModule):
     http_options: Optional[types.HttpOptionsOrDict] = None
     if isinstance(config, dict):
       http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options'):
+    elif hasattr(config, 'http_options') and config is not None:
       http_options = config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)

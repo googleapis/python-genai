@@ -19,7 +19,7 @@ from typing import Optional, Union
 import google.auth
 import pydantic
 
-from ._api_client import ApiClient, HttpOptions, HttpOptionsDict
+from ._api_client import BaseApiClient, HttpOptions, HttpOptionsDict
 from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
@@ -34,7 +34,7 @@ from .tunings import AsyncTunings, Tunings
 class AsyncClient:
   """Client for making asynchronous (non-blocking) requests."""
 
-  def __init__(self, api_client: ApiClient):
+  def __init__(self, api_client: BaseApiClient):
 
     self._api_client = api_client
     self._models = AsyncModels(self._api_client)
@@ -239,7 +239,7 @@ class Client:
           http_options=http_options,
       )
 
-    return ApiClient(
+    return BaseApiClient(
         vertexai=vertexai,
         api_key=api_key,
         credentials=credentials,
