@@ -826,7 +826,7 @@ class Files(_api_module.BaseModule):
           'Vertex AI does not support creating files. You can upload files to'
           ' GCS files instead.'
       )
-    config_model = None
+    config_model = types.UploadFileConfig()
     if config:
       if isinstance(config, dict):
         config_model = types.UploadFileConfig(**config)
@@ -907,7 +907,7 @@ class Files(_api_module.BaseModule):
 
     return types.File._from_response(
         response=_File_from_mldev(self._api_client, return_file['file']),
-        kwargs=None,
+        kwargs=config_model.model_dump() if config else {},
     )
 
   def list(
@@ -979,7 +979,7 @@ class Files(_api_module.BaseModule):
           'downloaded. You can tell which files are downloadable by checking '
           'the `source` or `download_uri` property.'
       )
-    name = t.t_file_name(self, file)
+    name = t.t_file_name(self._api_client, file)
 
     path = f'files/{name}:download'
 
@@ -996,7 +996,7 @@ class Files(_api_module.BaseModule):
 
     if isinstance(file, types.Video):
       file.video_bytes = data
-    elif isinstance(file, types.GeneratedVideo):
+    elif isinstance(file, types.GeneratedVideo) and file.video is not None:
       file.video.video_bytes = data
 
     return data
@@ -1293,7 +1293,7 @@ class AsyncFiles(_api_module.BaseModule):
           'Vertex AI does not support creating files. You can upload files to'
           ' GCS files instead.'
       )
-    config_model = None
+    config_model = types.UploadFileConfig()
     if config:
       if isinstance(config, dict):
         config_model = types.UploadFileConfig(**config)
@@ -1373,7 +1373,7 @@ class AsyncFiles(_api_module.BaseModule):
 
     return types.File._from_response(
         response=_File_from_mldev(self._api_client, return_file['file']),
-        kwargs=None,
+        kwargs=config_model.model_dump() if config else {},
     )
 
   async def list(
@@ -1433,7 +1433,7 @@ class AsyncFiles(_api_module.BaseModule):
       else:
         config_model = config
 
-    name = t.t_file_name(self, file)
+    name = t.t_file_name(self._api_client, file)
 
     path = f'files/{name}:download'
 
