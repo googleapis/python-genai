@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/googleapis/python-genai/compare/v1.5.0...v1.5.1) (2025-03-07)
+
+
+### Documentation
+
+* Update docs with agreed-upon fixes ([f523a7c](https://github.com/googleapis/python-genai/commit/f523a7c45abc8373c01cfcb737fd446d8567fc46))
+
 ## [1.5.0](https://github.com/googleapis/python-genai/compare/v1.4.0...v1.5.0) (2025-03-07)
 
 
