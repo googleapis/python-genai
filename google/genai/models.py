@@ -1351,10 +1351,8 @@ def _GenerateImagesConfig_to_mldev(
     raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['negative_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'negativePrompt'],
-        getv(from_object, ['negative_prompt']),
+    raise ValueError(
+        'negative_prompt parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['number_of_images']) is not None:
@@ -1910,10 +1908,8 @@ def _EditImageConfig_to_mldev(
     raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
 
   if getv(from_object, ['negative_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'negativePrompt'],
-        getv(from_object, ['negative_prompt']),
+    raise ValueError(
+        'negative_prompt parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['number_of_images']) is not None:
