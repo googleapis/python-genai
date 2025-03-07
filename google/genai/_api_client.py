@@ -633,7 +633,7 @@ class BaseApiClient:
 
   def upload_file(
       self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int
-  ) -> str:
+  ) -> dict[str, str]:
     """Transfers a file to the given URL.
 
     Args:
@@ -655,7 +655,7 @@ class BaseApiClient:
 
   def _upload_fd(
       self, file: io.IOBase, upload_url: str, upload_size: int
-  ) -> str:
+  ) -> dict[str, str]:
     """Transfers a file to the given URL.
 
     Args:
@@ -750,7 +750,7 @@ class BaseApiClient:
       file_path: Union[str, io.IOBase],
       upload_url: str,
       upload_size: int,
-  ) -> str:
+  ) -> dict[str, str]:
     """Transfers a file asynchronously to the given URL.
 
     Args:
@@ -776,7 +776,7 @@ class BaseApiClient:
       file: Union[io.IOBase, anyio.AsyncFile],
       upload_url: str,
       upload_size: int,
-  ) -> str:
+  ) -> dict[str, str]:
     """Transfers a file asynchronously to the given URL.
 
     Args:

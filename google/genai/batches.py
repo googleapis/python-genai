@@ -998,6 +998,8 @@ class Batches(_api_module.BaseModule):
       for batch_job in batch_jobs:
         print(f"Batch job: {batch_job.name}, state {batch_job.state}")
     """
+    if config is None:
+      config = types.ListBatchJobsConfig()
     return Pager(
         'batch_jobs',
         self._list,
@@ -1373,6 +1375,8 @@ class AsyncBatches(_api_module.BaseModule):
       await batch_jobs_pager.next_page()
       print(f"next page: {batch_jobs_pager.page}")
     """
+    if config is None:
+      config = types.ListBatchJobsConfig()
     return AsyncPager(
         'batch_jobs',
         self._list,
