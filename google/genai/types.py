@@ -5178,8 +5178,10 @@ class Video(_common.BaseModel):
       IPython_display = None
 
     if IPython_display:
-      return IPython_display.Video(
-          data=self.video_bytes, mimetype=mime_type, embed=True
+      IPython_display.display(
+          IPython_display.Video(
+              data=self.video_bytes, mimetype=mime_type, embed=True
+          )
       )
 
   def __repr__(self):
