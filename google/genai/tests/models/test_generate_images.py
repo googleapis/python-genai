@@ -49,7 +49,6 @@ test_table: list[pytest_helper.TestTableItem] = [
             prompt='Red skateboard',
             config={
                 'aspect_ratio': '1:1',
-                'negative_prompt': 'human',
                 'guidance_scale': 15.0,
                 'safety_filter_level': 'BLOCK_MEDIUM_AND_ABOVE',
                 'number_of_images': 1,
@@ -58,7 +57,8 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'include_rai_reason': True,
                 'output_mime_type': 'image/jpeg',
                 'output_compression_quality': 80,
-                # The below parameters are not supported in Google AI.
+                # The below parameters are not supported in Gemini Developer API.
+                'negative_prompt': 'human',
                 'add_watermark': False,
                 'seed': 1337,
                 'language': 'en',
