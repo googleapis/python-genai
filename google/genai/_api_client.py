@@ -346,7 +346,7 @@ class BaseApiClient:
       if not self.api_key:
         raise ValueError(
             'Missing key inputs argument! To use the Google AI API,'
-            'provide (`api_key`) arguments. To use the Google Cloud API,'
+            ' provide (`api_key`) arguments. To use the Google Cloud API,'
             ' provide (`vertexai`, `project` & `location`) arguments.'
         )
       self._http_options['base_url'] = (
