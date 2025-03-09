@@ -269,6 +269,15 @@ class Chat(_BaseChat):
         is_valid=is_valid and output_contents and finish_reason,
     )
 
+  @property
+  def history(self) -> list[Content]:
+    """Returns the conversation history.
+    
+    
+    Returns:
+        list[Content]: The conversation history.
+    """
+    return self._curated_history
 
 class Chats:
   """A util class to create chat sessions."""
