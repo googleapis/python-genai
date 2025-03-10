@@ -1663,7 +1663,7 @@ class File(_common.BaseModel):
   )
   sha256_hash: Optional[str] = Field(
       default=None,
-      description="""Output only. SHA-256 hash of the uploaded bytes.""",
+      description="""Output only. SHA-256 hash of the uploaded bytes. The hash value is encoded in base64 format.""",
   )
   uri: Optional[str] = Field(
       default=None, description="""Output only. The URI of the `File`."""
@@ -1712,7 +1712,7 @@ class FileDict(TypedDict, total=False):
   """Output only. The timestamp of when the `File` was last updated."""
 
   sha256_hash: Optional[str]
-  """Output only. SHA-256 hash of the uploaded bytes."""
+  """Output only. SHA-256 hash of the uploaded bytes. The hash value is encoded in base64 format."""
 
   uri: Optional[str]
   """Output only. The URI of the `File`."""
