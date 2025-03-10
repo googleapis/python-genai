@@ -719,7 +719,9 @@ class UserContent(Content):
   role: Literal['user'] = Field(default='user', init=False, frozen=True)
   parts: list[Part] = Field()
 
-  def __init__(self, parts: Union['PartUnionDict', list['PartUnionDict']]):
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
     from . import _transformers as t
 
     super().__init__(parts=t.t_parts(parts=parts))
@@ -747,7 +749,9 @@ class ModelContent(Content):
   role: Literal['model'] = Field(default='model', init=False, frozen=True)
   parts: list[Part] = Field()
 
-  def __init__(self, parts: Union['PartUnionDict', list['PartUnionDict']]):
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
     from . import _transformers as t
 
     super().__init__(parts=t.t_parts(parts=parts))

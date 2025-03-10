@@ -25,10 +25,9 @@ import re
 import sys
 import time
 import types as builtin_types
-import typing
-from typing import Any, GenericAlias, Optional, Union
-
 import types as builtin_types
+import typing
+from typing import Any, GenericAlias, Optional, TypeGuard, Union  # type: ignore[attr-defined]
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -165,7 +164,9 @@ def t_model(client: _api_client.BaseApiClient, model: str):
       return f'models/{model}'
 
 
-def t_models_url(api_client: _api_client.BaseApiClient, base_models: bool) -> str:
+def t_models_url(
+    api_client: _api_client.BaseApiClient, base_models: bool
+) -> str:
   if api_client.vertexai:
     if base_models:
       return 'publishers/google/models'
@@ -179,7 +180,8 @@ def t_models_url(api_client: _api_client.BaseApiClient, base_models: bool) -> st
 
 
 def t_extract_models(
-    api_client: _api_client.BaseApiClient, response: dict[str, list[types.ModelDict]]
+    api_client: _api_client.BaseApiClient,
+    response: dict[str, list[types.ModelDict]],
 ) -> Optional[list[types.ModelDict]]:
   if not response:
     return []
@@ -240,9 +242,7 @@ def pil_to_blob(img) -> types.Blob:
   return types.Blob(mime_type=mime_type, data=data)
 
 
-def t_part(
-    part: Optional[types.PartUnionDict]
-) -> types.Part:
+def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
   try:
     import PIL.Image
 
@@ -268,7 +268,7 @@ def t_part(
 
 
 def t_parts(
-    parts: Optional[Union[list[types.PartUnionDict], types.PartUnionDict]],
+    parts: Optional[Union[list[types.PartUnionDict], types.PartUnionDict, list[types.Part]]],
 ) -> list[types.Part]:
   #
   if parts is None or (isinstance(parts, list) and not parts):
@@ -333,21 +333,39 @@ def t_contents_for_embed(
     client: _api_client.BaseApiClient,
     contents: Union[list[types.Content], list[types.ContentDict], ContentType],
 ):
-  if client.vertexai and isinstance(contents, list):
-    # TODO: Assert that only text is supported.
-    return [t_content(client, content).parts[0].text for content in contents]
-  elif client.vertexai:
-    return [t_content(client, contents).parts[0].text]
-  elif isinstance(contents, list):
-    return [t_content(client, content) for content in contents]
+  if isinstance(contents, list):
+    transformed_contents = [t_content(client, content) for content in contents]
   else:
-    return [t_content(client, contents)]
+    transformed_contents = [t_content(client, contents)]
+
+  def _filter_text_parts(
+      contents: Union[list[types.Content], list[types.ContentDict]],
+  ) -> list[str]:
+    text_parts = []
+    for content in contents:
+      if content is not None:
+        if isinstance(content, dict):
+          content = types.Content.model_validate(content)
+        if content.parts is not None:
+          for part in content.parts:
+            if part.text:
+              text_parts.append(part.text)
+            else:
+              logger.warning(
+                  f'Part {part} is not text, only returning text parts.'
+              )
+    return text_parts
+
+  if client.vertexai:
+    return _filter_text_parts(transformed_contents)
+  else:
+    return transformed_contents
 
 
 def t_contents(
     client: _api_client.BaseApiClient,
     contents: Optional[
-        Union[types.ContentListUnion, types.ContentListUnionDict]
+        Union[types.ContentListUnion, types.ContentListUnionDict, types.Content]
     ],
 ) -> list[types.Content]:
   if contents is None or (isinstance(contents, list) and not contents):
@@ -365,7 +383,7 @@ def t_contents(
   result: list[types.Content] = []
   accumulated_parts: list[types.Part] = []
 
-  def _is_part(part: types.PartUnionDict) -> bool:
+  def _is_part(part: Union[types.PartUnionDict, Any]) -> TypeGuard[types.PartUnionDict]:
     if (
         isinstance(part, str)
         or isinstance(part, types.File)
@@ -429,11 +447,11 @@ def t_contents(
     ):
       _append_accumulated_parts_as_content(result, accumulated_parts)
       if isinstance(content, list):
-        result.append(types.UserContent(parts=content))
+        result.append(types.UserContent(parts=content))  # type: ignore[arg-type]
       else:
         result.append(content)
-    elif (_is_part(content)): # type: ignore
-      _handle_current_part(result, accumulated_parts, content) # type: ignore
+    elif (_is_part(content)):
+      _handle_current_part(result, accumulated_parts, content)
     elif isinstance(content, dict):
       # PactDict is already handled in _is_part
       result.append(types.Content.model_validate(content))
@@ -499,7 +517,7 @@ def handle_null_fields(schema: dict[str, Any]):
         schema['anyOf'].remove({'type': 'null'})
         if len(schema['anyOf']) == 1:
           # If there is only one type left after removing null, remove the anyOf field.
-          for key,val in schema['anyOf'][0].items():
+          for key, val in schema['anyOf'][0].items():
             schema[key] = val
           del schema['anyOf']
 
@@ -574,7 +592,8 @@ def process_schema(
 
     if schema.get('default') is not None:
       raise ValueError(
-          'Default value is not supported in the response schema for the Gemini API.'
+          'Default value is not supported in the response schema for the Gemini'
+          ' API.'
       )
 
   if schema.get('title') == 'PlaceholderLiteralEnum':
@@ -670,7 +689,7 @@ def process_schema(
 
 
 def _process_enum(
-    enum: EnumMeta, client: Optional[_api_client.BaseApiClient] = None  # type: ignore
+    enum: EnumMeta, client: _api_client.BaseApiClient
 ) -> types.Schema:
   for member in enum:  # type: ignore
     if not isinstance(member.value, str):
@@ -680,7 +699,7 @@ def _process_enum(
       )
 
   class Placeholder(pydantic.BaseModel):
-    placeholder: enum
+    placeholder: enum  # type: ignore[valid-type]
 
   enum_schema = Placeholder.model_json_schema()
   process_schema(enum_schema, client)
@@ -688,12 +707,19 @@ def _process_enum(
   return types.Schema.model_validate(enum_schema)
 
 
+def _is_type_dict_str_any(origin: Union[types.SchemaUnionDict, Any]) -> TypeGuard[dict[str, Any]]:
+  """Verifies the schema is of type dict[str, Any] for mypy type checking."""
+  return isinstance(origin, dict) and all(
+      isinstance(key, str) for key in origin
+  )
+
+
 def t_schema(
     client: _api_client.BaseApiClient, origin: Union[types.SchemaUnionDict, Any]
 ) -> Optional[types.Schema]:
   if not origin:
     return None
-  if isinstance(origin, dict):
+  if isinstance(origin, dict) and _is_type_dict_str_any(origin):
     process_schema(origin, client, order_properties=False)
     return types.Schema.model_validate(origin)
   if isinstance(origin, EnumMeta):
@@ -724,7 +750,7 @@ def t_schema(
   ):
 
     class Placeholder(pydantic.BaseModel):
-      placeholder: origin
+      placeholder: origin  # type: ignore[valid-type]
 
     schema = Placeholder.model_json_schema()
     process_schema(schema, client)
@@ -735,7 +761,8 @@ def t_schema(
 
 
 def t_speech_config(
-    _: _api_client.BaseApiClient, origin: Union[types.SpeechConfigUnionDict, Any]
+    _: _api_client.BaseApiClient,
+    origin: Union[types.SpeechConfigUnionDict, Any],
 ) -> Optional[types.SpeechConfig]:
   if not origin:
     return None
@@ -794,7 +821,10 @@ def t_tools(
     transformed_tool = t_tool(client, tool)
     # All functions should be merged into one tool.
     if transformed_tool is not None:
-      if transformed_tool.function_declarations:
+      if (
+          transformed_tool.function_declarations
+          and function_tool.function_declarations is not None
+      ):
         function_tool.function_declarations += (
             transformed_tool.function_declarations
         )
@@ -896,7 +926,10 @@ def t_file_name(
   elif isinstance(name, types.Video):
     name = name.uri
   elif isinstance(name, types.GeneratedVideo):
-    name = name.video.uri
+    if name.video is not None:
+      name = name.video.uri
+    else:
+      name = None
 
   if name is None:
     raise ValueError('File name is required.')
