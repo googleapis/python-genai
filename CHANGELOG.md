@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.1](https://github.com/googleapis/python-genai/compare/v1.5.0...v1.5.1) (2025-03-10)
+
+
+### Bug Fixes
+
+* Fix video.show() to display video ([dab1a4f](https://github.com/googleapis/python-genai/commit/dab1a4f474aed15e8d544162aa249e66f173d3e4))
+
+
+### Documentation
+
+* Update docs with agreed-upon fixes ([f523a7c](https://github.com/googleapis/python-genai/commit/f523a7c45abc8373c01cfcb737fd446d8567fc46))
+
 ## [1.5.0](https://github.com/googleapis/python-genai/compare/v1.4.0...v1.5.0) (2025-03-07)
 
 
