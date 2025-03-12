@@ -6745,7 +6745,7 @@ class AsyncModels(_api_module.BaseModule):
       # * Everlasting Florals
       # * Timeless Petals
 
-      async for chunk in awiat client.aio.models.generate_content_stream(
+      async for chunk in await client.aio.models.generate_content_stream(
         model='gemini-2.0-flash',
         contents=[
           types.Part.from_text('What is shown in this image?'),
