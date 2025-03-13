@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.6.0](https://github.com/googleapis/python-genai/compare/v1.5.0...v1.6.0) (2025-03-13)
+
+
+### Features
+
+* Add base steps to EditImageConfig ([9ddfbcd](https://github.com/googleapis/python-genai/commit/9ddfbcd64ddf4eb18d9d312cb8324748c2c4862e))
+* Enable union type for Schema when calling Gemini API, enable required field when doing automatic function calling for Gemini API. ([891d736](https://github.com/googleapis/python-genai/commit/891d736de4c561cb794ee4e91151b97ae5d55425))
+* Migrate sync client to use httpx ([d0bf03b](https://github.com/googleapis/python-genai/commit/d0bf03b1481a60407d36b279af39c95f6cfb702f))
+* Support returned safety attributes for generate_images ([98b5709](https://github.com/googleapis/python-genai/commit/98b57090662565aeb2d2c2491bffbfda984ba7b5))
+
+
+### Bug Fixes
+
+* Correctly import typing.typeguard in python 3.9 ([4dcaf99](https://github.com/googleapis/python-genai/commit/4dcaf99a6d0c749e7b5ebbf065a1098d2eadcd8b))
+* Fix the missing learning_rate_multiplier in CreateTuningJobConfig conversion. ([0bd0a5e](https://github.com/googleapis/python-genai/commit/0bd0a5ec959a8991e22269bf4fb2b4b0220d47c4))
+* Fix video.show() to display video ([dab1a4f](https://github.com/googleapis/python-genai/commit/dab1a4f474aed15e8d544162aa249e66f173d3e4))
+* Remove unsupported parameter negative_prompt from Gemini API generate_images ([5f3333e](https://github.com/googleapis/python-genai/commit/5f3333e8960ef5b0593d535e6c9f887e9a027d5c))
+* Resolve issue where pre-release versions of dependencies are installed ([6559a1a](https://github.com/googleapis/python-genai/commit/6559a1a776ba21b41c40caac9c31eca45c425401))
+
+
+### Documentation
+
+* Add docstring: the sha256_hash is encoded in base64. ([d710627](https://github.com/googleapis/python-genai/commit/d710627c24009809cd3ae105b7dd4f340cdff377))
+* Update docs with agreed-upon fixes ([f523a7c](https://github.com/googleapis/python-genai/commit/f523a7c45abc8373c01cfcb737fd446d8567fc46))
+
 ## [1.5.0](https://github.com/googleapis/python-genai/compare/v1.4.0...v1.5.0) (2025-03-07)
 
 
