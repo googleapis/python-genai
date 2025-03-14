@@ -20,7 +20,7 @@ import datetime
 import enum
 import functools
 import typing
-from typing import Union
+from typing import Any, Union
 import uuid
 import warnings
 
@@ -93,7 +93,7 @@ def set_value_by_path(data, keys, value):
     data[keys[-1]] = value
 
 
-def get_value_by_path(data: object, keys: list[str]):
+def get_value_by_path(data: Any, keys: list[str]):
   """Examples:
 
   get_value_by_path({'a': {'b': v}}, ['a', 'b'])
@@ -128,7 +128,7 @@ def get_value_by_path(data: object, keys: list[str]):
   return data
 
 
-def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
+def convert_to_dict(obj: object) -> Any:
   """Recursively converts a given object to a dictionary.
 
   If the object is a Pydantic model, it uses the model's `model_dump()` method.
@@ -137,7 +137,9 @@ def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
     obj: The object to convert.
 
   Returns:
-    A dictionary representation of the object.
+    A dictionary representation of the object, a list of objects if a list is
+    passed, or the object itself if it is not a dictionary, list, or Pydantic
+    model.
   """
   if isinstance(obj, pydantic.BaseModel):
     return obj.model_dump(exclude_none=True)
@@ -150,7 +152,7 @@ def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
 
 
 def _remove_extra_fields(
-    model: pydantic.BaseModel, response: dict[str, object]
+    model: Any, response: dict[str, object]
 ) -> None:
   """Removes extra fields from the response that are not in the model.
 
