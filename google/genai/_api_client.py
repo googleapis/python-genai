@@ -698,44 +698,43 @@ class BaseApiClient:
     returns:
           The response json object from the finalize request.
     """
-    offset = 0
-    # Upload the file in chunks
-    while True:
-      file_chunk = file.read(CHUNK_SIZE)
-      chunk_size = 0
-      if file_chunk:
-        chunk_size = len(file_chunk)
-      upload_command = 'upload'
-      # If last chunk, finalize the upload.
-      if chunk_size + offset >= upload_size:
-        upload_command += ', finalize'
-      request = HttpRequest(
-          method='POST',
-          url=upload_url,
-          headers={
-              'X-Goog-Upload-Command': upload_command,
-              'X-Goog-Upload-Offset': str(offset),
-              'Content-Length': str(chunk_size),
-          },
-          data=file_chunk,
-      )
-
-      response = self._request(request, stream=False)
-      offset += chunk_size
-      if response.headers['X-Goog-Upload-Status'] != 'active':
-        break  # upload is complete or it has been interrupted.
-
-      if upload_size <= offset:  # Status is not finalized.
-        raise ValueError(
-            'All content has been uploaded, but the upload status is not'
-            f' finalized.'
+    with httpx.Client() as client:
+      offset = 0
+      # Upload the file in chunks
+      while True:
+        file_chunk = file.read(CHUNK_SIZE)
+        chunk_size = 0
+        if file_chunk:
+          chunk_size = len(file_chunk)
+        upload_command = 'upload'
+        # If last chunk, finalize the upload.
+        if chunk_size + offset >= upload_size:
+          upload_command += ', finalize'
+        response = client.request(
+            method='POST',
+            url=upload_url,
+            headers={
+                'X-Goog-Upload-Command': upload_command,
+                'X-Goog-Upload-Offset': str(offset),
+                'Content-Length': str(chunk_size),
+            },
+            content=file_chunk,
         )
+        offset += chunk_size
+        if response.headers['x-goog-upload-status'] != 'active':
+          break  # upload is complete or it has been interrupted.
 
-    if response.headers['X-Goog-Upload-Status'] != 'final':
-      raise ValueError(
-          'Failed to upload file: Upload status is not finalized.'
-      )
-    return response.json
+        if upload_size <= offset:  # Status is not finalized.
+          raise ValueError(
+              'All content has been uploaded, but the upload status is not'
+              f' finalized.'
+          )
+
+      if response.headers['x-goog-upload-status'] != 'final':
+        raise ValueError(
+            'Failed to upload file: Upload status is not finalized.'
+        )
+      return response.json()
 
   def download_file(self, path: str, http_options):
     """Downloads the file data.
@@ -750,12 +749,7 @@ class BaseApiClient:
     http_request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
-    return self._download_file_request(http_request).byte_stream[0]
 
-  def _download_file_request(
-      self,
-      http_request: HttpRequest,
-  ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
     if http_request.data:
       if not isinstance(http_request.data, bytes):
@@ -773,7 +767,9 @@ class BaseApiClient:
       )
 
       errors.APIError.raise_for_response(response)
-      return HttpResponse(response.headers, byte_stream=[response.read()])
+      return HttpResponse(
+          response.headers, byte_stream=[response.read()]
+      ).byte_stream[0]
 
   async def async_upload_file(
       self,
