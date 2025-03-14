@@ -520,11 +520,14 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(request).json
 
-  def _download_file_request(self, request):
+  def download_file(self, path: str, http_options: HttpOptions):
     self._initialize_replay_session_if_not_loaded()
+    request = self._build_request(
+        'get', path=path, request_dict={}, http_options=http_options
+    )
     if self._should_call_api():
       try:
-        result = super()._download_file_request(request)
+        result = super().download_file(path, http_options)
       except HTTPError as e:
         result = HttpResponse(
             e.response.headers, [json.dumps({'reason': e.response.reason})]
@@ -534,7 +537,7 @@ class ReplayApiClient(BaseApiClient):
       self._record_interaction(request, result)
       return result
     else:
-      return self._build_response_from_replay(request)
+      return self._build_response_from_replay(request).byte_stream[0]
 
   async def async_download_file(self, path: str, http_options):
     self._initialize_replay_session_if_not_loaded()
