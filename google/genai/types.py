@@ -622,13 +622,6 @@ class Part(_common.BaseModel):
     return cls(function_response=function_response)
 
   @classmethod
-  def from_video_metadata(cls, *, start_offset: str, end_offset: str) -> 'Part':
-    video_metadata = VideoMetadata(
-        end_offset=end_offset, start_offset=start_offset
-    )
-    return cls(video_metadata=video_metadata)
-
-  @classmethod
   def from_executable_code(cls, *, code: str, language: Language) -> 'Part':
     executable_code = ExecutableCode(code=code, language=language)
     return cls(executable_code=executable_code)
