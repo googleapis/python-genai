@@ -141,7 +141,7 @@ def test_constructor_with_invalid_http_options_key():
     _ = Client(api_key="google_api_key", http_options=mldev_http_options)
   except Exception as e:
     assert isinstance(e, ValueError)
-    assert "Invalid http_options" in str(e)
+    assert "invalid_version_key" in str(e)
 
   # Expect value error when HTTPOptions is provided as a dict and contains
   # an invalid key.
@@ -154,7 +154,7 @@ def test_constructor_with_invalid_http_options_key():
     )
   except Exception as e:
     assert isinstance(e, ValueError)
-    assert "Invalid http_options" in str(e)
+    assert "invalid_header_key" in str(e)
 
 
 def test_constructor_with_http_options_as_pydantic_type():

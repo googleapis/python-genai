@@ -906,7 +906,7 @@ class Files(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(self._api_client, return_file['file']),
+        response=_File_from_mldev(self._api_client, return_file.json['file']),
         kwargs=config_model.model_dump() if config else {},
     )
 
@@ -1372,7 +1372,7 @@ class AsyncFiles(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(self._api_client, return_file['file']),
+        response=_File_from_mldev(self._api_client, return_file.json['file']),
         kwargs=config_model.model_dump() if config else {},
     )
 
