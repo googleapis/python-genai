@@ -137,10 +137,9 @@ class State(_common.CaseInSensitiveEnum):
 
 
 class FinishReason(_common.CaseInSensitiveEnum):
-  """Output only.
+  """Output only. The reason why the model stopped generating tokens.
 
-  The reason why the model stopped generating tokens. If empty, the model has
-  not stopped generating the tokens.
+  If empty, the model has not stopped generating the tokens.
   """
 
   FINISH_REASON_UNSPECIFIED = 'FINISH_REASON_UNSPECIFIED'
@@ -153,6 +152,7 @@ class FinishReason(_common.CaseInSensitiveEnum):
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
   SPII = 'SPII'
   MALFORMED_FUNCTION_CALL = 'MALFORMED_FUNCTION_CALL'
+  IMAGE_SAFETY = 'IMAGE_SAFETY'
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
@@ -2740,13 +2740,15 @@ class Candidate(_common.BaseModel):
       description="""Number of tokens for this candidate.
       """,
   )
+  finish_reason: Optional[FinishReason] = Field(
+      default=None,
+      description="""The reason why the model stopped generating tokens.
+      If empty, the model has not stopped generating the tokens.
+      """,
+  )
   avg_logprobs: Optional[float] = Field(
       default=None,
       description="""Output only. Average log probability score of the candidate.""",
-  )
-  finish_reason: Optional[FinishReason] = Field(
-      default=None,
-      description="""Output only. The reason why the model stopped generating tokens. If empty, the model has not stopped generating the tokens.""",
   )
   grounding_metadata: Optional[GroundingMetadata] = Field(
       default=None,
@@ -2784,11 +2786,13 @@ class CandidateDict(TypedDict, total=False):
   """Number of tokens for this candidate.
       """
 
+  finish_reason: Optional[FinishReason]
+  """The reason why the model stopped generating tokens.
+      If empty, the model has not stopped generating the tokens.
+      """
+
   avg_logprobs: Optional[float]
   """Output only. Average log probability score of the candidate."""
-
-  finish_reason: Optional[FinishReason]
-  """Output only. The reason why the model stopped generating tokens. If empty, the model has not stopped generating the tokens."""
 
   grounding_metadata: Optional[GroundingMetadataDict]
   """Output only. Metadata specifies sources used to ground generated content."""
