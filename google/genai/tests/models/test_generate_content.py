@@ -765,8 +765,6 @@ def test_pydantic_schema_from_json(client):
 
   schema = types.Schema.model_validate(CountryInfo.model_json_schema())
 
-  print(schema)
-
   response = client.models.generate_content(
       model='gemini-1.5-flash',
       contents='Give me information of the United States.',
@@ -776,7 +774,7 @@ def test_pydantic_schema_from_json(client):
       ),
   )
 
-  print(response.text)
+  assert response.text
 
 
 @pytest.mark.skipif(
@@ -1519,7 +1517,7 @@ def test_json_schema_with_streaming(client):
   for r in response:
     parts = r.candidates[0].content.parts
     for p in parts:
-      print(p.text)
+      assert p.text
 
 
 def test_pydantic_schema_with_streaming(client):
@@ -1545,7 +1543,7 @@ def test_pydantic_schema_with_streaming(client):
   for r in response:
     parts = r.candidates[0].content.parts
     for p in parts:
-      print(p.text)
+      assert p.text
 
 
 def test_schema_from_json(client):
@@ -1566,7 +1564,7 @@ def test_schema_from_json(client):
       ),
   )
 
-  print(response.text)
+  assert response.text
 
 
 def test_schema_from_model_schema(client):
@@ -1585,7 +1583,7 @@ def test_schema_from_model_schema(client):
       ),
   )
 
-  print(response.text)
+  response.text
 
 
 def test_function(client):

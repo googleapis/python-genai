@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "google-genai"
-version = "1.6.0"
+version = "1.5.0"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = {text = "Apache-2.0"}
