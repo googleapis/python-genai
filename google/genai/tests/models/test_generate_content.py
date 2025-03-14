@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import base64
 import enum
 
 from pydantic import BaseModel, ValidationError, Field
@@ -1780,3 +1781,34 @@ def test_multiple_function_calls(client):
   assert 'sunny' in response.text
   assert '100 degrees' in response.text
   assert '$100' in response.text
+
+def test_usage_metadata_part_types(client):
+  contents = [
+      'Hello world.',
+      types.Part.from_bytes(
+          data=base64.b64decode(
+              # 2x2 black PNG, base64 encoded.
+              'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAC0lEQVR4nGNgQAYAAA4AAamRc7EAAAAASUVORK5CYII='
+          ),
+          mime_type='image/png',
+      ),
+  ]
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash', contents=contents
+  )
+  usage_metadata = response.usage_metadata
+
+  assert usage_metadata.candidates_token_count
+  assert usage_metadata.candidates_tokens_details
+  modalities = sorted(
+      [d.modality.name for d in usage_metadata.candidates_tokens_details]
+  )
+  assert modalities == ['TEXT']
+
+  assert usage_metadata.prompt_token_count
+  assert usage_metadata.prompt_tokens_details
+  modalities = sorted(
+      [d.modality.name for d in usage_metadata.prompt_tokens_details]
+  )
+  assert modalities == ['IMAGE', 'TEXT']

@@ -185,6 +185,15 @@ class BlockedReason(_common.CaseInSensitiveEnum):
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
 
 
+class Modality(_common.CaseInSensitiveEnum):
+  """Server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  TEXT = 'TEXT'
+  IMAGE = 'IMAGE'
+  AUDIO = 'AUDIO'
+
+
 class DeploymentResourcesType(_common.CaseInSensitiveEnum):
   """"""
 
@@ -332,15 +341,6 @@ class FileSource(_common.CaseInSensitiveEnum):
   SOURCE_UNSPECIFIED = 'SOURCE_UNSPECIFIED'
   UPLOADED = 'UPLOADED'
   GENERATED = 'GENERATED'
-
-
-class Modality(_common.CaseInSensitiveEnum):
-  """Server content modalities."""
-
-  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
-  TEXT = 'TEXT'
-  IMAGE = 'IMAGE'
-  AUDIO = 'AUDIO'
 
 
 class VideoMetadata(_common.BaseModel):
@@ -2840,9 +2840,38 @@ GenerateContentResponsePromptFeedbackOrDict = Union[
 ]
 
 
+class ModalityTokenCount(_common.BaseModel):
+  """Represents token counting info for a single modality."""
+
+  modality: Optional[Modality] = Field(
+      default=None,
+      description="""The modality associated with this token count.""",
+  )
+  token_count: Optional[int] = Field(
+      default=None, description="""Number of tokens."""
+  )
+
+
+class ModalityTokenCountDict(TypedDict, total=False):
+  """Represents token counting info for a single modality."""
+
+  modality: Optional[Modality]
+  """The modality associated with this token count."""
+
+  token_count: Optional[int]
+  """Number of tokens."""
+
+
+ModalityTokenCountOrDict = Union[ModalityTokenCount, ModalityTokenCountDict]
+
+
 class GenerateContentResponseUsageMetadata(_common.BaseModel):
   """Usage metadata about response(s)."""
 
+  cache_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities of the cached content in the request input.""",
+  )
   cached_content_token_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of tokens in the cached part in the input (the cached content).""",
@@ -2850,18 +2879,41 @@ class GenerateContentResponseUsageMetadata(_common.BaseModel):
   candidates_token_count: Optional[int] = Field(
       default=None, description="""Number of tokens in the response(s)."""
   )
+  candidates_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities that were returned in the response.""",
+  )
   prompt_token_count: Optional[int] = Field(
       default=None,
       description="""Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content.""",
   )
+  prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities that were processed in the request input.""",
+  )
+  thoughts_token_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tokens present in thoughts output.""",
+  )
+  tool_use_prompt_token_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tokens present in tool-use prompt(s).""",
+  )
+  tool_use_prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities that were processed for tool-use request inputs.""",
+  )
   total_token_count: Optional[int] = Field(
       default=None,
-      description="""Total token count for prompt and response candidates.""",
+      description="""Total token count for prompt, response candidates, and tool-use prompts (if present).""",
   )
 
 
 class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
   """Usage metadata about response(s)."""
+
+  cache_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities of the cached content in the request input."""
 
   cached_content_token_count: Optional[int]
   """Output only. Number of tokens in the cached part in the input (the cached content)."""
@@ -2869,11 +2921,26 @@ class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
   candidates_token_count: Optional[int]
   """Number of tokens in the response(s)."""
 
+  candidates_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities that were returned in the response."""
+
   prompt_token_count: Optional[int]
   """Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content."""
 
+  prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities that were processed in the request input."""
+
+  thoughts_token_count: Optional[int]
+  """Output only. Number of tokens present in thoughts output."""
+
+  tool_use_prompt_token_count: Optional[int]
+  """Output only. Number of tokens present in tool-use prompt(s)."""
+
+  tool_use_prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities that were processed for tool-use request inputs."""
+
   total_token_count: Optional[int]
-  """Total token count for prompt and response candidates."""
+  """Total token count for prompt, response candidates, and tool-use prompts (if present)."""
 
 
 GenerateContentResponseUsageMetadataOrDict = Union[
