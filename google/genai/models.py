@@ -3246,11 +3246,11 @@ def _Candidate_from_mldev(
   if getv(from_object, ['tokenCount']) is not None:
     setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
 
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
   if getv(from_object, ['groundingMetadata']) is not None:
     setv(
@@ -3298,11 +3298,11 @@ def _Candidate_from_vertex(
   if getv(from_object, ['finishMessage']) is not None:
     setv(to_object, ['finish_message'], getv(from_object, ['finishMessage']))
 
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
   if getv(from_object, ['groundingMetadata']) is not None:
     setv(
