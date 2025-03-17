@@ -482,7 +482,7 @@ class ReplayApiClient(BaseApiClient):
         result = super().upload_file(file_path, upload_url, upload_size)
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e
@@ -519,7 +519,7 @@ class ReplayApiClient(BaseApiClient):
         )
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e
@@ -538,7 +538,7 @@ class ReplayApiClient(BaseApiClient):
         result = super().download_file(path, http_options)
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e
@@ -557,7 +557,7 @@ class ReplayApiClient(BaseApiClient):
         result = await super().async_download_file(path, http_options)
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e
