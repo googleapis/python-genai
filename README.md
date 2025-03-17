@@ -45,10 +45,12 @@ You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you're using the Gemini API
 on Vertex AI or the ML Dev Gemini API.
 
-**ML Dev Gemini API:** Set `GOOGLE_API_KEY` as shown below:
+**ML Dev Gemini API:** Set `GEMINI_API_KEY`(preferred) or `GOOGLE_API_KEY` as
+shown below:
 
 ```bash
-export GOOGLE_API_KEY='your-api-key'
+export GEMINI_API_KEY='your-api-key'
+
 ```
 
 **Vertex AI API:** Set `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`
