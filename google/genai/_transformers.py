@@ -43,7 +43,7 @@ if sys.version_info >= (3, 10):
   _UNION_TYPES = (typing.Union, builtin_types.UnionType)
   from typing import TypeGuard
 else:
-  VersionedUnionType = typing._UnionGenericAlias
+  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
   _UNION_TYPES = (typing.Union,)
   from typing_extensions import TypeGuard
 

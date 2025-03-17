@@ -30,7 +30,7 @@ from . import types
 if sys.version_info >= (3, 10):
   from types import UnionType
 else:
-  UnionType = typing._UnionGenericAlias
+  UnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
