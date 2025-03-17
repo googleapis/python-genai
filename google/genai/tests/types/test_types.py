@@ -2215,8 +2215,8 @@ def test_function_with_return_type_not_supported():
 
 
 def test_function_with_options_gemini_api(monkeypatch):
-  api_key = 'google_api_key'
-  monkeypatch.setenv('GOOGLE_API_KEY', api_key)
+  api_key = 'gemini_api_key'
+  monkeypatch.setenv('GEMINI_API_KEY', api_key)
 
   def func_under_test(a: int) -> str:
     """test return type."""

@@ -23,7 +23,7 @@ from ... import Client
 
 
 def build_test_client(monkeypatch):
-  monkeypatch.setenv('GOOGLE_API_KEY', 'google_api_key')
+  monkeypatch.setenv('GEMINI_API_KEY', 'gemini_api_key')
   return Client()
 
 
