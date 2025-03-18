@@ -91,7 +91,7 @@ def client(use_vertex, replays_prefix,http_options, request):
     mode = 'replay'
 
     # Set various environment variables to ensure that the test runs.
-    os.environ['GOOGLE_API_KEY'] = 'dummy-api-key'
+    os.environ['GEMINI_API_KEY'] = 'dummy-api-key'
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.path.join(
         os.path.dirname(__file__),
         'credentials.json',

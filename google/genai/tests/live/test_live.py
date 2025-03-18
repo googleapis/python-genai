@@ -81,7 +81,7 @@ async def _async_iterator_to_list(async_iter):
 
 def test_mldev_from_env(monkeypatch):
   api_key = 'google_api_key'
-  monkeypatch.setenv('GOOGLE_API_KEY', api_key)
+  monkeypatch.setenv('GEMINI_API_KEY', api_key)
 
   client = Client()
 

@@ -26,14 +26,39 @@ from ... import _replay_api_client as replay_api_client
 from ... import Client
 
 
-def test_ml_dev_from_env(monkeypatch):
+def test_ml_dev_from_google_api_key_env(monkeypatch):
   api_key = "google_api_key"
   monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+  monkeypatch.setenv("GEMINI_API_KEY", "")
 
   client = Client()
 
   assert not client.models._api_client.vertexai
   assert client.models._api_client.api_key == api_key
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+def test_ml_dev_from_gemini_api_key_env(monkeypatch):
+  api_key = "gemini_api_key"
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
+  monkeypatch.setenv("GEMINI_API_KEY", api_key)
+
+  client = Client()
+
+  assert not client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+def test_ml_dev_from_env_precedence(monkeypatch):
+  # Gemini API key takes precedence over Google API key.
+  gemini_api_key = "gemini_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", gemini_api_key)
+  google_api_key = "google_api_key"
+  monkeypatch.setenv("GOOGLE_API_KEY", google_api_key)
+
+  client = Client()
+
+  assert not client.models._api_client.vertexai
+  assert client.models._api_client.api_key == gemini_api_key
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
@@ -271,6 +296,7 @@ def test_invalid_vertexai_constructor_empty(monkeypatch):
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
     monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
     monkeypatch.setenv("GOOGLE_API_KEY", "")
+    monkeypatch.setenv("GEMINI_API_KEY", "")
     def mock_auth_default(scopes=None):
       return None, None
 
@@ -281,6 +307,7 @@ def test_invalid_vertexai_constructor_empty(monkeypatch):
 def test_invalid_mldev_constructor_empty(monkeypatch):
   with pytest.raises(ValueError):
     monkeypatch.setenv("GOOGLE_API_KEY", "")
+    monkeypatch.setenv("GEMINI_API_KEY", "")
     Client()
 
 
@@ -389,8 +416,8 @@ def test_mldev_explicit_arg_precedence(monkeypatch):
 
 
 def test_replay_client_ml_dev_from_env(monkeypatch, use_vertex: bool):
-  api_key = "google_api_key"
-  monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+  gemini_api_key = "gemini_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", gemini_api_key)
   monkeypatch.setenv("GOOGLE_GENAI_CLIENT_MODE", "replay")
   api_type = "vertex" if use_vertex else "mldev"
   monkeypatch.setenv("GOOGLE_GENAI_REPLAY_ID", "test_replay_id." + api_type)
@@ -399,7 +426,7 @@ def test_replay_client_ml_dev_from_env(monkeypatch, use_vertex: bool):
   client = Client()
 
   assert not client.models._api_client.vertexai
-  assert client.models._api_client.api_key == api_key
+  assert client.models._api_client.api_key == gemini_api_key
   assert isinstance(
       client.models._api_client, replay_api_client.ReplayApiClient
   )
@@ -461,10 +488,11 @@ def test_vertexai_apikey_from_constructor(monkeypatch):
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
-def test_vertexai_apikey_from_env(monkeypatch):
+def test_vertexai_apikey_from_google_api_key_env(monkeypatch):
   # Vertex AI Express mode uses API key on Vertex AI.
   api_key = "vertexai_api_key"
   monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+  monkeypatch.setenv("GEMINI_API_KEY", "")
 
   # Due to proj/location taking precedence, need to clear proj/location env
   # variables.
@@ -475,6 +503,27 @@ def test_vertexai_apikey_from_env(monkeypatch):
 
   assert client.models._api_client.vertexai
   assert client.models._api_client.api_key == api_key
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+def test_vertexai_apikey_from_env_precedence(monkeypatch):
+  # Vertex AI Express mode uses gemnai API key on Vertex AI.
+  gemini_api_key = "gemini_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", gemini_api_key)
+  google_api_key = "google_api_key"
+  monkeypatch.setenv("GOOGLE_API_KEY", google_api_key)
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client(vertexai=True)
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == gemini_api_key
   assert not client.models._api_client.project
   assert not client.models._api_client.location
   assert "aiplatform" in client._api_client._http_options["base_url"]
@@ -504,6 +553,7 @@ def test_vertexai_apikey_combo1(monkeypatch):
   monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", project_id)
   monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", location)
   monkeypatch.setenv("GOOGLE_API_KEY", "")
+  monkeypatch.setenv("GEMINI_API_KEY", "")
 
   # Explicit api_key takes precedence over implicit project/location.
   client = Client(vertexai=True, api_key=api_key)

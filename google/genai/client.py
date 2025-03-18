@@ -102,8 +102,9 @@ class Client:
   To initialize the client, provide the required arguments either directly
   or by using environment variables. Gemini API users and Vertex AI users in
   express mode can provide API key by providing input argument
-  `api_key="your-api-key"` or by defining `GOOGLE_API_KEY="your-api-key"` as an
-  environment variable
+  `api_key="your-api-key"` or via environment variables: `GOOGLE_API_KEY` or
+  `GEMINI_API_KEY`. When both environment variables are set `GEMINI_API_KEY`
+  takes precedence.
 
   Vertex AI API users can provide inputs argument as `vertexai=True,
   project="your-project-id", location="us-central1"` or by defining
