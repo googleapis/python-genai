@@ -322,7 +322,10 @@ class BaseApiClient:
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
-    env_api_key = os.environ.get('GOOGLE_API_KEY', None)
+    # Gemini API key takes precedence over Google API key.
+    env_api_key = os.environ.get('GEMINI_API_KEY', None)
+    if not env_api_key or env_api_key == '':
+      env_api_key = os.environ.get('GOOGLE_API_KEY', None)
     self.project = project or env_project
     self.location = location or env_location
     self.api_key = api_key or env_api_key
