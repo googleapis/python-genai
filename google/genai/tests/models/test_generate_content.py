@@ -1780,3 +1780,30 @@ def test_multiple_function_calls(client):
   assert 'sunny' in response.text
   assert '100 degrees' in response.text
   assert '$100' in response.text
+
+
+def test_warning_log_includes_parsed_for_multi_candidate_response(client, caplog):
+  caplog.set_level(logging.DEBUG, logger='google_genai')
+
+  class CountryInfo(BaseModel):
+    name: str
+    population: int
+    capital: str
+    continent: str
+    major_cities: list[str]
+    gdp: int
+    official_language: str
+    total_area_sq_mi: int
+
+  response = client.models.generate_content(
+      model='gemini-2.0-flash',
+      contents='Give me information of the United States.',
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': CountryInfo,
+          "candidate_count": 2
+      },
+  )
+  assert response.parsed
+  assert len(response.candidates) == 2
+  assert 'parsed' in caplog.text

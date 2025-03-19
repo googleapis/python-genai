@@ -2914,12 +2914,14 @@ class GenerateContentResponse(_common.BaseModel):
   automatic_function_calling_history: Optional[list[Content]] = None
   parsed: Optional[Union[pydantic.BaseModel, dict, Enum]] = Field(
       default=None,
-      description="""Parsed response if response_schema is provided. Not available for streaming.""",
+      description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
 
-  @property
-  def text(self) -> Optional[str]:
-    """Returns the concatenation of all text parts in the response."""
+  def _get_text(self, warn_property: str = 'text') -> Optional[str]:
+    """Returns the concatenation of all text parts in the response.
+
+    This is an internal method that allows customizing the warning message.
+    """
     if (
         not self.candidates
         or not self.candidates[0].content
@@ -2928,9 +2930,10 @@ class GenerateContentResponse(_common.BaseModel):
       return None
     if len(self.candidates) > 1:
       logger.warning(
-          f'there are {len(self.candidates)} candidates, returning text from'
-          ' the first candidate.Access response.candidates directly to get'
-          ' text from other candidates.'
+          f'there are {len(self.candidates)} candidates, returning'
+          f' {warn_property} result from the first candidate. Access'
+          ' response.candidates directly to get the result from other'
+          ' candidates.'
       )
     text = ''
     any_text_part_text = False
@@ -2949,11 +2952,17 @@ class GenerateContentResponse(_common.BaseModel):
     if non_text_parts:
       logger.warning(
           'Warning: there are non-text parts in the response:'
-          f' {non_text_parts},returning concatenated text from text parts,check'
-          ' out the non text parts for full response from model.'
+          f' {non_text_parts},returning concatenated {warn_property} result'
+          ' from text parts,check out the non text parts for full response'
+          ' from model.'
       )
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
+
+  @property
+  def text(self) -> Optional[str]:
+    """Returns the concatenation of all text parts in the response."""
+    return self._get_text(warn_property='text')
 
   @property
   def function_calls(self) -> Optional[list[FunctionCall]]:
@@ -3037,16 +3046,23 @@ class GenerateContentResponse(_common.BaseModel):
     ):
       # Pydantic schema.
       try:
-        if result.text is not None:
-          result.parsed = response_schema.model_validate_json(result.text)
+        result_text = result._get_text(warn_property='parsed')
+        if result_text is not None:
+          result.parsed = response_schema.model_validate_json(result_text)
       # may not be a valid json per stream response
       except pydantic.ValidationError:
         pass
       except json.decoder.JSONDecodeError:
         pass
-    elif isinstance(response_schema, EnumMeta) and result.text is not None:
+    elif (
+        isinstance(response_schema, EnumMeta)
+        and result._get_text(warn_property='parsed') is not None
+    ):
       # Enum with "application/json" returns response in double quotes.
-      enum_value = result.text.replace('"', '')
+      result_text = result._get_text(warn_property='parsed')
+      if result_text is None:
+        raise ValueError('Response is empty.')
+      enum_value = result_text.replace('"', '')
       try:
         result.parsed = response_schema(enum_value)
         if (
@@ -3064,8 +3080,9 @@ class GenerateContentResponse(_common.BaseModel):
         placeholder: response_schema  # type: ignore[valid-type]
 
       try:
-        if result.text is not None:
-          parsed = {'placeholder': json.loads(result.text)}
+        result_text = result._get_text(warn_property='parsed')
+        if result_text is not None:
+          parsed = {'placeholder': json.loads(result_text)}
           placeholder = Placeholder.model_validate(parsed)
           result.parsed = placeholder.placeholder
       except json.decoder.JSONDecodeError:
@@ -3080,8 +3097,9 @@ class GenerateContentResponse(_common.BaseModel):
       # want the result converted to. So just return json.
       # JSON schema.
       try:
-        if result.text is not None:
-          result.parsed = json.loads(result.text)
+        result_text = result._get_text(warn_property='parsed')
+        if result_text is not None:
+          result.parsed = json.loads(result_text)
       # may not be a valid json per stream response
       except json.decoder.JSONDecodeError:
         pass
@@ -3091,12 +3109,13 @@ class GenerateContentResponse(_common.BaseModel):
       for union_type in union_types:
         if issubclass(union_type, pydantic.BaseModel):
           try:
-            if result.text is not None:
+            result_text = result._get_text(warn_property='parsed')
+            if result_text is not None:
 
               class Placeholder(pydantic.BaseModel):  # type: ignore[no-redef]
                 placeholder: response_schema  # type: ignore[valid-type]
 
-              parsed = {'placeholder': json.loads(result.text)}
+              parsed = {'placeholder': json.loads(result_text)}
               placeholder = Placeholder.model_validate(parsed)
               result.parsed = placeholder.placeholder
           except json.decoder.JSONDecodeError:
@@ -3105,8 +3124,9 @@ class GenerateContentResponse(_common.BaseModel):
             pass
         else:
           try:
-            if result.text is not None:
-              result.parsed = json.loads(result.text)
+            result_text = result._get_text(warn_property='parsed')
+            if result_text is not None:
+              result.parsed = json.loads(result_text)
           # may not be a valid json per stream response
           except json.decoder.JSONDecodeError:
             pass
