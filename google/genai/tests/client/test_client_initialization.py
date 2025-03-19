@@ -32,9 +32,9 @@ def test_ml_dev_from_env(monkeypatch):
 
   client = Client()
 
-  assert not client.models._api_client.vertexai
-  assert client.models._api_client.api_key == api_key
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert not client.models.api_client.vertexai
+  assert client.models.api_client.api_key == api_key
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_ml_dev_from_constructor():
@@ -42,8 +42,8 @@ def test_ml_dev_from_constructor():
 
   client = Client(api_key=api_key)
 
-  assert not client.models._api_client.vertexai
-  assert client.models._api_client.api_key == api_key
+  assert not client.models.api_client.vertexai
+  assert client.models.api_client.api_key == api_key
 
 
 def test_constructor_with_http_options():
@@ -65,27 +65,27 @@ def test_constructor_with_http_options():
   mldev_client = Client(
       api_key="google_api_key", http_options=mldev_http_options
   )
-  assert not mldev_client.models._api_client.vertexai
+  assert not mldev_client.models.api_client.vertexai
   assert (
-      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      mldev_client.models.api_client.get_read_only_http_options()["base_url"]
       == "https://placeholder-fake-url.com/"
   )
   assert (
-      mldev_client.models._api_client.get_read_only_http_options()[
+      mldev_client.models.api_client.get_read_only_http_options()[
           "api_version"
       ]
       == "v1main"
   )
 
   assert (
-      mldev_client.models._api_client.get_read_only_http_options()["headers"][
+      mldev_client.models.api_client.get_read_only_http_options()["headers"][
           "X-Custom-Header"
       ]
       == "custom_value_mldev"
   )
 
   assert (
-      mldev_client.models._api_client.get_read_only_http_options()["timeout"]
+      mldev_client.models.api_client.get_read_only_http_options()["timeout"]
       == 10000
   )
 
@@ -95,28 +95,28 @@ def test_constructor_with_http_options():
       location="fake-location",
       http_options=vertexai_http_options,
   )
-  assert vertexai_client.models._api_client.vertexai
+  assert vertexai_client.models.api_client.vertexai
   assert (
-      vertexai_client.models._api_client.get_read_only_http_options()[
+      vertexai_client.models.api_client.get_read_only_http_options()[
           "base_url"
       ]
       == "https://{self.location}-aiplatform.googleapis.com/{{api_version}}/"
   )
   assert (
-      vertexai_client.models._api_client.get_read_only_http_options()[
+      vertexai_client.models.api_client.get_read_only_http_options()[
           "api_version"
       ]
       == "v1"
   )
   assert (
-      vertexai_client.models._api_client.get_read_only_http_options()[
+      vertexai_client.models.api_client.get_read_only_http_options()[
           "headers"
       ]["X-Custom-Header"]
       == "custom_value_vertexai"
   )
 
   assert (
-      vertexai_client.models._api_client.get_read_only_http_options()["timeout"]
+      vertexai_client.models.api_client.get_read_only_http_options()["timeout"]
       == 11000
   )
 
@@ -175,20 +175,20 @@ def test_constructor_with_http_options_as_pydantic_type():
   mldev_client = Client(
       api_key="google_api_key", http_options=mldev_http_options
   )
-  assert not mldev_client.models._api_client.vertexai
+  assert not mldev_client.models.api_client.vertexai
   assert (
-      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      mldev_client.models.api_client.get_read_only_http_options()["base_url"]
       == mldev_http_options.base_url
   )
   assert (
-      mldev_client.models._api_client.get_read_only_http_options()[
+      mldev_client.models.api_client.get_read_only_http_options()[
           "api_version"
       ]
       == mldev_http_options.api_version
   )
 
   assert (
-      mldev_client.models._api_client.get_read_only_http_options()["headers"][
+      mldev_client.models.api_client.get_read_only_http_options()["headers"][
           "X-Custom-Header"
       ]
       == mldev_http_options.headers["X-Custom-Header"]
@@ -201,21 +201,21 @@ def test_constructor_with_http_options_as_pydantic_type():
       location="fake-location",
       http_options=vertexai_http_options,
   )
-  assert vertexai_client.models._api_client.vertexai
+  assert vertexai_client.models.api_client.vertexai
   assert (
-      vertexai_client.models._api_client.get_read_only_http_options()[
+      vertexai_client.models.api_client.get_read_only_http_options()[
           "base_url"
       ]
       == vertexai_http_options.base_url
   )
   assert (
-      vertexai_client.models._api_client.get_read_only_http_options()[
+      vertexai_client.models.api_client.get_read_only_http_options()[
           "api_version"
       ]
       == vertexai_http_options.api_version
   )
   assert (
-      vertexai_client.models._api_client.get_read_only_http_options()[
+      vertexai_client.models.api_client.get_read_only_http_options()[
           "headers"
       ]["X-Custom-Header"]
       == vertexai_http_options.headers["X-Custom-Header"]
@@ -231,9 +231,9 @@ def test_vertexai_from_env_1(monkeypatch):
 
   client = Client()
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
 
 
 def test_vertexai_from_env_true(monkeypatch):
@@ -245,9 +245,9 @@ def test_vertexai_from_env_true(monkeypatch):
 
   client = Client()
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
 
 
 def test_vertexai_from_constructor():
@@ -260,10 +260,10 @@ def test_vertexai_from_constructor():
       location=location,
   )
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_invalid_vertexai_constructor_empty(monkeypatch):
@@ -336,11 +336,11 @@ def test_vertexai_explicit_arg_precedence1(monkeypatch):
       location=location,
   )
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
-  assert not client.models._api_client.api_key
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
+  assert not client.models.api_client.api_key
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_explicit_arg_precedence2(monkeypatch):
@@ -355,11 +355,11 @@ def test_vertexai_explicit_arg_precedence2(monkeypatch):
       api_key=api_key,
   )
 
-  assert client.models._api_client.vertexai
-  assert not client.models._api_client.project
-  assert not client.models._api_client.location
-  assert client.models._api_client.api_key == api_key
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert not client.models.api_client.project
+  assert not client.models.api_client.location
+  assert client.models.api_client.api_key == api_key
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_invalid_mldev_constructor():
@@ -383,9 +383,9 @@ def test_mldev_explicit_arg_precedence(monkeypatch):
 
   client = Client(api_key=api_key)
 
-  assert not client.models._api_client.vertexai
-  assert client.models._api_client.api_key == api_key
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert not client.models.api_client.vertexai
+  assert client.models.api_client.api_key == api_key
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_replay_client_ml_dev_from_env(monkeypatch, use_vertex: bool):
@@ -398,10 +398,10 @@ def test_replay_client_ml_dev_from_env(monkeypatch, use_vertex: bool):
 
   client = Client()
 
-  assert not client.models._api_client.vertexai
-  assert client.models._api_client.api_key == api_key
+  assert not client.models.api_client.vertexai
+  assert client.models.api_client.api_key == api_key
   assert isinstance(
-      client.models._api_client, replay_api_client.ReplayApiClient
+      client.models.api_client, replay_api_client.ReplayApiClient
   )
 
 
@@ -418,11 +418,11 @@ def test_replay_client_vertexai_from_env(monkeypatch, use_vertex: bool):
 
   client = Client()
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
   assert isinstance(
-      client.models._api_client, replay_api_client.ReplayApiClient
+      client.models.api_client, replay_api_client.ReplayApiClient
   )
 
 
@@ -433,13 +433,13 @@ def test_change_client_mode_from_env(monkeypatch, use_vertex: bool):
 
   client1 = Client()
   assert isinstance(
-      client1.models._api_client, replay_api_client.ReplayApiClient
+      client1.models.api_client, replay_api_client.ReplayApiClient
   )
 
   monkeypatch.setenv("GOOGLE_GENAI_CLIENT_MODE", None)
 
   client2 = Client()
-  assert isinstance(client2.models._api_client, api_client.BaseApiClient)
+  assert isinstance(client2.models.api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_apikey_from_constructor(monkeypatch):
@@ -453,12 +453,12 @@ def test_vertexai_apikey_from_constructor(monkeypatch):
 
   client = Client(api_key=api_key, vertexai=True)
 
-  assert client.models._api_client.vertexai
-  assert not client.models._api_client.project
-  assert not client.models._api_client.location
-  assert client.models._api_client.api_key == api_key
-  assert "aiplatform" in client._api_client._http_options["base_url"]
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert not client.models.api_client.project
+  assert not client.models.api_client.location
+  assert client.models.api_client.api_key == api_key
+  assert "aiplatform" in client.api_client._http_options["base_url"]
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_apikey_from_env(monkeypatch):
@@ -473,12 +473,12 @@ def test_vertexai_apikey_from_env(monkeypatch):
 
   client = Client(vertexai=True)
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.api_key == api_key
-  assert not client.models._api_client.project
-  assert not client.models._api_client.location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.api_key == api_key
+  assert not client.models.api_client.project
+  assert not client.models.api_client.location
+  assert "aiplatform" in client.api_client._http_options["base_url"]
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_apikey_invalid_constructor1():
@@ -508,12 +508,12 @@ def test_vertexai_apikey_combo1(monkeypatch):
   # Explicit api_key takes precedence over implicit project/location.
   client = Client(vertexai=True, api_key=api_key)
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.api_key == api_key
-  assert not client.models._api_client.project
-  assert not client.models._api_client.location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.api_key == api_key
+  assert not client.models.api_client.project
+  assert not client.models.api_client.location
+  assert "aiplatform" in client.api_client._http_options["base_url"]
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_apikey_combo2(monkeypatch):
@@ -528,12 +528,12 @@ def test_vertexai_apikey_combo2(monkeypatch):
   # Explicit project/location takes precedence over implicit api_key.
   client = Client(vertexai=True, project=project_id, location=location)
 
-  assert client.models._api_client.vertexai
-  assert not client.models._api_client.api_key
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert not client.models.api_client.api_key
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
+  assert "aiplatform" in client.api_client._http_options["base_url"]
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_apikey_combo3(monkeypatch):
@@ -548,12 +548,12 @@ def test_vertexai_apikey_combo3(monkeypatch):
   # Implicit project/location takes precedence over implicit api_key.
   client = Client(vertexai=True)
 
-  assert client.models._api_client.vertexai
-  assert not client.models._api_client.api_key
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert client.models.api_client.vertexai
+  assert not client.models.api_client.api_key
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
+  assert "aiplatform" in client.api_client._http_options["base_url"]
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_global_endpoint(monkeypatch):
@@ -565,13 +565,13 @@ def test_vertexai_global_endpoint(monkeypatch):
 
   client = Client(vertexai=True, location=location)
 
-  assert client.models._api_client.vertexai
-  assert client.models._api_client.project == project_id
-  assert client.models._api_client.location == location
-  assert client.models._api_client._http_options["base_url"] == (
+  assert client.models.api_client.vertexai
+  assert client.models.api_client.project == project_id
+  assert client.models.api_client.location == location
+  assert client.models.api_client._http_options["base_url"] == (
       "https://aiplatform.googleapis.com/"
   )
-  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert isinstance(client.models.api_client, api_client.BaseApiClient)
 
 
 def test_client_logs_to_logger_instance(monkeypatch, caplog):

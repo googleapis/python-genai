@@ -738,7 +738,7 @@ async def test_google_search_retrieval_stream_async(client):
 
 @pytest.mark.asyncio
 async def test_vai_search_stream_async(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     async for part in await client.aio.models.generate_content_stream(
         model='gemini-1.5-flash',
         contents='what is vertex ai search?',

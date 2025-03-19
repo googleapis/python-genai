@@ -56,7 +56,7 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_get(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = await client.aio.caches.get(
         name=constants.CACHED_CONTENT_NAME_VERTEX
     )
@@ -66,7 +66,7 @@ async def test_async_get(client):
 
 
 def test_different_cache_name_formats(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response1 = client.caches.get(
         name='projects/801452371447/locations/us-central1/cachedContents/1739497763885809664'
     )

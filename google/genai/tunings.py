@@ -730,9 +730,9 @@ class Tunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GetTuningJobParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -741,7 +741,7 @@ class Tunings(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _GetTuningJobParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -763,19 +763,19 @@ class Tunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _TuningJob_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
+      response_dict = _TuningJob_from_mldev(self.api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def _list(
@@ -796,9 +796,9 @@ class Tunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _ListTuningJobsParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -807,7 +807,7 @@ class Tunings(_api_module.BaseModule):
         path = 'tuningJobs'
     else:
       request_dict = _ListTuningJobsParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -829,23 +829,23 @@ class Tunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _ListTuningJobsResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _ListTuningJobsResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def _tune(
@@ -873,11 +873,11 @@ class Tunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _CreateTuningJobParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -900,19 +900,19 @@ class Tunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _TuningJob_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
+      response_dict = _TuningJob_from_mldev(self.api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def _tune_mldev(
@@ -940,11 +940,11 @@ class Tunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       raise ValueError('This method is only supported in the default client.')
     else:
       request_dict = _CreateTuningJobParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -967,19 +967,19 @@ class Tunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _Operation_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _Operation_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _Operation_from_mldev(self._api_client, response_dict)
+      response_dict = _Operation_from_mldev(self.api_client, response_dict)
 
     return_value = types.Operation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def list(
@@ -1001,12 +1001,12 @@ class Tunings(_api_module.BaseModule):
     job = self._get(name=name, config=config)
     if (
         job.experiment
-        and self._api_client.vertexai
-        and self._api_client.project is not None
+        and self.api_client.vertexai
+        and self.api_client.project is not None
     ):
       _IpythonUtils.display_experiment_button(
           experiment=job.experiment,
-          project=self._api_client.project,
+          project=self.api_client.project,
       )
     return job
 
@@ -1021,7 +1021,7 @@ class Tunings(_api_module.BaseModule):
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       tuning_job = self._tune(
           base_model=base_model,
           training_dataset=training_dataset,
@@ -1043,7 +1043,7 @@ class Tunings(_api_module.BaseModule):
           name=tuned_model_name,
           state=types.JobState.JOB_STATE_QUEUED,
       )
-    if tuning_job.name and self._api_client.vertexai:
+    if tuning_job.name and self.api_client.vertexai:
       _IpythonUtils.display_model_tuning_button(
           tuning_job_resource=tuning_job.name
       )
@@ -1074,9 +1074,9 @@ class AsyncTunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GetTuningJobParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1085,7 +1085,7 @@ class AsyncTunings(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _GetTuningJobParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1107,19 +1107,19 @@ class AsyncTunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _TuningJob_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
+      response_dict = _TuningJob_from_mldev(self.api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def _list(
@@ -1140,9 +1140,9 @@ class AsyncTunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _ListTuningJobsParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1151,7 +1151,7 @@ class AsyncTunings(_api_module.BaseModule):
         path = 'tuningJobs'
     else:
       request_dict = _ListTuningJobsParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1173,23 +1173,23 @@ class AsyncTunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _ListTuningJobsResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _ListTuningJobsResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def _tune(
@@ -1217,11 +1217,11 @@ class AsyncTunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _CreateTuningJobParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1244,19 +1244,19 @@ class AsyncTunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _TuningJob_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _TuningJob_from_mldev(self._api_client, response_dict)
+      response_dict = _TuningJob_from_mldev(self.api_client, response_dict)
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def _tune_mldev(
@@ -1284,11 +1284,11 @@ class AsyncTunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       raise ValueError('This method is only supported in the default client.')
     else:
       request_dict = _CreateTuningJobParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1311,19 +1311,19 @@ class AsyncTunings(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _Operation_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _Operation_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _Operation_from_mldev(self._api_client, response_dict)
+      response_dict = _Operation_from_mldev(self.api_client, response_dict)
 
     return_value = types.Operation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def list(
@@ -1345,12 +1345,12 @@ class AsyncTunings(_api_module.BaseModule):
     job = await self._get(name=name, config=config)
     if (
         job.experiment
-        and self._api_client.vertexai
-        and self._api_client.project is not None
+        and self.api_client.vertexai
+        and self.api_client.project is not None
     ):
       _IpythonUtils.display_experiment_button(
           experiment=job.experiment,
-          project=self._api_client.project,
+          project=self.api_client.project,
       )
     return job
 
@@ -1365,7 +1365,7 @@ class AsyncTunings(_api_module.BaseModule):
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       tuning_job = await self._tune(
           base_model=base_model,
           training_dataset=training_dataset,
@@ -1387,7 +1387,7 @@ class AsyncTunings(_api_module.BaseModule):
           name=tuned_model_name,
           state=types.JobState.JOB_STATE_QUEUED,
       )
-    if tuning_job.name and self._api_client.vertexai:
+    if tuning_job.name and self.api_client.vertexai:
       _IpythonUtils.display_model_tuning_button(
           tuning_job_resource=tuning_job.name
       )

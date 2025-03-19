@@ -185,11 +185,11 @@ def test_schema_with_default_value_raises_for_mldev(client):
 
   if not client.vertexai:
     with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client._api_client, CountryInfoWithDefaultValue)
+      _transformers.t_schema(client.api_client, CountryInfoWithDefaultValue)
     assert 'Default value is not supported' in str(e)
   else:
     transformed_schema_vertex = _transformers.t_schema(
-        client._api_client, CountryInfoWithDefaultValue
+        client.api_client, CountryInfoWithDefaultValue
     )
     expected_schema_vertex = types.Schema(
         properties={

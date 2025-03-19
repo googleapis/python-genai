@@ -81,7 +81,7 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_get_tuned_model(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     with pytest.raises(errors.ClientError) as e:
       await client.aio.models.get(model='tunedModels/generate-num-1896')
     assert '404' in str(e)
@@ -93,7 +93,7 @@ async def test_async_get_tuned_model(client):
 
 @pytest.mark.asyncio
 async def test_async_get_model(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = await client.aio.models.get(
         model='models/7687416965014487040',
         config={'http_options': test_http_options},

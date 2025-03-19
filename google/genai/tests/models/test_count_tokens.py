@@ -105,7 +105,7 @@ async def test_async(client):
 
 
 def test_different_model_names(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response1 = client.models.count_tokens(
         model='gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )

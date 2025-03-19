@@ -80,7 +80,7 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_update_tuned_model(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     with pytest.raises(errors.ClientError) as e:
       await client.aio.models.update(
           model='tunedModels/generate-num-8498',
@@ -102,7 +102,7 @@ async def test_async_update_tuned_model(client):
 
 @pytest.mark.asyncio
 async def test_async_update_model(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = await client.aio.models.update(
         model='models/7687416965014487040',
         config={

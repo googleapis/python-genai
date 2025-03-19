@@ -53,7 +53,7 @@ def base_test_function(
   )
   api_type = 'vertex' if use_vertex else 'mldev'
   replay_id = f'{replays_prefix}/{replay_id}.{api_type}'
-  client._api_client.initialize_replay_session(replay_id)
+  client.api_client.initialize_replay_session(replay_id)
   # vars().copy() provides a shallow copy of the parameters.
   parameters_dict = vars(test_table_item.parameters).copy()
   method_name_parts = test_method.split('.')
@@ -62,15 +62,15 @@ def base_test_function(
   try:
     method(**parameters_dict)
     # Should not reach here if expecting an exception.
-    if test_table_item.exception_if_mldev and not client._api_client.vertexai:
+    if test_table_item.exception_if_mldev and not client.api_client.vertexai:
       assert False, 'Should have raised exception in MLDev.'
-    elif test_table_item.exception_if_vertex and client._api_client.vertexai:
+    elif test_table_item.exception_if_vertex and client.api_client.vertexai:
       assert False, 'Should have raised exception in Vertex.'
-    client._api_client.close()
+    client.api_client.close()
   except Exception as e:
-    if test_table_item.exception_if_mldev and not client._api_client.vertexai:
+    if test_table_item.exception_if_mldev and not client.api_client.vertexai:
       assert test_table_item.exception_if_mldev in str(e), str(e)
-    elif test_table_item.exception_if_vertex and client._api_client.vertexai:
+    elif test_table_item.exception_if_vertex and client.api_client.vertexai:
       assert test_table_item.exception_if_vertex in str(e), str(e)
     else:
       raise e
@@ -177,14 +177,14 @@ def setup(
 
 
 def exception_if_mldev(client, exception_type: type[Exception]):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     return contextlib.nullcontext()
   else:
     return pytest.raises(exception_type)
 
 
 def exception_if_vertex(client, exception_type: type[Exception]):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     return pytest.raises(exception_type)
   else:
     return contextlib.nullcontext()

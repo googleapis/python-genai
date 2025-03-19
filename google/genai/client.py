@@ -36,14 +36,14 @@ class AsyncClient:
 
   def __init__(self, api_client: BaseApiClient):
 
-    self._api_client = api_client
-    self._models = AsyncModels(self._api_client)
-    self._tunings = AsyncTunings(self._api_client)
-    self._caches = AsyncCaches(self._api_client)
-    self._batches = AsyncBatches(self._api_client)
-    self._files = AsyncFiles(self._api_client)
-    self._live = AsyncLive(self._api_client)
-    self._operations = AsyncOperations(self._api_client)
+    self.api_client = api_client
+    self._models = AsyncModels(self.api_client)
+    self._tunings = AsyncTunings(self.api_client)
+    self._caches = AsyncCaches(self.api_client)
+    self._batches = AsyncBatches(self.api_client)
+    self._files = AsyncFiles(self.api_client)
+    self._live = AsyncLive(self.api_client)
+    self._operations = AsyncOperations(self.api_client)
 
   @property
   def models(self) -> AsyncModels:
@@ -197,7 +197,7 @@ class Client:
     if isinstance(http_options, dict):
       http_options = HttpOptions(**http_options)
 
-    self._api_client = self._get_api_client(
+    self.api_client = self._get_api_client(
         vertexai=vertexai,
         api_key=api_key,
         credentials=credentials,
@@ -207,13 +207,13 @@ class Client:
         http_options=http_options,
     )
 
-    self._aio = AsyncClient(self._api_client)
-    self._models = Models(self._api_client)
-    self._tunings = Tunings(self._api_client)
-    self._caches = Caches(self._api_client)
-    self._batches = Batches(self._api_client)
-    self._files = Files(self._api_client)
-    self._operations = Operations(self._api_client)
+    self._aio = AsyncClient(self.api_client)
+    self._models = Models(self.api_client)
+    self._tunings = Tunings(self.api_client)
+    self._caches = Caches(self.api_client)
+    self._batches = Batches(self.api_client)
+    self._files = Files(self.api_client)
+    self._operations = Operations(self.api_client)
 
   @staticmethod
   def _get_api_client(
@@ -286,4 +286,4 @@ class Client:
   @property
   def vertexai(self) -> bool:
     """Returns whether the client is using the Vertex AI API."""
-    return self._api_client.vertexai or False
+    return self.api_client.vertexai or False

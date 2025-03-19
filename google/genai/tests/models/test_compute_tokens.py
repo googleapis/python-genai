@@ -73,7 +73,7 @@ pytestmark = pytest_helper.setup(
 
 
 def test_token_bytes_deserialization(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = client.models.compute_tokens(
         model=_COMPUTE_TOKENS_PARAMS.model,
         contents=_UNICODE_STRING,
@@ -88,7 +88,7 @@ def test_token_bytes_deserialization(client):
 
 @pytest.mark.asyncio
 async def test_async(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = await client.aio.models.compute_tokens(
         model=_COMPUTE_TOKENS_PARAMS.model,
         contents=_COMPUTE_TOKENS_PARAMS.contents,
@@ -103,7 +103,7 @@ async def test_async(client):
 
 
 def test_different_model_names(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response1 = client.models.compute_tokens(
         model='gemini-1.5-flash', contents=_COMPUTE_TOKENS_PARAMS.contents
     )

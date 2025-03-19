@@ -20,7 +20,7 @@ pytest_plugins = ("pytest_asyncio",)
 def test_tune_until_success(client):
   import time
 
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     job = client.tunings.tune(
         base_model="gemini-1.5-pro-002",
         training_dataset=genai_types.TuningDataset(
@@ -48,7 +48,7 @@ def test_tune_until_success(client):
 
   while not job.has_ended:
     # Skipping the sleep for when in replay mode.
-    if not isinstance(client._api_client, _replay_api_client.ReplayApiClient):
+    if not isinstance(client.api_client, _replay_api_client.ReplayApiClient):
       time.sleep(60)
     job = client.tunings.get(name=job.name)
 

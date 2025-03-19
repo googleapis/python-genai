@@ -4302,9 +4302,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4313,7 +4313,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:generateContent'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4335,23 +4335,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _GenerateContentResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _GenerateContentResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.GenerateContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def _generate_content_stream(
@@ -4369,9 +4369,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4382,7 +4382,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:streamGenerateContent?alt=sse'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4406,23 +4406,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    for response_dict in self._api_client.request_streamed(
+    for response_dict in self.api_client.request_streamed(
         'post', path, request_dict, http_options
     ):
 
-      if self._api_client.vertexai:
+      if self.api_client.vertexai:
         response_dict = _GenerateContentResponse_from_vertex(
-            self._api_client, response_dict
+            self.api_client, response_dict
         )
       else:
         response_dict = _GenerateContentResponse_from_mldev(
-            self._api_client, response_dict
+            self.api_client, response_dict
         )
 
       return_value = types.GenerateContentResponse._from_response(
           response=response_dict, kwargs=parameter_model.model_dump()
       )
-      self._api_client._verify_response(return_value)
+      self.api_client._verify_response(return_value)
       yield return_value
 
   def embed_content(
@@ -4463,9 +4463,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _EmbedContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4474,7 +4474,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:predict'
     else:
       request_dict = _EmbedContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4496,23 +4496,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _EmbedContentResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _EmbedContentResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def generate_images(
@@ -4553,9 +4553,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateImagesParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4564,7 +4564,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:predict'
     else:
       request_dict = _GenerateImagesParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4586,23 +4586,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _GenerateImagesResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _GenerateImagesResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def _edit_image(
@@ -4663,11 +4663,11 @@ class Models(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _EditImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4690,23 +4690,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _EditImageResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _EditImageResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def _upscale_image(
@@ -4734,11 +4734,11 @@ class Models(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4761,23 +4761,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _UpscaleImageResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _UpscaleImageResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.UpscaleImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def get(
@@ -4790,9 +4790,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GetModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4801,7 +4801,7 @@ class Models(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _GetModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4823,19 +4823,19 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _Model_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _Model_from_mldev(self._api_client, response_dict)
+      response_dict = _Model_from_mldev(self.api_client, response_dict)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def _list(
@@ -4847,9 +4847,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _ListModelsParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4858,7 +4858,7 @@ class Models(_api_module.BaseModule):
         path = '{models_url}'
     else:
       request_dict = _ListModelsParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4880,23 +4880,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _ListModelsResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _ListModelsResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def update(
@@ -4912,9 +4912,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _UpdateModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4923,7 +4923,7 @@ class Models(_api_module.BaseModule):
         path = '{model}'
     else:
       request_dict = _UpdateModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4945,19 +4945,19 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'patch', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _Model_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _Model_from_mldev(self._api_client, response_dict)
+      response_dict = _Model_from_mldev(self.api_client, response_dict)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def delete(
@@ -4973,9 +4973,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _DeleteModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4984,7 +4984,7 @@ class Models(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _DeleteModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5006,23 +5006,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'delete', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _DeleteModelResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _DeleteModelResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def count_tokens(
@@ -5061,9 +5061,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _CountTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5072,7 +5072,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:countTokens'
     else:
       request_dict = _CountTokensParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5094,23 +5094,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _CountTokensResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _CountTokensResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def compute_tokens(
@@ -5150,11 +5150,11 @@ class Models(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5177,23 +5177,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _ComputeTokensResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _ComputeTokensResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   @_common.experimental_warning(
@@ -5238,9 +5238,9 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateVideosParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5249,7 +5249,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:predictLongRunning'
     else:
       request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5271,23 +5271,23 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response_dict = self.api_client.request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _GenerateVideosOperation_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   def generate_content(
@@ -5396,7 +5396,7 @@ class Models(_api_module.BaseModule):
           role='user',
           parts=func_response_parts,
       )
-      contents = t.t_contents(self._api_client, contents)
+      contents = t.t_contents(self.api_client, contents)
       if not automatic_function_calling_history:
         automatic_function_calling_history.extend(contents)
       if isinstance(contents, list):
@@ -5549,7 +5549,7 @@ class Models(_api_module.BaseModule):
           role='user',
           parts=func_response_parts,
       )
-      contents = t.t_contents(self._api_client, contents)
+      contents = t.t_contents(self.api_client, contents)
       if not automatic_function_calling_history:
         automatic_function_calling_history.extend(contents)
       if isinstance(contents, list):
@@ -5703,7 +5703,7 @@ class Models(_api_module.BaseModule):
     )
     if config.query_base is None:
       config.query_base = True
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       config = config.copy()
       if not config.query_base:
         # Filter for tuning jobs artifacts by labels.
@@ -5738,9 +5738,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5749,7 +5749,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:generateContent'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5771,23 +5771,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _GenerateContentResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _GenerateContentResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.GenerateContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def _generate_content_stream(
@@ -5805,9 +5805,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5818,7 +5818,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:streamGenerateContent?alt=sse'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5842,26 +5842,26 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_stream = await self._api_client.async_request_streamed(
+    response_stream = await self.api_client.async_request_streamed(
         'post', path, request_dict, http_options
     )
 
     async def async_generator():
       async for response_dict in response_stream:
 
-        if self._api_client.vertexai:
+        if self.api_client.vertexai:
           response_dict = _GenerateContentResponse_from_vertex(
-              self._api_client, response_dict
+              self.api_client, response_dict
           )
         else:
           response_dict = _GenerateContentResponse_from_mldev(
-              self._api_client, response_dict
+              self.api_client, response_dict
           )
 
         return_value = types.GenerateContentResponse._from_response(
             response=response_dict, kwargs=parameter_model.model_dump()
         )
-        self._api_client._verify_response(return_value)
+        self.api_client._verify_response(return_value)
         yield return_value
 
     return async_generator()
@@ -5904,9 +5904,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _EmbedContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5915,7 +5915,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:predict'
     else:
       request_dict = _EmbedContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5937,23 +5937,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _EmbedContentResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _EmbedContentResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def generate_images(
@@ -5994,9 +5994,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateImagesParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6005,7 +6005,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:predict'
     else:
       request_dict = _GenerateImagesParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6027,23 +6027,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _GenerateImagesResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _GenerateImagesResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def _edit_image(
@@ -6104,11 +6104,11 @@ class AsyncModels(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _EditImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6131,23 +6131,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _EditImageResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _EditImageResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def _upscale_image(
@@ -6175,11 +6175,11 @@ class AsyncModels(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6202,23 +6202,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _UpscaleImageResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _UpscaleImageResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.UpscaleImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def get(
@@ -6231,9 +6231,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GetModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6242,7 +6242,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _GetModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6264,19 +6264,19 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _Model_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _Model_from_mldev(self._api_client, response_dict)
+      response_dict = _Model_from_mldev(self.api_client, response_dict)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def _list(
@@ -6288,9 +6288,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _ListModelsParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6299,7 +6299,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{models_url}'
     else:
       request_dict = _ListModelsParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6321,23 +6321,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'get', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _ListModelsResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _ListModelsResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def update(
@@ -6353,9 +6353,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _UpdateModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6364,7 +6364,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}'
     else:
       request_dict = _UpdateModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6386,19 +6386,19 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'patch', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(self._api_client, response_dict)
+    if self.api_client.vertexai:
+      response_dict = _Model_from_vertex(self.api_client, response_dict)
     else:
-      response_dict = _Model_from_mldev(self._api_client, response_dict)
+      response_dict = _Model_from_mldev(self.api_client, response_dict)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def delete(
@@ -6414,9 +6414,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _DeleteModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6425,7 +6425,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _DeleteModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6447,23 +6447,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'delete', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _DeleteModelResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _DeleteModelResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def count_tokens(
@@ -6502,9 +6502,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _CountTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6513,7 +6513,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:countTokens'
     else:
       request_dict = _CountTokensParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6535,23 +6535,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _CountTokensResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _CountTokensResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def compute_tokens(
@@ -6590,11 +6590,11 @@ class AsyncModels(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-    if not self._api_client.vertexai:
+    if not self.api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6617,23 +6617,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _ComputeTokensResponse_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _ComputeTokensResponse_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   @_common.experimental_warning(
@@ -6678,9 +6678,9 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       request_dict = _GenerateVideosParameters_to_vertex(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6689,7 +6689,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:predictLongRunning'
     else:
       request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model
+          self.api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6711,23 +6711,23 @@ class AsyncModels(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response_dict = await self.api_client.async_request(
         'post', path, request_dict, http_options
     )
 
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
     else:
       response_dict = _GenerateVideosOperation_from_mldev(
-          self._api_client, response_dict
+          self.api_client, response_dict
       )
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
+    self.api_client._verify_response(return_value)
     return return_value
 
   async def generate_content(
@@ -6805,7 +6805,7 @@ class AsyncModels(_api_module.BaseModule):
           role='user',
           parts=func_response_parts,
       )
-      contents = t.t_contents(self._api_client, contents)
+      contents = t.t_contents(self.api_client, contents)
       if not automatic_function_calling_history:
         automatic_function_calling_history.extend(contents)
       if isinstance(contents, list):
@@ -6968,7 +6968,7 @@ class AsyncModels(_api_module.BaseModule):
             role='user',
             parts=func_response_parts,
         )
-        contents = t.t_contents(self._api_client, contents)
+        contents = t.t_contents(self.api_client, contents)
         if not automatic_function_calling_history:
           automatic_function_calling_history.extend(contents)
         if isinstance(contents, list):
@@ -7070,7 +7070,7 @@ class AsyncModels(_api_module.BaseModule):
     )
     if config.query_base is None:
       config.query_base = True
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       config = config.copy()
       if not config.query_base:
         # Filter for tuning jobs artifacts by labels.
