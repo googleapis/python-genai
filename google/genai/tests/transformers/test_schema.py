@@ -213,26 +213,8 @@ def test_schema_with_default_value_raises_for_mldev(client):
 
 
 def test_schema_with_any_of(client):
-  transformed_schema = _transformers.t_schema(
-      client, CountryInfoWithAnyOf
-  )
-  expected_schema_mldev = types.Schema(
-      properties={
-          'name': types.Schema(
-              type='STRING',
-          ),
-          'restaurants_per_capita': types.Schema(
-              any_of=[
-                  types.Schema(type='INTEGER'),
-                  types.Schema(type='NUMBER'),
-              ],
-          ),
-      },
-      type='OBJECT',
-      required=['name', 'restaurants_per_capita'],
-      property_ordering=['name', 'restaurants_per_capita'],
-  )
-  expected_schema_vertex = types.Schema(
+  transformed_schema = _transformers.t_schema(client, CountryInfoWithAnyOf)
+  expected_schema = types.Schema(
       properties={
           'name': types.Schema(
               type='STRING',
@@ -252,10 +234,7 @@ def test_schema_with_any_of(client):
       property_ordering=['name', 'restaurants_per_capita'],
   )
 
-  if client.vertexai:
-    assert transformed_schema == expected_schema_vertex
-  else:
-    assert transformed_schema == expected_schema_mldev
+  assert transformed_schema == expected_schema
 
 
 @pytest.mark.parametrize('use_vertex', [True, False])
