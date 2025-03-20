@@ -194,6 +194,8 @@ class Client:
     """
 
     self._debug_config = debug_config or DebugConfig()
+    if isinstance(http_options, dict):
+      http_options = HttpOptions(**http_options)
 
     self._api_client = self._get_api_client(
         vertexai=vertexai,
@@ -229,10 +231,10 @@ class Client:
         'auto',
     ]:
       return ReplayApiClient(
-          mode=debug_config.client_mode,
-          replay_id=debug_config.replay_id,
+          mode=debug_config.client_mode,  # type: ignore[arg-type]
+          replay_id=debug_config.replay_id,  # type: ignore[arg-type]
           replays_directory=debug_config.replays_directory,
-          vertexai=vertexai,
+          vertexai=vertexai,  # type: ignore[arg-type]
           api_key=api_key,
           credentials=credentials,
           project=project,

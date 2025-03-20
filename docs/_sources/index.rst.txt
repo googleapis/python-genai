@@ -16,7 +16,7 @@ Google Gen AI Python SDK provides an interface for developers to integrate Googl
 Installation
 ------------
 
-.. code:: console
+.. code:: shell
 
     pip install google-genai
 
@@ -50,9 +50,9 @@ run all the examples to see how it behaves under different APIs.
 
 **(Optional) Using environment variables:**
 
-You can create a client by configuring the necessary environmental variables.
-Configuration setup instructions depends on whether the user is using the ML Dev
-Gemini API or the Vertex AI Gemini API.
+You can create a client by configuring the necessary environment variables.
+Configuration setup instructions depends on whether you're using the Gemini
+Developer API or the Gemini API in Vertex AI.
 
 **Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
 
@@ -61,7 +61,7 @@ Gemini API or the Vertex AI Gemini API.
     export GOOGLE_API_KEY='your-api-key'
 
 
-**Vertex AI Gemini API:** Set `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`
+**Gemini API in Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`
 and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 .. code:: bash
@@ -72,7 +72,7 @@ and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 
 .. code:: python
-    
+
     client = genai.Client()
 
 
@@ -128,7 +128,7 @@ with text content
     )
     print(response.text)
 
-with uploaded file (Gemini API only)
+with uploaded file (Gemini Developer API only)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 download the file in console.
@@ -560,7 +560,6 @@ The following example shows how to do it for a simple function invocation.
     )
     function_call_part = response.function_calls[0]
     function_call_content = response.candidates[0].content
-    
 
 
     try:
@@ -609,27 +608,27 @@ If you'd like to disable automatic function calling in `ANY` mode:
 
 .. code-block:: python
 
-   def get_current_weather(location: str) -> str:
-       """Returns the current weather.
+    def get_current_weather(location: str) -> str:
+        """Returns the current weather.
 
-       Args:
-         location: The city and state, e.g. San Francisco, CA
-       """
-       return "sunny"
+        Args:
+            location: The city and state, e.g. San Francisco, CA
+        """
+        return "sunny"
 
-   response = client.models.generate_content(
-       model="gemini-2.0-flash-001",
-       contents="What is the weather like in Boston?",
-       config=types.GenerateContentConfig(
-           tools=[get_current_weather],
-           automatic_function_calling=types.AutomaticFunctionCallingConfig(
-               disable=True
-           ),
-           tool_config=types.ToolConfig(
-               function_calling_config=types.FunctionCallingConfig(mode='ANY')
-           ),
-       ),
-   )
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-001",
+        contents="What is the weather like in Boston?",
+        config=types.GenerateContentConfig(
+            tools=[get_current_weather],
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                disable=True
+            ),
+            tool_config=types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(mode='ANY')
+            ),
+        ),
+    )
 
 If you'd like to set ``x`` number of automatic function call turns, you can
 configure the maximum remote calls to be ``x + 1``.
@@ -637,27 +636,27 @@ Assuming you prefer ``1`` turn for automatic function calling:
 
 .. code-block:: python
 
-   def get_current_weather(location: str) -> str:
-       """Returns the current weather.
+    def get_current_weather(location: str) -> str:
+        """Returns the current weather.
 
-       Args:
-         location: The city and state, e.g. San Francisco, CA
-       """
-       return "sunny"
+        Args:
+            location: The city and state, e.g. San Francisco, CA
+        """
+        return "sunny"
 
-   response = client.models.generate_content(
-       model="gemini-2.0-flash-001",
-       contents="What is the weather like in Boston?",
-       config=types.GenerateContentConfig(
-           tools=[get_current_weather],
-           automatic_function_calling=types.AutomaticFunctionCallingConfig(
-               maximum_remote_calls=2
-           ),
-           tool_config=types.ToolConfig(
-               function_calling_config=types.FunctionCallingConfig(mode='ANY')
-           ),
-       ),
-   )
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-001",
+        contents="What is the weather like in Boston?",
+        config=types.GenerateContentConfig(
+            tools=[get_current_weather],
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                maximum_remote_calls=2
+            ),
+            tool_config=types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(mode='ANY')
+            ),
+        ),
+    )
 
 JSON Response Schema
 --------------------

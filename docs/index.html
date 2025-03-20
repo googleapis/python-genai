@@ -275,7 +275,7 @@ Google’s Generative AI APIs.</p>
 <p>Google Gen AI Python SDK provides an interface for developers to integrate Google’s generative models into their Python applications. It supports the <a class="reference external" href="https://ai.google.dev/gemini-api/docs">Gemini Developer API</a> and <a class="reference external" href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview">Vertex AI</a> APIs.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install google-genai</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>google-genai
 </pre></div>
 </div>
 </section>
@@ -302,14 +302,14 @@ run all the examples to see how it behaves under different APIs.</p>
 </pre></div>
 </div>
 <p><strong>(Optional) Using environment variables:</strong></p>
-<p>You can create a client by configuring the necessary environmental variables.
-Configuration setup instructions depends on whether the user is using the ML Dev
-Gemini API or the Vertex AI Gemini API.</p>
+<p>You can create a client by configuring the necessary environment variables.
+Configuration setup instructions depends on whether you’re using the Gemini
+Developer API or the Gemini API in Vertex AI.</p>
 <p><strong>Gemini Developer API:</strong> Set <cite>GOOGLE_API_KEY</cite> as shown below:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_API_KEY</span><span class="o">=</span><span class="s1">&#39;your-api-key&#39;</span>
 </pre></div>
 </div>
-<p><strong>Vertex AI Gemini API:</strong> Set <cite>GOOGLE_GENAI_USE_VERTEXAI</cite>, <cite>GOOGLE_CLOUD_PROJECT</cite>
+<p><strong>Gemini API in Vertex AI:</strong> Set <cite>GOOGLE_GENAI_USE_VERTEXAI</cite>, <cite>GOOGLE_CLOUD_PROJECT</cite>
 and <cite>GOOGLE_CLOUD_LOCATION</cite>, as shown below:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_GENAI_USE_VERTEXAI</span><span class="o">=</span><span class="nb">true</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_CLOUD_PROJECT</span><span class="o">=</span><span class="s1">&#39;your-project-id&#39;</span>
@@ -362,8 +362,8 @@ getters.</p>
 </pre></div>
 </div>
 </section>
-<section id="with-uploaded-file-gemini-api-only">
-<h3>with uploaded file (Gemini API only)<a class="headerlink" href="#with-uploaded-file-gemini-api-only" title="Link to this heading">¶</a></h3>
+<section id="with-uploaded-file-gemini-developer-api-only">
+<h3>with uploaded file (Gemini Developer API only)<a class="headerlink" href="#with-uploaded-file-gemini-developer-api-only" title="Link to this heading">¶</a></h3>
 <p>download the file in console.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">!wget -q https://storage.googleapis.com/generativeai-downloads/data/a11.txt</span>
 </pre></div>
@@ -715,7 +715,6 @@ The following example shows how to do it for a simple function invocation.</p>
 <span class="n">function_call_content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">content</span>
 
 
-
 <span class="k">try</span><span class="p">:</span>
     <span class="n">function_result</span> <span class="o">=</span> <span class="n">get_current_weather</span><span class="p">(</span>
         <span class="o">**</span><span class="n">function_call_part</span><span class="o">.</span><span class="n">function_call</span><span class="o">.</span><span class="n">args</span>
@@ -759,7 +758,7 @@ exceed the maximum remote call for automatic function calling (default to 10 tim
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the current weather.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      location: The city and state, e.g. San Francisco, CA</span>
+<span class="sd">        location: The city and state, e.g. San Francisco, CA</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;sunny&quot;</span>
 
@@ -785,7 +784,7 @@ Assuming you prefer <code class="docutils literal notranslate"><span class="pre"
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the current weather.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      location: The city and state, e.g. San Francisco, CA</span>
+<span class="sd">        location: The city and state, e.g. San Francisco, CA</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;sunny&quot;</span>
 
@@ -2206,6 +2205,7 @@ tuning through <code class="docutils literal notranslate"><span class="pre">tune
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EditImageConfig"><code class="docutils literal notranslate"><span class="pre">EditImageConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.aspect_ratio"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.aspect_ratio</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.base_steps"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.base_steps</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.edit_mode"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.edit_mode</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.guidance_scale"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.guidance_scale</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.http_options"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.http_options</span></code></a></li>
@@ -2224,6 +2224,7 @@ tuning through <code class="docutils literal notranslate"><span class="pre">tune
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.aspect_ratio"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.aspect_ratio</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.base_steps"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.base_steps</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.edit_mode"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.edit_mode</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.guidance_scale"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.guidance_scale</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.http_options</span></code></a></li>
@@ -2690,12 +2691,14 @@ tuning through <code class="docutils literal notranslate"><span class="pre">tune
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImage.enhanced_prompt"><code class="docutils literal notranslate"><span class="pre">GeneratedImage.enhanced_prompt</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImage.image"><code class="docutils literal notranslate"><span class="pre">GeneratedImage.image</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImage.rai_filtered_reason"><code class="docutils literal notranslate"><span class="pre">GeneratedImage.rai_filtered_reason</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImage.safety_attributes"><code class="docutils literal notranslate"><span class="pre">GeneratedImage.safety_attributes</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GeneratedImageDict"><code class="docutils literal notranslate"><span class="pre">GeneratedImageDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImageDict.enhanced_prompt"><code class="docutils literal notranslate"><span class="pre">GeneratedImageDict.enhanced_prompt</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImageDict.image"><code class="docutils literal notranslate"><span class="pre">GeneratedImageDict.image</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImageDict.rai_filtered_reason"><code class="docutils literal notranslate"><span class="pre">GeneratedImageDict.rai_filtered_reason</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GeneratedImageDict.safety_attributes"><code class="docutils literal notranslate"><span class="pre">GeneratedImageDict.safety_attributes</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GeneratedVideo"><code class="docutils literal notranslate"><span class="pre">GeneratedVideo</span></code></a><ul>
@@ -3532,6 +3535,16 @@ tuning through <code class="docutils literal notranslate"><span class="pre">tune
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.RetrievalMetadataDict.google_search_dynamic_retrieval_score"><code class="docutils literal notranslate"><span class="pre">RetrievalMetadataDict.google_search_dynamic_retrieval_score</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.SafetyAttributes"><code class="docutils literal notranslate"><span class="pre">SafetyAttributes</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SafetyAttributes.categories"><code class="docutils literal notranslate"><span class="pre">SafetyAttributes.categories</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SafetyAttributes.scores"><code class="docutils literal notranslate"><span class="pre">SafetyAttributes.scores</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.SafetyAttributesDict"><code class="docutils literal notranslate"><span class="pre">SafetyAttributesDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SafetyAttributesDict.categories"><code class="docutils literal notranslate"><span class="pre">SafetyAttributesDict.categories</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SafetyAttributesDict.scores"><code class="docutils literal notranslate"><span class="pre">SafetyAttributesDict.scores</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.SafetyFilterLevel"><code class="docutils literal notranslate"><span class="pre">SafetyFilterLevel</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE"><code class="docutils literal notranslate"><span class="pre">SafetyFilterLevel.BLOCK_LOW_AND_ABOVE</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SafetyFilterLevel.BLOCK_MEDIUM_AND_ABOVE"><code class="docutils literal notranslate"><span class="pre">SafetyFilterLevel.BLOCK_MEDIUM_AND_ABOVE</span></code></a></li>
@@ -4202,7 +4215,7 @@ tuning through <code class="docutils literal notranslate"><span class="pre">tune
 <li><a class="reference internal" href="#models">Models</a><ul>
 <li><a class="reference internal" href="#generate-content">Generate Content</a><ul>
 <li><a class="reference internal" href="#with-text-content">with text content</a></li>
-<li><a class="reference internal" href="#with-uploaded-file-gemini-api-only">with uploaded file (Gemini API only)</a></li>
+<li><a class="reference internal" href="#with-uploaded-file-gemini-developer-api-only">with uploaded file (Gemini Developer API only)</a></li>
 <li><a class="reference internal" href="#how-to-structure-contents-argument-for-generate-content">How to structure <cite>contents</cite> argument for <cite>generate_content</cite></a><ul>
 <li><a class="reference internal" href="#provide-a-list-types-content">Provide a <cite>list[types.Content]</cite></a></li>
 <li><a class="reference internal" href="#provide-a-types-content-instance">Provide a <cite>types.Content</cite> instance</a></li>

@@ -216,9 +216,7 @@ class HttpResponse:
               chunk = chunk[len('data: ') :]
             yield json.loads(chunk)
       else:
-        raise ValueError(
-            'Error parsing streaming response.'
-        )
+        raise ValueError('Error parsing streaming response.')
 
   def byte_segments(self):
     if isinstance(self.byte_stream, list):
@@ -446,9 +444,7 @@ class BaseApiClient:
             self.project = project
 
     if self._credentials:
-      if (
-          self._credentials.expired or not self._credentials.token
-      ):
+      if self._credentials.expired or not self._credentials.token:
         # Only refresh when it needs to. Default expiration is 3600 seconds.
         async with self._auth_lock:
           if self._credentials.expired or not self._credentials.token:
@@ -698,7 +694,7 @@ class BaseApiClient:
 
   def upload_file(
       self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int
-  ) -> dict[str, str]:
+  ) -> HttpResponse:
     """Transfers a file to the given URL.
 
     Args:
@@ -710,7 +706,7 @@ class BaseApiClient:
         match the size requested in the resumable upload request.
 
     returns:
-          The response json object from the finalize request.
+          The HttpResponse object from the finalize request.
     """
     if isinstance(file_path, io.IOBase):
       return self._upload_fd(file_path, upload_url, upload_size)
@@ -720,7 +716,7 @@ class BaseApiClient:
 
   def _upload_fd(
       self, file: io.IOBase, upload_url: str, upload_size: int
-  ) -> dict[str, str]:
+  ) -> HttpResponse:
     """Transfers a file to the given URL.
 
     Args:
@@ -730,7 +726,7 @@ class BaseApiClient:
         match the size requested in the resumable upload request.
 
     returns:
-          The response json object from the finalize request.
+          The HttpResponse object from the finalize request.
     """
     offset = 0
     # Upload the file in chunks
@@ -758,7 +754,7 @@ class BaseApiClient:
         break  # upload is complete or it has been interrupted.
       if upload_size <= offset:  # Status is not finalized.
         raise ValueError(
-            'All content has been uploaded, but the upload status is not'
+            f'All content has been uploaded, but the upload status is not'
             f' finalized.'
         )
 
@@ -766,7 +762,7 @@ class BaseApiClient:
       raise ValueError(
           'Failed to upload file: Upload status is not finalized.'
       )
-    return response.json()
+    return HttpResponse(response.headers, response_stream=[response.text])
 
   def download_file(self, path: str, http_options):
     """Downloads the file data.
@@ -807,7 +803,7 @@ class BaseApiClient:
       file_path: Union[str, io.IOBase],
       upload_url: str,
       upload_size: int,
-  ) -> dict[str, str]:
+  ) -> HttpResponse:
     """Transfers a file asynchronously to the given URL.
 
     Args:
@@ -818,7 +814,7 @@ class BaseApiClient:
         match the size requested in the resumable upload request.
 
     returns:
-          The response json object from the finalize request.
+          The HttpResponse object from the finalize request.
     """
     if isinstance(file_path, io.IOBase):
       return await self._async_upload_fd(file_path, upload_url, upload_size)
@@ -833,7 +829,7 @@ class BaseApiClient:
       file: Union[io.IOBase, anyio.AsyncFile],
       upload_url: str,
       upload_size: int,
-  ) -> dict[str, str]:
+  ) -> HttpResponse:
     """Transfers a file asynchronously to the given URL.
 
     Args:
@@ -843,7 +839,7 @@ class BaseApiClient:
         match the size requested in the resumable upload request.
 
     returns:
-          The response json object from the finalize request.
+          The HttpResponse object from the finalized request.
     """
     offset = 0
     # Upload the file in chunks
@@ -882,7 +878,7 @@ class BaseApiClient:
       raise ValueError(
           'Failed to upload file: Upload status is not finalized.'
       )
-    return response.json()
+    return HttpResponse(response.headers, response_stream=[response.text])
 
   async def async_download_file(self, path: str, http_options):
     """Downloads the file data.

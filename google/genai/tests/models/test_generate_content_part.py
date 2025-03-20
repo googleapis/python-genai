@@ -272,7 +272,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'gs://vertexsdk-gcs/test_video2.mp4'
+                                        'gs://generativeai-downloads/videos/Big_Buck_Bunny.mp4'
                                     ),
                                     'mime_type': 'video/mp4',
                                 },

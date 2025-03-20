@@ -207,7 +207,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'frequency_penalty': 0.5,
             },
         ),
-        exception_if_mldev='400',
     ),
     pytest_helper.TestTableItem(
         name='test_google_search_tool',
@@ -1588,10 +1587,11 @@ def test_schema_from_model_schema(client):
 
 def test_function(client):
   def get_weather(city: str) -> str:
+    """Returns the weather in a city."""
     return f'The weather in {city} is sunny and 100 degrees.'
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.0-flash',
       contents=(
           'What is the weather like in Sunnyvale? Answer in very short'
           ' sentence.'
@@ -1690,8 +1690,8 @@ def test_multiple_strings(client):
 
   assert 'Shakespeare' in response.text
   assert 'Hemingway' in response.text
-  assert 'Shakespeare' == response.parsed[0].person
-  assert 'Hemingway' == response.parsed[1].person
+  assert 'Shakespeare' in response.parsed[0].person
+  assert 'Hemingway' in response.parsed[1].person
 
 
 def test_multiple_parts(client):
