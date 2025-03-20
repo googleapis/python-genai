@@ -339,7 +339,7 @@ def test_simple_shared_generation_config_stream(client):
     chunks += 1
     assert (
         chunk.text is not None or chunk.candidates[0].finish_reason
-    ), f'vertexai: {client._api_client.vertexai}, {chunk.candidate[0]}'
+    ), f'vertexai: {client.api_client.vertexai}, {chunk.candidate[0]}'
   assert chunks >= 2
 
 
@@ -469,7 +469,7 @@ def test_safety_settings_on_difference_stream(client):
           'method': 'PROBABILITY',
       },
   ]
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     for part in client.models.generate_content_stream(
         model='gemini-1.5-flash',
         contents='What is your name?',
@@ -504,7 +504,7 @@ def test_safety_settings_on_difference_stream_with_lower_enum(client):
           'method': 'probability',
       },
   ]
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     for part in client.models.generate_content_stream(
         model='gemini-1.5-flash',
         contents='What is your name?',
@@ -575,7 +575,7 @@ def test_pydantic_schema_with_default_value(client):
     rating: int = 0
     city: Optional[str] = 'New York'
 
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = client.models.generate_content(
         model='gemini-1.5-flash',
         contents='Can you recommend a restaurant for me?',

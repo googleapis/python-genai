@@ -74,7 +74,7 @@ async def test_async_delete_model_with_http_options_in_method(client):
             },
         },
     )
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     assert TEST_API_VERSION in e.value.args[0]
   else:
     assert '404' in str(e)
@@ -82,7 +82,7 @@ async def test_async_delete_model_with_http_options_in_method(client):
 
 @pytest.mark.asyncio
 async def test_async_delete_tuned_model(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     with pytest.raises(errors.ClientError) as e:
       await client.aio.models.delete(model='tunedModels/generate-num-888')
     assert '404' in str(e)
@@ -94,7 +94,7 @@ async def test_async_delete_tuned_model(client):
 
 @pytest.mark.asyncio
 async def test_async_delete_model(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = await client.aio.models.delete(
         model='models/1071206899942162432'
     )

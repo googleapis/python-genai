@@ -57,7 +57,7 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_update(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     response = await client.aio.caches.update(
         name=_VERTEX_UPDATE_PARAMETERS.name,
         config=_VERTEX_UPDATE_PARAMETERS.config,

@@ -29,8 +29,8 @@ pytestmark = [pytest.mark.parametrize('use_vertex', [True, False])]
 
 @pytest.mark.usefixtures('client')
 def test_t_bytes(client):
-  assert t.t_bytes(client._api_client, _RAW_BYTES) == base64.b64encode(
+  assert t.t_bytes(client.api_client, _RAW_BYTES) == base64.b64encode(
       _RAW_BYTES
   ).decode('ascii')
-  assert t.t_bytes(client._api_client, 'string') == 'string'
+  assert t.t_bytes(client.api_client, 'string') == 'string'
 

@@ -71,7 +71,7 @@ class AsyncSession:
   def __init__(
       self, api_client: client.BaseApiClient, websocket: ClientConnection
   ):
-    self._api_client = api_client
+    self.api_client = api_client
     self._ws = websocket
 
   async def send(
@@ -215,7 +215,7 @@ class AsyncSession:
         raise ValueError(f'Failed to parse response: {raw_response!r}')
     else:
       response = {}
-    if self._api_client.vertexai:
+    if self.api_client.vertexai:
       response_dict = self._LiveServerMessage_from_vertex(response)
     else:
       response_dict = self._LiveServerMessage_from_mldev(response)
@@ -250,7 +250,7 @@ class AsyncSession:
           to_object,
           ['model_turn'],
           _Content_from_mldev(
-              self._api_client,
+              self.api_client,
               getv(from_object, ['modelTurn']),
           ),
       )
@@ -323,7 +323,7 @@ class AsyncSession:
           to_object,
           ['model_turn'],
           _Content_from_vertex(
-              self._api_client,
+              self.api_client,
               getv(from_object, ['modelTurn']),
           ),
       )
@@ -402,7 +402,7 @@ class AsyncSession:
       formatted_input = [input]
     elif isinstance(input, dict) and 'name' in input and 'response' in input:
       # ToolResponse.FunctionResponse
-      if not (self._api_client.vertexai) and 'id' not in input:
+      if not (self.api_client.vertexai) and 'id' not in input:
         raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
       formatted_input = [input]
 
@@ -423,7 +423,7 @@ class AsyncSession:
             )
           if (
               function_response_input.id is None
-              and not self._api_client.vertexai
+              and not self.api_client.vertexai
           ):
             raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
           else:
@@ -452,15 +452,15 @@ class AsyncSession:
       for item in formatted_input:
         if isinstance(item, get_args(types.PartUnion)):
           content_input_parts.append(item)
-      if self._api_client.vertexai:
+      if self.api_client.vertexai:
         contents = [
-            _Content_to_vertex(self._api_client, item, to_object)
-            for item in t.t_contents(self._api_client, content_input_parts)
+            _Content_to_vertex(self.api_client, item, to_object)
+            for item in t.t_contents(self.api_client, content_input_parts)
         ]
       else:
         contents = [
-            _Content_to_mldev(self._api_client, item, to_object)
-            for item in t.t_contents(self._api_client, content_input_parts)
+            _Content_to_mldev(self.api_client, item, to_object)
+            for item in t.t_contents(self.api_client, content_input_parts)
         ]
 
       content_dict_list: list[types.ContentDict] = []
@@ -607,7 +607,7 @@ class AsyncSession:
     elif isinstance(formatted_input, types.LiveClientToolResponse):
       # ToolResponse.FunctionResponse
       if (
-          not (self._api_client.vertexai)
+          not (self.api_client.vertexai)
           and formatted_input.function_responses is not None
           and not (formatted_input.function_responses[0].id)
       ):
@@ -620,7 +620,7 @@ class AsyncSession:
           )
       )
     elif isinstance(formatted_input, types.FunctionResponse):
-      if not (self._api_client.vertexai) and not (formatted_input.id):
+      if not (self.api_client.vertexai) and not (formatted_input.id):
         raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
       function_response_dict = formatted_input.model_dump(
           exclude_none=True, mode='json'
@@ -639,7 +639,7 @@ class AsyncSession:
     elif isinstance(formatted_input, Sequence) and isinstance(
         formatted_input[0], types.FunctionResponse
     ):
-      if not (self._api_client.vertexai) and not (formatted_input[0].id):
+      if not (self.api_client.vertexai) and not (formatted_input[0].id):
         raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
       function_response_list: list[types.FunctionResponseDict] = []
       for item in formatted_input:
@@ -682,7 +682,7 @@ class AsyncLive(_api_module.BaseModule):
           to_object,
           ['generationConfig'],
           _GenerateContentConfig_to_mldev(
-              self._api_client,
+              self.api_client,
               getv(config, ['generation_config']),
               to_object,
           ),
@@ -699,18 +699,18 @@ class AsyncLive(_api_module.BaseModule):
     if getv(config, ['speech_config']) is not None:
       if getv(to_object, ['generationConfig']) is not None:
         to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_mldev(
-            self._api_client,
+            self.api_client,
             t.t_speech_config(
-                self._api_client, getv(config, ['speech_config'])
+                self.api_client, getv(config, ['speech_config'])
             ),
             to_object,
         )
       else:
         to_object['generationConfig'] = {
             'speechConfig': _SpeechConfig_to_mldev(
-                self._api_client,
+                self.api_client,
                 t.t_speech_config(
-                    self._api_client, getv(config, ['speech_config'])
+                    self.api_client, getv(config, ['speech_config'])
                 ),
                 to_object,
             )
@@ -721,9 +721,9 @@ class AsyncLive(_api_module.BaseModule):
           to_object,
           ['systemInstruction'],
           _Content_to_mldev(
-              self._api_client,
+              self.api_client,
               t.t_content(
-                  self._api_client, getv(config, ['system_instruction'])
+                  self.api_client, getv(config, ['system_instruction'])
               ),
               to_object,
           ),
@@ -734,9 +734,9 @@ class AsyncLive(_api_module.BaseModule):
           ['tools'],
           [
               _Tool_to_mldev(
-                  self._api_client, t.t_tool(self._api_client, item), to_object
+                  self.api_client, t.t_tool(self.api_client, item), to_object
               )
-              for item in t.t_tools(self._api_client, getv(config, ['tools']))
+              for item in t.t_tools(self.api_client, getv(config, ['tools']))
           ],
       )
 
@@ -755,7 +755,7 @@ class AsyncLive(_api_module.BaseModule):
           to_object,
           ['generationConfig'],
           _GenerateContentConfig_to_vertex(
-              self._api_client,
+              self.api_client,
               getv(config, ['generation_config']),
               to_object,
           ),
@@ -780,18 +780,18 @@ class AsyncLive(_api_module.BaseModule):
     if getv(config, ['speech_config']) is not None:
       if getv(to_object, ['generationConfig']) is not None:
         to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_vertex(
-            self._api_client,
+            self.api_client,
             t.t_speech_config(
-                self._api_client, getv(config, ['speech_config'])
+                self.api_client, getv(config, ['speech_config'])
             ),
             to_object,
         )
       else:
         to_object['generationConfig'] = {
             'speechConfig': _SpeechConfig_to_vertex(
-                self._api_client,
+                self.api_client,
                 t.t_speech_config(
-                    self._api_client, getv(config, ['speech_config'])
+                    self.api_client, getv(config, ['speech_config'])
                 ),
                 to_object,
             )
@@ -801,9 +801,9 @@ class AsyncLive(_api_module.BaseModule):
           to_object,
           ['systemInstruction'],
           _Content_to_vertex(
-              self._api_client,
+              self.api_client,
               t.t_content(
-                  self._api_client, getv(config, ['system_instruction'])
+                  self.api_client, getv(config, ['system_instruction'])
               ),
               to_object,
           ),
@@ -814,9 +814,9 @@ class AsyncLive(_api_module.BaseModule):
           ['tools'],
           [
               _Tool_to_vertex(
-                  self._api_client, t.t_tool(self._api_client, item), to_object
+                  self.api_client, t.t_tool(self.api_client, item), to_object
               )
-              for item in t.t_tools(self._api_client, getv(config, ['tools']))
+              for item in t.t_tools(self.api_client, getv(config, ['tools']))
           ],
       )
 
@@ -849,8 +849,8 @@ class AsyncLive(_api_module.BaseModule):
         async for message in session.receive():
           print(message)
     """
-    base_url = self._api_client._websocket_base_url()
-    transformed_model = t.t_model(self._api_client, model)
+    base_url = self.api_client._websocket_base_url()
+    transformed_model = t.t_model(self.api_client, model)
     # Ensure the config is a LiveConnectConfig.
     if config is None:
       parameter_model = types.LiveConnectConfig()
@@ -859,7 +859,7 @@ class AsyncLive(_api_module.BaseModule):
         system_instruction = None
       else:
         system_instruction = t.t_content(
-            self._api_client, config.get('system_instruction')
+            self.api_client, config.get('system_instruction')
         )
       parameter_model = types.LiveConnectConfig(
           generation_config=config.get('generation_config'),
@@ -871,11 +871,11 @@ class AsyncLive(_api_module.BaseModule):
     else:
       parameter_model = config
 
-    if self._api_client.api_key:
-      api_key = self._api_client.api_key
-      version = self._api_client._http_options['api_version']
+    if self.api_client.api_key:
+      api_key = self.api_client.api_key
+      version = self.api_client._http_options['api_version']
       uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateContent?key={api_key}'
-      headers = self._api_client._http_options['headers']
+      headers = self.api_client._http_options['headers']
       request_dict = _common.convert_to_dict(
           self._LiveSetup_to_mldev(
               model=transformed_model,
@@ -894,15 +894,15 @@ class AsyncLive(_api_module.BaseModule):
       auth_req = google.auth.transport.requests.Request()
       creds.refresh(auth_req)
       bearer_token = creds.token
-      headers = self._api_client._http_options['headers']
+      headers = self.api_client._http_options['headers']
       if headers is not None:
         headers.update({
             'Authorization': 'Bearer {}'.format(bearer_token),
         })
-      version = self._api_client._http_options['api_version']
+      version = self.api_client._http_options['api_version']
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      location = self._api_client.location
-      project = self._api_client.project
+      location = self.api_client.location
+      project = self.api_client.project
       if transformed_model.startswith('publishers/'):
         transformed_model = (
             f'projects/{project}/locations/{location}/' + transformed_model
@@ -919,4 +919,4 @@ class AsyncLive(_api_module.BaseModule):
       await ws.send(request)
       logger.info(await ws.recv(decode=False))
 
-      yield AsyncSession(api_client=self._api_client, websocket=ws)
+      yield AsyncSession(api_client=self.api_client, websocket=ws)

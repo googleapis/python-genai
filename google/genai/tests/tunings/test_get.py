@@ -45,7 +45,7 @@ pytest_plugins = ("pytest_asyncio",)
 
 
 def test_helper_properties(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     job = client.tunings.get(
         name="projects/801452371447/locations/us-central1/tuningJobs/5608183405364641792"
     )

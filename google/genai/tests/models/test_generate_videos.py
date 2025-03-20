@@ -107,7 +107,7 @@ def test_text_to_video_poll(client):
   )
   while not operation.done:
     # Skip the sleep when in replay mode.
-    if not isinstance(client._api_client, _replay_api_client.ReplayApiClient):
+    if not isinstance(client.api_client, _replay_api_client.ReplayApiClient):
       time.sleep(20)
     operation = client.operations.get(operation=operation)
 
@@ -125,7 +125,7 @@ def test_image_to_video_poll(client):
   )
   while not operation.done:
     # Skip the sleep when in replay mode.
-    if not isinstance(client._api_client, _replay_api_client.ReplayApiClient):
+    if not isinstance(client.api_client, _replay_api_client.ReplayApiClient):
       time.sleep(60)
     operation = client.operations.get(operation=operation)
 
@@ -144,7 +144,7 @@ def test_text_and_image_to_video_poll(client):
   )
   while not operation.done:
     # Skip the sleep when in replay mode.
-    if not isinstance(client._api_client, _replay_api_client.ReplayApiClient):
+    if not isinstance(client.api_client, _replay_api_client.ReplayApiClient):
       time.sleep(60)
     operation = client.operations.get(operation=operation)
 
@@ -163,7 +163,7 @@ def test_create_operation_to_poll(client):
   )
   while not operation.done:
     # Skip the sleep when in replay mode.
-    if not isinstance(client._api_client, _replay_api_client.ReplayApiClient):
+    if not isinstance(client.api_client, _replay_api_client.ReplayApiClient):
       time.sleep(20)
     operation = client.operations.get(operation=operation)
 
@@ -183,7 +183,7 @@ async def test_text_to_video_poll_async(client):
   )
   while not operation.done:
     # Skip the sleep when in replay mode.
-    if not isinstance(client._api_client, _replay_api_client.ReplayApiClient):
+    if not isinstance(client.api_client, _replay_api_client.ReplayApiClient):
       time.sleep(20)
     operation = await client.aio.operations.get(operation=operation)
 

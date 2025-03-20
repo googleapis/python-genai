@@ -85,9 +85,9 @@ def test_mldev_from_env(monkeypatch):
 
   client = Client()
 
-  assert not client.aio.live._api_client.vertexai
-  assert client.aio.live._api_client.api_key == api_key
-  assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert not client.aio.live.api_client.vertexai
+  assert client.aio.live.api_client.api_key == api_key
+  assert isinstance(client.aio.live.api_client, api_client.BaseApiClient)
 
 
 def test_vertex_from_env(monkeypatch):
@@ -99,9 +99,9 @@ def test_vertex_from_env(monkeypatch):
 
   client = Client()
 
-  assert client.aio.live._api_client.vertexai
-  assert client.aio.live._api_client.project == project_id
-  assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live.api_client.vertexai
+  assert client.aio.live.api_client.project == project_id
+  assert isinstance(client.aio.live.api_client, api_client.BaseApiClient)
 
 
 def test_websocket_base_url():

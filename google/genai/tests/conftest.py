@@ -126,7 +126,7 @@ def client(use_vertex, replays_prefix,http_options, request):
     yield google_genai_client
 
     # Save the replay after the test if we were in recording mode.
-    google_genai_client._api_client.close()
+    google_genai_client.api_client.close()
 
 
 @pytest.fixture

@@ -184,7 +184,7 @@ pytest_plugins = ('pytest_asyncio',)
 
 @pytest.mark.asyncio
 async def test_async_googleai_file_create(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     with pytest.raises(Exception):
       await client.aio.caches.create(
           model=_CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE.model,

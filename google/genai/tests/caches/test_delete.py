@@ -48,7 +48,7 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_delete(client):
-  if client._api_client.vertexai:
+  if client.api_client.vertexai:
     await client.aio.caches.delete(name=constants.CACHED_CONTENT_NAME_VERTEX)
   else:
     await client.aio.caches.delete(name=constants.CACHED_CONTENT_NAME_MLDEV)
