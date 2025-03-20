@@ -180,38 +180,6 @@ def test_schema_with_no_null_fields_is_unchanged():
     assert schema_before == schema
 
 
-@pytest.mark.parametrize('use_vertex', [True, False])
-def test_schema_with_default_value_raises_for_mldev(client):
-
-  if not client.vertexai:
-    with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client._api_client, CountryInfoWithDefaultValue)
-    assert 'Default value is not supported' in str(e)
-  else:
-    transformed_schema_vertex = _transformers.t_schema(
-        client._api_client, CountryInfoWithDefaultValue
-    )
-    expected_schema_vertex = types.Schema(
-        properties={
-            'name': types.Schema(
-                type='STRING',
-                title='Name',
-            ),
-            'population': types.Schema(
-                type='INTEGER',
-                default=0,
-                title='Population',
-            ),
-        },
-        type='OBJECT',
-        required=['name'],
-        title='CountryInfoWithDefaultValue',
-        property_ordering=['name', 'population'],
-    )
-
-    assert transformed_schema_vertex == expected_schema_vertex
-
-
 def test_schema_with_any_of(client):
   transformed_schema = _transformers.t_schema(
       client, CountryInfoWithAnyOf
@@ -365,10 +333,5 @@ def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
       title='CountryInfoWithDefaultValue',
   )
 
-  if client.vertexai:
-    transformed_schema = _transformers.t_schema(client, schema)
-    assert transformed_schema.property_ordering is None
-  else:
-    with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client, schema)
-    assert 'Default value is not supported' in str(e)
+  transformed_schema = _transformers.t_schema(client, schema)
+  assert transformed_schema.property_ordering is None
