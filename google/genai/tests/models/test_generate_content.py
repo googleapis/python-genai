@@ -276,7 +276,28 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
         exception_if_mldev='not supported',
-    )
+    ),
+    pytest_helper.TestTableItem(
+        name='test_response_schema_with_default',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=t.t_contents(None, 'What is your name?'),
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': {
+                    'type': 'OBJECT',
+                    'properties': {
+                        'name': {
+                            'type': 'STRING',
+                            'default': 'default_name',
+                        },
+                    },
+                },
+            },
+        ),
+        exception_if_mldev='not supported',
+        ignore_keys=['parsed'],
+    ),
 ]
 
 pytestmark = pytest_helper.setup(

@@ -8061,6 +8061,10 @@ class TestTableItem(_common.BaseModel):
       default=None,
       description="""When set to a reason string, this test will be skipped in the API mode. Use this flag for tests that can not be reproduced with the real API. E.g. a test that deletes a resource.""",
   )
+  ignore_keys: Optional[list[str]] = Field(
+      default=None,
+      description="""Keys to ignore when comparing the request and response. This is useful for tests that are not deterministic.""",
+  )
 
 
 class TestTableItemDict(TypedDict, total=False):
@@ -8085,6 +8089,9 @@ class TestTableItemDict(TypedDict, total=False):
 
   skip_in_api_mode: Optional[str]
   """When set to a reason string, this test will be skipped in the API mode. Use this flag for tests that can not be reproduced with the real API. E.g. a test that deletes a resource."""
+
+  ignore_keys: Optional[list[str]]
+  """Keys to ignore when comparing the request and response. This is useful for tests that are not deterministic."""
 
 
 TestTableItemOrDict = Union[TestTableItem, TestTableItemDict]
