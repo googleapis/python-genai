@@ -837,9 +837,6 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. Maximum length of the Type.STRING""",
   )
-  title: Optional[str] = Field(
-      default=None, description="""Optional. The title of the Schema."""
-  )
   min_length: Optional[int] = Field(
       default=None,
       description="""Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING""",
@@ -903,6 +900,9 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. Required properties of Type.OBJECT.""",
   )
+  title: Optional[str] = Field(
+      default=None, description="""Optional. The title of the Schema."""
+  )
   type: Optional[Type] = Field(
       default=None, description="""Optional. The type of the data."""
   )
@@ -925,9 +925,6 @@ class SchemaDict(TypedDict, total=False):
 
   max_length: Optional[int]
   """Optional. Maximum length of the Type.STRING"""
-
-  title: Optional[str]
-  """Optional. The title of the Schema."""
 
   min_length: Optional[int]
   """Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"""
@@ -976,6 +973,9 @@ class SchemaDict(TypedDict, total=False):
 
   required: Optional[list[str]]
   """Optional. Required properties of Type.OBJECT."""
+
+  title: Optional[str]
+  """Optional. The title of the Schema."""
 
   type: Optional[Type]
   """Optional. The type of the data."""

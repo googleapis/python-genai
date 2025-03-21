@@ -526,7 +526,6 @@ def process_schema(
 ):
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
-  - Removes the `title` field from the schema if the client is not vertexai.
   - Inlines the $defs.
 
   Example of a schema before and after (with mldev):
@@ -570,21 +569,22 @@ def process_schema(
         'items': {
           'properties': {
             'continent': {
-                'type': 'string'
+              'title': 'Continent',
+              'type': 'string'
             },
             'gdp': {
-                'type': 'integer'}
+              'title': 'Gdp',
+              'type': 'integer'
             },
           }
           'required':['continent', 'gdp'],
+          'title': 'CountryInfo',
           'type': 'object'
         },
         'type': 'array'
     }
   """
   if not client.vertexai:
-    schema.pop('title', None)
-
     if schema.get('default') is not None:
       raise ValueError(
           'Default value is not supported in the response schema for the Gemini'
