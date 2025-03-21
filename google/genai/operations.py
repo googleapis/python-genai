@@ -67,24 +67,6 @@ def _GetOperationParameters_to_vertex(
   return to_object
 
 
-def _FetchPredictOperationParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    raise ValueError('operation_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['resource_name']) is not None:
-    raise ValueError('resource_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _FetchPredictOperationParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -129,28 +111,6 @@ def _Video_from_mldev(
   return to_object
 
 
-def _Video_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcsUri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['gcsUri']))
-
-  if getv(from_object, ['bytesBase64Encoded']) is not None:
-    setv(
-        to_object,
-        ['video_bytes'],
-        t.t_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
-    )
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
 def _GeneratedVideo_from_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -162,22 +122,6 @@ def _GeneratedVideo_from_mldev(
         to_object,
         ['video'],
         _Video_from_mldev(api_client, getv(from_object, ['_self']), to_object),
-    )
-
-  return to_object
-
-
-def _GeneratedVideo_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Video_from_vertex(api_client, getv(from_object, ['_self']), to_object),
     )
 
   return to_object
@@ -196,39 +140,6 @@ def _GenerateVideosResponse_from_mldev(
         [
             _GeneratedVideo_from_mldev(api_client, item, to_object)
             for item in getv(from_object, ['generatedSamples'])
-        ],
-    )
-
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
-    )
-
-  return to_object
-
-
-def _GenerateVideosResponse_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['videos']) is not None:
-    setv(
-        to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_vertex(api_client, item, to_object)
-            for item in getv(from_object, ['videos'])
         ],
     )
 
@@ -279,6 +190,77 @@ def _GenerateVideosOperation_from_mldev(
             getv(from_object, ['response', 'generateVideoResponse']),
             to_object,
         ),
+    )
+
+  return to_object
+
+
+def _Video_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['gcsUri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['gcsUri']))
+
+  if getv(from_object, ['bytesBase64Encoded']) is not None:
+    setv(
+        to_object,
+        ['video_bytes'],
+        t.t_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
+    )
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
+def _GeneratedVideo_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['_self']) is not None:
+    setv(
+        to_object,
+        ['video'],
+        _Video_from_vertex(api_client, getv(from_object, ['_self']), to_object),
+    )
+
+  return to_object
+
+
+def _GenerateVideosResponse_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['videos']) is not None:
+    setv(
+        to_object,
+        ['generated_videos'],
+        [
+            _GeneratedVideo_from_vertex(api_client, item, to_object)
+            for item in getv(from_object, ['videos'])
+        ],
+    )
+
+  if getv(from_object, ['raiMediaFilteredCount']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_count'],
+        getv(from_object, ['raiMediaFilteredCount']),
+    )
+
+  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_reasons'],
+        getv(from_object, ['raiMediaFilteredReasons']),
     )
 
   return to_object
@@ -373,6 +355,7 @@ class Operations(_api_module.BaseModule):
       response_dict = _GenerateVideosOperation_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _GenerateVideosOperation_from_mldev(
           self._api_client, response_dict
@@ -433,10 +416,6 @@ class Operations(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
-      )
-    else:
-      response_dict = _GenerateVideosOperation_from_mldev(
           self._api_client, response_dict
       )
 
@@ -547,6 +526,7 @@ class AsyncOperations(_api_module.BaseModule):
       response_dict = _GenerateVideosOperation_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _GenerateVideosOperation_from_mldev(
           self._api_client, response_dict
@@ -607,10 +587,6 @@ class AsyncOperations(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
-      )
-    else:
-      response_dict = _GenerateVideosOperation_from_mldev(
           self._api_client, response_dict
       )
 

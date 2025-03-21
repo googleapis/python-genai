@@ -74,50 +74,6 @@ def _Part_to_mldev(
   return to_object
 
 
-def _Part_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['code_execution_result']) is not None:
-    setv(
-        to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
-    )
-
-  if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
-
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
-
-  if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
 def _Content_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -130,28 +86,6 @@ def _Content_to_mldev(
         ['parts'],
         [
             _Part_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
-
-  if getv(from_object, ['role']) is not None:
-    setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _Content_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_to_vertex(api_client, item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -241,6 +175,431 @@ def _Schema_to_mldev(
   return to_object
 
 
+def _FunctionDeclaration_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['response']) is not None:
+    raise ValueError('response parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  return to_object
+
+
+def _GoogleSearch_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _DynamicRetrievalConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['dynamic_threshold']) is not None:
+    setv(
+        to_object,
+        ['dynamicThreshold'],
+        getv(from_object, ['dynamic_threshold']),
+    )
+
+  return to_object
+
+
+def _GoogleSearchRetrieval_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['dynamic_retrieval_config']) is not None:
+    setv(
+        to_object,
+        ['dynamicRetrievalConfig'],
+        _DynamicRetrievalConfig_to_mldev(
+            api_client,
+            getv(from_object, ['dynamic_retrieval_config']),
+            to_object,
+        ),
+    )
+
+  return to_object
+
+
+def _Tool_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
+  if getv(from_object, ['retrieval']) is not None:
+    raise ValueError('retrieval parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(
+            api_client, getv(from_object, ['google_search']), to_object
+        ),
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        _GoogleSearchRetrieval_to_mldev(
+            api_client,
+            getv(from_object, ['google_search_retrieval']),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  return to_object
+
+
+def _FunctionCallingConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['allowed_function_names']) is not None:
+    setv(
+        to_object,
+        ['allowedFunctionNames'],
+        getv(from_object, ['allowed_function_names']),
+    )
+
+  return to_object
+
+
+def _ToolConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_calling_config']) is not None:
+    setv(
+        to_object,
+        ['functionCallingConfig'],
+        _FunctionCallingConfig_to_mldev(
+            api_client,
+            getv(from_object, ['function_calling_config']),
+            to_object,
+        ),
+    )
+
+  return to_object
+
+
+def _CreateCachedContentConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['ttl']) is not None:
+    setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
+
+  if getv(from_object, ['expire_time']) is not None:
+    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        parent_object,
+        ['contents'],
+        [
+            _Content_to_mldev(api_client, item, to_object)
+            for item in t.t_contents(
+                api_client, getv(from_object, ['contents'])
+            )
+        ],
+    )
+
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        parent_object,
+        ['systemInstruction'],
+        _Content_to_mldev(
+            api_client,
+            t.t_content(api_client, getv(from_object, ['system_instruction'])),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        parent_object,
+        ['tools'],
+        [
+            _Tool_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['tools'])
+        ],
+    )
+
+  if getv(from_object, ['tool_config']) is not None:
+    setv(
+        parent_object,
+        ['toolConfig'],
+        _ToolConfig_to_mldev(
+            api_client, getv(from_object, ['tool_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _CreateCachedContentParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['model'],
+        t.t_caches_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _CreateCachedContentConfig_to_mldev(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _GetCachedContentParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
+  return to_object
+
+
+def _DeleteCachedContentParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
+  return to_object
+
+
+def _UpdateCachedContentConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['ttl']) is not None:
+    setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
+
+  if getv(from_object, ['expire_time']) is not None:
+    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
+
+  return to_object
+
+
+def _UpdateCachedContentParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _UpdateCachedContentConfig_to_mldev(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _ListCachedContentsConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['page_size']) is not None:
+    setv(
+        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+    )
+
+  if getv(from_object, ['page_token']) is not None:
+    setv(
+        parent_object,
+        ['_query', 'pageToken'],
+        getv(from_object, ['page_token']),
+    )
+
+  return to_object
+
+
+def _ListCachedContentsParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _ListCachedContentsConfig_to_mldev(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _Part_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  return to_object
+
+
+def _Content_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _Part_to_vertex(api_client, item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['role']) is not None:
+    setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
 def _Schema_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -320,27 +679,6 @@ def _Schema_to_vertex(
   return to_object
 
 
-def _FunctionDeclaration_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['response']) is not None:
-    raise ValueError('response parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  return to_object
-
-
 def _FunctionDeclaration_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -368,41 +706,12 @@ def _FunctionDeclaration_to_vertex(
   return to_object
 
 
-def _GoogleSearch_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _GoogleSearch_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
   to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _DynamicRetrievalConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
 
   return to_object
 
@@ -426,26 +735,6 @@ def _DynamicRetrievalConfig_to_vertex(
   return to_object
 
 
-def _GoogleSearchRetrieval_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_mldev(
-            api_client,
-            getv(from_object, ['dynamic_retrieval_config']),
-            to_object,
-        ),
-    )
-
-  return to_object
-
-
 def _GoogleSearchRetrieval_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -462,51 +751,6 @@ def _GoogleSearchRetrieval_to_vertex(
             to_object,
         ),
     )
-
-  return to_object
-
-
-def _Tool_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
-  if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(
-            api_client, getv(from_object, ['google_search']), to_object
-        ),
-    )
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_mldev(
-            api_client,
-            getv(from_object, ['google_search_retrieval']),
-            to_object,
-        ),
-    )
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -556,25 +800,6 @@ def _Tool_to_vertex(
   return to_object
 
 
-def _FunctionCallingConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['allowed_function_names']) is not None:
-    setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
-    )
-
-  return to_object
-
-
 def _FunctionCallingConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -594,26 +819,6 @@ def _FunctionCallingConfig_to_vertex(
   return to_object
 
 
-def _ToolConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_mldev(
-            api_client,
-            getv(from_object, ['function_calling_config']),
-            to_object,
-        ),
-    )
-
-  return to_object
-
-
 def _ToolConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -628,67 +833,6 @@ def _ToolConfig_to_vertex(
             api_client,
             getv(from_object, ['function_calling_config']),
             to_object,
-        ),
-    )
-
-  return to_object
-
-
-def _CreateCachedContentConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['ttl']) is not None:
-    setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
-
-  if getv(from_object, ['expire_time']) is not None:
-    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        parent_object,
-        ['contents'],
-        [
-            _Content_to_mldev(api_client, item, to_object)
-            for item in t.t_contents(
-                api_client, getv(from_object, ['contents'])
-            )
-        ],
-    )
-
-  if getv(from_object, ['system_instruction']) is not None:
-    setv(
-        parent_object,
-        ['systemInstruction'],
-        _Content_to_mldev(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
-        ),
-    )
-
-  if getv(from_object, ['tools']) is not None:
-    setv(
-        parent_object,
-        ['tools'],
-        [
-            _Tool_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['tools'])
-        ],
-    )
-
-  if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_mldev(
-            api_client, getv(from_object, ['tool_config']), to_object
         ),
     )
 
@@ -756,31 +900,6 @@ def _CreateCachedContentConfig_to_vertex(
   return to_object
 
 
-def _CreateCachedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['model'],
-        t.t_caches_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _CreateCachedContentParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -806,45 +925,7 @@ def _CreateCachedContentParameters_to_vertex(
   return to_object
 
 
-def _GetCachedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
 def _GetCachedContentParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _DeleteCachedContentParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
@@ -882,22 +963,6 @@ def _DeleteCachedContentParameters_to_vertex(
   return to_object
 
 
-def _UpdateCachedContentConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['ttl']) is not None:
-    setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
-
-  if getv(from_object, ['expire_time']) is not None:
-    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
-
-  return to_object
-
-
 def _UpdateCachedContentConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -910,31 +975,6 @@ def _UpdateCachedContentConfig_to_vertex(
 
   if getv(from_object, ['expire_time']) is not None:
     setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
-
-  return to_object
-
-
-def _UpdateCachedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
 
   return to_object
 
@@ -964,28 +1004,6 @@ def _UpdateCachedContentParameters_to_vertex(
   return to_object
 
 
-def _ListCachedContentsConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  return to_object
-
-
 def _ListCachedContentsConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -1003,24 +1021,6 @@ def _ListCachedContentsConfig_to_vertex(
         parent_object,
         ['_query', 'pageToken'],
         getv(from_object, ['page_token']),
-    )
-
-  return to_object
-
-
-def _ListCachedContentsParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListCachedContentsConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
     )
 
   return to_object
@@ -1074,6 +1074,38 @@ def _CachedContent_from_mldev(
   return to_object
 
 
+def _DeleteCachedContentResponse_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _ListCachedContentsResponse_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict, object],
+    parent_object: Optional[dict] = None,
+) -> dict:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['nextPageToken']) is not None:
+    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
+
+  if getv(from_object, ['cachedContents']) is not None:
+    setv(
+        to_object,
+        ['cached_contents'],
+        [
+            _CachedContent_from_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['cachedContents'])
+        ],
+    )
+
+  return to_object
+
+
 def _CachedContent_from_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
@@ -1104,44 +1136,12 @@ def _CachedContent_from_vertex(
   return to_object
 
 
-def _DeleteCachedContentResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _DeleteCachedContentResponse_from_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict, object],
     parent_object: Optional[dict] = None,
 ) -> dict:
   to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _ListCachedContentsResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['cachedContents']) is not None:
-    setv(
-        to_object,
-        ['cached_contents'],
-        [
-            _CachedContent_from_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['cachedContents'])
-        ],
-    )
 
   return to_object
 
@@ -1242,6 +1242,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _CachedContent_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
@@ -1312,6 +1313,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _CachedContent_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
@@ -1384,6 +1386,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _DeleteCachedContentResponse_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _DeleteCachedContentResponse_from_mldev(
           self._api_client, response_dict
@@ -1461,6 +1464,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _CachedContent_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
@@ -1529,6 +1533,7 @@ class Caches(_api_module.BaseModule):
       response_dict = _ListCachedContentsResponse_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _ListCachedContentsResponse_from_mldev(
           self._api_client, response_dict
@@ -1625,6 +1630,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _CachedContent_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
@@ -1696,6 +1702,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _CachedContent_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
@@ -1769,6 +1776,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _DeleteCachedContentResponse_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _DeleteCachedContentResponse_from_mldev(
           self._api_client, response_dict
@@ -1846,6 +1854,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _CachedContent_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
 
@@ -1914,6 +1923,7 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _ListCachedContentsResponse_from_vertex(
           self._api_client, response_dict
       )
+
     else:
       response_dict = _ListCachedContentsResponse_from_mldev(
           self._api_client, response_dict
