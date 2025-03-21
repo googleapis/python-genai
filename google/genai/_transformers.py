@@ -181,17 +181,26 @@ def t_models_url(
 
 def t_extract_models(
     api_client: _api_client.BaseApiClient,
-    response: dict[str, list[types.ModelDict]],
-) -> Optional[list[types.ModelDict]]:
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
   if not response:
     return []
-  elif response.get('models') is not None:
-    return response.get('models')
-  elif response.get('tunedModels') is not None:
-    return response.get('tunedModels')
-  elif response.get('publisherModels') is not None:
-    return response.get('publisherModels')
-  elif (
+
+  models: Optional[list[dict[str, Any]]] = response.get('models')
+  if models is not None:
+    return models
+
+  tuned_models: Optional[list[dict[str, Any]]] = response.get('tunedModels')
+  if tuned_models is not None:
+    return tuned_models
+
+  publisher_models: Optional[list[dict[str, Any]]] = response.get(
+      'publisherModels'
+  )
+  if publisher_models is not None:
+    return publisher_models
+
+  if (
       response.get('httpHeaders') is not None
       and response.get('jsonPayload') is None
   ):
