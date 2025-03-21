@@ -596,7 +596,7 @@ def test_pydantic_schema_with_default_value(client):
     )
     assert isinstance(response.parsed, Restaurant)
   else:
-    with pytest.raises(ValueError) as e:
+    with pytest_helper.exception_if_mldev(client, errors.ClientError) as e:
       client.models.generate_content(
           model='gemini-1.5-flash',
           contents='Can you recommend a restaurant for me?',
@@ -605,7 +605,7 @@ def test_pydantic_schema_with_default_value(client):
               'response_schema': Restaurant,
           },
       )
-    assert 'Default value is not supported' in str(e)
+    assert 'INVALID_ARGUMENT' in str(e)
 
 
 def test_repeated_pydantic_schema(client):
