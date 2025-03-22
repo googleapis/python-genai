@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import contextlib
 import json
 import logging
 from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union, get_args
+import warnings
 
 import google.auth
 import pydantic
@@ -30,7 +31,6 @@ from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import client
-from . import errors
 from . import types
 from ._api_client import BaseApiClient
 from ._common import experimental_warning
@@ -63,6 +63,48 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
     'FunctionResponse request must have an `id` field from the'
     ' response of a ToolCall.FunctionalCalls in Google AI.'
 )
+
+
+def _ClientContent_to_mldev(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientContent,
+) -> dict:
+  client_content = from_object.model_dump(exclude_none=True, mode='json')
+  if 'turns' in client_content:
+    client_content['turns'] = [
+        _Content_to_mldev(api_client=api_client, from_object=item)
+        for item in client_content['turns']
+    ]
+  return client_content
+
+
+def _ClientContent_to_vertex(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientContent,
+) -> dict:
+  client_content = from_object.model_dump(exclude_none=True, mode='json')
+  if 'turns' in client_content:
+    client_content['turns'] = [
+        _Content_to_vertex(api_client=api_client, from_object=item)
+        for item in client_content['turns']
+    ]
+  return client_content
+
+
+def _ToolResponse_to_mldev(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientToolResponse,
+) -> dict:
+  tool_response = from_object.model_dump(exclude_none=True, mode='json')
+  return tool_response
+
+
+def _ToolResponse_to_vertex(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientToolResponse,
+) -> dict:
+  tool_response = from_object.model_dump(exclude_none=True, mode='json')
+  return tool_response
 
 
 class AsyncSession:
@@ -109,8 +151,250 @@ class AsyncSession:
         async for message in session.receive():
           print(message)
     """
+    warnings.warn(
+        'The `session.send` method is deprecated. Please use one of the more '
+        'specific methods: `send_client_content`, `send_realtime_input`, or '
+        '`send_tool_response` instead.',
+        DeprecationWarning,
+        stacklevel=2,
+    )
     client_message = self._parse_client_message(input, end_of_turn)
     await self._ws.send(json.dumps(client_message))
+
+  async def send_client_content(
+      self,
+      *,
+      turns: Optional[
+          Union[
+              types.ContentListUnion,
+              types.ContentListUnionDict,
+          ]
+      ] = None,
+      turn_complete: bool = True,
+  ):
+    """Send non-realtime, turn based content to the model.
+
+    There are two ways to send messages to the live API:
+    `send_client_content` and `send_realtime_input`.
+
+    `send_client_content` messages are added to the model context **in order**.
+    Having a conversation using `send_client_content` messages is roughly
+    equivalent to using the `Chat.send_message_stream` method, except that the
+    state of the `chat` history is stored on the API server.
+
+    Because of `send_client_content`'s order guarantee, the model cannot
+    respond as quickly to `send_client_content` messages as to
+    `send_realtime_input` messages. This makes the biggest difference when
+    sending objects that have significant preprocessing time (typically images).
+
+    The `send_client_content` message sends a list of `Content` objects,
+    which has more options than the `media:Blob` sent by `send_realtime_input`.
+
+    The main use-cases for `send_client_content` over `send_realtime_input` are:
+
+    - Sending anything that can't be represented in a real time message.
+    - Managing turns when not using audio input and voice activity detection.
+      (send `turn_complete=True` to force a response.)
+    - Prefilling a conversation context
+
+    Args:
+      turns: A list og `Content`-like or `Part`-like objects. same as
+        `client.models.generate_content`. For clarity it's best not to mix
+        `Content` and `Part` objects.
+      turn_complete: if true (the default) the model will reply immediately. If
+        false, the model will wait for you to send additional client_content,
+        and will not return until you send `turn_complete=True`.
+
+    Example:
+    ```
+    # These will immediately trigger a response from the model.
+    client = genai.Client(http_options= {'api_version': 'v1alpha'})
+    async with client.aio.live.connect(
+        model=MODEL_NAME,
+        config={"response_modalities": ["TEXT"]}
+    ) as session:
+      await session.send_client_content(
+          turns="Hello world!")
+      async for msg in session.receive():
+        if msg.text:
+          print(msg.text)
+      print('_'*80)
+
+      await session.send_client_content(turns=[
+          "Here is a picture from my vacation",
+          PIL.Image.open('image.jpg')])
+      async for msg in session.receive():
+        if msg.text:
+          print(msg.text)
+      print('_'*80)
+
+      await session.send_client_content(turns=[
+          types.Content(
+              role='user', parts=[types.Part.from_text(text='Hi when\'s your
+                birrthday?')]),
+          types.Content(
+              # made up
+              role='model', parts=[types.Part.from_text(text="June 3 2023")]),
+          types.Content(
+              role='user', parts=[types.Part.from_text(text="Really?")])
+      ])
+      async for msg in session.receive():
+        if msg.text:
+          print(msg.text)
+      print('_'*80)
+    ```
+
+    ```
+    # Here the model waits the turn_complete, and sends 1 response.
+    async with client.aio.live.connect(
+        model=MODEL_NAME,
+        config={"response_modalities": ["TEXT"]}
+    ) as session:
+      await session.send_client_content(
+          turns=PIL.Image.open('image.jpg'),
+          turn_complete=False)
+
+      await session.send_client_content(
+          turns="what do you think of this picture?",
+          turn_complete=False)
+
+      await session.send_client_content()
+
+      async for msg in session.receive():
+        if msg.text:
+          print(msg.text)
+    """
+    client_content = self._t_client_content(turns, turn_complete)
+
+    if self._api_client.vertexai:
+      client_content = _ClientContent_to_vertex(
+          api_client=self._api_client, from_object=client_content
+      )
+    else:
+      client_content = _ClientContent_to_mldev(
+          api_client=self._api_client, from_object=client_content
+      )
+
+    await self._ws.send(json.dumps({'client_content': client_content}))
+
+  async def send_realtime_input(self, *, media: t.BlobUnion):
+    """Send realtime media chunks to the model.
+
+    Use `send_realtime_input` for realtime audio chunks and video
+    frames(images).
+
+    With `send_realtime_input` the api will respond to audio automatically
+    based on voice activity detection (VAD).
+
+    `send_realtime_input` is optimized for responsivness at the expense of
+    deterministic ordering. Audio and video tokens are added to the
+    context when they become available.
+
+    Args:
+      media: A `Blob`-like object, the realtime media to send.
+
+    Example:
+    ```
+    from pathlib import Path
+
+    from google import genai
+    from google.genai import types
+
+    import PIL.Image
+
+    client = genai.Client(http_options= {'api_version': 'v1alpha'})
+
+    async with client.aio.live.connect(
+        model=MODEL_NAME,
+        config={"response_modalities": ["TEXT"]},
+    ) as session:
+      await session.send_realtime_input(
+          media=PIL.Image.open('image.jpg'))
+
+      audio_bytes = Path('audio.pcm').read_bytes()
+      await session.send_realtime_input(
+          media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
+
+      async for msg in session.receive():
+        if msg.text is not None:
+          print(f'{msg.text}')
+    ```
+    """
+    realtime_input = self._t_realtime_input(media)
+    realtime_input = realtime_input.model_dump(exclude_none=True, mode='json')
+    await self._ws.send(json.dumps({'realtime_input': realtime_input}))
+
+  async def send_tool_response(
+      self,
+      *,
+      function_responses: Union[
+          types.FunctionResponseOrDict,
+          Sequence[types.FunctionResponseOrDict],
+      ],
+  ):
+    """Send a tool response to the session.
+
+    Use `send_tool_response` to send to reply to `LiveServerToolCall` messages
+    from the server.
+
+    Use set the available tools in the `config: LiveConnectConfig` argument to
+    `client.live.connect`.
+
+    Args:
+      function_responses: A `FunctionResponse`-like object or list of
+        `FunctionResponse`-like objects.
+
+    Example:
+    ```
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(http_options={'api_version': 'v1alpha'})
+
+    tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
+    config = {
+        "tools": tools,
+        "response_modalities": ['TEXT']
+    }
+
+    async with client.aio.live.connect(
+        model='gemini-2.0-flash-exp',
+        config=config
+    ) as session:
+      prompt = "Turn on the lights please"
+      await session.send_client_content(
+          turns=prompt,
+          turn_complete=True)
+
+      async for chunk in session.receive():
+          if chunk.server_content:
+            if chunk.text is not None:
+              print(chunk.text)
+          elif chunk.tool_call:
+            print(chunk.tool_call)
+            print('_'*80)
+            function_response=types.FunctionResponse(
+                    name='turn_on_the_lights',
+                    response={'result': 'ok'},
+                    id=chunk.tool_call.function_calls[0].id,
+                )
+            print(function_response)
+            await session.send_tool_response(
+                function_responses=function_response
+            )
+
+            print('_'*80)
+    """
+    tool_response = self._t_tool_response(function_responses)
+    if self._api_client.vertexai:
+      tool_response = _ToolResponse_to_vertex(
+          api_client=self._api_client, from_object=tool_response
+      )
+    else:
+      tool_response = _ToolResponse_to_mldev(
+          api_client=self._api_client, from_object=tool_response
+      )
+    await self._ws.send(json.dumps({'tool_response': tool_response}))
 
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
     """Receive model responses from the server.
@@ -663,6 +947,62 @@ class AsyncSession:
       )
 
     return client_message
+
+  def _t_client_content(
+      self,
+      turns: Optional[
+          Union[
+              types.ContentListUnion,
+              types.ContentListUnionDict,
+          ]
+      ] = None,
+      turn_complete: bool = True,
+  ) -> types.LiveClientContent:
+    if turns is None:
+      return types.LiveClientContent(turn_complete=turn_complete)
+
+    try:
+      return types.LiveClientContent(
+          turns=t.t_contents(client=self._api_client, contents=turns),
+          turn_complete=turn_complete,
+      )
+    except Exception as e:
+      raise ValueError(
+          f'Could not convert input (type "{type(turns)}") to '
+          '`types.LiveClientContent`'
+      ) from e
+
+  def _t_realtime_input(
+      self,
+      media: t.BlobUnion,
+  ) -> types.LiveClientRealtimeInput:
+    try:
+      return types.LiveClientRealtimeInput(media_chunks=[t.t_blob(blob=media)])
+    except Exception as e:
+      raise ValueError(
+          f'Could not convert input (type "{type(input)}") to '
+          '`types.LiveClientRealtimeInput`'
+      ) from e
+
+  def _t_tool_response(
+      self,
+      input: Union[
+          types.FunctionResponseOrDict,
+          Sequence[types.FunctionResponseOrDict],
+      ],
+  ) -> types.LiveClientToolResponse:
+    if not input:
+      raise ValueError(f'A tool response is required, got: \n{input}')
+
+    try:
+      return types.LiveClientToolResponse(
+          function_responses=t.t_function_responses(function_responses=input)
+      )
+    except Exception as e:
+      raise ValueError(
+          f'Could not convert input (type "{type(input)}") to '
+          '`types.LiveClientToolResponse`'
+      ) from e
 
   async def close(self):
     # Close the websocket connection.
