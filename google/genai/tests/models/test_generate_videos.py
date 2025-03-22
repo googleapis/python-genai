@@ -68,7 +68,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "output_gcs_uri parameter is not supported in Gemini API"
+            "not supported in Gemini API"
         ),
     ),
     pytest_helper.TestTableItem(
