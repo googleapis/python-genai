@@ -22,7 +22,7 @@
 * Schema transformer logic fix. ([f64bcba](https://github.com/googleapis/python-genai/commit/f64bcba552156c1f344f8c03932a24c0a4f9c222))
 * Set event loop before asyncio.Lock() to ensure threading safety ([be2d9c6](https://github.com/googleapis/python-genai/commit/be2d9c61176f8330166e7912e233fb07fa82e4a8))
 * Surface complete error details from backend ([38f5beb](https://github.com/googleapis/python-genai/commit/38f5bebba79182f78c4aa921861151626c79a84d))
-
+* **chats:** Raise error when `types.Content` is passed to `send_message()` to correctly adhere to type annotation. To migrate code previously passing `content = types.Content(...)` to `send_message()`, pass `content.parts` instead.
 
 ### Documentation
 
