@@ -343,6 +343,22 @@ class FileSource(_common.CaseInSensitiveEnum):
   GENERATED = 'GENERATED'
 
 
+class ActivityHandling(_common.CaseInSensitiveEnum):
+  """The different ways of handling user activity."""
+
+  ACTIVITY_HANDLING_UNSPECIFIED = 'ACTIVITY_HANDLING_UNSPECIFIED'
+  START_OF_ACTIVITY_INTERRUPTS = 'START_OF_ACTIVITY_INTERRUPTS'
+  NO_INTERRUPTION = 'NO_INTERRUPTION'
+
+
+class TurnCoverage(_common.CaseInSensitiveEnum):
+  """Options about which input is included in the user's turn."""
+
+  TURN_COVERAGE_UNSPECIFIED = 'TURN_COVERAGE_UNSPECIFIED'
+  TURN_INCLUDES_ONLY_ACTIVITY = 'TURN_INCLUDES_ONLY_ACTIVITY'
+  TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
+
+
 class MediaModality(_common.CaseInSensitiveEnum):
   """Server content modalities."""
 
@@ -8937,6 +8953,67 @@ class LiveServerMessageDict(TypedDict, total=False):
 LiveServerMessageOrDict = Union[LiveServerMessage, LiveServerMessageDict]
 
 
+class AutomaticActivityDetection(_common.BaseModel):
+  """Configures automatic detection of activity."""
+
+  enabled: Optional[bool] = Field(
+      default=None,
+      description="""If enbled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
+  )
+
+
+class AutomaticActivityDetectionDict(TypedDict, total=False):
+  """Configures automatic detection of activity."""
+
+  enabled: Optional[bool]
+  """If enbled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
+
+
+AutomaticActivityDetectionOrDict = Union[
+    AutomaticActivityDetection, AutomaticActivityDetectionDict
+]
+
+
+class RealtimeInputConfig(_common.BaseModel):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
+      default=None,
+      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
+  )
+  activity_handling: Optional[ActivityHandling] = Field(
+      default=None, description="""Defines what effect activity has."""
+  )
+  turn_coverage: Optional[TurnCoverage] = Field(
+      default=None,
+      description="""Defines which input is included in the user's turn.""",
+  )
+
+
+class RealtimeInputConfigDict(TypedDict, total=False):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
+  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
+
+  activity_handling: Optional[ActivityHandling]
+  """Defines what effect activity has."""
+
+  turn_coverage: Optional[TurnCoverage]
+  """Defines which input is included in the user's turn."""
+
+
+RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
+
+
 class LiveClientSetup(_common.BaseModel):
   """Message contains configuration that will apply for the duration of the streaming session."""
 
@@ -8975,6 +9052,10 @@ The following fields are supported:
       external systems to perform an action, or set of actions, outside of
       knowledge and scope of the model.""",
   )
+  realtime_input_config: Optional[RealtimeInputConfig] = Field(
+      default=None,
+      description="""Configures the realtime input behavior in BidiGenerateContent.""",
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -9010,6 +9091,9 @@ The following fields are supported:
       A `Tool` is a piece of code that enables the system to interact with
       external systems to perform an action, or set of actions, outside of
       knowledge and scope of the model."""
+
+  realtime_input_config: Optional[RealtimeInputConfigDict]
+  """Configures the realtime input behavior in BidiGenerateContent."""
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -9067,6 +9151,52 @@ class LiveClientContentDict(TypedDict, total=False):
 LiveClientContentOrDict = Union[LiveClientContent, LiveClientContentDict]
 
 
+class ActivityStart(_common.BaseModel):
+  """Marks the start of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  pass
+
+
+class ActivityStartDict(TypedDict, total=False):
+  """Marks the start of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  pass
+
+
+ActivityStartOrDict = Union[ActivityStart, ActivityStartDict]
+
+
+class ActivityEnd(_common.BaseModel):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  pass
+
+
+class ActivityEndDict(TypedDict, total=False):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  pass
+
+
+ActivityEndOrDict = Union[ActivityEnd, ActivityEndDict]
+
+
 class LiveClientRealtimeInput(_common.BaseModel):
   """User input that is sent in real time.
 
@@ -9086,6 +9216,12 @@ class LiveClientRealtimeInput(_common.BaseModel):
 
   media_chunks: Optional[list[Blob]] = Field(
       default=None, description="""Inlined bytes data for media input."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
   )
 
 
@@ -9108,6 +9244,12 @@ class LiveClientRealtimeInputDict(TypedDict, total=False):
 
   media_chunks: Optional[list[BlobDict]]
   """Inlined bytes data for media input."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
 
 
 LiveClientRealtimeInputOrDict = Union[
