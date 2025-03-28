@@ -1,3 +1,122 @@
+# Video Q&A System with Gemini API Integration
+
+## Overview
+
+Welcome to my repository! This project demonstrates my implementation of a **Video Q&A System** that leverages Google's Gemini API to process video transcripts and answer complex questions. The system is designed with production-readiness in mind, featuring robust error handling, caching, and comprehensive test coverage.
+
+This implementation addresses [Issue #1](https://github.com/Konikz/python-genai/issues/1) by providing an efficient solution for batch processing of questions about video content, particularly useful for educational content and video documentation.
+
+---
+
+## Project Features
+
+### Key Components
+
+* **Transcript Processing Engine:**  
+  Implements intelligent chunking with semantic awareness and timestamp parsing, ensuring efficient handling of long video transcripts while maintaining context.
+
+* **Question Optimization System:**  
+  Analyzes question dependencies and optimizes processing order to minimize API calls and improve response accuracy.
+
+* **Gemini API Integration:**  
+  Robust integration with Google's Gemini API, featuring retry logic and rate limiting for reliable performance.
+
+* **Hybrid Caching System:**  
+  Multi-layer caching (memory and disk) with semantic search capabilities to improve response times and reduce API usage.
+
+* **FastAPI Service Layer:**  
+  RESTful API endpoints for transcript analysis and cache management, making the system easily integrable.
+
+### Technical Implementation
+
+* **Batch Processing:**  
+  Efficiently handles multiple questions through dependency-aware ordering and parallel processing where possible.
+
+* **Context Management:**  
+  Smart chunking system that maintains context across transcript segments while respecting token limits.
+
+* **Error Handling:**  
+  Comprehensive error handling and retry logic for API calls and system operations.
+
+* **Monitoring & Logging:**  
+  Built-in monitoring with Prometheus metrics for performance tracking and debugging.
+
+---
+
+## Usage Example
+
+```python
+from video_transcript_analysis.core.orchestrator import TranscriptAnalyzer
+
+# Initialize the analyzer
+analyzer = TranscriptAnalyzer()
+
+# Analyze a transcript
+result = await analyzer.analyze_transcript(
+    video_id="video123",
+    transcript="[00:00] Welcome to the video...",
+    questions=[
+        "What is the main topic?",
+        "Who are the key speakers?",
+        "What are the three main points discussed?"
+    ]
+)
+
+# Access the results
+for question, answer in zip(result.questions, result.answers):
+    print(f"Q: {question}")
+    print(f"A: {answer}\n")
+```
+
+---
+
+## API Endpoints
+
+* `POST /analyze`: Process a video transcript and answer questions
+* `DELETE /cache/{video_id}`: Clear cache for a specific video
+* `GET /health`: Health check endpoint
+
+---
+
+## Testing & Quality Assurance
+
+The implementation includes comprehensive test coverage:
+* Unit tests for core components
+* Integration tests for API endpoints
+* Performance tests for caching system
+* Error handling and edge case tests
+
+To run tests:
+```bash
+pytest tests/ --cov=src
+```
+
+---
+
+## Configuration
+
+The system is highly configurable through environment variables:
+* `GEMINI_API_KEY`: Required for API access
+* `GEMINI_MODEL`: Model selection (default: gemini-pro)
+* `CACHE_TTL`: Cache time-to-live in seconds
+* `MAX_CHUNK_SIZE`: Maximum chunk size for transcript processing
+* `BATCH_SIZE`: Number of questions to process in parallel
+
+---
+
+## About Me
+
+**Hello, I'm Konikz – a Computer Science and Engineering graduate from India.**  
+My journey in technology is driven by a passion for building scalable systems and exploring the intersection of AI and software engineering. This project represents my contribution to the open-source community, focusing on making video content more accessible and interactive through AI-powered analysis.
+
+---
+
+## P.S.
+
+As a contributor to the open-source community, I welcome feedback and suggestions to improve this implementation. Your insights would be invaluable in helping me refine this feature and make it more useful for the community!
+
+\* **If you're reviewing this, your feedback would help make this feature even better!**
+
 # Google Gen AI SDK
 
 [![PyPI version](https://img.shields.io/pypi/v/google-genai.svg)](https://pypi.org/project/google-genai/)
