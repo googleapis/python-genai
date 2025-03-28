@@ -107,7 +107,7 @@ The system is highly configurable through environment variables:
 ## About Me
 
 **Hello, I'm Konikz – a Computer Science and Engineering graduate from India.**  
-My journey in technology is driven by a passion for building scalable systems and exploring the intersection of AI and software engineering. This project represents my contribution to the open-source community, focusing on making video content more accessible and interactive through AI-powered analysis.
+This project represents my contribution to the open-source community for GSoC, focusing on making video content more accessible and interactive through AI-powered analysis.
 
 ---
 
