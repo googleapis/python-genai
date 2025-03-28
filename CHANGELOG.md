@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.1](https://github.com/googleapis/python-genai/compare/v1.8.0...v1.8.1) (2025-03-28)
+
+
+### Bug Fixes
+
+* Make response arg in APIError class constructor optional. [#572](https://github.com/googleapis/python-genai/issues/572) ([7b3f4a4](https://github.com/googleapis/python-genai/commit/7b3f4a4c50646c29293c0196b471b7bf3a29f102))
+
+
+### Documentation
+
+* Docstring improvements ([77f5356](https://github.com/googleapis/python-genai/commit/77f53566bbff3a715d2c7e5e83ada61ffd80ac96))
+
 ## [1.8.0](https://github.com/googleapis/python-genai/compare/v1.7.0...v1.8.0) (2025-03-26)
 
 
