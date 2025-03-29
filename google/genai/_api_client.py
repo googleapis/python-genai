@@ -19,7 +19,6 @@
 The BaseApiClient is intended to be a private module and is subject to change.
 """
 
-import anyio
 import asyncio
 import copy
 from dataclasses import dataclass
@@ -28,19 +27,30 @@ import io
 import json
 import logging
 import os
+import ssl
 import sys
 from typing import Any, AsyncIterator, Optional, Tuple, Union
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
+from urllib.parse import urlunparse
+
+import anyio
+import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
 from google.auth.transport.requests import Request
 import httpx
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import ValidationError
+
 from . import _common
 from . import errors
 from . import version
-from .types import HttpOptions, HttpOptionsDict, HttpOptionsOrDict
+from .types import HttpOptions
+from .types import HttpOptionsDict
+from .types import HttpOptionsOrDict
+
 
 logger = logging.getLogger('google_genai._api_client')
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB chunk size
@@ -409,8 +419,15 @@ class BaseApiClient:
       if self._http_options.headers is not None:
         _append_library_version_headers(self._http_options.headers)
     # Initialize the httpx client.
-    self._httpx_client = SyncHttpxClient()
-    self._async_httpx_client = AsyncHttpxClient()
+    # Unlike requests, the httpx package does not automatically pull in the
+    # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
+    # enabled explicitly.
+    ctx = ssl.create_default_context(
+        cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+        capath=os.environ.get('SSL_CERT_DIR'),
+    )
+    self._httpx_client = SyncHttpxClient(verify=ctx)
+    self._async_httpx_client = AsyncHttpxClient(verify=ctx)
 
   def _websocket_base_url(self):
     url_parts = urlparse(self._http_options.base_url)
