@@ -5469,9 +5469,8 @@ class GenerateVideosOperation(_common.BaseModel):
       default=None,
       description="""The error result of the operation in case of failure or cancellation.""",
   )
-  response: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""The normal response of the operation in case of success.""",
+  response: Optional[GenerateVideosResponse] = Field(
+      default=None, description="""The generated videos."""
   )
   result: Optional[GenerateVideosResponse] = Field(
       default=None, description="""The generated videos."""
@@ -5493,8 +5492,8 @@ class GenerateVideosOperationDict(TypedDict, total=False):
   error: Optional[dict[str, Any]]
   """The error result of the operation in case of failure or cancellation."""
 
-  response: Optional[dict[str, Any]]
-  """The normal response of the operation in case of success."""
+  response: Optional[GenerateVideosResponseDict]
+  """The generated videos."""
 
   result: Optional[GenerateVideosResponseDict]
   """The generated videos."""
@@ -6691,10 +6690,6 @@ class Operation(_common.BaseModel):
       default=None,
       description="""The error result of the operation in case of failure or cancellation.""",
   )
-  response: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""The normal response of the operation in case of success.""",
-  )
 
 
 class OperationDict(TypedDict, total=False):
@@ -6711,9 +6706,6 @@ class OperationDict(TypedDict, total=False):
 
   error: Optional[dict[str, Any]]
   """The error result of the operation in case of failure or cancellation."""
-
-  response: Optional[dict[str, Any]]
-  """The normal response of the operation in case of success."""
 
 
 OperationOrDict = Union[Operation, OperationDict]
