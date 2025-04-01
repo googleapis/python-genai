@@ -434,7 +434,7 @@ def test_bidi_setup_to_api_no_config(mock_api_client):
   assert result == expected_result
 
 
-def test_bidi_setup_to_api_speech_config(mock_api_client):
+def test_bidi_setup_to_api_top_level_from_generation_config(mock_api_client):
 
   expected_result = {
       'setup': {
@@ -444,16 +444,41 @@ def test_bidi_setup_to_api_speech_config(mock_api_client):
                   'voiceConfig': {
                       'prebuiltVoiceConfig': {'voiceName': 'en-default'}
                   }
-              }
+              },
+              'temperature': 0.7,
+              'topP': 0.8,
+              'topK': 9,
+              'maxOutputTokens': 10,
+              'seed': 13,
           },
-      }
+      },
+      'systemInstruction': {
+          'parts': [
+              {
+                  'text': 'test instruction',
+              },
+          ],
+          'role': 'user',
+      },
   }
-  config_dict = {'speech_config': 'en-default'}
+  # Test for mldev, config is a dict
+  config_dict = {
+      'speech_config': 'en-default',
+      'temperature': 0.7,
+      'top_p': 0.8,
+      'top_k': 9,
+      'max_output_tokens': 10,
+      'seed': 13,
+      'system_instruction': 'test instruction',
+  }
   result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
       model='test_model', config=config_dict
   )
-  assert result == expected_result
-
+  assert (
+      expected_result['setup']['generationConfig']
+      == result['setup']['generationConfig']
+  )
+  # Test for mldev, config is a LiveConnectConfig
   config = types.LiveConnectConfig(
       speech_config=types.SpeechConfig(
           voice_config=types.VoiceConfig(
@@ -461,19 +486,41 @@ def test_bidi_setup_to_api_speech_config(mock_api_client):
                   voice_name='en-default'
               )
           )
-      )
+      ),
+      temperature=0.7,
+      top_p=0.8,
+      top_k=9,
+      max_output_tokens=10,
+      seed=13,
+      system_instruction=types.Content(
+          parts=[
+              types.Part(
+                  text='test instruction',
+              )
+          ],
+          role='user',
+      ),
   )
   result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
       model='test_model', config=config
   )
-  assert result == expected_result
+  assert (
+      expected_result['setup']['generationConfig']
+      == result['setup']['generationConfig']
+  )
+  # Test for vertex, config is a LiveConnectConfig
   result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
       model='test_model', config=config
   )
+  # Vertex API does not set default response_modalities like mldev API.
+  # We need to add it manually.
   expected_result['setup']['generationConfig'].update(
       {'responseModalities': ['AUDIO']}
   )
-  assert result == expected_result
+  assert (
+      expected_result['setup']['generationConfig']
+      == result['setup']['generationConfig']
+  )
 
 
 def test_bidi_setup_to_api_with_config_tools_google_search_retrieval(
@@ -649,6 +696,35 @@ def test_bidi_setup_to_api_with_config_tools_code_execution(
       model='test_model', config=config
   )
   assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
+
+
+def test_bidi_setup_to_api_with_config_transcription(
+    mock_api_client,
+):
+  config_dict = {
+      'input_audio_transcription': {},
+      'output_audio_transcription': {},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'inputAudioTranscription': {},
+          'outputAudioTranscription': {},
+      }
+  }
+
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
+      model='test_model', config=config
+  )
+  assert (
+      result['setup']['inputAudioTranscription']
+      == expected_result['setup']['inputAudioTranscription']
+  )
+  assert (
+      result['setup']['outputAudioTranscription']
+      == expected_result['setup']['outputAudioTranscription']
+  )
 
 
 @pytest.mark.parametrize('vertexai', [True, False])

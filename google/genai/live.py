@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import contextlib
 import json
 import logging
 from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union, get_args
+import warnings
 
 import google.auth
 import pydantic
@@ -30,7 +31,6 @@ from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import client
-from . import errors
 from . import types
 from ._api_client import BaseApiClient
 from ._common import experimental_warning
@@ -63,6 +63,59 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
     'FunctionResponse request must have an `id` field from the'
     ' response of a ToolCall.FunctionalCalls in Google AI.'
 )
+
+
+def _ClientContent_to_mldev(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientContent,
+) -> dict:
+  client_content = from_object.model_dump(exclude_none=True, mode='json')
+  if 'turns' in client_content:
+    client_content['turns'] = [
+        _Content_to_mldev(api_client=api_client, from_object=item)
+        for item in client_content['turns']
+    ]
+  return client_content
+
+
+def _ClientContent_to_vertex(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientContent,
+) -> dict:
+  client_content = from_object.model_dump(exclude_none=True, mode='json')
+  if 'turns' in client_content:
+    client_content['turns'] = [
+        _Content_to_vertex(api_client=api_client, from_object=item)
+        for item in client_content['turns']
+    ]
+  return client_content
+
+
+def _ToolResponse_to_mldev(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientToolResponse,
+) -> dict:
+  tool_response = from_object.model_dump(exclude_none=True, mode='json')
+  for response in tool_response.get('function_responses', []):
+    if response.get('id') is None:
+      raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
+  return tool_response
+
+
+def _ToolResponse_to_vertex(
+    api_client: BaseApiClient,
+    from_object: types.LiveClientToolResponse,
+) -> dict:
+  tool_response = from_object.model_dump(exclude_none=True, mode='json')
+  return tool_response
+
+
+def _AudioTranscriptionConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: types.AudioTranscriptionConfig,
+) -> dict:
+  audio_transcription: dict[str, Any] = {}
+  return audio_transcription
 
 
 class AsyncSession:
@@ -111,6 +164,208 @@ class AsyncSession:
     """
     client_message = self._parse_client_message(input, end_of_turn)
     await self._ws.send(json.dumps(client_message))
+
+  async def send_client_content(
+      self,
+      *,
+      turns: Optional[
+          Union[
+              types.Content,
+              types.ContentDict,
+              list[Union[types.Content, types.ContentDict]]
+          ]
+      ] = None,
+      turn_complete: bool = True,
+  ):
+    """Send non-realtime, turn based content to the model.
+
+    There are two ways to send messages to the live API:
+    `send_client_content` and `send_realtime_input`.
+
+    `send_client_content` messages are added to the model context **in order**.
+    Having a conversation using `send_client_content` messages is roughly
+    equivalent to using the `Chat.send_message_stream` method, except that the
+    state of the `chat` history is stored on the API server.
+
+    Because of `send_client_content`'s order guarantee, the model cannot
+    respond as quickly to `send_client_content` messages as to
+    `send_realtime_input` messages. This makes the biggest difference when
+    sending objects that have significant preprocessing time (typically images).
+
+    The `send_client_content` message sends a list of `Content` objects,
+    which has more options than the `media:Blob` sent by `send_realtime_input`.
+
+    The main use-cases for `send_client_content` over `send_realtime_input` are:
+
+    - Prefilling a conversation context (including sending anything that can't
+      be represented as a realtime message), before starting a realtime
+      conversation.
+    - Conducting a non-realtime conversation, similar to `client.chat`, using
+      the live api.
+
+    Caution: Interleaving `send_client_content` and `send_realtime_input`
+      in the same conversation is not recommended and can lead to unexpected
+      results.
+
+    Args:
+      turns: A `Content` object or list of `Content` objects (or equivalent
+        dicts).
+      turn_complete: if true (the default) the model will reply immediately. If
+        false, the model will wait for you to send additional client_content,
+        and will not return until you send `turn_complete=True`.
+
+    Example:
+    ```
+    import google.genai
+    from google.genai import types
+
+    client = genai.Client(http_options={'api_version': 'v1alpha'})
+    async with client.aio.live.connect(
+        model=MODEL_NAME,
+        config={"response_modalities": ["TEXT"]}
+    ) as session:
+      await session.send_client_content(
+          turns=types.Content(
+              role='user',
+              parts=[types.Part(text="Hello world!")]))
+      async for msg in session.receive():
+        if msg.text:
+          print(msg.text)
+    ```
+    """
+    client_content = _t_client_content(turns, turn_complete)
+
+    if self._api_client.vertexai:
+      client_content_dict = _ClientContent_to_vertex(
+          api_client=self._api_client, from_object=client_content
+      )
+    else:
+      client_content_dict = _ClientContent_to_mldev(
+          api_client=self._api_client, from_object=client_content
+      )
+
+    await self._ws.send(json.dumps({'client_content': client_content_dict}))
+
+  async def send_realtime_input(self, *, media: t.BlobUnion):
+    """Send realtime media chunks to the model.
+
+    Use `send_realtime_input` for realtime audio chunks and video
+    frames(images).
+
+    With `send_realtime_input` the api will respond to audio automatically
+    based on voice activity detection (VAD).
+
+    `send_realtime_input` is optimized for responsivness at the expense of
+    deterministic ordering. Audio and video tokens are added to the
+    context when they become available.
+
+    Args:
+      media: A `Blob`-like object, the realtime media to send.
+
+    Example:
+    ```
+    from pathlib import Path
+
+    from google import genai
+    from google.genai import types
+
+    import PIL.Image
+
+    client = genai.Client(http_options= {'api_version': 'v1alpha'})
+
+    async with client.aio.live.connect(
+        model=MODEL_NAME,
+        config={"response_modalities": ["TEXT"]},
+    ) as session:
+      await session.send_realtime_input(
+          media=PIL.Image.open('image.jpg'))
+
+      audio_bytes = Path('audio.pcm').read_bytes()
+      await session.send_realtime_input(
+          media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
+
+      async for msg in session.receive():
+        if msg.text is not None:
+          print(f'{msg.text}')
+    ```
+    """
+    realtime_input = _t_realtime_input(media)
+    realtime_input_dict = realtime_input.model_dump(
+        exclude_none=True, mode='json'
+    )
+    await self._ws.send(json.dumps({'realtime_input': realtime_input_dict}))
+
+  async def send_tool_response(
+      self,
+      *,
+      function_responses: Union[
+          types.FunctionResponseOrDict,
+          Sequence[types.FunctionResponseOrDict],
+      ],
+  ):
+    """Send a tool response to the session.
+
+    Use `send_tool_response` to reply to `LiveServerToolCall` messages
+    from the server.
+
+    To set the available tools, use the `config.tools` argument
+    when you connect to the session (`client.live.connect`).
+
+    Args:
+      function_responses: A `FunctionResponse`-like object or list of
+        `FunctionResponse`-like objects.
+
+    Example:
+    ```
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(http_options={'api_version': 'v1alpha'})
+
+    tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
+    config = {
+        "tools": tools,
+        "response_modalities": ['TEXT']
+    }
+
+    async with client.aio.live.connect(
+        model='gemini-2.0-flash-exp',
+        config=config
+    ) as session:
+      prompt = "Turn on the lights please"
+      await session.send_client_content(
+          turns=prompt,
+          turn_complete=True)
+
+      async for chunk in session.receive():
+          if chunk.server_content:
+            if chunk.text is not None:
+              print(chunk.text)
+          elif chunk.tool_call:
+            print(chunk.tool_call)
+            print('_'*80)
+            function_response=types.FunctionResponse(
+                    name='turn_on_the_lights',
+                    response={'result': 'ok'},
+                    id=chunk.tool_call.function_calls[0].id,
+                )
+            print(function_response)
+            await session.send_tool_response(
+                function_responses=function_response
+            )
+
+            print('_'*80)
+    """
+    tool_response = _t_tool_response(function_responses)
+    if self._api_client.vertexai:
+      tool_response_dict = _ToolResponse_to_vertex(
+          api_client=self._api_client, from_object=tool_response
+      )
+    else:
+      tool_response_dict = _ToolResponse_to_mldev(
+          api_client=self._api_client, from_object=tool_response
+      )
+    await self._ws.send(json.dumps({'tool_response': tool_response_dict}))
 
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
     """Receive model responses from the server.
@@ -261,6 +516,12 @@ class AsyncSession:
       setv(to_object, ['turn_complete'], getv(from_object, ['turnComplete']))
     if getv(from_object, ['interrupted']) is not None:
       setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
+    if getv(from_object, ['generationComplete']) is not None:
+      setv(
+          to_object,
+          ['generation_complete'],
+          getv(from_object, ['generationComplete']),
+      )
     return to_object
 
   def _LiveToolCall_from_mldev(
@@ -332,6 +593,25 @@ class AsyncSession:
       )
     if getv(from_object, ['turnComplete']) is not None:
       setv(to_object, ['turn_complete'], getv(from_object, ['turnComplete']))
+    if getv(from_object, ['generationComplete']) is not None:
+      setv(
+          to_object,
+          ['generation_complete'],
+          getv(from_object, ['generationComplete']),
+      )
+    # Vertex supports transcription.
+    if getv(from_object, ['inputTranscription']) is not None:
+      setv(
+          to_object,
+          ['input_transcription'],
+          getv(from_object, ['inputTranscription']),
+      )
+    if getv(from_object, ['outputTranscription']) is not None:
+      setv(
+          to_object,
+          ['output_transcription'],
+          getv(from_object, ['outputTranscription']),
+      )
     if getv(from_object, ['interrupted']) is not None:
       setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
     return to_object
@@ -672,6 +952,79 @@ class AsyncSession:
     await self._ws.close()
 
 
+def _t_content_strict(content: types.ContentOrDict):
+  if isinstance(content, dict):
+    return types.Content.model_validate(content)
+  elif isinstance(content, types.Content):
+    return content
+  else:
+    raise ValueError(
+        f'Could not convert input (type "{type(content)}") to '
+        '`types.Content`'
+    )
+
+
+def _t_contents_strict(
+    contents: Union[Sequence[types.ContentOrDict], types.ContentOrDict]):
+  if isinstance(contents, Sequence):
+    return [_t_content_strict(content) for content in contents]
+  else:
+    return [_t_content_strict(contents)]
+
+
+def _t_client_content(
+    turns: Optional[
+        Union[Sequence[types.ContentOrDict], types.ContentOrDict]
+    ] = None,
+    turn_complete: bool = True,
+) -> types.LiveClientContent:
+  if turns is None:
+    return types.LiveClientContent(turn_complete=turn_complete)
+
+  try:
+    return types.LiveClientContent(
+        turns=_t_contents_strict(contents=turns),
+        turn_complete=turn_complete,
+    )
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(turns)}") to '
+        '`types.LiveClientContent`'
+    ) from e
+
+
+def _t_realtime_input(
+    media: t.BlobUnion,
+) -> types.LiveClientRealtimeInput:
+  try:
+    return types.LiveClientRealtimeInput(media_chunks=[t.t_blob(blob=media)])
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(input)}") to '
+        '`types.LiveClientRealtimeInput`'
+    ) from e
+
+
+def _t_tool_response(
+    input: Union[
+        types.FunctionResponseOrDict,
+        Sequence[types.FunctionResponseOrDict],
+    ],
+) -> types.LiveClientToolResponse:
+  if not input:
+    raise ValueError(f'A tool response is required, got: \n{input}')
+
+  try:
+    return types.LiveClientToolResponse(
+        function_responses=t.t_function_responses(function_responses=input)
+    )
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(input)}") to '
+        '`types.LiveClientToolResponse`'
+    ) from e
+
+
 class AsyncLive(_api_module.BaseModule):
   """AsyncLive. The live module is experimental."""
 
@@ -718,7 +1071,39 @@ class AsyncLive(_api_module.BaseModule):
                 to_object,
             )
         }
-
+    if getv(config, ['temperature']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['temperature'] = getv(
+            config, ['temperature']
+        )
+      else:
+        to_object['generationConfig'] = {
+            'temperature': getv(config, ['temperature'])
+        }
+    if getv(config, ['top_p']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['topP'] = getv(config, ['top_p'])
+      else:
+        to_object['generationConfig'] = {'topP': getv(config, ['top_p'])}
+    if getv(config, ['top_k']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['topK'] = getv(config, ['top_k'])
+      else:
+        to_object['generationConfig'] = {'topK': getv(config, ['top_k'])}
+    if getv(config, ['max_output_tokens']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['maxOutputTokens'] = getv(
+            config, ['max_output_tokens']
+        )
+      else:
+        to_object['generationConfig'] = {
+            'maxOutputTokens': getv(config, ['max_output_tokens'])
+        }
+    if getv(config, ['seed']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['seed'] = getv(config, ['seed'])
+      else:
+        to_object['generationConfig'] = {'seed': getv(config, ['seed'])}
     if getv(config, ['system_instruction']) is not None:
       setv(
           to_object,
@@ -799,6 +1184,39 @@ class AsyncLive(_api_module.BaseModule):
                 to_object,
             )
         }
+    if getv(config, ['temperature']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['temperature'] = getv(
+            config, ['temperature']
+        )
+      else:
+        to_object['generationConfig'] = {
+            'temperature': getv(config, ['temperature'])
+        }
+    if getv(config, ['top_p']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['topP'] = getv(config, ['top_p'])
+      else:
+        to_object['generationConfig'] = {'topP': getv(config, ['top_p'])}
+    if getv(config, ['top_k']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['topK'] = getv(config, ['top_k'])
+      else:
+        to_object['generationConfig'] = {'topK': getv(config, ['top_k'])}
+    if getv(config, ['max_output_tokens']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['maxOutputTokens'] = getv(
+            config, ['max_output_tokens']
+        )
+      else:
+        to_object['generationConfig'] = {
+            'maxOutputTokens': getv(config, ['max_output_tokens'])
+        }
+    if getv(config, ['seed']) is not None:
+      if getv(to_object, ['generationConfig']) is not None:
+        to_object['generationConfig']['seed'] = getv(config, ['seed'])
+      else:
+        to_object['generationConfig'] = {'seed': getv(config, ['seed'])}
     if getv(config, ['system_instruction']) is not None:
       setv(
           to_object,
@@ -821,6 +1239,24 @@ class AsyncLive(_api_module.BaseModule):
               )
               for item in t.t_tools(self._api_client, getv(config, ['tools']))
           ],
+      )
+    if getv(config, ['input_audio_transcription']) is not None:
+      setv(
+          to_object,
+          ['inputAudioTranscription'],
+          _AudioTranscriptionConfig_to_vertex(
+              self._api_client,
+              getv(config, ['input_audio_transcription']),
+          ),
+      )
+    if getv(config, ['output_audio_transcription']) is not None:
+      setv(
+          to_object,
+          ['outputAudioTranscription'],
+          _AudioTranscriptionConfig_to_vertex(
+              self._api_client,
+              getv(config, ['output_audio_transcription']),
+          ),
       )
 
     return_value = {'setup': {'model': model}}
@@ -868,8 +1304,15 @@ class AsyncLive(_api_module.BaseModule):
           generation_config=config.get('generation_config'),
           response_modalities=config.get('response_modalities'),
           speech_config=config.get('speech_config'),
+          temperature=config.get('temperature'),
+          top_p=config.get('top_p'),
+          top_k=config.get('top_k'),
+          max_output_tokens=config.get('max_output_tokens'),
+          seed=config.get('seed'),
           system_instruction=system_instruction,
           tools=config.get('tools'),
+          input_audio_transcription=config.get('input_audio_transcription'),
+          output_audio_transcription=config.get('output_audio_transcription'),
       )
     else:
       parameter_model = config

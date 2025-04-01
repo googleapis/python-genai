@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, Optional, Union  # type: ignore[attr-defined]
+from typing import Any, GenericAlias, Optional, Sequence, Union  # type: ignore[attr-defined]
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -249,6 +249,62 @@ def pil_to_blob(img) -> types.Blob:
   bytesio.seek(0)
   data = bytesio.read()
   return types.Blob(mime_type=mime_type, data=data)
+
+
+def t_function_response(
+    function_response: types.FunctionResponseOrDict,
+) -> types.FunctionResponse:
+  if not function_response:
+    raise ValueError('function_response is required.')
+  if isinstance(function_response, dict):
+    return types.FunctionResponse.model_validate(function_response)
+  elif isinstance(function_response, types.FunctionResponse):
+    return function_response
+  else:
+    raise TypeError(
+        f'Could not parse input as FunctionResponse. Unsupported'
+        f' function_response type: {type(function_response)}'
+    )
+
+def t_function_responses(
+    function_responses: Union[
+        types.FunctionResponseOrDict,
+        Sequence[types.FunctionResponseOrDict],
+    ],
+) -> list[types.FunctionResponse]:
+  if not function_responses:
+    raise ValueError('function_responses are required.')
+  if isinstance(function_responses, Sequence):
+    return [t_function_response(response) for response in function_responses]
+  else:
+    return [t_function_response(function_responses)]
+
+
+BlobUnion = Union[types.Blob, types.BlobDict, 'PIL.Image.Image']
+
+def t_blob(blob: BlobUnion) -> types.Blob:
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
+  if not blob:
+    raise ValueError('blob is required.')
+
+  if isinstance(blob, types.Blob):
+    return blob
+
+  if isinstance(blob, dict):
+    return types.Blob.model_validate(blob)
+
+  if PIL_Image is not None and isinstance(blob, PIL_Image):
+    return pil_to_blob(blob)
+
+  raise TypeError(
+      f'Could not parse input as Blob. Unsupported blob type: {type(blob)}'
+  )
 
 
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
