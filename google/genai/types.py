@@ -2310,67 +2310,3619 @@ class Citation(_common.BaseModel):
   )
 
 
-class CitationDict(TypedDict, total=False):
-  """Source attributions for content."""
+class GroundingChunkRetrievedContextDict(TypedDict, total=False):
+  """Chunk from context retrieved by the retrieval tools."""
 
-  end_index: Optional[int]
-  """Output only. End index into the content."""
-
-  license: Optional[str]
-  """Output only. License of the attribution."""
-
-  publication_date: Optional[GoogleTypeDateDict]
-  """Output only. Publication date of the attribution."""
-
-  start_index: Optional[int]
-  """Output only. Start index into the content."""
+  text: Optional[str]
+  """Text of the attribution."""
 
   title: Optional[str]
-  """Output only. Title of the attribution."""
+  """Title of the attribution."""
 
   uri: Optional[str]
-  """Output only. Url reference of the attribution."""
+  """URI reference of the attribution."""
 
 
-CitationOrDict = Union[Citation, CitationDict]
+GroundingChunkRetrievedContextOrDict = Union[
+    GroundingChunkRetrievedContext, GroundingChunkRetrievedContextDict
+]
 
 
-class CitationMetadata(_common.BaseModel):
-  """Citation information when the model quotes another source."""
+class GroundingChunkWeb(_common.BaseModel):
+  """Chunk from the web."""
 
-  citations: Optional[list[Citation]] = Field(
+  title: Optional[str] = Field(
+      default=None, description="""Title of the chunk."""
+  )
+  uri: Optional[str] = Field(
+      default=None, description="""URI reference of the chunk."""
+  )
+
+
+class GroundingChunkWebDict(TypedDict, total=False):
+  """Chunk from the web."""
+
+  title: Optional[str]
+  """Title of the chunk."""
+
+  uri: Optional[str]
+  """URI reference of the chunk."""
+
+
+GroundingChunkWebOrDict = Union[GroundingChunkWeb, GroundingChunkWebDict]
+
+
+class GroundingChunk(_common.BaseModel):
+  """Grounding chunk."""
+
+  retrieved_context: Optional[GroundingChunkRetrievedContext] = Field(
       default=None,
-      description="""Contains citation information when the model directly quotes, at
-      length, from another source. Can include traditional websites and code
-      repositories.
+      description="""Grounding chunk from context retrieved by the retrieval tools.""",
+  )
+  web: Optional[GroundingChunkWeb] = Field(
+      default=None, description="""Grounding chunk from the web."""
+  )
+
+
+class GroundingChunkDict(TypedDict, total=False):
+  """Grounding chunk."""
+
+  retrieved_context: Optional[GroundingChunkRetrievedContextDict]
+  """Grounding chunk from context retrieved by the retrieval tools."""
+
+  web: Optional[GroundingChunkWebDict]
+  """Grounding chunk from the web."""
+
+
+GroundingChunkOrDict = Union[GroundingChunk, GroundingChunkDict]
+
+
+class Segment(_common.BaseModel):
+  """Segment of the content."""
+
+  end_index: Optional[int] = Field(
+      default=None,
+      description="""Output only. End index in the given Part, measured in bytes. Offset from the start of the Part, exclusive, starting at zero.""",
+  )
+  part_index: Optional[int] = Field(
+      default=None,
+      description="""Output only. The index of a Part object within its parent Content object.""",
+  )
+  start_index: Optional[int] = Field(
+      default=None,
+      description="""Output only. Start index in the given Part, measured in bytes. Offset from the start of the Part, inclusive, starting at zero.""",
+  )
+  text: Optional[str] = Field(
+      default=None,
+      description="""Output only. The text corresponding to the segment from the response.""",
+  )
+
+
+class SegmentDict(TypedDict, total=False):
+  """Segment of the content."""
+
+  end_index: Optional[int]
+  """Output only. End index in the given Part, measured in bytes. Offset from the start of the Part, exclusive, starting at zero."""
+
+  part_index: Optional[int]
+  """Output only. The index of a Part object within its parent Content object."""
+
+  start_index: Optional[int]
+  """Output only. Start index in the given Part, measured in bytes. Offset from the start of the Part, inclusive, starting at zero."""
+
+  text: Optional[str]
+  """Output only. The text corresponding to the segment from the response."""
+
+
+SegmentOrDict = Union[Segment, SegmentDict]
+
+
+class GroundingSupport(_common.BaseModel):
+  """Grounding support."""
+
+  confidence_scores: Optional[list[float]] = Field(
+      default=None,
+      description="""Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. This list must have the same size as the grounding_chunk_indices.""",
+  )
+  grounding_chunk_indices: Optional[list[int]] = Field(
+      default=None,
+      description="""A list of indices (into 'grounding_chunk') specifying the citations associated with the claim. For instance [1,3,4] means that grounding_chunk[1], grounding_chunk[3], grounding_chunk[4] are the retrieved content attributed to the claim.""",
+  )
+  segment: Optional[Segment] = Field(
+      default=None,
+      description="""Segment of the content this support belongs to.""",
+  )
+
+
+class GroundingSupportDict(TypedDict, total=False):
+  """Grounding support."""
+
+  confidence_scores: Optional[list[float]]
+  """Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. This list must have the same size as the grounding_chunk_indices."""
+
+  grounding_chunk_indices: Optional[list[int]]
+  """A list of indices (into 'grounding_chunk') specifying the citations associated with the claim. For instance [1,3,4] means that grounding_chunk[1], grounding_chunk[3], grounding_chunk[4] are the retrieved content attributed to the claim."""
+
+  segment: Optional[SegmentDict]
+  """Segment of the content this support belongs to."""
+
+
+GroundingSupportOrDict = Union[GroundingSupport, GroundingSupportDict]
+
+
+class RetrievalMetadata(_common.BaseModel):
+  """Metadata related to retrieval in the grounding flow."""
+
+  google_search_dynamic_retrieval_score: Optional[float] = Field(
+      default=None,
+      description="""Optional. Score indicating how likely information from Google Search could help answer the prompt. The score is in the range `[0, 1]`, where 0 is the least likely and 1 is the most likely. This score is only populated when Google Search grounding and dynamic retrieval is enabled. It will be compared to the threshold to determine whether to trigger Google Search.""",
+  )
+
+
+class RetrievalMetadataDict(TypedDict, total=False):
+  """Metadata related to retrieval in the grounding flow."""
+
+  google_search_dynamic_retrieval_score: Optional[float]
+  """Optional. Score indicating how likely information from Google Search could help answer the prompt. The score is in the range `[0, 1]`, where 0 is the least likely and 1 is the most likely. This score is only populated when Google Search grounding and dynamic retrieval is enabled. It will be compared to the threshold to determine whether to trigger Google Search."""
+
+
+RetrievalMetadataOrDict = Union[RetrievalMetadata, RetrievalMetadataDict]
+
+
+class SearchEntryPoint(_common.BaseModel):
+  """Google search entry point."""
+
+  rendered_content: Optional[str] = Field(
+      default=None,
+      description="""Optional. Web content snippet that can be embedded in a web page or an app webview.""",
+  )
+  sdk_blob: Optional[bytes] = Field(
+      default=None,
+      description="""Optional. Base64 encoded JSON representing array of tuple.""",
+  )
+
+
+class SearchEntryPointDict(TypedDict, total=False):
+  """Google search entry point."""
+
+  rendered_content: Optional[str]
+  """Optional. Web content snippet that can be embedded in a web page or an app webview."""
+
+  sdk_blob: Optional[bytes]
+  """Optional. Base64 encoded JSON representing array of tuple."""
+
+
+SearchEntryPointOrDict = Union[SearchEntryPoint, SearchEntryPointDict]
+
+
+class GroundingMetadata(_common.BaseModel):
+  """Metadata returned to client when grounding is enabled."""
+
+  grounding_chunks: Optional[list[GroundingChunk]] = Field(
+      default=None,
+      description="""List of supporting references retrieved from specified grounding source.""",
+  )
+  grounding_supports: Optional[list[GroundingSupport]] = Field(
+      default=None, description="""Optional. List of grounding support."""
+  )
+  retrieval_metadata: Optional[RetrievalMetadata] = Field(
+      default=None, description="""Optional. Output only. Retrieval metadata."""
+  )
+  retrieval_queries: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Queries executed by the retrieval tools.""",
+  )
+  search_entry_point: Optional[SearchEntryPoint] = Field(
+      default=None,
+      description="""Optional. Google search entry for the following-up web searches.""",
+  )
+  web_search_queries: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Web search queries for the following-up web search.""",
+  )
+
+
+class GroundingMetadataDict(TypedDict, total=False):
+  """Metadata returned to client when grounding is enabled."""
+
+  grounding_chunks: Optional[list[GroundingChunkDict]]
+  """List of supporting references retrieved from specified grounding source."""
+
+  grounding_supports: Optional[list[GroundingSupportDict]]
+  """Optional. List of grounding support."""
+
+  retrieval_metadata: Optional[RetrievalMetadataDict]
+  """Optional. Output only. Retrieval metadata."""
+
+  retrieval_queries: Optional[list[str]]
+  """Optional. Queries executed by the retrieval tools."""
+
+  search_entry_point: Optional[SearchEntryPointDict]
+  """Optional. Google search entry for the following-up web searches."""
+
+  web_search_queries: Optional[list[str]]
+  """Optional. Web search queries for the following-up web search."""
+
+
+GroundingMetadataOrDict = Union[GroundingMetadata, GroundingMetadataDict]
+
+
+class LogprobsResultCandidate(_common.BaseModel):
+  """Candidate for the logprobs token and score."""
+
+  log_probability: Optional[float] = Field(
+      default=None, description="""The candidate's log probability."""
+  )
+  token: Optional[str] = Field(
+      default=None, description="""The candidate's token string value."""
+  )
+  token_id: Optional[int] = Field(
+      default=None, description="""The candidate's token id value."""
+  )
+
+
+class LogprobsResultCandidateDict(TypedDict, total=False):
+  """Candidate for the logprobs token and score."""
+
+  log_probability: Optional[float]
+  """The candidate's log probability."""
+
+  token: Optional[str]
+  """The candidate's token string value."""
+
+  token_id: Optional[int]
+  """The candidate's token id value."""
+
+
+LogprobsResultCandidateOrDict = Union[
+    LogprobsResultCandidate, LogprobsResultCandidateDict
+]
+
+
+class LogprobsResultTopCandidates(_common.BaseModel):
+  """Candidates with top log probabilities at each decoding step."""
+
+  candidates: Optional[list[LogprobsResultCandidate]] = Field(
+      default=None,
+      description="""Sorted by log probability in descending order.""",
+  )
+
+
+class LogprobsResultTopCandidatesDict(TypedDict, total=False):
+  """Candidates with top log probabilities at each decoding step."""
+
+  candidates: Optional[list[LogprobsResultCandidateDict]]
+  """Sorted by log probability in descending order."""
+
+
+LogprobsResultTopCandidatesOrDict = Union[
+    LogprobsResultTopCandidates, LogprobsResultTopCandidatesDict
+]
+
+
+class LogprobsResult(_common.BaseModel):
+  """Logprobs Result"""
+
+  chosen_candidates: Optional[list[LogprobsResultCandidate]] = Field(
+      default=None,
+      description="""Length = total number of decoding steps. The chosen candidates may or may not be in top_candidates.""",
+  )
+  top_candidates: Optional[list[LogprobsResultTopCandidates]] = Field(
+      default=None, description="""Length = total number of decoding steps."""
+  )
+
+
+class LogprobsResultDict(TypedDict, total=False):
+  """Logprobs Result"""
+
+  chosen_candidates: Optional[list[LogprobsResultCandidateDict]]
+  """Length = total number of decoding steps. The chosen candidates may or may not be in top_candidates."""
+
+  top_candidates: Optional[list[LogprobsResultTopCandidatesDict]]
+  """Length = total number of decoding steps."""
+
+
+LogprobsResultOrDict = Union[LogprobsResult, LogprobsResultDict]
+
+
+class SafetyRating(_common.BaseModel):
+  """Safety rating corresponding to the generated content."""
+
+  blocked: Optional[bool] = Field(
+      default=None,
+      description="""Output only. Indicates whether the content was filtered out because of this rating.""",
+  )
+  category: Optional[HarmCategory] = Field(
+      default=None, description="""Output only. Harm category."""
+  )
+  probability: Optional[HarmProbability] = Field(
+      default=None,
+      description="""Output only. Harm probability levels in the content.""",
+  )
+  probability_score: Optional[float] = Field(
+      default=None, description="""Output only. Harm probability score."""
+  )
+  severity: Optional[HarmSeverity] = Field(
+      default=None,
+      description="""Output only. Harm severity levels in the content.""",
+  )
+  severity_score: Optional[float] = Field(
+      default=None, description="""Output only. Harm severity score."""
+  )
+
+
+class SafetyRatingDict(TypedDict, total=False):
+  """Safety rating corresponding to the generated content."""
+
+  blocked: Optional[bool]
+  """Output only. Indicates whether the content was filtered out because of this rating."""
+
+  category: Optional[HarmCategory]
+  """Output only. Harm category."""
+
+  probability: Optional[HarmProbability]
+  """Output only. Harm probability levels in the content."""
+
+  probability_score: Optional[float]
+  """Output only. Harm probability score."""
+
+  severity: Optional[HarmSeverity]
+  """Output only. Harm severity levels in the content."""
+
+  severity_score: Optional[float]
+  """Output only. Harm severity score."""
+
+
+SafetyRatingOrDict = Union[SafetyRating, SafetyRatingDict]
+
+
+class Candidate(_common.BaseModel):
+  """A response candidate generated from the model."""
+
+  content: Optional[Content] = Field(
+      default=None,
+      description="""Contains the multi-part content of the response.
+      """,
+  )
+  citation_metadata: Optional[CitationMetadata] = Field(
+      default=None,
+      description="""Source attribution of the generated content.
+      """,
+  )
+  finish_message: Optional[str] = Field(
+      default=None,
+      description="""Describes the reason the model stopped generating tokens.
+      """,
+  )
+  token_count: Optional[int] = Field(
+      default=None,
+      description="""Number of tokens for this candidate.
+      """,
+  )
+  finish_reason: Optional[FinishReason] = Field(
+      default=None,
+      description="""The reason why the model stopped generating tokens.
+      If empty, the model has not stopped generating the tokens.
+      """,
+  )
+  avg_logprobs: Optional[float] = Field(
+      default=None,
+      description="""Output only. Average log probability score of the candidate.""",
+  )
+  grounding_metadata: Optional[GroundingMetadata] = Field(
+      default=None,
+      description="""Output only. Metadata specifies sources used to ground generated content.""",
+  )
+  index: Optional[int] = Field(
+      default=None, description="""Output only. Index of the candidate."""
+  )
+  logprobs_result: Optional[LogprobsResult] = Field(
+      default=None,
+      description="""Output only. Log-likelihood scores for the response tokens and top tokens""",
+  )
+  safety_ratings: Optional[list[SafetyRating]] = Field(
+      default=None,
+      description="""Output only. List of ratings for the safety of a response candidate. There is at most one rating per category.""",
+  )
+
+
+class CandidateDict(TypedDict, total=False):
+  """A response candidate generated from the model."""
+
+  content: Optional[ContentDict]
+  """Contains the multi-part content of the response.
+      """
+
+  citation_metadata: Optional[CitationMetadataDict]
+  """Source attribution of the generated content.
+      """
+
+  finish_message: Optional[str]
+  """Describes the reason the model stopped generating tokens.
+      """
+
+  token_count: Optional[int]
+  """Number of tokens for this candidate.
+      """
+
+  finish_reason: Optional[FinishReason]
+  """The reason why the model stopped generating tokens.
+      If empty, the model has not stopped generating the tokens.
+      """
+
+  avg_logprobs: Optional[float]
+  """Output only. Average log probability score of the candidate."""
+
+  grounding_metadata: Optional[GroundingMetadataDict]
+  """Output only. Metadata specifies sources used to ground generated content."""
+
+  index: Optional[int]
+  """Output only. Index of the candidate."""
+
+  logprobs_result: Optional[LogprobsResultDict]
+  """Output only. Log-likelihood scores for the response tokens and top tokens"""
+
+  safety_ratings: Optional[list[SafetyRatingDict]]
+  """Output only. List of ratings for the safety of a response candidate. There is at most one rating per category."""
+
+
+CandidateOrDict = Union[Candidate, CandidateDict]
+
+
+class GenerateContentResponsePromptFeedback(_common.BaseModel):
+  """Content filter results for a prompt sent in the request."""
+
+  block_reason: Optional[BlockedReason] = Field(
+      default=None, description="""Output only. Blocked reason."""
+  )
+  block_reason_message: Optional[str] = Field(
+      default=None,
+      description="""Output only. A readable block reason message.""",
+  )
+  safety_ratings: Optional[list[SafetyRating]] = Field(
+      default=None, description="""Output only. Safety ratings."""
+  )
+
+
+class GenerateContentResponsePromptFeedbackDict(TypedDict, total=False):
+  """Content filter results for a prompt sent in the request."""
+
+  block_reason: Optional[BlockedReason]
+  """Output only. Blocked reason."""
+
+  block_reason_message: Optional[str]
+  """Output only. A readable block reason message."""
+
+  safety_ratings: Optional[list[SafetyRatingDict]]
+  """Output only. Safety ratings."""
+
+
+GenerateContentResponsePromptFeedbackOrDict = Union[
+    GenerateContentResponsePromptFeedback,
+    GenerateContentResponsePromptFeedbackDict,
+]
+
+
+class ModalityTokenCount(_common.BaseModel):
+  """Represents token counting info for a single modality."""
+
+  modality: Optional[MediaModality] = Field(
+      default=None,
+      description="""The modality associated with this token count.""",
+  )
+  token_count: Optional[int] = Field(
+      default=None, description="""Number of tokens."""
+  )
+
+
+class ModalityTokenCountDict(TypedDict, total=False):
+  """Represents token counting info for a single modality."""
+
+  modality: Optional[MediaModality]
+  """The modality associated with this token count."""
+
+  token_count: Optional[int]
+  """Number of tokens."""
+
+
+ModalityTokenCountOrDict = Union[ModalityTokenCount, ModalityTokenCountDict]
+
+
+class GenerateContentResponseUsageMetadata(_common.BaseModel):
+  """Usage metadata about response(s)."""
+
+  cache_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities of the cached content in the request input.""",
+  )
+  cached_content_token_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tokens in the cached part in the input (the cached content).""",
+  )
+  candidates_token_count: Optional[int] = Field(
+      default=None, description="""Number of tokens in the response(s)."""
+  )
+  candidates_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities that were returned in the response.""",
+  )
+  prompt_token_count: Optional[int] = Field(
+      default=None,
+      description="""Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content.""",
+  )
+  prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities that were processed in the request input.""",
+  )
+  thoughts_token_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tokens present in thoughts output.""",
+  )
+  tool_use_prompt_token_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tokens present in tool-use prompt(s).""",
+  )
+  tool_use_prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Output only. List of modalities that were processed for tool-use request inputs.""",
+  )
+  total_token_count: Optional[int] = Field(
+      default=None,
+      description="""Total token count for prompt, response candidates, and tool-use prompts (if present).""",
+  )
+
+
+class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
+  """Usage metadata about response(s)."""
+
+  cache_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities of the cached content in the request input."""
+
+  cached_content_token_count: Optional[int]
+  """Output only. Number of tokens in the cached part in the input (the cached content)."""
+
+  candidates_token_count: Optional[int]
+  """Number of tokens in the response(s)."""
+
+  candidates_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities that were returned in the response."""
+
+  prompt_token_count: Optional[int]
+  """Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content."""
+
+  prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities that were processed in the request input."""
+
+  thoughts_token_count: Optional[int]
+  """Output only. Number of tokens present in thoughts output."""
+
+  tool_use_prompt_token_count: Optional[int]
+  """Output only. Number of tokens present in tool-use prompt(s)."""
+
+  tool_use_prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Output only. List of modalities that were processed for tool-use request inputs."""
+
+  total_token_count: Optional[int]
+  """Total token count for prompt, response candidates, and tool-use prompts (if present)."""
+
+
+GenerateContentResponseUsageMetadataOrDict = Union[
+    GenerateContentResponseUsageMetadata,
+    GenerateContentResponseUsageMetadataDict,
+]
+
+
+class GenerateContentResponse(_common.BaseModel):
+  """Response message for PredictionService.GenerateContent."""
+
+  candidates: Optional[list[Candidate]] = Field(
+      default=None,
+      description="""Response variations returned by the model.
+      """,
+  )
+  create_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Timestamp when the request is made to the server.
+      """,
+  )
+  response_id: Optional[str] = Field(
+      default=None,
+      description="""Identifier for each response.
+      """,
+  )
+  model_version: Optional[str] = Field(
+      default=None,
+      description="""Output only. The model version used to generate the response.""",
+  )
+  prompt_feedback: Optional[GenerateContentResponsePromptFeedback] = Field(
+      default=None,
+      description="""Output only. Content filter results for a prompt sent in the request. Note: Sent only in the first stream chunk. Only happens when no candidates were generated due to content violations.""",
+  )
+  usage_metadata: Optional[GenerateContentResponseUsageMetadata] = Field(
+      default=None, description="""Usage metadata about the response(s)."""
+  )
+  automatic_function_calling_history: Optional[list[Content]] = None
+  parsed: Optional[Union[pydantic.BaseModel, dict, Enum]] = Field(
+      default=None,
+      description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
+  )
+
+  def _get_text(self, warn_property: str = 'text') -> Optional[str]:
+    """Returns the concatenation of all text parts in the response.
+
+    This is an internal method that allows customizing the warning message.
+    """
+    if (
+        not self.candidates
+        or not self.candidates[0].content
+        or not self.candidates[0].content.parts
+    ):
+      return None
+    if len(self.candidates) > 1:
+      logger.warning(
+          f'there are {len(self.candidates)} candidates, returning'
+          f' {warn_property} result from the first candidate. Access'
+          ' response.candidates directly to get the result from other'
+          ' candidates.'
+      )
+    text = ''
+    any_text_part_text = False
+    non_text_parts = []
+    for part in self.candidates[0].content.parts:
+      for field_name, field_value in part.model_dump(
+          exclude={'text', 'thought'}
+      ).items():
+        if field_value is not None:
+          non_text_parts.append(field_name)
+      if isinstance(part.text, str):
+        if isinstance(part.thought, bool) and part.thought:
+          continue
+        any_text_part_text = True
+        # Fix for special character handling - replace escape sequences like \[e] with actual characters
+        fixed_text = part.text
+        # Handle common French character escapes
+        fixed_text = fixed_text.replace('\\[e]', 'é')
+        fixed_text = fixed_text.replace('\\[a]', 'à')
+        fixed_text = fixed_text.replace('\\[c]', 'ç')
+        fixed_text = fixed_text.replace('\\[e\\]', 'é')
+        fixed_text = fixed_text.replace('\\[a\\]', 'à')
+        fixed_text = fixed_text.replace('\\[c\\]', 'ç')
+        fixed_text = fixed_text.replace('\\[i]', 'î')
+        fixed_text = fixed_text.replace('\\[o]', 'ô')
+        fixed_text = fixed_text.replace('\\[u]', 'ù')
+        fixed_text = fixed_text.replace('\\[i\\]', 'î')
+        fixed_text = fixed_text.replace('\\[o\\]', 'ô')
+        fixed_text = fixed_text.replace('\\[u\\]', 'ù')
+        text += fixed_text
+    if non_text_parts:
+      logger.warning(
+          'Warning: there are non-text parts in the response:'
+          f' {non_text_parts},returning concatenated {warn_property} result'
+          ' from text parts,check out the non text parts for full response'
+          ' from model.'
+      )
+    # part.text == '' is different from part.text is None
+    return text if any_text_part_text else None
+
+  @property
+  def text(self) -> Optional[str]:
+    """Returns the concatenation of all text parts in the response."""
+    return self._get_text(warn_property='text')
+
+  @property
+  def function_calls(self) -> Optional[list[FunctionCall]]:
+    """Returns the list of function calls in the response."""
+    if (
+        not self.candidates
+        or not self.candidates[0].content
+        or not self.candidates[0].content.parts
+    ):
+      return None
+    if len(self.candidates) > 1:
+      logger.warning(
+          'Warning: there are multiple candidates in the response, returning'
+          ' function calls from the first one.'
+      )
+    function_calls = [
+        part.function_call
+        for part in self.candidates[0].content.parts
+        if part.function_call is not None
+    ]
+
+    return function_calls if function_calls else None
+
+  @property
+  def executable_code(self) -> Optional[str]:
+    """Returns the executable code in the response."""
+    if (
+        not self.candidates
+        or not self.candidates[0].content
+        or not self.candidates[0].content.parts
+    ):
+      return None
+    if len(self.candidates) > 1:
+      logging.warning(
+          'Warning: there are multiple candidates in the response, returning'
+          ' executable code from the first one.'
+      )
+    for part in self.candidates[0].content.parts:
+      if part.executable_code is not None:
+        return part.executable_code.code
+    return None
+
+  @property
+  def code_execution_result(self) -> Optional[str]:
+    """Returns the code execution result in the response."""
+    if (
+        not self.candidates
+        or not self.candidates[0].content
+        or not self.candidates[0].content.parts
+    ):
+      return None
+    if len(self.candidates) > 1:
+      logging.warning(
+          'Warning: there are multiple candidates in the response, returning'
+          ' code execution result from the first one.'
+      )
+    for part in self.candidates[0].content.parts:
+      if part.code_execution_result is not None:
+        return part.code_execution_result.output
+    return None
+
+  @classmethod
+  def _from_response(
+      cls: typing.Type[T],
+      *,
+      response: dict[str, object],
+      kwargs: dict[str, object],
+  ) -> T:
+    result = super()._from_response(response=response, kwargs=kwargs)
+
+    # Handles response schema.
+    response_schema = _common.get_value_by_path(
+        kwargs, ['config', 'response_schema']
+    )
+    if (
+        inspect.isclass(response_schema)
+        and not (
+            isinstance(response_schema, builtin_types.GenericAlias)
+        )  # Needed for Python 3.9 and 3.10
+        and issubclass(response_schema, pydantic.BaseModel)
+    ):
+      # Pydantic schema.
+      try:
+        result_text = result._get_text(warn_property='parsed')
+        if result_text is not None:
+          # Fix specially escaped characters in JSON strings before parsing
+          if 'response_mime_type' in kwargs.get('config', {}) and kwargs['config']['response_mime_type'] == 'application/json':
+            # Handle special character escapes in JSON text
+            result_text = result_text.replace('\\[e]', 'é')
+            result_text = result_text.replace('\\[a]', 'à') 
+            result_text = result_text.replace('\\[c]', 'ç')
+            result_text = result_text.replace('\\[e\\]', 'é')
+            result_text = result_text.replace('\\[a\\]', 'à')
+            result_text = result_text.replace('\\[c\\]', 'ç')
+            result_text = result_text.replace('\\[i]', 'î')
+            result_text = result_text.replace('\\[o]', 'ô')
+            result_text = result_text.replace('\\[u]', 'ù')
+            result_text = result_text.replace('\\[i\\]', 'î')
+            result_text = result_text.replace('\\[o\\]', 'ô')
+            result_text = result_text.replace('\\[u\\]', 'ù')
+          result.parsed = response_schema.model_validate_json(result_text)
+      # may not be a valid json per stream response
+      except pydantic.ValidationError:
+        pass
+      except json.decoder.JSONDecodeError:
+        pass
+    elif (
+        isinstance(response_schema, EnumMeta)
+        and result._get_text(warn_property='parsed') is not None
+    ):
+      # Enum with "application/json" returns response in double quotes.
+      result_text = result._get_text(warn_property='parsed')
+      if result_text is None:
+        raise ValueError('Response is empty.')
+      enum_value = result_text.replace('"', '')
+      try:
+        result.parsed = response_schema(enum_value)
+        if (
+            hasattr(response_schema, '__name__')
+            and response_schema.__name__ == 'PlaceholderLiteralEnum'
+        ):
+          result.parsed = str(response_schema(enum_value).name)  # type: ignore
+      except ValueError:
+        pass
+    elif isinstance(response_schema, builtin_types.GenericAlias) or isinstance(
+        response_schema, type
+    ):
+
+      class Placeholder(pydantic.BaseModel):
+        placeholder: response_schema  # type: ignore[valid-type]
+
+      try:
+        result_text = result._get_text(warn_property='parsed')
+        if result_text is not None:
+          # Fix specially escaped characters in JSON strings before parsing
+          if 'response_mime_type' in kwargs.get('config', {}) and kwargs['config']['response_mime_type'] == 'application/json':
+            # Handle special character escapes in JSON text
+            result_text = result_text.replace('\\[e]', 'é')
+            result_text = result_text.replace('\\[a]', 'à') 
+            result_text = result_text.replace('\\[c]', 'ç')
+            result_text = result_text.replace('\\[e\\]', 'é')
+            result_text = result_text.replace('\\[a\\]', 'à')
+            result_text = result_text.replace('\\[c\\]', 'ç')
+            result_text = result_text.replace('\\[i]', 'î')
+            result_text = result_text.replace('\\[o]', 'ô')
+            result_text = result_text.replace('\\[u]', 'ù')
+            result_text = result_text.replace('\\[i\\]', 'î')
+            result_text = result_text.replace('\\[o\\]', 'ô')
+            result_text = result_text.replace('\\[u\\]', 'ù')
+          parsed = {'placeholder': json.loads(result_text)}
+          placeholder = Placeholder.model_validate(parsed)
+          result.parsed = placeholder.placeholder
+      except json.decoder.JSONDecodeError:
+        pass
+      except pydantic.ValidationError:
+        pass
+
+    elif isinstance(response_schema, dict) or isinstance(
+        response_schema, Schema
+    ):
+      # With just the Schema, we don't know what pydantic model the user would
+      # want the result converted to. So just return json.
+      # JSON schema.
+      try:
+        result_text = result._get_text(warn_property='parsed')
+        if result_text is not None:
+          # Fix specially escaped characters in JSON strings before parsing
+          if 'response_mime_type' in kwargs.get('config', {}) and kwargs['config']['response_mime_type'] == 'application/json':
+            # Handle special character escapes in JSON text
+            result_text = result_text.replace('\\[e]', 'é')
+            result_text = result_text.replace('\\[a]', 'à') 
+            result_text = result_text.replace('\\[c]', 'ç')
+            result_text = result_text.replace('\\[e\\]', 'é')
+            result_text = result_text.replace('\\[a\\]', 'à')
+            result_text = result_text.replace('\\[c\\]', 'ç')
+            result_text = result_text.replace('\\[i]', 'î')
+            result_text = result_text.replace('\\[o]', 'ô')
+            result_text = result_text.replace('\\[u]', 'ù')
+            result_text = result_text.replace('\\[i\\]', 'î')
+            result_text = result_text.replace('\\[o\\]', 'ô')
+            result_text = result_text.replace('\\[u\\]', 'ù')
+          result.parsed = json.loads(result_text)
+      # may not be a valid json per stream response
+      except json.decoder.JSONDecodeError:
+        pass
+    elif typing.get_origin(response_schema) in _UNION_TYPES:
+      # Union schema.
+      union_types = typing.get_args(response_schema)
+      for union_type in union_types:
+        if issubclass(union_type, pydantic.BaseModel):
+          try:
+            result_text = result._get_text(warn_property='parsed')
+            if result_text is not None:
+              # Fix specially escaped characters in JSON strings before parsing
+              if 'response_mime_type' in kwargs.get('config', {}) and kwargs['config']['response_mime_type'] == 'application/json':
+                # Handle special character escapes in JSON text
+                result_text = result_text.replace('\\[e]', 'é')
+                result_text = result_text.replace('\\[a]', 'à') 
+                result_text = result_text.replace('\\[c]', 'ç')
+                result_text = result_text.replace('\\[e\\]', 'é')
+                result_text = result_text.replace('\\[a\\]', 'à')
+                result_text = result_text.replace('\\[c\\]', 'ç')
+                result_text = result_text.replace('\\[i]', 'î')
+                result_text = result_text.replace('\\[o]', 'ô')
+                result_text = result_text.replace('\\[u]', 'ù')
+                result_text = result_text.replace('\\[i\\]', 'î')
+                result_text = result_text.replace('\\[o\\]', 'ô')
+                result_text = result_text.replace('\\[u\\]', 'ù')
+
+              class Placeholder(pydantic.BaseModel):  # type: ignore[no-redef]
+                placeholder: response_schema  # type: ignore[valid-type]
+
+              parsed = {'placeholder': json.loads(result_text)}
+              placeholder = Placeholder.model_validate(parsed)
+              result.parsed = placeholder.placeholder
+          except json.decoder.JSONDecodeError:
+            pass
+          except pydantic.ValidationError:
+            pass
+        else:
+          try:
+            result_text = result._get_text(warn_property='parsed')
+            if result_text is not None:
+              # Fix specially escaped characters in JSON strings before parsing
+              if 'response_mime_type' in kwargs.get('config', {}) and kwargs['config']['response_mime_type'] == 'application/json':
+                # Handle special character escapes in JSON text
+                result_text = result_text.replace('\\[e]', 'é')
+                result_text = result_text.replace('\\[a]', 'à') 
+                result_text = result_text.replace('\\[c]', 'ç')
+                result_text = result_text.replace('\\[e\\]', 'é')
+                result_text = result_text.replace('\\[a\\]', 'à')
+                result_text = result_text.replace('\\[c\\]', 'ç')
+                result_text = result_text.replace('\\[i]', 'î')
+                result_text = result_text.replace('\\[o]', 'ô')
+                result_text = result_text.replace('\\[u]', 'ù')
+                result_text = result_text.replace('\\[i\\]', 'î')
+                result_text = result_text.replace('\\[o\\]', 'ô')
+                result_text = result_text.replace('\\[u\\]', 'ù')
+              result.parsed = json.loads(result_text)
+          # may not be a valid json per stream response
+          except json.decoder.JSONDecodeError:
+            pass
+
+    return result
+
+
+class GenerateContentResponseDict(TypedDict, total=False):
+  """Response message for PredictionService.GenerateContent."""
+
+  candidates: Optional[list[CandidateDict]]
+  """Response variations returned by the model.
+      """
+
+  create_time: Optional[datetime.datetime]
+  """Timestamp when the request is made to the server.
+      """
+
+  response_id: Optional[str]
+  """Identifier for each response.
+      """
+
+  model_version: Optional[str]
+  """Output only. The model version used to generate the response."""
+
+  prompt_feedback: Optional[GenerateContentResponsePromptFeedbackDict]
+  """Output only. Content filter results for a prompt sent in the request. Note: Sent only in the first stream chunk. Only happens when no candidates were generated due to content violations."""
+
+  usage_metadata: Optional[GenerateContentResponseUsageMetadataDict]
+  """Usage metadata about the response(s)."""
+
+
+GenerateContentResponseOrDict = Union[
+    GenerateContentResponse, GenerateContentResponseDict
+]
+
+
+class EmbedContentConfig(_common.BaseModel):
+  """Optional parameters for the embed_content method."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  task_type: Optional[str] = Field(
+      default=None,
+      description="""Type of task for which the embedding will be used.
+      """,
+  )
+  title: Optional[str] = Field(
+      default=None,
+      description="""Title for the text. Only applicable when TaskType is
+      `RETRIEVAL_DOCUMENT`.
+      """,
+  )
+  output_dimensionality: Optional[int] = Field(
+      default=None,
+      description="""Reduced dimension for the output embedding. If set,
+      excessive values in the output embedding are truncated from the end.
+      Supported by newer models since 2024 only. You cannot set this value if
+      using the earlier model (`models/embedding-001`).
+      """,
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Vertex API only. The MIME type of the input.
+      """,
+  )
+  auto_truncate: Optional[bool] = Field(
+      default=None,
+      description="""Vertex API only. Whether to silently truncate inputs longer than
+      the max sequence length. If this option is set to false, oversized inputs
+      will lead to an INVALID_ARGUMENT error, similar to other text APIs.
       """,
   )
 
 
-class CitationMetadataDict(TypedDict, total=False):
-  """Citation information when the model quotes another source."""
+class EmbedContentConfigDict(TypedDict, total=False):
+  """Optional parameters for the embed_content method."""
 
-  citations: Optional[list[CitationDict]]
-  """Contains citation information when the model directly quotes, at
-      length, from another source. Can include traditional websites and code
-      repositories.
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  task_type: Optional[str]
+  """Type of task for which the embedding will be used.
+      """
+
+  title: Optional[str]
+  """Title for the text. Only applicable when TaskType is
+      `RETRIEVAL_DOCUMENT`.
+      """
+
+  output_dimensionality: Optional[int]
+  """Reduced dimension for the output embedding. If set,
+      excessive values in the output embedding are truncated from the end.
+      Supported by newer models since 2024 only. You cannot set this value if
+      using the earlier model (`models/embedding-001`).
+      """
+
+  mime_type: Optional[str]
+  """Vertex API only. The MIME type of the input.
+      """
+
+  auto_truncate: Optional[bool]
+  """Vertex API only. Whether to silently truncate inputs longer than
+      the max sequence length. If this option is set to false, oversized inputs
+      will lead to an INVALID_ARGUMENT error, similar to other text APIs.
       """
 
 
-CitationMetadataOrDict = Union[CitationMetadata, CitationMetadataDict]
+EmbedContentConfigOrDict = Union[EmbedContentConfig, EmbedContentConfigDict]
 
 
-class GroundingChunkRetrievedContext(_common.BaseModel):
-  """Chunk from context retrieved by the retrieval tools."""
+class _EmbedContentParameters(_common.BaseModel):
+  """Parameters for the embed_content method."""
 
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""The content to embed. Only the `parts.text` fields will be counted.
+      """,
+  )
+  config: Optional[EmbedContentConfig] = Field(
+      default=None,
+      description="""Configuration that contains optional parameters.
+      """,
+  )
+
+
+class _EmbedContentParametersDict(TypedDict, total=False):
+  """Parameters for the embed_content method."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  contents: Optional[ContentListUnionDict]
+  """The content to embed. Only the `parts.text` fields will be counted.
+      """
+
+  config: Optional[EmbedContentConfigDict]
+  """Configuration that contains optional parameters.
+      """
+
+
+_EmbedContentParametersOrDict = Union[
+    _EmbedContentParameters, _EmbedContentParametersDict
+]
+
+
+class ContentEmbeddingStatistics(_common.BaseModel):
+  """Statistics of the input text associated with the result of content embedding."""
+
+  truncated: Optional[bool] = Field(
+      default=None,
+      description="""Vertex API only. If the input text was truncated due to having
+      a length longer than the allowed maximum input.
+      """,
+  )
+  token_count: Optional[float] = Field(
+      default=None,
+      description="""Vertex API only. Number of tokens of the input text.
+      """,
+  )
+
+
+class ContentEmbeddingStatisticsDict(TypedDict, total=False):
+  """Statistics of the input text associated with the result of content embedding."""
+
+  truncated: Optional[bool]
+  """Vertex API only. If the input text was truncated due to having
+      a length longer than the allowed maximum input.
+      """
+
+  token_count: Optional[float]
+  """Vertex API only. Number of tokens of the input text.
+      """
+
+
+ContentEmbeddingStatisticsOrDict = Union[
+    ContentEmbeddingStatistics, ContentEmbeddingStatisticsDict
+]
+
+
+class ContentEmbedding(_common.BaseModel):
+  """The embedding generated from an input content."""
+
+  values: Optional[list[float]] = Field(
+      default=None,
+      description="""A list of floats representing an embedding.
+      """,
+  )
+  statistics: Optional[ContentEmbeddingStatistics] = Field(
+      default=None,
+      description="""Vertex API only. Statistics of the input text associated with this
+      embedding.
+      """,
+  )
+
+
+class ContentEmbeddingDict(TypedDict, total=False):
+  """The embedding generated from an input content."""
+
+  values: Optional[list[float]]
+  """A list of floats representing an embedding.
+      """
+
+  statistics: Optional[ContentEmbeddingStatisticsDict]
+  """Vertex API only. Statistics of the input text associated with this
+      embedding.
+      """
+
+
+ContentEmbeddingOrDict = Union[ContentEmbedding, ContentEmbeddingDict]
+
+
+class EmbedContentMetadata(_common.BaseModel):
+  """Request-level metadata for the Vertex Embed Content API."""
+
+  billable_character_count: Optional[int] = Field(
+      default=None,
+      description="""Vertex API only. The total number of billable characters included
+      in the request.
+      """,
+  )
+
+
+class EmbedContentMetadataDict(TypedDict, total=False):
+  """Request-level metadata for the Vertex Embed Content API."""
+
+  billable_character_count: Optional[int]
+  """Vertex API only. The total number of billable characters included
+      in the request.
+      """
+
+
+EmbedContentMetadataOrDict = Union[
+    EmbedContentMetadata, EmbedContentMetadataDict
+]
+
+
+class EmbedContentResponse(_common.BaseModel):
+  """Response for the embed_content method."""
+
+  embeddings: Optional[list[ContentEmbedding]] = Field(
+      default=None,
+      description="""The embeddings for each request, in the same order as provided in
+      the batch request.
+      """,
+  )
+  metadata: Optional[EmbedContentMetadata] = Field(
+      default=None,
+      description="""Vertex API only. Metadata about the request.
+      """,
+  )
+
+
+class EmbedContentResponseDict(TypedDict, total=False):
+  """Response for the embed_content method."""
+
+  embeddings: Optional[list[ContentEmbeddingDict]]
+  """The embeddings for each request, in the same order as provided in
+      the batch request.
+      """
+
+  metadata: Optional[EmbedContentMetadataDict]
+  """Vertex API only. Metadata about the request.
+      """
+
+
+EmbedContentResponseOrDict = Union[
+    EmbedContentResponse, EmbedContentResponseDict
+]
+
+
+class GenerateImagesConfig(_common.BaseModel):
+  """The config for generating an images."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  output_gcs_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage URI used to store the generated images.
+      """,
+  )
+  negative_prompt: Optional[str] = Field(
+      default=None,
+      description="""Description of what to discourage in the generated images.
+      """,
+  )
+  number_of_images: Optional[int] = Field(
+      default=None,
+      description="""Number of images to generate.
+      """,
+  )
+  aspect_ratio: Optional[str] = Field(
+      default=None,
+      description="""Aspect ratio of the generated images.
+      """,
+  )
+  guidance_scale: Optional[float] = Field(
+      default=None,
+      description="""Controls how much the model adheres to the text prompt. Large
+      values increase output and prompt alignment, but may compromise image
+      quality.
+      """,
+  )
+  seed: Optional[int] = Field(
+      default=None,
+      description="""Random seed for image generation. This is not available when
+      ``add_watermark`` is set to true.
+      """,
+  )
+  safety_filter_level: Optional[SafetyFilterLevel] = Field(
+      default=None,
+      description="""Filter level for safety filtering.
+      """,
+  )
+  person_generation: Optional[PersonGeneration] = Field(
+      default=None,
+      description="""Allows generation of people by the model.
+      """,
+  )
+  include_safety_attributes: Optional[bool] = Field(
+      default=None,
+      description="""Whether to report the safety scores of each generated image and
+      the positive prompt in the response.
+      """,
+  )
+  include_rai_reason: Optional[bool] = Field(
+      default=None,
+      description="""Whether to include the Responsible AI filter reason if the image
+      is filtered out of the response.
+      """,
+  )
+  language: Optional[ImagePromptLanguage] = Field(
+      default=None,
+      description="""Language of the text in the prompt.
+      """,
+  )
+  output_mime_type: Optional[str] = Field(
+      default=None,
+      description="""MIME type of the generated image.
+      """,
+  )
+  output_compression_quality: Optional[int] = Field(
+      default=None,
+      description="""Compression quality of the generated image (for ``image/jpeg``
+      only).
+      """,
+  )
+  add_watermark: Optional[bool] = Field(
+      default=None,
+      description="""Whether to add a watermark to the generated images.
+      """,
+  )
+  enhance_prompt: Optional[bool] = Field(
+      default=None,
+      description="""Whether to use the prompt rewriting logic.
+      """,
+  )
+
+
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Code generated by the Google Gen AI SDK generator DO NOT EDIT.
+
+import datetime
+from enum import Enum, EnumMeta
+import inspect
+import json
+import logging
+import sys
+import types as builtin_types
+import typing
+from typing import Any, Callable, Literal, Optional, Union, _UnionGenericAlias  # type: ignore
+import pydantic
+from pydantic import Field
+from typing_extensions import TypedDict
+from . import _common
+
+if sys.version_info >= (3, 10):
+  # Supports both Union[t1, t2] and t1 | t2
+  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
+else:
+  # Supports only Union[t1, t2]
+  VersionedUnionType = _UnionGenericAlias
+  _UNION_TYPES = (typing.Union,)
+
+_is_pillow_image_imported = False
+if typing.TYPE_CHECKING:
+  import PIL.Image
+
+  PIL_Image = PIL.Image.Image
+  _is_pillow_image_imported = True
+else:
+  PIL_Image: typing.Type = Any
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+    _is_pillow_image_imported = True
+  except ImportError:
+    PIL_Image = None
+
+logger = logging.getLogger('google_genai.types')
+
+T = typing.TypeVar('T', bound='GenerateContentResponse')
+
+
+class Outcome(_common.CaseInSensitiveEnum):
+  """Required. Outcome of the code execution."""
+
+  OUTCOME_UNSPECIFIED = 'OUTCOME_UNSPECIFIED'
+  OUTCOME_OK = 'OUTCOME_OK'
+  OUTCOME_FAILED = 'OUTCOME_FAILED'
+  OUTCOME_DEADLINE_EXCEEDED = 'OUTCOME_DEADLINE_EXCEEDED'
+
+
+class Language(_common.CaseInSensitiveEnum):
+  """Required. Programming language of the `code`."""
+
+  LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
+  PYTHON = 'PYTHON'
+
+
+class Type(_common.CaseInSensitiveEnum):
+  """Optional. The type of the data."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  STRING = 'STRING'
+  NUMBER = 'NUMBER'
+  INTEGER = 'INTEGER'
+  BOOLEAN = 'BOOLEAN'
+  ARRAY = 'ARRAY'
+  OBJECT = 'OBJECT'
+
+
+class HarmCategory(_common.CaseInSensitiveEnum):
+  """Required. Harm category."""
+
+  HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
+  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
+  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
+  HARM_CATEGORY_HARASSMENT = 'HARM_CATEGORY_HARASSMENT'
+  HARM_CATEGORY_SEXUALLY_EXPLICIT = 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
+  HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
+
+
+class HarmBlockMethod(_common.CaseInSensitiveEnum):
+  """Optional.
+
+  Specify if the threshold is used for probability or severity score. If not
+  specified, the threshold is used for probability score.
+  """
+
+  HARM_BLOCK_METHOD_UNSPECIFIED = 'HARM_BLOCK_METHOD_UNSPECIFIED'
+  SEVERITY = 'SEVERITY'
+  PROBABILITY = 'PROBABILITY'
+
+
+class HarmBlockThreshold(_common.CaseInSensitiveEnum):
+  """Required. The harm block threshold."""
+
+  HARM_BLOCK_THRESHOLD_UNSPECIFIED = 'HARM_BLOCK_THRESHOLD_UNSPECIFIED'
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
+  OFF = 'OFF'
+
+
+class Mode(_common.CaseInSensitiveEnum):
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
+
+
+class State(_common.CaseInSensitiveEnum):
+  """Output only. RagFile state."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  ACTIVE = 'ACTIVE'
+  ERROR = 'ERROR'
+
+
+class FinishReason(_common.CaseInSensitiveEnum):
+  """Output only. The reason why the model stopped generating tokens.
+
+  If empty, the model has not stopped generating the tokens.
+  """
+
+  FINISH_REASON_UNSPECIFIED = 'FINISH_REASON_UNSPECIFIED'
+  STOP = 'STOP'
+  MAX_TOKENS = 'MAX_TOKENS'
+  SAFETY = 'SAFETY'
+  RECITATION = 'RECITATION'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+  SPII = 'SPII'
+  MALFORMED_FUNCTION_CALL = 'MALFORMED_FUNCTION_CALL'
+  IMAGE_SAFETY = 'IMAGE_SAFETY'
+
+
+class HarmProbability(_common.CaseInSensitiveEnum):
+  """Output only. Harm probability levels in the content."""
+
+  HARM_PROBABILITY_UNSPECIFIED = 'HARM_PROBABILITY_UNSPECIFIED'
+  NEGLIGIBLE = 'NEGLIGIBLE'
+  LOW = 'LOW'
+  MEDIUM = 'MEDIUM'
+  HIGH = 'HIGH'
+
+
+class HarmSeverity(_common.CaseInSensitiveEnum):
+  """Output only. Harm severity levels in the content."""
+
+  HARM_SEVERITY_UNSPECIFIED = 'HARM_SEVERITY_UNSPECIFIED'
+  HARM_SEVERITY_NEGLIGIBLE = 'HARM_SEVERITY_NEGLIGIBLE'
+  HARM_SEVERITY_LOW = 'HARM_SEVERITY_LOW'
+  HARM_SEVERITY_MEDIUM = 'HARM_SEVERITY_MEDIUM'
+  HARM_SEVERITY_HIGH = 'HARM_SEVERITY_HIGH'
+
+
+class BlockedReason(_common.CaseInSensitiveEnum):
+  """Output only. Blocked reason."""
+
+  BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
+  SAFETY = 'SAFETY'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+
+
+class Modality(_common.CaseInSensitiveEnum):
+  """Server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  TEXT = 'TEXT'
+  IMAGE = 'IMAGE'
+  AUDIO = 'AUDIO'
+
+
+class DeploymentResourcesType(_common.CaseInSensitiveEnum):
+  """"""
+
+  DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED = (
+      'DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED'
+  )
+  DEDICATED_RESOURCES = 'DEDICATED_RESOURCES'
+  AUTOMATIC_RESOURCES = 'AUTOMATIC_RESOURCES'
+  SHARED_RESOURCES = 'SHARED_RESOURCES'
+
+
+class JobState(_common.CaseInSensitiveEnum):
+  """Job state."""
+
+  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
+  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
+  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
+  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
+  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
+  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
+  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
+  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
+  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
+  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
+  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
+  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
+
+
+class AdapterSize(_common.CaseInSensitiveEnum):
+  """Optional. Adapter size for tuning."""
+
+  ADAPTER_SIZE_UNSPECIFIED = 'ADAPTER_SIZE_UNSPECIFIED'
+  ADAPTER_SIZE_ONE = 'ADAPTER_SIZE_ONE'
+  ADAPTER_SIZE_TWO = 'ADAPTER_SIZE_TWO'
+  ADAPTER_SIZE_FOUR = 'ADAPTER_SIZE_FOUR'
+  ADAPTER_SIZE_EIGHT = 'ADAPTER_SIZE_EIGHT'
+  ADAPTER_SIZE_SIXTEEN = 'ADAPTER_SIZE_SIXTEEN'
+  ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
+
+
+class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
+  """Config for the dynamic retrieval config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
+
+
+class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
+  """Config for the function calling config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  AUTO = 'AUTO'
+  ANY = 'ANY'
+  NONE = 'NONE'
+
+
+class MediaResolution(_common.CaseInSensitiveEnum):
+  """The media resolution to use."""
+
+  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
+
+
+class SafetyFilterLevel(_common.CaseInSensitiveEnum):
+  """Enum that controls the safety filter level for objectionable content."""
+
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
+
+
+class PersonGeneration(_common.CaseInSensitiveEnum):
+  """Enum that controls the generation of people."""
+
+  DONT_ALLOW = 'DONT_ALLOW'
+  ALLOW_ADULT = 'ALLOW_ADULT'
+  ALLOW_ALL = 'ALLOW_ALL'
+
+
+class ImagePromptLanguage(_common.CaseInSensitiveEnum):
+  """Enum that specifies the language of the text in the prompt."""
+
+  auto = 'auto'
+  en = 'en'
+  ja = 'ja'
+  ko = 'ko'
+  hi = 'hi'
+
+
+class MaskReferenceMode(_common.CaseInSensitiveEnum):
+  """Enum representing the mask mode of a mask reference image."""
+
+  MASK_MODE_DEFAULT = 'MASK_MODE_DEFAULT'
+  MASK_MODE_USER_PROVIDED = 'MASK_MODE_USER_PROVIDED'
+  MASK_MODE_BACKGROUND = 'MASK_MODE_BACKGROUND'
+  MASK_MODE_FOREGROUND = 'MASK_MODE_FOREGROUND'
+  MASK_MODE_SEMANTIC = 'MASK_MODE_SEMANTIC'
+
+
+class ControlReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the control type of a control reference image."""
+
+  CONTROL_TYPE_DEFAULT = 'CONTROL_TYPE_DEFAULT'
+  CONTROL_TYPE_CANNY = 'CONTROL_TYPE_CANNY'
+  CONTROL_TYPE_SCRIBBLE = 'CONTROL_TYPE_SCRIBBLE'
+  CONTROL_TYPE_FACE_MESH = 'CONTROL_TYPE_FACE_MESH'
+
+
+class SubjectReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the subject type of a subject reference image."""
+
+  SUBJECT_TYPE_DEFAULT = 'SUBJECT_TYPE_DEFAULT'
+  SUBJECT_TYPE_PERSON = 'SUBJECT_TYPE_PERSON'
+  SUBJECT_TYPE_ANIMAL = 'SUBJECT_TYPE_ANIMAL'
+  SUBJECT_TYPE_PRODUCT = 'SUBJECT_TYPE_PRODUCT'
+
+
+class EditMode(_common.CaseInSensitiveEnum):
+  """Enum representing the Imagen 3 Edit mode."""
+
+  EDIT_MODE_DEFAULT = 'EDIT_MODE_DEFAULT'
+  EDIT_MODE_INPAINT_REMOVAL = 'EDIT_MODE_INPAINT_REMOVAL'
+  EDIT_MODE_INPAINT_INSERTION = 'EDIT_MODE_INPAINT_INSERTION'
+  EDIT_MODE_OUTPAINT = 'EDIT_MODE_OUTPAINT'
+  EDIT_MODE_CONTROLLED_EDITING = 'EDIT_MODE_CONTROLLED_EDITING'
+  EDIT_MODE_STYLE = 'EDIT_MODE_STYLE'
+  EDIT_MODE_BGSWAP = 'EDIT_MODE_BGSWAP'
+  EDIT_MODE_PRODUCT_IMAGE = 'EDIT_MODE_PRODUCT_IMAGE'
+
+
+class FileState(_common.CaseInSensitiveEnum):
+  """State for the lifecycle of a File."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  PROCESSING = 'PROCESSING'
+  ACTIVE = 'ACTIVE'
+  FAILED = 'FAILED'
+
+
+class FileSource(_common.CaseInSensitiveEnum):
+  """Source of the File."""
+
+  SOURCE_UNSPECIFIED = 'SOURCE_UNSPECIFIED'
+  UPLOADED = 'UPLOADED'
+  GENERATED = 'GENERATED'
+
+
+class MediaModality(_common.CaseInSensitiveEnum):
+  """Server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  TEXT = 'TEXT'
+  IMAGE = 'IMAGE'
+  VIDEO = 'VIDEO'
+  AUDIO = 'AUDIO'
+  DOCUMENT = 'DOCUMENT'
+
+
+class VideoMetadata(_common.BaseModel):
+  """Metadata describes the input video content."""
+
+  end_offset: Optional[str] = Field(
+      default=None, description="""Optional. The end offset of the video."""
+  )
+  start_offset: Optional[str] = Field(
+      default=None, description="""Optional. The start offset of the video."""
+  )
+
+
+class VideoMetadataDict(TypedDict, total=False):
+  """Metadata describes the input video content."""
+
+  end_offset: Optional[str]
+  """Optional. The end offset of the video."""
+
+  start_offset: Optional[str]
+  """Optional. The start offset of the video."""
+
+
+VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
+
+
+class CodeExecutionResult(_common.BaseModel):
+  """Result of executing the [ExecutableCode].
+
+  Always follows a `part` containing the [ExecutableCode].
+  """
+
+  outcome: Optional[Outcome] = Field(
+      default=None, description="""Required. Outcome of the code execution."""
+  )
+  output: Optional[str] = Field(
+      default=None,
+      description="""Optional. Contains stdout when code execution is successful, stderr or other description otherwise.""",
+  )
+
+
+class CodeExecutionResultDict(TypedDict, total=False):
+  """Result of executing the [ExecutableCode].
+
+  Always follows a `part` containing the [ExecutableCode].
+  """
+
+  outcome: Optional[Outcome]
+  """Required. Outcome of the code execution."""
+
+  output: Optional[str]
+  """Optional. Contains stdout when code execution is successful, stderr or other description otherwise."""
+
+
+CodeExecutionResultOrDict = Union[CodeExecutionResult, CodeExecutionResultDict]
+
+
+class ExecutableCode(_common.BaseModel):
+  """Code generated by the model that is meant to be executed, and the result returned to the model.
+
+  Generated when using the [FunctionDeclaration] tool and
+  [FunctionCallingConfig] mode is set to [Mode.CODE].
+  """
+
+  code: Optional[str] = Field(
+      default=None, description="""Required. The code to be executed."""
+  )
+  language: Optional[Language] = Field(
+      default=None,
+      description="""Required. Programming language of the `code`.""",
+  )
+
+
+class ExecutableCodeDict(TypedDict, total=False):
+  """Code generated by the model that is meant to be executed, and the result returned to the model.
+
+  Generated when using the [FunctionDeclaration] tool and
+  [FunctionCallingConfig] mode is set to [Mode.CODE].
+  """
+
+  code: Optional[str]
+  """Required. The code to be executed."""
+
+  language: Optional[Language]
+  """Required. Programming language of the `code`."""
+
+
+ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
+
+
+class FileData(_common.BaseModel):
+  """URI based data."""
+
+  file_uri: Optional[str] = Field(
+      default=None, description="""Required. URI."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class FileDataDict(TypedDict, total=False):
+  """URI based data."""
+
+  file_uri: Optional[str]
+  """Required. URI."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+FileDataOrDict = Union[FileData, FileDataDict]
+
+
+class FunctionCall(_common.BaseModel):
+  """A function call."""
+
+  id: Optional[str] = Field(
+      default=None,
+      description="""The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`.""",
+  )
+  args: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Optional. Required. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the function to call. Matches [FunctionDeclaration.name].""",
+  )
+
+
+class FunctionCallDict(TypedDict, total=False):
+  """A function call."""
+
+  id: Optional[str]
+  """The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`."""
+
+  args: Optional[dict[str, Any]]
+  """Optional. Required. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details."""
+
+  name: Optional[str]
+  """Required. The name of the function to call. Matches [FunctionDeclaration.name]."""
+
+
+FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
+
+
+class FunctionResponse(_common.BaseModel):
+  """A function response."""
+
+  id: Optional[str] = Field(
+      default=None,
+      description="""The id of the function call this response is for. Populated by the client
+   to match the corresponding function call `id`.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name].""",
+  )
+  response: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output.""",
+  )
+
+
+class FunctionResponseDict(TypedDict, total=False):
+  """A function response."""
+
+  id: Optional[str]
+  """The id of the function call this response is for. Populated by the client
+   to match the corresponding function call `id`."""
+
+  name: Optional[str]
+  """Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name]."""
+
+  response: Optional[dict[str, Any]]
+  """Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output."""
+
+
+FunctionResponseOrDict = Union[FunctionResponse, FunctionResponseDict]
+
+
+class Blob(_common.BaseModel):
+  """Content blob."""
+
+  data: Optional[bytes] = Field(
+      default=None, description="""Required. Raw bytes."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class BlobDict(TypedDict, total=False):
+  """Content blob."""
+
+  data: Optional[bytes]
+  """Required. Raw bytes."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+BlobOrDict = Union[Blob, BlobDict]
+
+
+class Part(_common.BaseModel):
+  """A datatype containing media content.
+
+  Exactly one field within a Part should be set, representing the specific type
+  of content being conveyed. Using multiple fields within the same `Part`
+  instance is considered invalid.
+  """
+
+  video_metadata: Optional[VideoMetadata] = Field(
+      default=None, description="""Metadata for a given video."""
+  )
+  thought: Optional[bool] = Field(
+      default=None,
+      description="""Indicates if the part is thought from the model.""",
+  )
+  code_execution_result: Optional[CodeExecutionResult] = Field(
+      default=None,
+      description="""Optional. Result of executing the [ExecutableCode].""",
+  )
+  executable_code: Optional[ExecutableCode] = Field(
+      default=None,
+      description="""Optional. Code generated by the model that is meant to be executed.""",
+  )
+  file_data: Optional[FileData] = Field(
+      default=None, description="""Optional. URI based data."""
+  )
+  function_call: Optional[FunctionCall] = Field(
+      default=None,
+      description="""Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values.""",
+  )
+  function_response: Optional[FunctionResponse] = Field(
+      default=None,
+      description="""Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model.""",
+  )
+  inline_data: Optional[Blob] = Field(
+      default=None, description="""Optional. Inlined bytes data."""
+  )
   text: Optional[str] = Field(
-      default=None, description="""Text of the attribution."""
+      default=None, description="""Optional. Text part (can be code)."""
+  )
+
+  @classmethod
+  def from_uri(cls, *, file_uri: str, mime_type: str) -> 'Part':
+    file_data = FileData(file_uri=file_uri, mime_type=mime_type)
+    return cls(file_data=file_data)
+
+  @classmethod
+  def from_text(cls, *, text: str) -> 'Part':
+    return cls(text=text)
+
+  @classmethod
+  def from_bytes(cls, *, data: bytes, mime_type: str) -> 'Part':
+    inline_data = Blob(
+        data=data,
+        mime_type=mime_type,
+    )
+    return cls(inline_data=inline_data)
+
+  @classmethod
+  def from_function_call(cls, *, name: str, args: dict[str, Any]) -> 'Part':
+    function_call = FunctionCall(name=name, args=args)
+    return cls(function_call=function_call)
+
+  @classmethod
+  def from_function_response(
+      cls, *, name: str, response: dict[str, Any]
+  ) -> 'Part':
+    function_response = FunctionResponse(name=name, response=response)
+    return cls(function_response=function_response)
+
+  @classmethod
+  def from_video_metadata(cls, *, start_offset: str, end_offset: str) -> 'Part':
+    logger.warning("""Part.from_video_metadata will be deprecated soon.
+           Because a Part instance needs to include at least one of the fields:
+           text, file_data, inline_data, function_call, function_response, executable_code or code_execution_result.
+           A Part instance contains only video_metadata is not a valid Part.
+        """)
+    video_metadata = VideoMetadata(
+        end_offset=end_offset, start_offset=start_offset
+    )
+    return cls(video_metadata=video_metadata)
+
+  @classmethod
+  def from_executable_code(cls, *, code: str, language: Language) -> 'Part':
+    executable_code = ExecutableCode(code=code, language=language)
+    return cls(executable_code=executable_code)
+
+  @classmethod
+  def from_code_execution_result(
+      cls, *, outcome: Outcome, output: str
+  ) -> 'Part':
+    code_execution_result = CodeExecutionResult(outcome=outcome, output=output)
+    return cls(code_execution_result=code_execution_result)
+
+
+class PartDict(TypedDict, total=False):
+  """A datatype containing media content.
+
+  Exactly one field within a Part should be set, representing the specific type
+  of content being conveyed. Using multiple fields within the same `Part`
+  instance is considered invalid.
+  """
+
+  video_metadata: Optional[VideoMetadataDict]
+  """Metadata for a given video."""
+
+  thought: Optional[bool]
+  """Indicates if the part is thought from the model."""
+
+  code_execution_result: Optional[CodeExecutionResultDict]
+  """Optional. Result of executing the [ExecutableCode]."""
+
+  executable_code: Optional[ExecutableCodeDict]
+  """Optional. Code generated by the model that is meant to be executed."""
+
+  file_data: Optional[FileDataDict]
+  """Optional. URI based data."""
+
+  function_call: Optional[FunctionCallDict]
+  """Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values."""
+
+  function_response: Optional[FunctionResponseDict]
+  """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
+
+  inline_data: Optional[BlobDict]
+  """Optional. Inlined bytes data."""
+
+  text: Optional[str]
+  """Optional. Text part (can be code)."""
+
+
+PartOrDict = Union[Part, PartDict]
+
+
+class Content(_common.BaseModel):
+  """Contains the multi-part content of a message."""
+
+  parts: Optional[list[Part]] = Field(
+      default=None,
+      description="""List of parts that constitute a single message. Each part may have
+      a different IANA MIME type.""",
+  )
+  role: Optional[str] = Field(
+      default=None,
+      description="""Optional. The producer of the content. Must be either 'user' or
+      'model'. Useful to set for multi-turn conversations, otherwise can be
+      empty. If role is not specified, SDK will determine the role.""",
+  )
+
+
+class UserContent(Content):
+  """UserContent facilitates the creation of a Content object with a user role.
+
+  Example usages:
+
+
+  - Create a user Content object with a string:
+    user_content = UserContent("Why is the sky blue?")
+  - Create a user Content object with a file data Part object:
+    user_content = UserContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    mime_type="text/plain"))
+  - Create a user Content object with byte data Part object:
+    user_content = UserContent(Part.from_bytes(data=b"Hello, World!",
+    mime_type="text/plain"))
+
+    You can create a user Content object using other classmethods in the Part
+    class as well.
+    You can also create a user Content using a list of Part objects or strings.
+  """
+
+  role: Literal['user'] = Field(default='user', init=False, frozen=True)
+  parts: list[Part] = Field()
+
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
+    from . import _transformers as t
+
+    super().__init__(parts=t.t_parts(parts=parts))
+
+
+class ModelContent(Content):
+  """ModelContent facilitates the creation of a Content object with a model role.
+
+  Example usages:
+
+  - Create a model Content object with a string:
+    model_content = ModelContent("Why is the sky blue?")
+  - Create a model Content object with a file data Part object:
+    model_content = ModelContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    mime_type="text/plain"))
+  - Create a model Content object with byte data Part object:
+    model_content = ModelContent(Part.from_bytes(data=b"Hello, World!",
+    mime_type="text/plain"))
+
+    You can create a model Content object using other classmethods in the Part
+    class as well.
+    You can also create a model Content using a list of Part objects or strings.
+  """
+
+  role: Literal['model'] = Field(default='model', init=False, frozen=True)
+  parts: list[Part] = Field()
+
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
+    from . import _transformers as t
+
+    super().__init__(parts=t.t_parts(parts=parts))
+
+
+class ContentDict(TypedDict, total=False):
+  """Contains the multi-part content of a message."""
+
+  parts: Optional[list[PartDict]]
+  """List of parts that constitute a single message. Each part may have
+      a different IANA MIME type."""
+
+  role: Optional[str]
+  """Optional. The producer of the content. Must be either 'user' or
+      'model'. Useful to set for multi-turn conversations, otherwise can be
+      empty. If role is not specified, SDK will determine the role."""
+
+
+ContentOrDict = Union[Content, ContentDict]
+
+
+class HttpOptions(_common.BaseModel):
+  """HTTP options to be used in each of the requests."""
+
+  base_url: Optional[str] = Field(
+      default=None,
+      description="""The base URL for the AI platform service endpoint.""",
+  )
+  api_version: Optional[str] = Field(
+      default=None, description="""Specifies the version of the API to use."""
+  )
+  headers: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Additional HTTP headers to be sent with the request.""",
+  )
+  timeout: Optional[int] = Field(
+      default=None, description="""Timeout for the request in milliseconds."""
+  )
+
+
+class HttpOptionsDict(TypedDict, total=False):
+  """HTTP options to be used in each of the requests."""
+
+  base_url: Optional[str]
+  """The base URL for the AI platform service endpoint."""
+
+  api_version: Optional[str]
+  """Specifies the version of the API to use."""
+
+  headers: Optional[dict[str, str]]
+  """Additional HTTP headers to be sent with the request."""
+
+  timeout: Optional[int]
+  """Timeout for the request in milliseconds."""
+
+
+HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
+
+
+class Schema(_common.BaseModel):
+  """Schema that defines the format of input and output data.
+
+  Represents a select subset of an OpenAPI 3.0 schema object.
+  """
+
+  example: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Example of the object. Will only populated when the object is the root.""",
+  )
+  pattern: Optional[str] = Field(
+      default=None,
+      description="""Optional. Pattern of the Type.STRING to restrict a string to a regular expression.""",
+  )
+  default: Optional[Any] = Field(
+      default=None, description="""Optional. Default value of the data."""
+  )
+  max_length: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum length of the Type.STRING""",
+  )
+  min_length: Optional[int] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING""",
+  )
+  min_properties: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the properties for Type.OBJECT.""",
+  )
+  max_properties: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the properties for Type.OBJECT.""",
+  )
+  any_of: Optional[list['Schema']] = Field(
+      default=None,
+      description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
+  )
+  description: Optional[str] = Field(
+      default=None, description="""Optional. The description of the data."""
+  )
+  enum: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}""",
+  )
+  format: Optional[str] = Field(
+      default=None,
+      description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
+  )
+  items: Optional['Schema'] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
+  )
+  max_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
+  )
+  maximum: Optional[float] = Field(
+      default=None,
+      description="""Optional. Maximum value of the Type.INTEGER and Type.NUMBER""",
+  )
+  min_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
+  )
+  minimum: Optional[float] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER""",
+  )
+  nullable: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Indicates if the value may be null.""",
+  )
+  properties: Optional[dict[str, 'Schema']] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
+  )
+  property_ordering: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
+  )
+  required: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Required properties of Type.OBJECT.""",
   )
   title: Optional[str] = Field(
-      default=None, description="""Title of the attribution."""
+      default=None, description="""Optional. The title of the Schema."""
+  )
+  type: Optional[Type] = Field(
+      default=None, description="""Optional. The type of the data."""
+  )
+
+
+class SchemaDict(TypedDict, total=False):
+  """Schema that defines the format of input and output data.
+
+  Represents a select subset of an OpenAPI 3.0 schema object.
+  """
+
+  example: Optional[Any]
+  """Optional. Example of the object. Will only populated when the object is the root."""
+
+  pattern: Optional[str]
+  """Optional. Pattern of the Type.STRING to restrict a string to a regular expression."""
+
+  default: Optional[Any]
+  """Optional. Default value of the data."""
+
+  max_length: Optional[int]
+  """Optional. Maximum length of the Type.STRING"""
+
+  min_length: Optional[int]
+  """Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"""
+
+  min_properties: Optional[int]
+  """Optional. Minimum number of the properties for Type.OBJECT."""
+
+  max_properties: Optional[int]
+  """Optional. Maximum number of the properties for Type.OBJECT."""
+
+  any_of: Optional[list['SchemaDict']]
+  """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
+
+  description: Optional[str]
+  """Optional. The description of the data."""
+
+  enum: Optional[list[str]]
+  """Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}"""
+
+  format: Optional[str]
+  """Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc"""
+
+  items: Optional['SchemaDict']
+  """Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY."""
+
+  max_items: Optional[int]
+  """Optional. Maximum number of the elements for Type.ARRAY."""
+
+  maximum: Optional[float]
+  """Optional. Maximum value of the Type.INTEGER and Type.NUMBER"""
+
+  min_items: Optional[int]
+  """Optional. Minimum number of the elements for Type.ARRAY."""
+
+  minimum: Optional[float]
+  """Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER"""
+
+  nullable: Optional[bool]
+  """Optional. Indicates if the value may be null."""
+
+  properties: Optional[dict[str, 'SchemaDict']]
+  """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
+
+  property_ordering: Optional[list[str]]
+  """Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties."""
+
+  required: Optional[list[str]]
+  """Optional. Required properties of Type.OBJECT."""
+
+  title: Optional[str]
+  """Optional. The title of the Schema."""
+
+  type: Optional[Type]
+  """Optional. The type of the data."""
+
+
+SchemaOrDict = Union[Schema, SchemaDict]
+
+
+class SafetySetting(_common.BaseModel):
+  """Safety settings."""
+
+  method: Optional[HarmBlockMethod] = Field(
+      default=None,
+      description="""Determines if the harm block method uses probability or probability
+      and severity scores.""",
+  )
+  category: Optional[HarmCategory] = Field(
+      default=None, description="""Required. Harm category."""
+  )
+  threshold: Optional[HarmBlockThreshold] = Field(
+      default=None, description="""Required. The harm block threshold."""
+  )
+
+
+class SafetySettingDict(TypedDict, total=False):
+  """Safety settings."""
+
+  method: Optional[HarmBlockMethod]
+  """Determines if the harm block method uses probability or probability
+      and severity scores."""
+
+  category: Optional[HarmCategory]
+  """Required. Harm category."""
+
+  threshold: Optional[HarmBlockThreshold]
+  """Required. The harm block threshold."""
+
+
+SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
+
+
+class FunctionDeclaration(_common.BaseModel):
+  """Defines a function that the model can generate JSON inputs for.
+
+  The inputs are based on `OpenAPI 3.0 specifications
+  <https://spec.openapis.org/oas/v3.0.3>`_.
+  """
+
+  response: Optional[Schema] = Field(
+      default=None,
+      description="""Describes the output from the function in the OpenAPI JSON Schema
+      Object format.""",
+  )
+  description: Optional[str] = Field(
+      default=None,
+      description="""Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the function to call. Must start with a letter or an underscore. Must be a-z, A-Z, 0-9, or contain underscores, dots and dashes, with a maximum length of 64.""",
+  )
+  parameters: Optional[Schema] = Field(
+      default=None,
+      description="""Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1""",
+  )
+
+  @classmethod
+  def from_callable_with_api_option(
+      cls,
+      *,
+      callable: Callable,
+      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
+  ) -> 'FunctionDeclaration':
+    """Converts a Callable to a FunctionDeclaration based on the API option.
+
+    Supported API option is 'VERTEX_AI' or 'GEMINI_API'. If api_option is unset,
+    it will default to 'GEMINI_API'. If unsupported api_option is provided, it
+    will raise ValueError.
+    """
+    supported_api_options = ['VERTEX_AI', 'GEMINI_API']
+    if api_option not in supported_api_options:
+      raise ValueError(
+          f'Unsupported api_option value: {api_option}. Supported api_option'
+          f' value is one of: {supported_api_options}.'
+      )
+    from . import _automatic_function_calling_util
+
+    parameters_properties = {}
+    for name, param in inspect.signature(callable).parameters.items():
+      if param.kind in (
+          inspect.Parameter.POSITIONAL_OR_KEYWORD,
+          inspect.Parameter.KEYWORD_ONLY,
+          inspect.Parameter.POSITIONAL_ONLY,
+      ):
+        schema = _automatic_function_calling_util._parse_schema_from_parameter(
+            api_option, param, callable.__name__
+        )
+        parameters_properties[name] = schema
+    declaration = FunctionDeclaration(
+        name=callable.__name__,
+        description=callable.__doc__,
+    )
+    if parameters_properties:
+      declaration.parameters = Schema(
+          type='OBJECT',
+          properties=parameters_properties,
+      )
+      declaration.parameters.required = (
+          _automatic_function_calling_util._get_required_fields(
+              declaration.parameters
+          )
+      )
+    if api_option == 'GEMINI_API':
+      return declaration
+
+    return_annotation = inspect.signature(callable).return_annotation
+    if return_annotation is inspect._empty:
+      return declaration
+
+    declaration.response = (
+        _automatic_function_calling_util._parse_schema_from_parameter(
+            api_option,
+            inspect.Parameter(
+                'return_value',
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                annotation=return_annotation,
+            ),
+            callable.__name__,
+        )
+    )
+    return declaration
+
+  @classmethod
+  def from_callable(
+      cls,
+      *,
+      client,
+      callable: Callable,
+  ) -> 'FunctionDeclaration':
+    """Converts a Callable to a FunctionDeclaration based on the client."""
+    if client.vertexai:
+      return cls.from_callable_with_api_option(
+          callable=callable, api_option='VERTEX_AI'
+      )
+    else:
+      return cls.from_callable_with_api_option(
+          callable=callable, api_option='GEMINI_API'
+      )
+
+
+class FunctionDeclarationDict(TypedDict, total=False):
+  """Defines a function that the model can generate JSON inputs for.
+
+  The inputs are based on `OpenAPI 3.0 specifications
+  <https://spec.openapis.org/oas/v3.0.3>`_.
+  """
+
+  response: Optional[SchemaDict]
+  """Describes the output from the function in the OpenAPI JSON Schema
+      Object format."""
+
+  description: Optional[str]
+  """Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function."""
+
+  name: Optional[str]
+  """Required. The name of the function to call. Must start with a letter or an underscore. Must be a-z, A-Z, 0-9, or contain underscores, dots and dashes, with a maximum length of 64."""
+
+  parameters: Optional[SchemaDict]
+  """Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1"""
+
+
+FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
+
+
+class GoogleSearch(_common.BaseModel):
+  """Tool to support Google Search in Model. Powered by Google."""
+
+  pass
+
+
+class GoogleSearchDict(TypedDict, total=False):
+  """Tool to support Google Search in Model. Powered by Google."""
+
+  pass
+
+
+GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
+
+
+class DynamicRetrievalConfig(_common.BaseModel):
+  """Describes the options to customize dynamic retrieval."""
+
+  mode: Optional[DynamicRetrievalConfigMode] = Field(
+      default=None,
+      description="""The mode of the predictor to be used in dynamic retrieval.""",
+  )
+  dynamic_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used.""",
+  )
+
+
+class DynamicRetrievalConfigDict(TypedDict, total=False):
+  """Describes the options to customize dynamic retrieval."""
+
+  mode: Optional[DynamicRetrievalConfigMode]
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  dynamic_threshold: Optional[float]
+  """Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used."""
+
+
+DynamicRetrievalConfigOrDict = Union[
+    DynamicRetrievalConfig, DynamicRetrievalConfigDict
+]
+
+
+class GoogleSearchRetrieval(_common.BaseModel):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfig] = Field(
+      default=None,
+      description="""Specifies the dynamic retrieval configuration for the given source.""",
+  )
+
+
+class GoogleSearchRetrievalDict(TypedDict, total=False):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfigDict]
+  """Specifies the dynamic retrieval configuration for the given source."""
+
+
+GoogleSearchRetrievalOrDict = Union[
+    GoogleSearchRetrieval, GoogleSearchRetrievalDict
+]
+
+
+class VertexAISearch(_common.BaseModel):
+  """Retrieve from Vertex AI Search datastore or engine for grounding.
+
+  datastore and engine are mutually exclusive. See
+  https://cloud.google.com/products/agent-builder
+  """
+
+  datastore: Optional[str] = Field(
+      default=None,
+      description="""Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`""",
+  )
+  engine: Optional[str] = Field(
+      default=None,
+      description="""Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`""",
+  )
+
+
+class VertexAISearchDict(TypedDict, total=False):
+  """Retrieve from Vertex AI Search datastore or engine for grounding.
+
+  datastore and engine are mutually exclusive. See
+  https://cloud.google.com/products/agent-builder
+  """
+
+  datastore: Optional[str]
+  """Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`"""
+
+  engine: Optional[str]
+  """Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`"""
+
+
+VertexAISearchOrDict = Union[VertexAISearch, VertexAISearchDict]
+
+
+class VertexRagStoreRagResource(_common.BaseModel):
+  """The definition of the Rag resource."""
+
+  rag_corpus: Optional[str] = Field(
+      default=None,
+      description="""Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`""",
+  )
+  rag_file_ids: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field.""",
+  )
+
+
+class VertexRagStoreRagResourceDict(TypedDict, total=False):
+  """The definition of the Rag resource."""
+
+  rag_corpus: Optional[str]
+  """Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`"""
+
+  rag_file_ids: Optional[list[str]]
+  """Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field."""
+
+
+VertexRagStoreRagResourceOrDict = Union[
+    VertexRagStoreRagResource, VertexRagStoreRagResourceDict
+]
+
+
+class VertexRagStore(_common.BaseModel):
+  """Retrieve from Vertex RAG Store for grounding."""
+
+  rag_corpora: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Deprecated. Please use rag_resources instead.""",
+  )
+  rag_resources: Optional[list[VertexRagStoreRagResource]] = Field(
+      default=None,
+      description="""Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support.""",
+  )
+  similarity_top_k: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of top k results to return from the selected corpora.""",
+  )
+  vector_distance_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. Only return results with vector distance smaller than the threshold.""",
+  )
+
+
+class VertexRagStoreDict(TypedDict, total=False):
+  """Retrieve from Vertex RAG Store for grounding."""
+
+  rag_corpora: Optional[list[str]]
+  """Optional. Deprecated. Please use rag_resources instead."""
+
+  rag_resources: Optional[list[VertexRagStoreRagResourceDict]]
+  """Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support."""
+
+  similarity_top_k: Optional[int]
+  """Optional. Number of top k results to return from the selected corpora."""
+
+  vector_distance_threshold: Optional[float]
+  """Optional. Only return results with vector distance smaller than the threshold."""
+
+
+VertexRagStoreOrDict = Union[VertexRagStore, VertexRagStoreDict]
+
+
+class Retrieval(_common.BaseModel):
+  """Defines a retrieval tool that model can call to access external knowledge."""
+
+  disable_attribution: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Deprecated. This option is no longer supported.""",
+  )
+  vertex_ai_search: Optional[VertexAISearch] = Field(
+      default=None,
+      description="""Set to use data source powered by Vertex AI Search.""",
+  )
+  vertex_rag_store: Optional[VertexRagStore] = Field(
+      default=None,
+      description="""Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService.""",
+  )
+
+
+class RetrievalDict(TypedDict, total=False):
+  """Defines a retrieval tool that model can call to access external knowledge."""
+
+  disable_attribution: Optional[bool]
+  """Optional. Deprecated. This option is no longer supported."""
+
+  vertex_ai_search: Optional[VertexAISearchDict]
+  """Set to use data source powered by Vertex AI Search."""
+
+  vertex_rag_store: Optional[VertexRagStoreDict]
+  """Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService."""
+
+
+RetrievalOrDict = Union[Retrieval, RetrievalDict]
+
+
+class ToolCodeExecution(_common.BaseModel):
+  """Tool that executes code generated by the model, and automatically returns the result to the model.
+
+  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
+  to this tool.
+  """
+
+  pass
+
+
+class ToolCodeExecutionDict(TypedDict, total=False):
+  """Tool that executes code generated by the model, and automatically returns the result to the model.
+
+  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
+  to this tool.
+  """
+
+  pass
+
+
+ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
+
+
+class Tool(_common.BaseModel):
+  """Tool details of a tool that the model may use to generate a response."""
+
+  function_declarations: Optional[list[FunctionDeclaration]] = Field(
+      default=None,
+      description="""List of function declarations that the tool supports.""",
+  )
+  retrieval: Optional[Retrieval] = Field(
+      default=None,
+      description="""Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation.""",
+  )
+  google_search: Optional[GoogleSearch] = Field(
+      default=None,
+      description="""Optional. Google Search tool type. Specialized retrieval tool
+      that is powered by Google Search.""",
+  )
+  google_search_retrieval: Optional[GoogleSearchRetrieval] = Field(
+      default=None,
+      description="""Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search.""",
+  )
+  code_execution: Optional[ToolCodeExecution] = Field(
+      default=None,
+      description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services.""",
+  )
+
+
+class ToolDict(TypedDict, total=False):
+  """Tool details of a tool that the model may use to generate a response."""
+
+  function_declarations: Optional[list[FunctionDeclarationDict]]
+  """List of function declarations that the tool supports."""
+
+  retrieval: Optional[RetrievalDict]
+  """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation."""
+
+  google_search: Optional[GoogleSearchDict]
+  """Optional. Google Search tool type. Specialized retrieval tool
+      that is powered by Google Search."""
+
+  google_search_retrieval: Optional[GoogleSearchRetrievalDict]
+  """Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search."""
+
+  code_execution: Optional[ToolCodeExecutionDict]
+  """Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services."""
+
+
+ToolOrDict = Union[Tool, ToolDict]
+ToolListUnion = list[Union[Tool, Callable]]
+ToolListUnionDict = list[Union[ToolDict, Callable]]
+
+SchemaUnion = Union[
+    dict, type, Schema, builtin_types.GenericAlias, VersionedUnionType  # type: ignore[valid-type]
+]
+SchemaUnionDict = Union[SchemaUnion, SchemaDict]
+
+
+class FunctionCallingConfig(_common.BaseModel):
+  """Function calling config."""
+
+  mode: Optional[FunctionCallingConfigMode] = Field(
+      default=None, description="""Optional. Function calling mode."""
+  )
+  allowed_function_names: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided.""",
+  )
+
+
+class FunctionCallingConfigDict(TypedDict, total=False):
+  """Function calling config."""
+
+  mode: Optional[FunctionCallingConfigMode]
+  """Optional. Function calling mode."""
+
+  allowed_function_names: Optional[list[str]]
+  """Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided."""
+
+
+FunctionCallingConfigOrDict = Union[
+    FunctionCallingConfig, FunctionCallingConfigDict
+]
+
+
+class ToolConfig(_common.BaseModel):
+  """Tool config.
+
+  This config is shared for all tools provided in the request.
+  """
+
+  function_calling_config: Optional[FunctionCallingConfig] = Field(
+      default=None, description="""Optional. Function calling config."""
+  )
+
+
+class ToolConfigDict(TypedDict, total=False):
+  """Tool config.
+
+  This config is shared for all tools provided in the request.
+  """
+
+  function_calling_config: Optional[FunctionCallingConfigDict]
+  """Optional. Function calling config."""
+
+
+ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
+
+
+class PrebuiltVoiceConfig(_common.BaseModel):
+  """The configuration for the prebuilt speaker to use."""
+
+  voice_name: Optional[str] = Field(
+      default=None,
+      description="""The name of the prebuilt voice to use.
+      """,
+  )
+
+
+class PrebuiltVoiceConfigDict(TypedDict, total=False):
+  """The configuration for the prebuilt speaker to use."""
+
+  voice_name: Optional[str]
+  """The name of the prebuilt voice to use.
+      """
+
+
+PrebuiltVoiceConfigOrDict = Union[PrebuiltVoiceConfig, PrebuiltVoiceConfigDict]
+
+
+class VoiceConfig(_common.BaseModel):
+  """The configuration for the voice to use."""
+
+  prebuilt_voice_config: Optional[PrebuiltVoiceConfig] = Field(
+      default=None,
+      description="""The configuration for the speaker to use.
+      """,
+  )
+
+
+class VoiceConfigDict(TypedDict, total=False):
+  """The configuration for the voice to use."""
+
+  prebuilt_voice_config: Optional[PrebuiltVoiceConfigDict]
+  """The configuration for the speaker to use.
+      """
+
+
+VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
+
+
+class SpeechConfig(_common.BaseModel):
+  """The speech generation configuration."""
+
+  voice_config: Optional[VoiceConfig] = Field(
+      default=None,
+      description="""The configuration for the speaker to use.
+      """,
+  )
+
+
+class SpeechConfigDict(TypedDict, total=False):
+  """The speech generation configuration."""
+
+  voice_config: Optional[VoiceConfigDict]
+  """The configuration for the speaker to use.
+      """
+
+
+SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
+
+
+class AutomaticFunctionCallingConfig(_common.BaseModel):
+  """The configuration for automatic function calling."""
+
+  disable: Optional[bool] = Field(
+      default=None,
+      description="""Whether to disable automatic function calling.
+      If not set or set to False, will enable automatic function calling.
+      If set to True, will disable automatic function calling.
+      """,
+  )
+  maximum_remote_calls: Optional[int] = Field(
+      default=10,
+      description="""If automatic function calling is enabled,
+      maximum number of remote calls for automatic function calling.
+      This number should be a positive integer.
+      If not set, SDK will set maximum number of remote calls to 10.
+      """,
+  )
+  ignore_call_history: Optional[bool] = Field(
+      default=None,
+      description="""If automatic function calling is enabled,
+      whether to ignore call history to the response.
+      If not set, SDK will set ignore_call_history to false,
+      and will append the call history to
+      GenerateContentResponse.automatic_function_calling_history.
+      """,
+  )
+
+
+class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
+  """The configuration for automatic function calling."""
+
+  disable: Optional[bool]
+  """Whether to disable automatic function calling.
+      If not set or set to False, will enable automatic function calling.
+      If set to True, will disable automatic function calling.
+      """
+
+  maximum_remote_calls: Optional[int]
+  """If automatic function calling is enabled,
+      maximum number of remote calls for automatic function calling.
+      This number should be a positive integer.
+      If not set, SDK will set maximum number of remote calls to 10.
+      """
+
+  ignore_call_history: Optional[bool]
+  """If automatic function calling is enabled,
+      whether to ignore call history to the response.
+      If not set, SDK will set ignore_call_history to false,
+      and will append the call history to
+      GenerateContentResponse.automatic_function_calling_history.
+      """
+
+
+AutomaticFunctionCallingConfigOrDict = Union[
+    AutomaticFunctionCallingConfig, AutomaticFunctionCallingConfigDict
+]
+
+
+class ThinkingConfig(_common.BaseModel):
+  """The thinking features configuration."""
+
+  include_thoughts: Optional[bool] = Field(
+      default=None,
+      description="""Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """,
+  )
+
+
+class ThinkingConfigDict(TypedDict, total=False):
+  """The thinking features configuration."""
+
+  include_thoughts: Optional[bool]
+  """Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """
+
+
+ThinkingConfigOrDict = Union[ThinkingConfig, ThinkingConfigDict]
+
+
+class FileStatus(_common.BaseModel):
+  """Status of a File that uses a common error model."""
+
+  details: Optional[list[dict[str, Any]]] = Field(
+      default=None,
+      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
+  )
+  message: Optional[str] = Field(
+      default=None,
+      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
+  )
+  code: Optional[int] = Field(
+      default=None, description="""The status code. 0 for OK, 1 for CANCELLED"""
+  )
+
+
+class FileStatusDict(TypedDict, total=False):
+  """Status of a File that uses a common error model."""
+
+  details: Optional[list[dict[str, Any]]]
+  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
+
+  message: Optional[str]
+  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
+
+  code: Optional[int]
+  """The status code. 0 for OK, 1 for CANCELLED"""
+
+
+FileStatusOrDict = Union[FileStatus, FileStatusDict]
+
+
+class File(_common.BaseModel):
+  """A file uploaded to the API."""
+
+  name: Optional[str] = Field(
+      default=None,
+      description="""The `File` resource name. The ID (name excluding the "files/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be generated. Example: `files/123-456`""",
+  )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'""",
+  )
+  mime_type: Optional[str] = Field(
+      default=None, description="""Output only. MIME type of the file."""
+  )
+  size_bytes: Optional[int] = Field(
+      default=None, description="""Output only. Size of the file in bytes."""
+  )
+  create_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Output only. The timestamp of when the `File` was created.""",
+  )
+  expiration_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Output only. The timestamp of when the `File` will be deleted. Only set if the `File` is scheduled to expire.""",
+  )
+  update_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Output only. The timestamp of when the `File` was last updated.""",
+  )
+  sha256_hash: Optional[str] = Field(
+      default=None,
+      description="""Output only. SHA-256 hash of the uploaded bytes. The hash value is encoded in base64 format.""",
   )
   uri: Optional[str] = Field(
-      default=None, description="""URI reference of the attribution."""
+      default=None, description="""Output only. The URI of the `File`."""
+  )
+  download_uri: Optional[str] = Field(
+      default=None,
+      description="""Output only. The URI of the `File`, only set for downloadable (generated) files.""",
+  )
+  state: Optional[FileState] = Field(
+      default=None, description="""Output only. Processing state of the File."""
+  )
+  source: Optional[FileSource] = Field(
+      default=None, description="""Output only. The source of the `File`."""
+  )
+  video_metadata: Optional[dict[str, Any]] = Field(
+      default=None, description="""Output only. Metadata for a video."""
+  )
+  error: Optional[FileStatus] = Field(
+      default=None,
+      description="""Output only. Error status if File processing failed.""",
+  )
+
+
+class FileDict(TypedDict, total=False):
+  """A file uploaded to the API."""
+
+  name: Optional[str]
+  """The `File` resource name. The ID (name excluding the "files/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be generated. Example: `files/123-456`"""
+
+  display_name: Optional[str]
+  """Optional. The human-readable display name for the `File`. The display name must be no more than 512 characters in length, including spaces. Example: 'Welcome Image'"""
+
+  mime_type: Optional[str]
+  """Output only. MIME type of the file."""
+
+  size_bytes: Optional[int]
+  """Output only. Size of the file in bytes."""
+
+  create_time: Optional[datetime.datetime]
+  """Output only. The timestamp of when the `File` was created."""
+
+  expiration_time: Optional[datetime.datetime]
+  """Output only. The timestamp of when the `File` will be deleted. Only set if the `File` is scheduled to expire."""
+
+  update_time: Optional[datetime.datetime]
+  """Output only. The timestamp of when the `File` was last updated."""
+
+  sha256_hash: Optional[str]
+  """Output only. SHA-256 hash of the uploaded bytes. The hash value is encoded in base64 format."""
+
+  uri: Optional[str]
+  """Output only. The URI of the `File`."""
+
+  download_uri: Optional[str]
+  """Output only. The URI of the `File`, only set for downloadable (generated) files."""
+
+  state: Optional[FileState]
+  """Output only. Processing state of the File."""
+
+  source: Optional[FileSource]
+  """Output only. The source of the `File`."""
+
+  video_metadata: Optional[dict[str, Any]]
+  """Output only. Metadata for a video."""
+
+  error: Optional[FileStatusDict]
+  """Output only. Error status if File processing failed."""
+
+
+FileOrDict = Union[File, FileDict]
+
+if _is_pillow_image_imported:
+  PartUnion = Union[File, Part, PIL_Image, str]
+else:
+  PartUnion = Union[File, Part, str]  # type: ignore[misc]
+
+
+PartUnionDict = Union[PartUnion, PartDict]
+
+
+ContentUnion = Union[Content, list[PartUnion], PartUnion]
+
+
+ContentUnionDict = Union[ContentUnion, ContentDict]
+
+
+class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
+  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
+
+  model_routing_preference: Optional[
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
+  ] = Field(default=None, description="""The model routing preference.""")
+
+
+class GenerationConfigRoutingConfigAutoRoutingModeDict(TypedDict, total=False):
+  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
+
+  model_routing_preference: Optional[
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
+  ]
+  """The model routing preference."""
+
+
+GenerationConfigRoutingConfigAutoRoutingModeOrDict = Union[
+    GenerationConfigRoutingConfigAutoRoutingMode,
+    GenerationConfigRoutingConfigAutoRoutingModeDict,
+]
+
+
+class GenerationConfigRoutingConfigManualRoutingMode(_common.BaseModel):
+  """When manual routing is set, the specified model will be used directly."""
+
+  model_name: Optional[str] = Field(
+      default=None,
+      description="""The model name to use. Only the public LLM models are accepted. e.g. 'gemini-1.5-pro-001'.""",
+  )
+
+
+class GenerationConfigRoutingConfigManualRoutingModeDict(
+    TypedDict, total=False
+):
+  """When manual routing is set, the specified model will be used directly."""
+
+  model_name: Optional[str]
+  """The model name to use. Only the public LLM models are accepted. e.g. 'gemini-1.5-pro-001'."""
+
+
+GenerationConfigRoutingConfigManualRoutingModeOrDict = Union[
+    GenerationConfigRoutingConfigManualRoutingMode,
+    GenerationConfigRoutingConfigManualRoutingModeDict,
+]
+
+
+class GenerationConfigRoutingConfig(_common.BaseModel):
+  """The configuration for routing the request to a specific model."""
+
+  auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingMode] = Field(
+      default=None, description="""Automated routing."""
+  )
+  manual_mode: Optional[GenerationConfigRoutingConfigManualRoutingMode] = Field(
+      default=None, description="""Manual routing."""
+  )
+
+
+class GenerationConfigRoutingConfigDict(TypedDict, total=False):
+  """The configuration for routing the request to a specific model."""
+
+  auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingModeDict]
+  """Automated routing."""
+
+  manual_mode: Optional[GenerationConfigRoutingConfigManualRoutingModeDict]
+  """Manual routing."""
+
+
+GenerationConfigRoutingConfigOrDict = Union[
+    GenerationConfigRoutingConfig, GenerationConfigRoutingConfigDict
+]
+
+
+SpeechConfigUnion = Union[SpeechConfig, str]
+
+
+SpeechConfigUnionDict = Union[SpeechConfigUnion, SpeechConfigDict]
+
+
+class GenerateContentConfig(_common.BaseModel):
+  """Optional model configuration parameters.
+
+  For more information, see `Content generation parameters
+  <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
+  """
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  system_instruction: Optional[ContentUnion] = Field(
+      default=None,
+      description="""Instructions for the model to steer it toward better performance.
+      For example, "Answer as concisely as possible" or "Don't use technical
+      terms in your response".
+      """,
+  )
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Value that controls the degree of randomness in token selection.
+      Lower temperatures are good for prompts that require a less open-ended or
+      creative response, while higher temperatures can lead to more diverse or
+      creative results.
+      """,
+  )
+  top_p: Optional[float] = Field(
+      default=None,
+      description="""Tokens are selected from the most to least probable until the sum
+      of their probabilities equals this value. Use a lower value for less
+      random responses and a higher value for more random responses.
+      """,
+  )
+  top_k: Optional[float] = Field(
+      default=None,
+      description="""For each token selection step, the ``top_k`` tokens with the
+      highest probabilities are sampled. Then tokens are further filtered based
+      on ``top_p`` with the final token selected using temperature sampling. Use
+      a lower number for less random responses and a higher number for more
+      random responses.
+      """,
+  )
+  candidate_count: Optional[int] = Field(
+      default=None,
+      description="""Number of response variations to return.
+      """,
+  )
+  max_output_tokens: Optional[int] = Field(
+      default=None,
+      description="""Maximum number of tokens that can be generated in the response.
+      """,
+  )
+  stop_sequences: Optional[list[str]] = Field(
+      default=None,
+      description="""List of strings that tells the model to stop generating text if one
+      of the strings is encountered in the response.
+      """,
+  )
+  response_logprobs: Optional[bool] = Field(
+      default=None,
+      description="""Whether to return the log probabilities of the tokens that were
+      chosen by the model at each step.
+      """,
+  )
+  logprobs: Optional[int] = Field(
+      default=None,
+      description="""Number of top candidate tokens to return the log probabilities for
+      at each generation step.
+      """,
+  )
+  presence_penalty: Optional[float] = Field(
+      default=None,
+      description="""Positive values penalize tokens that already appear in the
+      generated text, increasing the probability of generating more diverse
+      content.
+      """,
+  )
+  frequency_penalty: Optional[float] = Field(
+      default=None,
+      description="""Positive values penalize tokens that repeatedly appear in the
+      generated text, increasing the probability of generating more diverse
+      content.
+      """,
+  )
+  seed: Optional[int] = Field(
+      default=None,
+      description="""When ``seed`` is fixed to a specific number, the model makes a best
+      effort to provide the same response for repeated requests. By default, a
+      random number is used.
+      """,
+  )
+  response_mime_type: Optional[str] = Field(
+      default=None,
+      description="""Output response media type of the generated candidate text.
+      """,
+  )
+  response_schema: Optional[SchemaUnion] = Field(
+      default=None,
+      description="""Schema that the generated candidate text must adhere to.
+      """,
+  )
+  routing_config: Optional[GenerationConfigRoutingConfig] = Field(
+      default=None,
+      description="""Configuration for model router requests.
+      """,
+  )
+  safety_settings: Optional[list[SafetySetting]] = Field(
+      default=None,
+      description="""Safety settings in the request to block unsafe content in the
+      response.
+      """,
+  )
+  tools: Optional[ToolListUnion] = Field(
+      default=None,
+      description="""Code that enables the system to interact with external systems to
+      perform an action outside of the knowledge and scope of the model.
+      """,
+  )
+  tool_config: Optional[ToolConfig] = Field(
+      default=None,
+      description="""Associates model output to a specific function call.
+      """,
+  )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Labels with user-defined metadata to break down billed charges.""",
+  )
+  cached_content: Optional[str] = Field(
+      default=None,
+      description="""Resource name of a context cache that can be used in subsequent
+      requests.
+      """,
+  )
+  response_modalities: Optional[list[str]] = Field(
+      default=None,
+      description="""The requested modalities of the response. Represents the set of
+      modalities that the model can return.
+      """,
+  )
+  media_resolution: Optional[MediaResolution] = Field(
+      default=None,
+      description="""If specified, the media resolution specified will be used.
+    """,
+  )
+  speech_config: Optional[SpeechConfigUnion] = Field(
+      default=None,
+      description="""The speech generation configuration.
+      """,
+  )
+  audio_timestamp: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, audio timestamp will be included in the request to the
+       model.
+      """,
+  )
+  automatic_function_calling: Optional[AutomaticFunctionCallingConfig] = Field(
+      default=None,
+      description="""The configuration for automatic function calling.
+      """,
+  )
+  thinking_config: Optional[ThinkingConfig] = Field(
+      default=None,
+      description="""The thinking features configuration.
+      """,
+  )
+
+  @pydantic.field_validator('response_schema', mode='before')
+  @classmethod
+  def _convert_literal_to_enum(cls, value):
+    if typing.get_origin(value) is typing.Literal:
+      enum_vals = typing.get_args(value)
+      if not all(isinstance(arg, str) for arg in enum_vals):
+        # This doesn't stop execution, it tells pydantic to raise a ValidationError
+        # when the class is instantiated with an unsupported Literal
+        raise ValueError(f'Literal type {value} must be a list of strings.')
+      # The title 'PlaceholderLiteralEnum' is removed from the generated Schema
+      # before sending the request
+      return Enum('PlaceholderLiteralEnum', {s: s for s in enum_vals})
+    return value
+
+
+class GenerateContentConfigDict(TypedDict, total=False):
+  """Optional model configuration parameters.
+
+  For more information, see `Content generation parameters
+  <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
+  """
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  system_instruction: Optional[ContentUnionDict]
+  """Instructions for the model to steer it toward better performance.
+      For example, "Answer as concisely as possible" or "Don't use technical
+      terms in your response".
+      """
+
+  temperature: Optional[float]
+  """Value that controls the degree of randomness in token selection.
+      Lower temperatures are good for prompts that require a less open-ended or
+      creative response, while higher temperatures can lead to more diverse or
+      creative results.
+      """
+
+  top_p: Optional[float]
+  """Tokens are selected from the most to least probable until the sum
+      of their probabilities equals this value. Use a lower value for less
+      random responses and a higher value for more random responses.
+      """
+
+  top_k: Optional[float]
+  """For each token selection step, the ``top_k`` tokens with the
+      highest probabilities are sampled. Then tokens are further filtered based
+      on ``top_p`` with the final token selected using temperature sampling. Use
+      a lower number for less random responses and a higher number for more
+      random responses.
+      """
+
+  candidate_count: Optional[int]
+  """Number of response variations to return.
+      """
+
+  max_output_tokens: Optional[int]
+  """Maximum number of tokens that can be generated in the response.
+      """
+
+  stop_sequences: Optional[list[str]]
+  """List of strings that tells the model to stop generating text if one
+      of the strings is encountered in the response.
+      """
+
+  response_logprobs: Optional[bool]
+  """Whether to return the log probabilities of the tokens that were
+      chosen by the model at each step.
+      """
+
+  logprobs: Optional[int]
+  """Number of top candidate tokens to return the log probabilities for
+      at each generation step.
+      """
+
+  presence_penalty: Optional[float]
+  """Positive values penalize tokens that already appear in the
+      generated text, increasing the probability of generating more diverse
+      content.
+      """
+
+  frequency_penalty: Optional[float]
+  """Positive values penalize tokens that repeatedly appear in the
+      generated text, increasing the probability of generating more diverse
+      content.
+      """
+
+  seed: Optional[int]
+  """When ``seed`` is fixed to a specific number, the model makes a best
+      effort to provide the same response for repeated requests. By default, a
+      random number is used.
+      """
+
+  response_mime_type: Optional[str]
+  """Output response media type of the generated candidate text.
+      """
+
+  response_schema: Optional[SchemaUnionDict]
+  """Schema that the generated candidate text must adhere to.
+      """
+
+  routing_config: Optional[GenerationConfigRoutingConfigDict]
+  """Configuration for model router requests.
+      """
+
+  safety_settings: Optional[list[SafetySettingDict]]
+  """Safety settings in the request to block unsafe content in the
+      response.
+      """
+
+  tools: Optional[ToolListUnionDict]
+  """Code that enables the system to interact with external systems to
+      perform an action outside of the knowledge and scope of the model.
+      """
+
+  tool_config: Optional[ToolConfigDict]
+  """Associates model output to a specific function call.
+      """
+
+  labels: Optional[dict[str, str]]
+  """Labels with user-defined metadata to break down billed charges."""
+
+  cached_content: Optional[str]
+  """Resource name of a context cache that can be used in subsequent
+      requests.
+      """
+
+  response_modalities: Optional[list[str]]
+  """The requested modalities of the response. Represents the set of
+      modalities that the model can return.
+      """
+
+  media_resolution: Optional[MediaResolution]
+  """If specified, the media resolution specified will be used.
+    """
+
+  speech_config: Optional[SpeechConfigUnionDict]
+  """The speech generation configuration.
+      """
+
+  audio_timestamp: Optional[bool]
+  """If enabled, audio timestamp will be included in the request to the
+       model.
+      """
+
+  automatic_function_calling: Optional[AutomaticFunctionCallingConfigDict]
+  """The configuration for automatic function calling.
+      """
+
+  thinking_config: Optional[ThinkingConfigDict]
+  """The thinking features configuration.
+      """
+
+
+GenerateContentConfigOrDict = Union[
+    GenerateContentConfig, GenerateContentConfigDict
+]
+
+
+ContentListUnion = Union[list[ContentUnion], ContentUnion]
+
+
+ContentListUnionDict = Union[list[ContentUnionDict], ContentUnionDict]
+
+
+class _GenerateContentParameters(_common.BaseModel):
+  """Config for models.generate_content parameters."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""Content of the request.
+      """,
+  )
+  config: Optional[GenerateContentConfig] = Field(
+      default=None,
+      description="""Configuration that contains optional model parameters.
+      """,
+  )
+
+
+class _GenerateContentParametersDict(TypedDict, total=False):
+  """Config for models.generate_content parameters."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  contents: Optional[ContentListUnionDict]
+  """Content of the request.
+      """
+
+  config: Optional[GenerateContentConfigDict]
+  """Configuration that contains optional model parameters.
+      """
+
+
+_GenerateContentParametersOrDict = Union[
+    _GenerateContentParameters, _GenerateContentParametersDict
+]
+
+
+class GoogleTypeDate(_common.BaseModel):
+  """Represents a whole or partial calendar date, such as a birthday.
+
+  The time of day and time zone are either specified elsewhere or are
+  insignificant. The date is relative to the Gregorian Calendar. This can
+  represent one of the following: * A full date, with non-zero year, month, and
+  day values. * A month and day, with a zero year (for example, an anniversary).
+  * A year on its own, with a zero month and a zero day. * A year and month,
+  with a zero day (for example, a credit card expiration date). Related types: *
+  google.type.TimeOfDay * google.type.DateTime * google.protobuf.Timestamp
+  """
+
+  day: Optional[int] = Field(
+      default=None,
+      description="""Day of a month. Must be from 1 to 31 and valid for the year and month, or 0 to specify a year by itself or a year and month where the day isn't significant.""",
+  )
+  month: Optional[int] = Field(
+      default=None,
+      description="""Month of a year. Must be from 1 to 12, or 0 to specify a year without a month and day.""",
+  )
+  year: Optional[int] = Field(
+      default=None,
+      description="""Year of the date. Must be from 1 to 9999, or 0 to specify a date without a year.""",
+  )
+
+
+class GoogleTypeDateDict(TypedDict, total=False):
+  """Represents a whole or partial calendar date, such as a birthday.
+
+  The time of day and time zone are either specified elsewhere or are
+  insignificant. The date is relative to the Gregorian Calendar. This can
+  represent one of the following: * A full date, with non-zero year, month, and
+  day values. * A month and day, with a zero year (for example, an anniversary).
+  * A year on its own, with a zero month and a zero day. * A year and month,
+  with a zero day (for example, a credit card expiration date). Related types: *
+  google.type.TimeOfDay * google.type.DateTime * google.protobuf.Timestamp
+  """
+
+  day: Optional[int]
+  """Day of a month. Must be from 1 to 31 and valid for the year and month, or 0 to specify a year by itself or a year and month where the day isn't significant."""
+
+  month: Optional[int]
+  """Month of a year. Must be from 1 to 12, or 0 to specify a year without a month and day."""
+
+  year: Optional[int]
+  """Year of the date. Must be from 1 to 9999, or 0 to specify a date without a year."""
+
+
+GoogleTypeDateOrDict = Union[GoogleTypeDate, GoogleTypeDateDict]
+
+
+class Citation(_common.BaseModel):
+  """Source attributions for content."""
+
+  end_index: Optional[int] = Field(
+      default=None, description="""Output only. End index into the content."""
+  )
+  license: Optional[str] = Field(
+      default=None, description="""Output only. License of the attribution."""
+  )
+  publication_date: Optional[GoogleTypeDate] = Field(
+      default=None,
+      description="""Output only. Publication date of the attribution.""",
+  )
+  start_index: Optional[int] = Field(
+      default=None, description="""Output only. Start index into the content."""
+  )
+  title: Optional[str] = Field(
+      default=None, description="""Output only. Title of the attribution."""
+  )
+  uri: Optional[str] = Field(
+      default=None,
+      description="""Output only. Url reference of the attribution.""",
   )
 
 
@@ -3042,7 +6594,22 @@ class GenerateContentResponse(_common.BaseModel):
         if isinstance(part.thought, bool) and part.thought:
           continue
         any_text_part_text = True
-        text += part.text
+        # Fix for special character handling - replace escape sequences like \[e] with actual characters
+        fixed_text = part.text
+        # Handle common French character escapes
+        fixed_text = fixed_text.replace('\\[e]', 'é')
+        fixed_text = fixed_text.replace('\\[a]', 'à')
+        fixed_text = fixed_text.replace('\\[c]', 'ç')
+        fixed_text = fixed_text.replace('\\[e\\]', 'é')
+        fixed_text = fixed_text.replace('\\[a\\]', 'à')
+        fixed_text = fixed_text.replace('\\[c\\]', 'ç')
+        fixed_text = fixed_text.replace('\\[i]', 'î')
+        fixed_text = fixed_text.replace('\\[o]', 'ô')
+        fixed_text = fixed_text.replace('\\[u]', 'ù')
+        fixed_text = fixed_text.replace('\\[i\\]', 'î')
+        fixed_text = fixed_text.replace('\\[o\\]', 'ô')
+        fixed_text = fixed_text.replace('\\[u\\]', 'ù')
+        text += fixed_text
     if non_text_parts:
       logger.warning(
           'Warning: there are non-text parts in the response:'
@@ -7127,82 +10694,6 @@ class ListCachedContentsConfig(_common.BaseModel):
   page_token: Optional[str] = Field(default=None, description="""""")
 
 
-class ListCachedContentsConfigDict(TypedDict, total=False):
-  """Config for caches.list method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  page_size: Optional[int]
-  """"""
-
-  page_token: Optional[str]
-  """"""
-
-
-ListCachedContentsConfigOrDict = Union[
-    ListCachedContentsConfig, ListCachedContentsConfigDict
-]
-
-
-class _ListCachedContentsParameters(_common.BaseModel):
-  """Parameters for caches.list method."""
-
-  config: Optional[ListCachedContentsConfig] = Field(
-      default=None,
-      description="""Configuration that contains optional parameters.
-      """,
-  )
-
-
-class _ListCachedContentsParametersDict(TypedDict, total=False):
-  """Parameters for caches.list method."""
-
-  config: Optional[ListCachedContentsConfigDict]
-  """Configuration that contains optional parameters.
-      """
-
-
-_ListCachedContentsParametersOrDict = Union[
-    _ListCachedContentsParameters, _ListCachedContentsParametersDict
-]
-
-
-class ListCachedContentsResponse(_common.BaseModel):
-
-  next_page_token: Optional[str] = Field(default=None, description="""""")
-  cached_contents: Optional[list[CachedContent]] = Field(
-      default=None,
-      description="""List of cached contents.
-      """,
-  )
-
-
-class ListCachedContentsResponseDict(TypedDict, total=False):
-
-  next_page_token: Optional[str]
-  """"""
-
-  cached_contents: Optional[list[CachedContentDict]]
-  """List of cached contents.
-      """
-
-
-ListCachedContentsResponseOrDict = Union[
-    ListCachedContentsResponse, ListCachedContentsResponseDict
-]
-
-
-class ListFilesConfig(_common.BaseModel):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  page_size: Optional[int] = Field(default=None, description="""""")
-  page_token: Optional[str] = Field(default=None, description="""""")
-
-
 class ListFilesConfigDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
@@ -7748,257 +11239,6 @@ class GetBatchJobConfigDict(TypedDict, total=False):
 
 
 GetBatchJobConfigOrDict = Union[GetBatchJobConfig, GetBatchJobConfigDict]
-
-
-class _GetBatchJobParameters(_common.BaseModel):
-  """Config for batches.get parameters."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """,
-  )
-  config: Optional[GetBatchJobConfig] = Field(
-      default=None, description="""Optional parameters for the request."""
-  )
-
-
-class _GetBatchJobParametersDict(TypedDict, total=False):
-  """Config for batches.get parameters."""
-
-  name: Optional[str]
-  """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """
-
-  config: Optional[GetBatchJobConfigDict]
-  """Optional parameters for the request."""
-
-
-_GetBatchJobParametersOrDict = Union[
-    _GetBatchJobParameters, _GetBatchJobParametersDict
-]
-
-
-class CancelBatchJobConfig(_common.BaseModel):
-  """Optional parameters."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class CancelBatchJobConfigDict(TypedDict, total=False):
-  """Optional parameters."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-CancelBatchJobConfigOrDict = Union[
-    CancelBatchJobConfig, CancelBatchJobConfigDict
-]
-
-
-class _CancelBatchJobParameters(_common.BaseModel):
-  """Config for batches.cancel parameters."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """,
-  )
-  config: Optional[CancelBatchJobConfig] = Field(
-      default=None, description="""Optional parameters for the request."""
-  )
-
-
-class _CancelBatchJobParametersDict(TypedDict, total=False):
-  """Config for batches.cancel parameters."""
-
-  name: Optional[str]
-  """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """
-
-  config: Optional[CancelBatchJobConfigDict]
-  """Optional parameters for the request."""
-
-
-_CancelBatchJobParametersOrDict = Union[
-    _CancelBatchJobParameters, _CancelBatchJobParametersDict
-]
-
-
-class ListBatchJobsConfig(_common.BaseModel):
-  """Config for optional parameters."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  page_size: Optional[int] = Field(default=None, description="""""")
-  page_token: Optional[str] = Field(default=None, description="""""")
-  filter: Optional[str] = Field(default=None, description="""""")
-
-
-class ListBatchJobsConfigDict(TypedDict, total=False):
-  """Config for optional parameters."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  page_size: Optional[int]
-  """"""
-
-  page_token: Optional[str]
-  """"""
-
-  filter: Optional[str]
-  """"""
-
-
-ListBatchJobsConfigOrDict = Union[ListBatchJobsConfig, ListBatchJobsConfigDict]
-
-
-class _ListBatchJobsParameters(_common.BaseModel):
-  """Config for batches.list parameters."""
-
-  config: Optional[ListBatchJobsConfig] = Field(
-      default=None, description=""""""
-  )
-
-
-class _ListBatchJobsParametersDict(TypedDict, total=False):
-  """Config for batches.list parameters."""
-
-  config: Optional[ListBatchJobsConfigDict]
-  """"""
-
-
-_ListBatchJobsParametersOrDict = Union[
-    _ListBatchJobsParameters, _ListBatchJobsParametersDict
-]
-
-
-class ListBatchJobsResponse(_common.BaseModel):
-  """Config for batches.list return value."""
-
-  next_page_token: Optional[str] = Field(default=None, description="""""")
-  batch_jobs: Optional[list[BatchJob]] = Field(default=None, description="""""")
-
-
-class ListBatchJobsResponseDict(TypedDict, total=False):
-  """Config for batches.list return value."""
-
-  next_page_token: Optional[str]
-  """"""
-
-  batch_jobs: Optional[list[BatchJobDict]]
-  """"""
-
-
-ListBatchJobsResponseOrDict = Union[
-    ListBatchJobsResponse, ListBatchJobsResponseDict
-]
-
-
-class DeleteBatchJobConfig(_common.BaseModel):
-  """Optional parameters for models.get method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class DeleteBatchJobConfigDict(TypedDict, total=False):
-  """Optional parameters for models.get method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-DeleteBatchJobConfigOrDict = Union[
-    DeleteBatchJobConfig, DeleteBatchJobConfigDict
-]
-
-
-class _DeleteBatchJobParameters(_common.BaseModel):
-  """Config for batches.delete parameters."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """,
-  )
-  config: Optional[DeleteBatchJobConfig] = Field(
-      default=None, description="""Optional parameters for the request."""
-  )
-
-
-class _DeleteBatchJobParametersDict(TypedDict, total=False):
-  """Config for batches.delete parameters."""
-
-  name: Optional[str]
-  """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """
-
-  config: Optional[DeleteBatchJobConfigDict]
-  """Optional parameters for the request."""
-
-
-_DeleteBatchJobParametersOrDict = Union[
-    _DeleteBatchJobParameters, _DeleteBatchJobParametersDict
-]
-
-
-class DeleteResourceJob(_common.BaseModel):
-  """The return value of delete operation."""
-
-  name: Optional[str] = Field(default=None, description="""""")
-  done: Optional[bool] = Field(default=None, description="""""")
-  error: Optional[JobError] = Field(default=None, description="""""")
-
-
-class DeleteResourceJobDict(TypedDict, total=False):
-  """The return value of delete operation."""
-
-  name: Optional[str]
-  """"""
-
-  done: Optional[bool]
-  """"""
-
-  error: Optional[JobErrorDict]
-  """"""
-
-
-DeleteResourceJobOrDict = Union[DeleteResourceJob, DeleteResourceJobDict]
-
-
-class GetOperationConfig(_common.BaseModel):
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class GetOperationConfigDict(TypedDict, total=False):
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-GetOperationConfigOrDict = Union[GetOperationConfig, GetOperationConfigDict]
 
 
 class _GetOperationParameters(_common.BaseModel):
