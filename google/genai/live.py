@@ -1032,236 +1032,142 @@ class AsyncLive(_api_module.BaseModule):
       self, model: str, config: Optional[types.LiveConnectConfig] = None
   ):
 
-    to_object: dict[str, Any] = {}
-    if getv(config, ['generation_config']) is not None:
-      setv(
-          to_object,
-          ['generationConfig'],
-          _GenerateContentConfig_to_mldev(
-              self._api_client,
-              getv(config, ['generation_config']),
-              to_object,
-          ),
-      )
-    if getv(config, ['response_modalities']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['responseModalities'] = getv(
-            config, ['response_modalities']
+    setup = types.LiveClientSetup(model=f'models/{model}').model_dump(
+        exclude_none=True, mode='json'
+    )
+    if config:
+      generation_config_dict: Optional[dict[str, Any]] = {}
+      if config.generation_config is not None:
+        generation_config_dict = _GenerateContentConfig_to_mldev(
+            api_client=self._api_client,
+            from_object=config.generation_config,
+            parent_object=setup,  # type: ignore[arg-type]
         )
-      else:
-        to_object['generationConfig'] = {
-            'responseModalities': getv(config, ['response_modalities'])
-        }
-    if getv(config, ['speech_config']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_mldev(
-            self._api_client,
-            t.t_speech_config(
-                self._api_client, getv(config, ['speech_config'])
-            ),
-            to_object,
+      if config.response_modalities is not None:
+        generation_config_dict['responseModalities'] = config.response_modalities
+      if config.temperature is not None:
+        generation_config_dict['temperature'] = config.temperature
+      if config.top_p is not None:
+        generation_config_dict['topP'] = config.top_p
+      if config.top_k is not None:
+        generation_config_dict['topK'] = config.top_k
+      if config.max_output_tokens is not None:
+        generation_config_dict['maxOutputTokens'] = config.max_output_tokens
+      if config.seed is not None:
+        generation_config_dict['seed'] = config.seed
+      if generation_config_dict:
+        setup['generation_config'] = generation_config_dict
+      if config.system_instruction is not None:
+        system_instruction_dict = _Content_to_mldev(
+            api_client=self._api_client,
+            from_object=config.system_instruction,
         )
-      else:
-        to_object['generationConfig'] = {
-            'speechConfig': _SpeechConfig_to_mldev(
-                self._api_client,
-                t.t_speech_config(
-                    self._api_client, getv(config, ['speech_config'])
-                ),
-                to_object,
-            )
-        }
-    if getv(config, ['temperature']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['temperature'] = getv(
-            config, ['temperature']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'temperature': getv(config, ['temperature'])
-        }
-    if getv(config, ['top_p']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topP'] = getv(config, ['top_p'])
-      else:
-        to_object['generationConfig'] = {'topP': getv(config, ['top_p'])}
-    if getv(config, ['top_k']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topK'] = getv(config, ['top_k'])
-      else:
-        to_object['generationConfig'] = {'topK': getv(config, ['top_k'])}
-    if getv(config, ['max_output_tokens']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['maxOutputTokens'] = getv(
-            config, ['max_output_tokens']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'maxOutputTokens': getv(config, ['max_output_tokens'])
-        }
-    if getv(config, ['seed']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['seed'] = getv(config, ['seed'])
-      else:
-        to_object['generationConfig'] = {'seed': getv(config, ['seed'])}
-    if getv(config, ['system_instruction']) is not None:
-      setv(
-          to_object,
-          ['systemInstruction'],
-          _Content_to_mldev(
-              self._api_client,
-              t.t_content(
-                  self._api_client, getv(config, ['system_instruction'])
-              ),
-              to_object,
-          ),
-      )
-    if getv(config, ['tools']) is not None:
-      setv(
-          to_object,
-          ['tools'],
-          [
-              _Tool_to_mldev(
-                  self._api_client, t.t_tool(self._api_client, item), to_object
-              )
-              for item in t.t_tools(self._api_client, getv(config, ['tools']))
-          ],
-      )
+        if system_instruction_dict:
+          setup['system_instruction'] = system_instruction_dict
 
-    return_value = {'setup': {'model': model}}
-    return_value['setup'].update(to_object)
-    return return_value
+      if config.speech_config is not None:
+        speech_config_dict = _SpeechConfig_to_mldev(
+            api_client=self._api_client,
+            from_object=t.t_speech_config(
+                api_client=self._api_client, from_object=config.speech_config
+            ),
+        )
+        if speech_config_dict:
+          setup['speech_config'] = speech_config_dict
+      if config.tools:
+        setup['tools'] = [
+            _Tool_to_mldev(api_client=self._api_client, from_object=tool)
+            for tool in t.t_tools(
+                api_client=self._api_client, from_object=config.tools
+            )
+        ]
+      # Add tool_config if present
+      if config.tool_config:
+        tool_config_dict = _ToolConfig_to_mldev(
+            api_client=self._api_client, from_object=config.tool_config
+        )
+        if tool_config_dict:
+          setup['tool_config'] = tool_config_dict
+
+    return setup
 
   def _LiveSetup_to_vertex(
       self, model: str, config: Optional[types.LiveConnectConfig] = None
   ):
 
-    to_object: dict[str, Any] = {}
+    setup = types.LiveClientSetup(model=t.t_model(self._api_client, model)).model_dump(
+        exclude_none=True, mode='json'
+    )
+    if config:
+      generation_config_dict: Optional[dict[str, Any]] = {}
+      if config.generation_config is not None:
+        generation_config_dict = _GenerateContentConfig_to_vertex(
+            api_client=self._api_client,
+            from_object=config.generation_config,
+            parent_object=setup,  # type: ignore[arg-type]
+        )
+      if config.response_modalities is not None:
+        generation_config_dict['responseModalities'] = config.response_modalities
+      if config.temperature is not None:
+        generation_config_dict['temperature'] = config.temperature
+      if config.top_p is not None:
+        generation_config_dict['topP'] = config.top_p
+      if config.top_k is not None:
+        generation_config_dict['topK'] = config.top_k
+      if config.max_output_tokens is not None:
+        generation_config_dict['maxOutputTokens'] = config.max_output_tokens
+      if config.seed is not None:
+        generation_config_dict['seed'] = config.seed
+      if generation_config_dict:
+        setup['generation_config'] = generation_config_dict
+      if config.system_instruction is not None:
+        system_instruction_dict = _Content_to_vertex(
+            api_client=self._api_client,
+            from_object=config.system_instruction,
+        )
+        if system_instruction_dict:
+          setup['system_instruction'] = system_instruction_dict
 
-    if getv(config, ['generation_config']) is not None:
-      setv(
-          to_object,
-          ['generationConfig'],
-          _GenerateContentConfig_to_vertex(
-              self._api_client,
-              getv(config, ['generation_config']),
-              to_object,
-          ),
-      )
-    if getv(config, ['response_modalities']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['responseModalities'] = getv(
-            config, ['response_modalities']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'responseModalities': getv(config, ['response_modalities'])
-        }
-    else:
-      # Set default to AUDIO to align with MLDev API.
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig'].update({'responseModalities': ['AUDIO']})
-      else:
-        to_object.update(
-            {'generationConfig': {'responseModalities': ['AUDIO']}}
-        )
-    if getv(config, ['speech_config']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_vertex(
-            self._api_client,
-            t.t_speech_config(
-                self._api_client, getv(config, ['speech_config'])
+      if config.speech_config is not None:
+        speech_config_dict = _SpeechConfig_to_vertex(
+            api_client=self._api_client,
+            from_object=t.t_speech_config(
+                api_client=self._api_client, from_object=config.speech_config
             ),
-            to_object,
         )
-      else:
-        to_object['generationConfig'] = {
-            'speechConfig': _SpeechConfig_to_vertex(
-                self._api_client,
-                t.t_speech_config(
-                    self._api_client, getv(config, ['speech_config'])
-                ),
-                to_object,
-            )
-        }
-    if getv(config, ['temperature']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['temperature'] = getv(
-            config, ['temperature']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'temperature': getv(config, ['temperature'])
-        }
-    if getv(config, ['top_p']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topP'] = getv(config, ['top_p'])
-      else:
-        to_object['generationConfig'] = {'topP': getv(config, ['top_p'])}
-    if getv(config, ['top_k']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topK'] = getv(config, ['top_k'])
-      else:
-        to_object['generationConfig'] = {'topK': getv(config, ['top_k'])}
-    if getv(config, ['max_output_tokens']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['maxOutputTokens'] = getv(
-            config, ['max_output_tokens']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'maxOutputTokens': getv(config, ['max_output_tokens'])
-        }
-    if getv(config, ['seed']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['seed'] = getv(config, ['seed'])
-      else:
-        to_object['generationConfig'] = {'seed': getv(config, ['seed'])}
-    if getv(config, ['system_instruction']) is not None:
-      setv(
-          to_object,
-          ['systemInstruction'],
-          _Content_to_vertex(
-              self._api_client,
-              t.t_content(
-                  self._api_client, getv(config, ['system_instruction'])
-              ),
-              to_object,
-          ),
-      )
-    if getv(config, ['tools']) is not None:
-      setv(
-          to_object,
-          ['tools'],
-          [
-              _Tool_to_vertex(
-                  self._api_client, t.t_tool(self._api_client, item), to_object
-              )
-              for item in t.t_tools(self._api_client, getv(config, ['tools']))
-          ],
-      )
-    if getv(config, ['input_audio_transcription']) is not None:
-      setv(
-          to_object,
-          ['inputAudioTranscription'],
-          _AudioTranscriptionConfig_to_vertex(
-              self._api_client,
-              getv(config, ['input_audio_transcription']),
-          ),
-      )
-    if getv(config, ['output_audio_transcription']) is not None:
-      setv(
-          to_object,
-          ['outputAudioTranscription'],
-          _AudioTranscriptionConfig_to_vertex(
-              self._api_client,
-              getv(config, ['output_audio_transcription']),
-          ),
-      )
+        if speech_config_dict:
+          setup['speech_config'] = speech_config_dict
 
-    return_value = {'setup': {'model': model}}
-    return_value['setup'].update(to_object)
-    return return_value
+      if config.tools:
+        setup['tools'] = [
+            _Tool_to_vertex(api_client=self._api_client, from_object=tool)
+            for tool in t.t_tools(
+                api_client=self._api_client, from_object=config.tools
+            )
+        ]
+      # Add tool_config if present
+      if config.tool_config:
+        tool_config_dict = _ToolConfig_to_vertex(
+            api_client=self._api_client, from_object=config.tool_config
+        )
+        if tool_config_dict:
+          setup['tool_config'] = tool_config_dict
+      if config.input_audio_transcription:
+        input_audio_transcription_dict = _AudioTranscriptionConfig_to_vertex(
+            api_client=self._api_client,
+            from_object=config.input_audio_transcription,
+        )
+        if input_audio_transcription_dict:
+          setup['input_audio_transcription'] = input_audio_transcription_dict
+      if config.output_audio_transcription:
+        output_audio_transcription_dict = _AudioTranscriptionConfig_to_vertex(
+            api_client=self._api_client,
+            from_object=config.output_audio_transcription,
+        )
+        if output_audio_transcription_dict:
+          setup['output_audio_transcription'] = output_audio_transcription_dict
+
+    return setup
 
   @experimental_warning(
       'The live API is experimental and may change in future versions.',
