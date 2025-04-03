@@ -658,6 +658,14 @@ class Files(_api_module.BaseModule):
     http_options: types.HttpOptions
     if config_model and config_model.http_options:
       http_options = config_model.http_options
+      http_options.api_version = ''
+      http_options.headers = {
+          'Content-Type': 'application/json',
+          'X-Goog-Upload-Protocol': 'resumable',
+          'X-Goog-Upload-Command': 'start',
+          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+      }
     else:
       http_options = types.HttpOptions(
           api_version='',
@@ -685,11 +693,11 @@ class Files(_api_module.BaseModule):
 
     if isinstance(file, io.IOBase):
       return_file = self._api_client.upload_file(
-          file, upload_url, file_obj.size_bytes
+          file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
       return_file = self._api_client.upload_file(
-          fs_path, upload_url, file_obj.size_bytes
+          fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
 
     return types.File._from_response(
@@ -778,7 +786,7 @@ class Files(_api_module.BaseModule):
 
     data = self._api_client.download_file(
         path,
-        http_options,
+        http_options=http_options,
     )
 
     if isinstance(file, types.Video):
@@ -1122,6 +1130,14 @@ class AsyncFiles(_api_module.BaseModule):
     http_options: types.HttpOptions
     if config_model and config_model.http_options:
       http_options = config_model.http_options
+      http_options.api_version = ''
+      http_options.headers = {
+          'Content-Type': 'application/json',
+          'X-Goog-Upload-Protocol': 'resumable',
+          'X-Goog-Upload-Command': 'start',
+          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+      }
     else:
       http_options = types.HttpOptions(
           api_version='',
@@ -1148,11 +1164,11 @@ class AsyncFiles(_api_module.BaseModule):
 
     if isinstance(file, io.IOBase):
       return_file = await self._api_client.async_upload_file(
-          file, upload_url, file_obj.size_bytes
+          file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
       return_file = await self._api_client.async_upload_file(
-          fs_path, upload_url, file_obj.size_bytes
+          fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
 
     return types.File._from_response(
@@ -1231,7 +1247,7 @@ class AsyncFiles(_api_module.BaseModule):
 
     data = await self._api_client.async_download_file(
         path,
-        http_options,
+        http_options=http_options,
     )
 
     return data

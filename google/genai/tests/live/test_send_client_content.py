@@ -34,7 +34,6 @@ IMAGE_FILE_PATH = os.path.abspath(
 image = PIL.Image.open(IMAGE_FILE_PATH)
 
 
-@pytest.fixture
 def mock_api_client(vertexai=False):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
@@ -57,7 +56,7 @@ def mock_websocket():
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_content_dict(mock_api_client, mock_websocket, vertexai):
+async def test_send_content_dict(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -72,7 +71,7 @@ async def test_send_content_dict(mock_api_client, mock_websocket, vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_content_dict_list(mock_api_client, mock_websocket, vertexai):
+async def test_send_content_dict_list(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -87,7 +86,7 @@ async def test_send_content_dict_list(mock_api_client, mock_websocket, vertexai)
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_content_content(mock_api_client, mock_websocket, vertexai):
+async def test_send_content_content(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -104,7 +103,7 @@ async def test_send_content_content(mock_api_client, mock_websocket, vertexai):
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_send_client_content_turn_complete_false(
-    mock_api_client, mock_websocket, vertexai
+    mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -120,7 +119,7 @@ async def test_send_client_content_turn_complete_false(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_send_client_content_empty(
-    mock_api_client, mock_websocket, vertexai
+    mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket

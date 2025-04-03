@@ -33,8 +33,6 @@ IMAGE_FILE_PATH = os.path.abspath(
 )
 image = PIL.Image.open(IMAGE_FILE_PATH)
 
-
-@pytest.fixture
 def mock_api_client(vertexai=False):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
@@ -57,7 +55,7 @@ def mock_websocket():
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_blob_dict(mock_api_client, mock_websocket, vertexai):
+async def test_send_blob_dict(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -76,7 +74,7 @@ async def test_send_blob_dict(mock_api_client, mock_websocket, vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_blob(mock_api_client, mock_websocket, vertexai):
+async def test_send_blob(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -95,7 +93,7 @@ async def test_send_blob(mock_api_client, mock_websocket, vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_image(mock_api_client, mock_websocket, vertexai):
+async def test_send_image(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )

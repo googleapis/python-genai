@@ -19,18 +19,20 @@
 The BaseApiClient is intended to be a private module and is subject to change.
 """
 
-import anyio
 import asyncio
 import copy
 from dataclasses import dataclass
 import datetime
+import http
 import io
 import json
 import logging
 import os
 import sys
+import time
 from typing import Any, AsyncIterator, Optional, Tuple, Union
 from urllib.parse import urlparse, urlunparse
+import anyio
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
@@ -126,6 +128,19 @@ def _load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
 def _refresh_auth(credentials: Credentials) -> Credentials:
   credentials.refresh(Request())
   return credentials
+
+
+def _get_timeout_in_seconds(
+    timeout: Optional[Union[float, int]],
+) -> Optional[float]:
+  """Converts the timeout to seconds."""
+  if timeout:
+    # HttpOptions.timeout is in milliseconds. But httpx.Client.request()
+    # expects seconds.
+    timeout_in_seconds = timeout / 1000.0
+  else:
+    timeout_in_seconds = None
+  return timeout_in_seconds
 
 
 @dataclass
@@ -520,15 +535,7 @@ class BaseApiClient:
         versioned_path,
     )
 
-    timeout_in_seconds: Optional[Union[float, int]] = (
-        patched_http_options.timeout
-    )
-    if timeout_in_seconds:
-      # HttpOptions.timeout is in milliseconds. But httpx.Client.request()
-      # expects seconds.
-      timeout_in_seconds = timeout_in_seconds / 1000.0
-    else:
-      timeout_in_seconds = None
+    timeout_in_seconds = _get_timeout_in_seconds(patched_http_options.timeout)
 
     if patched_http_options.headers is None:
       raise ValueError('Request headers must be set.')
@@ -712,7 +719,12 @@ class BaseApiClient:
     return async_generator()
 
   def upload_file(
-      self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int
+      self,
+      file_path: Union[str, io.IOBase],
+      upload_url: str,
+      upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file to the given URL.
 
@@ -723,18 +735,28 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalize request.
     """
     if isinstance(file_path, io.IOBase):
-      return self._upload_fd(file_path, upload_url, upload_size)
+      return self._upload_fd(
+          file_path, upload_url, upload_size, http_options=http_options
+      )
     else:
       with open(file_path, 'rb') as file:
-        return self._upload_fd(file, upload_url, upload_size)
+        return self._upload_fd(
+            file, upload_url, upload_size, http_options=http_options
+        )
 
   def _upload_fd(
-      self, file: io.IOBase, upload_url: str, upload_size: int
+      self,
+      file: io.IOBase,
+      upload_url: str,
+      upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file to the given URL.
 
@@ -743,6 +765,7 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalize request.
@@ -758,6 +781,20 @@ class BaseApiClient:
       # If last chunk, finalize the upload.
       if chunk_size + offset >= upload_size:
         upload_command += ', finalize'
+      http_options = http_options if http_options else self._http_options
+      timeout = (
+          http_options.get('timeout')
+          if isinstance(http_options, dict)
+          else http_options.timeout
+      )
+      if timeout is None:
+        # Per request timeout is not configured. Check the global timeout.
+        timeout = (
+            self._http_options.timeout
+            if isinstance(self._http_options, dict)
+            else self._http_options.timeout
+        )
+      timeout_in_seconds = _get_timeout_in_seconds(timeout)
       response = self._httpx_client.request(
           method='POST',
           url=upload_url,
@@ -767,6 +804,7 @@ class BaseApiClient:
               'Content-Length': str(chunk_size),
           },
           content=file_chunk,
+          timeout=timeout_in_seconds,
       )
       offset += chunk_size
       if response.headers['x-goog-upload-status'] != 'active':
@@ -783,7 +821,12 @@ class BaseApiClient:
       )
     return HttpResponse(response.headers, response_stream=[response.text])
 
-  def download_file(self, path: str, http_options):
+  def download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ):
     """Downloads the file data.
 
     Args:
@@ -822,6 +865,8 @@ class BaseApiClient:
       file_path: Union[str, io.IOBase],
       upload_url: str,
       upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file asynchronously to the given URL.
 
@@ -831,23 +876,30 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalize request.
     """
     if isinstance(file_path, io.IOBase):
-      return await self._async_upload_fd(file_path, upload_url, upload_size)
+      return await self._async_upload_fd(
+          file_path, upload_url, upload_size, http_options=http_options
+      )
     else:
       file = anyio.Path(file_path)
       fd = await file.open('rb')
       async with fd:
-        return await self._async_upload_fd(fd, upload_url, upload_size)
+        return await self._async_upload_fd(
+            fd, upload_url, upload_size, http_options=http_options
+        )
 
   async def _async_upload_fd(
       self,
       file: Union[io.IOBase, anyio.AsyncFile],
       upload_url: str,
       upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file asynchronously to the given URL.
 
@@ -856,6 +908,7 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalized request.
@@ -874,6 +927,20 @@ class BaseApiClient:
       # If last chunk, finalize the upload.
       if chunk_size + offset >= upload_size:
         upload_command += ', finalize'
+      http_options = http_options if http_options else self._http_options
+      timeout = (
+          http_options.get('timeout')
+          if isinstance(http_options, dict)
+          else http_options.timeout
+      )
+      if timeout is None:
+        # Per request timeout is not configured. Check the global timeout.
+        timeout = (
+            self._http_options.timeout
+            if isinstance(self._http_options, dict)
+            else self._http_options.timeout
+        )
+      timeout_in_seconds = _get_timeout_in_seconds(timeout)
       response = await self._async_httpx_client.request(
           method='POST',
           url=upload_url,
@@ -883,6 +950,7 @@ class BaseApiClient:
               'X-Goog-Upload-Offset': str(offset),
               'Content-Length': str(chunk_size),
           },
+          timeout=timeout_in_seconds,
       )
       offset += chunk_size
       if response.headers.get('x-goog-upload-status') != 'active':
@@ -899,7 +967,12 @@ class BaseApiClient:
       )
     return HttpResponse(response.headers, response_stream=[response.text])
 
-  async def async_download_file(self, path: str, http_options):
+  async def async_download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ):
     """Downloads the file data.
 
     Args:

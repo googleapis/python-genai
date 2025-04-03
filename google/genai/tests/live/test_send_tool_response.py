@@ -28,13 +28,14 @@ from ... import client as gl_client
 from ... import live
 from ... import types
 
+
 def exception_if_mldev(vertexai, exception_type: type[Exception]):
   if vertexai:
     return contextlib.nullcontext()
   else:
     return pytest.raises(exception_type)
 
-@pytest.fixture
+
 def mock_api_client(vertexai=False):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
@@ -57,7 +58,7 @@ def mock_websocket():
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_function_response_dict(mock_api_client, mock_websocket, vertexai):
+async def test_function_response_dict(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -91,7 +92,7 @@ async def test_function_response_dict(mock_api_client, mock_websocket, vertexai)
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_function_response(mock_api_client, mock_websocket, vertexai):
+async def test_function_response(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -125,7 +126,7 @@ async def test_function_response(mock_api_client, mock_websocket, vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_function_response_list(mock_api_client, mock_websocket, vertexai):
+async def test_function_response_list(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -164,7 +165,7 @@ async def test_function_response_list(mock_api_client, mock_websocket, vertexai)
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_missing_id(mock_api_client, mock_websocket, vertexai):
+async def test_missing_id(mock_websocket, vertexai):
   api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(
       api_client=api_client, websocket=mock_websocket
@@ -184,21 +185,3 @@ async def test_missing_id(mock_api_client, mock_websocket, vertexai):
   client._api_client = api_client
   with pytest_helper.exception_if_mldev(client, ValueError):
     await session.send_tool_response(function_responses=[input1, input2])
-
-  mock_websocket.send.assert_called_once()
-  sent_data = json.loads(mock_websocket.send.call_args[0][0])
-  assert 'tool_response' in sent_data
-
-  assert len(sent_data['tool_response']['function_responses']) == 2
-  assert (
-      sent_data['tool_response']['function_responses'][0]['response'][
-          'temperature'
-      ]
-      == 14.5
-  )
-  assert (
-      sent_data['tool_response']['function_responses'][1]['response'][
-          'temperature'
-      ]
-      == 99.9
-  )

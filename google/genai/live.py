@@ -465,7 +465,7 @@ class AsyncSession:
     try:
       raw_response = await self._ws.recv(decode=False)
     except TypeError:
-      raw_response = await self._ws.recv()
+      raw_response = await self._ws.recv()  # type: ignore[assignment]
     if raw_response:
       try:
         response = json.loads(raw_response)
