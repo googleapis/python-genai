@@ -2387,8 +2387,10 @@ def test_function_with_option_vertex(monkeypatch):
 
 
 def test_case_insensitive_enum():
+  """Tests that Type enum handles case insensitivity."""
   assert types.Type('STRING') == types.Type.STRING
   assert types.Type('string') == types.Type.STRING
+  assert types.Type('NuLl') == types.Type.NULL
 
 
 def test_case_insensitive_enum_with_pydantic_model():
@@ -2400,11 +2402,27 @@ def test_case_insensitive_enum_with_pydantic_model():
 
 
 def test_unknown_enum_value():
+  """Tests behavior with invalid type values."""
   with pytest.warns(Warning, match='is not a valid'):
     enum_instance = types.Type('float')
     assert enum_instance.name == 'float'
     assert enum_instance.value == 'float'
 
+  with pytest.raises(ValueError):
+    types.Type('invalid type')
+
+def test_enum_with_complex_type():
+  """Tests enum with non-string values."""
+  schema = types.Schema(
+    type='OBJECT',
+    properties={
+      'status': {
+        'type': 'INTEGER',
+        'enum': [1, 2, 3]
+      }
+    }
+  )
+  assert schema.properties['status'].enum == [1, 2, 3]
 
 def test_unknown_enum_value_in_nested_dict():
   schema = types.SafetyRating._from_response(
@@ -2413,9 +2431,208 @@ def test_unknown_enum_value_in_nested_dict():
   assert schema.category.name == 'NEW_CATEGORY'
   assert schema.category.value == 'NEW_CATEGORY'
 
+def test_nested_property_conversion():
+  schema = types.Schema(
+    type='OBJECT',
+    properties={
+      'user': {
+        'type': 'OBJECT',
+        'properties': {
+          'age': {'type': 'INTEGER', 'nullable': True}
+        }
+      }
+    }
+  )
+  assert schema.properties['user'].properties['age'].type == ['integer', 'null']
 
-# Tests that TypedDict types from types.py are compatible with pydantic
-# pydantic requires TypedDict from typing_extensions for Python <3.12
+def test_array_conversion():
+  schema = types.Schema(
+    type='ARRAY',
+    items={
+      'type': 'INTEGER',
+      'format': 'int32'
+    }
+  )
+  assert schema.items.type == 'integer'
+  assert schema.items.format == 'int32'
+
+def test_nullable_conversion():
+  """Tests nullable field conversion to type array."""
+  schema = types.Schema(type='STRING', nullable=True)
+  assert schema.type == ['string', 'null']
+
+def test_int_conversion():
+  """Tests int32/int64 format conversion to min/max."""
+  schema = types.Schema(type='INTEGER', format='int32')
+  assert schema.minimum == -2147483648
+  assert schema.maximum == 2147483647
+  assert schema.type == 'integer'
+  assert 'format' not in schema.model_dump()
+
+def test_anyof_with_nullable():
+  schema = types.Schema(
+    anyOf=[{
+      'type': 'STRING',
+      'nullable': True
+    }]
+  )
+  assert {'type': 'null'} in schema.anyOf
+  assert {'type': 'string'} in schema.anyOf
+
+def test_nested_anyof_allof():
+  """Tests nested anyOf/allOf with multiple levels."""
+  schema = types.Schema(
+    anyOf=[
+      {
+        "allOf": [
+                  {"type": "STRING", "maxLength": 10},
+                  {"type": "STRING", "minLength": 5}
+        ]
+      },
+      {
+        "type": "INTEGER",
+        "minimum": 1,
+        "maximum": 100
+      }
+    ]
+  )
+  assert len(schema.anyOf) == 2
+  assert len(schema.anyOf[0].allOf) == 2
+
+def test_nested_combiners():
+  schema = types.Schema(
+    allOf=[
+      {
+        'anyOf': [
+          {
+            'type': 'INTEGER',
+            'format': 'int32'
+          },
+          {
+            'type': 'INTEGER',
+            'format': 'int64' 
+          }
+        ]
+      },
+      {
+        'type': 'STRING',
+        'nullable': True
+      }
+    ]
+  )
+  assert schema.allOf[0].anyOf[0].minimum == -2147483648
+  assert schema.allOf[0].anyOf[1].minimum == -9223372036854775808
+  assert schema.allOf[0].anyOf[0].maximum == 2147483647
+  assert schema.allOf[0].anyOf[1].maximum == 9223372036854775807
+  assert schema.allOf[1].type == 'string'
+  assert schema.allOf[1].nullable
+
+def test_recursive_schema_definition():
+  """Tests recursive schema references itself."""
+  schema = types.Schema({
+    "type": 'OBJECT',
+    "properties": {
+      "name": {
+        "type": "STRING"
+      },
+      "children": {
+        "type": "ARRAY",
+        "items": {
+          "$ref": "#" # Referencing the same schema
+        }
+      }
+    }
+  })
+  
+  with pytest.raises(ValueError):
+    types.Schema(**schema)
+
+
+def test_invalid_types():
+  with pytest.raises(ValueError, match='Invalid type value'):
+    types.Schema(type=['INVALID_TYPE'])
+  with pytest.raises(ValueError, match='Invalid type value'):
+    types.Schema(type=['string', 'null', 'INVALID_TYPE'])
+
+def test_empty_type_array():
+  with pytest.raises(ValueError, match='type array cannot be empty'):
+    types.Schema(type=[])
+
+def test_invalid_type_combinations():
+  with pytest.raises(ValueError, match='May only combine with one other type'):
+    types.Schema(type=['INTEGER', 'NULL', 'STRING'])
+
+def test_legacy_type_unspecified():
+  """Tests TYPE_UNSPECIFIED conversion."""
+  with pytest.warns(Warning, match='Legacy type unspecified'):
+    schema = types.Schema(type='TYPE_UNSPECIFIED')
+    assert schema.type is None
+
+def test_legacy_type_unspecified_with_pydantic():
+  with pytest.warns(Warning, match='Legacy type unspecified'):
+    class MyModel(pydantic.BaseModel):
+      config: types.GenerationConfigDict
+
+    model = MyModel(config=types.GenerationConfigDict(type='TYPE_UNSPECIFIED'))
+    assert model.config.type is None
+
+def test_uppercase_property_names():
+  """Tests normalization of uppercase property names."""
+  schema = types.Schema(
+    PROPERTIES={
+      'NAME': {
+        'type': 'STRING'
+      }
+    }
+  )
+  assert 'properties' in schema.model_dump()
+  assert 'name' in schema.properties
+  assert schema.properties['name'].type == 'string'
+
+def test_full_schema_conversion():
+  """Tests complete schema conversion from legacy(OPENAPI) to modern(JSON Schema) format."""
+  legacy_schema = {
+    'type': 'OBJECT',
+    'properties': {
+      'user': {
+        'type': 'OBJECT',
+        'properties': {
+          'name': {'type': 'STRING'},
+          'age': {'type': 'INTEGER', 'format': 'int32'}
+        }
+      }
+    }
+  }
+
+  schema = types.Schema(**legacy_schema)
+  assert schema.type == 'object'
+  assert schema.properties['user'].type == 'object'
+  assert schema.properties['user'].properties['name'].type == 'string'
+  assert schema.properties['user'].properties['age'].type == 'integer'
+  assert schema.properties['user'].properties['age'].format == 'int32'
+  assert schema.properties['user'].properties['age'].minimum == -2147483648
+  assert schema.properties['user'].properties['age'].maximum == 2147483647
+  
+def test_function_with_converted_schema():
+  """Tests function declaration with converted schema types."""
+  def sample_function(a: int, b: str=None) -> bool:
+    return True
+  
+  expected_schema = types.FunctionDeclaration(
+    name='sample_function',
+    properties={
+      'a': types.Schema(type='integer'),
+      'b': types.Schema(type=['string', 'null'])
+    },
+    required=['a'],
+    
+    return_type=types.Schema(type='boolean'),
+    description='Sample function to test schema conversion'
+  )
+  
+  actual_schema = types.FunctionDeclaration.from_callable(sample_function)
+  assert actual_schema.model_dump_json(exclude_none=True) == expected_schema.model_dump_json(exclude_none=True)
+
 def test_typed_dict_pydantic_field():
   from pydantic import BaseModel
 

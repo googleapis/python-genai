@@ -25,7 +25,7 @@ import types as builtin_types
 import typing
 from typing import Any, Callable, Literal, Optional, Union, _UnionGenericAlias  # type: ignore
 import pydantic
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 from typing_extensions import TypedDict
 from . import _common
 
@@ -76,16 +76,28 @@ class Language(_common.CaseInSensitiveEnum):
 
 
 class Type(_common.CaseInSensitiveEnum):
-  """Optional. The type of the data."""
+  """JSON Schema 2020-12 types"""
+  NULL = 'null'
+  BOOLEAN = 'boolean'
+  OBJECT = 'object'
+  ARRAY = 'array'
+  NUMBER = 'number'
+  INTEGER = 'integer'  # Separate from number per JSON Schema
+  STRING = 'string'
 
-  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
-  STRING = 'STRING'
-  NUMBER = 'NUMBER'
-  INTEGER = 'INTEGER'
-  BOOLEAN = 'BOOLEAN'
-  ARRAY = 'ARRAY'
-  OBJECT = 'OBJECT'
-
+  @classmethod
+  def _missing_(cls, value):
+    """Handle case-insensitive and legacy enum values"""
+    if isinstance(value, str):
+      # normalize to lowercase
+      value_lower = value.lower()
+      # check for case-insensitive match
+      for member in cls:
+        if value_lower == member.value:
+          logger.warning("Using deprecated enum value: %s. Use %s instead.", value, member.value)
+          return member
+        
+    raise ValueError(f"Invalid enum value: {value}")
 
 class HarmCategory(_common.CaseInSensitiveEnum):
   """Required. Harm category."""
@@ -854,6 +866,7 @@ class Schema(_common.BaseModel):
   )
   any_of: Optional[list['Schema']] = Field(
       default=None,
+      alias="anyOf",
       description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
   )
   description: Optional[str] = Field(
@@ -866,6 +879,7 @@ class Schema(_common.BaseModel):
   format: Optional[str] = Field(
       default=None,
       description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
+      examples=["int32", "date-time"]
   )
   items: Optional['Schema'] = Field(
       default=None,
@@ -889,7 +903,9 @@ class Schema(_common.BaseModel):
   )
   nullable: Optional[bool] = Field(
       default=None,
-      description="""Optional. Indicates if the value may be null.""",
+      description="""Deprecated. Use type arrays instead. Optional. Indicates if the value may be null.""",
+      alias="x-nullable", # legacy OpenAPI extension
+      deprecated=True
   )
   properties: Optional[dict[str, 'Schema']] = Field(
       default=None,
@@ -903,11 +919,243 @@ class Schema(_common.BaseModel):
       default=None,
       description="""Optional. Required properties of Type.OBJECT.""",
   )
-  type: Optional[Type] = Field(
-      default=None, description="""Optional. The type of the data."""
+  type: Optional[Union[Type, list[Type]]] = Field(
+      default=None,
+      description="""Optional. The type of the data.""",
   )
 
+  # Core identifiers
+  schema_: Optional[str] = Field(
+    default=None,
+    alias="$schema",
+    description="JSON Schema meta-schema identifier (e.g., draft-07)",
+    examples=["https://json-schema.org/draft/2020-12/schema"]
+  )
+  
+  id_: Optional[str] = Field(
+    default=None,
+    alias="$id",
+    description="Unique schema identifier URI",
+    examples=["https://example.com/schemas/user"]
+  )
+  
+  ref: Optional[str] = Field(
+    default=None,
+    alias="$ref",
+    description="Reference to another schema",
+    examples=["#/definitions/address"]
+  )
+  
+  # Schema composition
+  all_of: Optional[list["Schema"]] = Field(
+      default=None,
+      alias="allOf",
+      description="Value must validate against ALL subschemas"
+  )
+  
+  one_of: Optional[list["Schema"]] = Field(
+      default=None,
+      alias="oneOf",
+      description="Value must validate against EXACTLY ONE subschema"
+  )
+  
+  not_: Optional["Schema"] = Field(
+      default=None,
+      alias="not",
+      description="Value must NOT validate against this schema"
+  )
+  
+  # Vocabulary additions
+  const: Optional[Any] = Field(
+      default=None,
+      description="Value must equal this exact value",
+      examples=[42, "fixed-value"]
+  )
+  
+  multiple_of: Optional[float] = Field(
+      default=None,
+      alias="multipleOf",
+      description="Number must be a multiple of this value",
+      examples=[5, 0.1]
+  )
+  
+  exclusive_maximum: Optional[float] = Field(
+      default=None,
+      alias="exclusiveMaximum",
+      description="Number must be LESS than this (Draft 2020-12+)",
+      examples=[100]
+  )
+  
+  exclusive_minimum: Optional[float] = Field(
+      default=None,
+      alias="exclusiveMinimum",
+      description="Number must be GREATER than this (Draft 2020-12+)",
+      examples=[0]
+  )
+  
+  definitions: Optional[dict[str, "Schema"]] = Field(
+    default=None,
+    description="Reusable schema components (Draft-07 style)",
+    examples=[{"address": {"type": "object", "properties": {}}}]
+  )
+  
+  @field_validator('type')
+  def validate_type(cls, v):
+    if v == Type.NULL:
+      raise ValueError("Use ['null'] in type array instead of standalone null type")
+    return v
+  
+  @field_validator('type', mode='before')
+  def validate_type_enum(cls, v):
+    if v is None:
+      return None
+    
+    if isinstance(v, list):
+      return [cls.validate_type_enum(item) for item in v]
+    
+    if isinstance(v, str):
+      try:
+        return Type(v)
+      except ValueError:
+        raise ValueError(f"Invalid enum value: {v}")
+    
+    return v
+  
+  @model_validator(mode='after')
+  def check_type_specific_fields(cls, values):
+    type_ = getattr(values, "type")
+    
+    # List of fields forbidden for specific types
+    invalid_fields = {
+      Type.BOOLEAN: ['pattern', 'format', 'min_length', 'max_length'],
+      Type.NUMBER: ['pattern', 'min_length', 'max_length'],
+      Type.INTEGER: ['pattern', 'min_length', 'max_length'],
+      Type.STRING: ['multiple_of', 'exclusive_minimum', 'exclusive_maximum']
+    }.get(type_, [])
+    
+    for field in invalid_fields:
+      if getattr(values, field):
+        raise ValueError(f"Field '{field}' not allowed for type {type_}")
+    
+    return values
+  @field_validator('format', mode='before')
+  def validate_format(cls, v, values):
+    if 'type' in values:
+      type_ = values['type']
+      if type_ == Type.STRING:
+        valid_formats = {
+          'date-time', 'time', 'date', 'duration', 'email',
+          'idn-email', 'hostname', 'idn-hostname', 'ipv4',
+          'ipv6', 'uri', 'uri-reference', 'iri', 'iri-reference'
+        }
+      elif type_ == Type.NUMBER:
+        valid_formats = {'float', 'double'}
+      elif type_ == Type.INTEGER:
+        valid_formats = {'int32', 'int64'}
+      else:
+        valid_formats = set()
+      
+      if v and v not in valid_formats:
+        raise ValueError(f"Invalid format '{v}' for type {type_}")
+    return v
 
+  @model_validator(mode='after')
+  def validate_keyword_combinations(cls, values):
+    type_ = values.type
+    
+    # Const validation
+    if "const" in values:
+      if type_ not in [Type.STRING, Type.NUMBER, Type.INTEGER, Type.BOOLEAN]:
+        raise ValueError("'const' only allowed for primitive types")
+    
+    # Exclusive bounds validation
+    if getattr(values, "exclusive_maximum") is not None:
+      if "maximum" in values:
+        raise ValueError("Use either 'maximum' or 'exclusive_maximum'")
+      if type_ not in [Type.NUMBER, Type.INTEGER]:
+        raise ValueError("exclusive_maximum requires numeric type")
+            
+    return values
+
+  @classmethod
+  def _convert_int_format(cls, values: dict) -> None:
+    format_map = {
+      "int32": (-2_147_483_648, 2_147_483_647),  # 32-bit signed bounds
+      "int64": (-9_223_372_036_854_775_808, 9_223_372_036_854_775_807)  # 64-bit
+    }
+      
+    if values.format in format_map:
+      min_val, max_val = format_map[values.format]
+      values.update({"minimum": min_val, "maximum": max_val})
+      del values["format"]
+
+  @model_validator(mode='before')
+  def handle_deprecated_fields(cls, values: dict) -> dict:
+    print("values", values)
+    
+    # convert nullable to type array
+    if "nullable" in values and values['nullable']:
+      values["type"] = [values["type"]] if "type" in values else []
+      values["type"].append(Type.NULL)
+      del values["nullable"]
+    
+    if "type" in values and values["type"] == "TYPE_UNSPECIFIED":
+      values["type"] = None
+    
+    # Convert OpenAPI integer formats to min/max bounds
+    if "format" in values and values["format"] in ("int32", "int64"):
+      cls._convert_int_format(values)
+
+    # Recursively handle nested schemas
+    if "properties" in values and isinstance(values["properties"], dict):
+      for prop, schema in values["properties"].items():
+        if isinstance(schema, dict):
+          values["properties"][prop] = cls(**schema)
+        elif isinstance(schema, list):
+          values["properties"][prop] = [cls(**item) if isinstance(item, dict) else item for item in schema]
+    
+    # Recursively handle items in arrays
+    if "items" in values and isinstance(values["items"], dict):
+      values["items"] = cls(**values["items"])
+
+    return values
+
+  @classmethod
+  def _modernize_subschema(cls, subschema: Union[dict, 'Schema']) -> 'Schema':
+    """Convert a single subschema to modern format"""
+    if isinstance(subschema, dict):
+      return cls(**subschema)
+    return subschema  # Already a Schema instance
+  
+  @model_validator(mode='before')
+  def handle_anyof_allof_oneof(cls, values: dict) -> dict:
+    """Handle anyOf, allOf, and oneOf in nested structures"""
+    if "anyOf" in values:
+      values["anyOf"] = [cls._modernize_subschema(sub) for sub in values["anyOf"]]
+    if "allOf" in values:
+      values["allOf"] = [cls._modernize_subschema(sub) for sub in values["allOf"]]
+    if "oneOf" in values:
+      values["oneOf"] = [cls._modernize_subschema(sub) for sub in values["oneOf"]]
+    return values
+
+  @model_validator(mode='before')
+  def merge_nullables_with_combinations(cls, values: dict) -> dict:
+    """Merge nullable with combinations"""
+    null_schema = {"type": "null"}
+    if "anyOf" in values:
+      values["anyOf"].append(null_schema)
+    if "oneOf" in values:
+      values["oneOf"].append(null_schema)
+    if "allOf" in values:
+      values["allOf"].append(null_schema)
+    return values
+
+  @field_validator("any_of", "one_of", "all_of")
+  def validate_non_empty(cls, v):
+    if v is not None and len(v) < 1:
+      raise ValueError("anyOf/allOf/oneOf must contain at least one schema")
+    return v
+  
 class SchemaDict(TypedDict, total=False):
   """Schema that defines the format of input and output data.
 
