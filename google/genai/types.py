@@ -1621,6 +1621,11 @@ class ThinkingConfig(_common.BaseModel):
       description="""Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
       """,
   )
+  thinking_budget: Optional[int] = Field(
+      default=None,
+      description="""Indicates the thinking budget in tokens.
+      """,
+  )
 
 
 class ThinkingConfigDict(TypedDict, total=False):
@@ -1628,6 +1633,10 @@ class ThinkingConfigDict(TypedDict, total=False):
 
   include_thoughts: Optional[bool]
   """Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """
+
+  thinking_budget: Optional[int]
+  """Indicates the thinking budget in tokens.
       """
 
 
