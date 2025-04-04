@@ -8835,13 +8835,13 @@ class LiveServerContent(_common.BaseModel):
   input_transcription: Optional[Transcription] = Field(
       default=None,
       description="""Input transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn.""",
   )
   output_transcription: Optional[Transcription] = Field(
       default=None,
       description="""Output transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn.
       """,
   )
@@ -8875,12 +8875,12 @@ class LiveServerContentDict(TypedDict, total=False):
 
   input_transcription: Optional[TranscriptionDict]
   """Input transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn."""
 
   output_transcription: Optional[TranscriptionDict]
   """Output transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn.
       """
 
@@ -9040,6 +9040,9 @@ class LiveClientSetup(_common.BaseModel):
       external systems to perform an action, or set of actions, outside of
       knowledge and scope of the model.""",
   )
+  tool_config: Optional[ToolConfigOrDict] = Field(
+      default=None, description="""Configuration for the tools."""
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -9067,6 +9070,9 @@ class LiveClientSetupDict(TypedDict, total=False):
       A `Tool` is a piece of code that enables the system to interact with
       external systems to perform an action, or set of actions, outside of
       knowledge and scope of the model."""
+
+  tool_config: Optional[ToolConfigDict]
+  """Configuration for the tools."""
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
