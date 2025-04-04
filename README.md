@@ -7,7 +7,7 @@
 
 -----
 
-Google Gen AI Python SDK provides an interface for developers to integrate Google's generative models into their Python applications. It supports the [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview) APIs.
+Google Gen AI Python SDK provides an interface for developers to integrate Google's generative models into their Python applications. It supports the [Gemini Developer API](https://ai.google.dev/gemini-api/docs), [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview) APIs, and [ModelGarden](https://cloud.google.com/vertex-ai/docs/model-garden/get-started) models.
 
 ## Installation
 
@@ -25,7 +25,7 @@ from google.genai import types
 ## Create a client
 
 Please run one of the following code blocks to create a client for
-different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)).
+different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs), [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview), or [ModelGarden](https://cloud.google.com/vertex-ai/docs/model-garden/get-started)).
 
 ```python
 # Only run this block for Gemini Developer API
@@ -39,11 +39,18 @@ client = genai.Client(
 )
 ```
 
+```python
+# Only run this block for ModelGarden models
+client = genai.Client(
+    modelgarden=True, project='your-project-id', location='us-central1'
+)
+```
+
 **(Optional) Using environment variables:**
 
 You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you're using the Gemini
-Developer API or the Gemini API in Vertex AI.
+Developer API, the Gemini API in Vertex AI, or ModelGarden models.
 
 **Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
 
@@ -56,6 +63,15 @@ and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 ```bash
 export GOOGLE_GENAI_USE_VERTEXAI=true
+export GOOGLE_CLOUD_PROJECT='your-project-id'
+export GOOGLE_CLOUD_LOCATION='us-central1'
+```
+
+**ModelGarden models:** Set `GOOGLE_GENAI_USE_MODELGARDEN`, `GOOGLE_CLOUD_PROJECT`
+and `GOOGLE_CLOUD_LOCATION`, as shown below:
+
+```bash
+export GOOGLE_GENAI_USE_MODELGARDEN=true
 export GOOGLE_CLOUD_PROJECT='your-project-id'
 export GOOGLE_CLOUD_LOCATION='us-central1'
 ```

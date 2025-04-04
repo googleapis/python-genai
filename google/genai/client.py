@@ -110,12 +110,17 @@ class Client:
   `GOOGLE_GENAI_USE_VERTEXAI=true`, `GOOGLE_CLOUD_PROJECT` and
   `GOOGLE_CLOUD_LOCATION` environment variables.
 
+  ModelGarden users can provide `modelgarden=True` along with Vertex AI parameters
+  or by defining `GOOGLE_GENAI_USE_MODELGARDEN=true` as an environment variable.
+
   Attributes:
     api_key: The `API key <https://ai.google.dev/gemini-api/docs/api-key>`_ to
       use for authentication. Applies to the Gemini Developer API only.
     vertexai: Indicates whether the client should use the Vertex AI
       API endpoints. Defaults to False (uses Gemini Developer API endpoints).
       Applies to the Vertex AI API only.
+    modelgarden: Indicates whether the client should use ModelGarden models.
+      If True, vertexai is also set to True. Defaults to False.
     credentials: The credentials to use for authentication when calling the
       Vertex AI APIs. Credentials can be obtained from environment variables and
       default credentials. For more information, see
@@ -151,12 +156,23 @@ class Client:
     client = genai.Client(
         vertexai=True, project='my-project-id', location='us-central1'
     )
+    
+  Usage for ModelGarden models:
+  
+  .. code-block:: python
+  
+    from google import genai
+    
+    client = genai.Client(
+        modelgarden=True, project='my-project-id', location='us-central1'
+    )
   """
 
   def __init__(
       self,
       *,
       vertexai: Optional[bool] = None,
+      modelgarden: Optional[bool] = None,
       api_key: Optional[str] = None,
       credentials: Optional[google.auth.credentials.Credentials] = None,
       project: Optional[str] = None,
@@ -170,6 +186,8 @@ class Client:
        vertexai (bool): Indicates whether the client should use the Vertex AI
          API endpoints. Defaults to False (uses Gemini Developer API endpoints).
          Applies to the Vertex AI API only.
+       modelgarden (bool): Indicates whether the client should use ModelGarden models.
+         If True, vertexai is also set to True. Defaults to False.
        api_key (str): The `API key
          <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
          authentication. Applies to the Gemini Developer API only.
@@ -199,6 +217,7 @@ class Client:
 
     self._api_client = self._get_api_client(
         vertexai=vertexai,
+        modelgarden=modelgarden,
         api_key=api_key,
         credentials=credentials,
         project=project,
@@ -218,6 +237,7 @@ class Client:
   @staticmethod
   def _get_api_client(
       vertexai: Optional[bool] = None,
+      modelgarden: Optional[bool] = None,
       api_key: Optional[str] = None,
       credentials: Optional[google.auth.credentials.Credentials] = None,
       project: Optional[str] = None,
@@ -235,6 +255,7 @@ class Client:
           replay_id=debug_config.replay_id,  # type: ignore[arg-type]
           replays_directory=debug_config.replays_directory,
           vertexai=vertexai,  # type: ignore[arg-type]
+          modelgarden=modelgarden,  # type: ignore[arg-type]
           api_key=api_key,
           credentials=credentials,
           project=project,
@@ -244,6 +265,7 @@ class Client:
 
     return BaseApiClient(
         vertexai=vertexai,
+        modelgarden=modelgarden,
         api_key=api_key,
         credentials=credentials,
         project=project,
@@ -287,3 +309,8 @@ class Client:
   def vertexai(self) -> bool:
     """Returns whether the client is using the Vertex AI API."""
     return self._api_client.vertexai or False
+
+  @property
+  def modelgarden(self) -> bool:
+    """Returns whether the client is using the ModelGarden API."""
+    return getattr(self._api_client, 'modelgarden', False) or False
