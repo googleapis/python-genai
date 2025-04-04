@@ -9269,6 +9269,9 @@ AudioTranscriptionConfigOrDict = Union[
 class LiveConnectConfig(_common.BaseModel):
   """Session config for the API connection."""
 
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   generation_config: Optional[GenerationConfig] = Field(
       default=None,
       description="""The generation configuration for the session.""",
@@ -9349,6 +9352,9 @@ class LiveConnectConfig(_common.BaseModel):
 
 class LiveConnectConfigDict(TypedDict, total=False):
   """Session config for the API connection."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
 
   generation_config: Optional[GenerationConfigDict]
   """The generation configuration for the session."""
