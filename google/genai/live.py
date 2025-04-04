@@ -162,6 +162,16 @@ class AsyncSession:
         async for message in session.receive():
           print(message)
     """
+    warnings.warn(
+        # DO_NOT_SUBMIT: Confirm date
+        'The `session.send` method is deprecated and will be removed in May '
+        '2025.\n'
+        'Please use one of the more specific methods: `send_client_content`, '
+        '`send_realtime_input`, or '
+        '`send_tool_response` instead.',
+        DeprecationWarning,
+        stacklevel=2,
+    )
     client_message = self._parse_client_message(input, end_of_turn)
     await self._ws.send(json.dumps(client_message))
 
