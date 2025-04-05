@@ -1024,14 +1024,20 @@ class Schema(_common.BaseModel):
   @model_validator(mode='after')
   def check_type_specific_fields(cls, values):
     type_ = getattr(values, "type")
+    print("type_", type_)
     
+    if type_ is None:
+      return values
     # List of fields forbidden for specific types
-    invalid_fields = {
-      Type.BOOLEAN: ['pattern', 'format', 'min_length', 'max_length'],
-      Type.NUMBER: ['pattern', 'min_length', 'max_length'],
-      Type.INTEGER: ['pattern', 'min_length', 'max_length'],
-      Type.STRING: ['multiple_of', 'exclusive_minimum', 'exclusive_maximum']
-    }.get(type_, [])
+    invalid_fields = []
+    if Type.BOOLEAN in type_:
+      invalid_fields.extend(['pattern', 'format', 'min_length', 'max_length'])
+    if Type.NUMBER in type_:
+      invalid_fields.extend(['pattern', 'min_length', 'max_length'])
+    if Type.INTEGER in type_:
+      invalid_fields.extend(['pattern', 'min_length', 'max_length'])
+    if Type.STRING in type_:
+      invalid_fields.extend(['multiple_of', 'exclusive_minimum', 'exclusive_maximum'])
     
     for field in invalid_fields:
       if getattr(values, field):
@@ -1091,34 +1097,47 @@ class Schema(_common.BaseModel):
 
   @model_validator(mode='before')
   def handle_deprecated_fields(cls, values: dict) -> dict:
-    print("values", values)
-    
-    # convert nullable to type array
-    if "nullable" in values and values['nullable']:
-      values["type"] = [values["type"]] if "type" in values else []
-      values["type"].append(Type.NULL)
-      del values["nullable"]
-    
-    if "type" in values and values["type"] == "TYPE_UNSPECIFIED":
-      values["type"] = None
-    
-    # Convert OpenAPI integer formats to min/max bounds
-    if "format" in values and values["format"] in ("int32", "int64"):
-      cls._convert_int_format(values)
+    def recursive_apply(schema) -> dict:
+      # convert nullable to type array
+      if "nullable" in schema and schema['nullable']:
+        schema["type"] = [schema["type"]] if "type" in schema else []
+        schema["type"].append(Type.NULL)
+        del schema["nullable"]
+      
+      if "type" in schema and schema["type"] == "TYPE_UNSPECIFIED":
+        schema["type"] = None
+      
+      # Convert OpenAPI integer formats to min/max bounds
+      if "format" in schema and schema["format"] in ("int32", "int64"):
+        cls._convert_int_format(schema)
+      
+      props = None
+      if not isinstance(schema, dict):
+        props = schema.properties
+      elif "properties" in schema:
+        props = schema["properties"]
+      
+      # Recursively handle nested schemas
+      if props and isinstance(props, dict):
+        for prop, nested_schema in props.items():
+          if isinstance(schema, dict):
+            if isinstance(nested_schema, list):
+              schema["properties"][prop] = [recursive_apply(item) if isinstance(item, dict) else item for item in nested_schema]
+            else:
+              schema["properties"][prop] = recursive_apply(nested_schema)
+          else:
+            if isinstance(nested_schema, list):
+              schema.properties[prop] = [recursive_apply(item) if isinstance(item, dict) else item for item in nested_schema]
+            else:
+              schema.properties[prop] = recursive_apply(nested_schema)
+  
+      # Recursively handle items in arrays
+      if "items" in schema and isinstance(schema["items"], dict):
+        schema["items"] = recursive_apply(schema["items"])
 
-    # Recursively handle nested schemas
-    if "properties" in values and isinstance(values["properties"], dict):
-      for prop, schema in values["properties"].items():
-        if isinstance(schema, dict):
-          values["properties"][prop] = cls(**schema)
-        elif isinstance(schema, list):
-          values["properties"][prop] = [cls(**item) if isinstance(item, dict) else item for item in schema]
-    
-    # Recursively handle items in arrays
-    if "items" in values and isinstance(values["items"], dict):
-      values["items"] = cls(**values["items"])
+      return schema
 
-    return values
+    return recursive_apply(values)
 
   @classmethod
   def _modernize_subschema(cls, subschema: Union[dict, 'Schema']) -> 'Schema':

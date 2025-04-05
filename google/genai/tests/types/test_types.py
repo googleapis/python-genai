@@ -1321,10 +1321,10 @@ def test_pydantic_model_in_union_type():
 
 def test_pydantic_model_with_default_value():
   class MySimplePydanticModel(pydantic.BaseModel):
-    a_simple: Optional[int]
-    b_simple: Optional[str]
+    a_simple: typing.Optional[int] = 1
+    b_simple: typing.Optional[str] = 'a'
 
-  mySimplePydanticModel = MySimplePydanticModel(a_simple=1, b_simple='a')
+  mySimplePydanticModel = MySimplePydanticModel()
 
   def func_under_test(a: MySimplePydanticModel = mySimplePydanticModel):
     """test pydantic model with default value."""
@@ -1337,7 +1337,7 @@ def test_pydantic_model_with_default_value():
           type='OBJECT',
           properties={
               'a': types.Schema(
-                  default=MySimplePydanticModel(a_simple=1, b_simple='a'),
+                  default=mySimplePydanticModel,
                   type='OBJECT',
                   properties={
                       'a_simple': types.Schema(
@@ -1363,7 +1363,7 @@ def test_pydantic_model_with_default_value():
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
-
+  
   assert actual_schema_vertex == expected_schema_vertex
 
 
