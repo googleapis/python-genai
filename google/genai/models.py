@@ -393,6 +393,9 @@ def _SpeechConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
   return to_object
 
 
@@ -1489,6 +1492,9 @@ def _SpeechConfig_to_vertex(
             api_client, getv(from_object, ['voice_config']), to_object
         ),
     )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
 
   return to_object
 

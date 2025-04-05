@@ -33,6 +33,7 @@ from ... import client as gl_client
 from ... import live
 from ... import types
 
+
 def exception_if_mldev(vertexai, exception_type: type[Exception]):
   if vertexai:
     return contextlib.nullcontext()
@@ -490,7 +491,8 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
               'speechConfig': {
                   'voiceConfig': {
                       'prebuiltVoiceConfig': {'voiceName': 'en-default'}
-                  }
+                  },
+                  'languageCode': 'en-US',
               },
               'temperature': 0.7,
               'topP': 0.8,
@@ -512,14 +514,15 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
     expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
     expected_result['setup']['generationConfig']['responseModalities'] = ['AUDIO']
   else:
-     expected_result['setup']['model'] = 'models/test_model'
+    expected_result['setup']['model'] = 'models/test_model'
 
   # Test for mldev, config is a dict
   config_dict = {
       'speech_config': {
           'voice_config': {
               'prebuilt_voice_config': {'voice_name': 'en-default'}
-          }
+          },
+          'language_code': 'en-US',
       },
       'temperature': 0.7,
       'top_p': 0.8,
@@ -542,7 +545,8 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
               prebuilt_voice_config=types.PrebuiltVoiceConfig(
                   voice_name='en-default'
               )
-          )
+          ),
+          language_code='en-US',
       ),
       temperature=0.7,
       top_p=0.8,

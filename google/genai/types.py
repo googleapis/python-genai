@@ -1541,6 +1541,12 @@ class SpeechConfig(_common.BaseModel):
       description="""The configuration for the speaker to use.
       """,
   )
+  language_code: Optional[str] = Field(
+      default=None,
+      description="""Language code (ISO 639. e.g. en-US) for the speech synthesization.
+      Only available for Live API.
+      """,
+  )
 
 
 class SpeechConfigDict(TypedDict, total=False):
@@ -1548,6 +1554,11 @@ class SpeechConfigDict(TypedDict, total=False):
 
   voice_config: Optional[VoiceConfigDict]
   """The configuration for the speaker to use.
+      """
+
+  language_code: Optional[str]
+  """Language code (ISO 639. e.g. en-US) for the speech synthesization.
+      Only available for Live API.
       """
 
 
