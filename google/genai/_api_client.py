@@ -27,6 +27,7 @@ import http
 import io
 import json
 import logging
+import math
 import os
 import sys
 import time
@@ -95,6 +96,14 @@ def _patch_http_options(
   if copy_option.headers is not None:
     _append_library_version_headers(copy_option.headers)
   return copy_option
+
+
+def _populate_server_timeout_header(
+    headers: dict[str, str], timeout_in_seconds: Optional[Union[float, int]]
+) -> None:
+  """Populates the server timeout header in the headers dict."""
+  if timeout_in_seconds and 'X-Server-Timeout' not in headers:
+    headers['X-Server-Timeout'] = str(math.ceil(timeout_in_seconds))
 
 
 def _join_url_path(base_url: str, path: str) -> str:
@@ -539,6 +548,9 @@ class BaseApiClient:
 
     if patched_http_options.headers is None:
       raise ValueError('Request headers must be set.')
+    _populate_server_timeout_header(
+        patched_http_options.headers, timeout_in_seconds
+    )
     return HttpRequest(
         method=http_method,
         url=url,
@@ -795,14 +807,16 @@ class BaseApiClient:
             else self._http_options.timeout
         )
       timeout_in_seconds = _get_timeout_in_seconds(timeout)
+      upload_headers = {
+          'X-Goog-Upload-Command': upload_command,
+          'X-Goog-Upload-Offset': str(offset),
+          'Content-Length': str(chunk_size),
+      }
+      _populate_server_timeout_header(upload_headers, timeout_in_seconds)
       response = self._httpx_client.request(
           method='POST',
           url=upload_url,
-          headers={
-              'X-Goog-Upload-Command': upload_command,
-              'X-Goog-Upload-Offset': str(offset),
-              'Content-Length': str(chunk_size),
-          },
+          headers=upload_headers,
           content=file_chunk,
           timeout=timeout_in_seconds,
       )
@@ -941,15 +955,17 @@ class BaseApiClient:
             else self._http_options.timeout
         )
       timeout_in_seconds = _get_timeout_in_seconds(timeout)
+      upload_headers = {
+          'X-Goog-Upload-Command': upload_command,
+          'X-Goog-Upload-Offset': str(offset),
+          'Content-Length': str(chunk_size),
+      }
+      _populate_server_timeout_header(upload_headers, timeout_in_seconds)
       response = await self._async_httpx_client.request(
           method='POST',
           url=upload_url,
           content=file_chunk,
-          headers={
-              'X-Goog-Upload-Command': upload_command,
-              'X-Goog-Upload-Offset': str(offset),
-              'Content-Length': str(chunk_size),
-          },
+          headers=upload_headers,
           timeout=timeout_in_seconds,
       )
       offset += chunk_size
