@@ -433,8 +433,15 @@ class BaseApiClient:
       if self._http_options.headers is not None:
         _append_library_version_headers(self._http_options.headers)
     # Initialize the httpx client.
-    self._httpx_client = SyncHttpxClient()
-    self._async_httpx_client = AsyncHttpxClient()
+    # Requests will be retried HttpOptions.max_retries times in case an
+    # httpx.ConnectError or httpx.TimeoutException is raised.
+    retries = (
+        self._http_options.max_retries if self._http_options.max_retries else 0
+    )
+    transport = httpx.HTTPTransport(retries=retries)
+    self._httpx_client = SyncHttpxClient(transport=transport)
+    async_transport = httpx.AsyncHTTPTransport(retries=retries)
+    self._async_httpx_client = AsyncHttpxClient(transport=async_transport)
 
   def _websocket_base_url(self):
     url_parts = urlparse(self._http_options.base_url)
