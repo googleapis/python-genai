@@ -178,8 +178,16 @@ def _GenerateVideosOperation_from_mldev(
   if getv(from_object, ['error']) is not None:
     setv(to_object, ['error'], getv(from_object, ['error']))
 
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
+  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
+    setv(
+        to_object,
+        ['response'],
+        _GenerateVideosResponse_from_mldev(
+            api_client,
+            getv(from_object, ['response', 'generateVideoResponse']),
+            to_object,
+        ),
+    )
 
   if getv(from_object, ['response', 'generateVideoResponse']) is not None:
     setv(
@@ -285,7 +293,13 @@ def _GenerateVideosOperation_from_vertex(
     setv(to_object, ['error'], getv(from_object, ['error']))
 
   if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
+    setv(
+        to_object,
+        ['response'],
+        _GenerateVideosResponse_from_vertex(
+            api_client, getv(from_object, ['response']), to_object
+        ),
+    )
 
   if getv(from_object, ['response']) is not None:
     setv(

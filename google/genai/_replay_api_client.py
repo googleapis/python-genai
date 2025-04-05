@@ -35,6 +35,7 @@ from ._api_client import HttpRequest
 from ._api_client import HttpResponse
 from ._common import BaseModel
 from .types import HttpOptionsOrDict
+from .types import GenerateVideosOperation
 
 
 def _redact_version_numbers(version_string: str) -> str:
@@ -397,7 +398,12 @@ class ReplayApiClient(BaseApiClient):
     if isinstance(response_model, list):
       response_model = response_model[0]
     print('response_model: ', response_model.model_dump(exclude_none=True))
-    actual = response_model.model_dump(exclude_none=True, mode='json')
+    if isinstance(response_model, GenerateVideosOperation):
+      actual = response_model.model_dump(
+          exclude={'result'}, exclude_none=True, mode='json'
+      )
+    else:
+      actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
