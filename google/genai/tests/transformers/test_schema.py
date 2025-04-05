@@ -424,6 +424,51 @@ def test_process_schema_order_properties_propagates_into_items(
     'use_vertex,order_properties',
     [(False, False), (False, True), (True, False), (True, True)],
 )
+def test_process_schema_order_properties_propagates_into_prefix_items(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to 'prefixItems'."""
+  schema = {
+      'type': 'ARRAY',
+      'prefixItems': [
+          {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+          },
+      ],
+  }
+  schema_without_property_ordering = copy.deepcopy(schema)
+  schema_with_property_ordering = {
+      'type': 'ARRAY',
+      'prefixItems': [
+          {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+              'property_ordering': ['foo', 'bar'],
+          },
+      ],
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
 def test_process_schema_order_properties_propagates_into_properties(
     client, order_properties
 ):
@@ -456,6 +501,47 @@ def test_process_schema_order_properties_propagates_into_properties(
           'abc': {'type': 'STRING'},
       },
       'property_ordering': ['xyz', 'abc'],
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
+def test_process_schema_order_properties_propagates_into_additional_properties(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to 'additionalProperties'."""
+  schema = {
+      'type': 'OBJECT',
+      'additionalProperties': {
+          'type': 'OBJECT',
+          'properties': {
+              'foo': {'type': 'STRING'},
+              'bar': {'type': 'STRING'},
+          },
+      },
+  }
+  schema_without_property_ordering = copy.deepcopy(schema)
+  schema_with_property_ordering = {
+      'type': 'OBJECT',
+      'additionalProperties': {
+          'type': 'OBJECT',
+          'properties': {
+              'foo': {'type': 'STRING'},
+              'bar': {'type': 'STRING'},
+          },
+          'property_ordering': ['foo', 'bar'],
+      },
   }
 
   _transformers.process_schema(
@@ -518,7 +604,7 @@ def test_t_schema_does_not_change_property_ordering_if_set(client):
 
   schema = CountryInfo.model_json_schema()
   custom_property_ordering = ['code', 'symbol', 'name']
-  schema['property_ordering'] = custom_property_ordering
+  schema['property_ordering'] = custom_property_ordering.copy()
 
   transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering == custom_property_ordering

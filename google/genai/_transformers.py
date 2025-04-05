@@ -663,7 +663,9 @@ def process_schema(
   # provided directly to response_schema, it may use `any_of` instead of `anyOf.
   # Otherwise, model_json_schema() uses `anyOf`.
   for from_name, to_name in [
+      ('additional_properties', 'additionalProperties'),
       ('any_of', 'anyOf'),
+      ('prefix_items', 'prefixItems'),
       ('property_ordering', 'propertyOrdering'),
   ]:
     if (value := schema.pop(from_name, None)) is not None:
@@ -723,9 +725,16 @@ def process_schema(
           and 'propertyOrdering' not in schema
       ):
         schema['property_ordering'] = list(properties.keys())
+    if (additional := schema.get('additionalProperties')) is not None:
+      # It is legal to set 'additionalProperties' to a bool:
+      # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
+      if isinstance(additional, dict):
+        schema['additionalProperties'] = _recurse(additional)
   elif schema_type == 'ARRAY':
     if (items := schema.get('items')) is not None:
       schema['items'] = _recurse(items)
+    if (prefixes := schema.get('prefixItems')) is not None:
+      schema['prefixItems'] = [_recurse(prefix) for prefix in prefixes]
 
 
 def _process_enum(
