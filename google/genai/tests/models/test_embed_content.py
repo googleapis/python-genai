@@ -51,6 +51,24 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_multi_texts_with_list_titles',
+        parameters=types._EmbedContentParameters(
+            model='text-embedding-004',
+            contents=[
+                t.t_content(None, 'What is your name?'),
+                t.t_content(None, 'I am a model.'),
+            ],
+            config={
+                'output_dimensionality': 10,
+                'title': ['First Title', 'Second Title'],
+                'task_type': 'RETRIEVAL_DOCUMENT',
+                'http_options': {
+                    'headers': {'test': 'headers'},
+                },
+            },
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_single_text_with_mime_type_not_supported_in_mldev',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
