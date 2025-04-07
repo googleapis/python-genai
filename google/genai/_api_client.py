@@ -300,11 +300,12 @@ class AsyncHttpxClient(httpx.AsyncClient):
 
 
 class BaseApiClient:
-  """Client for calling HTTP APIs sending and receiving JSON."""
+  """Base client for calling HTTP APIs sending and receiving JSON."""
 
   def __init__(
       self,
       vertexai: Optional[bool] = None,
+      modelgarden: Optional[bool] = None,
       api_key: Optional[str] = None,
       credentials: Optional[google.auth.credentials.Credentials] = None,
       project: Optional[str] = None,
@@ -312,12 +313,25 @@ class BaseApiClient:
       http_options: Optional[HttpOptionsOrDict] = None,
   ):
     self.vertexai = vertexai
+    self.modelgarden = modelgarden
+    
     if self.vertexai is None:
       if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI', '0').lower() in [
           'true',
           '1',
       ]:
         self.vertexai = True
+        
+    if self.modelgarden is None:
+      if os.environ.get('GOOGLE_GENAI_USE_MODELGARDEN', '0').lower() in [
+          'true',
+          '1',
+      ]:
+        self.modelgarden = True
+    
+    # If modelgarden is True, then vertexai must also be True
+    if self.modelgarden:
+      self.vertexai = True
 
     # Validate explicitly set initializer values.
     if (project or location) and api_key:
@@ -409,7 +423,16 @@ class BaseApiClient:
         self._http_options.base_url = (
             f'https://{self.location}-aiplatform.googleapis.com/'
         )
-      self._http_options.api_version = 'v1beta1'
+      
+      # If using modelgarden, use v1 API version
+      if self.modelgarden:
+        if not (self.project and self.location):
+          raise ValueError(
+              'Project and location must be set when using ModelGarden models.'
+          )
+        self._http_options.api_version = 'v1'
+      else:
+        self._http_options.api_version = 'v1beta1'
     else:  # Implicit initialization or missing arguments.
       if not self.api_key:
         raise ValueError(

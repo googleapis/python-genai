@@ -192,6 +192,7 @@ class ReplayApiClient(BaseApiClient):
       replay_id: str,
       replays_directory: Optional[str] = None,
       vertexai: bool = False,
+      modelgarden: bool = False,
       api_key: Optional[str] = None,
       credentials: Optional[google.auth.credentials.Credentials] = None,
       project: Optional[str] = None,
@@ -200,6 +201,7 @@ class ReplayApiClient(BaseApiClient):
   ):
     super().__init__(
         vertexai=vertexai,
+        modelgarden=modelgarden,
         api_key=api_key,
         credentials=credentials,
         project=project,
