@@ -407,6 +407,9 @@ def _ThinkingConfig_to_mldev(
         to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
     )
 
+  if getv(from_object, ['thinking_budget']) is not None:
+    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
+
   return to_object
 
 
@@ -1503,6 +1506,9 @@ def _ThinkingConfig_to_vertex(
     setv(
         to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
     )
+
+  if getv(from_object, ['thinking_budget']) is not None:
+    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
 
   return to_object
 
