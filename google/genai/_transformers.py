@@ -582,6 +582,42 @@ def handle_null_fields(schema: dict[str, Any]):
           del schema['anyOf']
 
 
+def _is_schema_too_large(schema: dict[str, Any]) -> bool:
+  """Checks if the schema is too large.
+
+  Args:
+    schema: The schema to check.
+
+  Returns:
+    True if the schema is too large, False otherwise.
+  """
+  # The maximum size of the schema is 10000 characters.
+  # This is a conservative estimate based on the "too many states for serving" error.
+  schema_str = str(schema)
+  return len(schema_str) > 10000
+
+
+def _strip_titles(schema: dict[str, Any]) -> None:
+  """Recursively strips titles from a schema and its sub-schemas.
+
+  Args:
+    schema: The schema to strip titles from.
+  """
+  if 'title' in schema:
+    del schema['title']
+
+  if schema.get('type', '').upper() == 'OBJECT':
+    if (properties := schema.get('properties')) is not None:
+      for sub_schema in properties.values():
+        _strip_titles(sub_schema)
+  elif schema.get('type', '').upper() == 'ARRAY':
+    if (items := schema.get('items')) is not None:
+      _strip_titles(items)
+  elif 'anyOf' in schema:
+    for sub_schema in schema['anyOf']:
+      _strip_titles(sub_schema)
+
+
 def process_schema(
     schema: dict[str, Any],
     client: _api_client.BaseApiClient,
@@ -591,63 +627,11 @@ def process_schema(
 ):
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
-  - Inlines the $defs.
-
-  Example of a schema before and after (with mldev):
-    Before:
-
-    `schema`
-
-    {
-        'items': {
-            '$ref': '#/$defs/CountryInfo'
-        },
-        'title': 'Placeholder',
-        'type': 'array'
-    }
-
-
-    `defs`
-
-    {
-      'CountryInfo': {
-        'properties': {
-          'continent': {
-              'title': 'Continent',
-              'type': 'string'
-          },
-          'gdp': {
-              'title': 'Gdp',
-              'type': 'integer'}
-          },
-        }
-        'required':['continent', 'gdp'],
-        'title': 'CountryInfo',
-        'type': 'object'
-      }
-    }
-
-    After:
-
-    `schema`
-     {
-        'items': {
-          'properties': {
-            'continent': {
-              'title': 'Continent',
-              'type': 'string'
-            },
-            'gdp': {
-              'title': 'Gdp',
-              'type': 'integer'
-            },
-          }
-          'required':['continent', 'gdp'],
-          'title': 'CountryInfo',
-          'type': 'object'
-        },
-        'type': 'array'
-    }
+  Args:
+    schema: The schema to process.
+    client: The API client.
+    defs: The definitions.
+    order_properties: Whether to order the properties.
   """
   if not client.vertexai:
     if schema.get('default') is not None:
@@ -726,6 +710,10 @@ def process_schema(
   elif schema_type == 'ARRAY':
     if (items := schema.get('items')) is not None:
       schema['items'] = _recurse(items)
+
+  # Check if the schema is too large and, if so, strip the titles from all properties
+  if _is_schema_too_large(schema):
+    _strip_titles(schema)
 
 
 def _process_enum(
