@@ -35,28 +35,10 @@ class APIError(Exception):
   def __init__(
       self,
       code: int,
-      response: Union['ReplayResponse', httpx.Response],
+      response_json: Any,
+      response: Optional[Union['ReplayResponse', httpx.Response]] = None,
   ):
     self.response = response
-    message = None
-    if isinstance(response, httpx.Response):
-      try:
-        response_json = response.json()
-      except (json.decoder.JSONDecodeError):
-        message = response.text
-        response_json = {
-            'message': message,
-            'status': response.reason_phrase,
-        }
-      except httpx.ResponseNotRead:
-        message = 'Response not read'
-        response_json = {
-            'message': message,
-            'status': response.reason_phrase,
-        }
-    else:
-      response_json = response.body_segments[0].get('error', {})
-
     self.details = response_json
     self.message = self._get_message(response_json)
     self.status = self._get_status(response_json)
@@ -101,13 +83,54 @@ class APIError(Exception):
     if response.status_code == 200:
       return
 
+    if isinstance(response, httpx.Response):
+      try:
+        response.read()
+        response_json = response.json()
+      except json.decoder.JSONDecodeError:
+        message = response.text
+        response_json = {
+            'message': message,
+            'status': response.reason_phrase,
+        }
+    else:
+      response_json = response.body_segments[0].get('error', {})
+
     status_code = response.status_code
     if 400 <= status_code < 500:
-      raise ClientError(status_code, response)
+      raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
-      raise ServerError(status_code, response)
+      raise ServerError(status_code, response_json, response)
     else:
-      raise cls(status_code, response)
+      raise cls(status_code, response_json, response)
+
+  @classmethod
+  async def raise_for_async_response(
+      cls, response: Union['ReplayResponse', httpx.Response]
+  ):
+    """Raises an error with detailed error message if the response has an error status."""
+    if response.status_code == 200:
+      return
+    if isinstance(response, httpx.Response):
+      try:
+        await response.aread()
+        response_json = response.json()
+      except json.decoder.JSONDecodeError:
+        message = response.text
+        response_json = {
+            'message': message,
+            'status': response.reason_phrase,
+        }
+    else:
+      response_json = response.body_segments[0].get('error', {})
+
+    status_code = response.status_code
+    if 400 <= status_code < 500:
+      raise ClientError(status_code, response_json, response)
+    elif 500 <= status_code < 600:
+      raise ServerError(status_code, response_json, response)
+    else:
+      raise cls(status_code, response_json, response)
 
 
 class ClientError(APIError):

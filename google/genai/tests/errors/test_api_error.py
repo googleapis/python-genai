@@ -19,31 +19,24 @@
 End to end tests should be in models/test_generate_content.py.
 """
 
-
-import json
-from typing import cast
-
 import httpx
+import pytest
 
 from ... import errors
 
 
 def test_constructor_code_none_error_in_json_code_in_error():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      None,
+      {
           'error': {
               'code': 400,
               'message': 'error message',
               'status': 'INVALID_ARGUMENT',
           }
-      }
-
-  actual_error = errors.APIError(
-      None,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -60,23 +53,17 @@ def test_constructor_code_none_error_in_json_code_in_error():
 
 def test_constructor_code_none_error_in_json_code_outside_error():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      None,
+      {
           'code': 400,
           'error': {
-              'code': (
-                  500
-              ),  # differentiate from the code in the outer level for test purpose.
+              'code': 500,
               'message': 'error message',
               'status': 'INVALID_ARGUMENT',
           },
-      }
-
-  actual_error = errors.APIError(
-      None,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -94,19 +81,15 @@ def test_constructor_code_none_error_in_json_code_outside_error():
 
 def test_constructor_code_not_present():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      None,
+      {
           'error': {
               'message': 'error message',
               'status': 'INVALID_ARGUMENT',
           }
-      }
-
-  actual_error = errors.APIError(
-      None,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code is None
@@ -122,20 +105,16 @@ def test_constructor_code_not_present():
 
 def test_constructor_code_exist_error_in_json():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      400,
+      {
           'error': {
               'code': 400,
               'message': 'error message',
               'status': 'INVALID_ARGUMENT',
           }
-      }
-
-  actual_error = errors.APIError(
-      400,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -152,18 +131,14 @@ def test_constructor_code_exist_error_in_json():
 
 def test_constructor_error_not_in_json():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      400,
+      {
           'message': 'error message',
           'status': 'INVALID_ARGUMENT',
           'code': 400,
-      }
-
-  actual_error = errors.APIError(
-      400,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -178,21 +153,17 @@ def test_constructor_error_not_in_json():
 
 def test_constructor_error_in_json_status_outside_error():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      400,
+      {
           'status': 'OUTER_INVALID_ARGUMENT_STATUS',
           'error': {
               'code': 400,
               'message': 'error message',
               'status': 'INNER_INVALID_ARGUMENT_STATUS',
           },
-      }
-
-  actual_error = errors.APIError(
-      400,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -210,19 +181,15 @@ def test_constructor_error_in_json_status_outside_error():
 
 def test_constructor_status_not_present():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      400,
+      {
           'error': {
               'code': 400,
               'message': 'error message',
           }
-      }
-
-  actual_error = errors.APIError(
-      400,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -238,21 +205,17 @@ def test_constructor_status_not_present():
 
 def test_constructor_error_in_json_message_outside_error():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      400,
+      {
           'message': 'OUTER_ERROR_MESSAGE',
           'error': {
               'code': 400,
               'message': 'INNER_ERROR_MESSAGE',
               'status': 'INVALID_ARGUMENT',
           },
-      }
-
-  actual_error = errors.APIError(
-      400,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -270,19 +233,15 @@ def test_constructor_error_in_json_message_outside_error():
 
 def test_constructor_message_not_present():
 
-  class FakeResponse(httpx.Response):
-
-    def json(self):
-      return {
+  actual_error = errors.APIError(
+      400,
+      {
           'error': {
               'code': 400,
               'status': 'INVALID_ARGUMENT',
           }
-      }
-
-  actual_error = errors.APIError(
-      400,
-      FakeResponse(status_code=400),
+      },
+      httpx.Response(status_code=400),
   )
 
   assert actual_error.code == 400
@@ -296,43 +255,156 @@ def test_constructor_message_not_present():
   }
 
 
-def test_constructor_code_exist_json_decoder_error():
-
+def test_raise_for_response_code_exist_json_decoder_error():
   class FakeResponse(httpx.Response):
 
-    def json(self):
-      raise json.decoder.JSONDecodeError('json decode error', 'json string', 10)
+    def read(self) -> bytes:
+      self._content = b'{"data": {"key1": "value1", "key2"}'
+      return self._content
 
-  actual_error = errors.APIError(
-      200,
-      FakeResponse(status_code=200),
-  )
-  assert actual_error.code == 200
-  assert not actual_error.message
-  assert actual_error.status == 'OK'
-  assert actual_error.details == {
-      'message': '',
-      'status': 'OK',
-  }
+  try:
+    errors.APIError.raise_for_response(
+        FakeResponse(
+            status_code=503,
+            extensions={'reason_phrase': b'Service Unavailable'},
+        )
+    )
+  except errors.ServerError as actual_error:
+    assert actual_error.code == 503
+    assert actual_error.message == '{"data": {"key1": "value1", "key2"}'
+    assert actual_error.status == 'Service Unavailable'
+    assert actual_error.details == {
+        'message': '{"data": {"key1": "value1", "key2"}',
+        'status': 'Service Unavailable',
+    }
 
 
-def test_constructor_code_none_json_decoder_error():
-
+def test_raise_for_response_client_error():
   class FakeResponse(httpx.Response):
 
-    def json(self):
-      raise httpx.ResponseNotRead()
+    def read(self) -> bytes:
+      self._content = (
+          b'{"error": {"code": 400, "message": "error message", "status":'
+          b' "INVALID_ARGUMENT"}}'
+      )
+      return self._content
 
-  actual_error = errors.APIError(
-      None,
-      FakeResponse(status_code=200),
-  )
-  assert actual_error.code is None
-  assert (
-      actual_error.message == 'Response not read'
-  )  # response.text defaults to '' in requests.Response.
-  assert actual_error.status == 'OK'
-  assert actual_error.details == {
-      'message': 'Response not read',
-      'status': 'OK',
-  }
+  try:
+    errors.APIError.raise_for_response(FakeResponse(status_code=400))
+  except errors.ClientError as actual_error:
+    assert actual_error.code == 400
+    assert actual_error.message == 'error message'
+    assert actual_error.status == 'INVALID_ARGUMENT'
+    assert actual_error.details == {
+        'error': {
+            'code': 400,
+            'message': 'error message',
+            'status': 'INVALID_ARGUMENT',
+        }
+    }
+
+
+def test_raise_for_response_server_error():
+  class FakeResponse(httpx.Response):
+
+    def read(self) -> bytes:
+      self._content = (
+          b'{"error": {"code": 500, "message": "error message", "status":'
+          b' "SERVER_INTERNAL ERROR"}}'
+      )
+      return self._content
+
+  try:
+    errors.APIError.raise_for_response(FakeResponse(status_code=500))
+  except errors.ServerError as actual_error:
+    assert actual_error.code == 500
+    assert actual_error.message == 'error message'
+    assert actual_error.status == 'SERVER_INTERNAL ERROR'
+    assert actual_error.details == {
+        'error': {
+            'code': 500,
+            'message': 'error message',
+            'status': 'SERVER_INTERNAL ERROR',
+        }
+    }
+
+
+@pytest.mark.asyncio
+async def test_raise_for_async_response_client_error():
+  class FakeResponse(httpx.Response):
+
+    async def aread(self) -> bytes:
+      self._content = (
+          b'{"error": {"code": 400, "message": "error message", "status":'
+          b' "INVALID_ARGUMENT"}}'
+      )
+      return self._content
+
+  try:
+    await errors.APIError.raise_for_async_response(
+        FakeResponse(status_code=400)
+    )
+  except errors.ClientError as actual_error:
+    assert actual_error.code == 400
+    assert actual_error.message == 'error message'
+    assert actual_error.status == 'INVALID_ARGUMENT'
+    assert actual_error.details == {
+        'error': {
+            'code': 400,
+            'message': 'error message',
+            'status': 'INVALID_ARGUMENT',
+        }
+    }
+
+
+@pytest.mark.asyncio
+async def test_raise_for_async_response_server_error():
+  class FakeResponse(httpx.Response):
+
+    async def aread(self) -> bytes:
+      self._content = (
+          b'{"error": {"code": 500, "message": "error message", "status":'
+          b' "SERVER_INTERNAL ERROR"}}'
+      )
+      return self._content
+
+  try:
+    await errors.APIError.raise_for_async_response(
+        FakeResponse(status_code=500)
+    )
+  except errors.ServerError as actual_error:
+    assert actual_error.code == 500
+    assert actual_error.message == 'error message'
+    assert actual_error.status == 'SERVER_INTERNAL ERROR'
+    assert actual_error.details == {
+        'error': {
+            'code': 500,
+            'message': 'error message',
+            'status': 'SERVER_INTERNAL ERROR',
+        }
+    }
+
+
+@pytest.mark.asyncio
+async def test_raise_for_async_response_code_exist_json_decoder_error():
+  class FakeResponse(httpx.Response):
+
+    async def aread(self) -> bytes:
+      self._content = b'{"data": {"key1": "value1", "key2"}'
+      return self._content
+
+  try:
+    await errors.APIError.raise_for_async_response(
+        FakeResponse(
+            status_code=503,
+            extensions={'reason_phrase': b'Service Unavailable'},
+        )
+    )
+  except errors.ServerError as actual_error:
+    assert actual_error.code == 503
+    assert actual_error.message == '{"data": {"key1": "value1", "key2"}'
+    assert actual_error.status == 'Service Unavailable'
+    assert actual_error.details == {
+        'message': '{"data": {"key1": "value1", "key2"}',
+        'status': 'Service Unavailable',
+    }

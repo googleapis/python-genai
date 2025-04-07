@@ -77,3 +77,63 @@ def test_patch_http_options_appends_version_headers():
   patched = _api_client._patch_http_options(original_options, patch_options)
   assert 'user-agent' in patched.headers
   assert 'x-goog-api-client' in patched.headers
+
+
+def test_setting_timeout_populates_server_timeout_header():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+      http_options=types.HttpOptions(timeout=10000),
+  )
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  assert 'X-Server-Timeout' in request.headers
+  assert request.headers['X-Server-Timeout'] == '10'
+
+
+def test_timeout_rounded_to_nearest_second():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+  )
+  http_options = types.HttpOptions(timeout=7300)
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+      http_options=http_options,
+  )
+  assert request.headers['X-Server-Timeout'] == '8'
+
+
+def test_server_timeout_not_overwritten():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+  )
+  http_options = types.HttpOptions(
+      headers={'X-Server-Timeout': '3'},
+      timeout=11000)
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+      http_options=http_options,
+  )
+  assert request.headers['X-Server-Timeout'] == '3'
+
+
+def test_server_timeout_not_set_by_default():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+  )
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  assert not 'X-Server-Timeout' in request.headers

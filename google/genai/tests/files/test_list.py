@@ -24,7 +24,7 @@ from .. import pytest_helper
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_not_empty',
-        exception_if_vertex='only supported in the default client',
+        exception_if_vertex='only supported in the Gemini Developer client',
         parameters=types._ListFilesParameters(
             config=types.ListFilesConfig(
                 page_size=2,

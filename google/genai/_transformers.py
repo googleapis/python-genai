@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, Optional, Union  # type: ignore[attr-defined]
+from typing import Any, GenericAlias, Optional, Sequence, Union  # type: ignore[attr-defined]
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -43,7 +43,7 @@ if sys.version_info >= (3, 10):
   _UNION_TYPES = (typing.Union, builtin_types.UnionType)
   from typing import TypeGuard
 else:
-  VersionedUnionType = typing._UnionGenericAlias
+  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
   _UNION_TYPES = (typing.Union,)
   from typing_extensions import TypeGuard
 
@@ -181,17 +181,26 @@ def t_models_url(
 
 def t_extract_models(
     api_client: _api_client.BaseApiClient,
-    response: dict[str, list[types.ModelDict]],
-) -> Optional[list[types.ModelDict]]:
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
   if not response:
     return []
-  elif response.get('models') is not None:
-    return response.get('models')
-  elif response.get('tunedModels') is not None:
-    return response.get('tunedModels')
-  elif response.get('publisherModels') is not None:
-    return response.get('publisherModels')
-  elif (
+
+  models: Optional[list[dict[str, Any]]] = response.get('models')
+  if models is not None:
+    return models
+
+  tuned_models: Optional[list[dict[str, Any]]] = response.get('tunedModels')
+  if tuned_models is not None:
+    return tuned_models
+
+  publisher_models: Optional[list[dict[str, Any]]] = response.get(
+      'publisherModels'
+  )
+  if publisher_models is not None:
+    return publisher_models
+
+  if (
       response.get('httpHeaders') is not None
       and response.get('jsonPayload') is None
   ):
@@ -240,6 +249,62 @@ def pil_to_blob(img) -> types.Blob:
   bytesio.seek(0)
   data = bytesio.read()
   return types.Blob(mime_type=mime_type, data=data)
+
+
+def t_function_response(
+    function_response: types.FunctionResponseOrDict,
+) -> types.FunctionResponse:
+  if not function_response:
+    raise ValueError('function_response is required.')
+  if isinstance(function_response, dict):
+    return types.FunctionResponse.model_validate(function_response)
+  elif isinstance(function_response, types.FunctionResponse):
+    return function_response
+  else:
+    raise TypeError(
+        f'Could not parse input as FunctionResponse. Unsupported'
+        f' function_response type: {type(function_response)}'
+    )
+
+def t_function_responses(
+    function_responses: Union[
+        types.FunctionResponseOrDict,
+        Sequence[types.FunctionResponseOrDict],
+    ],
+) -> list[types.FunctionResponse]:
+  if not function_responses:
+    raise ValueError('function_responses are required.')
+  if isinstance(function_responses, Sequence):
+    return [t_function_response(response) for response in function_responses]
+  else:
+    return [t_function_response(function_responses)]
+
+
+BlobUnion = Union[types.Blob, types.BlobDict, 'PIL.Image.Image']
+
+def t_blob(blob: BlobUnion) -> types.Blob:
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
+  if not blob:
+    raise ValueError('blob is required.')
+
+  if isinstance(blob, types.Blob):
+    return blob
+
+  if isinstance(blob, dict):
+    return types.Blob.model_validate(blob)
+
+  if PIL_Image is not None and isinstance(blob, PIL_Image):
+    return pil_to_blob(blob)
+
+  raise TypeError(
+      f'Could not parse input as Blob. Unsupported blob type: {type(blob)}'
+  )
 
 
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
@@ -526,7 +591,6 @@ def process_schema(
 ):
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
-  - Removes the `title` field from the schema if the client is not vertexai.
   - Inlines the $defs.
 
   Example of a schema before and after (with mldev):
@@ -570,21 +634,22 @@ def process_schema(
         'items': {
           'properties': {
             'continent': {
-                'type': 'string'
+              'title': 'Continent',
+              'type': 'string'
             },
             'gdp': {
-                'type': 'integer'}
+              'title': 'Gdp',
+              'type': 'integer'
             },
           }
           'required':['continent', 'gdp'],
+          'title': 'CountryInfo',
           'type': 'object'
         },
         'type': 'array'
     }
   """
   if not client.vertexai:
-    schema.pop('title', None)
-
     if schema.get('default') is not None:
       raise ValueError(
           'Default value is not supported in the response schema for the Gemini'
@@ -592,51 +657,55 @@ def process_schema(
       )
 
   if schema.get('title') == 'PlaceholderLiteralEnum':
-    schema.pop('title', None)
+    del schema['title']
 
-  # If a dict is provided directly to response_schema, it may use `any_of`
-  # instead of `anyOf`. Otherwise model_json_schema() uses `anyOf`
-  if schema.get('any_of', None) is not None:
-    schema['anyOf'] = schema.pop('any_of')
+  # Standardize spelling for relevant schema fields.  For example, if a dict is
+  # provided directly to response_schema, it may use `any_of` instead of `anyOf.
+  # Otherwise, model_json_schema() uses `anyOf`.
+  for from_name, to_name in [
+      ('any_of', 'anyOf'),
+      ('property_ordering', 'propertyOrdering'),
+  ]:
+    if (value := schema.pop(from_name, None)) is not None:
+      schema[to_name] = value
 
   if defs is None:
     defs = schema.pop('$defs', {})
     for _, sub_schema in defs.items():
-      process_schema(sub_schema, client, defs)
+      # We can skip the '$ref' check, because JSON schema forbids a '$ref' from
+      # directly referencing another '$ref':
+      # https://json-schema.org/understanding-json-schema/structuring#recursion
+      process_schema(
+          sub_schema, client, defs, order_properties=order_properties
+      )
 
   handle_null_fields(schema)
 
   # After removing null fields, Optional fields with only one possible type
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
-  schema_ref = schema.get('$ref', None)
-  if schema_ref is not None:
-    ref = defs[schema_ref.split('defs/')[-1]]
-    for schema_key in list(ref.keys()):
-      schema[schema_key] = ref[schema_key]
-    del schema['$ref']
+  if (ref := schema.pop('$ref', None)) is not None:
+    schema.update(defs[ref.split('defs/')[-1]])
 
-  any_of = schema.get('anyOf', None)
-  if any_of is not None:
-    for sub_schema in any_of:
-      # $ref is present in any_of if the schema is a union of Pydantic classes
-      ref_key = sub_schema.get('$ref', None)
-      if ref_key is None:
-        process_schema(sub_schema, client, defs)
-      else:
-        ref = defs[ref_key.split('defs/')[-1]]
-        any_of.append(ref)
-    schema['anyOf'] = [item for item in any_of if '$ref' not in item]
+  def _recurse(sub_schema: dict[str, Any]) -> dict[str, Any]:
+    """Returns the processed `sub_schema`, resolving its '$ref' if any."""
+    if (ref := sub_schema.pop('$ref', None)) is not None:
+      sub_schema = defs[ref.split('defs/')[-1]]
+    process_schema(sub_schema, client, defs, order_properties=order_properties)
+    return sub_schema
+
+  if (any_of := schema.get('anyOf')) is not None:
+    schema['anyOf'] = [_recurse(sub_schema) for sub_schema in any_of]
     return
 
-  schema_type = schema.get('type', None)
+  schema_type = schema.get('type')
   if isinstance(schema_type, Enum):
     schema_type = schema_type.value
   schema_type = schema_type.upper()
 
   # model_json_schema() returns a schema with a 'const' field when a Literal with one value is provided as a pydantic field
   # For example `genre: Literal['action']` becomes: {'const': 'action', 'title': 'Genre', 'type': 'string'}
-  const = schema.get('const', None)
+  const = schema.get('const')
   if const is not None:
     if schema_type == 'STRING':
       schema['enum'] = [const]
@@ -645,38 +714,18 @@ def process_schema(
       raise ValueError('Literal values must be strings.')
 
   if schema_type == 'OBJECT':
-    properties = schema.get('properties', None)
-    if properties is None:
-      return
-    for name, sub_schema in properties.items():
-      ref_key = sub_schema.get('$ref', None)
-      if ref_key is None:
-        process_schema(sub_schema, client, defs)
-      else:
-        ref = defs[ref_key.split('defs/')[-1]]
-        process_schema(ref, client, defs)
-        properties[name] = ref
-    if (
-        len(properties.items()) > 1
-        and order_properties
-        and all(
-            ordering_key not in schema
-            for ordering_key in ['property_ordering', 'propertyOrdering']
-        )
-    ):
-      property_names = list(properties.keys())
-      schema['property_ordering'] = property_names
+    if (properties := schema.get('properties')) is not None:
+      for name, sub_schema in list(properties.items()):
+        properties[name] = _recurse(sub_schema)
+      if (
+          len(properties.items()) > 1
+          and order_properties
+          and 'propertyOrdering' not in schema
+      ):
+        schema['property_ordering'] = list(properties.keys())
   elif schema_type == 'ARRAY':
-    sub_schema = schema.get('items', None)
-    if sub_schema is None:
-      return
-    ref_key = sub_schema.get('$ref', None)
-    if ref_key is None:
-      process_schema(sub_schema, client, defs)
-    else:
-      ref = defs[ref_key.split('defs/')[-1]]
-      process_schema(ref, client, defs)
-      schema['items'] = ref
+    if (items := schema.get('items')) is not None:
+      schema['items'] = _recurse(items)
 
 
 def _process_enum(

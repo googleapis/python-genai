@@ -144,6 +144,25 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='retrieval',
         exception_if_vertex='400',
     ),
+     pytest_helper.TestTableItem(
+        name='test_vai_search_engine',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-001',
+            contents=t.t_contents(None, 'why is the sky blue?'),
+            config={
+                'tools': [
+                    types.Tool(
+                        retrieval=types.Retrieval(
+                            vertex_ai_search=types.VertexAISearch(
+                                engine='projects/862721868538/locations/global/collections/default_collection/engines/teamfood-v11_1720671063545'
+                            )
+                        )
+                    ),
+                ]
+            },
+        ),
+        exception_if_mldev='retrieval',
+    ),
     pytest_helper.TestTableItem(
         name='test_rag_model',
         parameters=types._GenerateContentParameters(

@@ -24,7 +24,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_get',
         parameters=types._GetFileParameters(name='files/vjvu9fwk2qj8'),
-        exception_if_vertex='only supported in the default client',
+        exception_if_vertex='only supported in the Gemini Developer client',
     ),
 ]
 

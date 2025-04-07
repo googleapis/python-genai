@@ -276,7 +276,28 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
         exception_if_mldev='not supported',
-    )
+    ),
+    pytest_helper.TestTableItem(
+        name='test_response_schema_with_default',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=t.t_contents(None, 'What is your name?'),
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': {
+                    'type': 'OBJECT',
+                    'properties': {
+                        'name': {
+                            'type': 'STRING',
+                            'default': 'default_name',
+                        },
+                    },
+                },
+            },
+        ),
+        exception_if_mldev='not supported',
+        ignore_keys=['parsed'],
+    ),
 ]
 
 pytestmark = pytest_helper.setup(
@@ -1816,6 +1837,8 @@ def test_usage_metadata_part_types(client):
       [d.modality.name for d in usage_metadata.candidates_tokens_details]
   )
   assert modalities == ['TEXT']
+  assert isinstance(
+      usage_metadata.candidates_tokens_details[0].modality, types.MediaModality)
 
   assert usage_metadata.prompt_token_count
   assert usage_metadata.prompt_tokens_details
@@ -1823,3 +1846,165 @@ def test_usage_metadata_part_types(client):
       [d.modality.name for d in usage_metadata.prompt_tokens_details]
   )
   assert modalities == ['IMAGE', 'TEXT']
+
+
+def test_warning_log_includes_parsed_for_multi_candidate_response(client, caplog):
+  caplog.set_level(logging.DEBUG, logger='google_genai')
+
+  class CountryInfo(BaseModel):
+    name: str
+    population: int
+    capital: str
+    continent: str
+    major_cities: list[str]
+    gdp: int
+    official_language: str
+    total_area_sq_mi: int
+
+  response = client.models.generate_content(
+      model='gemini-2.0-flash',
+      contents='Give me information of the United States.',
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': CountryInfo,
+          'candidate_count': 2,
+      },
+  )
+  assert response.parsed
+  assert len(response.candidates) == 2
+  assert 'parsed' in caplog.text
+
+
+def test_error_handling_stream(client):
+  if client.vertexai:
+    return
+
+  try:
+    for chunk in client.models.generate_content_stream(
+        model='gemini-2.0-flash-exp-image-generation',
+        contents=[
+            types.Content(
+                role='user',
+                parts=[
+                    types.Part.from_bytes(
+                        data=image_bytes, mime_type='image/png'
+                    ),
+                    types.Part.from_text(text='Make sky more beautiful.'),
+                ],
+            ),
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='text/plain',
+            response_modalities=['IMAGE', 'TEXT'],
+            system_instruction='make the sky more beautiful.',
+        ),
+    ):
+      continue
+
+  except errors.ClientError as e:
+    assert (
+        e.message
+        == 'Developer instruction is not enabled for'
+        ' models/gemini-2.0-flash-exp-image-generation'
+    )
+
+
+def test_error_handling_unary(client):
+  if client.vertexai:
+    return
+
+  try:
+    client.models.generate_content(
+        model='gemini-2.0-flash-exp-image-generation',
+        contents=[
+            types.Content(
+                role='user',
+                parts=[
+                    types.Part.from_bytes(
+                        data=image_bytes, mime_type='image/png'
+                    ),
+                    types.Part.from_text(text='Make sky more beautiful.'),
+                ],
+            ),
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='text/plain',
+            response_modalities=['IMAGE', 'TEXT'],
+            system_instruction='make the sky more beautiful.',
+        ),
+    )
+
+  except errors.ClientError as e:
+    assert (
+        e.message
+        == 'Developer instruction is not enabled for'
+        ' models/gemini-2.0-flash-exp-image-generation'
+    )
+
+@pytest.mark.asyncio
+async def test_error_handling_unary_async(client):
+  if client.vertexai:
+    return
+
+  try:
+    await client.aio.models.generate_content(
+        model='gemini-2.0-flash-exp-image-generation',
+        contents=[
+            types.Content(
+                role='user',
+                parts=[
+                    types.Part.from_bytes(
+                        data=image_bytes, mime_type='image/png'
+                    ),
+                    types.Part.from_text(text='Make sky more beautiful.'),
+                ],
+            ),
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='text/plain',
+            response_modalities=['IMAGE', 'TEXT'],
+            system_instruction='make the sky more beautiful.',
+        ),
+    )
+
+  except errors.ClientError as e:
+    assert (
+        e.message
+        == 'Developer instruction is not enabled for'
+        ' models/gemini-2.0-flash-exp-image-generation'
+    )
+
+
+@pytest.mark.asyncio
+async def test_error_handling_stream_async(client):
+  if client.vertexai:
+    return
+
+  try:
+    async for part in await client.aio.models.generate_content_stream(
+        model='gemini-2.0-flash-exp-image-generation',
+        contents=[
+            types.Content(
+                role='user',
+                parts=[
+                    types.Part.from_bytes(
+                        data=image_bytes, mime_type='image/png'
+                    ),
+                    types.Part.from_text(text='Make sky more beautiful.'),
+                ],
+            ),
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='text/plain',
+            response_modalities=['IMAGE', 'TEXT'],
+            system_instruction='make the sky more beautiful.',
+        ),
+    ):
+      continue
+
+  except errors.ClientError as e:
+    assert (
+        e.message
+        == 'Developer instruction is not enabled for'
+        ' models/gemini-2.0-flash-exp-image-generation'
+    )

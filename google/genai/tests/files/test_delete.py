@@ -24,7 +24,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_delete',
         parameters=types._DeleteFileParameters(name='files/1vx8znuf0yje'),
-        exception_if_vertex='only supported in the default client',
+        exception_if_vertex='only supported in the Gemini Developer client',
     ),
 ]
 

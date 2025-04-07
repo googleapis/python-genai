@@ -34,6 +34,8 @@ from ._api_client import HttpOptions
 from ._api_client import HttpRequest
 from ._api_client import HttpResponse
 from ._common import BaseModel
+from .types import HttpOptionsOrDict
+from .types import GenerateVideosOperation
 
 
 def _redact_version_numbers(version_string: str) -> str:
@@ -396,7 +398,12 @@ class ReplayApiClient(BaseApiClient):
     if isinstance(response_model, list):
       response_model = response_model[0]
     print('response_model: ', response_model.model_dump(exclude_none=True))
-    actual = response_model.model_dump(exclude_none=True, mode='json')
+    if isinstance(response_model, GenerateVideosOperation):
+      actual = response_model.model_dump(
+          exclude={'result'}, exclude_none=True, mode='json'
+      )
+    else:
+      actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
@@ -461,7 +468,14 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(http_request)
 
-  def upload_file(self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int) -> HttpResponse:
+  def upload_file(
+      self,
+      file_path: Union[str, io.IOBase],
+      upload_url: str,
+      upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ) -> HttpResponse:
     if isinstance(file_path, io.IOBase):
       offset = file_path.tell()
       content = file_path.read()
@@ -479,10 +493,12 @@ class ReplayApiClient(BaseApiClient):
     if self._should_call_api():
       result: Union[str, HttpResponse]
       try:
-        result = super().upload_file(file_path, upload_url, upload_size)
+        result = super().upload_file(
+            file_path, upload_url, upload_size, http_options=http_options
+        )
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e
@@ -496,6 +512,8 @@ class ReplayApiClient(BaseApiClient):
       file_path: Union[str, io.IOBase],
       upload_url: str,
       upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     if isinstance(file_path, io.IOBase):
       offset = file_path.tell()
@@ -515,11 +533,11 @@ class ReplayApiClient(BaseApiClient):
       result: HttpResponse
       try:
         result = await super().async_upload_file(
-            file_path, upload_url, upload_size
+            file_path, upload_url, upload_size, http_options=http_options
         )
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e
@@ -528,17 +546,19 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(request)
 
-  def download_file(self, path: str, http_options: HttpOptions):
+  def download_file(
+      self, path: str, *, http_options: Optional[HttpOptionsOrDict] = None
+  ):
     self._initialize_replay_session_if_not_loaded()
     request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
       try:
-        result = super().download_file(path, http_options)
+        result = super().download_file(path, http_options=http_options)
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e
@@ -547,17 +567,21 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(request).byte_stream[0]
 
-  async def async_download_file(self, path: str, http_options):
+  async def async_download_file(
+      self, path: str, *, http_options: Optional[HttpOptionsOrDict] = None
+  ):
     self._initialize_replay_session_if_not_loaded()
     request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
       try:
-        result = await super().async_download_file(path, http_options)
+        result = await super().async_download_file(
+            path, http_options=http_options
+        )
       except HTTPError as e:
         result = HttpResponse(
-            e.response.headers, [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
         )
         result.status_code = e.response.status_code
         raise e

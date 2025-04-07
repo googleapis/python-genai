@@ -28,7 +28,7 @@ from . import types
 if sys.version_info >= (3, 10):
   VersionedUnionType = builtin_types.UnionType
 else:
-  VersionedUnionType = typing._UnionGenericAlias
+  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
 
 _py_builtin_type_to_schema_type = {
     str: types.Type.STRING,
