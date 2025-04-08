@@ -136,6 +136,17 @@ class State(_common.CaseInSensitiveEnum):
   ERROR = 'ERROR'
 
 
+class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
+  """Options for feature selection preference."""
+
+  FEATURE_SELECTION_PREFERENCE_UNSPECIFIED = (
+      'FEATURE_SELECTION_PREFERENCE_UNSPECIFIED'
+  )
+  PRIORITIZE_QUALITY = 'PRIORITIZE_QUALITY'
+  BALANCED = 'BALANCED'
+  PRIORITIZE_COST = 'PRIORITIZE_COST'
+
+
 class FinishReason(_common.CaseInSensitiveEnum):
   """Output only. The reason why the model stopped generating tokens.
 
@@ -1878,6 +1889,26 @@ GenerationConfigRoutingConfigOrDict = Union[
 ]
 
 
+class GenerationConfigModelConfig(_common.BaseModel):
+  """Config for model selection."""
+
+  feature_selection_preference: Optional[FeatureSelectionPreference] = Field(
+      default=None, description="""Options for feature selection preference."""
+  )
+
+
+class GenerationConfigModelConfigDict(TypedDict, total=False):
+  """Config for model selection."""
+
+  feature_selection_preference: Optional[FeatureSelectionPreference]
+  """Options for feature selection preference."""
+
+
+GenerationConfigModelConfigOrDict = Union[
+    GenerationConfigModelConfig, GenerationConfigModelConfigDict
+]
+
+
 SpeechConfigUnion = Union[SpeechConfig, str]
 
 
@@ -1986,7 +2017,13 @@ class GenerateContentConfig(_common.BaseModel):
   )
   routing_config: Optional[GenerationConfigRoutingConfig] = Field(
       default=None,
-      description="""Configuration for model router requests.
+      description="""Deprecated. Configuration for model router requests. This field is
+      deprecated, please use the `generate_content_model_config` field instead.
+      """,
+  )
+  generate_content_model_config: Optional[GenerationConfigModelConfig] = Field(
+      default=None,
+      description="""Configuration for model selection.
       """,
   )
   safety_settings: Optional[list[SafetySetting]] = Field(
@@ -2151,7 +2188,12 @@ class GenerateContentConfigDict(TypedDict, total=False):
       """
 
   routing_config: Optional[GenerationConfigRoutingConfigDict]
-  """Configuration for model router requests.
+  """Deprecated. Configuration for model router requests. This field is
+      deprecated, please use the `generate_content_model_config` field instead.
+      """
+
+  generate_content_model_config: Optional[GenerationConfigModelConfigDict]
+  """Configuration for model selection.
       """
 
   safety_settings: Optional[list[SafetySettingDict]]

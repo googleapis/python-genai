@@ -497,6 +497,12 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['routing_config']) is not None:
     raise ValueError('routing_config parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['generate_content_model_config']) is not None:
+    raise ValueError(
+        'generate_content_model_config parameter is not supported in Gemini'
+        ' API.'
+    )
+
   if getv(from_object, ['safety_settings']) is not None:
     setv(
         parent_object,
@@ -1596,6 +1602,13 @@ def _GenerateContentConfig_to_vertex(
 
   if getv(from_object, ['routing_config']) is not None:
     setv(to_object, ['routingConfig'], getv(from_object, ['routing_config']))
+
+  if getv(from_object, ['generate_content_model_config']) is not None:
+    setv(
+        to_object,
+        ['modelConfig'],
+        getv(from_object, ['generate_content_model_config']),
+    )
 
   if getv(from_object, ['safety_settings']) is not None:
     setv(
