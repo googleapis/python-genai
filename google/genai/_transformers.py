@@ -53,7 +53,7 @@ def _resource_name(
     *,
     collection_identifier: str,
     collection_hierarchy_depth: int = 2,
-):
+) -> str:
   # pylint: disable=line-too-long
   """Prepends resource name with project, location, collection_identifier if needed.
 
@@ -140,7 +140,7 @@ def _resource_name(
       return resource_name
 
 
-def t_model(client: _api_client.BaseApiClient, model: str):
+def t_model(client: _api_client.BaseApiClient, model: str) -> str:
   if not model:
     raise ValueError('model is required.')
   if client.vertexai:
@@ -211,7 +211,7 @@ def t_extract_models(
     return []
 
 
-def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
+def t_caches_model(api_client: _api_client.BaseApiClient, model: str) -> Optional[str]:
   model = t_model(api_client, model)
   if not model:
     return None
@@ -226,7 +226,7 @@ def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
     return model
 
 
-def pil_to_blob(img) -> types.Blob:
+def pil_to_blob(img: Any) -> types.Blob:
   PngImagePlugin: Optional[builtin_types.ModuleType]
   try:
     import PIL.PngImagePlugin
@@ -470,7 +470,7 @@ def t_contents(
   def _append_accumulated_parts_as_content(
       result: list[types.Content],
       accumulated_parts: list[types.Part],
-  ):
+  ) -> None:
     if not accumulated_parts:
       return
     result.append(
@@ -484,7 +484,7 @@ def t_contents(
       result: list[types.Content],
       accumulated_parts: list[types.Part],
       current_part: types.PartUnionDict,
-  ):
+  ) -> None:
     current_part = t_part(current_part)
     if _is_user_part(current_part) == _are_user_parts(accumulated_parts):
       accumulated_parts.append(current_part)
@@ -523,7 +523,7 @@ def t_contents(
   return result
 
 
-def handle_null_fields(schema: dict[str, Any]):
+def handle_null_fields(schema: dict[str, Any]) -> None:
   """Process null fields in the schema so it is compatible with OpenAPI.
 
   The OpenAPI spec does not support 'type: 'null' in the schema. This function
@@ -588,7 +588,7 @@ def process_schema(
     defs: Optional[dict[str, Any]] = None,
     *,
     order_properties: bool = True,
-):
+) -> None:
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
   - Inlines the $defs.
@@ -834,7 +834,7 @@ def t_speech_config(
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
 
 
-def t_tool(client: _api_client.BaseApiClient, origin) -> Optional[types.Tool]:
+def t_tool(client: _api_client.BaseApiClient, origin: Any) -> Optional[Union[types.Tool, Any]]:
   if not origin:
     return None
   if inspect.isfunction(origin) or inspect.ismethod(origin):
@@ -875,11 +875,11 @@ def t_tools(
   return tools
 
 
-def t_cached_content_name(client: _api_client.BaseApiClient, name: str):
+def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
+def t_batch_job_source(client: _api_client.BaseApiClient, src: str) -> types.BatchJobSource:
   if src.startswith('gs://'):
     return types.BatchJobSource(
         format='jsonl',
@@ -894,7 +894,7 @@ def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
     raise ValueError(f'Unsupported source: {src}')
 
 
-def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
+def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str) -> types.BatchJobDestination:
   if dest.startswith('gs://'):
     return types.BatchJobDestination(
         format='jsonl',
@@ -909,7 +909,7 @@ def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
     raise ValueError(f'Unsupported destination: {dest}')
 
 
-def t_batch_job_name(client: _api_client.BaseApiClient, name: str):
+def t_batch_job_name(client: _api_client.BaseApiClient, name: str) -> str:
   if not client.vertexai:
     return name
 
@@ -928,7 +928,7 @@ LRO_POLLING_TIMEOUT_SECONDS = 900.0
 LRO_POLLING_MULTIPLIER = 1.5
 
 
-def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
+def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict[str, Any]) -> Any:
   if (name := struct.get('name')) and '/operations/' in name:
     operation: dict[str, Any] = struct
     total_seconds = 0.0
@@ -959,7 +959,7 @@ def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
 def t_file_name(
     api_client: _api_client.BaseApiClient,
     name: Optional[Union[str, types.File, types.Video, types.GeneratedVideo]],
-):
+) -> str:
   # Remove the files/ prefix since it's added to the url path.
   if isinstance(name, types.File):
     name = name.name

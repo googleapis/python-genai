@@ -50,8 +50,8 @@ from .models import _Tool_to_mldev
 from .models import _Tool_to_vertex
 
 try:
-  from websockets.asyncio.client import ClientConnection  # type: ignore
-  from websockets.asyncio.client import connect  # type: ignore
+  from websockets.asyncio.client import ClientConnection
+  from websockets.asyncio.client import connect
 except ModuleNotFoundError:
   # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
   from websockets.client import ClientConnection  # type: ignore
@@ -122,7 +122,7 @@ class AsyncSession:
   """AsyncSession. The live module is experimental."""
 
   def __init__(
-      self, api_client: client.BaseApiClient, websocket: ClientConnection
+      self, api_client: BaseApiClient, websocket: ClientConnection
   ):
     self._api_client = api_client
     self._ws = websocket
@@ -142,7 +142,7 @@ class AsyncSession:
           ]
       ] = None,
       end_of_turn: Optional[bool] = False,
-  ):
+  ) -> None:
     """Send input to the model.
 
     The method will send the input request to the server.
@@ -487,7 +487,7 @@ class AsyncSession:
       data_stream: AsyncIterator[bytes],
       mime_type: str,
       stop_event: asyncio.Event,
-  ):
+  ) -> None:
     async for data in data_stream:
       model_input = types.LiveClientRealtimeInput(
         media_chunks=[types.Blob(data=data, mime_type=mime_type)]
@@ -500,7 +500,7 @@ class AsyncSession:
 
   def _LiveServerContent_from_mldev(
       self,
-      from_object: Union[dict, object],
+      from_object: Union[dict[str, Any], object],
   ) -> Dict[str, Any]:
     to_object: dict[str, Any] = {}
     if getv(from_object, ['modelTurn']) is not None:
@@ -526,7 +526,7 @@ class AsyncSession:
 
   def _LiveToolCall_from_mldev(
       self,
-      from_object: Union[dict, object],
+      from_object: Union[dict[str, Any], object],
   ) -> Dict[str, Any]:
     to_object: dict[str, Any] = {}
     if getv(from_object, ['functionCalls']) is not None:
@@ -539,7 +539,7 @@ class AsyncSession:
 
   def _LiveToolCall_from_vertex(
       self,
-      from_object: Union[dict, object],
+      from_object: Union[dict[str, Any], object],
   ) -> Dict[str, Any]:
     to_object: dict[str, Any] = {}
     if getv(from_object, ['functionCalls']) is not None:
@@ -552,7 +552,7 @@ class AsyncSession:
 
   def _LiveServerMessage_from_mldev(
       self,
-      from_object: Union[dict, object],
+      from_object: Union[dict[str, Any], object],
   ) -> Dict[str, Any]:
     to_object: dict[str, Any] = {}
     if getv(from_object, ['serverContent']) is not None:
@@ -579,7 +579,7 @@ class AsyncSession:
 
   def _LiveServerContent_from_vertex(
       self,
-      from_object: Union[dict, object],
+      from_object: Union[dict[str, Any], object],
   ) -> Dict[str, Any]:
     to_object: dict[str, Any] = {}
     if getv(from_object, ['modelTurn']) is not None:
@@ -618,7 +618,7 @@ class AsyncSession:
 
   def _LiveServerMessage_from_vertex(
       self,
-      from_object: Union[dict, object],
+      from_object: Union[dict[str, Any], object],
   ) -> Dict[str, Any]:
     to_object: dict[str, Any] = {}
     if getv(from_object, ['serverContent']) is not None:
@@ -947,7 +947,7 @@ class AsyncSession:
 
     return client_message
 
-  async def close(self):
+  async def close(self) -> None:
     # Close the websocket connection.
     await self._ws.close()
 
@@ -1030,7 +1030,7 @@ class AsyncLive(_api_module.BaseModule):
 
   def _LiveSetup_to_mldev(
       self, model: str, config: Optional[types.LiveConnectConfig] = None
-  ):
+  ) -> dict[str, Any]:
 
     to_object: dict[str, Any] = {}
     if getv(config, ['generation_config']) is not None:
@@ -1134,7 +1134,7 @@ class AsyncLive(_api_module.BaseModule):
 
   def _LiveSetup_to_vertex(
       self, model: str, config: Optional[types.LiveConnectConfig] = None
-  ):
+  ) -> dict[str, Any]:
 
     to_object: dict[str, Any] = {}
 
@@ -1331,13 +1331,13 @@ class AsyncLive(_api_module.BaseModule):
       request = json.dumps(request_dict)
     else:
       # Get bearer token through Application Default Credentials.
-      creds, _ = google.auth.default(
+      creds, _ = google.auth.default(  # type: ignore[no-untyped-call]
           scopes=['https://www.googleapis.com/auth/cloud-platform']
       )
 
       # creds.valid is False, and creds.token is None
       # Need to refresh credentials to populate those
-      auth_req = google.auth.transport.requests.Request()
+      auth_req = google.auth.transport.requests.Request()  # type: ignore[no-untyped-call]
       creds.refresh(auth_req)
       bearer_token = creds.token
       headers = self._api_client._http_options.headers

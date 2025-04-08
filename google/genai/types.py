@@ -40,6 +40,7 @@ else:
 
 _is_pillow_image_imported = False
 if typing.TYPE_CHECKING:
+  from ._api_client import BaseApiClient
   import PIL.Image
 
   PIL_Image = PIL.Image.Image
@@ -1058,7 +1059,7 @@ class FunctionDeclaration(_common.BaseModel):
   def from_callable_with_api_option(
       cls,
       *,
-      callable: Callable,
+      callable: Callable[..., Any],
       api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
   ) -> 'FunctionDeclaration':
     """Converts a Callable to a FunctionDeclaration based on the API option.
@@ -1124,8 +1125,8 @@ class FunctionDeclaration(_common.BaseModel):
   def from_callable(
       cls,
       *,
-      client,
-      callable: Callable,
+      client: 'BaseApiClient',
+      callable: Callable[..., Any],
   ) -> 'FunctionDeclaration':
     """Converts a Callable to a FunctionDeclaration based on the client."""
     if client.vertexai:
@@ -1431,11 +1432,11 @@ class ToolDict(TypedDict, total=False):
 
 
 ToolOrDict = Union[Tool, ToolDict]
-ToolListUnion = list[Union[Tool, Callable]]
-ToolListUnionDict = list[Union[ToolDict, Callable]]
+ToolListUnion = list[Union[Tool, Callable[..., Any]]]
+ToolListUnionDict = list[Union[ToolDict, Callable[..., Any]]]
 
 SchemaUnion = Union[
-    dict, type, Schema, builtin_types.GenericAlias, VersionedUnionType  # type: ignore[valid-type]
+    dict[Any, Any], type, Schema, builtin_types.GenericAlias, VersionedUnionType  # type: ignore[valid-type]
 ]
 SchemaUnionDict = Union[SchemaUnion, SchemaDict]
 
@@ -2039,7 +2040,7 @@ class GenerateContentConfig(_common.BaseModel):
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
-  def _convert_literal_to_enum(cls, value):
+  def _convert_literal_to_enum(cls, value: Any) -> Union[Any, EnumMeta]:
     if typing.get_origin(value) is typing.Literal:
       enum_vals = typing.get_args(value)
       if not all(isinstance(arg, str) for arg in enum_vals):
@@ -3021,7 +3022,7 @@ class GenerateContentResponse(_common.BaseModel):
       default=None, description="""Usage metadata about the response(s)."""
   )
   automatic_function_calling_history: Optional[list[Content]] = None
-  parsed: Optional[Union[pydantic.BaseModel, dict, Enum]] = Field(
+  parsed: Optional[Union[pydantic.BaseModel, dict[Any, Any], Enum]] = Field(
       default=None,
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
@@ -3741,7 +3742,7 @@ class Image(_common.BaseModel):
       default=None, description="""The MIME type of the image."""
   )
 
-  _loaded_image = None
+  _loaded_image: Optional['PIL_Image'] = None
 
   """Image."""
 
@@ -3787,7 +3788,7 @@ class Image(_common.BaseModel):
     image = cls(image_bytes=image_bytes, mime_type=mime_type)
     return image
 
-  def show(self):
+  def show(self) -> None:
     """Shows the image.
 
     This method only works in a notebook environment.
@@ -3801,7 +3802,7 @@ class Image(_common.BaseModel):
       IPython_display.display(self._pil_image)
 
   @property
-  def _pil_image(self) -> 'PIL_Image':
+  def _pil_image(self) -> Optional['PIL_Image']:
     PIL_Image: Optional[builtin_types.ModuleType]
     try:
       from PIL import Image as PIL_Image
@@ -3820,7 +3821,7 @@ class Image(_common.BaseModel):
       self._loaded_image = PIL_Image.open(io.BytesIO(self.image_bytes))
     return self._loaded_image
 
-  def save(self, location: str):
+  def save(self, location: str) -> None:
     """Saves the image to a file.
 
     Args:
@@ -5364,7 +5365,7 @@ class Video(_common.BaseModel):
 
     pathlib.Path(path).write_bytes(self.video_bytes)
 
-  def show(self):
+  def show(self) -> None:
     """Shows the video.
 
     If the video has no mime_type, it is assumed to be video/mp4.
@@ -5372,9 +5373,9 @@ class Video(_common.BaseModel):
     This method only works in a notebook environment.
     """
     if self.uri and not self.video_bytes:
-      return ValueError('Showing remote videos is not supported.')
+      raise ValueError('Showing remote videos is not supported.')
     if not self.video_bytes:
-      return ValueError('Video has no bytes.')
+      raise ValueError('Video has no bytes.')
 
     mime_type = self.mime_type or 'video/mp4'
 
@@ -5390,7 +5391,7 @@ class Video(_common.BaseModel):
           )
       )
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     video_bytes = '<video_bytes>' if self.video_bytes else 'None'
     return (
         f'Video(uri={self.uri}, video_bytes={video_bytes},'
@@ -8454,7 +8455,7 @@ class RawReferenceImage(_common.BaseModel):
 
   @pydantic.model_validator(mode='before')
   @classmethod
-  def _validate_mask_image_config(self, values):
+  def _validate_mask_image_config(self, values: Any) -> Any:
     if 'reference_type' in values:
       raise ValueError('Cannot set internal reference_type field directly.')
     values['reference_type'] = 'REFERENCE_TYPE_RAW'
@@ -8516,7 +8517,7 @@ class MaskReferenceImage(_common.BaseModel):
 
   @pydantic.model_validator(mode='before')
   @classmethod
-  def _validate_mask_image_config(self, values):
+  def _validate_mask_image_config(self, values: Any) -> Any:
     config = values.get('config', None)
     values['mask_image_config'] = config
     if 'reference_type' in values:
@@ -8587,7 +8588,7 @@ class ControlReferenceImage(_common.BaseModel):
 
   @pydantic.model_validator(mode='before')
   @classmethod
-  def _validate_mask_image_config(self, values):
+  def _validate_mask_image_config(self, values: Any) -> Any:
     config = values.get('config', None)
     values['control_image_config'] = config
     if 'reference_type' in values:
@@ -8658,7 +8659,7 @@ class StyleReferenceImage(_common.BaseModel):
 
   @pydantic.model_validator(mode='before')
   @classmethod
-  def _validate_mask_image_config(self, values):
+  def _validate_mask_image_config(self, values: Any) -> Any:
     config = values.get('config', None)
     values['style_image_config'] = config
     if 'reference_type' in values:
@@ -8725,7 +8726,7 @@ class SubjectReferenceImage(_common.BaseModel):
 
   @pydantic.model_validator(mode='before')
   @classmethod
-  def _validate_mask_image_config(self, values):
+  def _validate_mask_image_config(self, values: Any) -> Any:
     config = values.get('config', None)
     values['subject_image_config'] = config
     if 'reference_type' in values:
