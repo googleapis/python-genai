@@ -1889,6 +1889,11 @@ class ThinkingConfig(_common.BaseModel):
       description="""Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
       """,
   )
+  thinking_budget: Optional[int] = Field(
+      default=None,
+      description="""Indicates the thinking budget in tokens.
+      """,
+  )
 
 
 class ThinkingConfigDict(TypedDict, total=False):
@@ -1896,6 +1901,10 @@ class ThinkingConfigDict(TypedDict, total=False):
 
   include_thoughts: Optional[bool]
   """Indicates whether to include thoughts in the response. If true, thoughts are returned only if the model supports thought and thoughts are available.
+      """
+
+  thinking_budget: Optional[int]
+  """Indicates the thinking budget in tokens.
       """
 
 
@@ -2663,6 +2672,9 @@ GroundingChunkRetrievedContextOrDict = Union[
 class GroundingChunkWeb(_common.BaseModel):
   """Chunk from the web."""
 
+  domain: Optional[str] = Field(
+      default=None, description="""Domain of the (original) URI."""
+  )
   title: Optional[str] = Field(
       default=None, description="""Title of the chunk."""
   )
@@ -2673,6 +2685,9 @@ class GroundingChunkWeb(_common.BaseModel):
 
 class GroundingChunkWebDict(TypedDict, total=False):
   """Chunk from the web."""
+
+  domain: Optional[str]
+  """Domain of the (original) URI."""
 
   title: Optional[str]
   """Title of the chunk."""
