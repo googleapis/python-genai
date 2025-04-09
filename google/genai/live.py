@@ -239,7 +239,7 @@ class AsyncSession:
     import google.genai
     from google.genai import types
 
-    client = genai.Client(http_options={'api_version': 'v1alpha'})
+    client = genai.Client()
     async with client.aio.live.connect(
         model=MODEL_NAME,
         config={"response_modalities": ["TEXT"]}
@@ -291,7 +291,7 @@ class AsyncSession:
 
     import PIL.Image
 
-    client = genai.Client(http_options= {'api_version': 'v1alpha'})
+    client = genai.Client()
 
     async with client.aio.live.connect(
         model=MODEL_NAME,
@@ -340,7 +340,7 @@ class AsyncSession:
     from google import genai
     from google.genai import types
 
-    client = genai.Client(http_options={'api_version': 'v1alpha'})
+    client = genai.Client()
 
     tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
     config = {
@@ -349,7 +349,7 @@ class AsyncSession:
     }
 
     async with client.aio.live.connect(
-        model='gemini-2.0-flash-exp',
+        model='models/gemini-2.0-flash-live-001',
         config=config
     ) as session:
       prompt = "Turn on the lights please"

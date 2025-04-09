@@ -221,7 +221,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_google_search_tool',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.0-flash',
             contents=t.t_contents(None, 'Why is the sky blue?'),
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())]
@@ -231,7 +231,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.0-flash',
             contents=t.t_contents(
                 None, 'Produce a speech response saying "Cheese"'
             ),
@@ -250,7 +250,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_speech_string_config',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.0-flash',
             contents='Say hello!',
             config=types.GenerateContentConfig(
                 response_modalities=['audio'], speech_config='charon'
@@ -1525,7 +1525,7 @@ def test_schema_with_any_of(client):
 def test_json_schema_with_streaming(client):
 
   response = client.models.generate_content_stream(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -1562,7 +1562,7 @@ def test_pydantic_schema_with_streaming(client):
     total_area_sq_mi: int
 
   response = client.models.generate_content_stream(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -1586,7 +1586,7 @@ def test_schema_from_json(client):
   schema = types.Schema.model_validate(Foo.model_json_schema())
 
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       contents='Fill in the Foo.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1605,7 +1605,7 @@ def test_schema_from_model_schema(client):
     qux: list[str]
 
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       contents='Fill in the Foo.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',

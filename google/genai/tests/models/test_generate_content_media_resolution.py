@@ -83,7 +83,6 @@ def test_low_media_resolution(client):
         contents=[file, 'Describe the image.'],
         config=types.GenerateContentConfig(
             media_resolution='MEDIA_RESOLUTION_LOW',
-            http_options= types.HttpOptions(api_version='v1alpha', base_url='https://generativelanguage.googleapis.com')
             ),
         )
     assert response.text

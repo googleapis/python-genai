@@ -1022,7 +1022,7 @@ def test_class_method_tools(client):
 
   function_holder = FunctionHolder()
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       contents=(
           'Print the verbatim output of is_a_duck and is_a_rabbit for the'
           ' number 100.'
@@ -1068,7 +1068,7 @@ def test_afc_once_in_any_mode(client):
 
 def test_code_execution_tool(client):
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       contents=(
           'What is the sum of the first 50 prime numbers? Generate and run code'
           ' for the calculation, and make sure you get all 50.'

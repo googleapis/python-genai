@@ -5350,7 +5350,7 @@ class Models(_api_module.BaseModule):
 
       response=client.models.list(config={'page_size': 5, 'query_base': True})
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-2.0-flash' ...
     """
 
     config = (
@@ -6711,7 +6711,7 @@ class AsyncModels(_api_module.BaseModule):
           config={'page_size': 5, 'query_base': True}
         )
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-2.0-flash' ...
     """
 
     config = (

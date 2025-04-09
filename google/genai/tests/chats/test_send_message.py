@@ -178,7 +178,7 @@ def test_send_2_messages(client):
 
 def test_with_afc_history(client):
   chat = client.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
   _ = chat.send_message('what is the result of 100/2?')
@@ -211,7 +211,7 @@ def test_with_afc_history(client):
 
 def test_existing_chat_history_extends_afc_history(client):
   chat = client.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
   _ = chat.send_message('hello')
@@ -336,7 +336,7 @@ def test_with_afc_multiple_remote_calls_async(client):
 
 def test_with_afc_disabled(client):
   chat = client.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       config={
           'tools': [square_integer],
           'automatic_function_calling': {'disable': True},
@@ -361,7 +361,7 @@ def test_with_afc_disabled(client):
 @pytest.mark.asyncio
 async def test_with_afc_history_async(client):
   chat = client.aio.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
   _ = await chat.send_message('what is the result of 100/2?')
@@ -395,7 +395,7 @@ async def test_with_afc_history_async(client):
 @pytest.mark.asyncio
 async def test_with_afc_disabled_async(client):
   chat = client.aio.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       config={
           'tools': [square_integer],
           'automatic_function_calling': {'disable': True},
@@ -473,7 +473,7 @@ def test_stream_config_override(client):
 
 def test_stream_function_calling(client):
   chat = client.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
   # Now we support AFC.
@@ -627,7 +627,7 @@ async def test_async_stream_config_override(client):
 @pytest.mark.asyncio
 async def test_async_stream_function_calling(client):
   chat = client.aio.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-2.0-flash',
       config={'tools': [divide_intergers_with_customized_math_rule]},
   )
   # Now we support AFC.
