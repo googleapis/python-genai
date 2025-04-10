@@ -820,6 +820,9 @@ class HttpOptions(_common.BaseModel):
   timeout: Optional[int] = Field(
       default=None, description="""Timeout for the request in milliseconds."""
   )
+  max_retries: Optional[int] = Field(
+      default=None, description="""Maximum number of retries for the request."""
+  )
 
 
 class HttpOptionsDict(TypedDict, total=False):
@@ -836,6 +839,9 @@ class HttpOptionsDict(TypedDict, total=False):
 
   timeout: Optional[int]
   """Timeout for the request in milliseconds."""
+
+  max_retries: Optional[int]
+  """Maximum number of retries for the request."""
 
 
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]

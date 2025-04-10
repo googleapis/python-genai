@@ -27,6 +27,7 @@ def test_patch_http_options_with_copies_all_fields():
       api_version='v1',
       headers={'X-Custom-Header': 'custom_value'},
       timeout=10000,
+      max_retries=2,
   )
   options = types.HttpOptions()
   patched = _api_client._patch_http_options(options, patch_options)

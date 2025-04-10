@@ -52,6 +52,7 @@ def test_constructor_with_http_options():
       "base_url": "https://placeholder-fake-url.com/",
       "headers": {"X-Custom-Header": "custom_value_mldev"},
       "timeout": 10000,
+      "max_retries": 3,
   }
   vertexai_http_options = {
       "api_version": "v1",
@@ -60,6 +61,7 @@ def test_constructor_with_http_options():
       ),
       "headers": {"X-Custom-Header": "custom_value_vertexai"},
       "timeout": 11000,
+      "max_retries": 4,
   }
 
   mldev_client = Client(
@@ -87,6 +89,11 @@ def test_constructor_with_http_options():
   assert (
       mldev_client.models._api_client.get_read_only_http_options()["timeout"]
       == 10000
+  )
+
+  assert (
+      mldev_client.models._api_client.get_read_only_http_options()["max_retries"]
+      == 3
   )
 
   vertexai_client = Client(
@@ -118,6 +125,11 @@ def test_constructor_with_http_options():
   assert (
       vertexai_client.models._api_client.get_read_only_http_options()["timeout"]
       == 11000
+  )
+
+  assert (
+      vertexai_client.models._api_client.get_read_only_http_options()["max_retries"]
+      == 4
   )
 
 

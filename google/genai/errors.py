@@ -15,7 +15,7 @@
 
 """Error classes for the GenAI SDK."""
 
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import Callable, Optional, TYPE_CHECKING, Union
 import httpx
 import json
 
@@ -131,6 +131,46 @@ class APIError(Exception):
       raise ServerError(status_code, response_json, response)
     else:
       raise cls(status_code, response_json, response)
+
+
+def _if_exception_type(
+    *exception_types: type[Exception],
+) -> Callable[[Exception], bool]:
+  """Creates a predicate to check if the exception is of a given type.
+
+  Args:
+      *exception_types: The exception types to check for.
+
+  Returns:
+      Callable[Exception]: A predicate that returns True if the provided
+      exception is of the given type(s).
+  """
+
+  def if_exception_type_predicate(exception: Exception) -> bool:
+    """Bound predicate for checking an exception type."""
+    return isinstance(exception, exception_types)
+
+  return if_exception_type_predicate
+
+
+def is_retriable(exception: Exception)-> bool:
+  """Returns true if the exception is retrieable."""
+  if isinstance(exception, APIError):
+    # The following list [429, 500, 503] are the default retryable HTTP errors
+    # in google/api-core.
+    # https://github.com/googleapis/python-api-core/blob/ab22afdf311a2d87493c29833b35ef3b3ca8f246/google/api_core/retry/retry_base.py#L87-L90
+    #
+    # More errors can be added in a similar way if needed:
+    # 408 Request Timeout
+    # 429 Too Many Requests, it depends, should not be retried too fast.
+    # 500 Internal Server Error, it depends.
+    # 502 Bad Gateway, it depends.
+    # 503 Service Unavailable
+    # 504 Gateway Timeout
+    return exception.code in [429, 500, 503]
+  if _if_exception_type(httpx.ConnectError, httpx.TimeoutException)(exception):
+    return True
+  return False
 
 
 class ClientError(APIError):
