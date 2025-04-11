@@ -26,7 +26,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_caches_get_with_vertex_cache_name',
         exception_if_mldev='PERMISSION_DENIED',
         parameters=types._GetCachedContentParameters(
-            name=constants.CACHED_CONTENT_NAME_VERTEX,
+            name='projects/180930198915/locations/us-central1/cachedContents/5588989127799341056',
         ),
     ),
     pytest_helper.TestTableItem(
