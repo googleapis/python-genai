@@ -10320,3 +10320,35 @@ If included the server will send SessionResumptionUpdate messages."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
+
+
+class LiveConnectParameters(_common.BaseModel):
+  """Parameters for connecting to the live API."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  config: Optional[LiveConnectConfig] = Field(
+      default=None,
+      description="""Optional parameters for the request.
+      """,
+  )
+
+
+class LiveConnectParametersDict(TypedDict, total=False):
+  """Parameters for connecting to the live API."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  config: Optional[LiveConnectConfigDict]
+  """Optional parameters for the request.
+      """
+
+
+LiveConnectParametersOrDict = Union[
+    LiveConnectParameters, LiveConnectParametersDict
+]
