@@ -34,51 +34,27 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.files')
 
 
-def _ListFilesConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListFilesConfig_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
+    setv(parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size']))
 
   if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
+    setv(parent_object, ['_query', 'pageToken'], getv(from_object, ['page_token']))
 
   return to_object
 
 
-def _ListFilesParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListFilesParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListFilesConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _ListFilesConfig_to_mldev(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _FileStatus_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _FileStatus_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -92,11 +68,7 @@ def _FileStatus_to_mldev(
   return to_object
 
 
-def _File_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _File_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -129,38 +101,24 @@ def _File_to_mldev(
     setv(to_object, ['downloadUri'], getv(from_object, ['download_uri']))
 
   if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
+        setv(to_object, ['state'], getv(from_object, ['state']))
 
   if getv(from_object, ['source']) is not None:
-    setv(to_object, ['source'], getv(from_object, ['source']))
+        setv(to_object, ['source'], getv(from_object, ['source']))
 
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _FileStatus_to_mldev(
-            api_client, getv(from_object, ['error']), to_object
-        ),
-    )
+    setv(to_object, ['error'], _FileStatus_to_mldev(api_client, getv(from_object, ['error']), to_object))
 
   return to_object
 
 
-def _CreateFileParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateFileParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['file']) is not None:
-    setv(
-        to_object,
-        ['file'],
-        _File_to_mldev(api_client, getv(from_object, ['file']), to_object),
-    )
+    setv(to_object, ['file'], _File_to_mldev(api_client, getv(from_object, ['file']), to_object))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -168,18 +126,10 @@ def _CreateFileParameters_to_mldev(
   return to_object
 
 
-def _GetFileParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GetFileParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'file'],
-        t.t_file_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'file'], t.t_file_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -187,18 +137,10 @@ def _GetFileParameters_to_mldev(
   return to_object
 
 
-def _DeleteFileParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteFileParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'file'],
-        t.t_file_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'file'], t.t_file_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -206,11 +148,7 @@ def _DeleteFileParameters_to_mldev(
   return to_object
 
 
-def _FileStatus_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _FileStatus_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -224,11 +162,7 @@ def _FileStatus_from_mldev(
   return to_object
 
 
-def _File_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _File_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -261,76 +195,54 @@ def _File_from_mldev(
     setv(to_object, ['download_uri'], getv(from_object, ['downloadUri']))
 
   if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
+        setv(to_object, ['state'], getv(from_object, ['state']))
 
   if getv(from_object, ['source']) is not None:
-    setv(to_object, ['source'], getv(from_object, ['source']))
+        setv(to_object, ['source'], getv(from_object, ['source']))
 
   if getv(from_object, ['videoMetadata']) is not None:
     setv(to_object, ['video_metadata'], getv(from_object, ['videoMetadata']))
 
   if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _FileStatus_from_mldev(
-            api_client, getv(from_object, ['error']), to_object
-        ),
-    )
+    setv(to_object, ['error'], _FileStatus_from_mldev(api_client, getv(from_object, ['error']), to_object))
 
   return to_object
 
 
-def _ListFilesResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListFilesResponse_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
   if getv(from_object, ['files']) is not None:
-    setv(
-        to_object,
-        ['files'],
-        [
-            _File_from_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['files'])
-        ],
-    )
+    setv(to_object, ['files'], [_File_from_mldev(api_client, item, to_object) for item in getv(from_object, ['files'])])
 
   return to_object
 
 
-def _CreateFileResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateFileResponse_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['httpHeaders']) is not None:
     setv(to_object, ['http_headers'], getv(from_object, ['httpHeaders']))
 
+
   return to_object
 
 
-def _DeleteFileResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteFileResponse_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   return to_object
 
 
 class Files(_api_module.BaseModule):
+  
 
-  def _list(
-      self, *, config: Optional[types.ListFilesConfigOrDict] = None
-  ) -> types.ListFilesResponse:
-    """Lists all files from the service.
+  def _list(self, *, config: Optional[types.ListFilesConfigOrDict] = None) -> types.ListFilesResponse:
+
+    """
+    
+    Lists all files from the service.
 
     Args:
       config (ListFilesConfig): Optional, configuration for the list method.
@@ -345,119 +257,99 @@ class Files(_api_module.BaseModule):
       pager = client.files.list(config={'page_size': 10})
       for file in pager.page:
         print(file.name)
+    
     """
+    
+    parameter_model = types._ListFilesParameters(config=config,    )
 
-    parameter_model = types._ListFilesParameters(
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _ListFilesParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListFilesParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files'.format_map(request_url_dict)
       else:
         path = 'files'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('get', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
-      response_dict = _ListFilesResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListFilesResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.ListFilesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.ListFilesResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def _create(
-      self,
-      *,
-      file: types.FileOrDict,
-      config: Optional[types.CreateFileConfigOrDict] = None,
-  ) -> types.CreateFileResponse:
-    parameter_model = types._CreateFileParameters(
-        file=file,
-        config=config,
-    )
+
+  def _create(self, *, file: types.FileOrDict, config: Optional[types.CreateFileConfigOrDict] = None) -> types.CreateFileResponse:
+    parameter_model = types._CreateFileParameters(file=file,config=config,    )
+
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _CreateFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateFileParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'upload/v1beta/files'.format_map(request_url_dict)
       else:
         path = 'upload/v1beta/files'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('post', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
-      response_dict = _CreateFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _CreateFileResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CreateFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CreateFileResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def get(
-      self, *, name: str, config: Optional[types.GetFileConfigOrDict] = None
-  ) -> types.File:
-    """Retrieves the file information from the service.
+
+  def get(self, *, name: str, config: Optional[types.GetFileConfigOrDict] = None) -> types.File:
+
+    """
+    
+    Retrieves the file information from the service.
 
     Args:
       name (str): The name identifier for the file to retrieve.
@@ -472,61 +364,56 @@ class Files(_api_module.BaseModule):
 
       file = client.files.get(name='files/...')
       print(file.uri)
+    
     """
+    
+    parameter_model = types._GetFileParameters(name=name,config=config,    )
 
-    parameter_model = types._GetFileParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _GetFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetFileParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
       else:
         path = 'files/{file}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('get', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
       response_dict = _File_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.File._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.File._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def delete(
-      self, *, name: str, config: Optional[types.DeleteFileConfigOrDict] = None
-  ) -> types.DeleteFileResponse:
-    """Deletes a remotely stored file.
+
+  def delete(self, *, name: str, config: Optional[types.DeleteFileConfigOrDict] = None) -> types.DeleteFileResponse:
+
+    """
+    
+    Deletes a remotely stored file.
 
     Args:
       name (str): The name identifier for the file to delete.
@@ -540,58 +427,51 @@ class Files(_api_module.BaseModule):
     .. code-block:: python
 
       client.files.delete(name='files/...')
+    
     """
+    
+    parameter_model = types._DeleteFileParameters(name=name,config=config,    )
 
-    parameter_model = types._DeleteFileParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _DeleteFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteFileParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
       else:
         path = 'files/{file}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'delete', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('delete', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
-      response_dict = _DeleteFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteFileResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.DeleteFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.DeleteFileResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
+
+
 
   def upload(
       self,
@@ -602,8 +482,8 @@ class Files(_api_module.BaseModule):
     """Calls the API to upload a file using a supported file service.
 
     Args:
-      file: A path to the file or an `IOBase` object to be uploaded. If it's an
-        IOBase object, it must be opened in blocking (the default) mode and
+      file: A path to the file or an `IOBase` object to be uploaded. If it's
+        an IOBase object, it must be opened in blocking (the default) mode and
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
@@ -651,8 +531,8 @@ class Files(_api_module.BaseModule):
         file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
       if file_obj.mime_type is None:
         raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
+            'Unknown mime type: Could not determine the mimetype for your file\n'
+            '    please set the `mime_type` argument'
         )
 
     http_options: types.HttpOptions
@@ -701,8 +581,7 @@ class Files(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(self._api_client, return_file.json['file']),
-        kwargs=config_model.model_dump() if config else {},
+        response=_File_from_mldev(self._api_client, return_file.json['file']), kwargs=config_model.model_dump() if config else {}
     )
 
   def list(
@@ -798,11 +677,13 @@ class Files(_api_module.BaseModule):
 
 
 class AsyncFiles(_api_module.BaseModule):
+  
 
-  async def _list(
-      self, *, config: Optional[types.ListFilesConfigOrDict] = None
-  ) -> types.ListFilesResponse:
-    """Lists all files from the service.
+  async def _list(self, *, config: Optional[types.ListFilesConfigOrDict] = None) -> types.ListFilesResponse:
+
+    """
+    
+    Lists all files from the service.
 
     Args:
       config (ListFilesConfig): Optional, configuration for the list method.
@@ -817,119 +698,99 @@ class AsyncFiles(_api_module.BaseModule):
       pager = await client.aio.files.list(config={'page_size': 10})
       for file in pager.page:
         print(file.name)
+    
     """
+    
+    parameter_model = types._ListFilesParameters(config=config,    )
 
-    parameter_model = types._ListFilesParameters(
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _ListFilesParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListFilesParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files'.format_map(request_url_dict)
       else:
         path = 'files'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('get', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
-      response_dict = _ListFilesResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListFilesResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.ListFilesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.ListFilesResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def _create(
-      self,
-      *,
-      file: types.FileOrDict,
-      config: Optional[types.CreateFileConfigOrDict] = None,
-  ) -> types.CreateFileResponse:
-    parameter_model = types._CreateFileParameters(
-        file=file,
-        config=config,
-    )
+
+  async def _create(self, *, file: types.FileOrDict, config: Optional[types.CreateFileConfigOrDict] = None) -> types.CreateFileResponse:
+    parameter_model = types._CreateFileParameters(file=file,config=config,    )
+
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _CreateFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateFileParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'upload/v1beta/files'.format_map(request_url_dict)
       else:
         path = 'upload/v1beta/files'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'post', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('post', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
-      response_dict = _CreateFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _CreateFileResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CreateFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CreateFileResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def get(
-      self, *, name: str, config: Optional[types.GetFileConfigOrDict] = None
-  ) -> types.File:
-    """Retrieves the file information from the service.
+
+  async def get(self, *, name: str, config: Optional[types.GetFileConfigOrDict] = None) -> types.File:
+
+    """
+    
+    Retrieves the file information from the service.
 
     Args:
       name (str): The name identifier for the file to retrieve.
@@ -944,61 +805,56 @@ class AsyncFiles(_api_module.BaseModule):
 
       file = await client.aio.files.get(name='files/...')
       print(file.uri)
+        
     """
+    
+    parameter_model = types._GetFileParameters(name=name,config=config,    )
 
-    parameter_model = types._GetFileParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _GetFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetFileParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
       else:
         path = 'files/{file}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('get', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
       response_dict = _File_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.File._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.File._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def delete(
-      self, *, name: str, config: Optional[types.DeleteFileConfigOrDict] = None
-  ) -> types.DeleteFileResponse:
-    """Deletes a remotely stored file.
+
+  async def delete(self, *, name: str, config: Optional[types.DeleteFileConfigOrDict] = None) -> types.DeleteFileResponse:
+
+    """
+    
+    Deletes a remotely stored file.
 
     Args:
       name (str): The name identifier for the file to delete.
@@ -1012,58 +868,51 @@ class AsyncFiles(_api_module.BaseModule):
     .. code-block:: python
 
       await client.aio.files.delete(name='files/...')
+    
     """
+    
+    parameter_model = types._DeleteFileParameters(name=name,config=config,    )
 
-    parameter_model = types._DeleteFileParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
+      raise ValueError('This method is only supported in the Gemini Developer client.')
     else:
-      request_dict = _DeleteFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteFileParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
       else:
         path = 'files/{file}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'delete', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('delete', path, request_dict, http_options)
+
+    
     if not self._api_client.vertexai:
-      response_dict = _DeleteFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteFileResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.DeleteFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.DeleteFileResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
+
+
 
   async def upload(
       self,
@@ -1074,8 +923,8 @@ class AsyncFiles(_api_module.BaseModule):
     """Calls the API to upload a file asynchronously using a supported file service.
 
     Args:
-      file: A path to the file or an `IOBase` object to be uploaded. If it's an
-        IOBase object, it must be opened in blocking (the default) mode and
+      file: A path to the file or an `IOBase` object to be uploaded. If it's
+        an IOBase object, it must be opened in blocking (the default) mode and
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
@@ -1104,8 +953,8 @@ class AsyncFiles(_api_module.BaseModule):
     if isinstance(file, io.IOBase):
       if file_obj.mime_type is None:
         raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
+            'Unknown mime type: Could not determine the mimetype for your file\n'
+            '    please set the `mime_type` argument'
         )
       if hasattr(file, 'mode'):
         if 'b' not in file.mode:
@@ -1123,15 +972,16 @@ class AsyncFiles(_api_module.BaseModule):
         file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
       if file_obj.mime_type is None:
         raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
+            'Unknown mime type: Could not determine the mimetype for your file\n'
+            '    please set the `mime_type` argument'
         )
+
 
     http_options: types.HttpOptions
     if config_model and config_model.http_options:
       http_options = config_model.http_options
       http_options.api_version = ''
-      http_options.headers = {
+      http_options.headers={
           'Content-Type': 'application/json',
           'X-Goog-Upload-Protocol': 'resumable',
           'X-Goog-Upload-Command': 'start',
@@ -1172,8 +1022,7 @@ class AsyncFiles(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(self._api_client, return_file.json['file']),
-        kwargs=config_model.model_dump() if config else {},
+        response=_File_from_mldev(self._api_client, return_file.json['file']), kwargs=config_model.model_dump() if config else {}
     )
 
   async def list(
