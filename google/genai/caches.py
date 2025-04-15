@@ -30,11 +30,7 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.caches')
 
 
-def _Part_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _Part_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
     raise ValueError('video_metadata parameter is not supported in Gemini API.')
@@ -43,11 +39,7 @@ def _Part_to_mldev(
     setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   if getv(from_object, ['code_execution_result']) is not None:
-    setv(
-        to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
-    )
+    setv(to_object, ['codeExecutionResult'], getv(from_object, ['code_execution_result']))
 
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
@@ -59,11 +51,7 @@ def _Part_to_mldev(
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
+    setv(to_object, ['functionResponse'], getv(from_object, ['function_response']))
 
   if getv(from_object, ['inline_data']) is not None:
     setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
@@ -74,21 +62,10 @@ def _Part_to_mldev(
   return to_object
 
 
-def _Content_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _Content_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
+    setv(to_object, ['parts'], [_Part_to_mldev(api_client, item, to_object) for item in getv(from_object, ['parts'])])
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
@@ -96,11 +73,7 @@ def _Content_to_mldev(
   return to_object
 
 
-def _Schema_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _Schema_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['example']) is not None:
     raise ValueError('example parameter is not supported in Gemini API.')
@@ -157,11 +130,7 @@ def _Schema_to_mldev(
     setv(to_object, ['properties'], getv(from_object, ['properties']))
 
   if getv(from_object, ['property_ordering']) is not None:
-    setv(
-        to_object,
-        ['propertyOrdering'],
-        getv(from_object, ['property_ordering']),
-    )
+    setv(to_object, ['propertyOrdering'], getv(from_object, ['property_ordering']))
 
   if getv(from_object, ['required']) is not None:
     setv(to_object, ['required'], getv(from_object, ['required']))
@@ -175,11 +144,7 @@ def _Schema_to_mldev(
   return to_object
 
 
-def _FunctionDeclaration_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _FunctionDeclaration_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['response']) is not None:
     raise ValueError('response parameter is not supported in Gemini API.')
@@ -196,93 +161,53 @@ def _FunctionDeclaration_to_mldev(
   return to_object
 
 
-def _GoogleSearch_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GoogleSearch_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   return to_object
 
 
-def _DynamicRetrievalConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DynamicRetrievalConfig_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
+        setv(to_object, ['mode'], getv(from_object, ['mode']))
 
   if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
+    setv(to_object, ['dynamicThreshold'], getv(from_object, ['dynamic_threshold']))
 
   return to_object
 
 
-def _GoogleSearchRetrieval_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GoogleSearchRetrieval_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_mldev(
-            api_client,
-            getv(from_object, ['dynamic_retrieval_config']),
-            to_object,
-        ),
-    )
+    setv(to_object, ['dynamicRetrievalConfig'], _DynamicRetrievalConfig_to_mldev(api_client, getv(from_object, ['dynamic_retrieval_config']), to_object))
 
   return to_object
 
 
-def _Tool_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _EnterpriseWebSearch_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _Tool_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
+    setv(to_object, ['functionDeclarations'], [_FunctionDeclaration_to_mldev(api_client, item, to_object) for item in getv(from_object, ['function_declarations'])])
 
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
   if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(
-            api_client, getv(from_object, ['google_search']), to_object
-        ),
-    )
+    setv(to_object, ['googleSearch'], _GoogleSearch_to_mldev(api_client, getv(from_object, ['google_search']), to_object))
 
   if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_mldev(
-            api_client,
-            getv(from_object, ['google_search_retrieval']),
-            to_object,
-        ),
-    )
+    setv(to_object, ['googleSearchRetrieval'], _GoogleSearchRetrieval_to_mldev(api_client, getv(from_object, ['google_search_retrieval']), to_object))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError('enterprise_web_search parameter is not supported in Gemini API.')
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -290,50 +215,29 @@ def _Tool_to_mldev(
   return to_object
 
 
-def _FunctionCallingConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _FunctionCallingConfig_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
+        setv(to_object, ['mode'], getv(from_object, ['mode']))
 
   if getv(from_object, ['allowed_function_names']) is not None:
-    setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
-    )
+    setv(to_object, ['allowedFunctionNames'], getv(from_object, ['allowed_function_names']))
 
   return to_object
 
 
-def _ToolConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ToolConfig_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_mldev(
-            api_client,
-            getv(from_object, ['function_calling_config']),
-            to_object,
-        ),
-    )
+    setv(to_object, ['functionCallingConfig'], _FunctionCallingConfig_to_mldev(api_client, getv(from_object, ['function_calling_config']), to_object))
+
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config']))
 
   return to_object
 
 
-def _CreateCachedContentConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateCachedContentConfig_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['ttl']) is not None:
@@ -346,87 +250,35 @@ def _CreateCachedContentConfig_to_mldev(
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['contents']) is not None:
-    setv(
-        parent_object,
-        ['contents'],
-        [
-            _Content_to_mldev(api_client, item, to_object)
-            for item in t.t_contents(
-                api_client, getv(from_object, ['contents'])
-            )
-        ],
-    )
+    setv(parent_object, ['contents'], [_Content_to_mldev(api_client, item, to_object) for item in t.t_contents(api_client, getv(from_object, ['contents']))])
 
   if getv(from_object, ['system_instruction']) is not None:
-    setv(
-        parent_object,
-        ['systemInstruction'],
-        _Content_to_mldev(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
-        ),
-    )
+    setv(parent_object, ['systemInstruction'], _Content_to_mldev(api_client, t.t_content(api_client, getv(from_object, ['system_instruction'])), to_object))
 
   if getv(from_object, ['tools']) is not None:
-    setv(
-        parent_object,
-        ['tools'],
-        [
-            _Tool_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['tools'])
-        ],
-    )
+    setv(parent_object, ['tools'], [_Tool_to_mldev(api_client, item, to_object) for item in getv(from_object, ['tools'])])
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_mldev(
-            api_client, getv(from_object, ['tool_config']), to_object
-        ),
-    )
+    setv(parent_object, ['toolConfig'], _ToolConfig_to_mldev(api_client, getv(from_object, ['tool_config']), to_object))
 
   return to_object
 
 
-def _CreateCachedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateCachedContentParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['model'],
-        t.t_caches_model(api_client, getv(from_object, ['model'])),
-    )
+    setv(to_object, ['model'], t.t_caches_model(api_client, getv(from_object, ['model'])))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _CreateCachedContentConfig_to_mldev(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _GetCachedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GetCachedContentParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_cached_content_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -434,18 +286,10 @@ def _GetCachedContentParameters_to_mldev(
   return to_object
 
 
-def _DeleteCachedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteCachedContentParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_cached_content_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -453,11 +297,7 @@ def _DeleteCachedContentParameters_to_mldev(
   return to_object
 
 
-def _UpdateCachedContentConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _UpdateCachedContentConfig_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['ttl']) is not None:
@@ -469,76 +309,38 @@ def _UpdateCachedContentConfig_to_mldev(
   return to_object
 
 
-def _UpdateCachedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _UpdateCachedContentParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_cached_content_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _UpdateCachedContentConfig_to_mldev(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _ListCachedContentsConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListCachedContentsConfig_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
+    setv(parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size']))
 
   if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
+    setv(parent_object, ['_query', 'pageToken'], getv(from_object, ['page_token']))
 
   return to_object
 
 
-def _ListCachedContentsParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListCachedContentsParameters_to_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListCachedContentsConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _ListCachedContentsConfig_to_mldev(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _Part_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _Part_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
@@ -547,11 +349,7 @@ def _Part_to_vertex(
     setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   if getv(from_object, ['code_execution_result']) is not None:
-    setv(
-        to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
-    )
+    setv(to_object, ['codeExecutionResult'], getv(from_object, ['code_execution_result']))
 
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
@@ -563,11 +361,7 @@ def _Part_to_vertex(
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
+    setv(to_object, ['functionResponse'], getv(from_object, ['function_response']))
 
   if getv(from_object, ['inline_data']) is not None:
     setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
@@ -578,21 +372,10 @@ def _Part_to_vertex(
   return to_object
 
 
-def _Content_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _Content_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_to_vertex(api_client, item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
+    setv(to_object, ['parts'], [_Part_to_vertex(api_client, item, to_object) for item in getv(from_object, ['parts'])])
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
@@ -600,11 +383,7 @@ def _Content_to_vertex(
   return to_object
 
 
-def _Schema_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _Schema_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['example']) is not None:
     setv(to_object, ['example'], getv(from_object, ['example']))
@@ -661,11 +440,7 @@ def _Schema_to_vertex(
     setv(to_object, ['properties'], getv(from_object, ['properties']))
 
   if getv(from_object, ['property_ordering']) is not None:
-    setv(
-        to_object,
-        ['propertyOrdering'],
-        getv(from_object, ['property_ordering']),
-    )
+    setv(to_object, ['propertyOrdering'], getv(from_object, ['property_ordering']))
 
   if getv(from_object, ['required']) is not None:
     setv(to_object, ['required'], getv(from_object, ['required']))
@@ -679,20 +454,10 @@ def _Schema_to_vertex(
   return to_object
 
 
-def _FunctionDeclaration_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _FunctionDeclaration_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _Schema_to_vertex(
-            api_client, getv(from_object, ['response']), to_object
-        ),
-    )
+    setv(to_object, ['response'], _Schema_to_vertex(api_client, getv(from_object, ['response']), to_object))
 
   if getv(from_object, ['description']) is not None:
     setv(to_object, ['description'], getv(from_object, ['description']))
@@ -706,93 +471,53 @@ def _FunctionDeclaration_to_vertex(
   return to_object
 
 
-def _GoogleSearch_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GoogleSearch_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   return to_object
 
 
-def _DynamicRetrievalConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DynamicRetrievalConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
+        setv(to_object, ['mode'], getv(from_object, ['mode']))
 
   if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
+    setv(to_object, ['dynamicThreshold'], getv(from_object, ['dynamic_threshold']))
 
   return to_object
 
 
-def _GoogleSearchRetrieval_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GoogleSearchRetrieval_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_vertex(
-            api_client,
-            getv(from_object, ['dynamic_retrieval_config']),
-            to_object,
-        ),
-    )
+    setv(to_object, ['dynamicRetrievalConfig'], _DynamicRetrievalConfig_to_vertex(api_client, getv(from_object, ['dynamic_retrieval_config']), to_object))
 
   return to_object
 
 
-def _Tool_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _EnterpriseWebSearch_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _Tool_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(api_client, item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
+    setv(to_object, ['functionDeclarations'], [_FunctionDeclaration_to_vertex(api_client, item, to_object) for item in getv(from_object, ['function_declarations'])])
 
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_vertex(
-            api_client, getv(from_object, ['google_search']), to_object
-        ),
-    )
+    setv(to_object, ['googleSearch'], _GoogleSearch_to_vertex(api_client, getv(from_object, ['google_search']), to_object))
 
   if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_vertex(
-            api_client,
-            getv(from_object, ['google_search_retrieval']),
-            to_object,
-        ),
-    )
+    setv(to_object, ['googleSearchRetrieval'], _GoogleSearchRetrieval_to_vertex(api_client, getv(from_object, ['google_search_retrieval']), to_object))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(to_object, ['enterpriseWebSearch'], _EnterpriseWebSearch_to_vertex(api_client, getv(from_object, ['enterprise_web_search']), to_object))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -800,50 +525,29 @@ def _Tool_to_vertex(
   return to_object
 
 
-def _FunctionCallingConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _FunctionCallingConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
+        setv(to_object, ['mode'], getv(from_object, ['mode']))
 
   if getv(from_object, ['allowed_function_names']) is not None:
-    setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
-    )
+    setv(to_object, ['allowedFunctionNames'], getv(from_object, ['allowed_function_names']))
 
   return to_object
 
 
-def _ToolConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ToolConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_vertex(
-            api_client,
-            getv(from_object, ['function_calling_config']),
-            to_object,
-        ),
-    )
+    setv(to_object, ['functionCallingConfig'], _FunctionCallingConfig_to_vertex(api_client, getv(from_object, ['function_calling_config']), to_object))
+
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config']))
 
   return to_object
 
 
-def _CreateCachedContentConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateCachedContentConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['ttl']) is not None:
@@ -856,87 +560,35 @@ def _CreateCachedContentConfig_to_vertex(
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['contents']) is not None:
-    setv(
-        parent_object,
-        ['contents'],
-        [
-            _Content_to_vertex(api_client, item, to_object)
-            for item in t.t_contents(
-                api_client, getv(from_object, ['contents'])
-            )
-        ],
-    )
+    setv(parent_object, ['contents'], [_Content_to_vertex(api_client, item, to_object) for item in t.t_contents(api_client, getv(from_object, ['contents']))])
 
   if getv(from_object, ['system_instruction']) is not None:
-    setv(
-        parent_object,
-        ['systemInstruction'],
-        _Content_to_vertex(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
-        ),
-    )
+    setv(parent_object, ['systemInstruction'], _Content_to_vertex(api_client, t.t_content(api_client, getv(from_object, ['system_instruction'])), to_object))
 
   if getv(from_object, ['tools']) is not None:
-    setv(
-        parent_object,
-        ['tools'],
-        [
-            _Tool_to_vertex(api_client, item, to_object)
-            for item in getv(from_object, ['tools'])
-        ],
-    )
+    setv(parent_object, ['tools'], [_Tool_to_vertex(api_client, item, to_object) for item in getv(from_object, ['tools'])])
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_vertex(
-            api_client, getv(from_object, ['tool_config']), to_object
-        ),
-    )
+    setv(parent_object, ['toolConfig'], _ToolConfig_to_vertex(api_client, getv(from_object, ['tool_config']), to_object))
 
   return to_object
 
 
-def _CreateCachedContentParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateCachedContentParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['model'],
-        t.t_caches_model(api_client, getv(from_object, ['model'])),
-    )
+    setv(to_object, ['model'], t.t_caches_model(api_client, getv(from_object, ['model'])))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateCachedContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _CreateCachedContentConfig_to_vertex(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _GetCachedContentParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GetCachedContentParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_cached_content_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -944,18 +596,10 @@ def _GetCachedContentParameters_to_vertex(
   return to_object
 
 
-def _DeleteCachedContentParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteCachedContentParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_cached_content_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -963,11 +607,7 @@ def _DeleteCachedContentParameters_to_vertex(
   return to_object
 
 
-def _UpdateCachedContentConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _UpdateCachedContentConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['ttl']) is not None:
@@ -979,76 +619,38 @@ def _UpdateCachedContentConfig_to_vertex(
   return to_object
 
 
-def _UpdateCachedContentParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _UpdateCachedContentParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_cached_content_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_cached_content_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateCachedContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _UpdateCachedContentConfig_to_vertex(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _ListCachedContentsConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListCachedContentsConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
+    setv(parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size']))
 
   if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
+    setv(parent_object, ['_query', 'pageToken'], getv(from_object, ['page_token']))
 
   return to_object
 
 
-def _ListCachedContentsParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListCachedContentsParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListCachedContentsConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _ListCachedContentsConfig_to_vertex(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _CachedContent_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CachedContent_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -1074,43 +676,24 @@ def _CachedContent_from_mldev(
   return to_object
 
 
-def _DeleteCachedContentResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteCachedContentResponse_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   return to_object
 
 
-def _ListCachedContentsResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListCachedContentsResponse_from_mldev(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
   if getv(from_object, ['cachedContents']) is not None:
-    setv(
-        to_object,
-        ['cached_contents'],
-        [
-            _CachedContent_from_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['cachedContents'])
-        ],
-    )
+    setv(to_object, ['cached_contents'], [_CachedContent_from_mldev(api_client, item, to_object) for item in getv(from_object, ['cachedContents'])])
 
   return to_object
 
 
-def _CachedContent_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CachedContent_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -1136,47 +719,31 @@ def _CachedContent_from_vertex(
   return to_object
 
 
-def _DeleteCachedContentResponse_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteCachedContentResponse_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   return to_object
 
 
-def _ListCachedContentsResponse_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListCachedContentsResponse_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
   if getv(from_object, ['cachedContents']) is not None:
-    setv(
-        to_object,
-        ['cached_contents'],
-        [
-            _CachedContent_from_vertex(api_client, item, to_object)
-            for item in getv(from_object, ['cachedContents'])
-        ],
-    )
+    setv(to_object, ['cached_contents'], [_CachedContent_from_vertex(api_client, item, to_object) for item in getv(from_object, ['cachedContents'])])
 
   return to_object
 
 
 class Caches(_api_module.BaseModule):
+  
 
-  def create(
-      self,
-      *,
-      model: str,
-      config: Optional[types.CreateCachedContentConfigOrDict] = None,
-  ) -> types.CachedContent:
-    """Creates a cached contents resource.
+  def create(self, *, model: str, config: Optional[types.CreateCachedContentConfigOrDict] = None) -> types.CachedContent:
+
+    """
+    
+    Creates a cached contents resource.
 
     Usage:
 
@@ -1192,28 +759,23 @@ class Caches(_api_module.BaseModule):
               'ttl': '86400s',
           },
       )
+    
     """
+    
+    parameter_model = types._CreateCachedContentParameters(model=model,config=config,    )
 
-    parameter_model = types._CreateCachedContentParameters(
-        model=model,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _CreateCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
       else:
         path = 'cachedContents'
     else:
-      request_dict = _CreateCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
@@ -1221,71 +783,59 @@ class Caches(_api_module.BaseModule):
         path = 'cachedContents'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('post', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _CachedContent_from_vertex(self._api_client, response_dict)
+  
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CachedContent._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def get(
-      self,
-      *,
-      name: str,
-      config: Optional[types.GetCachedContentConfigOrDict] = None,
-  ) -> types.CachedContent:
-    """Gets cached content configurations.
+
+  def get(self, *, name: str, config: Optional[types.GetCachedContentConfigOrDict] = None) -> types.CachedContent:
+
+    """
+    Gets cached content configurations.
 
     .. code-block:: python
 
       client.caches.get(name= ... ) // The server-generated resource name.
+    
     """
+    
+    parameter_model = types._GetCachedContentParameters(name=name,config=config,    )
 
-    parameter_model = types._GetCachedContentParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _GetCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _GetCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1293,73 +843,62 @@ class Caches(_api_module.BaseModule):
         path = '{name}'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _CachedContent_from_vertex(self._api_client, response_dict)
+  
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CachedContent._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def delete(
-      self,
-      *,
-      name: str,
-      config: Optional[types.DeleteCachedContentConfigOrDict] = None,
-  ) -> types.DeleteCachedContentResponse:
-    """Deletes cached content.
+
+  def delete(self, *, name: str, config: Optional[types.DeleteCachedContentConfigOrDict] = None) -> types.DeleteCachedContentResponse:
+
+    """
+    
+    Deletes cached content.
 
     Usage:
 
     .. code-block:: python
 
       client.caches.delete(name= ... ) // The server-generated resource name.
+    
     """
+    
+    parameter_model = types._DeleteCachedContentParameters(name=name,config=config,    )
 
-    parameter_model = types._DeleteCachedContentParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _DeleteCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _DeleteCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1367,47 +906,38 @@ class Caches(_api_module.BaseModule):
         path = '{name}'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'delete', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('delete', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _DeleteCachedContentResponse_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _DeleteCachedContentResponse_from_vertex(self._api_client, response_dict)
+  
     else:
-      response_dict = _DeleteCachedContentResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteCachedContentResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.DeleteCachedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.DeleteCachedContentResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def update(
-      self,
-      *,
-      name: str,
-      config: Optional[types.UpdateCachedContentConfigOrDict] = None,
-  ) -> types.CachedContent:
-    """Updates cached content configurations.
+
+  def update(self, *, name: str, config: Optional[types.UpdateCachedContentConfigOrDict] = None) -> types.CachedContent:
+
+    """
+    Updates cached content configurations.
 
     .. code-block:: python
 
@@ -1417,28 +947,23 @@ class Caches(_api_module.BaseModule):
               'ttl': '7600s',
           },
       )
+    
     """
+    
+    parameter_model = types._UpdateCachedContentParameters(name=name,config=config,    )
 
-    parameter_model = types._UpdateCachedContentParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _UpdateCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _UpdateCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _UpdateCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _UpdateCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1446,69 +971,61 @@ class Caches(_api_module.BaseModule):
         path = '{name}'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'patch', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('patch', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _CachedContent_from_vertex(self._api_client, response_dict)
+  
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CachedContent._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def _list(
-      self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
-  ) -> types.ListCachedContentsResponse:
-    """Lists cached content configurations.
+
+  def _list(self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None) -> types.ListCachedContentsResponse:
+
+    """
+    Lists cached content configurations.
 
     .. code-block:: python
 
       cached_contents = client.caches.list(config={'page_size': 2})
       for cached_content in cached_contents:
         print(cached_content)
+    
     """
+    
+    parameter_model = types._ListCachedContentsParameters(config=config,    )
 
-    parameter_model = types._ListCachedContentsParameters(
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _ListCachedContentsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
       else:
         path = 'cachedContents'
     else:
-      request_dict = _ListCachedContentsParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
@@ -1516,39 +1033,34 @@ class Caches(_api_module.BaseModule):
         path = 'cachedContents'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _ListCachedContentsResponse_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _ListCachedContentsResponse_from_vertex(self._api_client, response_dict)
+  
     else:
-      response_dict = _ListCachedContentsResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListCachedContentsResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.ListCachedContentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.ListCachedContentsResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
+
+
 
   def list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
@@ -1562,14 +1074,13 @@ class Caches(_api_module.BaseModule):
 
 
 class AsyncCaches(_api_module.BaseModule):
+  
 
-  async def create(
-      self,
-      *,
-      model: str,
-      config: Optional[types.CreateCachedContentConfigOrDict] = None,
-  ) -> types.CachedContent:
-    """Creates a cached contents resource.
+  async def create(self, *, model: str, config: Optional[types.CreateCachedContentConfigOrDict] = None) -> types.CachedContent:
+
+    """
+    
+    Creates a cached contents resource.
 
     Usage:
 
@@ -1585,28 +1096,23 @@ class AsyncCaches(_api_module.BaseModule):
               'ttl': '86400s',
           },
       )
+    
     """
+    
+    parameter_model = types._CreateCachedContentParameters(model=model,config=config,    )
 
-    parameter_model = types._CreateCachedContentParameters(
-        model=model,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _CreateCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
       else:
         path = 'cachedContents'
     else:
-      request_dict = _CreateCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
@@ -1614,72 +1120,59 @@ class AsyncCaches(_api_module.BaseModule):
         path = 'cachedContents'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'post', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('post', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _CachedContent_from_vertex(self._api_client, response_dict)
+  
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CachedContent._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def get(
-      self,
-      *,
-      name: str,
-      config: Optional[types.GetCachedContentConfigOrDict] = None,
-  ) -> types.CachedContent:
-    """Gets cached content configurations.
+
+  async def get(self, *, name: str, config: Optional[types.GetCachedContentConfigOrDict] = None) -> types.CachedContent:
+
+    """
+    Gets cached content configurations.
 
     .. code-block:: python
 
-      await client.aio.caches.get(name= ... ) // The server-generated resource
-      name.
+      await client.aio.caches.get(name= ... ) // The server-generated resource name.
+    
     """
+    
+    parameter_model = types._GetCachedContentParameters(name=name,config=config,    )
 
-    parameter_model = types._GetCachedContentParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _GetCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _GetCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1687,74 +1180,62 @@ class AsyncCaches(_api_module.BaseModule):
         path = '{name}'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _CachedContent_from_vertex(self._api_client, response_dict)
+  
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CachedContent._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def delete(
-      self,
-      *,
-      name: str,
-      config: Optional[types.DeleteCachedContentConfigOrDict] = None,
-  ) -> types.DeleteCachedContentResponse:
-    """Deletes cached content.
+
+  async def delete(self, *, name: str, config: Optional[types.DeleteCachedContentConfigOrDict] = None) -> types.DeleteCachedContentResponse:
+
+    """
+    
+    Deletes cached content.
 
     Usage:
 
     .. code-block:: python
 
-      await client.aio.caches.delete(name= ... ) // The server-generated
-      resource name.
+      await client.aio.caches.delete(name= ... ) // The server-generated resource name.
+    
     """
+    
+    parameter_model = types._DeleteCachedContentParameters(name=name,config=config,    )
 
-    parameter_model = types._DeleteCachedContentParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _DeleteCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _DeleteCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1762,47 +1243,38 @@ class AsyncCaches(_api_module.BaseModule):
         path = '{name}'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'delete', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('delete', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _DeleteCachedContentResponse_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _DeleteCachedContentResponse_from_vertex(self._api_client, response_dict)
+  
     else:
-      response_dict = _DeleteCachedContentResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteCachedContentResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.DeleteCachedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.DeleteCachedContentResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def update(
-      self,
-      *,
-      name: str,
-      config: Optional[types.UpdateCachedContentConfigOrDict] = None,
-  ) -> types.CachedContent:
-    """Updates cached content configurations.
+
+  async def update(self, *, name: str, config: Optional[types.UpdateCachedContentConfigOrDict] = None) -> types.CachedContent:
+
+    """
+    Updates cached content configurations.
 
     .. code-block:: python
 
@@ -1812,28 +1284,23 @@ class AsyncCaches(_api_module.BaseModule):
               'ttl': '7600s',
           },
       )
+    
     """
+    
+    parameter_model = types._UpdateCachedContentParameters(name=name,config=config,    )
 
-    parameter_model = types._UpdateCachedContentParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _UpdateCachedContentParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _UpdateCachedContentParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _UpdateCachedContentParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _UpdateCachedContentParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1841,69 +1308,61 @@ class AsyncCaches(_api_module.BaseModule):
         path = '{name}'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'patch', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('patch', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _CachedContent_from_vertex(self._api_client, response_dict)
+  
     else:
       response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.CachedContent._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def _list(
-      self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
-  ) -> types.ListCachedContentsResponse:
-    """Lists cached content configurations.
+
+  async def _list(self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None) -> types.ListCachedContentsResponse:
+
+    """
+    Lists cached content configurations.
 
     .. code-block:: python
 
       cached_contents = await client.aio.caches.list(config={'page_size': 2})
       async for cached_content in cached_contents:
         print(cached_content)
+    
     """
+    
+    parameter_model = types._ListCachedContentsParameters(config=config,    )
 
-    parameter_model = types._ListCachedContentsParameters(
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
-
+    
     if self._api_client.vertexai:
-      request_dict = _ListCachedContentsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
       else:
         path = 'cachedContents'
     else:
-      request_dict = _ListCachedContentsParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_mldev(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
@@ -1911,39 +1370,34 @@ class AsyncCaches(_api_module.BaseModule):
         path = 'cachedContents'
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _ListCachedContentsResponse_from_vertex(
-          self._api_client, response_dict
-      )
-
+      response_dict = _ListCachedContentsResponse_from_vertex(self._api_client, response_dict)
+  
     else:
-      response_dict = _ListCachedContentsResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListCachedContentsResponse_from_mldev(self._api_client, response_dict)
+  
 
-    return_value = types.ListCachedContentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.ListCachedContentsResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
+
+
 
   async def list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None

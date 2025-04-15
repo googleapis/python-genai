@@ -31,11 +31,7 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.batches')
 
 
-def _BatchJobSource_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _BatchJobSource_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['format']) is not None:
     setv(to_object, ['instancesFormat'], getv(from_object, ['format']))
@@ -44,113 +40,55 @@ def _BatchJobSource_to_vertex(
     setv(to_object, ['gcsSource', 'uris'], getv(from_object, ['gcs_uri']))
 
   if getv(from_object, ['bigquery_uri']) is not None:
-    setv(
-        to_object,
-        ['bigquerySource', 'inputUri'],
-        getv(from_object, ['bigquery_uri']),
-    )
+    setv(to_object, ['bigquerySource', 'inputUri'], getv(from_object, ['bigquery_uri']))
 
   return to_object
 
 
-def _BatchJobDestination_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _BatchJobDestination_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['format']) is not None:
     setv(to_object, ['predictionsFormat'], getv(from_object, ['format']))
 
   if getv(from_object, ['gcs_uri']) is not None:
-    setv(
-        to_object,
-        ['gcsDestination', 'outputUriPrefix'],
-        getv(from_object, ['gcs_uri']),
-    )
+    setv(to_object, ['gcsDestination', 'outputUriPrefix'], getv(from_object, ['gcs_uri']))
 
   if getv(from_object, ['bigquery_uri']) is not None:
-    setv(
-        to_object,
-        ['bigqueryDestination', 'outputUri'],
-        getv(from_object, ['bigquery_uri']),
-    )
+    setv(to_object, ['bigqueryDestination', 'outputUri'], getv(from_object, ['bigquery_uri']))
 
   return to_object
 
 
-def _CreateBatchJobConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateBatchJobConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['dest']) is not None:
-    setv(
-        parent_object,
-        ['outputConfig'],
-        _BatchJobDestination_to_vertex(
-            api_client,
-            t.t_batch_job_destination(api_client, getv(from_object, ['dest'])),
-            to_object,
-        ),
-    )
+    setv(parent_object, ['outputConfig'], _BatchJobDestination_to_vertex(api_client, t.t_batch_job_destination(api_client, getv(from_object, ['dest'])), to_object))
 
   return to_object
 
 
-def _CreateBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CreateBatchJobParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
+    setv(to_object, ['model'], t.t_model(api_client, getv(from_object, ['model'])))
 
   if getv(from_object, ['src']) is not None:
-    setv(
-        to_object,
-        ['inputConfig'],
-        _BatchJobSource_to_vertex(
-            api_client,
-            t.t_batch_job_source(api_client, getv(from_object, ['src'])),
-            to_object,
-        ),
-    )
+    setv(to_object, ['inputConfig'], _BatchJobSource_to_vertex(api_client, t.t_batch_job_source(api_client, getv(from_object, ['src'])), to_object))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateBatchJobConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _CreateBatchJobConfig_to_vertex(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _GetBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _GetBatchJobParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_batch_job_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -158,18 +96,10 @@ def _GetBatchJobParameters_to_vertex(
   return to_object
 
 
-def _CancelBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _CancelBatchJobParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_batch_job_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -177,24 +107,14 @@ def _CancelBatchJobParameters_to_vertex(
   return to_object
 
 
-def _ListBatchJobsConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListBatchJobsConfig_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
+    setv(parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size']))
 
   if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
+    setv(parent_object, ['_query', 'pageToken'], getv(from_object, ['page_token']))
 
   if getv(from_object, ['filter']) is not None:
     setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
@@ -202,36 +122,18 @@ def _ListBatchJobsConfig_to_vertex(
   return to_object
 
 
-def _ListBatchJobsParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListBatchJobsParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListBatchJobsConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    setv(to_object, ['config'], _ListBatchJobsConfig_to_vertex(api_client, getv(from_object, ['config']), to_object))
 
   return to_object
 
 
-def _DeleteBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteBatchJobParameters_to_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
+    setv(to_object, ['_url', 'name'], t.t_batch_job_name(api_client, getv(from_object, ['name'])))
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -239,11 +141,7 @@ def _DeleteBatchJobParameters_to_vertex(
   return to_object
 
 
-def _JobError_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _JobError_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -257,11 +155,7 @@ def _JobError_from_vertex(
   return to_object
 
 
-def _BatchJobSource_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _BatchJobSource_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['instancesFormat']) is not None:
     setv(to_object, ['format'], getv(from_object, ['instancesFormat']))
@@ -270,46 +164,26 @@ def _BatchJobSource_from_vertex(
     setv(to_object, ['gcs_uri'], getv(from_object, ['gcsSource', 'uris']))
 
   if getv(from_object, ['bigquerySource', 'inputUri']) is not None:
-    setv(
-        to_object,
-        ['bigquery_uri'],
-        getv(from_object, ['bigquerySource', 'inputUri']),
-    )
+    setv(to_object, ['bigquery_uri'], getv(from_object, ['bigquerySource', 'inputUri']))
 
   return to_object
 
 
-def _BatchJobDestination_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _BatchJobDestination_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictionsFormat']) is not None:
     setv(to_object, ['format'], getv(from_object, ['predictionsFormat']))
 
   if getv(from_object, ['gcsDestination', 'outputUriPrefix']) is not None:
-    setv(
-        to_object,
-        ['gcs_uri'],
-        getv(from_object, ['gcsDestination', 'outputUriPrefix']),
-    )
+    setv(to_object, ['gcs_uri'], getv(from_object, ['gcsDestination', 'outputUriPrefix']))
 
   if getv(from_object, ['bigqueryDestination', 'outputUri']) is not None:
-    setv(
-        to_object,
-        ['bigquery_uri'],
-        getv(from_object, ['bigqueryDestination', 'outputUri']),
-    )
+    setv(to_object, ['bigquery_uri'], getv(from_object, ['bigqueryDestination', 'outputUri']))
 
   return to_object
 
 
-def _BatchJob_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _BatchJob_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -318,16 +192,10 @@ def _BatchJob_from_vertex(
     setv(to_object, ['display_name'], getv(from_object, ['displayName']))
 
   if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
+        setv(to_object, ['state'], getv(from_object, ['state']))
 
   if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _JobError_from_vertex(
-            api_client, getv(from_object, ['error']), to_object
-        ),
-    )
+    setv(to_object, ['error'], _JobError_from_vertex(api_client, getv(from_object, ['error']), to_object))
 
   if getv(from_object, ['createTime']) is not None:
     setv(to_object, ['create_time'], getv(from_object, ['createTime']))
@@ -345,53 +213,26 @@ def _BatchJob_from_vertex(
     setv(to_object, ['model'], getv(from_object, ['model']))
 
   if getv(from_object, ['inputConfig']) is not None:
-    setv(
-        to_object,
-        ['src'],
-        _BatchJobSource_from_vertex(
-            api_client, getv(from_object, ['inputConfig']), to_object
-        ),
-    )
+    setv(to_object, ['src'], _BatchJobSource_from_vertex(api_client, getv(from_object, ['inputConfig']), to_object))
 
   if getv(from_object, ['outputConfig']) is not None:
-    setv(
-        to_object,
-        ['dest'],
-        _BatchJobDestination_from_vertex(
-            api_client, getv(from_object, ['outputConfig']), to_object
-        ),
-    )
+    setv(to_object, ['dest'], _BatchJobDestination_from_vertex(api_client, getv(from_object, ['outputConfig']), to_object))
 
   return to_object
 
 
-def _ListBatchJobsResponse_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _ListBatchJobsResponse_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
   if getv(from_object, ['batchPredictionJobs']) is not None:
-    setv(
-        to_object,
-        ['batch_jobs'],
-        [
-            _BatchJob_from_vertex(api_client, item, to_object)
-            for item in getv(from_object, ['batchPredictionJobs'])
-        ],
-    )
+    setv(to_object, ['batch_jobs'], [_BatchJob_from_vertex(api_client, item, to_object) for item in getv(from_object, ['batchPredictionJobs'])])
 
   return to_object
 
 
-def _DeleteResourceJob_from_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+def _DeleteResourceJob_from_vertex(api_client: BaseApiClient, from_object: Union[dict, object], parent_object: Optional[dict] = None) -> dict:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -400,83 +241,67 @@ def _DeleteResourceJob_from_vertex(
     setv(to_object, ['done'], getv(from_object, ['done']))
 
   if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _JobError_from_vertex(
-            api_client, getv(from_object, ['error']), to_object
-        ),
-    )
+    setv(to_object, ['error'], _JobError_from_vertex(api_client, getv(from_object, ['error']), to_object))
 
   return to_object
 
 
 class Batches(_api_module.BaseModule):
+  
 
-  def _create(
-      self,
-      *,
-      model: str,
-      src: str,
-      config: Optional[types.CreateBatchJobConfigOrDict] = None,
-  ) -> types.BatchJob:
-    parameter_model = types._CreateBatchJobParameters(
-        model=model,
-        src=src,
-        config=config,
-    )
+  def _create(self, *, model: str, src: str, config: Optional[types.CreateBatchJobConfigOrDict] = None) -> types.BatchJob:
+    parameter_model = types._CreateBatchJobParameters(model=model,src=src,config=config,    )
+
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _CreateBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('post', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.BatchJob._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def get(
-      self, *, name: str, config: Optional[types.GetBatchJobConfigOrDict] = None
-  ) -> types.BatchJob:
-    """Gets a batch job.
+
+  def get(self, *, name: str, config: Optional[types.GetBatchJobConfigOrDict] = None) -> types.BatchJob:
+
+    """
+    Gets a batch job.
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/456"
+        or "456" when project and location are initialized in the client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -487,178 +312,156 @@ class Batches(_api_module.BaseModule):
 
       batch_job = client.batches.get(name='123456789')
       print(f"Batch job: {batch_job.name}, state {batch_job.state}")
+    
     """
+    
+    parameter_model = types._GetBatchJobParameters(name=name,config=config,    )
 
-    parameter_model = types._GetBatchJobParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _GetBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs/{name}'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs/{name}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.BatchJob._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def cancel(
-      self,
-      *,
-      name: str,
-      config: Optional[types.CancelBatchJobConfigOrDict] = None,
-  ) -> None:
-    """Cancels a batch job.
 
-    Only available for batch jobs that are running or pending.
+  def cancel(self, *, name: str, config: Optional[types.CancelBatchJobConfigOrDict] = None) -> None:
+
+    """
+    Cancels a batch job. Only available for batch jobs that are running or pending.
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/123456789" or
-          "123456789" when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/123456789"
+        or "123456789" when project and location are initialized in the client.
 
     Usage:
 
     .. code-block:: python
 
       client.batches.cancel(name='123456789')
+    
     """
+    
+    parameter_model = types._CancelBatchJobParameters(name=name,config=config,    )
 
-    parameter_model = types._CancelBatchJobParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _CancelBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _CancelBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs/{name}:cancel'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs/{name}:cancel'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
 
-  def _list(
-      self, *, config: types.ListBatchJobsConfigOrDict
-  ) -> types.ListBatchJobsResponse:
-    parameter_model = types._ListBatchJobsParameters(
-        config=config,
-    )
+    response_dict = self._api_client.request('post', path, request_dict, http_options)
+
+
+
+  def _list(self, *, config: types.ListBatchJobsConfigOrDict) -> types.ListBatchJobsResponse:
+    parameter_model = types._ListBatchJobsParameters(config=config,    )
+
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _ListBatchJobsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListBatchJobsParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _ListBatchJobsResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _ListBatchJobsResponse_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.ListBatchJobsResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  def delete(
-      self,
-      *,
-      name: str,
-      config: Optional[types.DeleteBatchJobConfigOrDict] = None,
-  ) -> types.DeleteResourceJob:
-    """Deletes a batch job.
+
+  def delete(self, *, name: str, config: Optional[types.DeleteBatchJobConfigOrDict] = None) -> types.DeleteResourceJob:
+
+    """
+    Deletes a batch job.
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/456"
+        or "456" when project and location are initialized in the client.
 
     Returns:
       A DeleteResourceJob object that shows the status of the deletion.
@@ -668,56 +471,52 @@ class Batches(_api_module.BaseModule):
     .. code-block:: python
 
       client.batches.delete(name='123456789')
+    
     """
+    
+    parameter_model = types._DeleteBatchJobParameters(name=name,config=config,    )
 
-    parameter_model = types._DeleteBatchJobParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _DeleteBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs/{name}'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs/{name}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
-        'delete', path, request_dict, http_options
-    )
 
+    response_dict = self._api_client.request('delete', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _DeleteResourceJob_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteResourceJob_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.DeleteResourceJob._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
+
+
 
   def create(
       self,
@@ -731,8 +530,8 @@ class Batches(_api_module.BaseModule):
     Args:
       model (str): The model to use for the batch job.
       src (str): The source of the batch job. Currently supports GCS URI(-s) or
-        BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId".
+      BigQuery URI. Example: "gs://path/to/input/data" or
+      "bq://projectId.bqDatasetId.bqTableId".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:
@@ -782,71 +581,61 @@ class Batches(_api_module.BaseModule):
 
 
 class AsyncBatches(_api_module.BaseModule):
+  
 
-  async def _create(
-      self,
-      *,
-      model: str,
-      src: str,
-      config: Optional[types.CreateBatchJobConfigOrDict] = None,
-  ) -> types.BatchJob:
-    parameter_model = types._CreateBatchJobParameters(
-        model=model,
-        src=src,
-        config=config,
-    )
+  async def _create(self, *, model: str, src: str, config: Optional[types.CreateBatchJobConfigOrDict] = None) -> types.BatchJob:
+    parameter_model = types._CreateBatchJobParameters(model=model,src=src,config=config,    )
+
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _CreateBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'post', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('post', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.BatchJob._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def get(
-      self, *, name: str, config: Optional[types.GetBatchJobConfigOrDict] = None
-  ) -> types.BatchJob:
-    """Gets a batch job.
+
+  async def get(self, *, name: str, config: Optional[types.GetBatchJobConfigOrDict] = None) -> types.BatchJob:
+
+    """
+    Gets a batch job.
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/456"
+        or "456" when project and location are initialized in the client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -857,178 +646,156 @@ class AsyncBatches(_api_module.BaseModule):
 
       batch_job = await client.aio.batches.get(name='123456789')
       print(f"Batch job: {batch_job.name}, state {batch_job.state}")
+    
     """
+    
+    parameter_model = types._GetBatchJobParameters(name=name,config=config,    )
 
-    parameter_model = types._GetBatchJobParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _GetBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs/{name}'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs/{name}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.BatchJob._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def cancel(
-      self,
-      *,
-      name: str,
-      config: Optional[types.CancelBatchJobConfigOrDict] = None,
-  ) -> None:
-    """Cancels a batch job.
 
-    Only available for batch jobs that are running or pending.
+  async def cancel(self, *, name: str, config: Optional[types.CancelBatchJobConfigOrDict] = None) -> None:
+
+    """
+    Cancels a batch job. Only available for batch jobs that are running or pending.
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/123456789" or
-          "123456789" when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/123456789"
+        or "123456789" when project and location are initialized in the client.
 
     Usage:
 
     .. code-block:: python
 
       await client.aio.batches.cancel(name='123456789')
+    
     """
+    
+    parameter_model = types._CancelBatchJobParameters(name=name,config=config,    )
 
-    parameter_model = types._CancelBatchJobParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _CancelBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _CancelBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs/{name}:cancel'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs/{name}:cancel'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'post', path, request_dict, http_options
-    )
 
-  async def _list(
-      self, *, config: types.ListBatchJobsConfigOrDict
-  ) -> types.ListBatchJobsResponse:
-    parameter_model = types._ListBatchJobsParameters(
-        config=config,
-    )
+    response_dict = await self._api_client.async_request('post', path, request_dict, http_options)
+
+
+
+  async def _list(self, *, config: types.ListBatchJobsConfigOrDict) -> types.ListBatchJobsResponse:
+    parameter_model = types._ListBatchJobsParameters(config=config,    )
+
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _ListBatchJobsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListBatchJobsParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'get', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('get', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _ListBatchJobsResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _ListBatchJobsResponse_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.ListBatchJobsResponse._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def delete(
-      self,
-      *,
-      name: str,
-      config: Optional[types.DeleteBatchJobConfigOrDict] = None,
-  ) -> types.DeleteResourceJob:
-    """Deletes a batch job.
+
+  async def delete(self, *, name: str, config: Optional[types.DeleteBatchJobConfigOrDict] = None) -> types.DeleteResourceJob:
+
+    """
+    Deletes a batch job.
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/456"
+        or "456" when project and location are initialized in the client.
 
     Returns:
       A DeleteResourceJob object that shows the status of the deletion.
@@ -1038,56 +805,52 @@ class AsyncBatches(_api_module.BaseModule):
     .. code-block:: python
 
       await client.aio.batches.delete(name='123456789')
+    
     """
+    
+    parameter_model = types._DeleteBatchJobParameters(name=name,config=config,    )
 
-    parameter_model = types._DeleteBatchJobParameters(
-        name=name,
-        config=config,
-    )
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _DeleteBatchJobParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteBatchJobParameters_to_vertex(self._api_client, parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs/{name}'.format_map(request_url_dict)
       else:
         path = 'batchPredictionJobs/{name}'
 
+    
     query_params = request_dict.get('_query')
     if query_params:
-      path = f'{path}?{urlencode(query_params)}'
+      path = f"{path}?{urlencode(query_params)}"
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
     http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
+    if parameter_model.config is not None and parameter_model.config.http_options is not None:
       http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
-        'delete', path, request_dict, http_options
-    )
 
+    response_dict = await self._api_client.async_request('delete', path, request_dict, http_options)
+
+    
     if self._api_client.vertexai:
-      response_dict = _DeleteResourceJob_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteResourceJob_from_vertex(self._api_client, response_dict)
+  
+    
 
-    return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
+
+    return_value = types.DeleteResourceJob._from_response(response=response_dict, kwargs=parameter_model.model_dump())
     self._api_client._verify_response(return_value)
     return return_value
+
+
 
   async def create(
       self,
@@ -1101,8 +864,8 @@ class AsyncBatches(_api_module.BaseModule):
     Args:
       model (str): The model to use for the batch job.
       src (str): The source of the batch job. Currently supports GCS URI(-s) or
-        BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId".
+      BigQuery URI. Example: "gs://path/to/input/data" or
+      "bq://projectId.bqDatasetId.bqTableId".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:

@@ -471,6 +471,10 @@ ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
 class FileData(_common.BaseModel):
   """URI based data."""
 
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. This field is only returned in PromptMessage for prompt management. It is not currently used in the Gemini GenerateContent calls.""",
+  )
   file_uri: Optional[str] = Field(
       default=None, description="""Required. URI."""
   )
@@ -482,6 +486,9 @@ class FileData(_common.BaseModel):
 
 class FileDataDict(TypedDict, total=False):
   """URI based data."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. This field is only returned in PromptMessage for prompt management. It is not currently used in the Gemini GenerateContent calls."""
 
   file_uri: Optional[str]
   """Required. URI."""
@@ -569,6 +576,10 @@ class Blob(_common.BaseModel):
   data: Optional[bytes] = Field(
       default=None, description="""Required. Raw bytes."""
   )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is not currently used in the Gemini GenerateContent calls.""",
+  )
   mime_type: Optional[str] = Field(
       default=None,
       description="""Required. The IANA standard MIME type of the source data.""",
@@ -580,6 +591,9 @@ class BlobDict(TypedDict, total=False):
 
   data: Optional[bytes]
   """Required. Raw bytes."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is not currently used in the Gemini GenerateContent calls."""
 
   mime_type: Optional[str]
   """Required. The IANA standard MIME type of the source data."""
@@ -1456,6 +1470,21 @@ GoogleSearchRetrievalOrDict = Union[
 ]
 
 
+class EnterpriseWebSearch(_common.BaseModel):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
+
+  pass
+
+
+class EnterpriseWebSearchDict(TypedDict, total=False):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
+
+  pass
+
+
+EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
+
+
 class VertexAISearch(_common.BaseModel):
   """Retrieve from Vertex AI Search datastore or engine for grounding.
 
@@ -1803,9 +1832,14 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search.""",
   )
+  enterprise_web_search: Optional[EnterpriseWebSearch] = Field(
+      default=None,
+      description="""Optional. Enterprise web search tool type. Specialized retrieval
+      tool that is powered by Vertex AI Search and Sec4 compliance.""",
+  )
   code_execution: Optional[ToolCodeExecution] = Field(
       default=None,
-      description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services.""",
+      description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation.""",
   )
 
 
@@ -1825,8 +1859,12 @@ class ToolDict(TypedDict, total=False):
   google_search_retrieval: Optional[GoogleSearchRetrievalDict]
   """Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search."""
 
+  enterprise_web_search: Optional[EnterpriseWebSearchDict]
+  """Optional. Enterprise web search tool type. Specialized retrieval
+      tool that is powered by Vertex AI Search and Sec4 compliance."""
+
   code_execution: Optional[ToolCodeExecutionDict]
-  """Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services."""
+  """Optional. CodeExecution tool type. Enables the model to execute code as part of generation."""
 
 
 ToolOrDict = Union[Tool, ToolDict]
@@ -1866,6 +1904,66 @@ FunctionCallingConfigOrDict = Union[
 ]
 
 
+class GoogleTypeLatLng(_common.BaseModel):
+  """An object that represents a latitude/longitude pair.
+
+  This is expressed as a pair of doubles to represent degrees latitude and
+  degrees longitude. Unless specified otherwise, this object must conform to the
+  WGS84 standard. Values must be within normalized ranges.
+  """
+
+  latitude: Optional[float] = Field(
+      default=None,
+      description="""The latitude in degrees. It must be in the range [-90.0, +90.0].""",
+  )
+  longitude: Optional[float] = Field(
+      default=None,
+      description="""The longitude in degrees. It must be in the range [-180.0, +180.0].""",
+  )
+
+
+class GoogleTypeLatLngDict(TypedDict, total=False):
+  """An object that represents a latitude/longitude pair.
+
+  This is expressed as a pair of doubles to represent degrees latitude and
+  degrees longitude. Unless specified otherwise, this object must conform to the
+  WGS84 standard. Values must be within normalized ranges.
+  """
+
+  latitude: Optional[float]
+  """The latitude in degrees. It must be in the range [-90.0, +90.0]."""
+
+  longitude: Optional[float]
+  """The longitude in degrees. It must be in the range [-180.0, +180.0]."""
+
+
+GoogleTypeLatLngOrDict = Union[GoogleTypeLatLng, GoogleTypeLatLngDict]
+
+
+class RetrievalConfig(_common.BaseModel):
+  """Retrieval config."""
+
+  language_code: Optional[str] = Field(
+      default=None, description="""The language code of the user."""
+  )
+  lat_lng: Optional[GoogleTypeLatLng] = Field(
+      default=None, description="""The location of the user."""
+  )
+
+
+class RetrievalConfigDict(TypedDict, total=False):
+  """Retrieval config."""
+
+  language_code: Optional[str]
+  """The language code of the user."""
+
+  lat_lng: Optional[GoogleTypeLatLngDict]
+  """The location of the user."""
+
+
+RetrievalConfigOrDict = Union[RetrievalConfig, RetrievalConfigDict]
+
+
 class ToolConfig(_common.BaseModel):
   """Tool config.
 
@@ -1874,6 +1972,9 @@ class ToolConfig(_common.BaseModel):
 
   function_calling_config: Optional[FunctionCallingConfig] = Field(
       default=None, description="""Optional. Function calling config."""
+  )
+  retrieval_config: Optional[RetrievalConfig] = Field(
+      default=None, description="""Optional. Retrieval config."""
   )
 
 
@@ -1885,6 +1986,9 @@ class ToolConfigDict(TypedDict, total=False):
 
   function_calling_config: Optional[FunctionCallingConfigDict]
   """Optional. Function calling config."""
+
+  retrieval_config: Optional[RetrievalConfigDict]
+  """Optional. Retrieval config."""
 
 
 ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
@@ -5323,6 +5427,9 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature.""",
   )
+  response_modalities: Optional[list[Modality]] = Field(
+      default=None, description="""Optional. The modalities of the response."""
+  )
   response_schema: Optional[Schema] = Field(
       default=None,
       description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
@@ -5331,6 +5438,9 @@ class GenerationConfig(_common.BaseModel):
       default=None, description="""Optional. Routing configuration."""
   )
   seed: Optional[int] = Field(default=None, description="""Optional. Seed.""")
+  speech_config: Optional[SpeechConfig] = Field(
+      default=None, description="""Optional. The speech generation config."""
+  )
   stop_sequences: Optional[list[str]] = Field(
       default=None, description="""Optional. Stop sequences."""
   )
@@ -5378,6 +5488,9 @@ class GenerationConfigDict(TypedDict, total=False):
   response_mime_type: Optional[str]
   """Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature."""
 
+  response_modalities: Optional[list[Modality]]
+  """Optional. The modalities of the response."""
+
   response_schema: Optional[SchemaDict]
   """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
 
@@ -5386,6 +5499,9 @@ class GenerationConfigDict(TypedDict, total=False):
 
   seed: Optional[int]
   """Optional. Seed."""
+
+  speech_config: Optional[SpeechConfigDict]
+  """Optional. The speech generation config."""
 
   stop_sequences: Optional[list[str]]
   """Optional. Stop sequences."""
@@ -6430,6 +6546,10 @@ SupervisedTuningDatasetDistributionOrDict = Union[
 class SupervisedTuningDataStats(_common.BaseModel):
   """Tuning data statistics for Supervised Tuning."""
 
+  dropped_example_reasons: Optional[list[str]] = Field(
+      default=None,
+      description="""Output only. For each index in `truncated_example_indices`, the user-facing reason why the example was dropped. Must not include example itself.""",
+  )
   total_billable_character_count: Optional[int] = Field(
       default=None,
       description="""Output only. Number of billable characters in the tuning dataset.""",
@@ -6440,7 +6560,7 @@ class SupervisedTuningDataStats(_common.BaseModel):
   )
   total_truncated_example_count: Optional[int] = Field(
       default=None,
-      description="""The number of examples in the dataset that have been truncated by any amount.""",
+      description="""Output only. The number of examples in the dataset that have been dropped. An example can be dropped for reasons including: too many tokens, contains an invalid image, contains too many images, etc.""",
   )
   total_tuning_character_count: Optional[int] = Field(
       default=None,
@@ -6448,7 +6568,7 @@ class SupervisedTuningDataStats(_common.BaseModel):
   )
   truncated_example_indices: Optional[list[int]] = Field(
       default=None,
-      description="""A partial sample of the indices (starting from 1) of the truncated examples.""",
+      description="""Output only. A partial sample of the indices (starting from 1) of the dropped examples.""",
   )
   tuning_dataset_example_count: Optional[int] = Field(
       default=None,
@@ -6485,6 +6605,9 @@ class SupervisedTuningDataStats(_common.BaseModel):
 class SupervisedTuningDataStatsDict(TypedDict, total=False):
   """Tuning data statistics for Supervised Tuning."""
 
+  dropped_example_reasons: Optional[list[str]]
+  """Output only. For each index in `truncated_example_indices`, the user-facing reason why the example was dropped. Must not include example itself."""
+
   total_billable_character_count: Optional[int]
   """Output only. Number of billable characters in the tuning dataset."""
 
@@ -6492,13 +6615,13 @@ class SupervisedTuningDataStatsDict(TypedDict, total=False):
   """Output only. Number of billable tokens in the tuning dataset."""
 
   total_truncated_example_count: Optional[int]
-  """The number of examples in the dataset that have been truncated by any amount."""
+  """Output only. The number of examples in the dataset that have been dropped. An example can be dropped for reasons including: too many tokens, contains an invalid image, contains too many images, etc."""
 
   total_tuning_character_count: Optional[int]
   """Output only. Number of tuning characters in the tuning dataset."""
 
   truncated_example_indices: Optional[list[int]]
-  """A partial sample of the indices (starting from 1) of the truncated examples."""
+  """Output only. A partial sample of the indices (starting from 1) of the dropped examples."""
 
   tuning_dataset_example_count: Optional[int]
   """Output only. Number of examples in the tuning dataset."""
@@ -6655,15 +6778,15 @@ class DistillationSpec(_common.BaseModel):
   )
   pipeline_root_directory: Optional[str] = Field(
       default=None,
-      description="""Required. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts.""",
+      description="""Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts.""",
   )
   student_model: Optional[str] = Field(
       default=None,
-      description="""The student model that is being tuned, e.g., "google/gemma-2b-1.1-it".""",
+      description="""The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead.""",
   )
   training_dataset_uri: Optional[str] = Field(
       default=None,
-      description="""Required. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+      description="""Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
   )
   tuned_teacher_model_source: Optional[str] = Field(
       default=None,
@@ -6685,13 +6808,13 @@ class DistillationSpecDict(TypedDict, total=False):
   """Optional. Hyperparameters for Distillation."""
 
   pipeline_root_directory: Optional[str]
-  """Required. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts."""
+  """Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts."""
 
   student_model: Optional[str]
-  """The student model that is being tuned, e.g., "google/gemma-2b-1.1-it"."""
+  """The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead."""
 
   training_dataset_uri: Optional[str]
-  """Required. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+  """Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
 
   tuned_teacher_model_source: Optional[str]
   """The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`."""
@@ -6776,6 +6899,10 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.""",
   )
+  service_account: Optional[str] = Field(
+      default=None,
+      description="""The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account.""",
+  )
   tuned_model_display_name: Optional[str] = Field(
       default=None,
       description="""Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters.""",
@@ -6848,6 +6975,9 @@ class TuningJobDict(TypedDict, total=False):
 
   pipeline_job: Optional[str]
   """Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`."""
+
+  service_account: Optional[str]
+  """The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account."""
 
   tuned_model_display_name: Optional[str]
   """Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
