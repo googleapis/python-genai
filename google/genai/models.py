@@ -40,9 +40,6 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     raise ValueError('video_metadata parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -71,6 +68,9 @@ def _Part_to_mldev(
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   return to_object
 
@@ -294,9 +294,6 @@ def _Tool_to_mldev(
         ],
     )
 
-  if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
-
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
@@ -305,6 +302,9 @@ def _Tool_to_mldev(
             api_client, getv(from_object, ['google_search']), to_object
         ),
     )
+
+  if getv(from_object, ['retrieval']) is not None:
+    raise ValueError('retrieval parameter is not supported in Gemini API.')
 
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
@@ -319,6 +319,13 @@ def _Tool_to_mldev(
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(
+        to_object,
+        ['enterpriseWebSearch'],
+        getv(from_object, ['enterprise_web_search']),
+    )
 
   return to_object
 
@@ -359,34 +366,9 @@ def _ToolConfig_to_mldev(
         ),
     )
 
-  return to_object
-
-
-def _PrebuiltVoiceConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
-
-  return to_object
-
-
-def _VoiceConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prebuilt_voice_config']) is not None:
+  if getv(from_object, ['retrieval_config']) is not None:
     setv(
-        to_object,
-        ['prebuiltVoiceConfig'],
-        _PrebuiltVoiceConfig_to_mldev(
-            api_client, getv(from_object, ['prebuilt_voice_config']), to_object
-        ),
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -398,17 +380,11 @@ def _SpeechConfig_to_mldev(
     parent_object: Optional[dict] = None,
 ) -> dict:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(
-            api_client, getv(from_object, ['voice_config']), to_object
-        ),
-    )
-
   if getv(from_object, ['language_code']) is not None:
     setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
 
   return to_object
 
@@ -1156,9 +1132,6 @@ def _Part_to_vertex(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -1187,6 +1160,9 @@ def _Part_to_vertex(
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   return to_object
 
@@ -1418,9 +1394,6 @@ def _Tool_to_vertex(
         ],
     )
 
-  if getv(from_object, ['retrieval']) is not None:
-    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
-
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
@@ -1429,6 +1402,9 @@ def _Tool_to_vertex(
             api_client, getv(from_object, ['google_search']), to_object
         ),
     )
+
+  if getv(from_object, ['retrieval']) is not None:
+    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
@@ -1443,6 +1419,13 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(
+        to_object,
+        ['enterpriseWebSearch'],
+        getv(from_object, ['enterprise_web_search']),
+    )
 
   return to_object
 
@@ -1483,34 +1466,9 @@ def _ToolConfig_to_vertex(
         ),
     )
 
-  return to_object
-
-
-def _PrebuiltVoiceConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
-
-  return to_object
-
-
-def _VoiceConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prebuilt_voice_config']) is not None:
+  if getv(from_object, ['retrieval_config']) is not None:
     setv(
-        to_object,
-        ['prebuiltVoiceConfig'],
-        _PrebuiltVoiceConfig_to_vertex(
-            api_client, getv(from_object, ['prebuilt_voice_config']), to_object
-        ),
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -1522,17 +1480,11 @@ def _SpeechConfig_to_vertex(
     parent_object: Optional[dict] = None,
 ) -> dict:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_vertex(
-            api_client, getv(from_object, ['voice_config']), to_object
-        ),
-    )
-
   if getv(from_object, ['language_code']) is not None:
     setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
 
   return to_object
 
@@ -2736,9 +2688,6 @@ def _Part_from_mldev(
 ) -> dict:
   to_object: dict[str, Any] = {}
 
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -2767,6 +2716,9 @@ def _Part_from_mldev(
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   return to_object
 
@@ -3304,9 +3256,6 @@ def _Part_from_vertex(
   if getv(from_object, ['videoMetadata']) is not None:
     setv(to_object, ['video_metadata'], getv(from_object, ['videoMetadata']))
 
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -3335,6 +3284,9 @@ def _Part_from_vertex(
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   return to_object
 
