@@ -495,6 +495,9 @@ def _TuningJob_from_mldev(
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
 
+  if getv(from_object, ['serviceAccount']) is not None:
+    setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
+
   if getv(from_object, ['tunedModelDisplayName']) is not None:
     setv(
         to_object,
@@ -646,6 +649,9 @@ def _TuningJob_from_vertex(
 
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
+
+  if getv(from_object, ['serviceAccount']) is not None:
+    setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
 
   if getv(from_object, ['tunedModelDisplayName']) is not None:
     setv(

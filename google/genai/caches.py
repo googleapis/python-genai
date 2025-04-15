@@ -39,9 +39,6 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     raise ValueError('video_metadata parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -70,6 +67,9 @@ def _Part_to_mldev(
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   return to_object
 
@@ -261,9 +261,6 @@ def _Tool_to_mldev(
         ],
     )
 
-  if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
-
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
@@ -272,6 +269,9 @@ def _Tool_to_mldev(
             api_client, getv(from_object, ['google_search']), to_object
         ),
     )
+
+  if getv(from_object, ['retrieval']) is not None:
+    raise ValueError('retrieval parameter is not supported in Gemini API.')
 
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
@@ -286,6 +286,13 @@ def _Tool_to_mldev(
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(
+        to_object,
+        ['enterpriseWebSearch'],
+        getv(from_object, ['enterprise_web_search']),
+    )
 
   return to_object
 
@@ -324,6 +331,11 @@ def _ToolConfig_to_mldev(
             getv(from_object, ['function_calling_config']),
             to_object,
         ),
+    )
+
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -543,9 +555,6 @@ def _Part_to_vertex(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -574,6 +583,9 @@ def _Part_to_vertex(
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
   return to_object
 
@@ -771,9 +783,6 @@ def _Tool_to_vertex(
         ],
     )
 
-  if getv(from_object, ['retrieval']) is not None:
-    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
-
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
@@ -782,6 +791,9 @@ def _Tool_to_vertex(
             api_client, getv(from_object, ['google_search']), to_object
         ),
     )
+
+  if getv(from_object, ['retrieval']) is not None:
+    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
@@ -796,6 +808,13 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(
+        to_object,
+        ['enterpriseWebSearch'],
+        getv(from_object, ['enterprise_web_search']),
+    )
 
   return to_object
 
@@ -834,6 +853,11 @@ def _ToolConfig_to_vertex(
             getv(from_object, ['function_calling_config']),
             to_object,
         ),
+    )
+
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
