@@ -442,16 +442,50 @@ class BaseApiClient:
     else:
       if self._http_options.headers is not None:
         _append_library_version_headers(self._http_options.headers)
-    # Initialize the httpx client.
-    # Unlike requests, the httpx package does not automatically pull in the
-    # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
-    # enabled explicitly.
-    ctx = ssl.create_default_context(
-        cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
-        capath=os.environ.get('SSL_CERT_DIR'),
+
+    client_args, async_client_args = self._ensure_ssl_ctx(self._http_options)
+    self._httpx_client = SyncHttpxClient(**client_args)
+    self._async_httpx_client = AsyncHttpxClient(**async_client_args)
+
+  @staticmethod
+  def _ensure_ssl_ctx(options: HttpOptions) -> (
+      Tuple[dict[str, Any], dict[str, Any]]):
+    """Ensures the SSL context is present in the client args.
+
+    Create a default SSL context is not provided.
+
+    Args:
+      options: The http options to update.
+
+    Returns:
+      A tuple of sync and async httpx client options.
+    """
+
+    verify = 'verify'
+    args = options.client_args
+    async_args = options.async_client_args
+    ctx = (
+        args.get(verify) if args else None
+        or async_args.get(verify) if async_args else None
     )
-    self._httpx_client = SyncHttpxClient(verify=ctx)
-    self._async_httpx_client = AsyncHttpxClient(verify=ctx)
+
+    if not ctx:
+      ctx = ssl.create_default_context(
+          cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+          capath=os.environ.get('SSL_CERT_DIR'),
+      )
+
+    def _maybe_set(args: dict[str, Any], ctx: ssl.SSLContext) -> dict[str, Any]:
+      """Sets the SSL context in the client args if not set by making a copy."""
+      if not args or not args.get(verify):
+        args = (args or {}).copy()
+        args[verify] = ctx
+      return args
+
+    return (
+        _maybe_set(args, ctx),
+        _maybe_set(async_args, ctx),
+    )
 
   def _websocket_base_url(self):
     url_parts = urlparse(self._http_options.base_url)

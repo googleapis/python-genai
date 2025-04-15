@@ -16,10 +16,13 @@
 
 """Tests for client initialization."""
 
+import certifi
 import google.auth
 from google.auth import credentials
 import logging
+import os
 import pytest
+import ssl
 
 from ... import _api_client as api_client
 from ... import _replay_api_client as replay_api_client
@@ -587,3 +590,73 @@ def test_client_logs_to_logger_instance(monkeypatch, caplog):
 
   assert 'INFO' in caplog.text
   assert 'The user provided Vertex AI API key will take precedence' in caplog.text
+
+def test_client_ssl_context_implicit_initialization():
+  client_args, async_client_args = api_client.BaseApiClient._ensure_ssl_ctx(
+      api_client.HttpOptions())
+
+  assert client_args["verify"]
+  assert async_client_args["verify"]
+  assert isinstance(client_args["verify"], ssl.SSLContext)
+  assert isinstance(async_client_args["verify"], ssl.SSLContext)
+
+def test_client_ssl_context_explicit_initialization_same_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+      capath=os.environ.get('SSL_CERT_DIR'),
+  )
+
+  options = api_client.HttpOptions(
+      client_args={"verify": ctx}, async_client_args={"verify": ctx})
+  client_args, async_client_args = api_client.BaseApiClient._ensure_ssl_ctx(
+      options)
+
+  assert client_args["verify"] == ctx
+  assert async_client_args["verify"] == ctx
+
+def test_client_ssl_context_explicit_initialization_separate_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+      capath=os.environ.get('SSL_CERT_DIR'),
+  )
+
+  async_ctx = ssl.create_default_context(
+      cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+      capath=os.environ.get('SSL_CERT_DIR'),
+  )
+
+  options = api_client.HttpOptions(
+      client_args={"verify": ctx}, async_client_args={"verify": async_ctx})
+  client_args, async_client_args = api_client.BaseApiClient._ensure_ssl_ctx(
+      options)
+
+  assert client_args["verify"] == ctx
+  assert async_client_args["verify"] == async_ctx
+
+def test_client_ssl_context_explicit_initialization_sync_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+      capath=os.environ.get('SSL_CERT_DIR'),
+  )
+
+  options = api_client.HttpOptions(
+      client_args={"verify": ctx})
+  client_args, async_client_args = api_client.BaseApiClient._ensure_ssl_ctx(
+      options)
+
+  assert client_args["verify"] == ctx
+  assert async_client_args["verify"] == ctx
+
+def test_client_ssl_context_explicit_initialization_async_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+      capath=os.environ.get('SSL_CERT_DIR'),
+  )
+
+  options = api_client.HttpOptions(
+      async_client_args={"verify": ctx})
+  client_args, async_client_args = api_client.BaseApiClient._ensure_ssl_ctx(
+      options)
+
+  assert client_args["verify"] == ctx
+  assert async_client_args["verify"] == ctx
