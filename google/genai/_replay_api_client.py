@@ -226,7 +226,7 @@ class ReplayApiClient(BaseApiClient):
     self._replay_id = replay_id
     self._initialize_replay_session()
 
-  def _get_replay_file_path(self):
+  def _get_replay_file_path(self) -> str:
     return self._generate_file_path_from_replay_id(
         self.replays_directory, self._replay_id
     )
@@ -575,7 +575,7 @@ class ReplayApiClient(BaseApiClient):
 
   async def async_download_file(
       self, path: str, *, http_options: Optional[HttpOptionsOrDict] = None
-  ):
+  ) -> Any:
     self._initialize_replay_session_if_not_loaded()
     request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options

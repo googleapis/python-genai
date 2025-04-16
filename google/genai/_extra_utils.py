@@ -218,7 +218,7 @@ def convert_argument_from_function(
 
 
 def invoke_function_from_dict_args(
-    args: Dict[str, Any], function_to_invoke: Callable
+    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -232,7 +232,7 @@ def invoke_function_from_dict_args(
 
 
 async def invoke_function_from_dict_args_async(
-    args: Dict[str, Any], function_to_invoke: Callable
+    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -280,7 +280,7 @@ def get_function_response_parts(
 
 async def get_function_response_parts_async(
     response: types.GenerateContentResponse,
-    function_map: dict[str, Callable],
+    function_map: dict[str, Callable[..., Any]],
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []
