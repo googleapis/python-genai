@@ -203,8 +203,18 @@ class AsyncSession:
 
     await self._ws.send(json.dumps({'client_content': client_content_dict}))
 
-  async def send_realtime_input(self, *, media: t.BlobUnion):
-    """Send realtime media chunks to the model.
+  async def send_realtime_input(
+      self,
+      *,
+      media: Optional[types.BlobImageUnionDict] = None,
+      audio: Optional[types.BlobOrDict] = None,
+      audio_stream_end: Optional[bool] = None,
+      video: Optional[types.BlobImageUnionDict] = None,
+      text: Optional[str] = None,
+      activity_start: Optional[types.ActivityStartOrDict] = None,
+      activity_end: Optional[types.ActivityEndOrDict] = None,
+  ):
+    """Send realtime input to the model, only send one argument per call.
 
     Use `send_realtime_input` for realtime audio chunks and video
     frames(images).
@@ -227,7 +237,7 @@ class AsyncSession:
     from google.genai import types
 
     import PIL.Image
-    
+
     import os
 
     if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
@@ -254,9 +264,46 @@ class AsyncSession:
           print(f'{msg.text}')
     ```
     """
-    realtime_input = t.t_realtime_input(media)
-    realtime_input_dict = realtime_input.model_dump(
-        exclude_none=True, mode='json'
+    kwargs:dict[str, Any] = {}
+    if media is not None:
+      kwargs['media'] = media
+    if audio is not None:
+      kwargs['audio'] = audio
+    if audio_stream_end is not None:
+      kwargs['audio_stream_end'] = audio_stream_end
+    if video is not None:
+      kwargs['video'] = video
+    if text is not None:
+      kwargs['text'] = text
+    if activity_start is not None:
+      kwargs['activity_start'] = activity_start
+    if activity_end is not None:
+      kwargs['activity_end'] = activity_end
+
+    if len(kwargs) != 1:
+      raise ValueError(
+          f'Only one argument can be set, got {len(kwargs)}:'
+          f' {list(kwargs.keys())}'
+      )
+    realtime_input = types.LiveSendRealtimeInputParameters.model_validate(
+        kwargs
+    )
+
+    if self._api_client.vertexai:
+      realtime_input_dict = (
+          live_converters._LiveSendRealtimeInputParameters_to_vertex(
+              api_client=self._api_client, from_object=realtime_input
+          )
+      )
+    else:
+      realtime_input_dict = (
+          live_converters._LiveSendRealtimeInputParameters_to_mldev(
+              api_client=self._api_client, from_object=realtime_input
+          )
+      )
+    realtime_input_dict = _common.convert_to_dict(realtime_input_dict)
+    realtime_input_dict = _common.encode_unserializable_types(
+        realtime_input_dict
     )
     await self._ws.send(json.dumps({'realtime_input': realtime_input_dict}))
 
