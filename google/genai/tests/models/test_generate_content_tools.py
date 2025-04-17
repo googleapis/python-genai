@@ -92,6 +92,11 @@ def divide_integers(a: int, b: int) -> int:
   return a // b
 
 
+async def divide_floats_async(numerator: float, denominator: float) -> float:
+  """Divide two floats."""
+  return numerator / denominator
+
+
 def divide_floats(a: float, b: float) -> float:
   """Divide two floats."""
   return a / b
@@ -164,7 +169,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='retrieval',
     ),
     pytest_helper.TestTableItem(
-        name='test_rag_model',
+        name='test_rag_model_old',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=t.t_contents(
@@ -183,6 +188,39 @@ test_table: list[pytest_helper.TestTableItem] = [
                                     )
                                 ],
                                 similarity_top_k=3,
+                            )
+                        ),
+                    ),
+                ]
+            },
+        ),
+        exception_if_mldev='retrieval',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_rag_model_ga',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-001',
+            contents=t.t_contents(
+                None,
+                'How much gain or loss did Google get in the Motorola Mobile'
+                ' deal in 2014?',
+            ),
+            config={
+                'tools': [
+                    types.Tool(
+                        retrieval=types.Retrieval(
+                            vertex_rag_store=types.VertexRagStore(
+                                rag_resources=[
+                                    types.VertexRagStoreRagResource(
+                                        rag_corpus='projects/964831358985/locations/us-central1/ragCorpora/3379951520341557248'
+                                    )
+                                ],
+                                rag_retrieval_config=types.RagRetrievalConfig(
+                                    top_k=3,
+                                    filter=types.RagRetrievalConfigFilter(
+                                        vector_similarity_threshold=0.5,
+                                    ),
+                                ),
                             )
                         ),
                     ),
@@ -346,6 +384,20 @@ def test_automatic_function_calling(client):
   )
 
   assert '500' in response.text
+
+
+@pytest.mark.asyncio
+async def test_automatic_function_calling_with_async_function(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1001.0/2.0?',
+      config={
+          'tools': [divide_floats_async],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+
+  assert '500.5' in response.text
 
 
 def test_automatic_function_calling_stream(client):
@@ -815,8 +867,7 @@ async def test_automatic_function_calling_with_coroutine_function_async(
   async def divide_integers(a: int, b: int) -> int:
     return a // b
 
-  with pytest.raises(errors.UnsupportedFunctionError):
-    await client.aio.models.generate_content(
+  response = await client.aio.models.generate_content(
         model='gemini-1.5-flash',
         contents='what is the result of 1000/2?',
         config={
@@ -824,6 +875,8 @@ async def test_automatic_function_calling_with_coroutine_function_async(
             'automatic_function_calling': {'ignore_call_history': True}
         },
     )
+
+  assert '500' in response.text
 
 
 @pytest.mark.asyncio
@@ -895,6 +948,55 @@ async def test_automatic_function_calling_async_with_pydantic_model(client):
   # ML Dev couldn't understand pydantic model
   if client.vertexai:
     assert 'cold' in response.text and 'Boston' in response.text
+
+
+@pytest.mark.asyncio
+async def test_automatic_function_calling_async_with_async_function(client):
+  async def get_current_weather_async(city: str) -> str:
+    """Returns the current weather in the city."""
+
+    return 'windy'
+
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the weather in San Francisco?',
+      config={
+          'tools': [get_current_weather_async],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+
+  assert 'windy' in response.text
+  assert 'San Francisco' in response.text
+
+
+@pytest.mark.asyncio
+async def test_automatic_function_calling_async_with_async_function_stream(client):
+  async def get_current_weather_async(city: str) -> str:
+    """Returns the current weather in the city."""
+
+    return 'windy'
+
+  response = await client.aio.models.generate_content_stream(
+      model='gemini-1.5-flash',
+      contents='what is the weather in San Francisco?',
+      config={
+          'tools': [get_current_weather_async],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+
+  chunk = None
+  async for chunk in response:
+    if chunk.candidates[0].content.parts[0].function_call:
+      assert (
+          chunk.candidates[0].content.parts[0].function_call.name
+          == 'get_current_weather_async'
+      )
+      assert (
+          chunk.candidates[0].content.parts[0].function_call.args['city']
+          == 'San Francisco'
+      )
 
 
 def test_2_function_with_history(client):

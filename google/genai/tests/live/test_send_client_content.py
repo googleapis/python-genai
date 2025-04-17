@@ -113,7 +113,7 @@ async def test_send_client_content_turn_complete_false(
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'client_content' in sent_data
-  assert sent_data['client_content']['turn_complete'] == False
+  assert sent_data['client_content']['turnComplete'] == False
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -129,4 +129,4 @@ async def test_send_client_content_empty(
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'client_content' in sent_data
-  assert sent_data['client_content']['turn_complete'] == True
+  assert sent_data['client_content']['turnComplete'] == True

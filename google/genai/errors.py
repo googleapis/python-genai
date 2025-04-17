@@ -46,22 +46,22 @@ class APIError(Exception):
 
     super().__init__(f'{self.code} {self.status}. {self.details}')
 
-  def _get_status(self, response_json):
+  def _get_status(self, response_json: Any) -> Any:
     return response_json.get(
         'status', response_json.get('error', {}).get('status', None)
     )
 
-  def _get_message(self, response_json):
+  def _get_message(self, response_json: Any) -> Any:
     return response_json.get(
         'message', response_json.get('error', {}).get('message', None)
     )
 
-  def _get_code(self, response_json):
+  def _get_code(self, response_json: Any) -> Any:
     return response_json.get(
         'code', response_json.get('error', {}).get('code', None)
     )
 
-  def _to_replay_record(self):
+  def _to_replay_record(self) -> dict[str, Any]:
     """Returns a dictionary representation of the error for replay recording.
 
     details is not included since it may expose internal information in the
@@ -78,7 +78,7 @@ class APIError(Exception):
   @classmethod
   def raise_for_response(
       cls, response: Union['ReplayResponse', httpx.Response]
-  ):
+  ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
       return
@@ -107,7 +107,7 @@ class APIError(Exception):
   @classmethod
   async def raise_for_async_response(
       cls, response: Union['ReplayResponse', httpx.Response]
-  ):
+  ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
       return

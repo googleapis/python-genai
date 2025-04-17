@@ -13,35 +13,35 @@
 # limitations under the License.
 #
 
+from ... import _transformers as t
 from ... import errors
 from .. import pytest_helper
+from ... import types
 from ... import _api_client
 
-# TODO: b/372730941 - Re-enable this test once HTTP options are supported for
-# all languages.
-"""
+
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_generate_content_thought',
         parameters=types._GenerateContentParameters(
-            model='models/gemini-2.0-flash-thinking-exp',
+            model='gemini-2.5-pro-preview-03-25',
             contents=t.t_contents(
-                None, 'What is the sum of natural numbers from 1 to 100?'
+                None, 'Explain the monty hall problem.'
             ),
+            config={
+                'thinking_config': {'thinking_budget': 10000},
+            }
         ),
-        exception_if_vertex='404',
-        skip_in_api_mode=(
-            'Requires HTTP options support (not currently present in Go SDK).'
-        ),
+        exception_if_vertex='400',
     ),
 ]
-"""
 
 
 pytestmark = pytest_helper.setup(
     file=__file__,
     globals_for_file=globals(),
     test_method='models.generate_content',
+    test_table=test_table,
 )
 
 

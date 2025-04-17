@@ -441,6 +441,36 @@ def test_simple_config(client):
   assert response.text
 
 
+def test_model_selection_config_dict(client):
+  if not client.vertexai:
+    return
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me a Taylor Swift lyric and explain its meaning.',
+      config={
+          'model_selection_config': {
+              'feature_selection_preference': 'PRIORITIZE_COST'
+          }
+      },
+  )
+  assert response.text
+
+
+def test_model_selection_config_pydantic(client):
+  if not client.vertexai:
+    return
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me a Taylor Swift lyric and explain its meaning.',
+      config=types.GenerateContentConfig(
+          model_selection_config=types.ModelSelectionConfig(
+              feature_selection_preference=types.FeatureSelectionPreference.PRIORITIZE_QUALITY
+          )
+      ),
+  )
+  assert response.text
+
+
 def test_sdk_logger_logs_warnings(client, caplog):
   caplog.set_level(logging.DEBUG, logger='gemini_sdk_logger')
   sdk_logger = logging.getLogger('gemini_sdk_logger')
@@ -1940,6 +1970,21 @@ def test_error_handling_unary(client):
         == 'Developer instruction is not enabled for'
         ' models/gemini-2.0-flash-exp-image-generation'
     )
+
+
+def test_provisioned_output_dedicated(client):
+  response = client.models.generate_content(
+      model='gemini-2.0-flash',
+      contents='What is 1 + 1?',
+      config=types.GenerateContentConfig(
+          http_options={'headers': {'X-Vertex-AI-LLM-Request-Type': 'dedicated'}}
+      ),
+  )
+  if client.vertexai:
+    assert response.usage_metadata.traffic_type == types.TrafficType.PROVISIONED_THROUGHPUT
+  else:
+    assert not response.usage_metadata.traffic_type
+
 
 @pytest.mark.asyncio
 async def test_error_handling_unary_async(client):

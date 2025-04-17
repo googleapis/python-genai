@@ -22,6 +22,7 @@ from unittest import mock
 from unittest.mock import AsyncMock
 from unittest.mock import Mock
 from unittest.mock import patch
+import warnings
 
 import pytest
 from websockets import client
@@ -32,6 +33,7 @@ from ... import Client
 from ... import client as gl_client
 from ... import live
 from ... import types
+
 
 def exception_if_mldev(vertexai, exception_type: type[Exception]):
   if vertexai:
@@ -92,6 +94,7 @@ def mock_websocket():
   websocket.close = AsyncMock()
   return websocket
 
+
 async def get_connect_message(api_client, model, config=None):
   if config is None:
     config = {}
@@ -121,6 +124,7 @@ async def get_connect_message(api_client, model, config=None):
     return json.loads(mock_ws.send.call_args[0][0])
 
   return await _test_connect()
+
 
 async def _async_iterator_to_list(async_iter):
   return [value async for value in async_iter]
@@ -434,6 +438,94 @@ async def test_async_session_receive_tool_call(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
+async def test_async_session_receive_transcription(
+     mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"serverContent": {"inputTranscription": {"text": "test_input", "finished": true}}}',
+          '{"serverContent": {"outputTranscription": {"text": "test_output", "finished": false}}}',
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  assert isinstance(messages[0], types.LiveServerMessage)
+  assert messages[0].server_content.input_transcription.text == 'test_input'
+  assert messages[0].server_content.input_transcription.finished == True
+
+  assert isinstance(messages[1], types.LiveServerMessage)
+  assert messages[1].server_content.output_transcription.text == 'test_output'
+  assert messages[1].server_content.output_transcription.finished == False
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_go_away(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"goAway": {"timeLeft": "10s"}}',
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+  expected_result = types.LiveServerMessage(
+      go_away=types.LiveServerGoAway(time_left='10s'),
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  message = messages[0]
+
+  assert isinstance(message, types.LiveServerMessage)
+  assert message == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_resumption_update(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          """{
+                "sessionResumptionUpdate": {
+                    "newHandle": "test_handle",
+                    "resumable": "true",
+                    "lastConsumedClientMessageIndex": "123456789"
+                }
+          }""",
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+
+  expected_result = types.LiveServerMessage(
+      session_resumption_update=types.LiveServerSessionResumptionUpdate(
+          new_handle='test_handle',
+          resumable=True,
+          last_consumed_client_message_index=123456789
+      ),
+  )
+
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  message = messages[0]
+
+  assert isinstance(message, types.LiveServerMessage)
+  assert message == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
 async def test_async_session_start_stream(
      mock_websocket, vertexai
 ):
@@ -465,10 +557,13 @@ async def test_async_session_close( mock_websocket, vertexai):
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_no_config(vertexai):
-  result = await get_connect_message(
-      mock_api_client(vertexai=vertexai),
-      model='test_model'
-  )
+  with warnings.catch_warnings():
+    # Make sure there are no warnings cause by default values.
+    warnings.simplefilter('error')
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model'
+    )
   expected_result = {'setup': {}}
   if vertexai:
     expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
@@ -488,14 +583,21 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
           'model': 'models/test_model',
           'generationConfig': {
               'speechConfig': {
-                  'voiceConfig': {
-                      'prebuiltVoiceConfig': {'voiceName': 'en-default'}
-                  }
+                  # Note: the snake_casing is different from the usual camelCase
+                  # here. This is because speechConfig is an unmodified proto
+                  # defined in the discovery doc, so it doesn't need to/from
+                  # converters. The API is insensitive to the case format.
+                  # This looks wrong, but it is okay/correct.
+                  'voice_config': {
+                      'prebuilt_voice_config': {'voice_name': 'en-default'}
+                  },
+                  'language_code': 'en-US',
               },
               'temperature': 0.7,
               'topP': 0.8,
               'topK': 9.0,
               'maxOutputTokens': 10,
+              'mediaResolution': 'MEDIA_RESOLUTION_MEDIUM',
               'seed': 13,
           },
           'systemInstruction': {
@@ -509,17 +611,23 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
       }
   }
   if vertexai:
-    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
-    expected_result['setup']['generationConfig']['responseModalities'] = ['AUDIO']
+    expected_result['setup']['model'] = (
+        'projects/test_project/locations/us-central1/'
+        'publishers/google/models/test_model'
+    )
+    expected_result['setup']['generationConfig']['responseModalities'] = [
+        'AUDIO'
+    ]
   else:
-     expected_result['setup']['model'] = 'models/test_model'
+    expected_result['setup']['model'] = 'models/test_model'
 
-  # Test for mldev, config is a dict
+  # Config is a dict
   config_dict = {
       'speech_config': {
           'voice_config': {
               'prebuilt_voice_config': {'voice_name': 'en-default'}
-          }
+          },
+          'language_code': 'en-US',
       },
       'temperature': 0.7,
       'top_p': 0.8,
@@ -527,42 +635,113 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
       'max_output_tokens': 10,
       'seed': 13,
       'system_instruction': 'test instruction',
+      'media_resolution': 'MEDIA_RESOLUTION_MEDIUM'
   }
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
   )
-  assert (
-      expected_result['setup']['generationConfig']
-      == result['setup']['generationConfig']
-  )
-  # Test for mldev, config is a LiveConnectConfig
+  assert result == expected_result
+  # Config is a LiveConnectConfig
   config = types.LiveConnectConfig(
       speech_config=types.SpeechConfig(
           voice_config=types.VoiceConfig(
               prebuilt_voice_config=types.PrebuiltVoiceConfig(
                   voice_name='en-default'
               )
-          )
+          ),
+          language_code='en-US',
       ),
       temperature=0.7,
       top_p=0.8,
       top_k=9,
       max_output_tokens=10,
+      media_resolution=types.MediaResolution.MEDIA_RESOLUTION_MEDIUM,
       seed=13,
-      system_instruction=types.Content(
-          parts=[
-              types.Part(
-                  text='test instruction',
-              )
-          ],
-          role='user',
-      ),
+      system_instruction='test instruction',
   )
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
   assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_system_instruction_as_content_type(
+    vertexai,
+):
+  config_dict = {
+      'system_instruction': {
+          'parts': [{'text': 'test instruction'}],
+          'role': 'user',
+      },
+  }
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'systemInstruction': {
+              'parts': [{'text': 'test instruction'}],
+              'role': 'user',
+          },
+      }
+  }
+  if vertexai:
+    expected_result['setup'][
+        'model'
+    ] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+    expected_result['setup']['generationConfig'] = {}
+    expected_result['setup']['generationConfig']['responseModalities'] = [
+        'AUDIO'
+    ]
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_tools_google_search(vertexai):
+  config_dict = {
+      'response_modalities': ['TEXT'],
+      'system_instruction': 'test instruction',
+      'generation_config': {'temperature': 0.7},
+      'tools': [{'google_search': {}}],
+  }
+
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'generationConfig': {
+              'temperature': 0.7,
+              'responseModalities': ['TEXT'],
+          },
+          'systemInstruction': {
+              'parts': [{'text': 'test instruction'}],
+              'role': 'user',
+          },
+          'tools': [{'googleSearch': {}}],
+      }
+  }
+  if vertexai:
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config_dict
+  )
+
+  assert result == expected_result
+
+  # Test for vertex, config is a LiveConnectConfig
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
@@ -573,7 +752,7 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_bidi_setup_to_api_with_config_tools_google_search_retrieval(
+async def test_bidi_setup_to_api_with_context_window_compression(
      vertexai
 ):
   config = types.LiveConnectConfig(
@@ -582,7 +761,10 @@ async def test_bidi_setup_to_api_with_config_tools_google_search_retrieval(
       system_instruction=types.Content(
           parts=[types.Part(text='test instruction')], role='user'
       ),
-      tools=[types.Tool(google_search_retrieval=types.GoogleSearchRetrieval())],
+      context_window_compression=types.ContextWindowCompressionConfig(
+          trigger_tokens=1000,
+          sliding_window=types.SlidingWindow(target_tokens=10),
+      ),
   )
   expected_result = {
       'setup': {
@@ -594,7 +776,10 @@ async def test_bidi_setup_to_api_with_config_tools_google_search_retrieval(
               'parts': [{'text': 'test instruction'}],
               'role': 'user',
           },
-          'tools': [{'googleSearchRetrieval': {}}],
+           'contextWindowCompression': {
+              'triggerTokens': 1000,
+              'slidingWindow': {'targetTokens': 10},
+          }
       }
   }
   if vertexai:
@@ -602,14 +787,6 @@ async def test_bidi_setup_to_api_with_config_tools_google_search_retrieval(
   else:
     expected_result['setup']['model'] = 'models/test_model'
 
-  # Test for mldev, config is a LiveConnectConfig
-  result = await get_connect_message(
-      mock_api_client(vertexai=vertexai),
-      model='test_model', config=config
-  )
-  assert result == expected_result
-
-  # Test for vertex, config is a LiveConnectConfig
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
@@ -666,6 +843,7 @@ async def test_bidi_setup_to_api_with_config_tools_function_declaration(
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
+
   assert result['setup']['tools'][0]['functionDeclarations'][0][
       'description'
   ] == (
@@ -673,6 +851,7 @@ async def test_bidi_setup_to_api_with_config_tools_function_declaration(
           'description'
       ]
   )
+
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
@@ -724,6 +903,7 @@ async def test_bidi_setup_to_api_with_config_tools_function_directly(
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
+
   assert result['setup']['tools'][0]['functionDeclarations'][0][
       'description'
   ] == (
@@ -731,6 +911,7 @@ async def test_bidi_setup_to_api_with_config_tools_function_directly(
           'description'
       ]
   )
+
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
@@ -754,27 +935,93 @@ async def test_bidi_setup_to_api_with_config_tools_code_execution(
       model='test_model', config=config
   )
 
-
   assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_realtime_input_config(vertexai):
+  config_dict = {
+      'realtime_input_config': {
+          'automatic_activity_detection': {
+              'disabled': True,
+              'start_of_speech_sensitivity': 'START_SENSITIVITY_HIGH',
+              'end_of_speech_sensitivity': 'END_SENSITIVITY_HIGH',
+              'prefix_padding_ms': 20,
+              'silence_duration_ms': 100,
+          },
+          'activity_handling': 'NO_INTERRUPTION',
+          'turn_coverage': 'TURN_INCLUDES_ALL_INPUT',
+      }
+  }
+
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'realtimeInputConfig': {
+              'automaticActivityDetection': {
+                  'disabled': True,
+                  'startOfSpeechSensitivity': 'START_SENSITIVITY_HIGH',
+                  'endOfSpeechSensitivity': 'END_SENSITIVITY_HIGH',
+                  'prefixPaddingMs': 20,
+                  'silenceDurationMs': 100,
+              },
+              'activityHandling': 'NO_INTERRUPTION',
+              'turnCoverage': 'TURN_INCLUDES_ALL_INPUT',
+          },
+      }
+  }
 
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
-  assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
+
+  assert (
+      result['setup']['realtimeInputConfig']
+      == expected_result['setup']['realtimeInputConfig']
+  )
+
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_bidi_setup_to_api_with_config_transcription(vertexai):
+async def test_bidi_setup_to_api_with_input_transcription(vertexai):
   config_dict = {
       'input_audio_transcription': {},
-      'output_audio_transcription': {},
   }
   config = types.LiveConnectConfig(**config_dict)
   expected_result = {
       'setup': {
           'model': 'test_model',
           'inputAudioTranscription': {},
+      }
+  }
+
+  with exception_if_mldev(vertexai, ValueError):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model', config=config
+    )
+  if not vertexai:
+    return
+
+  assert (
+      result['setup']['inputAudioTranscription']
+      == expected_result['setup']['inputAudioTranscription']
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_output_transcription(vertexai):
+  config_dict = {
+      'output_audio_transcription': {},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
           'outputAudioTranscription': {},
       }
   }
@@ -784,15 +1031,34 @@ async def test_bidi_setup_to_api_with_config_transcription(vertexai):
       model='test_model', config=config
   )
 
-  with exception_if_mldev(vertexai, KeyError):
-    assert (
-        result['setup']['inputAudioTranscription']
-        == expected_result['setup']['inputAudioTranscription']
-    )
-    assert (
-        result['setup']['outputAudioTranscription']
-        == expected_result['setup']['outputAudioTranscription']
-    )
+  assert (
+      result['setup']['outputAudioTranscription']
+      == expected_result['setup']['outputAudioTranscription']
+  )
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_media_resolution(vertexai):
+  config_dict = {
+      'media_resolution': 'MEDIA_RESOLUTION_LOW',
+  }
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'generationConfig': {'mediaResolution':'MEDIA_RESOLUTION_LOW'},
+      }
+  }
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+
+  assert (
+      result['setup']['generationConfig']['mediaResolution']
+      == expected_result['setup']['generationConfig']['mediaResolution']
+  )
 
 
 @pytest.mark.parametrize('vertexai', [True])
@@ -813,6 +1079,89 @@ async def test_bidi_setup_publishers(
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai),
       model='publishers/google/models/test_model')
+
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_generation_config_warning(
+     vertexai
+):
+  with pytest.warns(
+      DeprecationWarning,
+      match='Setting `LiveConnectConfig.generation_config` is deprecated'
+  ):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='models/test_model',
+        config={'generation_config': {'temperature': 0.7}})
+
+  assert result['setup']['generationConfig']['temperature'] == 0.7
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_session_resumption(vertexai):
+  config_dict = {
+      'session_resumption': {'handle': 'test_handle'},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model',
+      config=config
+  )
+  expected_result = {
+      'setup': {
+          'sessionResumption': {
+              'handle': 'test_handle',
+          },
+      }
+  }
+  if vertexai:
+    expected_result['setup']['generationConfig'] = {
+        'responseModalities': [
+            'AUDIO',
+        ],
+    }
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+  assert result == expected_result
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
+  config_dict = {
+      'session_resumption': {'handle': 'test_handle', 'transparent': True},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+
+  with exception_if_mldev(vertexai, ValueError):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model',
+        config=config
+    )
+
+  expected_result = {
+      'setup': {
+          'sessionResumption': {
+              'handle': 'test_handle',
+              'transparent': True,
+          },
+      }
+  }
+  if vertexai:
+    expected_result['setup']['generationConfig'] = {
+        'responseModalities': [
+            'AUDIO',
+        ],
+    }
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    return
 
   assert result == expected_result
 

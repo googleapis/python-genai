@@ -53,7 +53,7 @@ def _resource_name(
     *,
     collection_identifier: str,
     collection_hierarchy_depth: int = 2,
-):
+) -> str:
   # pylint: disable=line-too-long
   """Prepends resource name with project, location, collection_identifier if needed.
 
@@ -140,7 +140,7 @@ def _resource_name(
       return resource_name
 
 
-def t_model(client: _api_client.BaseApiClient, model: str):
+def t_model(client: _api_client.BaseApiClient, model: str) -> str:
   if not model:
     raise ValueError('model is required.')
   if client.vertexai:
@@ -211,7 +211,7 @@ def t_extract_models(
     return []
 
 
-def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
+def t_caches_model(api_client: _api_client.BaseApiClient, model: str) -> Optional[str]:
   model = t_model(api_client, model)
   if not model:
     return None
@@ -226,7 +226,7 @@ def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
     return model
 
 
-def pil_to_blob(img) -> types.Blob:
+def pil_to_blob(img: Any) -> types.Blob:
   PngImagePlugin: Optional[builtin_types.ModuleType]
   try:
     import PIL.PngImagePlugin
@@ -470,7 +470,7 @@ def t_contents(
   def _append_accumulated_parts_as_content(
       result: list[types.Content],
       accumulated_parts: list[types.Part],
-  ):
+  ) -> None:
     if not accumulated_parts:
       return
     result.append(
@@ -484,7 +484,7 @@ def t_contents(
       result: list[types.Content],
       accumulated_parts: list[types.Part],
       current_part: types.PartUnionDict,
-  ):
+  ) -> None:
     current_part = t_part(current_part)
     if _is_user_part(current_part) == _are_user_parts(accumulated_parts):
       accumulated_parts.append(current_part)
@@ -523,7 +523,7 @@ def t_contents(
   return result
 
 
-def handle_null_fields(schema: dict[str, Any]):
+def handle_null_fields(schema: dict[str, Any]) -> None:
   """Process null fields in the schema so it is compatible with OpenAPI.
 
   The OpenAPI spec does not support 'type: 'null' in the schema. This function
@@ -588,7 +588,7 @@ def process_schema(
     defs: Optional[dict[str, Any]] = None,
     *,
     order_properties: bool = True,
-):
+) -> None:
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
   - Inlines the $defs.
@@ -663,7 +663,9 @@ def process_schema(
   # provided directly to response_schema, it may use `any_of` instead of `anyOf.
   # Otherwise, model_json_schema() uses `anyOf`.
   for from_name, to_name in [
+      ('additional_properties', 'additionalProperties'),
       ('any_of', 'anyOf'),
+      ('prefix_items', 'prefixItems'),
       ('property_ordering', 'propertyOrdering'),
   ]:
     if (value := schema.pop(from_name, None)) is not None:
@@ -723,9 +725,16 @@ def process_schema(
           and 'propertyOrdering' not in schema
       ):
         schema['property_ordering'] = list(properties.keys())
+    if (additional := schema.get('additionalProperties')) is not None:
+      # It is legal to set 'additionalProperties' to a bool:
+      # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
+      if isinstance(additional, dict):
+        schema['additionalProperties'] = _recurse(additional)
   elif schema_type == 'ARRAY':
     if (items := schema.get('items')) is not None:
       schema['items'] = _recurse(items)
+    if (prefixes := schema.get('prefixItems')) is not None:
+      schema['prefixItems'] = [_recurse(prefix) for prefix in prefixes]
 
 
 def _process_enum(
@@ -834,7 +843,7 @@ def t_speech_config(
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
 
 
-def t_tool(client: _api_client.BaseApiClient, origin) -> Optional[types.Tool]:
+def t_tool(client: _api_client.BaseApiClient, origin: Any) -> Optional[Union[types.Tool, Any]]:
   if not origin:
     return None
   if inspect.isfunction(origin) or inspect.ismethod(origin):
@@ -845,6 +854,8 @@ def t_tool(client: _api_client.BaseApiClient, origin) -> Optional[types.Tool]:
             )
         ]
     )
+  elif isinstance(origin, dict):
+    return types.Tool.model_validate(origin)
   else:
     return origin
 
@@ -875,11 +886,11 @@ def t_tools(
   return tools
 
 
-def t_cached_content_name(client: _api_client.BaseApiClient, name: str):
+def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
+def t_batch_job_source(client: _api_client.BaseApiClient, src: str) -> types.BatchJobSource:
   if src.startswith('gs://'):
     return types.BatchJobSource(
         format='jsonl',
@@ -894,7 +905,7 @@ def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
     raise ValueError(f'Unsupported source: {src}')
 
 
-def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
+def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str) -> types.BatchJobDestination:
   if dest.startswith('gs://'):
     return types.BatchJobDestination(
         format='jsonl',
@@ -909,7 +920,7 @@ def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
     raise ValueError(f'Unsupported destination: {dest}')
 
 
-def t_batch_job_name(client: _api_client.BaseApiClient, name: str):
+def t_batch_job_name(client: _api_client.BaseApiClient, name: str) -> str:
   if not client.vertexai:
     return name
 
@@ -928,7 +939,7 @@ LRO_POLLING_TIMEOUT_SECONDS = 900.0
 LRO_POLLING_MULTIPLIER = 1.5
 
 
-def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
+def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict[str, Any]) -> Any:
   if (name := struct.get('name')) and '/operations/' in name:
     operation: dict[str, Any] = struct
     total_seconds = 0.0
@@ -959,7 +970,7 @@ def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
 def t_file_name(
     api_client: _api_client.BaseApiClient,
     name: Optional[Union[str, types.File, types.Video, types.GeneratedVideo]],
-):
+) -> str:
   # Remove the files/ prefix since it's added to the url path.
   if isinstance(name, types.File):
     name = name.name
@@ -1017,3 +1028,121 @@ def t_bytes(api_client: _api_client.BaseApiClient, data: bytes) -> str:
   if not isinstance(data, bytes):
     return data
   return base64.b64encode(data).decode('ascii')
+
+
+def t_content_strict(content: types.ContentOrDict) -> types.Content:
+  if isinstance(content, dict):
+    return types.Content.model_validate(content)
+  elif isinstance(content, types.Content):
+    return content
+  else:
+    raise ValueError(
+        f'Could not convert input (type "{type(content)}") to '
+        '`types.Content`'
+    )
+
+
+def t_contents_strict(
+    contents: Union[Sequence[types.ContentOrDict], types.ContentOrDict],
+) -> list[types.Content]:
+  if isinstance(contents, Sequence):
+    return [t_content_strict(content) for content in contents]
+  else:
+    return [t_content_strict(contents)]
+
+
+def t_client_content(
+    turns: Optional[
+        Union[Sequence[types.ContentOrDict], types.ContentOrDict]
+    ] = None,
+    turn_complete: bool = True,
+) -> types.LiveClientContent:
+  if turns is None:
+    return types.LiveClientContent(turn_complete=turn_complete)
+
+  try:
+    return types.LiveClientContent(
+        turns=t_contents_strict(contents=turns),
+        turn_complete=turn_complete,
+    )
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(turns)}") to '
+        '`types.LiveClientContent`'
+    ) from e
+
+
+def t_realtime_input(
+    media: BlobUnion,
+) -> types.LiveClientRealtimeInput:
+  try:
+    return types.LiveClientRealtimeInput(media_chunks=[t_blob(blob=media)])
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(input)}") to '
+        '`types.LiveClientRealtimeInput`'
+    ) from e
+
+
+def t_tool_response(
+    input: Union[
+        types.FunctionResponseOrDict,
+        Sequence[types.FunctionResponseOrDict],
+    ],
+) -> types.LiveClientToolResponse:
+  if not input:
+    raise ValueError(f'A tool response is required, got: \n{input}')
+
+  try:
+    return types.LiveClientToolResponse(
+        function_responses=t_function_responses(function_responses=input)
+    )
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(input)}") to '
+        '`types.LiveClientToolResponse`'
+    ) from e
+
+
+def t_live_speech_config(
+    origin: Union[types.SpeechConfigUnionDict, Any],
+) -> Optional[types.SpeechConfig]:
+  if not origin:
+    return None
+  if isinstance(origin, types.SpeechConfig):
+    return origin
+  if isinstance(origin, str):
+    # There is no way to know if the string is a voice name or a language code.
+    raise ValueError(
+        f'Unsupported speechConfig type: {type(origin)}. There is no way to'
+        ' know if the string is a voice name or a language code.'
+    )
+  if isinstance(origin, dict):
+    speech_config = types.SpeechConfig()
+    if (
+        'voice_config' in origin
+        and origin['voice_config'] is not None
+        and 'prebuilt_voice_config' in origin['voice_config']
+        and origin['voice_config']['prebuilt_voice_config'] is not None
+        and 'voice_name' in origin['voice_config']['prebuilt_voice_config']
+    ):
+      speech_config.voice_config = types.VoiceConfig(
+          prebuilt_voice_config=types.PrebuiltVoiceConfig(
+              voice_name=origin['voice_config']['prebuilt_voice_config'].get(
+                  'voice_name'
+              )
+          )
+      )
+    if 'language_code' in origin and origin['language_code'] is not None:
+      speech_config.language_code = origin['language_code']
+    if (
+        speech_config.voice_config is None
+        and speech_config.language_code is None
+    ):
+      raise ValueError(
+          'Unsupported speechConfig type: {type(origin)}. At least one of'
+          ' voice_config or language_code must be set.'
+      )
+    return speech_config
+  raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
+
