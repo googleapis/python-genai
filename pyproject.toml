@@ -44,3 +44,7 @@ packages = [
     "google.genai",
 ]
 include-package-data = true
+
+
+[tools.setuptools.package_data]
+"google.genai" = ["py.typed"]

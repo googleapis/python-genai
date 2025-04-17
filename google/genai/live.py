@@ -41,8 +41,8 @@ from .models import _Content_to_vertex
 
 
 try:
-  from websockets.asyncio.client import ClientConnection  # type: ignore
-  from websockets.asyncio.client import connect  # type: ignore
+  from websockets.asyncio.client import ClientConnection
+  from websockets.asyncio.client import connect
 except ModuleNotFoundError:
   # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
   from websockets.client import ClientConnection  # type: ignore
@@ -127,7 +127,7 @@ class AsyncSession:
           ]
       ] = None,
       turn_complete: bool = True,
-  ):
+  ) -> None:
     """Send non-realtime, turn based content to the model.
 
     There are two ways to send messages to the live API:
@@ -203,7 +203,7 @@ class AsyncSession:
 
     await self._ws.send(json.dumps({'client_content': client_content_dict}))
 
-  async def send_realtime_input(self, *, media: t.BlobUnion):
+  async def send_realtime_input(self, *, media: t.BlobUnion) -> None:
     """Send realtime media chunks to the model.
 
     Use `send_realtime_input` for realtime audio chunks and video
@@ -267,7 +267,7 @@ class AsyncSession:
           types.FunctionResponseOrDict,
           Sequence[types.FunctionResponseOrDict],
       ],
-  ):
+  ) -> None:
     """Send a tool response to the session.
 
     Use `send_tool_response` to reply to `LiveServerToolCall` messages
