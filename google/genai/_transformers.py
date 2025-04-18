@@ -280,9 +280,19 @@ def t_function_responses(
     return [t_function_response(function_responses)]
 
 
-BlobUnion = Union[types.Blob, types.BlobDict, 'PIL.Image.Image']
+def t_blobs(
+    api_client: _api_client.BaseApiClient,
+    blobs: Union[types.BlobImageUnionDict, list[types.BlobImageUnionDict]],
+) -> list[types.Blob]:
+  if isinstance(blobs, list):
+    return [t_blob(api_client, blob) for blob in blobs]
+  else:
+    return [t_blob(api_client, blobs)]
 
-def t_blob(blob: BlobUnion) -> types.Blob:
+
+def t_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
+) -> types.Blob:
   try:
     import PIL.Image
 
@@ -305,6 +315,24 @@ def t_blob(blob: BlobUnion) -> types.Blob:
   raise TypeError(
       f'Could not parse input as Blob. Unsupported blob type: {type(blob)}'
   )
+
+
+def t_image_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
+) -> types.Blob:
+  blob = t_blob(api_client, blob)
+  if blob.mime_type and blob.mime_type.startswith('image/'):
+    return blob
+  raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
+
+
+def t_audio_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobOrDict
+) -> types.Blob:
+  blob = t_blob(api_client, blob)
+  if blob.mime_type and blob.mime_type.startswith('audio/'):
+    return blob
+  raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
 
 
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
@@ -1069,18 +1097,6 @@ def t_client_content(
     raise ValueError(
         f'Could not convert input (type "{type(turns)}") to '
         '`types.LiveClientContent`'
-    ) from e
-
-
-def t_realtime_input(
-    media: BlobUnion,
-) -> types.LiveClientRealtimeInput:
-  try:
-    return types.LiveClientRealtimeInput(media_chunks=[t_blob(blob=media)])
-  except Exception as e:
-    raise ValueError(
-        f'Could not convert input (type "{type(input)}") to '
-        '`types.LiveClientRealtimeInput`'
     ) from e
 
 
