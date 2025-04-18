@@ -1414,9 +1414,9 @@ def test_parse_client_message_function_response(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
   input = types.FunctionResponse(
-    id='test_id',
-    name='test_name',
-    response={'result': 'test_response'},
+      id='test_id',
+      name='test_name',
+      response={'result': 'test_response'},
   )
   result = session._parse_client_message(input)
   assert 'tool_response' in result
@@ -1443,11 +1443,11 @@ def test_parse_client_message_tool_response_dict_with_only_response(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
   input = {
-    'id': 'test_id',
-    'name': 'test_name',
-    'response': {
-        'result': 'test_response',
-    }
+      'id': 'test_id',
+      'name': 'test_name',
+      'response': {
+          'result': 'test_response',
+      },
   }
   result = session._parse_client_message(input)
   assert 'tool_response' in result
@@ -1500,3 +1500,19 @@ def test_parse_client_message_realtime_tool_response(
           ],
       }
   }
+
+
+@pytest.mark.asyncio
+async def test_connect_with_http_options_throws_error(
+    mock_api_client, mock_websocket
+):
+  with pytest.raises(ValueError, match='http_options is not supported'):
+    await live.AsyncLive(mock_api_client()).connect(
+        model='models/gemini-pro',
+        config=types.LiveConnectConfig(http_options={'proxy': 'test-proxy'}),
+    )
+  with pytest.raises(ValueError, match='http_options is not supported'):
+    await live.AsyncLive(mock_api_client()).connect(
+        model='models/gemini-pro',
+        config=types.LiveConnectConfig({'http_options': {'proxy': 'test-proxy'}}),
+    )
