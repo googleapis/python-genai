@@ -33,21 +33,12 @@ from . import _transformers as t
 from . import client
 from . import types
 from ._api_client import BaseApiClient
-from ._common import experimental_warning
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
-from .models import _Content_from_mldev
-from .models import _Content_from_vertex
+from . import _live_converters as live_converters
 from .models import _Content_to_mldev
 from .models import _Content_to_vertex
-from .models import _GenerateContentConfig_to_mldev
-from .models import _GenerateContentConfig_to_vertex
-from .models import _SafetySetting_to_mldev
-from .models import _SafetySetting_to_vertex
-from .models import _SpeechConfig_to_mldev
-from .models import _SpeechConfig_to_vertex
-from .models import _Tool_to_mldev
-from .models import _Tool_to_vertex
+
 
 try:
   from websockets.asyncio.client import ClientConnection  # type: ignore
@@ -65,206 +56,11 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 )
 
 
-def _ClientContent_to_mldev(
-    api_client: BaseApiClient,
-    from_object: types.LiveClientContent,
-) -> dict:
-  client_content = from_object.model_dump(exclude_none=True, mode='json')
-  if 'turns' in client_content:
-    client_content['turns'] = [
-        _Content_to_mldev(api_client=api_client, from_object=item)
-        for item in client_content['turns']
-    ]
-  return client_content
-
-
-def _ClientContent_to_vertex(
-    api_client: BaseApiClient,
-    from_object: types.LiveClientContent,
-) -> dict:
-  client_content = from_object.model_dump(exclude_none=True, mode='json')
-  if 'turns' in client_content:
-    client_content['turns'] = [
-        _Content_to_vertex(api_client=api_client, from_object=item)
-        for item in client_content['turns']
-    ]
-  return client_content
-
-
-def _ToolResponse_to_mldev(
-    api_client: BaseApiClient,
-    from_object: types.LiveClientToolResponse,
-) -> dict:
-  tool_response = from_object.model_dump(exclude_none=True, mode='json')
-  for response in tool_response.get('function_responses', []):
-    if response.get('id') is None:
-      raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
-  return tool_response
-
-
-def _ToolResponse_to_vertex(
-    api_client: BaseApiClient,
-    from_object: types.LiveClientToolResponse,
-) -> dict:
-  tool_response = from_object.model_dump(exclude_none=True, mode='json')
-  return tool_response
-
-
-def _AudioTranscriptionConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: types.AudioTranscriptionConfig,
-) -> dict:
-  audio_transcription: dict[str, Any] = {}
-  return audio_transcription
-
-
-def _AudioTranscriptionConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: types.AudioTranscriptionConfig,
-) -> dict:
-  audio_transcription: dict[str, Any] = {}
-  return audio_transcription
-
-
-def _AutomaticActivityDetection_to_mldev(
-    api_client: BaseApiClient,
-    from_object: types.AutomaticActivityDetection,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['disabled']) is not None:
-    setv(
-        to_object,
-        ['disabled'],
-        getv(from_object, ['disabled']),
-    )
-  if getv(from_object, ['start_of_speech_sensitivity']) is not None:
-    setv(
-        to_object,
-        ['startOfSpeechSensitivity'],
-        getv(from_object, ['start_of_speech_sensitivity']),
-    )
-  if getv(from_object, ['end_of_speech_sensitivity']) is not None:
-    setv(
-        to_object,
-        ['endOfSpeechSensitivity'],
-        getv(from_object, ['end_of_speech_sensitivity']),
-    )
-  if getv(from_object, ['prefix_padding_ms']) is not None:
-    setv(
-        to_object,
-        ['prefixPaddingMs'],
-        getv(from_object, ['prefix_padding_ms']),
-    )
-  if getv(from_object, ['silence_duration_ms']) is not None:
-    setv(
-        to_object,
-        ['silenceDurationMs'],
-        getv(from_object, ['silence_duration_ms']),
-    )
-  return to_object
-
-
-def _AutomaticActivityDetection_to_vertex(
-    api_client: BaseApiClient,
-    from_object: types.AutomaticActivityDetection,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['disabled']) is not None:
-    setv(
-        to_object,
-        ['disabled'],
-        getv(from_object, ['disabled']),
-    )
-  if getv(from_object, ['start_of_speech_sensitivity']) is not None:
-    setv(
-        to_object,
-        ['startOfSpeechSensitivity'],
-        getv(from_object, ['start_of_speech_sensitivity']),
-    )
-  if getv(from_object, ['end_of_speech_sensitivity']) is not None:
-    setv(
-        to_object,
-        ['endOfSpeechSensitivity'],
-        getv(from_object, ['end_of_speech_sensitivity']),
-    )
-  if getv(from_object, ['prefix_padding_ms']) is not None:
-    setv(
-        to_object,
-        ['prefixPaddingMs'],
-        getv(from_object, ['prefix_padding_ms']),
-    )
-  if getv(from_object, ['silence_duration_ms']) is not None:
-    setv(
-        to_object,
-        ['silenceDurationMs'],
-        getv(from_object, ['silence_duration_ms']),
-    )
-  return to_object
-
-
-def _RealtimeInputConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: types.RealtimeInputConfig,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['automatic_activity_detection']) is not None:
-    setv(
-        to_object,
-        ['automaticActivityDetection'],
-        _AutomaticActivityDetection_to_mldev(
-            api_client,
-            getv(from_object, ['automatic_activity_detection']),
-        ),
-    )
-  if getv(from_object, ['activity_handling']) is not None:
-    setv(
-        to_object,
-        ['activityHandling'],
-        getv(from_object, ['activity_handling']),
-    )
-  if getv(from_object, ['turn_coverage']) is not None:
-    setv(
-        to_object,
-        ['turnCoverage'],
-        getv(from_object, ['turn_coverage']),
-    )
-  return to_object
-
-
-def _RealtimeInputConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: types.RealtimeInputConfig,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['automatic_activity_detection']) is not None:
-    setv(
-        to_object,
-        ['automaticActivityDetection'],
-        _AutomaticActivityDetection_to_vertex(
-            api_client,
-            getv(from_object, ['automatic_activity_detection']),
-        ),
-    )
-  if getv(from_object, ['activity_handling']) is not None:
-    setv(
-        to_object,
-        ['activityHandling'],
-        getv(from_object, ['activity_handling']),
-    )
-  if getv(from_object, ['turn_coverage']) is not None:
-    setv(
-        to_object,
-        ['turnCoverage'],
-        getv(from_object, ['turn_coverage']),
-    )
-  return to_object
-
-
 class AsyncSession:
   """[Preview] AsyncSession."""
 
   def __init__(
-      self, api_client: client.BaseApiClient, websocket: ClientConnection
+      self, api_client: BaseApiClient, websocket: ClientConnection
   ):
     self._api_client = api_client
     self._ws = websocket
@@ -284,7 +80,7 @@ class AsyncSession:
           ]
       ] = None,
       end_of_turn: Optional[bool] = False,
-  ):
+  ) -> None:
     """[Deprecated] Send input to the model.
 
     > **Warning**: This method is deprecated and will be removed in a future
@@ -394,14 +190,14 @@ class AsyncSession:
           print(msg.text)
     ```
     """
-    client_content = _t_client_content(turns, turn_complete)
+    client_content = t.t_client_content(turns, turn_complete)
 
     if self._api_client.vertexai:
-      client_content_dict = _ClientContent_to_vertex(
+      client_content_dict = live_converters._LiveClientContent_to_vertex(
           api_client=self._api_client, from_object=client_content
       )
     else:
-      client_content_dict = _ClientContent_to_mldev(
+      client_content_dict = live_converters._LiveClientContent_to_mldev(
           api_client=self._api_client, from_object=client_content
       )
 
@@ -458,7 +254,7 @@ class AsyncSession:
           print(f'{msg.text}')
     ```
     """
-    realtime_input = _t_realtime_input(media)
+    realtime_input = t.t_realtime_input(media)
     realtime_input_dict = realtime_input.model_dump(
         exclude_none=True, mode='json'
     )
@@ -532,15 +328,19 @@ class AsyncSession:
 
             print('_'*80)
     """
-    tool_response = _t_tool_response(function_responses)
+    tool_response = t.t_tool_response(function_responses)
     if self._api_client.vertexai:
-      tool_response_dict = _ToolResponse_to_vertex(
+      tool_response_dict = live_converters._LiveClientToolResponse_to_vertex(
           api_client=self._api_client, from_object=tool_response
       )
     else:
-      tool_response_dict = _ToolResponse_to_mldev(
+      tool_response_dict = live_converters._LiveClientToolResponse_to_mldev(
           api_client=self._api_client, from_object=tool_response
       )
+      for response in tool_response_dict.get('functionResponses', []):
+        if response.get('id') is None:
+          raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
+
     await self._ws.send(json.dumps({'tool_response': tool_response_dict}))
 
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
@@ -659,9 +459,9 @@ class AsyncSession:
       response = {}
 
     if self._api_client.vertexai:
-      response_dict = self._LiveServerMessage_from_vertex(response)
+      response_dict = live_converters._LiveServerMessage_from_vertex(self._api_client, response)
     else:
-      response_dict = self._LiveServerMessage_from_mldev(response)
+      response_dict = live_converters._LiveServerMessage_from_mldev(self._api_client, response)
 
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -672,7 +472,7 @@ class AsyncSession:
       data_stream: AsyncIterator[bytes],
       mime_type: str,
       stop_event: asyncio.Event,
-  ):
+  ) -> None:
     async for data in data_stream:
       model_input = types.LiveClientRealtimeInput(
         media_chunks=[types.Blob(data=data, mime_type=mime_type)]
@@ -682,463 +482,6 @@ class AsyncSession:
       await asyncio.sleep(10**-12)
     # Give a chance for the receiver to process the last response.
     stop_event.set()
-
-  def _LiveServerContent_from_mldev(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['modelTurn']) is not None:
-      setv(
-          to_object,
-          ['model_turn'],
-          _Content_from_mldev(
-              self._api_client,
-              getv(from_object, ['modelTurn']),
-          ),
-      )
-    if getv(from_object, ['turnComplete']) is not None:
-      setv(to_object, ['turn_complete'], getv(from_object, ['turnComplete']))
-    if getv(from_object, ['generationComplete']) is not None:
-      setv(
-          to_object,
-          ['generation_complete'],
-          getv(from_object, ['generationComplete']),
-      )
-    if getv(from_object, ['inputTranscription']) is not None:
-      setv(
-          to_object,
-          ['input_transcription'],
-          getv(from_object, ['inputTranscription']),
-      )
-    if getv(from_object, ['outputTranscription']) is not None:
-      setv(
-          to_object,
-          ['output_transcription'],
-          getv(from_object, ['outputTranscription']),
-      )
-    if getv(from_object, ['interrupted']) is not None:
-      setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
-    return to_object
-
-  def _LiveToolCall_from_mldev(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['functionCalls']) is not None:
-      setv(
-          to_object,
-          ['function_calls'],
-          getv(from_object, ['functionCalls']),
-      )
-    return to_object
-
-  def _LiveToolCall_from_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['functionCalls']) is not None:
-      setv(
-          to_object,
-          ['function_calls'],
-          getv(from_object, ['functionCalls']),
-      )
-    return to_object
-
-  def _LiveServerGoAway_from_mldev(
-      self,
-      from_object: Union[dict, object],
-      parent_object: Optional[dict] = None,
-  ) -> dict:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['timeLeft']) is not None:
-      setv(to_object, ['time_left'], getv(from_object, ['timeLeft']))
-
-    return to_object
-
-  def _LiveServerSessionResumptionUpdate_from_mldev(
-      self,
-      from_object: Union[dict, object],
-      parent_object: Optional[dict] = None,
-  ) -> dict:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['newHandle']) is not None:
-      setv(to_object, ['new_handle'], getv(from_object, ['newHandle']))
-
-    if getv(from_object, ['resumable']) is not None:
-      setv(to_object, ['resumable'], getv(from_object, ['resumable']))
-
-    if getv(from_object, ['lastConsumedClientMessageIndex']) is not None:
-      setv(
-          to_object,
-          ['last_consumed_client_message_index'],
-          getv(from_object, ['lastConsumedClientMessageIndex']),
-      )
-
-    return to_object
-
-  def _ModalityTokenCount_from_mldev(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: Dict[str, Any] = {}
-    if getv(from_object, ['modality']) is not None:
-      setv(to_object, ['modality'], getv(from_object, ['modality']))
-    if getv(from_object, ['tokenCount']) is not None:
-      setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
-    return to_object
-
-  def _UsageMetadata_from_mldev(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['promptTokenCount']) is not None:
-      setv(
-          to_object,
-          ['prompt_token_count'],
-          getv(from_object, ['promptTokenCount']),
-      )
-    if getv(from_object, ['cachedContentTokenCount']) is not None:
-      setv(
-          to_object,
-          ['cached_content_token_count'],
-          getv(from_object, ['cachedContentTokenCount']),
-      )
-    if getv(from_object, ['responseTokenCount']) is not None:
-      setv(
-          to_object,
-          ['response_token_count'],
-          getv(from_object, ['responseTokenCount']),
-      )
-    if getv(from_object, ['toolUsePromptTokenCount']) is not None:
-      setv(
-          to_object,
-          ['tool_use_prompt_token_count'],
-          getv(from_object, ['toolUsePromptTokenCount']),
-      )
-    if getv(from_object, ['thoughtsTokenCount']) is not None:
-      setv(
-          to_object,
-          ['thoughts_token_count'],
-          getv(from_object, ['thoughtsTokenCount']),
-      )
-    if getv(from_object, ['totalTokenCount']) is not None:
-      setv(
-          to_object,
-          ['total_token_count'],
-          getv(from_object, ['totalTokenCount']),
-      )
-    if getv(from_object, ['promptTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['prompt_tokens_details'],
-          [
-              self._ModalityTokenCount_from_mldev(item)
-              for item in getv(from_object, ['promptTokensDetails'])
-          ],
-      )
-    if getv(from_object, ['cacheTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['cache_tokens_details'],
-          [
-              self._ModalityTokenCount_from_mldev(item)
-              for item in getv(from_object, ['cacheTokensDetails'])
-          ],
-      )
-    if getv(from_object, ['responseTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['response_tokens_details'],
-          [
-              self._ModalityTokenCount_from_mldev(item)
-              for item in getv(from_object, ['responseTokensDetails'])
-          ],
-      )
-    if getv(from_object, ['toolUsePromptTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['tool_use_prompt_tokens_details'],
-          [
-              self._ModalityTokenCount_from_mldev(item)
-              for item in getv(from_object, ['toolUsePromptTokensDetails'])
-          ],
-      )
-    return to_object
-
-  def _LiveServerMessage_from_mldev(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['serverContent']) is not None:
-      setv(
-          to_object,
-          ['server_content'],
-          self._LiveServerContent_from_mldev(
-              getv(from_object, ['serverContent'])
-          ),
-      )
-    if getv(from_object, ['toolCall']) is not None:
-      setv(
-          to_object,
-          ['tool_call'],
-          self._LiveToolCall_from_mldev(getv(from_object, ['toolCall'])),
-      )
-    if getv(from_object, ['toolCallCancellation']) is not None:
-      setv(
-          to_object,
-          ['tool_call_cancellation'],
-          getv(from_object, ['toolCallCancellation']),
-      )
-
-    if getv(from_object, ['goAway']) is not None:
-      setv(
-          to_object,
-          ['go_away'],
-          self._LiveServerGoAway_from_mldev(
-              getv(from_object, ['goAway']), to_object
-          ),
-      )
-
-    if getv(from_object, ['sessionResumptionUpdate']) is not None:
-      setv(
-          to_object,
-          ['session_resumption_update'],
-          self._LiveServerSessionResumptionUpdate_from_mldev(
-              getv(from_object, ['sessionResumptionUpdate']),
-              to_object,
-          ),
-      )
-
-      return to_object
-
-    if getv(from_object, ['usageMetadata']) is not None:
-      setv(
-          to_object,
-          ['usage_metadata'],
-          self._UsageMetadata_from_mldev(getv(from_object, ['usageMetadata'])),
-      )
-    return to_object
-
-  def _LiveServerContent_from_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['modelTurn']) is not None:
-      setv(
-          to_object,
-          ['model_turn'],
-          _Content_from_vertex(
-              self._api_client,
-              getv(from_object, ['modelTurn']),
-          ),
-      )
-    if getv(from_object, ['turnComplete']) is not None:
-      setv(to_object, ['turn_complete'], getv(from_object, ['turnComplete']))
-    if getv(from_object, ['generationComplete']) is not None:
-      setv(
-          to_object,
-          ['generation_complete'],
-          getv(from_object, ['generationComplete']),
-      )
-    if getv(from_object, ['inputTranscription']) is not None:
-      setv(
-          to_object,
-          ['input_transcription'],
-          getv(from_object, ['inputTranscription']),
-      )
-    if getv(from_object, ['outputTranscription']) is not None:
-      setv(
-          to_object,
-          ['output_transcription'],
-          getv(from_object, ['outputTranscription']),
-      )
-    if getv(from_object, ['interrupted']) is not None:
-      setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
-    return to_object
-
-  def _LiveServerGoAway_from_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> dict:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['timeLeft']) is not None:
-      setv(to_object, ['time_left'], getv(from_object, ['timeLeft']))
-
-    return to_object
-
-  def _LiveServerSessionResumptionUpdate_from_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> dict:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['newHandle']) is not None:
-      setv(to_object, ['new_handle'], getv(from_object, ['newHandle']))
-
-    if getv(from_object, ['resumable']) is not None:
-      setv(to_object, ['resumable'], getv(from_object, ['resumable']))
-
-    if getv(from_object, ['lastConsumedClientMessageIndex']) is not None:
-      setv(
-          to_object,
-          ['last_consumed_client_message_index'],
-          getv(from_object, ['lastConsumedClientMessageIndex']),
-      )
-
-    return to_object
-
-  def _ModalityTokenCount_from_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: Dict[str, Any] = {}
-    if getv(from_object, ['modality']) is not None:
-      setv(to_object, ['modality'], getv(from_object, ['modality']))
-    if getv(from_object, ['tokenCount']) is not None:
-      setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
-    return to_object
-
-  def _UsageMetadata_from_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['promptTokenCount']) is not None:
-      setv(
-          to_object,
-          ['prompt_token_count'],
-          getv(from_object, ['promptTokenCount']),
-      )
-    if getv(from_object, ['cachedContentTokenCount']) is not None:
-      setv(
-          to_object,
-          ['cached_content_token_count'],
-          getv(from_object, ['cachedContentTokenCount']),
-      )
-    if getv(from_object, ['candidatesTokenCount']) is not None:
-      setv(
-          to_object,
-          ['response_token_count'],
-          getv(from_object, ['candidatesTokenCount']),
-      )
-    if getv(from_object, ['toolUsePromptTokenCount']) is not None:
-      setv(
-          to_object,
-          ['tool_use_prompt_token_count'],
-          getv(from_object, ['toolUsePromptTokenCount']),
-      )
-    if getv(from_object, ['thoughtsTokenCount']) is not None:
-      setv(
-          to_object,
-          ['thoughts_token_count'],
-          getv(from_object, ['thoughtsTokenCount']),
-      )
-    if getv(from_object, ['totalTokenCount']) is not None:
-      setv(
-          to_object,
-          ['total_token_count'],
-          getv(from_object, ['totalTokenCount']),
-      )
-    if getv(from_object, ['promptTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['prompt_tokens_details'],
-          [
-              self._ModalityTokenCount_from_vertex(item)
-              for item in getv(from_object, ['promptTokensDetails'])
-          ],
-      )
-    if getv(from_object, ['cacheTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['cache_tokens_details'],
-          [
-              self._ModalityTokenCount_from_vertex(item)
-              for item in getv(from_object, ['cacheTokensDetails'])
-          ],
-      )
-    if getv(from_object, ['toolUsePromptTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['tool_use_prompt_tokens_details'],
-          [
-              self._ModalityTokenCount_from_vertex(item)
-              for item in getv(from_object, ['toolUsePromptTokensDetails'])
-          ],
-      )
-    if getv(from_object, ['candidatesTokensDetails']) is not None:
-      setv(
-          to_object,
-          ['response_tokens_details'],
-          [
-              self._ModalityTokenCount_from_vertex(item)
-              for item in getv(from_object, ['candidatesTokensDetails'])
-          ],
-      )
-    if getv(from_object, ['trafficType']) is not None:
-      setv(
-          to_object,
-          ['traffic_type'],
-          getv(from_object, ['trafficType']),
-      )
-    return to_object
-
-  def _LiveServerMessage_from_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> Dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['serverContent']) is not None:
-      setv(
-          to_object,
-          ['server_content'],
-          self._LiveServerContent_from_vertex(
-              getv(from_object, ['serverContent'])
-          ),
-      )
-    if getv(from_object, ['toolCall']) is not None:
-      setv(
-          to_object,
-          ['tool_call'],
-          self._LiveToolCall_from_vertex(getv(from_object, ['toolCall'])),
-      )
-    if getv(from_object, ['toolCallCancellation']) is not None:
-      setv(
-          to_object,
-          ['tool_call_cancellation'],
-          getv(from_object, ['toolCallCancellation']),
-      )
-
-    if getv(from_object, ['goAway']) is not None:
-      setv(
-          to_object,
-          ['go_away'],
-          self._LiveServerGoAway_from_vertex(
-              getv(from_object, ['goAway'])
-          ),
-      )
-
-    if getv(from_object, ['sessionResumptionUpdate']) is not None:
-      setv(
-          to_object,
-          ['session_resumption_update'],
-          self._LiveServerSessionResumptionUpdate_from_vertex(
-              getv(from_object, ['sessionResumptionUpdate']),
-          ),
-      )
-
-    if getv(from_object, ['usageMetadata']) is not None:
-      setv(
-          to_object,
-          ['usage_metadata'],
-          self._UsageMetadata_from_vertex(getv(from_object, ['usageMetadata'])),
-      )
-    return to_object
 
   def _parse_client_message(
       self,
@@ -1448,520 +791,9 @@ class AsyncSession:
     await self._ws.close()
 
 
-def _t_content_strict(content: types.ContentOrDict) -> types.Content:
-  if isinstance(content, dict):
-    return types.Content.model_validate(content)
-  elif isinstance(content, types.Content):
-    return content
-  else:
-    raise ValueError(
-        f'Could not convert input (type "{type(content)}") to '
-        '`types.Content`'
-    )
-
-
-def _t_contents_strict(
-    contents: Union[Sequence[types.ContentOrDict], types.ContentOrDict],
-) -> list[types.Content]:
-  if isinstance(contents, Sequence):
-    return [_t_content_strict(content) for content in contents]
-  else:
-    return [_t_content_strict(contents)]
-
-
-def _t_client_content(
-    turns: Optional[
-        Union[Sequence[types.ContentOrDict], types.ContentOrDict]
-    ] = None,
-    turn_complete: bool = True,
-) -> types.LiveClientContent:
-  if turns is None:
-    return types.LiveClientContent(turn_complete=turn_complete)
-
-  try:
-    return types.LiveClientContent(
-        turns=_t_contents_strict(contents=turns),
-        turn_complete=turn_complete,
-    )
-  except Exception as e:
-    raise ValueError(
-        f'Could not convert input (type "{type(turns)}") to '
-        '`types.LiveClientContent`'
-    ) from e
-
-
-def _t_realtime_input(
-    media: t.BlobUnion,
-) -> types.LiveClientRealtimeInput:
-  try:
-    return types.LiveClientRealtimeInput(media_chunks=[t.t_blob(blob=media)])
-  except Exception as e:
-    raise ValueError(
-        f'Could not convert input (type "{type(input)}") to '
-        '`types.LiveClientRealtimeInput`'
-    ) from e
-
-
-def _t_tool_response(
-    input: Union[
-        types.FunctionResponseOrDict,
-        Sequence[types.FunctionResponseOrDict],
-    ],
-) -> types.LiveClientToolResponse:
-  if not input:
-    raise ValueError(f'A tool response is required, got: \n{input}')
-
-  try:
-    return types.LiveClientToolResponse(
-        function_responses=t.t_function_responses(function_responses=input)
-    )
-  except Exception as e:
-    raise ValueError(
-        f'Could not convert input (type "{type(input)}") to '
-        '`types.LiveClientToolResponse`'
-    ) from e
-
-
-def _t_speech_config(
-    origin: Union[types.SpeechConfigUnionDict, Any],
-) -> Optional[types.SpeechConfig]:
-  if not origin:
-    return None
-  if isinstance(origin, types.SpeechConfig):
-    return origin
-  if isinstance(origin, str):
-    # There is no way to know if the string is a voice name or a language code.
-    raise ValueError(
-        f'Unsupported speechConfig type: {type(origin)}. There is no way to'
-        ' know if the string is a voice name or a language code.'
-    )
-  if isinstance(origin, dict):
-    speech_config = types.SpeechConfig()
-    if (
-        'voice_config' in origin
-        and origin['voice_config'] is not None
-        and 'prebuilt_voice_config' in origin['voice_config']
-        and origin['voice_config']['prebuilt_voice_config'] is not None
-        and 'voice_name' in origin['voice_config']['prebuilt_voice_config']
-    ):
-      speech_config.voice_config = types.VoiceConfig(
-          prebuilt_voice_config=types.PrebuiltVoiceConfig(
-              voice_name=origin['voice_config']['prebuilt_voice_config'].get(
-                  'voice_name'
-              )
-          )
-      )
-    if 'language_code' in origin and origin['language_code'] is not None:
-      speech_config.language_code = origin['language_code']
-    if (
-        speech_config.voice_config is None
-        and speech_config.language_code is None
-    ):
-      raise ValueError(
-          'Unsupported speechConfig type: {type(origin)}. At least one of'
-          ' voice_config or language_code must be set.'
-      )
-    return speech_config
-  raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
-
-
 class AsyncLive(_api_module.BaseModule):
   """[Preview] AsyncLive."""
 
-  def _LiveSetup_to_mldev(
-      self, model: str, config: Optional[types.LiveConnectConfig] = None
-  ) -> dict[str, Any]:
-
-    to_object: dict[str, Any] = {}
-    if getv(config, ['generation_config']) is not None:
-      setv(
-          to_object,
-          ['generationConfig'],
-          _GenerateContentConfig_to_mldev(
-              self._api_client,
-              getv(config, ['generation_config']),
-              to_object,
-          ),
-      )
-    if getv(config, ['response_modalities']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['responseModalities'] = getv(
-            config, ['response_modalities']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'responseModalities': getv(config, ['response_modalities'])
-        }
-    if getv(config, ['speech_config']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_mldev(
-            self._api_client,
-            _t_speech_config(getv(config, ['speech_config'])),
-            to_object,
-        )
-      else:
-        to_object['generationConfig'] = {
-            'speechConfig': _SpeechConfig_to_mldev(
-                self._api_client,
-                _t_speech_config(getv(config, ['speech_config'])),
-                to_object,
-            )
-        }
-    if getv(config, ['temperature']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['temperature'] = getv(
-            config, ['temperature']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'temperature': getv(config, ['temperature'])
-        }
-    if getv(config, ['top_p']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topP'] = getv(config, ['top_p'])
-      else:
-        to_object['generationConfig'] = {'topP': getv(config, ['top_p'])}
-    if getv(config, ['top_k']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topK'] = getv(config, ['top_k'])
-      else:
-        to_object['generationConfig'] = {'topK': getv(config, ['top_k'])}
-    if getv(config, ['max_output_tokens']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['maxOutputTokens'] = getv(
-            config, ['max_output_tokens']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'maxOutputTokens': getv(config, ['max_output_tokens'])
-        }
-    if getv(config, ['media_resolution']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['mediaResolution'] = getv(
-            config, ['media_resolution']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'mediaResolution': getv(config, ['media_resolution'])
-        }
-    if getv(config, ['seed']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['seed'] = getv(config, ['seed'])
-      else:
-        to_object['generationConfig'] = {'seed': getv(config, ['seed'])}
-    if getv(config, ['system_instruction']) is not None:
-      setv(
-          to_object,
-          ['systemInstruction'],
-          _Content_to_mldev(
-              self._api_client,
-              t.t_content(
-                  self._api_client, getv(config, ['system_instruction'])
-              ),
-              to_object,
-          ),
-      )
-    if getv(config, ['tools']) is not None:
-      setv(
-          to_object,
-          ['tools'],
-          [
-              _Tool_to_mldev(
-                  self._api_client, t.t_tool(self._api_client, item), to_object
-              )
-              for item in t.t_tools(self._api_client, getv(config, ['tools']))
-          ],
-      )
-    if getv(config, ['input_audio_transcription']) is not None:
-      raise ValueError('input_audio_transcription is not supported in MLDev '
-                       'API.')
-    if getv(config, ['output_audio_transcription']) is not None:
-      setv(
-          to_object,
-          ['outputAudioTranscription'],
-          _AudioTranscriptionConfig_to_mldev(
-              self._api_client,
-              getv(config, ['output_audio_transcription']),
-          ),
-      )
-
-    if getv(config, ['realtime_input_config']) is not None:
-      setv(
-          to_object,
-          ['realtimeInputConfig'],
-          _RealtimeInputConfig_to_mldev(
-              self._api_client,
-              getv(config, ['realtime_input_config']),
-          ),
-      )
-
-    if getv(config, ['session_resumption']) is not None:
-      setv(
-          to_object,
-          ['sessionResumption'],
-          self._LiveClientSessionResumptionConfig_to_mldev(
-              getv(config, ['session_resumption'])
-          ),
-      )
-
-    if getv(config, ['context_window_compression']) is not None:
-      setv(
-          to_object,
-          ['contextWindowCompression'],
-          self._ContextWindowCompressionConfig_to_mldev(
-              getv(config, ['context_window_compression']),
-          ),
-      )
-
-    return_value = {'setup': {'model': model}}
-    return_value['setup'].update(to_object)
-    return return_value
-
-  def _SlidingWindow_to_mldev(
-      self,
-      from_object: Union[dict, object],
-  ) -> dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['target_tokens']) is not None:
-      setv(to_object, ['targetTokens'], getv(from_object, ['target_tokens']))
-
-    return to_object
-
-
-  def _ContextWindowCompressionConfig_to_mldev(
-      self,
-      from_object: Union[dict, object],
-  ) -> dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['trigger_tokens']) is not None:
-      setv(to_object, ['triggerTokens'], getv(from_object, ['trigger_tokens']))
-
-    if getv(from_object, ['sliding_window']) is not None:
-      setv(
-          to_object,
-          ['slidingWindow'],
-          self._SlidingWindow_to_mldev(
-              getv(from_object, ['sliding_window'])
-          ),
-      )
-
-    return to_object
-
-  def _LiveClientSessionResumptionConfig_to_mldev(
-      self, from_object: Union[dict, object]
-  ) -> dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['handle']) is not None:
-      setv(to_object, ['handle'], getv(from_object, ['handle']))
-
-    if getv(from_object, ['transparent']) is not None:
-      raise ValueError('The `transparent` field is not supported in MLDev API')
-
-    return to_object
-
-  def _LiveSetup_to_vertex(
-      self, model: str, config: Optional[types.LiveConnectConfig] = None
-  ) -> dict[str, Any]:
-
-    to_object: dict[str, Any] = {}
-
-    if getv(config, ['generation_config']) is not None:
-      setv(
-          to_object,
-          ['generationConfig'],
-          _GenerateContentConfig_to_vertex(
-              self._api_client,
-              getv(config, ['generation_config']),
-              to_object,
-          ),
-      )
-    if getv(config, ['response_modalities']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['responseModalities'] = getv(
-            config, ['response_modalities']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'responseModalities': getv(config, ['response_modalities'])
-        }
-    else:
-      # Set default to AUDIO to align with MLDev API.
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig'].update({'responseModalities': ['AUDIO']})
-      else:
-        to_object.update(
-            {'generationConfig': {'responseModalities': ['AUDIO']}}
-        )
-    if getv(config, ['speech_config']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['speechConfig'] = _SpeechConfig_to_vertex(
-            self._api_client,
-            _t_speech_config(getv(config, ['speech_config'])),
-            to_object,
-        )
-      else:
-        to_object['generationConfig'] = {
-            'speechConfig': _SpeechConfig_to_vertex(
-                self._api_client,
-                _t_speech_config(getv(config, ['speech_config'])),
-                to_object,
-            )
-        }
-    if getv(config, ['temperature']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['temperature'] = getv(
-            config, ['temperature']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'temperature': getv(config, ['temperature'])
-        }
-    if getv(config, ['top_p']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topP'] = getv(config, ['top_p'])
-      else:
-        to_object['generationConfig'] = {'topP': getv(config, ['top_p'])}
-    if getv(config, ['top_k']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['topK'] = getv(config, ['top_k'])
-      else:
-        to_object['generationConfig'] = {'topK': getv(config, ['top_k'])}
-    if getv(config, ['max_output_tokens']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['maxOutputTokens'] = getv(
-            config, ['max_output_tokens']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'maxOutputTokens': getv(config, ['max_output_tokens'])
-        }
-    if getv(config, ['media_resolution']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['mediaResolution'] = getv(
-            config, ['media_resolution']
-        )
-      else:
-        to_object['generationConfig'] = {
-            'mediaResolution': getv(config, ['media_resolution'])
-        }
-    if getv(config, ['seed']) is not None:
-      if getv(to_object, ['generationConfig']) is not None:
-        to_object['generationConfig']['seed'] = getv(config, ['seed'])
-      else:
-        to_object['generationConfig'] = {'seed': getv(config, ['seed'])}
-    if getv(config, ['system_instruction']) is not None:
-      setv(
-          to_object,
-          ['systemInstruction'],
-          _Content_to_vertex(
-              self._api_client,
-              t.t_content(
-                  self._api_client, getv(config, ['system_instruction'])
-              ),
-              to_object,
-          ),
-      )
-    if getv(config, ['tools']) is not None:
-      setv(
-          to_object,
-          ['tools'],
-          [
-              _Tool_to_vertex(
-                  self._api_client, t.t_tool(self._api_client, item), to_object
-              )
-              for item in t.t_tools(self._api_client, getv(config, ['tools']))
-          ],
-      )
-    if getv(config, ['realtime_input_config']) is not None:
-      setv(
-          to_object,
-          ['realtimeInputConfig'],
-          _RealtimeInputConfig_to_vertex(
-              self._api_client,
-              getv(config, ['realtime_input_config']),
-          ),
-      )
-    if getv(config, ['input_audio_transcription']) is not None:
-      setv(
-          to_object,
-          ['inputAudioTranscription'],
-          _AudioTranscriptionConfig_to_vertex(
-              self._api_client,
-              getv(config, ['input_audio_transcription']),
-          ),
-      )
-    if getv(config, ['output_audio_transcription']) is not None:
-      setv(
-          to_object,
-          ['outputAudioTranscription'],
-          _AudioTranscriptionConfig_to_vertex(
-              self._api_client,
-              getv(config, ['output_audio_transcription']),
-          ),
-      )
-
-    if getv(config, ['session_resumption']) is not None:
-      setv(
-          to_object,
-          ['sessionResumption'],
-          self._LiveClientSessionResumptionConfig_to_vertex(
-              getv(config, ['session_resumption'])
-          ),
-      )
-
-    if getv(config, ['context_window_compression']) is not None:
-      setv(
-          to_object,
-          ['contextWindowCompression'],
-          self._ContextWindowCompressionConfig_to_vertex(
-              getv(config, ['context_window_compression']),
-          ),
-      )
-
-    return_value = {'setup': {'model': model}}
-    return_value['setup'].update(to_object)
-    return return_value
-
-  def _SlidingWindow_to_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['target_tokens']) is not None:
-      setv(to_object, ['targetTokens'], getv(from_object, ['target_tokens']))
-
-    return to_object
-
-  def _ContextWindowCompressionConfig_to_vertex(
-      self,
-      from_object: Union[dict, object],
-  ) -> dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['trigger_tokens']) is not None:
-      setv(to_object, ['triggerTokens'], getv(from_object, ['trigger_tokens']))
-
-    if getv(from_object, ['sliding_window']) is not None:
-      setv(
-          to_object,
-          ['slidingWindow'],
-          self._SlidingWindow_to_mldev(
-              getv(from_object, ['sliding_window'])
-          ),
-      )
-
-    return to_object
-
-  def _LiveClientSessionResumptionConfig_to_vertex(
-      self, from_object: Union[dict, object]
-  ) -> dict[str, Any]:
-    to_object: dict[str, Any] = {}
-    if getv(from_object, ['handle']) is not None:
-      setv(to_object, ['handle'], getv(from_object, ['handle']))
-
-    if getv(from_object, ['transparent']) is not None:
-      setv(to_object, ['transparent'], getv(from_object, ['transparent']))
-
-    return to_object
 
   @contextlib.asynccontextmanager
   async def connect(
@@ -1986,6 +818,8 @@ class AsyncLive(_api_module.BaseModule):
           print(message)
     """
     base_url = self._api_client._websocket_base_url()
+    if isinstance(base_url, bytes):
+      base_url = base_url.decode('utf-8')
     transformed_model = t.t_model(self._api_client, model)
 
     parameter_model = _t_live_connect_config(self._api_client, config)
@@ -1995,22 +829,30 @@ class AsyncLive(_api_module.BaseModule):
       version = self._api_client._http_options.api_version
       uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateContent?key={api_key}'
       headers = self._api_client._http_options.headers
+
       request_dict = _common.convert_to_dict(
-          self._LiveSetup_to_mldev(
-              model=transformed_model,
-              config=parameter_model,
+          live_converters._LiveConnectParameters_to_mldev(
+              api_client=self._api_client,
+              from_object=types.LiveConnectParameters(
+                model=transformed_model,
+                config=parameter_model,
+              ).model_dump(exclude_none=True)
           )
       )
+      del request_dict['config']
+
+      setv(request_dict, ['setup', 'model'], transformed_model)
+
       request = json.dumps(request_dict)
     else:
       # Get bearer token through Application Default Credentials.
-      creds, _ = google.auth.default(
+      creds, _ = google.auth.default(  # type: ignore[no-untyped-call]
           scopes=['https://www.googleapis.com/auth/cloud-platform']
       )
 
       # creds.valid is False, and creds.token is None
       # Need to refresh credentials to populate those
-      auth_req = google.auth.transport.requests.Request()
+      auth_req = google.auth.transport.requests.Request()  # type: ignore[no-untyped-call]
       creds.refresh(auth_req)
       bearer_token = creds.token
       headers = self._api_client._http_options.headers
@@ -2027,11 +869,19 @@ class AsyncLive(_api_module.BaseModule):
             f'projects/{project}/locations/{location}/' + transformed_model
         )
       request_dict = _common.convert_to_dict(
-          self._LiveSetup_to_vertex(
-              model=transformed_model,
-              config=parameter_model,
+          live_converters._LiveConnectParameters_to_vertex(
+              api_client=self._api_client,
+              from_object=types.LiveConnectParameters(
+                model=transformed_model,
+                config=parameter_model,
+              ).model_dump(exclude_none=True)
           )
       )
+      del request_dict['config']
+
+      if getv(request_dict, ['setup', 'generationConfig', 'responseModalities']) is None:
+        setv(request_dict, ['setup', 'generationConfig', 'responseModalities'], ['AUDIO'])
+
       request = json.dumps(request_dict)
 
     try:

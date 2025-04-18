@@ -36,7 +36,7 @@ class _BasePager(Generic[T]):
       request: Callable[..., Any],
       response: Any,
       config: Any,
-  ):
+  ) -> None:
     self._name = name
     self._request = request
 
@@ -52,7 +52,7 @@ class _BasePager(Generic[T]):
     request_config['page_token'] = getattr(response, 'next_page_token')
     self._config = request_config
 
-    self._page_size = request_config.get('page_size', len(self._page))
+    self._page_size: int = request_config.get('page_size', len(self._page))
 
   def __init__(
       self,

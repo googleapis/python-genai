@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.11.0](https://github.com/googleapis/python-genai/compare/v1.10.0...v1.11.0) (2025-04-16)
+
+
+### Features
+
+* Add support for model_selection_config to GenerateContentConfig ([fdb0662](https://github.com/googleapis/python-genai/commit/fdb066288228ca101042ed9b11f783ed0d5f2799))
+* Introduce json_schema quick accessor in Schema class to convert Google's Schema class into JSONSchema class. ([6e55222](https://github.com/googleapis/python-genai/commit/6e55222895a6639d41e54202e3d9a963609a391f))
+* Support audio transcription in Vertex Live API ([9678aba](https://github.com/googleapis/python-genai/commit/9678ababb31282130e3cb9669e3670b627f91d86))
+* Support configuring the underlying httpx client by allowing the caller to pass client arguments via HttpOptions. ([5130e0a](https://github.com/googleapis/python-genai/commit/5130e0a622210400d8d09399a06df55aa4af6a0e))
+* Support RealtimeInputConfig, and language_code in SpeechConfig in python ([807f098](https://github.com/googleapis/python-genai/commit/807f098dedd0f885147fb10db7f79af9230999e0))
+* Support user passing in async function to async generate_content and async generate_content_stream for automatic function calling ([33d190a](https://github.com/googleapis/python-genai/commit/33d190a77a198acfc857eff9677c88ed65e99758))
+* Update VertexRagStore ([c4558e5](https://github.com/googleapis/python-genai/commit/c4558e5f65555d5a5352e4276c714392d594a3fa))
+
+
+### Bug Fixes
+
+* Get SSL_CERT_FILE or SSL_CERT_DIR environment variables for proper SSL handshake in API client. They are not automatically retrieved in httpx ([5782a5f](https://github.com/googleapis/python-genai/commit/5782a5f8a0bd1b3c741ea13b917d7d0091e9e12f))
+* Update tests to use the pro 2.5 model gemini-2.5-pro-preview-03-25 ([fde4a8a](https://github.com/googleapis/python-genai/commit/fde4a8a484a5ab8cd0abadaaf108c552927f1976))
+
 ## [1.10.0](https://github.com/googleapis/python-genai/compare/v1.9.0...v1.10.0) (2025-04-09)
 
 

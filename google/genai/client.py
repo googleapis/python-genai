@@ -19,7 +19,7 @@ from typing import Optional, Union
 import google.auth
 import pydantic
 
-from ._api_client import BaseApiClient, HttpOptions, HttpOptionsDict
+from ._api_client import BaseApiClient
 from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
@@ -29,6 +29,7 @@ from .live import AsyncLive
 from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
 from .tunings import AsyncTunings, Tunings
+from .types import HttpOptions, HttpOptionsDict
 
 
 class AsyncClient:
@@ -224,7 +225,7 @@ class Client:
       location: Optional[str] = None,
       debug_config: Optional[DebugConfig] = None,
       http_options: Optional[HttpOptions] = None,
-  ):
+  ) -> BaseApiClient:
     if debug_config and debug_config.client_mode in [
         'record',
         'replay',

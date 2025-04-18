@@ -441,6 +441,36 @@ def test_simple_config(client):
   assert response.text
 
 
+def test_model_selection_config_dict(client):
+  if not client.vertexai:
+    return
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me a Taylor Swift lyric and explain its meaning.',
+      config={
+          'model_selection_config': {
+              'feature_selection_preference': 'PRIORITIZE_COST'
+          }
+      },
+  )
+  assert response.text
+
+
+def test_model_selection_config_pydantic(client):
+  if not client.vertexai:
+    return
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me a Taylor Swift lyric and explain its meaning.',
+      config=types.GenerateContentConfig(
+          model_selection_config=types.ModelSelectionConfig(
+              feature_selection_preference=types.FeatureSelectionPreference.PRIORITIZE_QUALITY
+          )
+      ),
+  )
+  assert response.text
+
+
 def test_sdk_logger_logs_warnings(client, caplog):
   caplog.set_level(logging.DEBUG, logger='gemini_sdk_logger')
   sdk_logger = logging.getLogger('gemini_sdk_logger')

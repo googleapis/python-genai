@@ -79,9 +79,9 @@ def format_destination(
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
     is_caller_method_async: bool = False,
-) -> dict[str, Callable]:
+) -> dict[str, Callable[..., Any]]:
   """Returns a function map from the config."""
-  function_map: dict[str, Callable] = {}
+  function_map: dict[str, Callable[..., Any]] = {}
   if not config:
     return function_map
   config_model = _create_generate_content_config_model(config)
@@ -201,7 +201,7 @@ def convert_if_exist_pydantic_model(
 
 
 def convert_argument_from_function(
-    args: dict[str, Any], function: Callable
+    args: dict[str, Any], function: Callable[..., Any]
 ) -> dict[str, Any]:
   signature = inspect.signature(function)
   func_name = function.__name__
@@ -247,7 +247,7 @@ async def invoke_function_from_dict_args_async(
 
 def get_function_response_parts(
     response: types.GenerateContentResponse,
-    function_map: dict[str, Callable],
+    function_map: dict[str, Callable[..., Any]],
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []

@@ -46,7 +46,7 @@ def _is_builtin_primitive_or_compound(
   return annotation in _py_builtin_type_to_schema_type.keys()
 
 
-def _raise_for_default_if_mldev(schema: types.Schema):
+def _raise_for_default_if_mldev(schema: types.Schema) -> None:
   if schema.default is not None:
     raise ValueError(
         'Default value is not supported in function declaration schema for'
@@ -54,7 +54,7 @@ def _raise_for_default_if_mldev(schema: types.Schema):
     )
 
 
-def _raise_if_schema_unsupported(api_option: Literal['VERTEX_AI', 'GEMINI_API'], schema: types.Schema):
+def _raise_if_schema_unsupported(api_option: Literal['VERTEX_AI', 'GEMINI_API'], schema: types.Schema) -> None:
   if api_option == 'GEMINI_API':
     _raise_for_default_if_mldev(schema)
 
@@ -72,16 +72,16 @@ def _is_default_value_compatible(
       or isinstance(annotation, VersionedUnionType)
   ):
     origin = get_origin(annotation)
-    if origin in (Union, VersionedUnionType):
+    if origin in (Union, VersionedUnionType):  # type: ignore[comparison-overlap]
       return any(
           _is_default_value_compatible(default_value, arg)
           for arg in get_args(annotation)
       )
 
-    if origin is dict:
+    if origin is dict:  # type: ignore[comparison-overlap]
       return isinstance(default_value, dict)
 
-    if origin is list:
+    if origin is list:  # type: ignore[comparison-overlap]
       if not isinstance(default_value, list):
         return False
       # most tricky case, element in list is union type
@@ -97,7 +97,7 @@ def _is_default_value_compatible(
           for item in default_value
       )
 
-    if origin is Literal:
+    if origin is Literal:  # type: ignore[comparison-overlap]
       return default_value in get_args(annotation)
 
   # return False for any other unrecognized annotation

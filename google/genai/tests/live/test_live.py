@@ -583,10 +583,15 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
           'model': 'models/test_model',
           'generationConfig': {
               'speechConfig': {
-                  'voiceConfig': {
-                      'prebuiltVoiceConfig': {'voiceName': 'en-default'}
+                  # Note: the snake_casing is different from the usual camelCase
+                  # here. This is because speechConfig is an unmodified proto
+                  # defined in the discovery doc, so it doesn't need to/from
+                  # converters. The API is insensitive to the case format.
+                  # This looks wrong, but it is okay/correct.
+                  'voice_config': {
+                      'prebuilt_voice_config': {'voice_name': 'en-default'}
                   },
-                  'languageCode': 'en-US',
+                  'language_code': 'en-US',
               },
               'temperature': 0.7,
               'topP': 0.8,
@@ -731,7 +736,7 @@ async def test_bidi_setup_to_api_with_config_tools_google_search(vertexai):
 
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai),
-      model='test_model', config=config
+      model='test_model', config=config_dict
   )
 
   assert result == expected_result
