@@ -646,3 +646,189 @@ def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
     with pytest.raises(ValueError) as e:
       _transformers.t_schema(client, schema)
     assert 'Default value is not supported' in str(e)
+
+
+def test_is_schema_too_large():
+  """Tests the _is_schema_too_large function."""
+  schema = {
+      'type': 'object',
+      'properties': {
+          'foo': {
+              'type': 'string',
+              'title': 'Foo',
+          },
+          'bar': {
+              'type': 'integer',
+              'title': 'Bar',
+          },
+      },
+  }
+  assert not _transformers._is_schema_too_large(schema)
+
+  # Create a schema that is too large.
+  large_schema = {
+      'type': 'object',
+      'properties': {
+          'foo': {
+              'type': 'string',
+              'title': 'Foo' * 5000,  # Make the title much longer
+          },
+          'bar': {
+              'type': 'integer',
+              'title': 'Bar' * 5000,  # Make the title much longer
+          },
+      },
+  }
+  assert _transformers._is_schema_too_large(large_schema)
+
+
+def test_process_schema_strips_titles_if_too_large():
+  """Tests that the process_schema function strips titles from properties if the schema is too large."""
+  schema = {
+      'type': 'object',
+      'properties': {
+          'foo': {
+              'type': 'string',
+              'title': 'Foo',
+          },
+          'bar': {
+              'type': 'integer',
+              'title': 'Bar',
+          },
+      },
+  }
+  client = google_genai_client_module.Client(api_key='test-api-key')
+  _transformers.process_schema(schema, client)
+  assert 'title' in schema['properties']['foo']
+  assert 'title' in schema['properties']['bar']
+
+  # Create a schema that is too large.
+  large_schema = {
+      'type': 'object',
+      'properties': {
+          'foo': {
+              'type': 'string',
+              'title': 'Foo' * 5000,
+          },
+          'bar': {
+              'type': 'integer',
+              'title': 'Bar' * 5000,
+          },
+      },
+  }
+  _transformers.process_schema(large_schema, client)
+  assert 'title' not in large_schema['properties']['foo']
+  assert 'title' not in large_schema['properties']['bar']
+
+
+def test_strip_titles():
+  """Tests that _strip_titles correctly removes titles from a schema."""
+  schema = {
+      'type': 'OBJECT',
+      'title': 'Root',
+      'properties': {
+          'foo': {
+              'type': 'STRING',
+              'title': 'Foo',
+          },
+          'bar': {
+              'type': 'OBJECT',
+              'title': 'Bar',
+              'properties': {
+                  'baz': {
+                      'type': 'INTEGER',
+                      'title': 'Baz',
+                  },
+              },
+          },
+          'qux': {
+              'type': 'ARRAY',
+              'title': 'Qux',
+              'items': {
+                  'type': 'STRING',
+                  'title': 'QuxItem',
+              },
+          },
+          'quux': {
+              'title': 'Quux',
+              'anyOf': [
+                  {
+                      'type': 'STRING',
+                      'title': 'QuuxString',
+                  },
+                  {
+                      'type': 'INTEGER',
+                      'title': 'QuuxInt',
+                  },
+              ],
+          },
+      },
+  }
+
+  _transformers._strip_titles(schema)
+
+  # Check that all titles have been removed
+  assert 'title' not in schema
+  assert 'title' not in schema['properties']['foo']
+  assert 'title' not in schema['properties']['bar']
+  assert 'title' not in schema['properties']['bar']['properties']['baz']
+  assert 'title' not in schema['properties']['qux']
+  assert 'title' not in schema['properties']['qux']['items']
+  assert 'title' not in schema['properties']['quux']
+  assert 'title' not in schema['properties']['quux']['anyOf'][0]
+  assert 'title' not in schema['properties']['quux']['anyOf'][1]
+
+
+def test_process_schema_strips_titles_when_too_large():
+  """Tests that process_schema strips titles when the schema is too large."""
+  client = google_genai_client_module.Client(api_key='test-api-key')
+  
+  # Create a schema that will be too large due to long titles
+  large_schema = {
+      'type': 'OBJECT',
+      'title': 'Root' * 1000,
+      'properties': {
+          'foo': {
+              'type': 'STRING',
+              'title': 'Foo' * 1000,
+          },
+          'bar': {
+              'type': 'INTEGER',
+              'title': 'Bar' * 1000,
+          },
+      },
+  }
+
+  _transformers.process_schema(large_schema, client)
+
+  # Check that all titles have been removed
+  assert 'title' not in large_schema
+  assert 'title' not in large_schema['properties']['foo']
+  assert 'title' not in large_schema['properties']['bar']
+
+
+def test_process_schema_preserves_titles_when_not_too_large():
+  """Tests that process_schema preserves titles when the schema is not too large."""
+  client = google_genai_client_module.Client(api_key='test-api-key')
+  
+  schema = {
+      'type': 'OBJECT',
+      'title': 'Root',
+      'properties': {
+          'foo': {
+              'type': 'STRING',
+              'title': 'Foo',
+          },
+          'bar': {
+              'type': 'INTEGER',
+              'title': 'Bar',
+          },
+      },
+  }
+
+  _transformers.process_schema(schema, client)
+
+  # Check that all titles are preserved
+  assert schema['title'] == 'Root'
+  assert schema['properties']['foo']['title'] == 'Foo'
+  assert schema['properties']['bar']['title'] == 'Bar'
