@@ -948,7 +948,7 @@ def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict[str,
       if total_seconds > LRO_POLLING_TIMEOUT_SECONDS:
         raise RuntimeError(f'Operation {name} timed out.\n{operation}')
       # TODO(b/374433890): Replace with LRO module once it's available.
-      operation = api_client.request(
+      operation = api_client.request(  # type: ignore[assignment]
           http_method='GET', path=name, request_dict={}
       )
       time.sleep(delay_seconds)
