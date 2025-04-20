@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+from collections.abc import AsyncGenerator
 import sys
 from typing import AsyncIterator, Awaitable, Optional, Union, get_args
 
@@ -140,7 +141,7 @@ class _BaseChat:
       model_output: list[Content],
       automatic_function_calling_history: list[Content],
       is_valid: bool,
-  ):
+  ) -> None:
     """Records the chat history.
 
     Maintaining both comprehensive and curated histories.
@@ -470,12 +471,12 @@ class AsyncChat(_BaseChat):
       )
     input_content = t.t_content(self._modules._api_client, message)
 
-    async def async_generator():
+    async def async_generator():  # type: ignore[no-untyped-def]
       output_contents = []
       finish_reason = None
       is_valid = True
       chunk = None
-      async for chunk in await self._modules.generate_content_stream(
+      async for chunk in await self._modules.generate_content_stream(  # type: ignore[attr-defined]
           model=self._model,
           contents=self._curated_history + [input_content],
           config=config if config else self._config,

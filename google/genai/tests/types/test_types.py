@@ -41,6 +41,19 @@ def test_factory_method_from_uri_part():
   assert isinstance(my_part, SubPart)
 
 
+def test_factory_method_from_uri_inferred_mime_type_part():
+
+  my_part = SubPart.from_uri(
+      file_uri='gs://generativeai-downloads/images/scones.jpg',
+  )
+  assert (
+      my_part.file_data.file_uri
+      == 'gs://generativeai-downloads/images/scones.jpg'
+  )
+  assert my_part.file_data.mime_type == 'image/jpeg'
+  assert isinstance(my_part, SubPart)
+
+
 def test_factory_method_from_text_part():
   my_part = SubPart.from_text(text='What is your name?')
   assert my_part.text == 'What is your name?'
@@ -67,13 +80,6 @@ def test_factory_method_from_function_response_part():
   )
   assert my_part.function_response.name == 'func'
   assert my_part.function_response.response == {'response': 'value'}
-  assert isinstance(my_part, SubPart)
-
-
-def test_factory_method_from_video_metadata_part():
-  my_part = SubPart.from_video_metadata(start_offset='10s', end_offset='20s')
-  assert my_part.video_metadata.end_offset == '20s'
-  assert my_part.video_metadata.start_offset == '10s'
   assert isinstance(my_part, SubPart)
 
 

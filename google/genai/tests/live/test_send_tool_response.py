@@ -42,6 +42,7 @@ def mock_api_client(vertexai=False):
   api_client._host = lambda: 'test_host'
   api_client._http_options = {'headers': {}}  # Ensure headers exist
   api_client.vertexai = vertexai
+  api_client._api_client = api_client
   return api_client
 
 
@@ -59,33 +60,37 @@ def mock_websocket():
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_function_response_dict(mock_websocket, vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(
-      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+      api_client=api_client, websocket=mock_websocket
   )
 
   input = {
       'name': 'get_current_weather',
       'response': {'temperature': 14.5, 'unit': 'C'},
-      'id': 'some-id',
   }
 
+  if not vertexai:
+    input['id'] = 'some-id'
+
   await session.send_tool_response(function_responses=input)
+
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'tool_response' in sent_data
 
   assert (
-      sent_data['tool_response']['function_responses'][0]['name']
+      sent_data['tool_response']['functionResponses'][0]['name']
       == 'get_current_weather'
   )
   assert (
-      sent_data['tool_response']['function_responses'][0]['response'][
+      sent_data['tool_response']['functionResponses'][0]['response'][
           'temperature'
       ]
       == 14.5
   )
   assert (
-      sent_data['tool_response']['function_responses'][0]['response']['unit']
+      sent_data['tool_response']['functionResponses'][0]['response']['unit']
       == 'C'
   )
 
@@ -100,8 +105,9 @@ async def test_function_response(mock_websocket, vertexai):
   input = types.FunctionResponse(
       name='get_current_weather',
       response={'temperature': 14.5, 'unit': 'C'},
-      id='some-id',
   )
+  if not vertexai:
+    input.id = 'some-id'
 
   await session.send_tool_response(function_responses=input)
   mock_websocket.send.assert_called_once()
@@ -109,17 +115,17 @@ async def test_function_response(mock_websocket, vertexai):
   assert 'tool_response' in sent_data
 
   assert (
-      sent_data['tool_response']['function_responses'][0]['name']
+      sent_data['tool_response']['functionResponses'][0]['name']
       == 'get_current_weather'
   )
   assert (
-      sent_data['tool_response']['function_responses'][0]['response'][
+      sent_data['tool_response']['functionResponses'][0]['response'][
           'temperature'
       ]
       == 14.5
   )
   assert (
-      sent_data['tool_response']['function_responses'][0]['response']['unit']
+      sent_data['tool_response']['functionResponses'][0]['response']['unit']
       == 'C'
   )
 
@@ -134,33 +140,34 @@ async def test_function_response_list(mock_websocket, vertexai):
   input1 = {
       'name': 'get_current_weather',
       'response': {'temperature': 14.5, 'unit': 'C'},
-      'id': '1',
   }
   input2 = {
       'name': 'get_current_weather',
       'response': {'temperature': 99.9, 'unit': 'C'},
-      'id': '2',
   }
+
+  if not vertexai:
+    input1['id'] = '1'
+    input2['id'] = '2'
 
   await session.send_tool_response(function_responses=[input1, input2])
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'tool_response' in sent_data
 
-  assert len(sent_data['tool_response']['function_responses']) == 2
+  assert len(sent_data['tool_response']['functionResponses']) == 2
   assert (
-      sent_data['tool_response']['function_responses'][0]['response'][
+      sent_data['tool_response']['functionResponses'][0]['response'][
           'temperature'
       ]
       == 14.5
   )
   assert (
-      sent_data['tool_response']['function_responses'][1]['response'][
+      sent_data['tool_response']['functionResponses'][1]['response'][
           'temperature'
       ]
       == 99.9
   )
-
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -181,7 +188,9 @@ async def test_missing_id(mock_websocket, vertexai):
       'response': {'temperature': 99.9, 'unit': 'C'},
   }
 
-  client = mock.MagicMock()
-  client._api_client = api_client
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    await session.send_tool_response(function_responses=[input1, input2])
+  if vertexai:
+    with pytest.raises(ValueError, match=".*not supported.*"):
+      await session.send_tool_response(function_responses=[input1, input2])
+  else:
+    with pytest.raises(ValueError, match=".*must have.*"):
+      await session.send_tool_response(function_responses=[input1, input2])

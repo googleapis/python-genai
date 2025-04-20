@@ -24,7 +24,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_generate_content_thought',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash-preview-04-09',
+            model='gemini-2.5-pro-preview-03-25',
             contents=t.t_contents(
                 None, 'Explain the monty hall problem.'
             ),
@@ -32,6 +32,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'thinking_config': {'thinking_budget': 10000},
             }
         ),
+        exception_if_vertex='400',
     ),
 ]
 
