@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.12.0](https://github.com/googleapis/python-genai/compare/v1.11.0...v1.12.0) (2025-04-23)
+
+
+### Features
+
+* Add additional realtime input fields ([bef6385](https://github.com/googleapis/python-genai/commit/bef638546d820911172581f0666ae0f1270085f5))
+* Add py.typed so MyPy interprets this as a typed library ([b137b4d](https://github.com/googleapis/python-genai/commit/b137b4dae363045ac1980d10cdda4712a309ef3c))
+* Automatically determine mime_type for Part.from_uri ([b9d3be1](https://github.com/googleapis/python-genai/commit/b9d3be1e87a3e4260c16a3c36e0c728b330f831a))
+* Generate _live_converters.py ([d526a08](https://github.com/googleapis/python-genai/commit/d526a08c6ed5dfee26d1332829cac114f0132d54))
+* Introduce from_json_schema classmethod to Schema class to allow conversion from JSONSchema class object to Schema class object ([899fa1a](https://github.com/googleapis/python-genai/commit/899fa1ae9a9ec7a5cf7d2dfe72267780fcc4fdc8))
+* Support `default` field in Schema when users call Gemini API ([1e56add](https://github.com/googleapis/python-genai/commit/1e56add36c9a1ebcb3499d9f3ea2a9af37edf3cd))
+
+
+### Documentation
+
+* Regenerate docs for 1.11.0 ([473bf4b](https://github.com/googleapis/python-genai/commit/473bf4b6b5a69e5324a5d4bac0fe852351338c43))
+
 ## [1.11.0](https://github.com/googleapis/python-genai/compare/v1.10.0...v1.11.0) (2025-04-16)
 
 
