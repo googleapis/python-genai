@@ -126,6 +126,7 @@ class Client:
     project: The `Google Cloud project ID <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to
       use for quota. Can be obtained from environment variables (for example,
       ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
+      Find your `Google Cloud project ID <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
     location: The `location <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
       to send API requests to (for example, ``us-central1``). Can be obtained
       from environment variables. Applies to the Vertex AI API only.
