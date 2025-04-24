@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.12.1](https://github.com/googleapis/python-genai/compare/v1.12.0...v1.12.1) (2025-04-24)
+
+
+### Bug Fixes
+
+* Fix required import of Pillow ([f23772d](https://github.com/googleapis/python-genai/commit/f23772d38bff649151b5a5f19ce39ab5006721b3))
+* Remove __del__ in client ([83394b8](https://github.com/googleapis/python-genai/commit/83394b87826903839249fe6e2a3fed32f824dbf8))
+
 ## [1.12.0](https://github.com/googleapis/python-genai/compare/v1.11.0...v1.12.0) (2025-04-23)
 
 
