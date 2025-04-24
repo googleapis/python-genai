@@ -5565,7 +5565,7 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    async def async_generator():
+    async def async_generator():  # type: ignore[no-untyped-def]
       async for response_dict in response_stream:
 
         if self._api_client.vertexai:
@@ -5584,7 +5584,7 @@ class AsyncModels(_api_module.BaseModule):
         self._api_client._verify_response(return_value)
         yield return_value
 
-    return async_generator()
+    return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 
   async def embed_content(
       self,
@@ -6539,7 +6539,7 @@ class AsyncModels(_api_module.BaseModule):
       model: str,
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
-  ) -> Awaitable[AsyncIterator[types.GenerateContentResponse]]:
+  ) -> AsyncIterator[types.GenerateContentResponse]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
 
     For the `model` parameter, supported formats for Vertex AI API include:
@@ -6602,13 +6602,13 @@ class AsyncModels(_api_module.BaseModule):
           model=model, contents=contents, config=config
       )
 
-      async def base_async_generator(model, contents, config):
+      async def base_async_generator(model, contents, config):  # type: ignore[no-untyped-def]
         async for chunk in response:  # type: ignore[attr-defined]
           yield chunk
 
-      return base_async_generator(model, contents, config)
+      return base_async_generator(model, contents, config)  # type: ignore[no-untyped-call, no-any-return]
 
-    async def async_generator(model, contents, config):
+    async def async_generator(model, contents, config):  # type: ignore[no-untyped-def]
       remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
       logger.info(
           f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
@@ -6687,15 +6687,15 @@ class AsyncModels(_api_module.BaseModule):
         )
         contents = t.t_contents(self._api_client, contents)
         if not automatic_function_calling_history:
-          automatic_function_calling_history.extend(contents)  # type: ignore[arg-type]
+          automatic_function_calling_history.extend(contents)
         if isinstance(contents, list) and func_call_content is not None:
-          contents.append(func_call_content)  # type: ignore[arg-type]
-          contents.append(func_response_content)  # type: ignore[arg-type]
+          contents.append(func_call_content)
+          contents.append(func_response_content)
         if func_call_content is not None:
           automatic_function_calling_history.append(func_call_content)
         automatic_function_calling_history.append(func_response_content)
 
-    return async_generator(model, contents, config)
+    return async_generator(model, contents, config)  # type: ignore[no-untyped-call, no-any-return]
 
   async def edit_image(
       self,

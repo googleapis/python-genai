@@ -280,9 +280,19 @@ def t_function_responses(
     return [t_function_response(function_responses)]
 
 
-BlobUnion = Union[types.Blob, types.BlobDict, 'PIL.Image.Image']
+def t_blobs(
+    api_client: _api_client.BaseApiClient,
+    blobs: Union[types.BlobImageUnionDict, list[types.BlobImageUnionDict]],
+) -> list[types.Blob]:
+  if isinstance(blobs, list):
+    return [t_blob(api_client, blob) for blob in blobs]
+  else:
+    return [t_blob(api_client, blobs)]
 
-def t_blob(blob: BlobUnion) -> types.Blob:
+
+def t_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
+) -> types.Blob:
   try:
     import PIL.Image
 
@@ -305,6 +315,24 @@ def t_blob(blob: BlobUnion) -> types.Blob:
   raise TypeError(
       f'Could not parse input as Blob. Unsupported blob type: {type(blob)}'
   )
+
+
+def t_image_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
+) -> types.Blob:
+  blob = t_blob(api_client, blob)
+  if blob.mime_type and blob.mime_type.startswith('image/'):
+    return blob
+  raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
+
+
+def t_audio_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobOrDict
+) -> types.Blob:
+  blob = t_blob(api_client, blob)
+  if blob.mime_type and blob.mime_type.startswith('audio/'):
+    return blob
+  raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
 
 
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
@@ -649,13 +677,6 @@ def process_schema(
         'type': 'array'
     }
   """
-  if not client.vertexai:
-    if schema.get('default') is not None:
-      raise ValueError(
-          'Default value is not supported in the response schema for the Gemini'
-          ' API.'
-      )
-
   if schema.get('title') == 'PlaceholderLiteralEnum':
     del schema['title']
 
@@ -948,7 +969,7 @@ def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict[str,
       if total_seconds > LRO_POLLING_TIMEOUT_SECONDS:
         raise RuntimeError(f'Operation {name} timed out.\n{operation}')
       # TODO(b/374433890): Replace with LRO module once it's available.
-      operation = api_client.request(
+      operation = api_client.request(  # type: ignore[assignment]
           http_method='GET', path=name, request_dict={}
       )
       time.sleep(delay_seconds)
@@ -1072,18 +1093,6 @@ def t_client_content(
     ) from e
 
 
-def t_realtime_input(
-    media: BlobUnion,
-) -> types.LiveClientRealtimeInput:
-  try:
-    return types.LiveClientRealtimeInput(media_chunks=[t_blob(blob=media)])
-  except Exception as e:
-    raise ValueError(
-        f'Could not convert input (type "{type(input)}") to '
-        '`types.LiveClientRealtimeInput`'
-    ) from e
-
-
 def t_tool_response(
     input: Union[
         types.FunctionResponseOrDict,
@@ -1102,47 +1111,3 @@ def t_tool_response(
         f'Could not convert input (type "{type(input)}") to '
         '`types.LiveClientToolResponse`'
     ) from e
-
-
-def t_live_speech_config(
-    origin: Union[types.SpeechConfigUnionDict, Any],
-) -> Optional[types.SpeechConfig]:
-  if not origin:
-    return None
-  if isinstance(origin, types.SpeechConfig):
-    return origin
-  if isinstance(origin, str):
-    # There is no way to know if the string is a voice name or a language code.
-    raise ValueError(
-        f'Unsupported speechConfig type: {type(origin)}. There is no way to'
-        ' know if the string is a voice name or a language code.'
-    )
-  if isinstance(origin, dict):
-    speech_config = types.SpeechConfig()
-    if (
-        'voice_config' in origin
-        and origin['voice_config'] is not None
-        and 'prebuilt_voice_config' in origin['voice_config']
-        and origin['voice_config']['prebuilt_voice_config'] is not None
-        and 'voice_name' in origin['voice_config']['prebuilt_voice_config']
-    ):
-      speech_config.voice_config = types.VoiceConfig(
-          prebuilt_voice_config=types.PrebuiltVoiceConfig(
-              voice_name=origin['voice_config']['prebuilt_voice_config'].get(
-                  'voice_name'
-              )
-          )
-      )
-    if 'language_code' in origin and origin['language_code'] is not None:
-      speech_config.language_code = origin['language_code']
-    if (
-        speech_config.voice_config is None
-        and speech_config.language_code is None
-    ):
-      raise ValueError(
-          'Unsupported speechConfig type: {type(origin)}. At least one of'
-          ' voice_config or language_code must be set.'
-      )
-    return speech_config
-  raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
-

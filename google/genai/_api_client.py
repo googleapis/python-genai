@@ -20,6 +20,7 @@ The BaseApiClient is intended to be a private module and is subject to change.
 """
 
 import asyncio
+from collections.abc import Awaitable, Generator
 import copy
 from dataclasses import dataclass
 import datetime
@@ -201,7 +202,7 @@ class HttpResponse:
     self.segment_iterator = self.async_segments()
     return self
 
-  async def __anext__(self):
+  async def __anext__(self) -> Any:
     try:
       return await self.segment_iterator.__anext__()
     except StopIteration:
@@ -213,7 +214,7 @@ class HttpResponse:
       return ''
     return json.loads(self.response_stream[0])
 
-  def segments(self):
+  def segments(self) -> Generator[Any, None, None]:
     if isinstance(self.response_stream, list):
       # list of objects retrieved from replay or from non-streaming API.
       for chunk in self.response_stream:
@@ -222,7 +223,7 @@ class HttpResponse:
       yield from []
     else:
       # Iterator of objects retrieved from the API.
-      for chunk in self.response_stream.iter_lines():
+      for chunk in self.response_stream.iter_lines():  # type: ignore[union-attr]
         if chunk:
           # In streaming mode, the chunk of JSON is prefixed with "data:" which
           # we must strip before parsing.
@@ -256,7 +257,7 @@ class HttpResponse:
       else:
         raise ValueError('Error parsing streaming response.')
 
-  def byte_segments(self):
+  def byte_segments(self) -> Generator[Union[bytes, Any], None, None]:
     if isinstance(self.byte_stream, list):
       # list of objects retrieved from replay or from non-streaming API.
       yield from self.byte_stream
@@ -267,7 +268,7 @@ class HttpResponse:
           'Byte segments are not supported for streaming responses.'
       )
 
-  def _copy_to_dict(self, response_payload: dict[str, object]):
+  def _copy_to_dict(self, response_payload: dict[str, object]) -> None:
     # Cannot pickle 'generator' object.
     delattr(self, 'segment_iterator')
     for attribute in dir(self):
@@ -282,15 +283,6 @@ class SyncHttpxClient(httpx.Client):
     kwargs.setdefault('follow_redirects', True)
     super().__init__(**kwargs)
 
-  def __del__(self) -> None:
-    """Closes the httpx client."""
-    if self.is_closed:
-      return
-    try:
-      self.close()
-    except Exception:
-      pass
-
 
 class AsyncHttpxClient(httpx.AsyncClient):
   """Async httpx client."""
@@ -299,14 +291,6 @@ class AsyncHttpxClient(httpx.AsyncClient):
     """Initializes the httpx client."""
     kwargs.setdefault('follow_redirects', True)
     super().__init__(**kwargs)
-
-  def __del__(self) -> None:
-    if self.is_closed:
-      return
-    try:
-      asyncio.get_running_loop().create_task(self.aclose())
-    except Exception:
-      pass
 
 
 class BaseApiClient:
@@ -521,11 +505,11 @@ class BaseApiClient:
         _refresh_auth(self._credentials)
       if not self._credentials.token:
         raise RuntimeError('Could not resolve API token from the environment')
-      return self._credentials.token
+      return self._credentials.token  # type: ignore[no-any-return]
     else:
       raise RuntimeError('Could not resolve API token from the environment')
 
-  async def _async_access_token(self) -> str:
+  async def _async_access_token(self) -> Union[str, Any]:
     """Retrieves the access token for the credentials asynchronously."""
     if not self._credentials:
       async with self._auth_lock:
@@ -675,7 +659,7 @@ class BaseApiClient:
 
   async def _async_request(
       self, http_request: HttpRequest, stream: bool = False
-  ):
+  ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
     if self.vertexai and not self.api_key:
       http_request.headers['Authorization'] = (
@@ -735,7 +719,7 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ):
+  ) -> Union[BaseResponse, Any]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
@@ -753,7 +737,7 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ):
+  ) -> Generator[Any, None, None]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
@@ -768,7 +752,7 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> dict[str, object]:
+  ) -> Union[BaseResponse, Any]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
@@ -785,18 +769,18 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ):
+  ) -> Any:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
 
     response = await self._async_request(http_request=http_request, stream=True)
 
-    async def async_generator():
+    async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
         yield chunk
 
-    return async_generator()
+    return async_generator()  # type: ignore[no-untyped-call]
 
   def upload_file(
       self,
@@ -977,7 +961,7 @@ class BaseApiClient:
 
   async def _async_upload_fd(
       self,
-      file: Union[io.IOBase, anyio.AsyncFile],
+      file: Union[io.IOBase, anyio.AsyncFile[Any]],
       upload_url: str,
       upload_size: int,
       *,
@@ -1093,5 +1077,5 @@ class BaseApiClient:
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the
   # recorded response.
-  def _verify_response(self, response_model: _common.BaseModel):
+  def _verify_response(self, response_model: _common.BaseModel) -> None:
     pass

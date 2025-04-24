@@ -467,15 +467,30 @@ def test_from_uploaded_file_uri(client):
         ],
     )
 
-def test_from_uri_error(client):
-  # missing mime_type
-  with pytest.raises(TypeError):
+
+def test_from_uri_inferred_mime_type(client):
+  # gs://generativeai-downloads/images/scones.jpg isn't supported in MLDev
+  with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents=[
             'What is this image about?',
             types.Part.from_uri(
                 file_uri='gs://generativeai-downloads/images/scones.jpg'
+            ),
+        ],
+    )
+
+
+def test_from_uri_invalid_inferred_mime_type(client):
+  # Throws ValueError if mime_type cannot be inferred.
+  with pytest.raises(ValueError):
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=[
+            'What is this image about?',
+            types.Part.from_uri(
+                file_uri='uri/without/mime/type'
             ),
         ],
     )

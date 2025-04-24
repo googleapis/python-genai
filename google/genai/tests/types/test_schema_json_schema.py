@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,22 +13,31 @@
 # limitations under the License.
 #
 
-import json
+
 
 import pydantic
-import pytest
 
 from ... import types
 
 
-def _get_non_none_fields(model: pydantic.BaseModel) -> list[str]:
+def _get_not_none_fields(model: pydantic.BaseModel) -> list[str]:
   """Returns field names in a Pydantic model whose values are not None."""
   return [
       field for field, value in model.model_dump().items() if value is not None
   ]
 
 
-def test_non_null_type_conversion():
+def test_empty_schema_conversion():
+    """Test conversion of empty Schema to JSONSchema."""
+    schema = types.Schema()
+    json_schema = schema.json_schema
+    not_none_field_names = _get_not_none_fields(json_schema)
+
+    assert json_schema == types.JSONSchema()
+    assert not_none_field_names == []
+
+
+def test_not_null_type_conversion():
   """Test conversion of Schema.type to JSONSchema.type."""
   schema_types = [
       'OBJECT',
@@ -49,32 +58,32 @@ def test_non_null_type_conversion():
   for schema_type, expected_type in zip(schema_types, json_schema_types):
     schema = types.Schema(type=schema_type)
     json_schema = schema.json_schema
-    non_none_field_names = _get_non_none_fields(json_schema)
+    not_none_field_names = _get_not_none_fields(json_schema)
     assert json_schema.type == types.JSONSchemaType(expected_type)
-    assert non_none_field_names == ['type']
+    assert not_none_field_names == ['type']
 
 
 def test_unspecified_type_conversion():
   """Test conversion of Schema.type to JSONSchema.type."""
   schema = types.Schema(type='TYPE_UNSPECIFIED')
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.type is None
-  assert non_none_field_names == []
+  assert not_none_field_names == []
 
 
 def test_nullable_conversion():
   """Test conversion of Schema.nullable to JSONSchema.type."""
   schema = types.Schema(type='STRING', nullable=True)
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.type == [
       types.JSONSchemaType('null'),
       types.JSONSchemaType('string')
   ]
-  assert non_none_field_names == ['type']
+  assert not_none_field_names == ['type']
 
 
 def test_property_conversion():
@@ -87,14 +96,14 @@ def test_property_conversion():
       },
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.properties == {
       'key1': types.JSONSchema(type=types.JSONSchemaType('string')),
       'key2': types.JSONSchema(type=types.JSONSchemaType('number')),
   }
   assert json_schema.type == types.JSONSchemaType('object')
-  assert non_none_field_names == ['type', 'properties']
+  assert not_none_field_names == ['type', 'properties']
 
 
 def test_complex_property_conversion():
@@ -113,7 +122,7 @@ def test_complex_property_conversion():
       },
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.properties == {
       'key1': types.JSONSchema(
@@ -129,7 +138,7 @@ def test_complex_property_conversion():
       ),
   }
   assert json_schema.type == types.JSONSchemaType('object')
-  assert non_none_field_names == ['type', 'properties']
+  assert not_none_field_names == ['type', 'properties']
 
 
 def test_items_conversion():
@@ -139,13 +148,13 @@ def test_items_conversion():
       items=types.Schema(type='STRING'),
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.type == types.JSONSchemaType('array')
   assert json_schema.items == types.JSONSchema(
       type=types.JSONSchemaType('string')
   )
-  assert non_none_field_names == ['type', 'items']
+  assert not_none_field_names == ['type', 'items']
 
 
 def test_complex_items_conversion():
@@ -161,7 +170,7 @@ def test_complex_items_conversion():
       ),
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.type == types.JSONSchemaType('array')
   assert json_schema.items == types.JSONSchema(
@@ -171,7 +180,7 @@ def test_complex_items_conversion():
           'key2': types.JSONSchema(type=types.JSONSchemaType('number')),
       },
   )
-  assert non_none_field_names == ['type', 'items']
+  assert not_none_field_names == ['type', 'items']
 
 
 def test_any_of_conversion():
@@ -184,14 +193,14 @@ def test_any_of_conversion():
       ],
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.type == types.JSONSchemaType('object')
   assert json_schema.any_of == [
       types.JSONSchema(type=types.JSONSchemaType('string')),
       types.JSONSchema(type=types.JSONSchemaType('number')),
   ]
-  assert non_none_field_names == ['type', 'any_of']
+  assert not_none_field_names == ['type', 'any_of']
 
 
 def test_complex_any_of_conversion():
@@ -210,7 +219,7 @@ def test_complex_any_of_conversion():
       ],
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.type == types.JSONSchemaType('object')
   assert json_schema.any_of == [
@@ -226,7 +235,7 @@ def test_complex_any_of_conversion():
           items=types.JSONSchema(type=types.JSONSchemaType('string')),
       ),
   ]
-  assert non_none_field_names == ['type', 'any_of']
+  assert not_none_field_names == ['type', 'any_of']
 
 
 def test_example_conversion():
@@ -235,9 +244,9 @@ def test_example_conversion():
       example='this is an example',
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
-  assert non_none_field_names == []
+  assert not_none_field_names == []
 
 
 def test_property_ordering_conversion():
@@ -246,9 +255,9 @@ def test_property_ordering_conversion():
       property_ordering=['a', 'b'],
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
-  assert non_none_field_names == []
+  assert not_none_field_names == []
 
 
 def test_direct_conversion():
@@ -271,7 +280,7 @@ def test_direct_conversion():
       required=['required1', 'required2'],
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.pattern == '^[a-z]+$'
   assert json_schema.default == 1
@@ -288,7 +297,7 @@ def test_direct_conversion():
   assert json_schema.min_items == 6
   assert json_schema.minimum == 40
   assert json_schema.required == ['required1', 'required2']
-  assert non_none_field_names.sort() == [
+  assert not_none_field_names.sort() == [
       'pattern',
       'default',
       'max_length',
@@ -365,7 +374,7 @@ def test_complex_any_of_conversion():
       required=['fruit'],
   )
   json_schema = schema.json_schema
-  non_none_field_names = _get_non_none_fields(json_schema)
+  not_none_field_names = _get_not_none_fields(json_schema)
 
   assert json_schema.type == types.JSONSchemaType('object')
   assert json_schema.title == 'Fruit Basket'
@@ -418,7 +427,7 @@ def test_complex_any_of_conversion():
       ),
   }
   assert json_schema.required == ['fruit']
-  assert non_none_field_names == [
+  assert not_none_field_names == [
       'type',
       'title',
       'description',

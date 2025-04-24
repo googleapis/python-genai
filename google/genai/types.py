@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import logging
 import sys
 import types as builtin_types
 import typing
-from typing import Any, Callable, Literal, Optional, Union, _UnionGenericAlias  # type: ignore
+from typing import Any, Callable, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
 import pydantic
 from pydantic import Field
 from typing_extensions import TypedDict
@@ -140,6 +140,7 @@ class FinishReason(_common.CaseInSensitiveEnum):
   MAX_TOKENS = 'MAX_TOKENS'
   SAFETY = 'SAFETY'
   RECITATION = 'RECITATION'
+  LANGUAGE = 'LANGUAGE'
   OTHER = 'OTHER'
   BLOCKLIST = 'BLOCKLIST'
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
@@ -642,7 +643,22 @@ class Part(_common.BaseModel):
   )
 
   @classmethod
-  def from_uri(cls, *, file_uri: str, mime_type: str) -> 'Part':
+  def from_uri(
+      cls, *, file_uri: str, mime_type: Optional[str] = None
+  ) -> 'Part':
+    """Creates a Part from a file uri.
+
+    Args:
+      file_uri (str): The uri of the file
+      mime_type (str): mime_type: The MIME type of the image. If not provided,
+        the MIME type will be automatically determined.
+    """
+    if mime_type is None:
+      import mimetypes
+
+      mime_type, _ = mimetypes.guess_type(file_uri)
+      if not mime_type:
+        raise ValueError(f'Failed to determine mime type for file: {file_uri}')
     file_data = FileData(file_uri=file_uri, mime_type=mime_type)
     return cls(file_data=file_data)
 
@@ -1172,6 +1188,288 @@ class Schema(_common.BaseModel):
       return json_schema
 
     return convert_schema(self)
+
+  @classmethod
+  def from_json_schema(
+      cls,
+      *,
+      json_schema: JSONSchema,
+      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
+      raise_error_on_unsupported_field: bool = False,
+  ) -> 'Schema':
+    """Converts a JSONSchema object to a Schema object.
+
+    The JSONSchema is compatible with 2020-12 JSON Schema draft, specified by
+    OpenAPI 3.1.
+
+    Args:
+        json_schema: JSONSchema object to be converted.
+        api_option: API option to be used. If set to 'VERTEX_AI', the JSONSchema
+          will be converted to a Schema object that is compatible with Vertex AI
+          API. If set to 'GEMINI_API', the JSONSchema will be converted to a
+          Schema object that is compatible with Gemini API. Default is
+          'GEMINI_API'.
+        raise_error_on_unsupported_field: If set to True, an error will be
+          raised if the JSONSchema contains any unsupported fields. Default is
+          False.
+
+    Returns:
+        Schema object that is compatible with the specified API option.
+    Raises:
+        ValueError: If the JSONSchema contains any unsupported fields and
+          raise_error_on_unsupported_field is set to True. Or if the JSONSchema
+          is not compatible with the specified API option.
+    """
+    google_schema_field_names: set[str] = set(cls.model_fields.keys())
+    schema_field_names: tuple[str, ...] = (
+        'items',
+    )  # 'additional_properties' to come
+    list_schema_field_names: tuple[str, ...] = (
+        'any_of',  # 'one_of', 'all_of', 'not' to come
+    )
+    dict_schema_field_names: tuple[str, ...] = ('properties',)  # 'defs' to come
+
+    number_integer_related_field_names: tuple[str, ...] = (
+        'description',
+        'enum',
+        'format',
+        'maximum',
+        'minimum',
+        'title',
+    )
+    string_related_field_names: tuple[str, ...] = (
+        'description',
+        'enum',
+        'format',
+        'max_length',
+        'min_length',
+        'pattern',
+        'title',
+    )
+    object_related_field_names: tuple[str, ...] = (
+        'any_of',
+        'description',
+        'max_properties',
+        'min_properties',
+        'properties',
+        'required',
+        'title',
+    )
+    array_related_field_names: tuple[str, ...] = (
+        'description',
+        'items',
+        'max_items',
+        'min_items',
+        'title',
+    )
+    boolean_related_field_names: tuple[str, ...] = (
+        'description',
+        'title',
+    )
+    # placeholder for potential gemini api unsupported fields
+    gemini_api_unsupported_field_names: tuple[str, ...] = ()
+
+    def normalize_json_schema_type(
+        json_schema_type: Optional[
+            Union[JSONSchemaType, Sequence[JSONSchemaType], str, Sequence[str]]
+        ],
+    ) -> tuple[list[str], bool]:
+      """Returns (non_null_types, nullable)"""
+      if json_schema_type is None:
+        return [], False
+      if isinstance(json_schema_type, str):
+        if json_schema_type == JSONSchemaType.NULL.value:
+          return [], True
+        return [json_schema_type], False
+      if isinstance(json_schema_type, JSONSchemaType):
+        if json_schema_type == JSONSchemaType.NULL:
+          return [], True
+        return [json_schema_type.value], False
+      non_null_types = []
+      nullable = False
+      for type_value in json_schema_type:
+        if isinstance(type_value, JSONSchemaType):
+          type_value = type_value.value
+        if type_value == JSONSchemaType.NULL.value:
+          nullable = True
+        else:
+          non_null_types.append(type_value)
+      return non_null_types, nullable
+
+    def raise_error_if_cannot_convert(
+        json_schema_dict: dict[str, Any],
+        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
+        raise_error_on_unsupported_field: bool,
+    ) -> None:
+      """Raises an error if the JSONSchema cannot be converted to the specified Schema object."""
+      if not raise_error_on_unsupported_field:
+        return
+      for field_name, field_value in json_schema_dict.items():
+        if field_value is None:
+          continue
+        if field_name not in google_schema_field_names:
+          raise ValueError((
+              f'JSONSchema field "{field_name}" is not supported by the '
+              'Schema object. And the "raise_error_on_unsupported_field" '
+              'argument is set to True. If you still want to convert '
+              'it into the Schema object, please either remove the field '
+              f'"{field_name}" from the JSONSchema object, or leave the '
+              '"raise_error_on_unsupported_field" unset.'
+          ))
+        if (
+            field_name in gemini_api_unsupported_field_names
+            and api_option == 'GEMINI_API'
+        ):
+          raise ValueError((
+              f'The "{field_name}" field is not supported by the Schema '
+              'object for GEMINI_API.'
+          ))
+
+    def copy_schema_fields(
+        json_schema_dict: dict[str, Any],
+        related_fields_to_copy: tuple[str, ...],
+        sub_schema_in_any_of: dict[str, Any],
+    ) -> None:
+      """Copies the fields from json_schema_dict to sub_schema_in_any_of."""
+      for field_name in related_fields_to_copy:
+        sub_schema_in_any_of[field_name] = json_schema_dict.get(
+            field_name, None
+        )
+
+    def convert_json_schema(
+        json_schema: JSONSchema,
+        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
+        raise_error_on_unsupported_field: bool,
+    ) -> 'Schema':
+      schema = Schema()
+      json_schema_dict = json_schema.model_dump()
+      raise_error_if_cannot_convert(
+          json_schema_dict=json_schema_dict,
+          api_option=api_option,
+          raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+      )
+
+      # At the highest level of the logic, there are two passes:
+      # Pass 1: the JSONSchema.type is union-like,
+      #         e.g. ['null', 'string', 'array'].
+      #         for this case, we need to split the JSONSchema into multiple
+      #         sub-schemas, and copy them into the any_of field of the Schema.
+      #         And when we copy the non-type fields into any_of field,
+      #         we only copy the fields related to the specific type.
+      #         Detailed logic is commented below with `Pass 1` keyword tag.
+      # Pass 2: the JSONSchema.type is not union-like,
+      #         e.g. 'string', ['string'], ['null', 'string'].
+      #         for this case, no splitting is needed. Detailed
+      #         logic is commented below with `Pass 2` keyword tag.
+      #
+      #
+      # Pass 1: the JSONSchema.type is union-like
+      #         e.g. ['null', 'string', 'array'].
+      non_null_types, nullable = normalize_json_schema_type(
+          json_schema_dict.get('type', None)
+      )
+      if len(non_null_types) > 1:
+        logger.warning(
+            'JSONSchema type is union-like, e.g. ["null", "string", "array"]. '
+            'Converting it into multiple sub-schemas, and copying them into '
+            'the any_of field of the Schema. The value of `default` field is '
+            'ignored because it is ambiguous to tell which sub-schema it '
+            'belongs to.'
+        )
+        reformed_json_schema = JSONSchema()
+        # start splitting the JSONSchema into multiple sub-schemas
+        any_of = []
+        if nullable:
+          schema.nullable = True
+        for normalized_type in non_null_types:
+          sub_schema_in_any_of = {'type': normalized_type}
+          if normalized_type == JSONSchemaType.BOOLEAN.value:
+            copy_schema_fields(
+                json_schema_dict=json_schema_dict,
+                related_fields_to_copy=boolean_related_field_names,
+                sub_schema_in_any_of=sub_schema_in_any_of,
+            )
+          elif normalized_type in (
+              JSONSchemaType.NUMBER.value,
+              JSONSchemaType.INTEGER.value,
+          ):
+            copy_schema_fields(
+                json_schema_dict=json_schema_dict,
+                related_fields_to_copy=number_integer_related_field_names,
+                sub_schema_in_any_of=sub_schema_in_any_of,
+            )
+          elif normalized_type == JSONSchemaType.STRING.value:
+            copy_schema_fields(
+                json_schema_dict=json_schema_dict,
+                related_fields_to_copy=string_related_field_names,
+                sub_schema_in_any_of=sub_schema_in_any_of,
+            )
+          elif normalized_type == JSONSchemaType.ARRAY.value:
+            copy_schema_fields(
+                json_schema_dict=json_schema_dict,
+                related_fields_to_copy=array_related_field_names,
+                sub_schema_in_any_of=sub_schema_in_any_of,
+            )
+          elif normalized_type == JSONSchemaType.OBJECT.value:
+            copy_schema_fields(
+                json_schema_dict=json_schema_dict,
+                related_fields_to_copy=object_related_field_names,
+                sub_schema_in_any_of=sub_schema_in_any_of,
+            )
+          any_of.append(JSONSchema(**sub_schema_in_any_of))
+        reformed_json_schema.any_of = any_of
+        json_schema_dict = reformed_json_schema.model_dump()
+
+      # Pass 2: the JSONSchema.type is not union-like,
+      # e.g. 'string', ['string'], ['null', 'string'].
+      for field_name, field_value in json_schema_dict.items():
+        if field_value is None:
+          continue
+        if field_name in schema_field_names:
+          schema_field_value: 'Schema' = convert_json_schema(
+              json_schema=JSONSchema(**field_value),
+              api_option=api_option,
+              raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+          )
+          setattr(schema, field_name, schema_field_value)
+        elif field_name in list_schema_field_names:
+          list_schema_field_value: list['Schema'] = [
+              convert_json_schema(
+                  json_schema=JSONSchema(**this_field_value),
+                  api_option=api_option,
+                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              )
+              for this_field_value in field_value
+          ]
+          setattr(schema, field_name, list_schema_field_value)
+        elif field_name in dict_schema_field_names:
+          dict_schema_field_value: dict[str, 'Schema'] = {
+              key: convert_json_schema(
+                  json_schema=JSONSchema(**value),
+                  api_option=api_option,
+                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              )
+              for key, value in field_value.items()
+          }
+          setattr(schema, field_name, dict_schema_field_value)
+        elif field_name == 'type':
+          # non_null_types can only be empty or have one element.
+          # because already handled union-like case above.
+          non_null_types, nullable = normalize_json_schema_type(field_value)
+          if nullable:
+            schema.nullable = True
+          if non_null_types:
+            schema.type = Type(non_null_types[0])
+        else:
+          setattr(schema, field_name, field_value)
+
+      return schema
+
+    return convert_json_schema(
+        json_schema=json_schema,
+        api_option=api_option,
+        raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+    )
 
 
 class SchemaDict(TypedDict, total=False):
@@ -10080,6 +10378,33 @@ class LiveClientRealtimeInput(_common.BaseModel):
   media_chunks: Optional[list[Blob]] = Field(
       default=None, description="""Inlined bytes data for media input."""
   )
+  audio: Optional[Blob] = Field(
+      default=None, description="""The realtime audio input stream."""
+  )
+  audio_stream_end: Optional[bool] = Field(
+      default=None,
+      description="""
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[Blob] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
 
 
 class LiveClientRealtimeInputDict(TypedDict, total=False):
@@ -10101,6 +10426,32 @@ class LiveClientRealtimeInputDict(TypedDict, total=False):
 
   media_chunks: Optional[list[BlobDict]]
   """Inlined bytes data for media input."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
 
 
 LiveClientRealtimeInputOrDict = Union[
@@ -10404,4 +10755,83 @@ class LiveConnectParametersDict(TypedDict, total=False):
 
 LiveConnectParametersOrDict = Union[
     LiveConnectParameters, LiveConnectParametersDict
+]
+
+
+BlobImageUnion = Union[Blob, PIL.Image.Image]
+
+
+BlobImageUnionDict = Union[BlobImageUnion, BlobDict]
+
+
+class LiveSendRealtimeInputParameters(_common.BaseModel):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnion] = Field(
+      default=None, description="""Realtime input to send to the session."""
+  )
+  audio: Optional[Blob] = Field(
+      default=None, description="""The realtime audio input stream."""
+  )
+  audio_stream_end: Optional[bool] = Field(
+      default=None,
+      description="""
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[BlobImageUnion] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
+
+
+class LiveSendRealtimeInputParametersDict(TypedDict, total=False):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnionDict]
+  """Realtime input to send to the session."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobImageUnionDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
+
+
+LiveSendRealtimeInputParametersOrDict = Union[
+    LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
 ]
