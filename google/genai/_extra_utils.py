@@ -30,7 +30,7 @@ from . import types
 if sys.version_info >= (3, 10):
   from types import UnionType
 else:
-  UnionType = typing._UnionGenericAlias
+  UnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -78,16 +78,17 @@ def format_destination(
 
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
-) -> dict[str, Callable]:
+    is_caller_method_async: bool = False,
+) -> dict[str, Callable[..., Any]]:
   """Returns a function map from the config."""
-  function_map: dict[str, Callable] = {}
+  function_map: dict[str, Callable[..., Any]] = {}
   if not config:
     return function_map
   config_model = _create_generate_content_config_model(config)
   if config_model.tools:
     for tool in config_model.tools:
       if callable(tool):
-        if inspect.iscoroutinefunction(tool):
+        if inspect.iscoroutinefunction(tool) and not is_caller_method_async:
           raise errors.UnsupportedFunctionError(
               f'Function {tool.__name__} is a coroutine function, which is not'
               ' supported for automatic function calling. Please manually'
@@ -199,11 +200,11 @@ def convert_if_exist_pydantic_model(
   return value
 
 
-def invoke_function_from_dict_args(
-    args: Dict[str, Any], function_to_invoke: Callable
-) -> Any:
-  signature = inspect.signature(function_to_invoke)
-  func_name = function_to_invoke.__name__
+def convert_argument_from_function(
+    args: dict[str, Any], function: Callable[..., Any]
+) -> dict[str, Any]:
+  signature = inspect.signature(function)
+  func_name = function.__name__
   converted_args = {}
   for param_name, param in signature.parameters.items():
     if param_name in args:
@@ -213,19 +214,40 @@ def invoke_function_from_dict_args(
           param_name,
           func_name,
       )
+  return converted_args
+
+
+def invoke_function_from_dict_args(
+    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+) -> Any:
+  converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
     return function_to_invoke(**converted_args)
   except Exception as e:
     raise errors.FunctionInvocationError(
-        f'Failed to invoke function {func_name} with converted arguments'
-        f' {converted_args} from model returned function call argument'
-        f' {args} because of error {e}'
+        f'Failed to invoke function {function_to_invoke.__name__} with'
+        f' converted arguments {converted_args} from model returned function'
+        f' call argument {args} because of error {e}'
+    )
+
+
+async def invoke_function_from_dict_args_async(
+    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+) -> Any:
+  converted_args = convert_argument_from_function(args, function_to_invoke)
+  try:
+    return await function_to_invoke(**converted_args)
+  except Exception as e:
+    raise errors.FunctionInvocationError(
+        f'Failed to invoke function {function_to_invoke.__name__} with'
+        f' converted arguments {converted_args} from model returned function'
+        f' call argument {args} because of error {e}'
     )
 
 
 def get_function_response_parts(
     response: types.GenerateContentResponse,
-    function_map: dict[str, Callable],
+    function_map: dict[str, Callable[..., Any]],
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []
@@ -248,6 +270,44 @@ def get_function_response_parts(
           func_response = {
               'result': invoke_function_from_dict_args(args, func)
           }
+        except Exception as e:  # pylint: disable=broad-except
+          func_response = {'error': str(e)}
+        func_response_part = types.Part.from_function_response(
+            name=func_name, response=func_response
+        )
+        func_response_parts.append(func_response_part)
+  return func_response_parts
+
+async def get_function_response_parts_async(
+    response: types.GenerateContentResponse,
+    function_map: dict[str, Callable[..., Any]],
+) -> list[types.Part]:
+  """Returns the function response parts from the response."""
+  func_response_parts = []
+  if (
+      response.candidates is not None
+      and isinstance(response.candidates[0].content, types.Content)
+      and response.candidates[0].content.parts is not None
+  ):
+    for part in response.candidates[0].content.parts:
+      if not part.function_call:
+        continue
+      func_name = part.function_call.name
+      if func_name is not None and part.function_call.args is not None:
+        func = function_map[func_name]
+        args = convert_number_values_for_dict_function_call_args(
+            part.function_call.args
+        )
+        func_response: dict[str, Any]
+        try:
+          if inspect.iscoroutinefunction(func):
+            func_response = {
+                'result': await invoke_function_from_dict_args_async(args, func)
+            }
+          else:
+            func_response = {
+                'result': invoke_function_from_dict_args(args, func)
+            }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}
         func_response_part = types.Part.from_function_response(

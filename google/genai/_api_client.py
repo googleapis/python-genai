@@ -19,28 +19,42 @@
 The BaseApiClient is intended to be a private module and is subject to change.
 """
 
-import anyio
 import asyncio
+from collections.abc import Awaitable, Generator
 import copy
 from dataclasses import dataclass
 import datetime
+import http
 import io
 import json
 import logging
+import math
 import os
+import ssl
 import sys
+import time
 from typing import Any, AsyncIterator, Optional, Tuple, Union
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
+from urllib.parse import urlunparse
+
+import anyio
+import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
 from google.auth.transport.requests import Request
 import httpx
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import ValidationError
+
 from . import _common
 from . import errors
 from . import version
-from .types import HttpOptions, HttpOptionsDict, HttpOptionsOrDict
+from .types import HttpOptions
+from .types import HttpOptionsDict
+from .types import HttpOptionsOrDict
+
 
 logger = logging.getLogger('google_genai._api_client')
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB chunk size
@@ -95,6 +109,14 @@ def _patch_http_options(
   return copy_option
 
 
+def _populate_server_timeout_header(
+    headers: dict[str, str], timeout_in_seconds: Optional[Union[float, int]]
+) -> None:
+  """Populates the server timeout header in the headers dict."""
+  if timeout_in_seconds and 'X-Server-Timeout' not in headers:
+    headers['X-Server-Timeout'] = str(math.ceil(timeout_in_seconds))
+
+
 def _join_url_path(base_url: str, path: str) -> str:
   parsed_base = urlparse(base_url)
   base_path = (
@@ -108,7 +130,7 @@ def _join_url_path(base_url: str, path: str) -> str:
 
 def _load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   """Loads google auth credentials and project id."""
-  credentials, loaded_project_id = google.auth.default(
+  credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
       scopes=['https://www.googleapis.com/auth/cloud-platform'],
   )
 
@@ -124,8 +146,21 @@ def _load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
 
 
 def _refresh_auth(credentials: Credentials) -> Credentials:
-  credentials.refresh(Request())
+  credentials.refresh(Request())  # type: ignore[no-untyped-call]
   return credentials
+
+
+def _get_timeout_in_seconds(
+    timeout: Optional[Union[float, int]],
+) -> Optional[float]:
+  """Converts the timeout to seconds."""
+  if timeout:
+    # HttpOptions.timeout is in milliseconds. But httpx.Client.request()
+    # expects seconds.
+    timeout_in_seconds = timeout / 1000.0
+  else:
+    timeout_in_seconds = None
+  return timeout_in_seconds
 
 
 @dataclass
@@ -157,17 +192,17 @@ class HttpResponse:
       response_stream: Union[Any, str] = None,
       byte_stream: Union[Any, bytes] = None,
   ):
-    self.status_code = 200
+    self.status_code: int = 200
     self.headers = headers
     self.response_stream = response_stream
     self.byte_stream = byte_stream
 
   # Async iterator for async streaming.
-  def __aiter__(self):
+  def __aiter__(self) -> 'HttpResponse':
     self.segment_iterator = self.async_segments()
     return self
 
-  async def __anext__(self):
+  async def __anext__(self) -> Any:
     try:
       return await self.segment_iterator.__anext__()
     except StopIteration:
@@ -179,7 +214,7 @@ class HttpResponse:
       return ''
     return json.loads(self.response_stream[0])
 
-  def segments(self):
+  def segments(self) -> Generator[Any, None, None]:
     if isinstance(self.response_stream, list):
       # list of objects retrieved from replay or from non-streaming API.
       for chunk in self.response_stream:
@@ -188,7 +223,7 @@ class HttpResponse:
       yield from []
     else:
       # Iterator of objects retrieved from the API.
-      for chunk in self.response_stream.iter_lines():
+      for chunk in self.response_stream.iter_lines():  # type: ignore[union-attr]
         if chunk:
           # In streaming mode, the chunk of JSON is prefixed with "data:" which
           # we must strip before parsing.
@@ -222,7 +257,7 @@ class HttpResponse:
       else:
         raise ValueError('Error parsing streaming response.')
 
-  def byte_segments(self):
+  def byte_segments(self) -> Generator[Union[bytes, Any], None, None]:
     if isinstance(self.byte_stream, list):
       # list of objects retrieved from replay or from non-streaming API.
       yield from self.byte_stream
@@ -233,7 +268,7 @@ class HttpResponse:
           'Byte segments are not supported for streaming responses.'
       )
 
-  def _copy_to_dict(self, response_payload: dict[str, object]):
+  def _copy_to_dict(self, response_payload: dict[str, object]) -> None:
     # Cannot pickle 'generator' object.
     delattr(self, 'segment_iterator')
     for attribute in dir(self):
@@ -248,15 +283,6 @@ class SyncHttpxClient(httpx.Client):
     kwargs.setdefault('follow_redirects', True)
     super().__init__(**kwargs)
 
-  def __del__(self) -> None:
-    """Closes the httpx client."""
-    if self.is_closed:
-      return
-    try:
-      self.close()
-    except Exception:
-      pass
-
 
 class AsyncHttpxClient(httpx.AsyncClient):
   """Async httpx client."""
@@ -265,14 +291,6 @@ class AsyncHttpxClient(httpx.AsyncClient):
     """Initializes the httpx client."""
     kwargs.setdefault('follow_redirects', True)
     super().__init__(**kwargs)
-
-  def __del__(self) -> None:
-    if self.is_closed:
-      return
-    try:
-      asyncio.get_running_loop().create_task(self.aclose())
-    except Exception:
-      pass
 
 
 class BaseApiClient:
@@ -390,7 +408,7 @@ class BaseApiClient:
       if not self.api_key:
         raise ValueError(
             'Missing key inputs argument! To use the Google AI API,'
-            'provide (`api_key`) arguments. To use the Google Cloud API,'
+            ' provide (`api_key`) arguments. To use the Google Cloud API,'
             ' provide (`vertexai`, `project` & `location`) arguments.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
@@ -408,13 +426,71 @@ class BaseApiClient:
     else:
       if self._http_options.headers is not None:
         _append_library_version_headers(self._http_options.headers)
-    # Initialize the httpx client.
-    self._httpx_client = SyncHttpxClient()
-    self._async_httpx_client = AsyncHttpxClient()
 
-  def _websocket_base_url(self):
+    client_args, async_client_args = self._ensure_ssl_ctx(self._http_options)
+    self._httpx_client = SyncHttpxClient(**client_args)
+    self._async_httpx_client = AsyncHttpxClient(**async_client_args)
+
+  @staticmethod
+  def _ensure_ssl_ctx(options: HttpOptions) -> (
+      Tuple[dict[str, Any], dict[str, Any]]):
+    """Ensures the SSL context is present in the client args.
+
+    Creates a default SSL context if one is not provided.
+
+    Args:
+      options: The http options to check for SSL context.
+
+    Returns:
+      A tuple of sync/async httpx client args.
+    """
+
+    verify = 'verify'
+    args = options.client_args
+    async_args = options.async_client_args
+    ctx = (
+        args.get(verify) if args else None
+        or async_args.get(verify) if async_args else None
+    )
+
+    if not ctx:
+      # Initialize the SSL context for the httpx client.
+      # Unlike requests, the httpx package does not automatically pull in the
+      # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
+      # enabled explicitly.
+      ctx = ssl.create_default_context(
+          cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+          capath=os.environ.get('SSL_CERT_DIR'),
+      )
+
+    def _maybe_set(
+        args: Optional[dict[str, Any]],
+        ctx: ssl.SSLContext,
+    ) -> dict[str, Any]:
+      """Sets the SSL context in the client args if not set.
+
+      Does not override the SSL context if it is already set.
+
+      Args:
+        args: The client args to to check for SSL context.
+        ctx: The SSL context to set.
+
+      Returns:
+        The client args with the SSL context included.
+      """
+      if not args or not args.get(verify):
+        args = (args or {}).copy()
+        args[verify] = ctx
+      return args
+
+    return (
+        _maybe_set(args, ctx),
+        _maybe_set(async_args, ctx),
+    )
+
+  def _websocket_base_url(self) -> str:
     url_parts = urlparse(self._http_options.base_url)
-    return url_parts._replace(scheme='wss').geturl()
+    return url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type, return-value]
 
   def _access_token(self) -> str:
     """Retrieves the access token for the credentials."""
@@ -429,11 +505,11 @@ class BaseApiClient:
         _refresh_auth(self._credentials)
       if not self._credentials.token:
         raise RuntimeError('Could not resolve API token from the environment')
-      return self._credentials.token
+      return self._credentials.token  # type: ignore[no-any-return]
     else:
       raise RuntimeError('Could not resolve API token from the environment')
 
-  async def _async_access_token(self) -> str:
+  async def _async_access_token(self) -> Union[str, Any]:
     """Retrieves the access token for the credentials asynchronously."""
     if not self._credentials:
       async with self._auth_lock:
@@ -520,18 +596,13 @@ class BaseApiClient:
         versioned_path,
     )
 
-    timeout_in_seconds: Optional[Union[float, int]] = (
-        patched_http_options.timeout
-    )
-    if timeout_in_seconds:
-      # HttpOptions.timeout is in milliseconds. But httpx.Client.request()
-      # expects seconds.
-      timeout_in_seconds = timeout_in_seconds / 1000.0
-    else:
-      timeout_in_seconds = None
+    timeout_in_seconds = _get_timeout_in_seconds(patched_http_options.timeout)
 
     if patched_http_options.headers is None:
       raise ValueError('Request headers must be set.')
+    _populate_server_timeout_header(
+        patched_http_options.headers, timeout_in_seconds
+    )
     return HttpRequest(
         method=http_method,
         url=url,
@@ -588,7 +659,7 @@ class BaseApiClient:
 
   async def _async_request(
       self, http_request: HttpRequest, stream: bool = False
-  ):
+  ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
     if self.vertexai and not self.api_key:
       http_request.headers['Authorization'] = (
@@ -648,7 +719,7 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ):
+  ) -> Union[BaseResponse, Any]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
@@ -666,7 +737,7 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ):
+  ) -> Generator[Any, None, None]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
@@ -681,7 +752,7 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> dict[str, object]:
+  ) -> Union[BaseResponse, Any]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
@@ -698,21 +769,26 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ):
+  ) -> Any:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
 
     response = await self._async_request(http_request=http_request, stream=True)
 
-    async def async_generator():
+    async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
         yield chunk
 
-    return async_generator()
+    return async_generator()  # type: ignore[no-untyped-call]
 
   def upload_file(
-      self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int
+      self,
+      file_path: Union[str, io.IOBase],
+      upload_url: str,
+      upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file to the given URL.
 
@@ -723,18 +799,28 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalize request.
     """
     if isinstance(file_path, io.IOBase):
-      return self._upload_fd(file_path, upload_url, upload_size)
+      return self._upload_fd(
+          file_path, upload_url, upload_size, http_options=http_options
+      )
     else:
       with open(file_path, 'rb') as file:
-        return self._upload_fd(file, upload_url, upload_size)
+        return self._upload_fd(
+            file, upload_url, upload_size, http_options=http_options
+        )
 
   def _upload_fd(
-      self, file: io.IOBase, upload_url: str, upload_size: int
+      self,
+      file: io.IOBase,
+      upload_url: str,
+      upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file to the given URL.
 
@@ -743,6 +829,7 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalize request.
@@ -758,15 +845,32 @@ class BaseApiClient:
       # If last chunk, finalize the upload.
       if chunk_size + offset >= upload_size:
         upload_command += ', finalize'
+      http_options = http_options if http_options else self._http_options
+      timeout = (
+          http_options.get('timeout')
+          if isinstance(http_options, dict)
+          else http_options.timeout
+      )
+      if timeout is None:
+        # Per request timeout is not configured. Check the global timeout.
+        timeout = (
+            self._http_options.timeout
+            if isinstance(self._http_options, dict)
+            else self._http_options.timeout
+        )
+      timeout_in_seconds = _get_timeout_in_seconds(timeout)
+      upload_headers = {
+          'X-Goog-Upload-Command': upload_command,
+          'X-Goog-Upload-Offset': str(offset),
+          'Content-Length': str(chunk_size),
+      }
+      _populate_server_timeout_header(upload_headers, timeout_in_seconds)
       response = self._httpx_client.request(
           method='POST',
           url=upload_url,
-          headers={
-              'X-Goog-Upload-Command': upload_command,
-              'X-Goog-Upload-Offset': str(offset),
-              'Content-Length': str(chunk_size),
-          },
+          headers=upload_headers,
           content=file_chunk,
+          timeout=timeout_in_seconds,
       )
       offset += chunk_size
       if response.headers['x-goog-upload-status'] != 'active':
@@ -783,7 +887,12 @@ class BaseApiClient:
       )
     return HttpResponse(response.headers, response_stream=[response.text])
 
-  def download_file(self, path: str, http_options):
+  def download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ) -> Union[Any,bytes]:
     """Downloads the file data.
 
     Args:
@@ -822,6 +931,8 @@ class BaseApiClient:
       file_path: Union[str, io.IOBase],
       upload_url: str,
       upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file asynchronously to the given URL.
 
@@ -831,23 +942,30 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalize request.
     """
     if isinstance(file_path, io.IOBase):
-      return await self._async_upload_fd(file_path, upload_url, upload_size)
+      return await self._async_upload_fd(
+          file_path, upload_url, upload_size, http_options=http_options
+      )
     else:
       file = anyio.Path(file_path)
       fd = await file.open('rb')
       async with fd:
-        return await self._async_upload_fd(fd, upload_url, upload_size)
+        return await self._async_upload_fd(
+            fd, upload_url, upload_size, http_options=http_options
+        )
 
   async def _async_upload_fd(
       self,
-      file: Union[io.IOBase, anyio.AsyncFile],
+      file: Union[io.IOBase, anyio.AsyncFile[Any]],
       upload_url: str,
       upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     """Transfers a file asynchronously to the given URL.
 
@@ -856,6 +974,7 @@ class BaseApiClient:
       upload_url: The URL to upload the file to.
       upload_size: The size of file content to be uploaded, this will have to
         match the size requested in the resumable upload request.
+      http_options: The http options to use for the request.
 
     returns:
           The HttpResponse object from the finalized request.
@@ -874,15 +993,32 @@ class BaseApiClient:
       # If last chunk, finalize the upload.
       if chunk_size + offset >= upload_size:
         upload_command += ', finalize'
+      http_options = http_options if http_options else self._http_options
+      timeout = (
+          http_options.get('timeout')
+          if isinstance(http_options, dict)
+          else http_options.timeout
+      )
+      if timeout is None:
+        # Per request timeout is not configured. Check the global timeout.
+        timeout = (
+            self._http_options.timeout
+            if isinstance(self._http_options, dict)
+            else self._http_options.timeout
+        )
+      timeout_in_seconds = _get_timeout_in_seconds(timeout)
+      upload_headers = {
+          'X-Goog-Upload-Command': upload_command,
+          'X-Goog-Upload-Offset': str(offset),
+          'Content-Length': str(chunk_size),
+      }
+      _populate_server_timeout_header(upload_headers, timeout_in_seconds)
       response = await self._async_httpx_client.request(
           method='POST',
           url=upload_url,
           content=file_chunk,
-          headers={
-              'X-Goog-Upload-Command': upload_command,
-              'X-Goog-Upload-Offset': str(offset),
-              'Content-Length': str(chunk_size),
-          },
+          headers=upload_headers,
+          timeout=timeout_in_seconds,
       )
       offset += chunk_size
       if response.headers.get('x-goog-upload-status') != 'active':
@@ -899,7 +1035,12 @@ class BaseApiClient:
       )
     return HttpResponse(response.headers, response_stream=[response.text])
 
-  async def async_download_file(self, path: str, http_options):
+  async def async_download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ) -> Union[Any, bytes]:
     """Downloads the file data.
 
     Args:
@@ -936,5 +1077,5 @@ class BaseApiClient:
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the
   # recorded response.
-  def _verify_response(self, response_model: _common.BaseModel):
+  def _verify_response(self, response_model: _common.BaseModel) -> None:
     pass

@@ -1,9 +1,9 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=1.12.0"]
 
 [project]
 name = "google-genai"
-version = "1.8.0"
+version = "1.12.0"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -44,3 +44,6 @@ packages = [
     "google.genai",
 ]
 include-package-data = true
+
+[tools.setuptools.package_data]
+"google.genai" = ["py.typed"]

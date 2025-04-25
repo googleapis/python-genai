@@ -36,9 +36,9 @@ logger = logging.getLogger('google_genai.files')
 
 def _ListFilesConfig_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
@@ -58,9 +58,9 @@ def _ListFilesConfig_to_mldev(
 
 def _ListFilesParameters_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     setv(
@@ -76,9 +76,9 @@ def _ListFilesParameters_to_mldev(
 
 def _FileStatus_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -94,9 +94,9 @@ def _FileStatus_to_mldev(
 
 def _File_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -151,9 +151,9 @@ def _File_to_mldev(
 
 def _CreateFileParameters_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['file']) is not None:
     setv(
@@ -170,9 +170,9 @@ def _CreateFileParameters_to_mldev(
 
 def _GetFileParameters_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
@@ -189,9 +189,9 @@ def _GetFileParameters_to_mldev(
 
 def _DeleteFileParameters_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
@@ -208,9 +208,9 @@ def _DeleteFileParameters_to_mldev(
 
 def _FileStatus_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -226,9 +226,9 @@ def _FileStatus_from_mldev(
 
 def _File_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -283,9 +283,9 @@ def _File_from_mldev(
 
 def _ListFilesResponse_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
@@ -305,9 +305,9 @@ def _ListFilesResponse_from_mldev(
 
 def _CreateFileResponse_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['httpHeaders']) is not None:
     setv(to_object, ['http_headers'], getv(from_object, ['httpHeaders']))
@@ -317,9 +317,9 @@ def _CreateFileResponse_from_mldev(
 
 def _DeleteFileResponse_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -596,7 +596,7 @@ class Files(_api_module.BaseModule):
   def upload(
       self,
       *,
-      file: Union[str, pathlib.Path, os.PathLike, io.IOBase],
+      file: Union[str, pathlib.Path, os.PathLike[str], io.IOBase],
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file using a supported file service.
@@ -658,6 +658,14 @@ class Files(_api_module.BaseModule):
     http_options: types.HttpOptions
     if config_model and config_model.http_options:
       http_options = config_model.http_options
+      http_options.api_version = ''
+      http_options.headers = {
+          'Content-Type': 'application/json',
+          'X-Goog-Upload-Protocol': 'resumable',
+          'X-Goog-Upload-Command': 'start',
+          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+      }
     else:
       http_options = types.HttpOptions(
           api_version='',
@@ -685,11 +693,11 @@ class Files(_api_module.BaseModule):
 
     if isinstance(file, io.IOBase):
       return_file = self._api_client.upload_file(
-          file, upload_url, file_obj.size_bytes
+          file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
       return_file = self._api_client.upload_file(
-          fs_path, upload_url, file_obj.size_bytes
+          fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
 
     return types.File._from_response(
@@ -841,7 +849,7 @@ class Files(_api_module.BaseModule):
 
     data = self._api_client.download_file(
         path,
-        http_options,
+        http_options=http_options,
     )
 
     if isinstance(file, types.Video):
@@ -1123,7 +1131,7 @@ class AsyncFiles(_api_module.BaseModule):
   async def upload(
       self,
       *,
-      file: Union[str, pathlib.Path, os.PathLike, io.IOBase],
+      file: Union[str, pathlib.Path, os.PathLike[str], io.IOBase],
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file asynchronously using a supported file service.
@@ -1185,6 +1193,14 @@ class AsyncFiles(_api_module.BaseModule):
     http_options: types.HttpOptions
     if config_model and config_model.http_options:
       http_options = config_model.http_options
+      http_options.api_version = ''
+      http_options.headers = {
+          'Content-Type': 'application/json',
+          'X-Goog-Upload-Protocol': 'resumable',
+          'X-Goog-Upload-Command': 'start',
+          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+      }
     else:
       http_options = types.HttpOptions(
           api_version='',
@@ -1211,11 +1227,11 @@ class AsyncFiles(_api_module.BaseModule):
 
     if isinstance(file, io.IOBase):
       return_file = await self._api_client.async_upload_file(
-          file, upload_url, file_obj.size_bytes
+          file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
       return_file = await self._api_client.async_upload_file(
-          fs_path, upload_url, file_obj.size_bytes
+          fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
 
     return types.File._from_response(
@@ -1357,7 +1373,7 @@ class AsyncFiles(_api_module.BaseModule):
 
     data = await self._api_client.async_download_file(
         path,
-        http_options,
+        http_options=http_options,
     )
 
     return data

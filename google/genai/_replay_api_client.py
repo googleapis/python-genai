@@ -30,10 +30,11 @@ from requests.exceptions import HTTPError
 
 from . import errors
 from ._api_client import BaseApiClient
-from ._api_client import HttpOptions
 from ._api_client import HttpRequest
 from ._api_client import HttpResponse
 from ._common import BaseModel
+from .types import HttpOptions, HttpOptionsOrDict
+from .types import GenerateVideosOperation
 
 
 def _redact_version_numbers(version_string: str) -> str:
@@ -46,7 +47,7 @@ def _redact_language_label(language_label: str) -> str:
   return re.sub(r'gl-python/', '{LANGUAGE_LABEL}/', language_label)
 
 
-def _redact_request_headers(headers):
+def _redact_request_headers(headers: dict[str, str]) -> dict[str, str]:
   """Redacts headers that should not be recorded."""
   redacted_headers = {}
   for header_name, header_value in headers.items():
@@ -109,29 +110,36 @@ def _redact_project_location_path(path: str) -> str:
     return path
 
 
-def _redact_request_body(body: dict[str, object]):
+def _redact_request_body(body: dict[str, object]) -> None:
   """Redacts fields in the request body in place."""
   for key, value in body.items():
     if isinstance(value, str):
       body[key] = _redact_project_location_path(value)
 
 
-def redact_http_request(http_request: HttpRequest):
+def redact_http_request(http_request: HttpRequest) -> None:
   http_request.headers = _redact_request_headers(http_request.headers)
   http_request.url = _redact_request_url(http_request.url)
   if not isinstance(http_request.data, bytes):
     _redact_request_body(http_request.data)
 
 
-def _current_file_path_and_line():
+def _current_file_path_and_line() -> str:
   """Prints the current file path and line number."""
-  frame = inspect.currentframe().f_back.f_back
-  filepath = inspect.getfile(frame)
-  lineno = frame.f_lineno
-  return f'File: {filepath}, Line: {lineno}'
+  current_frame = inspect.currentframe()
+  if (
+      current_frame is not None
+      and current_frame.f_back is not None
+      and current_frame.f_back.f_back is not None
+  ):
+    frame = current_frame.f_back.f_back
+    filepath = inspect.getfile(frame)
+    lineno = frame.f_lineno
+    return f'File: {filepath}, Line: {lineno}'
+  return ''
 
 
-def _debug_print(message: str):
+def _debug_print(message: str) -> None:
   print(
       'DEBUG (test',
       os.environ.get('PYTEST_CURRENT_TEST'),
@@ -210,33 +218,33 @@ class ReplayApiClient(BaseApiClient):
           'GOOGLE_GENAI_REPLAYS_DIRECTORY', None
       )
     # Valid replay modes are replay-only or record-and-replay.
-    self.replay_session = None
+    self.replay_session: Union[ReplayFile, None] = None
     self._mode = mode
     self._replay_id = replay_id
 
-  def initialize_replay_session(self, replay_id: str):
+  def initialize_replay_session(self, replay_id: str) -> None:
     self._replay_id = replay_id
     self._initialize_replay_session()
 
-  def _get_replay_file_path(self):
+  def _get_replay_file_path(self) -> str:
     return self._generate_file_path_from_replay_id(
         self.replays_directory, self._replay_id
     )
 
-  def _should_call_api(self):
+  def _should_call_api(self) -> bool:
     return self._mode in ['record', 'api'] or (
         self._mode == 'auto'
         and not os.path.isfile(self._get_replay_file_path())
     )
 
-  def _should_update_replay(self):
+  def _should_update_replay(self) -> bool:
     return self._should_call_api() and self._mode != 'api'
 
-  def _initialize_replay_session_if_not_loaded(self):
+  def _initialize_replay_session_if_not_loaded(self) -> None:
     if not self.replay_session:
       self._initialize_replay_session()
 
-  def _initialize_replay_session(self):
+  def _initialize_replay_session(self) -> None:
     _debug_print('Test is using replay id: ' + self._replay_id)
     self._replay_index = 0
     self._sdk_response_index = 0
@@ -257,7 +265,7 @@ class ReplayApiClient(BaseApiClient):
           replay_id=self._replay_id, interactions=[]
       )
 
-  def _generate_file_path_from_replay_id(self, replay_directory, replay_id):
+  def _generate_file_path_from_replay_id(self, replay_directory: Optional[str], replay_id: str) -> str:
     session_parts = replay_id.split('/')
     if len(session_parts) < 3:
       raise ValueError(
@@ -271,7 +279,7 @@ class ReplayApiClient(BaseApiClient):
     path_parts.extend(session_parts)
     return os.path.join(*path_parts) + '.json'
 
-  def close(self):
+  def close(self) -> None:
     if not self._should_update_replay() or not self.replay_session:
       return
     replay_file_path = self._get_replay_file_path()
@@ -284,7 +292,7 @@ class ReplayApiClient(BaseApiClient):
       self,
       http_request: HttpRequest,
       http_response: Union[HttpResponse, errors.APIError, bytes],
-  ):
+  ) -> None:
     if not self._should_update_replay():
       return
     redact_http_request(http_request)
@@ -332,7 +340,7 @@ class ReplayApiClient(BaseApiClient):
       self,
       http_request: HttpRequest,
       interaction: ReplayInteraction,
-  ):
+  ) -> None:
     assert http_request.url == interaction.request.url
     assert http_request.headers == interaction.request.headers, (
         'Request headers mismatch:\n'
@@ -376,7 +384,7 @@ class ReplayApiClient(BaseApiClient):
         byte_stream=interaction.response.byte_segments,
     )
 
-  def _verify_response(self, response_model: BaseModel):
+  def _verify_response(self, response_model: BaseModel) -> None:
     if self._mode == 'api':
       return
     if not self.replay_session:
@@ -387,7 +395,7 @@ class ReplayApiClient(BaseApiClient):
       if isinstance(response_model, list):
         response_model = response_model[0]
       if response_model and 'http_headers' in response_model.model_fields:
-        response_model.http_headers.pop('Date', None)
+        response_model.http_headers.pop('Date', None)  # type: ignore[attr-defined]
       interaction.response.sdk_response_segments.append(
           response_model.model_dump(exclude_none=True)
       )
@@ -396,7 +404,12 @@ class ReplayApiClient(BaseApiClient):
     if isinstance(response_model, list):
       response_model = response_model[0]
     print('response_model: ', response_model.model_dump(exclude_none=True))
-    actual = response_model.model_dump(exclude_none=True, mode='json')
+    if isinstance(response_model, GenerateVideosOperation):
+      actual = response_model.model_dump(
+          exclude={'result'}, exclude_none=True, mode='json'
+      )
+    else:
+      actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
@@ -461,7 +474,14 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(http_request)
 
-  def upload_file(self, file_path: Union[str, io.IOBase], upload_url: str, upload_size: int) -> HttpResponse:
+  def upload_file(
+      self,
+      file_path: Union[str, io.IOBase],
+      upload_url: str,
+      upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ) -> HttpResponse:
     if isinstance(file_path, io.IOBase):
       offset = file_path.tell()
       content = file_path.read()
@@ -479,7 +499,9 @@ class ReplayApiClient(BaseApiClient):
     if self._should_call_api():
       result: Union[str, HttpResponse]
       try:
-        result = super().upload_file(file_path, upload_url, upload_size)
+        result = super().upload_file(
+            file_path, upload_url, upload_size, http_options=http_options
+        )
       except HTTPError as e:
         result = HttpResponse(
             dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
@@ -496,6 +518,8 @@ class ReplayApiClient(BaseApiClient):
       file_path: Union[str, io.IOBase],
       upload_url: str,
       upload_size: int,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
   ) -> HttpResponse:
     if isinstance(file_path, io.IOBase):
       offset = file_path.tell()
@@ -515,7 +539,7 @@ class ReplayApiClient(BaseApiClient):
       result: HttpResponse
       try:
         result = await super().async_upload_file(
-            file_path, upload_url, upload_size
+            file_path, upload_url, upload_size, http_options=http_options
         )
       except HTTPError as e:
         result = HttpResponse(
@@ -528,14 +552,16 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(request)
 
-  def download_file(self, path: str, http_options: HttpOptions):
+  def download_file(
+      self, path: str, *, http_options: Optional[HttpOptionsOrDict] = None
+  ) -> Union[HttpResponse, bytes, Any]:
     self._initialize_replay_session_if_not_loaded()
     request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
       try:
-        result = super().download_file(path, http_options)
+        result = super().download_file(path, http_options=http_options)
       except HTTPError as e:
         result = HttpResponse(
             dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
@@ -547,14 +573,18 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(request).byte_stream[0]
 
-  async def async_download_file(self, path: str, http_options):
+  async def async_download_file(
+      self, path: str, *, http_options: Optional[HttpOptionsOrDict] = None
+  ) -> Any:
     self._initialize_replay_session_if_not_loaded()
     request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
       try:
-        result = await super().async_download_file(path, http_options)
+        result = await super().async_download_file(
+            path, http_options=http_options
+        )
       except HTTPError as e:
         result = HttpResponse(
             dict(e.response.headers), [json.dumps({'reason': e.response.reason})]

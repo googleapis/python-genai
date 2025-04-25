@@ -181,35 +181,30 @@ def test_schema_with_no_null_fields_is_unchanged():
 
 
 @pytest.mark.parametrize('use_vertex', [True, False])
-def test_schema_with_default_value_raises_for_mldev(client):
+def test_schema_with_default_value(client):
 
-  if not client.vertexai:
-    with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client._api_client, CountryInfoWithDefaultValue)
-    assert 'Default value is not supported' in str(e)
-  else:
-    transformed_schema_vertex = _transformers.t_schema(
-        client._api_client, CountryInfoWithDefaultValue
-    )
-    expected_schema_vertex = types.Schema(
-        properties={
-            'name': types.Schema(
-                type='STRING',
-                title='Name',
-            ),
-            'population': types.Schema(
-                type='INTEGER',
-                default=0,
-                title='Population',
-            ),
-        },
-        type='OBJECT',
-        required=['name'],
-        title='CountryInfoWithDefaultValue',
-        property_ordering=['name', 'population'],
-    )
+  transformed_schema = _transformers.t_schema(
+      client._api_client, CountryInfoWithDefaultValue
+  )
+  expected_schema = types.Schema(
+      properties={
+          'name': types.Schema(
+              type='STRING',
+              title='Name',
+          ),
+          'population': types.Schema(
+              type='INTEGER',
+              default=0,
+              title='Population',
+          ),
+      },
+      type='OBJECT',
+      required=['name'],
+      title='CountryInfoWithDefaultValue',
+      property_ordering=['name', 'population'],
+  )
 
-    assert transformed_schema_vertex == expected_schema_vertex
+  assert transformed_schema == expected_schema
 
 
 def test_schema_with_any_of(client):
@@ -304,12 +299,307 @@ def test_complex_dict_schema_with_anyof_is_unchanged(client):
     assert schema_before == dict_schema
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_converts_const_to_enum(client):
+  """The 'const' field should be converted to a singleton 'enum'."""
+  schema = {
+      'type': 'STRING',
+      'const': 'FOO',
+  }
+  expected_schema = {
+      'type': 'STRING',
+      'enum': ['FOO'],
+  }
+
+  _transformers.process_schema(schema, client)
+
+  assert schema == expected_schema
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_forbids_non_string_const(client):
+  """The 'const' field only works for strings."""
+  schema = {
+      'type': 'INTEGER',
+      'const': 123,
+  }
+
+  with pytest.raises(ValueError, match='.*Literal values must be strings.*'):
+    _transformers.process_schema(schema, client)
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
+def test_process_schema_order_properties_propagates_into_defs(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to '$defs'."""
+  schema = {
+      '$ref': '#/$defs/Foo',
+      '$defs': {
+          'Foo': {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+          },
+      },
+  }
+  schema_without_property_ordering = {
+      'type': 'OBJECT',
+      'properties': {
+          'foo': {'type': 'STRING'},
+          'bar': {'type': 'STRING'},
+      },
+  }
+  schema_with_property_ordering = {
+      'type': 'OBJECT',
+      'properties': {
+          'foo': {'type': 'STRING'},
+          'bar': {'type': 'STRING'},
+      },
+      'property_ordering': ['foo', 'bar'],
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
+def test_process_schema_order_properties_propagates_into_items(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to 'items'."""
+  schema = {
+      'type': 'ARRAY',
+      'items': {
+          'type': 'OBJECT',
+          'properties': {
+              'foo': {'type': 'STRING'},
+              'bar': {'type': 'STRING'},
+          },
+      },
+  }
+  schema_without_property_ordering = copy.deepcopy(schema)
+  schema_with_property_ordering = {
+      'type': 'ARRAY',
+      'items': {
+          'type': 'OBJECT',
+          'properties': {
+              'foo': {'type': 'STRING'},
+              'bar': {'type': 'STRING'},
+          },
+          'property_ordering': ['foo', 'bar'],
+      },
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
+def test_process_schema_order_properties_propagates_into_prefix_items(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to 'prefixItems'."""
+  schema = {
+      'type': 'ARRAY',
+      'prefixItems': [
+          {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+          },
+      ],
+  }
+  schema_without_property_ordering = copy.deepcopy(schema)
+  schema_with_property_ordering = {
+      'type': 'ARRAY',
+      'prefixItems': [
+          {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+              'property_ordering': ['foo', 'bar'],
+          },
+      ],
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
+def test_process_schema_order_properties_propagates_into_properties(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to 'properties'."""
+  schema = {
+      'type': 'OBJECT',
+      'properties': {
+          'xyz': {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+          },
+          'abc': {'type': 'STRING'},
+      },
+  }
+  schema_without_property_ordering = copy.deepcopy(schema)
+  schema_with_property_ordering = {
+      'type': 'OBJECT',
+      'properties': {
+          'xyz': {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+              'property_ordering': ['foo', 'bar'],
+          },
+          'abc': {'type': 'STRING'},
+      },
+      'property_ordering': ['xyz', 'abc'],
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
+def test_process_schema_order_properties_propagates_into_additional_properties(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to 'additionalProperties'."""
+  schema = {
+      'type': 'OBJECT',
+      'additionalProperties': {
+          'type': 'OBJECT',
+          'properties': {
+              'foo': {'type': 'STRING'},
+              'bar': {'type': 'STRING'},
+          },
+      },
+  }
+  schema_without_property_ordering = copy.deepcopy(schema)
+  schema_with_property_ordering = {
+      'type': 'OBJECT',
+      'additionalProperties': {
+          'type': 'OBJECT',
+          'properties': {
+              'foo': {'type': 'STRING'},
+              'bar': {'type': 'STRING'},
+          },
+          'property_ordering': ['foo', 'bar'],
+      },
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize(
+    'use_vertex,order_properties',
+    [(False, False), (False, True), (True, False), (True, True)],
+)
+def test_process_schema_order_properties_propagates_into_any_of(
+    client, order_properties
+):
+  """The `order_properties` setting should apply to 'anyOf'."""
+  schema = {
+      'anyOf': [
+          {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+          },
+          {'type': 'STRING'},
+      ]
+  }
+  schema_without_property_ordering = copy.deepcopy(schema)
+  schema_with_property_ordering = {
+      'anyOf': [
+          {
+              'type': 'OBJECT',
+              'properties': {
+                  'foo': {'type': 'STRING'},
+                  'bar': {'type': 'STRING'},
+              },
+              'property_ordering': ['foo', 'bar'],
+          },
+          {'type': 'STRING'},
+      ]
+  }
+
+  _transformers.process_schema(
+      schema, client, order_properties=order_properties
+  )
+
+  if order_properties:
+    assert schema == schema_with_property_ordering
+  else:
+    assert schema == schema_without_property_ordering
+
+
 def test_t_schema_does_not_change_property_ordering_if_set(client):
   """Tests t_schema doesn't overwrite the property_ordering field if already set."""
 
   schema = CountryInfo.model_json_schema()
   custom_property_ordering = ['code', 'symbol', 'name']
-  schema['property_ordering'] = custom_property_ordering
+  schema['property_ordering'] = custom_property_ordering.copy()
 
   transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering == custom_property_ordering
@@ -344,10 +634,5 @@ def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
       title='CountryInfoWithDefaultValue',
   )
 
-  if client.vertexai:
-    transformed_schema = _transformers.t_schema(client, schema)
-    assert transformed_schema.property_ordering is None
-  else:
-    with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client, schema)
-    assert 'Default value is not supported' in str(e)
+  transformed_schema = _transformers.t_schema(client, schema)
+  assert transformed_schema.property_ordering is None

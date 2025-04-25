@@ -31,9 +31,9 @@ logger = logging.getLogger('google_genai.operations')
 
 def _GetOperationParameters_to_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['operation_name']) is not None:
     setv(
@@ -50,9 +50,9 @@ def _GetOperationParameters_to_mldev(
 
 def _GetOperationParameters_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['operation_name']) is not None:
     setv(
@@ -69,9 +69,9 @@ def _GetOperationParameters_to_vertex(
 
 def _FetchPredictOperationParameters_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['operation_name']) is not None:
     setv(to_object, ['operationName'], getv(from_object, ['operation_name']))
@@ -91,9 +91,9 @@ def _FetchPredictOperationParameters_to_vertex(
 
 def _Video_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video', 'uri']) is not None:
     setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
@@ -113,9 +113,9 @@ def _Video_from_mldev(
 
 def _GeneratedVideo_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
@@ -129,9 +129,9 @@ def _GeneratedVideo_from_mldev(
 
 def _GenerateVideosResponse_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['generatedSamples']) is not None:
     setv(
@@ -162,9 +162,9 @@ def _GenerateVideosResponse_from_mldev(
 
 def _GenerateVideosOperation_from_mldev(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -178,8 +178,16 @@ def _GenerateVideosOperation_from_mldev(
   if getv(from_object, ['error']) is not None:
     setv(to_object, ['error'], getv(from_object, ['error']))
 
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
+  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
+    setv(
+        to_object,
+        ['response'],
+        _GenerateVideosResponse_from_mldev(
+            api_client,
+            getv(from_object, ['response', 'generateVideoResponse']),
+            to_object,
+        ),
+    )
 
   if getv(from_object, ['response', 'generateVideoResponse']) is not None:
     setv(
@@ -197,9 +205,9 @@ def _GenerateVideosOperation_from_mldev(
 
 def _Video_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcsUri']) is not None:
     setv(to_object, ['uri'], getv(from_object, ['gcsUri']))
@@ -219,9 +227,9 @@ def _Video_from_vertex(
 
 def _GeneratedVideo_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
@@ -235,9 +243,9 @@ def _GeneratedVideo_from_vertex(
 
 def _GenerateVideosResponse_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['videos']) is not None:
     setv(
@@ -268,9 +276,9 @@ def _GenerateVideosResponse_from_vertex(
 
 def _GenerateVideosOperation_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -285,7 +293,13 @@ def _GenerateVideosOperation_from_vertex(
     setv(to_object, ['error'], getv(from_object, ['error']))
 
   if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
+    setv(
+        to_object,
+        ['response'],
+        _GenerateVideosResponse_from_vertex(
+            api_client, getv(from_object, ['response']), to_object
+        ),
+    )
 
   if getv(from_object, ['response']) is not None:
     setv(
@@ -427,9 +441,6 @@ class Operations(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  @_common.experimental_warning(
-      'This method is experimental and may change in future versions.'
-  )
   def get(
       self,
       operation: types.GenerateVideosOperation,
@@ -600,9 +611,6 @@ class AsyncOperations(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  @_common.experimental_warning(
-      'This method is experimental and may change in future versions.'
-  )
   async def get(
       self,
       operation: types.GenerateVideosOperation,

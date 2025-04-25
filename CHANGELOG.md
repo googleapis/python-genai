@@ -1,5 +1,95 @@
 # Changelog
 
+## [1.12.0](https://github.com/googleapis/python-genai/compare/v1.11.0...v1.12.0) (2025-04-23)
+
+
+### Features
+
+* Add additional realtime input fields ([bef6385](https://github.com/googleapis/python-genai/commit/bef638546d820911172581f0666ae0f1270085f5))
+* Add py.typed so MyPy interprets this as a typed library ([b137b4d](https://github.com/googleapis/python-genai/commit/b137b4dae363045ac1980d10cdda4712a309ef3c))
+* Automatically determine mime_type for Part.from_uri ([b9d3be1](https://github.com/googleapis/python-genai/commit/b9d3be1e87a3e4260c16a3c36e0c728b330f831a))
+* Generate _live_converters.py ([d526a08](https://github.com/googleapis/python-genai/commit/d526a08c6ed5dfee26d1332829cac114f0132d54))
+* Introduce from_json_schema classmethod to Schema class to allow conversion from JSONSchema class object to Schema class object ([899fa1a](https://github.com/googleapis/python-genai/commit/899fa1ae9a9ec7a5cf7d2dfe72267780fcc4fdc8))
+* Support `default` field in Schema when users call Gemini API ([1e56add](https://github.com/googleapis/python-genai/commit/1e56add36c9a1ebcb3499d9f3ea2a9af37edf3cd))
+
+
+### Documentation
+
+* Regenerate docs for 1.11.0 ([473bf4b](https://github.com/googleapis/python-genai/commit/473bf4b6b5a69e5324a5d4bac0fe852351338c43))
+
+## [1.11.0](https://github.com/googleapis/python-genai/compare/v1.10.0...v1.11.0) (2025-04-16)
+
+
+### Features
+
+* Add support for model_selection_config to GenerateContentConfig ([fdb0662](https://github.com/googleapis/python-genai/commit/fdb066288228ca101042ed9b11f783ed0d5f2799))
+* Introduce json_schema quick accessor in Schema class to convert Google's Schema class into JSONSchema class. ([6e55222](https://github.com/googleapis/python-genai/commit/6e55222895a6639d41e54202e3d9a963609a391f))
+* Support audio transcription in Vertex Live API ([9678aba](https://github.com/googleapis/python-genai/commit/9678ababb31282130e3cb9669e3670b627f91d86))
+* Support configuring the underlying httpx client by allowing the caller to pass client arguments via HttpOptions. ([5130e0a](https://github.com/googleapis/python-genai/commit/5130e0a622210400d8d09399a06df55aa4af6a0e))
+* Support RealtimeInputConfig, and language_code in SpeechConfig in python ([807f098](https://github.com/googleapis/python-genai/commit/807f098dedd0f885147fb10db7f79af9230999e0))
+* Support user passing in async function to async generate_content and async generate_content_stream for automatic function calling ([33d190a](https://github.com/googleapis/python-genai/commit/33d190a77a198acfc857eff9677c88ed65e99758))
+* Update VertexRagStore ([c4558e5](https://github.com/googleapis/python-genai/commit/c4558e5f65555d5a5352e4276c714392d594a3fa))
+
+
+### Bug Fixes
+
+* Get SSL_CERT_FILE or SSL_CERT_DIR environment variables for proper SSL handshake in API client. They are not automatically retrieved in httpx ([5782a5f](https://github.com/googleapis/python-genai/commit/5782a5f8a0bd1b3c741ea13b917d7d0091e9e12f))
+* Update tests to use the pro 2.5 model gemini-2.5-pro-preview-03-25 ([fde4a8a](https://github.com/googleapis/python-genai/commit/fde4a8a484a5ab8cd0abadaaf108c552927f1976))
+
+## [1.10.0](https://github.com/googleapis/python-genai/compare/v1.9.0...v1.10.0) (2025-04-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove Part.from_video_metadata
+
+### Features
+
+* Add adapter size 2 for Gemini 2.0 Tuning ([959df89](https://github.com/googleapis/python-genai/commit/959df89e322efd4ed74f1c186a293b6f8fb7ee6e))
+* Add domain to Web GroundingChunk ([9a75d48](https://github.com/googleapis/python-genai/commit/9a75d4885056771625f1af9ae735d61db9e7dc3c))
+* Add session resumption. ([6e80ae7](https://github.com/googleapis/python-genai/commit/6e80ae77eba78607b91429168da20d618af9d3f0))
+* Add thinking_budget to ThinkingConfig for Gemini Thinking Models ([71863e0](https://github.com/googleapis/python-genai/commit/71863e00c187c4eb9a379780f0a871235768a555))
+* Add traffic type to GenerateContentResponseUsageMetadata ([925f983](https://github.com/googleapis/python-genai/commit/925f9836e1a6baf65adb5de5154870c1ec2621db))
+* Add transcription support for MLDev ([c0a1b5c](https://github.com/googleapis/python-genai/commit/c0a1b5cdc169bfed61c69ffd8a08c0bffaaa80ce))
+* Add types for configurable speech detection ([ae4ecee](https://github.com/googleapis/python-genai/commit/ae4ecee9562b71a292b61c63d33853568ab37f14))
+* Add types to support continuous sessions with a sliding window ([7099e1e](https://github.com/googleapis/python-genai/commit/7099e1e99ce9e80a3b1080dcd1141a51e1990fea))
+* Add UsageMetadata to LiveServerMessage ([018846a](https://github.com/googleapis/python-genai/commit/018846ae3e1f73d91522b8606e611152b7f63002))
+* Added support for Context Window Compression ([e5c646c](https://github.com/googleapis/python-genai/commit/e5c646c106407a6c424a5d7fc6d022a395bac430))
+* Populate X-Server-Timeout header when a request timeout is set. ([2af7b67](https://github.com/googleapis/python-genai/commit/2af7b67e811ae2b2e920c090006b2054193b404b))
+* Remove experimental warnings for generate_videos and operations ([fa6007a](https://github.com/googleapis/python-genai/commit/fa6007ae9fb755e7cafb518985c96d54dd572a43))
+* Remove experimental warnings from live api. ([007d1b1](https://github.com/googleapis/python-genai/commit/007d1b15e31000366352449c39679848dd7f622a))
+* Support media resolution ([ef64f8a](https://github.com/googleapis/python-genai/commit/ef64f8a49171f2e05765ed7141d8ee51409a1ac7))
+
+
+### Bug Fixes
+
+* Remove Part.from_video_metadata ([c0947ab](https://github.com/googleapis/python-genai/commit/c0947ab20f75ed1c67985f7a2fdea04a5959de68))
+* Upload file should support timeout (in milliseconds) configuration from http_options per request or from client ([5f3e895](https://github.com/googleapis/python-genai/commit/5f3e895276c94536ed797bcdca7fb913f95ddb01))
+
+
+### Miscellaneous Chores
+
+* Release 1.10.0 ([c136e41](https://github.com/googleapis/python-genai/commit/c136e4164d0c26530871c56653e21fc30caee511))
+
+## [1.9.0](https://github.com/googleapis/python-genai/compare/v1.8.0...v1.9.0) (2025-04-01)
+
+
+### Features
+
+* Add specialized `send` methods to the live api ([9c4e4dc](https://github.com/googleapis/python-genai/commit/9c4e4dcdff508230f635c5d174486b08b87f86c9))
+* Expose generation_complete, input/output_transcription & input/output_audio_transcription to SDK for Vertex Live API ([e5685ad](https://github.com/googleapis/python-genai/commit/e5685adc7a064b511ddb490ef0aaf27f3070775f))
+* Merge GenerationConfig into LiveConnectConfig ([d22535e](https://github.com/googleapis/python-genai/commit/d22535e700178f27e458a02868cd2c06d5470e34))
+
+
+### Bug Fixes
+
+* Make response arg in APIError class constructor optional. [#572](https://github.com/googleapis/python-genai/issues/572) ([7b3f4a4](https://github.com/googleapis/python-genai/commit/7b3f4a4c50646c29293c0196b471b7bf3a29f102))
+
+
+### Documentation
+
+* Docstring improvements ([77f5356](https://github.com/googleapis/python-genai/commit/77f53566bbff3a715d2c7e5e83ada61ffd80ac96))
+
 ## [1.8.0](https://github.com/googleapis/python-genai/compare/v1.7.0...v1.8.0) (2025-03-26)
 
 

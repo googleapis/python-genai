@@ -295,7 +295,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_mldev='not supported',
         ignore_keys=['parsed'],
     ),
 ]
@@ -437,6 +436,36 @@ def test_simple_config(client):
           'max_output_tokens': 3,
           'top_k': 2,
       },
+  )
+  assert response.text
+
+
+def test_model_selection_config_dict(client):
+  if not client.vertexai:
+    return
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me a Taylor Swift lyric and explain its meaning.',
+      config={
+          'model_selection_config': {
+              'feature_selection_preference': 'PRIORITIZE_COST'
+          }
+      },
+  )
+  assert response.text
+
+
+def test_model_selection_config_pydantic(client):
+  if not client.vertexai:
+    return
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me a Taylor Swift lyric and explain its meaning.',
+      config=types.GenerateContentConfig(
+          model_selection_config=types.ModelSelectionConfig(
+              feature_selection_preference=types.FeatureSelectionPreference.PRIORITIZE_QUALITY
+          )
+      ),
   )
   assert response.text
 
@@ -606,27 +635,15 @@ def test_pydantic_schema_with_default_value(client):
     rating: int = 0
     city: Optional[str] = 'New York'
 
-  if client._api_client.vertexai:
-    response = client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='Can you recommend a restaurant for me?',
-        config={
-            'response_mime_type': 'application/json',
-            'response_schema': Restaurant,
-        },
-    )
-    assert isinstance(response.parsed, Restaurant)
-  else:
-    with pytest.raises(ValueError) as e:
-      client.models.generate_content(
-          model='gemini-1.5-flash',
-          contents='Can you recommend a restaurant for me?',
-          config={
-              'response_mime_type': 'application/json',
-              'response_schema': Restaurant,
-          },
-      )
-    assert 'Default value is not supported' in str(e)
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Can you recommend a restaurant for me?',
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': Restaurant,
+      },
+  )
+  assert isinstance(response.parsed, Restaurant)
 
 
 def test_repeated_pydantic_schema(client):
@@ -1940,6 +1957,21 @@ def test_error_handling_unary(client):
         == 'Developer instruction is not enabled for'
         ' models/gemini-2.0-flash-exp-image-generation'
     )
+
+
+def test_provisioned_output_dedicated(client):
+  response = client.models.generate_content(
+      model='gemini-2.0-flash',
+      contents='What is 1 + 1?',
+      config=types.GenerateContentConfig(
+          http_options={'headers': {'X-Vertex-AI-LLM-Request-Type': 'dedicated'}}
+      ),
+  )
+  if client.vertexai:
+    assert response.usage_metadata.traffic_type == types.TrafficType.PROVISIONED_THROUGHPUT
+  else:
+    assert not response.usage_metadata.traffic_type
+
 
 @pytest.mark.asyncio
 async def test_error_handling_unary_async(client):

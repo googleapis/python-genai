@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+from collections.abc import Iterator
 import sys
 from typing import AsyncIterator, Awaitable, Optional, Union, get_args
 
@@ -140,7 +141,7 @@ class _BaseChat:
       model_output: list[Content],
       automatic_function_calling_history: list[Content],
       is_valid: bool,
-  ):
+  ) -> None:
     """Records the chat history.
 
     Maintaining both comprehensive and curated histories.
@@ -282,7 +283,7 @@ class Chat(_BaseChat):
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
       config: Optional[GenerateContentConfigOrDict] = None,
-  ):
+  ) -> Iterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
     Args:
@@ -444,7 +445,7 @@ class AsyncChat(_BaseChat):
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
       config: Optional[GenerateContentConfigOrDict] = None,
-  ) -> Awaitable[AsyncIterator[GenerateContentResponse]]:
+  ) -> AsyncIterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
     Args:
@@ -470,14 +471,14 @@ class AsyncChat(_BaseChat):
       )
     input_content = t.t_content(self._modules._api_client, message)
 
-    async def async_generator():
+    async def async_generator():  # type: ignore[no-untyped-def]
       output_contents = []
       finish_reason = None
       is_valid = True
       chunk = None
-      async for chunk in await self._modules.generate_content_stream(
+      async for chunk in await self._modules.generate_content_stream(  # type: ignore[attr-defined]
           model=self._model,
-          contents=self._curated_history + [input_content],
+          contents=self._curated_history + [input_content],  # type: ignore[arg-type]
           config=config if config else self._config,
       ):
         if not _validate_response(chunk):
@@ -488,13 +489,16 @@ class AsyncChat(_BaseChat):
           finish_reason = chunk.candidates[0].finish_reason
         yield chunk
 
+      if not output_contents or finish_reason is None:
+        is_valid = False
+
       self.record_history(
           user_input=input_content,
           model_output=output_contents,
-          automatic_function_calling_history=chunk.automatic_function_calling_history,
-          is_valid=is_valid and output_contents and finish_reason,
+          automatic_function_calling_history=chunk.automatic_function_calling_history if chunk.automatic_function_calling_history else [],
+          is_valid=is_valid,
       )
-    return async_generator()
+    return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 
 
 class AsyncChats:
