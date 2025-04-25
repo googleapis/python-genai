@@ -627,7 +627,14 @@ def _EmbedContentConfig_to_mldev(
     )
 
   if getv(from_object, ['title']) is not None:
-    setv(parent_object, ['requests[]', 'title'], getv(from_object, ['title']))
+    title = getv(from_object, ['title'])
+    if isinstance(title, list):
+      # If title is a list, set it for each request
+      for i in range(len(title)):
+        setv(parent_object, [f'requests[{i}]', 'title'], title[i])
+    else:
+      # If title is a string, set it for all requests
+      setv(parent_object, ['requests[]', 'title'], title)
 
   if getv(from_object, ['output_dimensionality']) is not None:
     setv(
@@ -1722,7 +1729,14 @@ def _EmbedContentConfig_to_vertex(
     )
 
   if getv(from_object, ['title']) is not None:
-    setv(parent_object, ['instances[]', 'title'], getv(from_object, ['title']))
+    title = getv(from_object, ['title'])
+    if isinstance(title, list):
+      # If title is a list, set it for each instance
+      for i in range(len(title)):
+        setv(parent_object, [f'instances[{i}]', 'title'], title[i])
+    else:
+      # If title is a string, set it for all instances
+      setv(parent_object, ['instances[]', 'title'], title)
 
   if getv(from_object, ['output_dimensionality']) is not None:
     setv(
@@ -6448,7 +6462,6 @@ class AsyncModels(_api_module.BaseModule):
         contents.append(func_response_content)  # type: ignore[arg-type]
       automatic_function_calling_history.append(func_call_content)
       automatic_function_calling_history.append(func_response_content)
-
     if _extra_utils.should_append_afc_history(config) and response is not None:
       response.automatic_function_calling_history = (
           automatic_function_calling_history

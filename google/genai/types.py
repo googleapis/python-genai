@@ -713,6 +713,2020 @@ class Content(_common.BaseModel):
   )
 
 
+class HttpOptions(_common.BaseModel):
+    """HTTP options to be used in each of the requests."""
+
+    base_url: Optional[str] = Field(
+        default=None,
+        description="""The base URL for the API endpoint."""
+    )
+    api_version: Optional[str] = Field(
+        default=None,
+        description="""Specifies the version of the API to use."""
+    )
+    headers: Optional[dict[str, str]] = Field(
+        default=None,
+        description="""Additional HTTP headers to be sent with the request."""
+    )
+    timeout: Optional[int] = Field(
+        default=None,
+        description="""Request timeout in seconds."""
+    )
+
+
+class HttpOptionsDict(TypedDict, total=False):
+    """HTTP options to be used in each of the requests."""
+
+    base_url: Optional[str]
+    """The base URL for the API endpoint."""
+
+    api_version: Optional[str]
+    """Specifies the version of the API to use."""
+
+    headers: Optional[dict[str, str]]
+    """Additional HTTP headers to be sent with the request."""
+
+    timeout: Optional[int]
+    """Request timeout in seconds."""
+
+
+HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
+
+
+class LiveClientContent(_common.BaseModel):
+    """Content for the Live Client."""
+    
+    title: Optional[Union[str, list[str]]] = Field(
+        default=None,
+        description="""The title or list of titles for the content."""
+    )
+    content: Optional[str] = Field(
+        default=None,
+        description="""The actual content."""
+    )
+
+
+class LiveClientContentDict(TypedDict, total=False):
+    """Content for the Live Client."""
+    
+    title: Optional[Union[str, list[str]]]
+    """The title or list of titles for the content."""
+    
+    content: Optional[str]
+    """The actual content."""
+
+
+LiveClientContentOrDict = Union[LiveClientContent, LiveClientContentDict]
+
+
+class LiveClientToolResponse(_common.BaseModel):
+    """Response from a Live Client tool."""
+    
+    response: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="""The response from the tool."""
+    )
+
+
+class LiveClientToolResponseDict(TypedDict, total=False):
+    """Response from a Live Client tool."""
+    
+    response: Optional[dict[str, Any]]
+    """The response from the tool."""
+
+
+LiveClientToolResponseOrDict = Union[LiveClientToolResponse, LiveClientToolResponseDict]
+
+
+class ContentEmbeddingStatistics(_common.BaseModel):
+  """Statistics of the input text associated with the result of content embedding."""
+
+  truncated: Optional[bool] = Field(
+      default=None,
+      description="""Vertex API only. If the input text was truncated due to having
+      a length longer than the allowed maximum input.
+      """,
+  )
+  token_count: Optional[float] = Field(
+      default=None,
+      description="""Vertex API only. Number of tokens of the input text.
+      """,
+  )
+
+
+class ContentEmbeddingStatisticsDict(TypedDict, total=False):
+  """Statistics of the input text associated with the result of content embedding."""
+
+  truncated: Optional[bool]
+  """Vertex API only. If the input text was truncated due to having
+      a length longer than the allowed maximum input.
+      """
+
+  token_count: Optional[float]
+  """Vertex API only. Number of tokens of the input text.
+      """
+
+
+ContentEmbeddingStatisticsOrDict = Union[
+    ContentEmbeddingStatistics, ContentEmbeddingStatisticsDict
+]
+
+
+class ContentEmbedding(_common.BaseModel):
+  """The embedding generated from an input content."""
+
+  values: Optional[list[float]] = Field(
+      default=None,
+      description="""A list of floats representing an embedding.
+      """,
+  )
+  statistics: Optional[ContentEmbeddingStatistics] = Field(
+      default=None,
+      description="""Vertex API only. Statistics of the input text associated with this
+      embedding.
+      """,
+  )
+
+
+class ContentEmbeddingDict(TypedDict, total=False):
+  """The embedding generated from an input content."""
+
+  values: Optional[list[float]]
+  """A list of floats representing an embedding.
+      """
+
+  statistics: Optional[ContentEmbeddingStatisticsDict]
+  """Vertex API only. Statistics of the input text associated with this
+      embedding.
+      """
+
+
+ContentEmbeddingOrDict = Union[ContentEmbedding, ContentEmbeddingDict]
+
+
+class EmbedContentMetadata(_common.BaseModel):
+  """Request-level metadata for the Vertex Embed Content API."""
+
+  billable_character_count: Optional[int] = Field(
+      default=None,
+      description="""Vertex API only. The total number of billable characters included
+      in the request.
+      """,
+  )
+
+
+class EmbedContentMetadataDict(TypedDict, total=False):
+  """Request-level metadata for the Vertex Embed Content API."""
+
+  billable_character_count: Optional[int]
+  """Vertex API only. The total number of billable characters included
+      in the request.
+      """
+
+
+EmbedContentMetadataOrDict = Union[
+    EmbedContentMetadata, EmbedContentMetadataDict
+]
+
+
+class EmbedContentResponse(_common.BaseModel):
+  """Response for the embed_content method."""
+
+  embeddings: Optional[list[ContentEmbedding]] = Field(
+      default=None,
+      description="""The embeddings for each request, in the same order as provided in
+      the batch request.
+      """,
+  )
+  metadata: Optional[EmbedContentMetadata] = Field(
+      default=None,
+      description="""Vertex API only. Metadata about the request.
+      """,
+  )
+
+
+class EmbedContentResponseDict(TypedDict, total=False):
+  """Response for the embed_content method."""
+
+  embeddings: Optional[list[ContentEmbeddingDict]]
+  """The embeddings for each request, in the same order as provided in
+      the batch request.
+      """
+
+  metadata: Optional[EmbedContentMetadataDict]
+  """Vertex API only. Metadata about the request.
+      """
+
+
+EmbedContentResponseOrDict = Union[
+    EmbedContentResponse, EmbedContentResponseDict
+]
+
+
+class GenerateImagesConfig(_common.BaseModel):
+  """The config for generating an images."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  output_gcs_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage URI used to store the generated images.
+      """,
+  )
+  negative_prompt: Optional[str] = Field(
+      default=None,
+      description="""Description of what to discourage in the generated images.
+      """,
+  )
+  number_of_images: Optional[int] = Field(
+      default=None,
+      description="""Number of images to generate.
+      """,
+  )
+  aspect_ratio: Optional[str] = Field(
+      default=None,
+      description="""Aspect ratio of the generated images.
+      """,
+  )
+  guidance_scale: Optional[float] = Field(
+      default=None,
+      description="""Controls how much the model adheres to the text prompt. Large
+      values increase output and prompt alignment, but may compromise image
+      quality.
+      """,
+  )
+  seed: Optional[int] = Field(
+      default=None,
+      description="""Random seed for image generation. This is not available when
+      ``add_watermark`` is set to true.
+      """,
+  )
+  safety_filter_level: Optional[SafetyFilterLevel] = Field(
+      default=None,
+      description="""Filter level for safety filtering.
+      """,
+  )
+  person_generation: Optional[PersonGeneration] = Field(
+      default=None,
+      description="""Allows generation of people by the model.
+      """,
+  )
+  include_safety_attributes: Optional[bool] = Field(
+      default=None,
+      description="""Whether to report the safety scores of each generated image and
+      the positive prompt in the response.
+      """,
+  )
+  include_rai_reason: Optional[bool] = Field(
+      default=None,
+      description="""Whether to include the Responsible AI filter reason if the image
+      is filtered out of the response.
+      """,
+  )
+  language: Optional[ImagePromptLanguage] = Field(
+      default=None,
+      description="""Language of the text in the prompt.
+      """,
+  )
+  output_mime_type: Optional[str] = Field(
+      default=None,
+      description="""MIME type of the generated image.
+      """,
+  )
+  output_compression_quality: Optional[int] = Field(
+      default=None,
+      description="""Compression quality of the generated image (for ``image/jpeg``
+      only).
+      """,
+  )
+  add_watermark: Optional[bool] = Field(
+      default=None,
+      description="""Whether to add a watermark to the generated images.
+      """,
+  )
+  enhance_prompt: Optional[bool] = Field(
+      default=None,
+      description="""Whether to use the prompt rewriting logic.
+      """,
+  )
+
+
+class GenerateImagesConfigDict(TypedDict, total=False):
+  """The config for generating an images."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  output_gcs_uri: Optional[str]
+  """Cloud Storage URI used to store the generated images.
+      """
+
+  negative_prompt: Optional[str]
+  """Description of what to discourage in the generated images.
+      """
+
+  number_of_images: Optional[int]
+  """Number of images to generate.
+      """
+
+  aspect_ratio: Optional[str]
+  """Aspect ratio of the generated images.
+      """
+
+  guidance_scale: Optional[float]
+  """Controls how much the model adheres to the text prompt. Large
+      values increase output and prompt alignment, but may compromise image
+      quality.
+      """
+
+  seed: Optional[int]
+  """Random seed for image generation. This is not available when
+      ``add_watermark`` is set to true.
+      """
+
+  safety_filter_level: Optional[SafetyFilterLevel]
+  """Filter level for safety filtering.
+      """
+
+  person_generation: Optional[PersonGeneration]
+  """Allows generation of people by the model.
+      """
+
+  include_safety_attributes: Optional[bool]
+  """Whether to report the safety scores of each generated image and
+      the positive prompt in the response.
+      """
+
+  include_rai_reason: Optional[bool]
+  """Whether to include the Responsible AI filter reason if the image
+      is filtered out of the response.
+      """
+
+  language: Optional[ImagePromptLanguage]
+  """Language of the text in the prompt.
+      """
+
+  output_mime_type: Optional[str]
+  """MIME type of the generated image.
+      """
+
+  output_compression_quality: Optional[int]
+  """Compression quality of the generated image (for ``image/jpeg``
+      only).
+      """
+
+  add_watermark: Optional[bool]
+  """Whether to add a watermark to the generated images.
+      """
+
+  enhance_prompt: Optional[bool]
+  """Whether to use the prompt rewriting logic.
+      """
+
+
+GenerateImagesConfigOrDict = Union[
+    GenerateImagesConfig, GenerateImagesConfigDict
+]
+
+
+class _GenerateImagesParameters(_common.BaseModel):
+  """The parameters for generating images."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  prompt: Optional[str] = Field(
+      default=None,
+      description="""Text prompt that typically describes the images to output.
+      """,
+  )
+  config: Optional[GenerateImagesConfig] = Field(
+      default=None,
+      description="""Configuration for generating images.
+      """,
+  )
+
+
+class _GenerateImagesParametersDict(TypedDict, total=False):
+  """The parameters for generating images."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  prompt: Optional[str]
+  """Text prompt that typically describes the images to output.
+      """
+
+  config: Optional[GenerateImagesConfigDict]
+  """Configuration for generating images.
+      """
+
+
+_GenerateImagesParametersOrDict = Union[
+    _GenerateImagesParameters, _GenerateImagesParametersDict
+]
+
+
+class Image(_common.BaseModel):
+  """An image."""
+
+  gcs_uri: Optional[str] = Field(
+      default=None,
+      description="""The Cloud Storage URI of the image. ``Image`` can contain a value
+      for this field or the ``image_bytes`` field but not both.
+      """,
+  )
+  image_bytes: Optional[bytes] = Field(
+      default=None,
+      description="""The image bytes data. ``Image`` can contain a value for this field
+      or the ``gcs_uri`` field but not both.
+      """,
+  )
+  mime_type: Optional[str] = Field(
+      default=None, description="""The MIME type of the image."""
+  )
+
+  _loaded_image = None
+
+  """Image."""
+
+  @classmethod
+  def from_file(
+      cls, *, location: str, mime_type: Optional[str] = None
+  ) -> 'Image':
+    """Lazy-loads an image from a local file or Google Cloud Storage.
+
+    Args:
+        location: The local path or Google Cloud Storage URI from which to load
+          the image.
+        mime_type: The MIME type of the image. If not provided, the MIME type
+          will be automatically determined.
+
+    Returns:
+        A loaded image as an `Image` object.
+    """
+    import urllib
+    import pathlib
+    import mimetypes
+
+    parsed_url = urllib.parse.urlparse(location)
+    if (
+        parsed_url.scheme == 'https'
+        and parsed_url.netloc == 'storage.googleapis.com'
+    ):
+      parsed_url = parsed_url._replace(
+          scheme='gs',
+          netloc='',
+          path=f'/{urllib.parse.unquote(parsed_url.path)}',
+      )
+      location = urllib.parse.urlunparse(parsed_url)
+
+    if parsed_url.scheme == 'gs':
+      return cls(gcs_uri=location)
+
+    # Load image from local path
+    image_bytes = pathlib.Path(location).read_bytes()
+
+    if not mime_type:
+      mime_type, _ = mimetypes.guess_type(location)
+    image = cls(image_bytes=image_bytes, mime_type=mime_type)
+    return image
+
+  def show(self):
+    """Shows the image.
+
+    This method only works in a notebook environment.
+    """
+    try:
+      from IPython import display as IPython_display
+    except ImportError:
+      IPython_display = None
+
+    if IPython_display:
+      IPython_display.display(self._pil_image)
+
+  @property
+  def _pil_image(self) -> 'PIL_Image':
+    PIL_Image: Optional[builtin_types.ModuleType]
+    try:
+      from PIL import Image as PIL_Image
+    except ImportError:
+      PIL_Image = None
+    import io
+
+    if self._loaded_image is None:
+      if not PIL_Image:
+        raise RuntimeError(
+            'The PIL module is not available. Please install the Pillow'
+            ' package. `pip install pillow`'
+        )
+      if self.image_bytes is None:
+        raise ValueError('The image bytes are not set.')
+      self._loaded_image = PIL_Image.open(io.BytesIO(self.image_bytes))
+    return self._loaded_image
+
+  def save(self, location: str):
+    """Saves the image to a file.
+
+    Args:
+        location: Local path where to save the image.
+    """
+    import pathlib
+
+    if self.image_bytes is None:
+      raise ValueError('The image bytes are not set.')
+    pathlib.Path(location).write_bytes(self.image_bytes)
+
+
+JOB_STATES_SUCCEEDED_VERTEX = [
+    'JOB_STATE_SUCCEEDED',
+]
+
+JOB_STATES_SUCCEEDED_MLDEV = [
+    'ACTIVE',
+]
+
+JOB_STATES_SUCCEEDED = JOB_STATES_SUCCEEDED_VERTEX + JOB_STATES_SUCCEEDED_MLDEV
+
+
+JOB_STATES_ENDED_VERTEX = [
+    'JOB_STATE_SUCCEEDED',
+    'JOB_STATE_FAILED',
+    'JOB_STATE_CANCELLED',
+    'JOB_STATE_EXPIRED',
+]
+
+JOB_STATES_ENDED_MLDEV = [
+    'ACTIVE',
+    'FAILED',
+]
+
+JOB_STATES_ENDED = JOB_STATES_ENDED_VERTEX + JOB_STATES_ENDED_MLDEV
+
+
+class ImageDict(TypedDict, total=False):
+  """An image."""
+
+  gcs_uri: Optional[str]
+  """The Cloud Storage URI of the image. ``Image`` can contain a value
+      for this field or the ``image_bytes`` field but not both.
+      """
+
+  image_bytes: Optional[bytes]
+  """The image bytes data. ``Image`` can contain a value for this field
+      or the ``gcs_uri`` field but not both.
+      """
+
+  mime_type: Optional[str]
+  """The MIME type of the image."""
+
+
+ImageOrDict = Union[Image, ImageDict]
+
+
+class SafetyAttributes(_common.BaseModel):
+  """Safety attributes of a GeneratedImage or the user-provided prompt."""
+
+  categories: Optional[list[str]] = Field(
+      default=None,
+      description="""List of RAI categories.
+      """,
+  )
+  scores: Optional[list[float]] = Field(
+      default=None,
+      description="""List of scores of each categories.
+      """,
+  )
+  content_type: Optional[str] = Field(
+      default=None,
+      description="""Internal use only.
+      """,
+  )
+
+
+class SafetyAttributesDict(TypedDict, total=False):
+  """Safety attributes of a GeneratedImage or the user-provided prompt."""
+
+  categories: Optional[list[str]]
+  """List of RAI categories.
+      """
+
+  scores: Optional[list[float]]
+  """List of scores of each categories.
+      """
+
+  content_type: Optional[str]
+  """Internal use only.
+      """
+
+
+SafetyAttributesOrDict = Union[SafetyAttributes, SafetyAttributesDict]
+
+
+class GeneratedImage(_common.BaseModel):
+  """An output image."""
+
+  image: Optional[Image] = Field(
+      default=None,
+      description="""The output image data.
+      """,
+  )
+  rai_filtered_reason: Optional[str] = Field(
+      default=None,
+      description="""Responsible AI filter reason if the image is filtered out of the
+      response.
+      """,
+  )
+  safety_attributes: Optional[SafetyAttributes] = Field(
+      default=None,
+      description="""Safety attributes of the image. Lists of RAI categories and their
+      scores of each content.
+      """,
+  )
+  enhanced_prompt: Optional[str] = Field(
+      default=None,
+      description="""The rewritten prompt used for the image generation if the prompt
+      enhancer is enabled.
+      """,
+  )
+
+
+class GeneratedImageDict(TypedDict, total=False):
+  """An output image."""
+
+  image: Optional[ImageDict]
+  """The output image data.
+      """
+
+  rai_filtered_reason: Optional[str]
+  """Responsible AI filter reason if the image is filtered out of the
+      response.
+      """
+
+  safety_attributes: Optional[SafetyAttributesDict]
+  """Safety attributes of the image. Lists of RAI categories and their
+      scores of each content.
+      """
+
+  enhanced_prompt: Optional[str]
+  """The rewritten prompt used for the image generation if the prompt
+      enhancer is enabled.
+      """
+
+
+GeneratedImageOrDict = Union[GeneratedImage, GeneratedImageDict]
+
+
+class GenerateImagesResponse(_common.BaseModel):
+  """The output images response."""
+
+  generated_images: Optional[list[GeneratedImage]] = Field(
+      default=None,
+      description="""List of generated images.
+      """,
+  )
+  positive_prompt_safety_attributes: Optional[SafetyAttributes] = Field(
+      default=None,
+      description="""Safety attributes of the positive prompt. Only populated if
+      ``include_safety_attributes`` is set to True.
+      """,
+  )
+
+
+class GenerateImagesResponseDict(TypedDict, total=False):
+  """The output images response."""
+
+  generated_images: Optional[list[GeneratedImageDict]]
+  """List of generated images.
+      """
+
+  positive_prompt_safety_attributes: Optional[SafetyAttributesDict]
+  """Safety attributes of the positive prompt. Only populated if
+      ``include_safety_attributes`` is set to True.
+      """
+
+
+GenerateImagesResponseOrDict = Union[
+    GenerateImagesResponse, GenerateImagesResponseDict
+]
+
+
+class MaskReferenceConfig(_common.BaseModel):
+  """Configuration for a Mask reference image."""
+
+  mask_mode: Optional[MaskReferenceMode] = Field(
+      default=None,
+      description="""Prompts the model to generate a mask instead of you needing to
+      provide one (unless MASK_MODE_USER_PROVIDED is used).""",
+  )
+  segmentation_classes: Optional[list[int]] = Field(
+      default=None,
+      description="""A list of up to 5 class ids to use for semantic segmentation.
+      Automatically creates an image mask based on specific objects.""",
+  )
+  mask_dilation: Optional[float] = Field(
+      default=None,
+      description="""Dilation percentage of the mask provided.
+      Float between 0 and 1.""",
+  )
+
+
+class MaskReferenceConfigDict(TypedDict, total=False):
+  """Configuration for a Mask reference image."""
+
+  mask_mode: Optional[MaskReferenceMode]
+  """Prompts the model to generate a mask instead of you needing to
+      provide one (unless MASK_MODE_USER_PROVIDED is used)."""
+
+  segmentation_classes: Optional[list[int]]
+  """A list of up to 5 class ids to use for semantic segmentation.
+      Automatically creates an image mask based on specific objects."""
+
+  mask_dilation: Optional[float]
+  """Dilation percentage of the mask provided.
+      Float between 0 and 1."""
+
+
+MaskReferenceConfigOrDict = Union[MaskReferenceConfig, MaskReferenceConfigDict]
+
+
+class ControlReferenceConfig(_common.BaseModel):
+  """Configuration for a Control reference image."""
+
+  control_type: Optional[ControlReferenceType] = Field(
+      default=None,
+      description="""The type of control reference image to use.""",
+  )
+  enable_control_image_computation: Optional[bool] = Field(
+      default=None,
+      description="""Defaults to False. When set to True, the control image will be
+      computed by the model based on the control type. When set to False,
+      the control image must be provided by the user.""",
+  )
+
+
+class ControlReferenceConfigDict(TypedDict, total=False):
+  """Configuration for a Control reference image."""
+
+  control_type: Optional[ControlReferenceType]
+  """The type of control reference image to use."""
+
+  enable_control_image_computation: Optional[bool]
+  """Defaults to False. When set to True, the control image will be
+      computed by the model based on the control type. When set to False,
+      the control image must be provided by the user."""
+
+
+ControlReferenceConfigOrDict = Union[
+    ControlReferenceConfig, ControlReferenceConfigDict
+]
+
+
+class StyleReferenceConfig(_common.BaseModel):
+  """Configuration for a Style reference image."""
+
+  style_description: Optional[str] = Field(
+      default=None,
+      description="""A text description of the style to use for the generated image.""",
+  )
+
+
+class StyleReferenceConfigDict(TypedDict, total=False):
+  """Configuration for a Style reference image."""
+
+  style_description: Optional[str]
+  """A text description of the style to use for the generated image."""
+
+
+StyleReferenceConfigOrDict = Union[
+    StyleReferenceConfig, StyleReferenceConfigDict
+]
+
+
+class SubjectReferenceConfig(_common.BaseModel):
+  """Configuration for a Subject reference image."""
+
+  subject_type: Optional[SubjectReferenceType] = Field(
+      default=None,
+      description="""The subject type of a subject reference image.""",
+  )
+  subject_description: Optional[str] = Field(
+      default=None, description="""Subject description for the image."""
+  )
+
+
+class SubjectReferenceConfigDict(TypedDict, total=False):
+  """Configuration for a Subject reference image."""
+
+  subject_type: Optional[SubjectReferenceType]
+  """The subject type of a subject reference image."""
+
+  subject_description: Optional[str]
+  """Subject description for the image."""
+
+
+SubjectReferenceConfigOrDict = Union[
+    SubjectReferenceConfig, SubjectReferenceConfigDict
+]
+
+
+class _ReferenceImageAPI(_common.BaseModel):
+  """Private class that represents a Reference image that is sent to API."""
+
+  reference_image: Optional[Image] = Field(
+      default=None,
+      description="""The reference image for the editing operation.""",
+  )
+  reference_id: Optional[int] = Field(
+      default=None, description="""The id of the reference image."""
+  )
+  reference_type: Optional[str] = Field(
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
+  )
+  mask_image_config: Optional[MaskReferenceConfig] = Field(
+      default=None,
+      description="""Configuration for the mask reference image.""",
+  )
+  control_image_config: Optional[ControlReferenceConfig] = Field(
+      default=None,
+      description="""Configuration for the control reference image.""",
+  )
+  style_image_config: Optional[StyleReferenceConfig] = Field(
+      default=None,
+      description="""Configuration for the style reference image.""",
+  )
+  subject_image_config: Optional[SubjectReferenceConfig] = Field(
+      default=None,
+      description="""Configuration for the subject reference image.""",
+  )
+
+
+class _ReferenceImageAPIDict(TypedDict, total=False):
+  """Private class that represents a Reference image that is sent to API."""
+
+  reference_image: Optional[ImageDict]
+  """The reference image for the editing operation."""
+
+  reference_id: Optional[int]
+  """The id of the reference image."""
+
+  reference_type: Optional[str]
+  """The type of the reference image. Only set by the SDK."""
+
+  mask_image_config: Optional[MaskReferenceConfigDict]
+  """Configuration for the mask reference image."""
+
+  control_image_config: Optional[ControlReferenceConfigDict]
+  """Configuration for the control reference image."""
+
+  style_image_config: Optional[StyleReferenceConfigDict]
+  """Configuration for the style reference image."""
+
+  subject_image_config: Optional[SubjectReferenceConfigDict]
+  """Configuration for the subject reference image."""
+
+
+_ReferenceImageAPIOrDict = Union[_ReferenceImageAPI, _ReferenceImageAPIDict]
+
+
+class DatasetDistributionDict(TypedDict, total=False):
+  """Distribution computed over a tuning dataset."""
+
+  buckets: Optional[list[DatasetDistributionDistributionBucketDict]]
+  """Output only. Defines the histogram bucket."""
+
+  max: Optional[float]
+  """Output only. The maximum of the population values."""
+
+  mean: Optional[float]
+  """Output only. The arithmetic mean of the values in the population."""
+
+  median: Optional[float]
+  """Output only. The median of the values in the population."""
+
+  min: Optional[float]
+  """Output only. The minimum of the population values."""
+
+  p5: Optional[float]
+  """Output only. The 5th percentile of the values in the population."""
+
+  p95: Optional[float]
+  """Output only. The 95th percentile of the values in the population."""
+
+  sum: Optional[float]
+  """Output only. Sum of a given population of values."""
+
+
+DatasetDistributionOrDict = Union[DatasetDistribution, DatasetDistributionDict]
+
+
+class DatasetStats(_common.BaseModel):
+  """Statistics computed over a tuning dataset."""
+
+  total_billable_character_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of billable characters in the tuning dataset.""",
+  )
+  total_tuning_character_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tuning characters in the tuning dataset.""",
+  )
+  tuning_dataset_example_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of examples in the tuning dataset.""",
+  )
+  tuning_step_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tuning steps for this Tuning Job.""",
+  )
+  user_dataset_examples: Optional[list[Content]] = Field(
+      default=None,
+      description="""Output only. Sample user messages in the training dataset uri.""",
+  )
+  user_input_token_distribution: Optional[DatasetDistribution] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the user input tokens.""",
+  )
+  user_message_per_example_distribution: Optional[DatasetDistribution] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the messages per example.""",
+  )
+  user_output_token_distribution: Optional[DatasetDistribution] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the user output tokens.""",
+  )
+
+
+class DatasetStatsDict(TypedDict, total=False):
+  """Statistics computed over a tuning dataset."""
+
+  total_billable_character_count: Optional[int]
+  """Output only. Number of billable characters in the tuning dataset."""
+
+  total_tuning_character_count: Optional[int]
+  """Output only. Number of tuning characters in the tuning dataset."""
+
+  tuning_dataset_example_count: Optional[int]
+  """Output only. Number of examples in the tuning dataset."""
+
+  tuning_step_count: Optional[int]
+  """Output only. Number of tuning steps for this Tuning Job."""
+
+  user_dataset_examples: Optional[list[ContentDict]]
+  """Output only. Sample user messages in the training dataset uri."""
+
+  user_input_token_distribution: Optional[DatasetDistributionDict]
+  """Output only. Dataset distributions for the user input tokens."""
+
+  user_message_per_example_distribution: Optional[DatasetDistributionDict]
+  """Output only. Dataset distributions for the messages per example."""
+
+  user_output_token_distribution: Optional[DatasetDistributionDict]
+  """Output only. Dataset distributions for the user output tokens."""
+
+
+DatasetStatsOrDict = Union[DatasetStats, DatasetStatsDict]
+
+
+class DistillationDataStats(_common.BaseModel):
+  """Statistics computed for datasets used for distillation."""
+
+  training_dataset_stats: Optional[DatasetStats] = Field(
+      default=None,
+      description="""Output only. Statistics computed for the training dataset.""",
+  )
+
+
+class DistillationDataStatsDict(TypedDict, total=False):
+  """Statistics computed for datasets used for distillation."""
+
+  training_dataset_stats: Optional[DatasetStatsDict]
+  """Output only. Statistics computed for the training dataset."""
+
+
+DistillationDataStatsOrDict = Union[
+    DistillationDataStats, DistillationDataStatsDict
+]
+
+
+class SupervisedTuningDatasetDistributionDatasetBucket(_common.BaseModel):
+  """Dataset bucket used to create a histogram for the distribution given a population of values."""
+
+  count: Optional[float] = Field(
+      default=None,
+      description="""Output only. Number of values in the bucket.""",
+  )
+  left: Optional[float] = Field(
+      default=None, description="""Output only. Left bound of the bucket."""
+  )
+  right: Optional[float] = Field(
+      default=None, description="""Output only. Right bound of the bucket."""
+  )
+
+
+class SupervisedTuningDatasetDistributionDatasetBucketDict(
+    TypedDict, total=False
+):
+  """Dataset bucket used to create a histogram for the distribution given a population of values."""
+
+  count: Optional[float]
+  """Output only. Number of values in the bucket."""
+
+  left: Optional[float]
+  """Output only. Left bound of the bucket."""
+
+  right: Optional[float]
+  """Output only. Right bound of the bucket."""
+
+
+SupervisedTuningDatasetDistributionDatasetBucketOrDict = Union[
+    SupervisedTuningDatasetDistributionDatasetBucket,
+    SupervisedTuningDatasetDistributionDatasetBucketDict,
+]
+
+
+class SupervisedTuningDatasetDistribution(_common.BaseModel):
+  """Dataset distribution for Supervised Tuning."""
+
+  billable_sum: Optional[int] = Field(
+      default=None,
+      description="""Output only. Sum of a given population of values that are billable.""",
+  )
+  buckets: Optional[list[SupervisedTuningDatasetDistributionDatasetBucket]] = (
+      Field(
+          default=None,
+          description="""Output only. Defines the histogram bucket.""",
+      )
+  )
+  max: Optional[float] = Field(
+      default=None,
+      description="""Output only. The maximum of the population values.""",
+  )
+  mean: Optional[float] = Field(
+      default=None,
+      description="""Output only. The arithmetic mean of the values in the population.""",
+  )
+  median: Optional[float] = Field(
+      default=None,
+      description="""Output only. The median of the values in the population.""",
+  )
+  min: Optional[float] = Field(
+      default=None,
+      description="""Output only. The minimum of the population values.""",
+  )
+  p5: Optional[float] = Field(
+      default=None,
+      description="""Output only. The 5th percentile of the values in the population.""",
+  )
+  p95: Optional[float] = Field(
+      default=None,
+      description="""Output only. The 95th percentile of the values in the population.""",
+  )
+  sum: Optional[int] = Field(
+      default=None,
+      description="""Output only. Sum of a given population of values.""",
+  )
+
+
+class SupervisedTuningDatasetDistributionDict(TypedDict, total=False):
+  """Dataset distribution for Supervised Tuning."""
+
+  billable_sum: Optional[int]
+  """Output only. Sum of a given population of values that are billable."""
+
+  buckets: Optional[list[SupervisedTuningDatasetDistributionDatasetBucketDict]]
+  """Output only. Defines the histogram bucket."""
+
+  max: Optional[float]
+  """Output only. The maximum of the population values."""
+
+  mean: Optional[float]
+  """Output only. The arithmetic mean of the values in the population."""
+
+  median: Optional[float]
+  """Output only. The median of the values in the population."""
+
+  min: Optional[float]
+  """Output only. The minimum of the population values."""
+
+  p5: Optional[float]
+  """Output only. The 5th percentile of the values in the population."""
+
+  p95: Optional[float]
+  """Output only. The 95th percentile of the values in the population."""
+
+  sum: Optional[int]
+  """Output only. Sum of a given population of values."""
+
+
+SupervisedTuningDatasetDistributionOrDict = Union[
+    SupervisedTuningDatasetDistribution, SupervisedTuningDatasetDistributionDict
+]
+
+
+class SupervisedTuningDataStats(_common.BaseModel):
+  """Tuning data statistics for Supervised Tuning."""
+
+  total_billable_character_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of billable characters in the tuning dataset.""",
+  )
+  total_billable_token_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of billable tokens in the tuning dataset.""",
+  )
+  total_truncated_example_count: Optional[int] = Field(
+      default=None,
+      description="""The number of examples in the dataset that have been truncated by any amount.""",
+  )
+  total_tuning_character_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tuning characters in the tuning dataset.""",
+  )
+  truncated_example_indices: Optional[list[int]] = Field(
+      default=None,
+      description="""A partial sample of the indices (starting from 1) of the truncated examples.""",
+  )
+  tuning_dataset_example_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of examples in the tuning dataset.""",
+  )
+  tuning_step_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tuning steps for this Tuning Job.""",
+  )
+  user_dataset_examples: Optional[list[Content]] = Field(
+      default=None,
+      description="""Output only. Sample user messages in the training dataset uri.""",
+  )
+  user_input_token_distribution: Optional[
+      SupervisedTuningDatasetDistribution
+  ] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the user input tokens.""",
+  )
+  user_message_per_example_distribution: Optional[
+      SupervisedTuningDatasetDistribution
+  ] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the messages per example.""",
+  )
+  user_output_token_distribution: Optional[
+      SupervisedTuningDatasetDistribution
+  ] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the user output tokens.""",
+  )
+
+
+class SupervisedTuningDataStatsDict(TypedDict, total=False):
+  """Tuning data statistics for Supervised Tuning."""
+
+  total_billable_character_count: Optional[int]
+  """Output only. Number of billable characters in the tuning dataset."""
+
+  total_billable_token_count: Optional[int]
+  """Output only. Number of billable tokens in the tuning dataset."""
+
+  total_truncated_example_count: Optional[int]
+  """The number of examples in the dataset that have been truncated by any amount."""
+
+  total_tuning_character_count: Optional[int]
+  """Output only. Number of tuning characters in the tuning dataset."""
+
+  truncated_example_indices: Optional[list[int]]
+  """A partial sample of the indices (starting from 1) of the truncated examples."""
+
+  tuning_dataset_example_count: Optional[int]
+  """Output only. Number of examples in the tuning dataset."""
+
+  tuning_step_count: Optional[int]
+  """Output only. Number of tuning steps for this Tuning Job."""
+
+  user_dataset_examples: Optional[list[ContentDict]]
+  """Output only. Sample user messages in the training dataset uri."""
+
+  user_input_token_distribution: Optional[
+      SupervisedTuningDatasetDistributionDict
+  ]
+  """Output only. Dataset distributions for the user input tokens."""
+
+  user_message_per_example_distribution: Optional[
+      SupervisedTuningDatasetDistributionDict
+  ]
+  """Output only. Dataset distributions for the messages per example."""
+
+  user_output_token_distribution: Optional[
+      SupervisedTuningDatasetDistributionDict
+  ]
+  """Output only. Dataset distributions for the user output tokens."""
+
+
+SupervisedTuningDataStatsOrDict = Union[
+    SupervisedTuningDataStats, SupervisedTuningDataStatsDict
+]
+
+
+class TuningDataStats(_common.BaseModel):
+  """The tuning data statistic values for TuningJob."""
+
+  distillation_data_stats: Optional[DistillationDataStats] = Field(
+      default=None, description="""Output only. Statistics for distillation."""
+  )
+  supervised_tuning_data_stats: Optional[SupervisedTuningDataStats] = Field(
+      default=None, description="""The SFT Tuning data stats."""
+  )
+
+
+class TuningDataStatsDict(TypedDict, total=False):
+  """The tuning data statistic values for TuningJob."""
+
+  distillation_data_stats: Optional[DistillationDataStatsDict]
+  """Output only. Statistics for distillation."""
+
+  supervised_tuning_data_stats: Optional[SupervisedTuningDataStatsDict]
+  """The SFT Tuning data stats."""
+
+
+TuningDataStatsOrDict = Union[TuningDataStats, TuningDataStatsDict]
+
+
+class EncryptionSpec(_common.BaseModel):
+  """Represents a customer-managed encryption key spec that can be applied to a top-level resource."""
+
+  kms_key_name: Optional[str] = Field(
+      default=None,
+      description="""Required. The Cloud KMS resource identifier of the customer managed encryption key used to protect a resource. Has the form: `projects/my-project/locations/my-region/keyRings/my-kr/cryptoKeys/my-key`. The key needs to be in the same region as where the compute resource is created.""",
+  )
+
+
+class EncryptionSpecDict(TypedDict, total=False):
+  """Represents a customer-managed encryption key spec that can be applied to a top-level resource."""
+
+  kms_key_name: Optional[str]
+  """Required. The Cloud KMS resource identifier of the customer managed encryption key used to protect a resource. Has the form: `projects/my-project/locations/my-region/keyRings/my-kr/cryptoKeys/my-key`. The key needs to be in the same region as where the compute resource is created."""
+
+
+EncryptionSpecOrDict = Union[EncryptionSpec, EncryptionSpecDict]
+
+
+class PartnerModelTuningSpec(_common.BaseModel):
+  """Tuning spec for Partner models."""
+
+  hyper_parameters: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Hyperparameters for tuning. The accepted hyper_parameters and their valid range of values will differ depending on the base model.""",
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+class PartnerModelTuningSpecDict(TypedDict, total=False):
+  """Tuning spec for Partner models."""
+
+  hyper_parameters: Optional[dict[str, Any]]
+  """Hyperparameters for tuning. The accepted hyper_parameters and their valid range of values will differ depending on the base model."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+PartnerModelTuningSpecOrDict = Union[
+    PartnerModelTuningSpec, PartnerModelTuningSpecDict
+]
+
+
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Code generated by the Google Gen AI SDK generator DO NOT EDIT.
+
+import datetime
+from enum import Enum, EnumMeta
+import inspect
+import json
+import logging
+import sys
+import types as builtin_types
+import typing
+from typing import Any, Callable, Literal, Optional, Union, _UnionGenericAlias  # type: ignore
+import pydantic
+from pydantic import Field
+from typing_extensions import TypedDict
+from . import _common
+
+if sys.version_info >= (3, 10):
+  # Supports both Union[t1, t2] and t1 | t2
+  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
+else:
+  # Supports only Union[t1, t2]
+  VersionedUnionType = _UnionGenericAlias
+  _UNION_TYPES = (typing.Union,)
+
+_is_pillow_image_imported = False
+if typing.TYPE_CHECKING:
+  import PIL.Image
+
+  PIL_Image = PIL.Image.Image
+  _is_pillow_image_imported = True
+else:
+  PIL_Image: typing.Type = Any
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+    _is_pillow_image_imported = True
+  except ImportError:
+    PIL_Image = None
+
+logger = logging.getLogger('google_genai.types')
+
+T = typing.TypeVar('T', bound='GenerateContentResponse')
+
+
+class Outcome(_common.CaseInSensitiveEnum):
+  """Required. Outcome of the code execution."""
+
+  OUTCOME_UNSPECIFIED = 'OUTCOME_UNSPECIFIED'
+  OUTCOME_OK = 'OUTCOME_OK'
+  OUTCOME_FAILED = 'OUTCOME_FAILED'
+  OUTCOME_DEADLINE_EXCEEDED = 'OUTCOME_DEADLINE_EXCEEDED'
+
+
+class Language(_common.CaseInSensitiveEnum):
+  """Required. Programming language of the `code`."""
+
+  LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
+  PYTHON = 'PYTHON'
+
+
+class Type(_common.CaseInSensitiveEnum):
+  """Optional. The type of the data."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  STRING = 'STRING'
+  NUMBER = 'NUMBER'
+  INTEGER = 'INTEGER'
+  BOOLEAN = 'BOOLEAN'
+  ARRAY = 'ARRAY'
+  OBJECT = 'OBJECT'
+
+
+class HarmCategory(_common.CaseInSensitiveEnum):
+  """Required. Harm category."""
+
+  HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
+  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
+  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
+  HARM_CATEGORY_HARASSMENT = 'HARM_CATEGORY_HARASSMENT'
+  HARM_CATEGORY_SEXUALLY_EXPLICIT = 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
+  HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
+
+
+class HarmBlockMethod(_common.CaseInSensitiveEnum):
+  """Optional.
+
+  Specify if the threshold is used for probability or severity score. If not
+  specified, the threshold is used for probability score.
+  """
+
+  HARM_BLOCK_METHOD_UNSPECIFIED = 'HARM_BLOCK_METHOD_UNSPECIFIED'
+  SEVERITY = 'SEVERITY'
+  PROBABILITY = 'PROBABILITY'
+
+
+class HarmBlockThreshold(_common.CaseInSensitiveEnum):
+  """Required. The harm block threshold."""
+
+  HARM_BLOCK_THRESHOLD_UNSPECIFIED = 'HARM_BLOCK_THRESHOLD_UNSPECIFIED'
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
+  OFF = 'OFF'
+
+
+class Mode(_common.CaseInSensitiveEnum):
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
+
+
+class State(_common.CaseInSensitiveEnum):
+  """Output only. RagFile state."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  ACTIVE = 'ACTIVE'
+  ERROR = 'ERROR'
+
+
+class FinishReason(_common.CaseInSensitiveEnum):
+  """Output only. The reason why the model stopped generating tokens.
+
+  If empty, the model has not stopped generating the tokens.
+  """
+
+  FINISH_REASON_UNSPECIFIED = 'FINISH_REASON_UNSPECIFIED'
+  STOP = 'STOP'
+  MAX_TOKENS = 'MAX_TOKENS'
+  SAFETY = 'SAFETY'
+  RECITATION = 'RECITATION'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+  SPII = 'SPII'
+  MALFORMED_FUNCTION_CALL = 'MALFORMED_FUNCTION_CALL'
+  IMAGE_SAFETY = 'IMAGE_SAFETY'
+
+
+class HarmProbability(_common.CaseInSensitiveEnum):
+  """Output only. Harm probability levels in the content."""
+
+  HARM_PROBABILITY_UNSPECIFIED = 'HARM_PROBABILITY_UNSPECIFIED'
+  NEGLIGIBLE = 'NEGLIGIBLE'
+  LOW = 'LOW'
+  MEDIUM = 'MEDIUM'
+  HIGH = 'HIGH'
+
+
+class HarmSeverity(_common.CaseInSensitiveEnum):
+  """Output only. Harm severity levels in the content."""
+
+  HARM_SEVERITY_UNSPECIFIED = 'HARM_SEVERITY_UNSPECIFIED'
+  HARM_SEVERITY_NEGLIGIBLE = 'HARM_SEVERITY_NEGLIGIBLE'
+  HARM_SEVERITY_LOW = 'HARM_SEVERITY_LOW'
+  HARM_SEVERITY_MEDIUM = 'HARM_SEVERITY_MEDIUM'
+  HARM_SEVERITY_HIGH = 'HARM_SEVERITY_HIGH'
+
+
+class BlockedReason(_common.CaseInSensitiveEnum):
+  """Output only. Blocked reason."""
+
+  BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
+  SAFETY = 'SAFETY'
+  OTHER = 'OTHER'
+  BLOCKLIST = 'BLOCKLIST'
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+
+
+class Modality(_common.CaseInSensitiveEnum):
+  """Server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  TEXT = 'TEXT'
+  IMAGE = 'IMAGE'
+  AUDIO = 'AUDIO'
+
+
+class DeploymentResourcesType(_common.CaseInSensitiveEnum):
+  """"""
+
+  DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED = (
+      'DEPLOYMENT_RESOURCES_TYPE_UNSPECIFIED'
+  )
+  DEDICATED_RESOURCES = 'DEDICATED_RESOURCES'
+  AUTOMATIC_RESOURCES = 'AUTOMATIC_RESOURCES'
+  SHARED_RESOURCES = 'SHARED_RESOURCES'
+
+
+class JobState(_common.CaseInSensitiveEnum):
+  """Job state."""
+
+  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
+  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
+  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
+  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
+  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
+  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
+  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
+  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
+  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
+  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
+  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
+  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
+
+
+class AdapterSize(_common.CaseInSensitiveEnum):
+  """Optional. Adapter size for tuning."""
+
+  ADAPTER_SIZE_UNSPECIFIED = 'ADAPTER_SIZE_UNSPECIFIED'
+  ADAPTER_SIZE_ONE = 'ADAPTER_SIZE_ONE'
+  ADAPTER_SIZE_TWO = 'ADAPTER_SIZE_TWO'
+  ADAPTER_SIZE_FOUR = 'ADAPTER_SIZE_FOUR'
+  ADAPTER_SIZE_EIGHT = 'ADAPTER_SIZE_EIGHT'
+  ADAPTER_SIZE_SIXTEEN = 'ADAPTER_SIZE_SIXTEEN'
+  ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
+
+
+class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
+  """Config for the dynamic retrieval config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
+
+
+class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
+  """Config for the function calling config mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  AUTO = 'AUTO'
+  ANY = 'ANY'
+  NONE = 'NONE'
+
+
+class MediaResolution(_common.CaseInSensitiveEnum):
+  """The media resolution to use."""
+
+  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
+
+
+class SafetyFilterLevel(_common.CaseInSensitiveEnum):
+  """Enum that controls the safety filter level for objectionable content."""
+
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  BLOCK_NONE = 'BLOCK_NONE'
+
+
+class PersonGeneration(_common.CaseInSensitiveEnum):
+  """Enum that controls the generation of people."""
+
+  DONT_ALLOW = 'DONT_ALLOW'
+  ALLOW_ADULT = 'ALLOW_ADULT'
+  ALLOW_ALL = 'ALLOW_ALL'
+
+
+class ImagePromptLanguage(_common.CaseInSensitiveEnum):
+  """Enum that specifies the language of the text in the prompt."""
+
+  auto = 'auto'
+  en = 'en'
+  ja = 'ja'
+  ko = 'ko'
+  hi = 'hi'
+
+
+class MaskReferenceMode(_common.CaseInSensitiveEnum):
+  """Enum representing the mask mode of a mask reference image."""
+
+  MASK_MODE_DEFAULT = 'MASK_MODE_DEFAULT'
+  MASK_MODE_USER_PROVIDED = 'MASK_MODE_USER_PROVIDED'
+  MASK_MODE_BACKGROUND = 'MASK_MODE_BACKGROUND'
+  MASK_MODE_FOREGROUND = 'MASK_MODE_FOREGROUND'
+  MASK_MODE_SEMANTIC = 'MASK_MODE_SEMANTIC'
+
+
+class ControlReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the control type of a control reference image."""
+
+  CONTROL_TYPE_DEFAULT = 'CONTROL_TYPE_DEFAULT'
+  CONTROL_TYPE_CANNY = 'CONTROL_TYPE_CANNY'
+  CONTROL_TYPE_SCRIBBLE = 'CONTROL_TYPE_SCRIBBLE'
+  CONTROL_TYPE_FACE_MESH = 'CONTROL_TYPE_FACE_MESH'
+
+
+class SubjectReferenceType(_common.CaseInSensitiveEnum):
+  """Enum representing the subject type of a subject reference image."""
+
+  SUBJECT_TYPE_DEFAULT = 'SUBJECT_TYPE_DEFAULT'
+  SUBJECT_TYPE_PERSON = 'SUBJECT_TYPE_PERSON'
+  SUBJECT_TYPE_ANIMAL = 'SUBJECT_TYPE_ANIMAL'
+  SUBJECT_TYPE_PRODUCT = 'SUBJECT_TYPE_PRODUCT'
+
+
+class EditMode(_common.CaseInSensitiveEnum):
+  """Enum representing the Imagen 3 Edit mode."""
+
+  EDIT_MODE_DEFAULT = 'EDIT_MODE_DEFAULT'
+  EDIT_MODE_INPAINT_REMOVAL = 'EDIT_MODE_INPAINT_REMOVAL'
+  EDIT_MODE_INPAINT_INSERTION = 'EDIT_MODE_INPAINT_INSERTION'
+  EDIT_MODE_OUTPAINT = 'EDIT_MODE_OUTPAINT'
+  EDIT_MODE_CONTROLLED_EDITING = 'EDIT_MODE_CONTROLLED_EDITING'
+  EDIT_MODE_STYLE = 'EDIT_MODE_STYLE'
+  EDIT_MODE_BGSWAP = 'EDIT_MODE_BGSWAP'
+  EDIT_MODE_PRODUCT_IMAGE = 'EDIT_MODE_PRODUCT_IMAGE'
+
+
+class FileState(_common.CaseInSensitiveEnum):
+  """State for the lifecycle of a File."""
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  PROCESSING = 'PROCESSING'
+  ACTIVE = 'ACTIVE'
+  FAILED = 'FAILED'
+
+
+class FileSource(_common.CaseInSensitiveEnum):
+  """Source of the File."""
+
+  SOURCE_UNSPECIFIED = 'SOURCE_UNSPECIFIED'
+  UPLOADED = 'UPLOADED'
+  GENERATED = 'GENERATED'
+
+
+class MediaModality(_common.CaseInSensitiveEnum):
+  """Server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  TEXT = 'TEXT'
+  IMAGE = 'IMAGE'
+  VIDEO = 'VIDEO'
+  AUDIO = 'AUDIO'
+  DOCUMENT = 'DOCUMENT'
+
+
+class VideoMetadata(_common.BaseModel):
+  """Metadata describes the input video content."""
+
+  end_offset: Optional[str] = Field(
+      default=None, description="""Optional. The end offset of the video."""
+  )
+  start_offset: Optional[str] = Field(
+      default=None, description="""Optional. The start offset of the video."""
+  )
+
+
+class VideoMetadataDict(TypedDict, total=False):
+  """Metadata describes the input video content."""
+
+  end_offset: Optional[str]
+  """Optional. The end offset of the video."""
+
+  start_offset: Optional[str]
+  """Optional. The start offset of the video."""
+
+
+VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
+
+
+class CodeExecutionResult(_common.BaseModel):
+  """Result of executing the [ExecutableCode].
+
+  Always follows a `part` containing the [ExecutableCode].
+  """
+
+  outcome: Optional[Outcome] = Field(
+      default=None, description="""Required. Outcome of the code execution."""
+  )
+  output: Optional[str] = Field(
+      default=None,
+      description="""Optional. Contains stdout when code execution is successful, stderr or other description otherwise.""",
+  )
+
+
+class CodeExecutionResultDict(TypedDict, total=False):
+  """Result of executing the [ExecutableCode].
+
+  Always follows a `part` containing the [ExecutableCode].
+  """
+
+  outcome: Optional[Outcome]
+  """Required. Outcome of the code execution."""
+
+  output: Optional[str]
+  """Optional. Contains stdout when code execution is successful, stderr or other description otherwise."""
+
+
+CodeExecutionResultOrDict = Union[CodeExecutionResult, CodeExecutionResultDict]
+
+
+class ExecutableCode(_common.BaseModel):
+  """Code generated by the model that is meant to be executed, and the result returned to the model.
+
+  Generated when using the [FunctionDeclaration] tool and
+  [FunctionCallingConfig] mode is set to [Mode.CODE].
+  """
+
+  code: Optional[str] = Field(
+      default=None, description="""Required. The code to be executed."""
+  )
+  language: Optional[Language] = Field(
+      default=None,
+      description="""Required. Programming language of the `code`.""",
+  )
+
+
+class ExecutableCodeDict(TypedDict, total=False):
+  """Code generated by the model that is meant to be executed, and the result returned to the model.
+
+  Generated when using the [FunctionDeclaration] tool and
+  [FunctionCallingConfig] mode is set to [Mode.CODE].
+  """
+
+  code: Optional[str]
+  """Required. The code to be executed."""
+
+  language: Optional[Language]
+  """Required. Programming language of the `code`."""
+
+
+ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
+
+
+class FileData(_common.BaseModel):
+  """URI based data."""
+
+  file_uri: Optional[str] = Field(
+      default=None, description="""Required. URI."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class FileDataDict(TypedDict, total=False):
+  """URI based data."""
+
+  file_uri: Optional[str]
+  """Required. URI."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+FileDataOrDict = Union[FileData, FileDataDict]
+
+
+class FunctionCall(_common.BaseModel):
+  """A function call."""
+
+  id: Optional[str] = Field(
+      default=None,
+      description="""The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`.""",
+  )
+  args: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Optional. Required. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the function to call. Matches [FunctionDeclaration.name].""",
+  )
+
+
+class FunctionCallDict(TypedDict, total=False):
+  """A function call."""
+
+  id: Optional[str]
+  """The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`."""
+
+  args: Optional[dict[str, Any]]
+  """Optional. Required. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details."""
+
+  name: Optional[str]
+  """Required. The name of the function to call. Matches [FunctionDeclaration.name]."""
+
+
+FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
+
+
+class FunctionResponse(_common.BaseModel):
+  """A function response."""
+
+  id: Optional[str] = Field(
+      default=None,
+      description="""The id of the function call this response is for. Populated by the client
+   to match the corresponding function call `id`.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name].""",
+  )
+  response: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output.""",
+  )
+
+
+class FunctionResponseDict(TypedDict, total=False):
+  """A function response."""
+
+  id: Optional[str]
+  """The id of the function call this response is for. Populated by the client
+   to match the corresponding function call `id`."""
+
+  name: Optional[str]
+  """Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name]."""
+
+  response: Optional[dict[str, Any]]
+  """Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output."""
+
+
+FunctionResponseOrDict = Union[FunctionResponse, FunctionResponseDict]
+
+
+class Blob(_common.BaseModel):
+  """Content blob."""
+
+  data: Optional[bytes] = Field(
+      default=None, description="""Required. Raw bytes."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class BlobDict(TypedDict, total=False):
+  """Content blob."""
+
+  data: Optional[bytes]
+  """Required. Raw bytes."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+BlobOrDict = Union[Blob, BlobDict]
+
+
+class Part(_common.BaseModel):
+  """A datatype containing media content.
+
+  Exactly one field within a Part should be set, representing the specific type
+  of content being conveyed. Using multiple fields within the same `Part`
+  instance is considered invalid.
+  """
+
+  video_metadata: Optional[VideoMetadata] = Field(
+      default=None, description="""Metadata for a given video."""
+  )
+  thought: Optional[bool] = Field(
+      default=None,
+      description="""Indicates if the part is thought from the model.""",
+  )
+  code_execution_result: Optional[CodeExecutionResult] = Field(
+      default=None,
+      description="""Optional. Result of executing the [ExecutableCode].""",
+  )
+  executable_code: Optional[ExecutableCode] = Field(
+      default=None,
+      description="""Optional. Code generated by the model that is meant to be executed.""",
+  )
+  file_data: Optional[FileData] = Field(
+      default=None, description="""Optional. URI based data."""
+  )
+  function_call: Optional[FunctionCall] = Field(
+      default=None,
+      description="""Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values.""",
+  )
+  function_response: Optional[FunctionResponse] = Field(
+      default=None,
+      description="""Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model.""",
+  )
+  inline_data: Optional[Blob] = Field(
+      default=None, description="""Optional. Inlined bytes data."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""Optional. Text part (can be code)."""
+  )
+
+  @classmethod
+  def from_uri(cls, *, file_uri: str, mime_type: str) -> 'Part':
+    file_data = FileData(file_uri=file_uri, mime_type=mime_type)
+    return cls(file_data=file_data)
+
+  @classmethod
+  def from_text(cls, *, text: str) -> 'Part':
+    return cls(text=text)
+
+  @classmethod
+  def from_bytes(cls, *, data: bytes, mime_type: str) -> 'Part':
+    inline_data = Blob(
+        data=data,
+        mime_type=mime_type,
+    )
+    return cls(inline_data=inline_data)
+
+  @classmethod
+  def from_function_call(cls, *, name: str, args: dict[str, Any]) -> 'Part':
+    function_call = FunctionCall(name=name, args=args)
+    return cls(function_call=function_call)
+
+  @classmethod
+  def from_function_response(
+      cls, *, name: str, response: dict[str, Any]
+  ) -> 'Part':
+    function_response = FunctionResponse(name=name, response=response)
+    return cls(function_response=function_response)
+
+  @classmethod
+  def from_video_metadata(cls, *, start_offset: str, end_offset: str) -> 'Part':
+    logger.warning("""Part.from_video_metadata will be deprecated soon.
+           Because a Part instance needs to include at least one of the fields:
+           text, file_data, inline_data, function_call, function_response, executable_code or code_execution_result.
+           A Part instance contains only video_metadata is not a valid Part.
+        """)
+    video_metadata = VideoMetadata(
+        end_offset=end_offset, start_offset=start_offset
+    )
+    return cls(video_metadata=video_metadata)
+
+  @classmethod
+  def from_executable_code(cls, *, code: str, language: Language) -> 'Part':
+    executable_code = ExecutableCode(code=code, language=language)
+    return cls(executable_code=executable_code)
+
+  @classmethod
+  def from_code_execution_result(
+      cls, *, outcome: Outcome, output: str
+  ) -> 'Part':
+    code_execution_result = CodeExecutionResult(outcome=outcome, output=output)
+    return cls(code_execution_result=code_execution_result)
+
+
+class PartDict(TypedDict, total=False):
+  """A datatype containing media content.
+
+  Exactly one field within a Part should be set, representing the specific type
+  of content being conveyed. Using multiple fields within the same `Part`
+  instance is considered invalid.
+  """
+
+  video_metadata: Optional[VideoMetadataDict]
+  """Metadata for a given video."""
+
+  thought: Optional[bool]
+  """Indicates if the part is thought from the model."""
+
+  code_execution_result: Optional[CodeExecutionResultDict]
+  """Optional. Result of executing the [ExecutableCode]."""
+
+  executable_code: Optional[ExecutableCodeDict]
+  """Optional. Code generated by the model that is meant to be executed."""
+
+  file_data: Optional[FileDataDict]
+  """Optional. URI based data."""
+
+  function_call: Optional[FunctionCallDict]
+  """Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values."""
+
+  function_response: Optional[FunctionResponseDict]
+  """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
+
+  inline_data: Optional[BlobDict]
+  """Optional. Inlined bytes data."""
+
+  text: Optional[str]
+  """Optional. Text part (can be code)."""
+
+
+PartOrDict = Union[Part, PartDict]
+
+
+class Content(_common.BaseModel):
+  """Contains the multi-part content of a message."""
+
+  parts: Optional[list[Part]] = Field(
+      default=None,
+      description="""List of parts that constitute a single message. Each part may have
+      a different IANA MIME type.""",
+  )
+  role: Optional[str] = Field(
+      default=None,
+      description="""Optional. The producer of the content. Must be either 'user' or
+      'model'. Useful to set for multi-turn conversations, otherwise can be
+      empty. If role is not specified, SDK will determine the role.""",
+  )
+
+
 class UserContent(Content):
   """UserContent facilitates the creation of a Content object with a user role.
 
@@ -2285,695 +4299,8 @@ class GoogleTypeDateDict(TypedDict, total=False):
 GoogleTypeDateOrDict = Union[GoogleTypeDate, GoogleTypeDateDict]
 
 
-class Citation(_common.BaseModel):
-  """Source attributions for content."""
-
-  end_index: Optional[int] = Field(
-      default=None, description="""Output only. End index into the content."""
-  )
-  license: Optional[str] = Field(
-      default=None, description="""Output only. License of the attribution."""
-  )
-  publication_date: Optional[GoogleTypeDate] = Field(
-      default=None,
-      description="""Output only. Publication date of the attribution.""",
-  )
-  start_index: Optional[int] = Field(
-      default=None, description="""Output only. Start index into the content."""
-  )
-  title: Optional[str] = Field(
-      default=None, description="""Output only. Title of the attribution."""
-  )
-  uri: Optional[str] = Field(
-      default=None,
-      description="""Output only. Url reference of the attribution.""",
-  )
-
-
-class CitationDict(TypedDict, total=False):
-  """Source attributions for content."""
-
-  end_index: Optional[int]
-  """Output only. End index into the content."""
-
-  license: Optional[str]
-  """Output only. License of the attribution."""
-
-  publication_date: Optional[GoogleTypeDateDict]
-  """Output only. Publication date of the attribution."""
-
-  start_index: Optional[int]
-  """Output only. Start index into the content."""
-
-  title: Optional[str]
-  """Output only. Title of the attribution."""
-
-  uri: Optional[str]
-  """Output only. Url reference of the attribution."""
-
-
-CitationOrDict = Union[Citation, CitationDict]
-
-
-class CitationMetadata(_common.BaseModel):
-  """Citation information when the model quotes another source."""
-
-  citations: Optional[list[Citation]] = Field(
-      default=None,
-      description="""Contains citation information when the model directly quotes, at
-      length, from another source. Can include traditional websites and code
-      repositories.
-      """,
-  )
-
-
-class CitationMetadataDict(TypedDict, total=False):
-  """Citation information when the model quotes another source."""
-
-  citations: Optional[list[CitationDict]]
-  """Contains citation information when the model directly quotes, at
-      length, from another source. Can include traditional websites and code
-      repositories.
-      """
-
-
-CitationMetadataOrDict = Union[CitationMetadata, CitationMetadataDict]
-
-
-class GroundingChunkRetrievedContext(_common.BaseModel):
-  """Chunk from context retrieved by the retrieval tools."""
-
-  text: Optional[str] = Field(
-      default=None, description="""Text of the attribution."""
-  )
-  title: Optional[str] = Field(
-      default=None, description="""Title of the attribution."""
-  )
-  uri: Optional[str] = Field(
-      default=None, description="""URI reference of the attribution."""
-  )
-
-
-class GroundingChunkRetrievedContextDict(TypedDict, total=False):
-  """Chunk from context retrieved by the retrieval tools."""
-
-  text: Optional[str]
-  """Text of the attribution."""
-
-  title: Optional[str]
-  """Title of the attribution."""
-
-  uri: Optional[str]
-  """URI reference of the attribution."""
-
-
-GroundingChunkRetrievedContextOrDict = Union[
-    GroundingChunkRetrievedContext, GroundingChunkRetrievedContextDict
-]
-
-
-class GroundingChunkWeb(_common.BaseModel):
-  """Chunk from the web."""
-
-  title: Optional[str] = Field(
-      default=None, description="""Title of the chunk."""
-  )
-  uri: Optional[str] = Field(
-      default=None, description="""URI reference of the chunk."""
-  )
-
-
-class GroundingChunkWebDict(TypedDict, total=False):
-  """Chunk from the web."""
-
-  title: Optional[str]
-  """Title of the chunk."""
-
-  uri: Optional[str]
-  """URI reference of the chunk."""
-
-
-GroundingChunkWebOrDict = Union[GroundingChunkWeb, GroundingChunkWebDict]
-
-
-class GroundingChunk(_common.BaseModel):
-  """Grounding chunk."""
-
-  retrieved_context: Optional[GroundingChunkRetrievedContext] = Field(
-      default=None,
-      description="""Grounding chunk from context retrieved by the retrieval tools.""",
-  )
-  web: Optional[GroundingChunkWeb] = Field(
-      default=None, description="""Grounding chunk from the web."""
-  )
-
-
-class GroundingChunkDict(TypedDict, total=False):
-  """Grounding chunk."""
-
-  retrieved_context: Optional[GroundingChunkRetrievedContextDict]
-  """Grounding chunk from context retrieved by the retrieval tools."""
-
-  web: Optional[GroundingChunkWebDict]
-  """Grounding chunk from the web."""
-
-
-GroundingChunkOrDict = Union[GroundingChunk, GroundingChunkDict]
-
-
-class Segment(_common.BaseModel):
-  """Segment of the content."""
-
-  end_index: Optional[int] = Field(
-      default=None,
-      description="""Output only. End index in the given Part, measured in bytes. Offset from the start of the Part, exclusive, starting at zero.""",
-  )
-  part_index: Optional[int] = Field(
-      default=None,
-      description="""Output only. The index of a Part object within its parent Content object.""",
-  )
-  start_index: Optional[int] = Field(
-      default=None,
-      description="""Output only. Start index in the given Part, measured in bytes. Offset from the start of the Part, inclusive, starting at zero.""",
-  )
-  text: Optional[str] = Field(
-      default=None,
-      description="""Output only. The text corresponding to the segment from the response.""",
-  )
-
-
-class SegmentDict(TypedDict, total=False):
-  """Segment of the content."""
-
-  end_index: Optional[int]
-  """Output only. End index in the given Part, measured in bytes. Offset from the start of the Part, exclusive, starting at zero."""
-
-  part_index: Optional[int]
-  """Output only. The index of a Part object within its parent Content object."""
-
-  start_index: Optional[int]
-  """Output only. Start index in the given Part, measured in bytes. Offset from the start of the Part, inclusive, starting at zero."""
-
-  text: Optional[str]
-  """Output only. The text corresponding to the segment from the response."""
-
-
-SegmentOrDict = Union[Segment, SegmentDict]
-
-
-class GroundingSupport(_common.BaseModel):
-  """Grounding support."""
-
-  confidence_scores: Optional[list[float]] = Field(
-      default=None,
-      description="""Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. This list must have the same size as the grounding_chunk_indices.""",
-  )
-  grounding_chunk_indices: Optional[list[int]] = Field(
-      default=None,
-      description="""A list of indices (into 'grounding_chunk') specifying the citations associated with the claim. For instance [1,3,4] means that grounding_chunk[1], grounding_chunk[3], grounding_chunk[4] are the retrieved content attributed to the claim.""",
-  )
-  segment: Optional[Segment] = Field(
-      default=None,
-      description="""Segment of the content this support belongs to.""",
-  )
-
-
-class GroundingSupportDict(TypedDict, total=False):
-  """Grounding support."""
-
-  confidence_scores: Optional[list[float]]
-  """Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. This list must have the same size as the grounding_chunk_indices."""
-
-  grounding_chunk_indices: Optional[list[int]]
-  """A list of indices (into 'grounding_chunk') specifying the citations associated with the claim. For instance [1,3,4] means that grounding_chunk[1], grounding_chunk[3], grounding_chunk[4] are the retrieved content attributed to the claim."""
-
-  segment: Optional[SegmentDict]
-  """Segment of the content this support belongs to."""
-
-
-GroundingSupportOrDict = Union[GroundingSupport, GroundingSupportDict]
-
-
-class RetrievalMetadata(_common.BaseModel):
-  """Metadata related to retrieval in the grounding flow."""
-
-  google_search_dynamic_retrieval_score: Optional[float] = Field(
-      default=None,
-      description="""Optional. Score indicating how likely information from Google Search could help answer the prompt. The score is in the range `[0, 1]`, where 0 is the least likely and 1 is the most likely. This score is only populated when Google Search grounding and dynamic retrieval is enabled. It will be compared to the threshold to determine whether to trigger Google Search.""",
-  )
-
-
-class RetrievalMetadataDict(TypedDict, total=False):
-  """Metadata related to retrieval in the grounding flow."""
-
-  google_search_dynamic_retrieval_score: Optional[float]
-  """Optional. Score indicating how likely information from Google Search could help answer the prompt. The score is in the range `[0, 1]`, where 0 is the least likely and 1 is the most likely. This score is only populated when Google Search grounding and dynamic retrieval is enabled. It will be compared to the threshold to determine whether to trigger Google Search."""
-
-
-RetrievalMetadataOrDict = Union[RetrievalMetadata, RetrievalMetadataDict]
-
-
-class SearchEntryPoint(_common.BaseModel):
-  """Google search entry point."""
-
-  rendered_content: Optional[str] = Field(
-      default=None,
-      description="""Optional. Web content snippet that can be embedded in a web page or an app webview.""",
-  )
-  sdk_blob: Optional[bytes] = Field(
-      default=None,
-      description="""Optional. Base64 encoded JSON representing array of tuple.""",
-  )
-
-
-class SearchEntryPointDict(TypedDict, total=False):
-  """Google search entry point."""
-
-  rendered_content: Optional[str]
-  """Optional. Web content snippet that can be embedded in a web page or an app webview."""
-
-  sdk_blob: Optional[bytes]
-  """Optional. Base64 encoded JSON representing array of tuple."""
-
-
-SearchEntryPointOrDict = Union[SearchEntryPoint, SearchEntryPointDict]
-
-
-class GroundingMetadata(_common.BaseModel):
-  """Metadata returned to client when grounding is enabled."""
-
-  grounding_chunks: Optional[list[GroundingChunk]] = Field(
-      default=None,
-      description="""List of supporting references retrieved from specified grounding source.""",
-  )
-  grounding_supports: Optional[list[GroundingSupport]] = Field(
-      default=None, description="""Optional. List of grounding support."""
-  )
-  retrieval_metadata: Optional[RetrievalMetadata] = Field(
-      default=None, description="""Optional. Output only. Retrieval metadata."""
-  )
-  retrieval_queries: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Queries executed by the retrieval tools.""",
-  )
-  search_entry_point: Optional[SearchEntryPoint] = Field(
-      default=None,
-      description="""Optional. Google search entry for the following-up web searches.""",
-  )
-  web_search_queries: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Web search queries for the following-up web search.""",
-  )
-
-
-class GroundingMetadataDict(TypedDict, total=False):
-  """Metadata returned to client when grounding is enabled."""
-
-  grounding_chunks: Optional[list[GroundingChunkDict]]
-  """List of supporting references retrieved from specified grounding source."""
-
-  grounding_supports: Optional[list[GroundingSupportDict]]
-  """Optional. List of grounding support."""
-
-  retrieval_metadata: Optional[RetrievalMetadataDict]
-  """Optional. Output only. Retrieval metadata."""
-
-  retrieval_queries: Optional[list[str]]
-  """Optional. Queries executed by the retrieval tools."""
-
-  search_entry_point: Optional[SearchEntryPointDict]
-  """Optional. Google search entry for the following-up web searches."""
-
-  web_search_queries: Optional[list[str]]
-  """Optional. Web search queries for the following-up web search."""
-
-
-GroundingMetadataOrDict = Union[GroundingMetadata, GroundingMetadataDict]
-
-
-class LogprobsResultCandidate(_common.BaseModel):
-  """Candidate for the logprobs token and score."""
-
-  log_probability: Optional[float] = Field(
-      default=None, description="""The candidate's log probability."""
-  )
-  token: Optional[str] = Field(
-      default=None, description="""The candidate's token string value."""
-  )
-  token_id: Optional[int] = Field(
-      default=None, description="""The candidate's token id value."""
-  )
-
-
-class LogprobsResultCandidateDict(TypedDict, total=False):
-  """Candidate for the logprobs token and score."""
-
-  log_probability: Optional[float]
-  """The candidate's log probability."""
-
-  token: Optional[str]
-  """The candidate's token string value."""
-
-  token_id: Optional[int]
-  """The candidate's token id value."""
-
-
-LogprobsResultCandidateOrDict = Union[
-    LogprobsResultCandidate, LogprobsResultCandidateDict
-]
-
-
-class LogprobsResultTopCandidates(_common.BaseModel):
-  """Candidates with top log probabilities at each decoding step."""
-
-  candidates: Optional[list[LogprobsResultCandidate]] = Field(
-      default=None,
-      description="""Sorted by log probability in descending order.""",
-  )
-
-
-class LogprobsResultTopCandidatesDict(TypedDict, total=False):
-  """Candidates with top log probabilities at each decoding step."""
-
-  candidates: Optional[list[LogprobsResultCandidateDict]]
-  """Sorted by log probability in descending order."""
-
-
-LogprobsResultTopCandidatesOrDict = Union[
-    LogprobsResultTopCandidates, LogprobsResultTopCandidatesDict
-]
-
-
-class LogprobsResult(_common.BaseModel):
-  """Logprobs Result"""
-
-  chosen_candidates: Optional[list[LogprobsResultCandidate]] = Field(
-      default=None,
-      description="""Length = total number of decoding steps. The chosen candidates may or may not be in top_candidates.""",
-  )
-  top_candidates: Optional[list[LogprobsResultTopCandidates]] = Field(
-      default=None, description="""Length = total number of decoding steps."""
-  )
-
-
-class LogprobsResultDict(TypedDict, total=False):
-  """Logprobs Result"""
-
-  chosen_candidates: Optional[list[LogprobsResultCandidateDict]]
-  """Length = total number of decoding steps. The chosen candidates may or may not be in top_candidates."""
-
-  top_candidates: Optional[list[LogprobsResultTopCandidatesDict]]
-  """Length = total number of decoding steps."""
-
-
-LogprobsResultOrDict = Union[LogprobsResult, LogprobsResultDict]
-
-
-class SafetyRating(_common.BaseModel):
-  """Safety rating corresponding to the generated content."""
-
-  blocked: Optional[bool] = Field(
-      default=None,
-      description="""Output only. Indicates whether the content was filtered out because of this rating.""",
-  )
-  category: Optional[HarmCategory] = Field(
-      default=None, description="""Output only. Harm category."""
-  )
-  probability: Optional[HarmProbability] = Field(
-      default=None,
-      description="""Output only. Harm probability levels in the content.""",
-  )
-  probability_score: Optional[float] = Field(
-      default=None, description="""Output only. Harm probability score."""
-  )
-  severity: Optional[HarmSeverity] = Field(
-      default=None,
-      description="""Output only. Harm severity levels in the content.""",
-  )
-  severity_score: Optional[float] = Field(
-      default=None, description="""Output only. Harm severity score."""
-  )
-
-
-class SafetyRatingDict(TypedDict, total=False):
-  """Safety rating corresponding to the generated content."""
-
-  blocked: Optional[bool]
-  """Output only. Indicates whether the content was filtered out because of this rating."""
-
-  category: Optional[HarmCategory]
-  """Output only. Harm category."""
-
-  probability: Optional[HarmProbability]
-  """Output only. Harm probability levels in the content."""
-
-  probability_score: Optional[float]
-  """Output only. Harm probability score."""
-
-  severity: Optional[HarmSeverity]
-  """Output only. Harm severity levels in the content."""
-
-  severity_score: Optional[float]
-  """Output only. Harm severity score."""
-
-
-SafetyRatingOrDict = Union[SafetyRating, SafetyRatingDict]
-
-
-class Candidate(_common.BaseModel):
-  """A response candidate generated from the model."""
-
-  content: Optional[Content] = Field(
-      default=None,
-      description="""Contains the multi-part content of the response.
-      """,
-  )
-  citation_metadata: Optional[CitationMetadata] = Field(
-      default=None,
-      description="""Source attribution of the generated content.
-      """,
-  )
-  finish_message: Optional[str] = Field(
-      default=None,
-      description="""Describes the reason the model stopped generating tokens.
-      """,
-  )
-  token_count: Optional[int] = Field(
-      default=None,
-      description="""Number of tokens for this candidate.
-      """,
-  )
-  finish_reason: Optional[FinishReason] = Field(
-      default=None,
-      description="""The reason why the model stopped generating tokens.
-      If empty, the model has not stopped generating the tokens.
-      """,
-  )
-  avg_logprobs: Optional[float] = Field(
-      default=None,
-      description="""Output only. Average log probability score of the candidate.""",
-  )
-  grounding_metadata: Optional[GroundingMetadata] = Field(
-      default=None,
-      description="""Output only. Metadata specifies sources used to ground generated content.""",
-  )
-  index: Optional[int] = Field(
-      default=None, description="""Output only. Index of the candidate."""
-  )
-  logprobs_result: Optional[LogprobsResult] = Field(
-      default=None,
-      description="""Output only. Log-likelihood scores for the response tokens and top tokens""",
-  )
-  safety_ratings: Optional[list[SafetyRating]] = Field(
-      default=None,
-      description="""Output only. List of ratings for the safety of a response candidate. There is at most one rating per category.""",
-  )
-
-
-class CandidateDict(TypedDict, total=False):
-  """A response candidate generated from the model."""
-
-  content: Optional[ContentDict]
-  """Contains the multi-part content of the response.
-      """
-
-  citation_metadata: Optional[CitationMetadataDict]
-  """Source attribution of the generated content.
-      """
-
-  finish_message: Optional[str]
-  """Describes the reason the model stopped generating tokens.
-      """
-
-  token_count: Optional[int]
-  """Number of tokens for this candidate.
-      """
-
-  finish_reason: Optional[FinishReason]
-  """The reason why the model stopped generating tokens.
-      If empty, the model has not stopped generating the tokens.
-      """
-
-  avg_logprobs: Optional[float]
-  """Output only. Average log probability score of the candidate."""
-
-  grounding_metadata: Optional[GroundingMetadataDict]
-  """Output only. Metadata specifies sources used to ground generated content."""
-
-  index: Optional[int]
-  """Output only. Index of the candidate."""
-
-  logprobs_result: Optional[LogprobsResultDict]
-  """Output only. Log-likelihood scores for the response tokens and top tokens"""
-
-  safety_ratings: Optional[list[SafetyRatingDict]]
-  """Output only. List of ratings for the safety of a response candidate. There is at most one rating per category."""
-
-
-CandidateOrDict = Union[Candidate, CandidateDict]
-
-
-class GenerateContentResponsePromptFeedback(_common.BaseModel):
-  """Content filter results for a prompt sent in the request."""
-
-  block_reason: Optional[BlockedReason] = Field(
-      default=None, description="""Output only. Blocked reason."""
-  )
-  block_reason_message: Optional[str] = Field(
-      default=None,
-      description="""Output only. A readable block reason message.""",
-  )
-  safety_ratings: Optional[list[SafetyRating]] = Field(
-      default=None, description="""Output only. Safety ratings."""
-  )
-
-
-class GenerateContentResponsePromptFeedbackDict(TypedDict, total=False):
-  """Content filter results for a prompt sent in the request."""
-
-  block_reason: Optional[BlockedReason]
-  """Output only. Blocked reason."""
-
-  block_reason_message: Optional[str]
-  """Output only. A readable block reason message."""
-
-  safety_ratings: Optional[list[SafetyRatingDict]]
-  """Output only. Safety ratings."""
-
-
-GenerateContentResponsePromptFeedbackOrDict = Union[
-    GenerateContentResponsePromptFeedback,
-    GenerateContentResponsePromptFeedbackDict,
-]
-
-
-class ModalityTokenCount(_common.BaseModel):
-  """Represents token counting info for a single modality."""
-
-  modality: Optional[MediaModality] = Field(
-      default=None,
-      description="""The modality associated with this token count.""",
-  )
-  token_count: Optional[int] = Field(
-      default=None, description="""Number of tokens."""
-  )
-
-
-class ModalityTokenCountDict(TypedDict, total=False):
-  """Represents token counting info for a single modality."""
-
-  modality: Optional[MediaModality]
-  """The modality associated with this token count."""
-
-  token_count: Optional[int]
-  """Number of tokens."""
-
-
-ModalityTokenCountOrDict = Union[ModalityTokenCount, ModalityTokenCountDict]
-
-
-class GenerateContentResponseUsageMetadata(_common.BaseModel):
-  """Usage metadata about response(s)."""
-
-  cache_tokens_details: Optional[list[ModalityTokenCount]] = Field(
-      default=None,
-      description="""Output only. List of modalities of the cached content in the request input.""",
-  )
-  cached_content_token_count: Optional[int] = Field(
-      default=None,
-      description="""Output only. Number of tokens in the cached part in the input (the cached content).""",
-  )
-  candidates_token_count: Optional[int] = Field(
-      default=None, description="""Number of tokens in the response(s)."""
-  )
-  candidates_tokens_details: Optional[list[ModalityTokenCount]] = Field(
-      default=None,
-      description="""Output only. List of modalities that were returned in the response.""",
-  )
-  prompt_token_count: Optional[int] = Field(
-      default=None,
-      description="""Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content.""",
-  )
-  prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
-      default=None,
-      description="""Output only. List of modalities that were processed in the request input.""",
-  )
-  thoughts_token_count: Optional[int] = Field(
-      default=None,
-      description="""Output only. Number of tokens present in thoughts output.""",
-  )
-  tool_use_prompt_token_count: Optional[int] = Field(
-      default=None,
-      description="""Output only. Number of tokens present in tool-use prompt(s).""",
-  )
-  tool_use_prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
-      default=None,
-      description="""Output only. List of modalities that were processed for tool-use request inputs.""",
-  )
-  total_token_count: Optional[int] = Field(
-      default=None,
-      description="""Total token count for prompt, response candidates, and tool-use prompts (if present).""",
-  )
-
-
-class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
-  """Usage metadata about response(s)."""
-
-  cache_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities of the cached content in the request input."""
-
-  cached_content_token_count: Optional[int]
-  """Output only. Number of tokens in the cached part in the input (the cached content)."""
-
-  candidates_token_count: Optional[int]
-  """Number of tokens in the response(s)."""
-
-  candidates_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities that were returned in the response."""
-
-  prompt_token_count: Optional[int]
-  """Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content."""
-
-  prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities that were processed in the request input."""
-
-  thoughts_token_count: Optional[int]
-  """Output only. Number of tokens present in thoughts output."""
-
-  tool_use_prompt_token_count: Optional[int]
-  """Output only. Number of tokens present in tool-use prompt(s)."""
-
-  tool_use_prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities that were processed for tool-use request inputs."""
-
-  total_token_count: Optional[int]
-  """Total token count for prompt, response candidates, and tool-use prompts (if present)."""
-
-
-GenerateContentResponseUsageMetadataOrDict = Union[
-    GenerateContentResponseUsageMetadata,
-    GenerateContentResponseUsageMetadataDict,
-]
+class LiveClientContent(_common.BaseModel):
+  pass
 
 
 class GenerateContentResponse(_common.BaseModel):
@@ -3269,10 +4596,11 @@ class EmbedContentConfig(_common.BaseModel):
       description="""Type of task for which the embedding will be used.
       """,
   )
-  title: Optional[str] = Field(
+  title: Optional[Union[str, list[str]]] = Field(
       default=None,
       description="""Title for the text. Only applicable when TaskType is
-      `RETRIEVAL_DOCUMENT`.
+      `RETRIEVAL_DOCUMENT`. Can be either a single string or a list of strings
+      corresponding to each content item.
       """,
   )
   output_dimensionality: Optional[int] = Field(
@@ -3307,9 +4635,10 @@ class EmbedContentConfigDict(TypedDict, total=False):
   """Type of task for which the embedding will be used.
       """
 
-  title: Optional[str]
+  title: Optional[Union[str, list[str]]]
   """Title for the text. Only applicable when TaskType is
-      `RETRIEVAL_DOCUMENT`.
+      `RETRIEVAL_DOCUMENT`. Can be either a single string or a list of strings
+      corresponding to each content item.
       """
 
   output_dimensionality: Optional[int]
@@ -4855,801 +6184,6 @@ class DeleteModelResponseDict(TypedDict, total=False):
 DeleteModelResponseOrDict = Union[DeleteModelResponse, DeleteModelResponseDict]
 
 
-class GenerationConfig(_common.BaseModel):
-  """Generation config."""
-
-  audio_timestamp: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If enabled, audio timestamp will be included in the request to the model.""",
-  )
-  candidate_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of candidates to generate.""",
-  )
-  frequency_penalty: Optional[float] = Field(
-      default=None, description="""Optional. Frequency penalties."""
-  )
-  logprobs: Optional[int] = Field(
-      default=None, description="""Optional. Logit probabilities."""
-  )
-  max_output_tokens: Optional[int] = Field(
-      default=None,
-      description="""Optional. The maximum number of output tokens to generate per message.""",
-  )
-  presence_penalty: Optional[float] = Field(
-      default=None, description="""Optional. Positive penalties."""
-  )
-  response_logprobs: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If true, export the logprobs results in response.""",
-  )
-  response_mime_type: Optional[str] = Field(
-      default=None,
-      description="""Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature.""",
-  )
-  response_schema: Optional[Schema] = Field(
-      default=None,
-      description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
-  )
-  routing_config: Optional[GenerationConfigRoutingConfig] = Field(
-      default=None, description="""Optional. Routing configuration."""
-  )
-  seed: Optional[int] = Field(default=None, description="""Optional. Seed.""")
-  stop_sequences: Optional[list[str]] = Field(
-      default=None, description="""Optional. Stop sequences."""
-  )
-  temperature: Optional[float] = Field(
-      default=None,
-      description="""Optional. Controls the randomness of predictions.""",
-  )
-  top_k: Optional[float] = Field(
-      default=None,
-      description="""Optional. If specified, top-k sampling will be used.""",
-  )
-  top_p: Optional[float] = Field(
-      default=None,
-      description="""Optional. If specified, nucleus sampling will be used.""",
-  )
-
-
-class GenerationConfigDict(TypedDict, total=False):
-  """Generation config."""
-
-  audio_timestamp: Optional[bool]
-  """Optional. If enabled, audio timestamp will be included in the request to the model."""
-
-  candidate_count: Optional[int]
-  """Optional. Number of candidates to generate."""
-
-  frequency_penalty: Optional[float]
-  """Optional. Frequency penalties."""
-
-  logprobs: Optional[int]
-  """Optional. Logit probabilities."""
-
-  max_output_tokens: Optional[int]
-  """Optional. The maximum number of output tokens to generate per message."""
-
-  presence_penalty: Optional[float]
-  """Optional. Positive penalties."""
-
-  response_logprobs: Optional[bool]
-  """Optional. If true, export the logprobs results in response."""
-
-  response_mime_type: Optional[str]
-  """Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature."""
-
-  response_schema: Optional[SchemaDict]
-  """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
-
-  routing_config: Optional[GenerationConfigRoutingConfigDict]
-  """Optional. Routing configuration."""
-
-  seed: Optional[int]
-  """Optional. Seed."""
-
-  stop_sequences: Optional[list[str]]
-  """Optional. Stop sequences."""
-
-  temperature: Optional[float]
-  """Optional. Controls the randomness of predictions."""
-
-  top_k: Optional[float]
-  """Optional. If specified, top-k sampling will be used."""
-
-  top_p: Optional[float]
-  """Optional. If specified, nucleus sampling will be used."""
-
-
-GenerationConfigOrDict = Union[GenerationConfig, GenerationConfigDict]
-
-
-class CountTokensConfig(_common.BaseModel):
-  """Config for the count_tokens method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  system_instruction: Optional[ContentUnion] = Field(
-      default=None,
-      description="""Instructions for the model to steer it toward better performance.
-      """,
-  )
-  tools: Optional[list[Tool]] = Field(
-      default=None,
-      description="""Code that enables the system to interact with external systems to
-      perform an action outside of the knowledge and scope of the model.
-      """,
-  )
-  generation_config: Optional[GenerationConfig] = Field(
-      default=None,
-      description="""Configuration that the model uses to generate the response. Not
-      supported by the Gemini Developer API.
-      """,
-  )
-
-
-class CountTokensConfigDict(TypedDict, total=False):
-  """Config for the count_tokens method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  system_instruction: Optional[ContentUnionDict]
-  """Instructions for the model to steer it toward better performance.
-      """
-
-  tools: Optional[list[ToolDict]]
-  """Code that enables the system to interact with external systems to
-      perform an action outside of the knowledge and scope of the model.
-      """
-
-  generation_config: Optional[GenerationConfigDict]
-  """Configuration that the model uses to generate the response. Not
-      supported by the Gemini Developer API.
-      """
-
-
-CountTokensConfigOrDict = Union[CountTokensConfig, CountTokensConfigDict]
-
-
-class _CountTokensParameters(_common.BaseModel):
-  """Parameters for counting tokens."""
-
-  model: Optional[str] = Field(
-      default=None,
-      description="""ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
-  )
-  contents: Optional[ContentListUnion] = Field(
-      default=None, description="""Input content."""
-  )
-  config: Optional[CountTokensConfig] = Field(
-      default=None, description="""Configuration for counting tokens."""
-  )
-
-
-class _CountTokensParametersDict(TypedDict, total=False):
-  """Parameters for counting tokens."""
-
-  model: Optional[str]
-  """ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
-
-  contents: Optional[ContentListUnionDict]
-  """Input content."""
-
-  config: Optional[CountTokensConfigDict]
-  """Configuration for counting tokens."""
-
-
-_CountTokensParametersOrDict = Union[
-    _CountTokensParameters, _CountTokensParametersDict
-]
-
-
-class CountTokensResponse(_common.BaseModel):
-  """Response for counting tokens."""
-
-  total_tokens: Optional[int] = Field(
-      default=None, description="""Total number of tokens."""
-  )
-  cached_content_token_count: Optional[int] = Field(
-      default=None,
-      description="""Number of tokens in the cached part of the prompt (the cached content).""",
-  )
-
-
-class CountTokensResponseDict(TypedDict, total=False):
-  """Response for counting tokens."""
-
-  total_tokens: Optional[int]
-  """Total number of tokens."""
-
-  cached_content_token_count: Optional[int]
-  """Number of tokens in the cached part of the prompt (the cached content)."""
-
-
-CountTokensResponseOrDict = Union[CountTokensResponse, CountTokensResponseDict]
-
-
-class ComputeTokensConfig(_common.BaseModel):
-  """Optional parameters for computing tokens."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class ComputeTokensConfigDict(TypedDict, total=False):
-  """Optional parameters for computing tokens."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-ComputeTokensConfigOrDict = Union[ComputeTokensConfig, ComputeTokensConfigDict]
-
-
-class _ComputeTokensParameters(_common.BaseModel):
-  """Parameters for computing tokens."""
-
-  model: Optional[str] = Field(
-      default=None,
-      description="""ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
-  )
-  contents: Optional[ContentListUnion] = Field(
-      default=None, description="""Input content."""
-  )
-  config: Optional[ComputeTokensConfig] = Field(
-      default=None,
-      description="""Optional parameters for the request.
-      """,
-  )
-
-
-class _ComputeTokensParametersDict(TypedDict, total=False):
-  """Parameters for computing tokens."""
-
-  model: Optional[str]
-  """ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
-
-  contents: Optional[ContentListUnionDict]
-  """Input content."""
-
-  config: Optional[ComputeTokensConfigDict]
-  """Optional parameters for the request.
-      """
-
-
-_ComputeTokensParametersOrDict = Union[
-    _ComputeTokensParameters, _ComputeTokensParametersDict
-]
-
-
-class TokensInfo(_common.BaseModel):
-  """Tokens info with a list of tokens and the corresponding list of token ids."""
-
-  role: Optional[str] = Field(
-      default=None,
-      description="""Optional. Optional fields for the role from the corresponding Content.""",
-  )
-  token_ids: Optional[list[int]] = Field(
-      default=None, description="""A list of token ids from the input."""
-  )
-  tokens: Optional[list[bytes]] = Field(
-      default=None, description="""A list of tokens from the input."""
-  )
-
-
-class TokensInfoDict(TypedDict, total=False):
-  """Tokens info with a list of tokens and the corresponding list of token ids."""
-
-  role: Optional[str]
-  """Optional. Optional fields for the role from the corresponding Content."""
-
-  token_ids: Optional[list[int]]
-  """A list of token ids from the input."""
-
-  tokens: Optional[list[bytes]]
-  """A list of tokens from the input."""
-
-
-TokensInfoOrDict = Union[TokensInfo, TokensInfoDict]
-
-
-class ComputeTokensResponse(_common.BaseModel):
-  """Response for computing tokens."""
-
-  tokens_info: Optional[list[TokensInfo]] = Field(
-      default=None,
-      description="""Lists of tokens info from the input. A ComputeTokensRequest could have multiple instances with a prompt in each instance. We also need to return lists of tokens info for the request with multiple instances.""",
-  )
-
-
-class ComputeTokensResponseDict(TypedDict, total=False):
-  """Response for computing tokens."""
-
-  tokens_info: Optional[list[TokensInfoDict]]
-  """Lists of tokens info from the input. A ComputeTokensRequest could have multiple instances with a prompt in each instance. We also need to return lists of tokens info for the request with multiple instances."""
-
-
-ComputeTokensResponseOrDict = Union[
-    ComputeTokensResponse, ComputeTokensResponseDict
-]
-
-
-class GenerateVideosConfig(_common.BaseModel):
-  """Configuration for generating videos."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  number_of_videos: Optional[int] = Field(
-      default=None, description="""Number of output videos."""
-  )
-  output_gcs_uri: Optional[str] = Field(
-      default=None,
-      description="""The gcs bucket where to save the generated videos.""",
-  )
-  fps: Optional[int] = Field(
-      default=None, description="""Frames per second for video generation."""
-  )
-  duration_seconds: Optional[int] = Field(
-      default=None,
-      description="""Duration of the clip for video generation in seconds.""",
-  )
-  seed: Optional[int] = Field(
-      default=None,
-      description="""The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result.""",
-  )
-  aspect_ratio: Optional[str] = Field(
-      default=None,
-      description="""The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported.""",
-  )
-  resolution: Optional[str] = Field(
-      default=None,
-      description="""The resolution for the generated video. 1280x720, 1920x1080 are supported.""",
-  )
-  person_generation: Optional[str] = Field(
-      default=None,
-      description="""Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult.""",
-  )
-  pubsub_topic: Optional[str] = Field(
-      default=None,
-      description="""The pubsub topic where to publish the video generation progress.""",
-  )
-  negative_prompt: Optional[str] = Field(
-      default=None,
-      description="""Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video.""",
-  )
-  enhance_prompt: Optional[bool] = Field(
-      default=None, description="""Whether to use the prompt rewriting logic."""
-  )
-
-
-class GenerateVideosConfigDict(TypedDict, total=False):
-  """Configuration for generating videos."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  number_of_videos: Optional[int]
-  """Number of output videos."""
-
-  output_gcs_uri: Optional[str]
-  """The gcs bucket where to save the generated videos."""
-
-  fps: Optional[int]
-  """Frames per second for video generation."""
-
-  duration_seconds: Optional[int]
-  """Duration of the clip for video generation in seconds."""
-
-  seed: Optional[int]
-  """The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result."""
-
-  aspect_ratio: Optional[str]
-  """The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported."""
-
-  resolution: Optional[str]
-  """The resolution for the generated video. 1280x720, 1920x1080 are supported."""
-
-  person_generation: Optional[str]
-  """Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult."""
-
-  pubsub_topic: Optional[str]
-  """The pubsub topic where to publish the video generation progress."""
-
-  negative_prompt: Optional[str]
-  """Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video."""
-
-  enhance_prompt: Optional[bool]
-  """Whether to use the prompt rewriting logic."""
-
-
-GenerateVideosConfigOrDict = Union[
-    GenerateVideosConfig, GenerateVideosConfigDict
-]
-
-
-class _GenerateVideosParameters(_common.BaseModel):
-  """Class that represents the parameters for generating an image."""
-
-  model: Optional[str] = Field(
-      default=None,
-      description="""ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
-  )
-  prompt: Optional[str] = Field(
-      default=None,
-      description="""The text prompt for generating the videos. Optional for image to video use cases.""",
-  )
-  image: Optional[Image] = Field(
-      default=None,
-      description="""The input image for generating the videos.
-      Optional if prompt is provided.""",
-  )
-  config: Optional[GenerateVideosConfig] = Field(
-      default=None, description="""Configuration for generating videos."""
-  )
-
-
-class _GenerateVideosParametersDict(TypedDict, total=False):
-  """Class that represents the parameters for generating an image."""
-
-  model: Optional[str]
-  """ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
-
-  prompt: Optional[str]
-  """The text prompt for generating the videos. Optional for image to video use cases."""
-
-  image: Optional[ImageDict]
-  """The input image for generating the videos.
-      Optional if prompt is provided."""
-
-  config: Optional[GenerateVideosConfigDict]
-  """Configuration for generating videos."""
-
-
-_GenerateVideosParametersOrDict = Union[
-    _GenerateVideosParameters, _GenerateVideosParametersDict
-]
-
-
-class Video(_common.BaseModel):
-  """A generated video."""
-
-  uri: Optional[str] = Field(
-      default=None, description="""Path to another storage."""
-  )
-  video_bytes: Optional[bytes] = Field(
-      default=None, description="""Video bytes."""
-  )
-  mime_type: Optional[str] = Field(
-      default=None, description="""Video encoding, for example "video/mp4"."""
-  )
-
-  def save(
-      self,
-      path: str,
-  ) -> None:
-    """Saves the video to a file.
-
-    Args:
-        path: Local path where to save the video.
-    """
-    import pathlib  # pylint: disable=g-import-not-at-top
-
-    if not self.video_bytes:
-      raise NotImplementedError('Saving remote videos is not supported.')
-
-    pathlib.Path(path).write_bytes(self.video_bytes)
-
-  def show(self):
-    """Shows the video.
-
-    If the video has no mime_type, it is assumed to be video/mp4.
-
-    This method only works in a notebook environment.
-    """
-    if self.uri and not self.video_bytes:
-      return ValueError('Showing remote videos is not supported.')
-    if not self.video_bytes:
-      return ValueError('Video has no bytes.')
-
-    mime_type = self.mime_type or 'video/mp4'
-
-    try:
-      from IPython import display as IPython_display
-    except ImportError:
-      IPython_display = None
-
-    if IPython_display:
-      IPython_display.display(
-          IPython_display.Video(
-              data=self.video_bytes, mimetype=mime_type, embed=True
-          )
-      )
-
-  def __repr__(self):
-    video_bytes = '<video_bytes>' if self.video_bytes else 'None'
-    return (
-        f'Video(uri={self.uri}, video_bytes={video_bytes},'
-        f' mime_type={self.mime_type})'
-    )
-
-
-class VideoDict(TypedDict, total=False):
-  """A generated video."""
-
-  uri: Optional[str]
-  """Path to another storage."""
-
-  video_bytes: Optional[bytes]
-  """Video bytes."""
-
-  mime_type: Optional[str]
-  """Video encoding, for example "video/mp4"."""
-
-
-VideoOrDict = Union[Video, VideoDict]
-
-
-class GeneratedVideo(_common.BaseModel):
-  """A generated video."""
-
-  video: Optional[Video] = Field(
-      default=None, description="""The output video"""
-  )
-
-
-class GeneratedVideoDict(TypedDict, total=False):
-  """A generated video."""
-
-  video: Optional[VideoDict]
-  """The output video"""
-
-
-GeneratedVideoOrDict = Union[GeneratedVideo, GeneratedVideoDict]
-
-
-class GenerateVideosResponse(_common.BaseModel):
-  """Response with generated videos."""
-
-  generated_videos: Optional[list[GeneratedVideo]] = Field(
-      default=None, description="""List of the generated videos"""
-  )
-  rai_media_filtered_count: Optional[int] = Field(
-      default=None,
-      description="""Returns if any videos were filtered due to RAI policies.""",
-  )
-  rai_media_filtered_reasons: Optional[list[str]] = Field(
-      default=None, description="""Returns rai failure reasons if any."""
-  )
-
-
-class GenerateVideosResponseDict(TypedDict, total=False):
-  """Response with generated videos."""
-
-  generated_videos: Optional[list[GeneratedVideoDict]]
-  """List of the generated videos"""
-
-  rai_media_filtered_count: Optional[int]
-  """Returns if any videos were filtered due to RAI policies."""
-
-  rai_media_filtered_reasons: Optional[list[str]]
-  """Returns rai failure reasons if any."""
-
-
-GenerateVideosResponseOrDict = Union[
-    GenerateVideosResponse, GenerateVideosResponseDict
-]
-
-
-class GenerateVideosOperation(_common.BaseModel):
-  """A video generation operation."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.""",
-  )
-  metadata: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any.""",
-  )
-  done: Optional[bool] = Field(
-      default=None,
-      description="""If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.""",
-  )
-  error: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""The error result of the operation in case of failure or cancellation.""",
-  )
-  response: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""The normal response of the operation in case of success.""",
-  )
-  result: Optional[GenerateVideosResponse] = Field(
-      default=None, description="""The generated videos."""
-  )
-
-
-class GenerateVideosOperationDict(TypedDict, total=False):
-  """A video generation operation."""
-
-  name: Optional[str]
-  """The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`."""
-
-  metadata: Optional[dict[str, Any]]
-  """Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any."""
-
-  done: Optional[bool]
-  """If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available."""
-
-  error: Optional[dict[str, Any]]
-  """The error result of the operation in case of failure or cancellation."""
-
-  response: Optional[dict[str, Any]]
-  """The normal response of the operation in case of success."""
-
-  result: Optional[GenerateVideosResponseDict]
-  """The generated videos."""
-
-
-GenerateVideosOperationOrDict = Union[
-    GenerateVideosOperation, GenerateVideosOperationDict
-]
-
-
-class GetTuningJobConfig(_common.BaseModel):
-  """Optional parameters for tunings.get method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class GetTuningJobConfigDict(TypedDict, total=False):
-  """Optional parameters for tunings.get method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-GetTuningJobConfigOrDict = Union[GetTuningJobConfig, GetTuningJobConfigDict]
-
-
-class _GetTuningJobParameters(_common.BaseModel):
-  """Parameters for the get method."""
-
-  name: Optional[str] = Field(default=None, description="""""")
-  config: Optional[GetTuningJobConfig] = Field(
-      default=None, description="""Optional parameters for the request."""
-  )
-
-
-class _GetTuningJobParametersDict(TypedDict, total=False):
-  """Parameters for the get method."""
-
-  name: Optional[str]
-  """"""
-
-  config: Optional[GetTuningJobConfigDict]
-  """Optional parameters for the request."""
-
-
-_GetTuningJobParametersOrDict = Union[
-    _GetTuningJobParameters, _GetTuningJobParametersDict
-]
-
-
-class TunedModel(_common.BaseModel):
-
-  model: Optional[str] = Field(
-      default=None,
-      description="""Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}`.""",
-  )
-  endpoint: Optional[str] = Field(
-      default=None,
-      description="""Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.""",
-  )
-
-
-class TunedModelDict(TypedDict, total=False):
-
-  model: Optional[str]
-  """Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}`."""
-
-  endpoint: Optional[str]
-  """Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`."""
-
-
-TunedModelOrDict = Union[TunedModel, TunedModelDict]
-
-
-class GoogleRpcStatus(_common.BaseModel):
-  """The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs.
-
-  It is used by [gRPC](https://github.com/grpc). Each `Status` message contains
-  three pieces of data: error code, error message, and error details. You can
-  find out more about this error model and how to work with it in the [API
-  Design Guide](https://cloud.google.com/apis/design/errors).
-  """
-
-  code: Optional[int] = Field(
-      default=None,
-      description="""The status code, which should be an enum value of google.rpc.Code.""",
-  )
-  details: Optional[list[dict[str, Any]]] = Field(
-      default=None,
-      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
-  )
-  message: Optional[str] = Field(
-      default=None,
-      description="""A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the google.rpc.Status.details field, or localized by the client.""",
-  )
-
-
-class GoogleRpcStatusDict(TypedDict, total=False):
-  """The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs.
-
-  It is used by [gRPC](https://github.com/grpc). Each `Status` message contains
-  three pieces of data: error code, error message, and error details. You can
-  find out more about this error model and how to work with it in the [API
-  Design Guide](https://cloud.google.com/apis/design/errors).
-  """
-
-  code: Optional[int]
-  """The status code, which should be an enum value of google.rpc.Code."""
-
-  details: Optional[list[dict[str, Any]]]
-  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
-
-  message: Optional[str]
-  """A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the google.rpc.Status.details field, or localized by the client."""
-
-
-GoogleRpcStatusOrDict = Union[GoogleRpcStatus, GoogleRpcStatusDict]
-
-
-class SupervisedHyperParameters(_common.BaseModel):
-  """Hyperparameters for SFT."""
-
-  adapter_size: Optional[AdapterSize] = Field(
-      default=None, description="""Optional. Adapter size for tuning."""
-  )
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
-  )
-
-
-class SupervisedHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for SFT."""
-
-  adapter_size: Optional[AdapterSize]
-  """Optional. Adapter size for tuning."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
-
-
-SupervisedHyperParametersOrDict = Union[
-    SupervisedHyperParameters, SupervisedHyperParametersDict
-]
-
-
 class SupervisedTuningSpec(_common.BaseModel):
   """Tuning Spec for Supervised Tuning for first party models."""
 
@@ -6872,2547 +7406,3 @@ CachedContentUsageMetadataOrDict = Union[
     CachedContentUsageMetadata, CachedContentUsageMetadataDict
 ]
 
-
-class CachedContent(_common.BaseModel):
-  """A resource used in LLM queries for users to explicitly specify what to cache."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The server-generated resource name of the cached content.""",
-  )
-  display_name: Optional[str] = Field(
-      default=None,
-      description="""The user-generated meaningful display name of the cached content.""",
-  )
-  model: Optional[str] = Field(
-      default=None,
-      description="""The name of the publisher model to use for cached content.""",
-  )
-  create_time: Optional[datetime.datetime] = Field(
-      default=None, description="""Creation time of the cache entry."""
-  )
-  update_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""When the cache entry was last updated in UTC time.""",
-  )
-  expire_time: Optional[datetime.datetime] = Field(
-      default=None, description="""Expiration time of the cached content."""
-  )
-  usage_metadata: Optional[CachedContentUsageMetadata] = Field(
-      default=None,
-      description="""Metadata on the usage of the cached content.""",
-  )
-
-
-class CachedContentDict(TypedDict, total=False):
-  """A resource used in LLM queries for users to explicitly specify what to cache."""
-
-  name: Optional[str]
-  """The server-generated resource name of the cached content."""
-
-  display_name: Optional[str]
-  """The user-generated meaningful display name of the cached content."""
-
-  model: Optional[str]
-  """The name of the publisher model to use for cached content."""
-
-  create_time: Optional[datetime.datetime]
-  """Creation time of the cache entry."""
-
-  update_time: Optional[datetime.datetime]
-  """When the cache entry was last updated in UTC time."""
-
-  expire_time: Optional[datetime.datetime]
-  """Expiration time of the cached content."""
-
-  usage_metadata: Optional[CachedContentUsageMetadataDict]
-  """Metadata on the usage of the cached content."""
-
-
-CachedContentOrDict = Union[CachedContent, CachedContentDict]
-
-
-class GetCachedContentConfig(_common.BaseModel):
-  """Optional parameters for caches.get method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class GetCachedContentConfigDict(TypedDict, total=False):
-  """Optional parameters for caches.get method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-GetCachedContentConfigOrDict = Union[
-    GetCachedContentConfig, GetCachedContentConfigDict
-]
-
-
-class _GetCachedContentParameters(_common.BaseModel):
-  """Parameters for caches.get method."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The server-generated resource name of the cached content.
-      """,
-  )
-  config: Optional[GetCachedContentConfig] = Field(
-      default=None,
-      description="""Optional parameters for the request.
-      """,
-  )
-
-
-class _GetCachedContentParametersDict(TypedDict, total=False):
-  """Parameters for caches.get method."""
-
-  name: Optional[str]
-  """The server-generated resource name of the cached content.
-      """
-
-  config: Optional[GetCachedContentConfigDict]
-  """Optional parameters for the request.
-      """
-
-
-_GetCachedContentParametersOrDict = Union[
-    _GetCachedContentParameters, _GetCachedContentParametersDict
-]
-
-
-class DeleteCachedContentConfig(_common.BaseModel):
-  """Optional parameters for caches.delete method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class DeleteCachedContentConfigDict(TypedDict, total=False):
-  """Optional parameters for caches.delete method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-DeleteCachedContentConfigOrDict = Union[
-    DeleteCachedContentConfig, DeleteCachedContentConfigDict
-]
-
-
-class _DeleteCachedContentParameters(_common.BaseModel):
-  """Parameters for caches.delete method."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The server-generated resource name of the cached content.
-      """,
-  )
-  config: Optional[DeleteCachedContentConfig] = Field(
-      default=None,
-      description="""Optional parameters for the request.
-      """,
-  )
-
-
-class _DeleteCachedContentParametersDict(TypedDict, total=False):
-  """Parameters for caches.delete method."""
-
-  name: Optional[str]
-  """The server-generated resource name of the cached content.
-      """
-
-  config: Optional[DeleteCachedContentConfigDict]
-  """Optional parameters for the request.
-      """
-
-
-_DeleteCachedContentParametersOrDict = Union[
-    _DeleteCachedContentParameters, _DeleteCachedContentParametersDict
-]
-
-
-class DeleteCachedContentResponse(_common.BaseModel):
-  """Empty response for caches.delete method."""
-
-  pass
-
-
-class DeleteCachedContentResponseDict(TypedDict, total=False):
-  """Empty response for caches.delete method."""
-
-  pass
-
-
-DeleteCachedContentResponseOrDict = Union[
-    DeleteCachedContentResponse, DeleteCachedContentResponseDict
-]
-
-
-class UpdateCachedContentConfig(_common.BaseModel):
-  """Optional parameters for caches.update method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  ttl: Optional[str] = Field(
-      default=None,
-      description="""The TTL for this resource. The expiration time is computed: now + TTL. It is a duration string, with up to nine fractional digits, terminated by 's'. Example: "3.5s".""",
-  )
-  expire_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Timestamp of when this resource is considered expired. Uses RFC 3339 format, Example: 2014-10-02T15:01:23Z.""",
-  )
-
-
-class UpdateCachedContentConfigDict(TypedDict, total=False):
-  """Optional parameters for caches.update method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  ttl: Optional[str]
-  """The TTL for this resource. The expiration time is computed: now + TTL. It is a duration string, with up to nine fractional digits, terminated by 's'. Example: "3.5s"."""
-
-  expire_time: Optional[datetime.datetime]
-  """Timestamp of when this resource is considered expired. Uses RFC 3339 format, Example: 2014-10-02T15:01:23Z."""
-
-
-UpdateCachedContentConfigOrDict = Union[
-    UpdateCachedContentConfig, UpdateCachedContentConfigDict
-]
-
-
-class _UpdateCachedContentParameters(_common.BaseModel):
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The server-generated resource name of the cached content.
-      """,
-  )
-  config: Optional[UpdateCachedContentConfig] = Field(
-      default=None,
-      description="""Configuration that contains optional parameters.
-      """,
-  )
-
-
-class _UpdateCachedContentParametersDict(TypedDict, total=False):
-
-  name: Optional[str]
-  """The server-generated resource name of the cached content.
-      """
-
-  config: Optional[UpdateCachedContentConfigDict]
-  """Configuration that contains optional parameters.
-      """
-
-
-_UpdateCachedContentParametersOrDict = Union[
-    _UpdateCachedContentParameters, _UpdateCachedContentParametersDict
-]
-
-
-class ListCachedContentsConfig(_common.BaseModel):
-  """Config for caches.list method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  page_size: Optional[int] = Field(default=None, description="""""")
-  page_token: Optional[str] = Field(default=None, description="""""")
-
-
-class ListCachedContentsConfigDict(TypedDict, total=False):
-  """Config for caches.list method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  page_size: Optional[int]
-  """"""
-
-  page_token: Optional[str]
-  """"""
-
-
-ListCachedContentsConfigOrDict = Union[
-    ListCachedContentsConfig, ListCachedContentsConfigDict
-]
-
-
-class _ListCachedContentsParameters(_common.BaseModel):
-  """Parameters for caches.list method."""
-
-  config: Optional[ListCachedContentsConfig] = Field(
-      default=None,
-      description="""Configuration that contains optional parameters.
-      """,
-  )
-
-
-class _ListCachedContentsParametersDict(TypedDict, total=False):
-  """Parameters for caches.list method."""
-
-  config: Optional[ListCachedContentsConfigDict]
-  """Configuration that contains optional parameters.
-      """
-
-
-_ListCachedContentsParametersOrDict = Union[
-    _ListCachedContentsParameters, _ListCachedContentsParametersDict
-]
-
-
-class ListCachedContentsResponse(_common.BaseModel):
-
-  next_page_token: Optional[str] = Field(default=None, description="""""")
-  cached_contents: Optional[list[CachedContent]] = Field(
-      default=None,
-      description="""List of cached contents.
-      """,
-  )
-
-
-class ListCachedContentsResponseDict(TypedDict, total=False):
-
-  next_page_token: Optional[str]
-  """"""
-
-  cached_contents: Optional[list[CachedContentDict]]
-  """List of cached contents.
-      """
-
-
-ListCachedContentsResponseOrDict = Union[
-    ListCachedContentsResponse, ListCachedContentsResponseDict
-]
-
-
-class ListFilesConfig(_common.BaseModel):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  page_size: Optional[int] = Field(default=None, description="""""")
-  page_token: Optional[str] = Field(default=None, description="""""")
-
-
-class ListFilesConfigDict(TypedDict, total=False):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  page_size: Optional[int]
-  """"""
-
-  page_token: Optional[str]
-  """"""
-
-
-ListFilesConfigOrDict = Union[ListFilesConfig, ListFilesConfigDict]
-
-
-class _ListFilesParameters(_common.BaseModel):
-  """Generates the parameters for the list method."""
-
-  config: Optional[ListFilesConfig] = Field(
-      default=None,
-      description="""Used to override the default configuration.""",
-  )
-
-
-class _ListFilesParametersDict(TypedDict, total=False):
-  """Generates the parameters for the list method."""
-
-  config: Optional[ListFilesConfigDict]
-  """Used to override the default configuration."""
-
-
-_ListFilesParametersOrDict = Union[
-    _ListFilesParameters, _ListFilesParametersDict
-]
-
-
-class ListFilesResponse(_common.BaseModel):
-  """Response for the list files method."""
-
-  next_page_token: Optional[str] = Field(
-      default=None, description="""A token to retrieve next page of results."""
-  )
-  files: Optional[list[File]] = Field(
-      default=None, description="""The list of files."""
-  )
-
-
-class ListFilesResponseDict(TypedDict, total=False):
-  """Response for the list files method."""
-
-  next_page_token: Optional[str]
-  """A token to retrieve next page of results."""
-
-  files: Optional[list[FileDict]]
-  """The list of files."""
-
-
-ListFilesResponseOrDict = Union[ListFilesResponse, ListFilesResponseDict]
-
-
-class CreateFileConfig(_common.BaseModel):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class CreateFileConfigDict(TypedDict, total=False):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-CreateFileConfigOrDict = Union[CreateFileConfig, CreateFileConfigDict]
-
-
-class _CreateFileParameters(_common.BaseModel):
-  """Generates the parameters for the private _create method."""
-
-  file: Optional[File] = Field(
-      default=None,
-      description="""The file to be uploaded.
-            mime_type: (Required) The MIME type of the file. Must be provided.
-            name: (Optional) The name of the file in the destination (e.g.
-            'files/sample-image').
-            display_name: (Optional) The display name of the file.
-      """,
-  )
-  config: Optional[CreateFileConfig] = Field(
-      default=None,
-      description="""Used to override the default configuration.""",
-  )
-
-
-class _CreateFileParametersDict(TypedDict, total=False):
-  """Generates the parameters for the private _create method."""
-
-  file: Optional[FileDict]
-  """The file to be uploaded.
-            mime_type: (Required) The MIME type of the file. Must be provided.
-            name: (Optional) The name of the file in the destination (e.g.
-            'files/sample-image').
-            display_name: (Optional) The display name of the file.
-      """
-
-  config: Optional[CreateFileConfigDict]
-  """Used to override the default configuration."""
-
-
-_CreateFileParametersOrDict = Union[
-    _CreateFileParameters, _CreateFileParametersDict
-]
-
-
-class CreateFileResponse(_common.BaseModel):
-  """Response for the create file method."""
-
-  http_headers: Optional[dict[str, str]] = Field(
-      default=None,
-      description="""Used to retain the HTTP headers in the request""",
-  )
-
-
-class CreateFileResponseDict(TypedDict, total=False):
-  """Response for the create file method."""
-
-  http_headers: Optional[dict[str, str]]
-  """Used to retain the HTTP headers in the request"""
-
-
-CreateFileResponseOrDict = Union[CreateFileResponse, CreateFileResponseDict]
-
-
-class GetFileConfig(_common.BaseModel):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class GetFileConfigDict(TypedDict, total=False):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-GetFileConfigOrDict = Union[GetFileConfig, GetFileConfigDict]
-
-
-class _GetFileParameters(_common.BaseModel):
-  """Generates the parameters for the get method."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The name identifier for the file to retrieve.""",
-  )
-  config: Optional[GetFileConfig] = Field(
-      default=None,
-      description="""Used to override the default configuration.""",
-  )
-
-
-class _GetFileParametersDict(TypedDict, total=False):
-  """Generates the parameters for the get method."""
-
-  name: Optional[str]
-  """The name identifier for the file to retrieve."""
-
-  config: Optional[GetFileConfigDict]
-  """Used to override the default configuration."""
-
-
-_GetFileParametersOrDict = Union[_GetFileParameters, _GetFileParametersDict]
-
-
-class DeleteFileConfig(_common.BaseModel):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class DeleteFileConfigDict(TypedDict, total=False):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-DeleteFileConfigOrDict = Union[DeleteFileConfig, DeleteFileConfigDict]
-
-
-class _DeleteFileParameters(_common.BaseModel):
-  """Generates the parameters for the get method."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The name identifier for the file to be deleted.""",
-  )
-  config: Optional[DeleteFileConfig] = Field(
-      default=None,
-      description="""Used to override the default configuration.""",
-  )
-
-
-class _DeleteFileParametersDict(TypedDict, total=False):
-  """Generates the parameters for the get method."""
-
-  name: Optional[str]
-  """The name identifier for the file to be deleted."""
-
-  config: Optional[DeleteFileConfigDict]
-  """Used to override the default configuration."""
-
-
-_DeleteFileParametersOrDict = Union[
-    _DeleteFileParameters, _DeleteFileParametersDict
-]
-
-
-class DeleteFileResponse(_common.BaseModel):
-  """Response for the delete file method."""
-
-  pass
-
-
-class DeleteFileResponseDict(TypedDict, total=False):
-  """Response for the delete file method."""
-
-  pass
-
-
-DeleteFileResponseOrDict = Union[DeleteFileResponse, DeleteFileResponseDict]
-
-
-class BatchJobSource(_common.BaseModel):
-  """Config for `src` parameter."""
-
-  format: Optional[str] = Field(
-      default=None,
-      description="""Storage format of the input files. Must be one of:
-      'jsonl', 'bigquery'.
-      """,
-  )
-  gcs_uri: Optional[list[str]] = Field(
-      default=None,
-      description="""The Google Cloud Storage URIs to input files.
-      """,
-  )
-  bigquery_uri: Optional[str] = Field(
-      default=None,
-      description="""The BigQuery URI to input table.
-      """,
-  )
-
-
-class BatchJobSourceDict(TypedDict, total=False):
-  """Config for `src` parameter."""
-
-  format: Optional[str]
-  """Storage format of the input files. Must be one of:
-      'jsonl', 'bigquery'.
-      """
-
-  gcs_uri: Optional[list[str]]
-  """The Google Cloud Storage URIs to input files.
-      """
-
-  bigquery_uri: Optional[str]
-  """The BigQuery URI to input table.
-      """
-
-
-BatchJobSourceOrDict = Union[BatchJobSource, BatchJobSourceDict]
-
-
-class BatchJobDestination(_common.BaseModel):
-  """Config for `des` parameter."""
-
-  format: Optional[str] = Field(
-      default=None,
-      description="""Storage format of the output files. Must be one of:
-      'jsonl', 'bigquery'.
-      """,
-  )
-  gcs_uri: Optional[str] = Field(
-      default=None,
-      description="""The Google Cloud Storage URI to the output file.
-      """,
-  )
-  bigquery_uri: Optional[str] = Field(
-      default=None,
-      description="""The BigQuery URI to the output table.
-      """,
-  )
-
-
-class BatchJobDestinationDict(TypedDict, total=False):
-  """Config for `des` parameter."""
-
-  format: Optional[str]
-  """Storage format of the output files. Must be one of:
-      'jsonl', 'bigquery'.
-      """
-
-  gcs_uri: Optional[str]
-  """The Google Cloud Storage URI to the output file.
-      """
-
-  bigquery_uri: Optional[str]
-  """The BigQuery URI to the output table.
-      """
-
-
-BatchJobDestinationOrDict = Union[BatchJobDestination, BatchJobDestinationDict]
-
-
-class CreateBatchJobConfig(_common.BaseModel):
-  """Config for optional parameters."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  display_name: Optional[str] = Field(
-      default=None,
-      description="""The user-defined name of this BatchJob.
-      """,
-  )
-  dest: Optional[str] = Field(
-      default=None,
-      description="""GCS or BigQuery URI prefix for the output predictions. Example:
-      "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
-      """,
-  )
-
-
-class CreateBatchJobConfigDict(TypedDict, total=False):
-  """Config for optional parameters."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  display_name: Optional[str]
-  """The user-defined name of this BatchJob.
-      """
-
-  dest: Optional[str]
-  """GCS or BigQuery URI prefix for the output predictions. Example:
-      "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
-      """
-
-
-CreateBatchJobConfigOrDict = Union[
-    CreateBatchJobConfig, CreateBatchJobConfigDict
-]
-
-
-class _CreateBatchJobParameters(_common.BaseModel):
-  """Config for batches.create parameters."""
-
-  model: Optional[str] = Field(
-      default=None,
-      description="""The name of the model to produces the predictions via the BatchJob.
-      """,
-  )
-  src: Optional[str] = Field(
-      default=None,
-      description="""GCS URI(-s) or BigQuery URI to your input data to run batch job.
-      Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
-      """,
-  )
-  config: Optional[CreateBatchJobConfig] = Field(
-      default=None,
-      description="""Optional parameters for creating a BatchJob.
-      """,
-  )
-
-
-class _CreateBatchJobParametersDict(TypedDict, total=False):
-  """Config for batches.create parameters."""
-
-  model: Optional[str]
-  """The name of the model to produces the predictions via the BatchJob.
-      """
-
-  src: Optional[str]
-  """GCS URI(-s) or BigQuery URI to your input data to run batch job.
-      Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
-      """
-
-  config: Optional[CreateBatchJobConfigDict]
-  """Optional parameters for creating a BatchJob.
-      """
-
-
-_CreateBatchJobParametersOrDict = Union[
-    _CreateBatchJobParameters, _CreateBatchJobParametersDict
-]
-
-
-class JobError(_common.BaseModel):
-  """Job error."""
-
-  details: Optional[list[str]] = Field(
-      default=None,
-      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
-  )
-  code: Optional[int] = Field(default=None, description="""The status code.""")
-  message: Optional[str] = Field(
-      default=None,
-      description="""A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field.""",
-  )
-
-
-class JobErrorDict(TypedDict, total=False):
-  """Job error."""
-
-  details: Optional[list[str]]
-  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
-
-  code: Optional[int]
-  """The status code."""
-
-  message: Optional[str]
-  """A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field."""
-
-
-JobErrorOrDict = Union[JobError, JobErrorDict]
-
-
-class BatchJob(_common.BaseModel):
-  """Config for batches.create return value."""
-
-  name: Optional[str] = Field(
-      default=None, description="""Output only. Resource name of the Job."""
-  )
-  display_name: Optional[str] = Field(
-      default=None, description="""The user-defined name of this Job."""
-  )
-  state: Optional[JobState] = Field(
-      default=None,
-      description="""Output only. The detailed state of the job.""",
-  )
-  error: Optional[JobError] = Field(
-      default=None,
-      description="""Output only. Only populated when the job's state is JOB_STATE_FAILED or JOB_STATE_CANCELLED.""",
-  )
-  create_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Output only. Time when the Job was created.""",
-  )
-  start_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Output only. Time when the Job for the first time entered the `JOB_STATE_RUNNING` state.""",
-  )
-  end_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Output only. Time when the Job entered any of the following states: `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED`, `JOB_STATE_CANCELLED`.""",
-  )
-  update_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Output only. Time when the Job was most recently updated.""",
-  )
-  model: Optional[str] = Field(
-      default=None,
-      description="""The name of the model that produces the predictions via the BatchJob.
-      """,
-  )
-  src: Optional[BatchJobSource] = Field(
-      default=None,
-      description="""Configuration for the input data.
-      """,
-  )
-  dest: Optional[BatchJobDestination] = Field(
-      default=None,
-      description="""Configuration for the output data.
-      """,
-  )
-
-
-class BatchJobDict(TypedDict, total=False):
-  """Config for batches.create return value."""
-
-  name: Optional[str]
-  """Output only. Resource name of the Job."""
-
-  display_name: Optional[str]
-  """The user-defined name of this Job."""
-
-  state: Optional[JobState]
-  """Output only. The detailed state of the job."""
-
-  error: Optional[JobErrorDict]
-  """Output only. Only populated when the job's state is JOB_STATE_FAILED or JOB_STATE_CANCELLED."""
-
-  create_time: Optional[datetime.datetime]
-  """Output only. Time when the Job was created."""
-
-  start_time: Optional[datetime.datetime]
-  """Output only. Time when the Job for the first time entered the `JOB_STATE_RUNNING` state."""
-
-  end_time: Optional[datetime.datetime]
-  """Output only. Time when the Job entered any of the following states: `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED`, `JOB_STATE_CANCELLED`."""
-
-  update_time: Optional[datetime.datetime]
-  """Output only. Time when the Job was most recently updated."""
-
-  model: Optional[str]
-  """The name of the model that produces the predictions via the BatchJob.
-      """
-
-  src: Optional[BatchJobSourceDict]
-  """Configuration for the input data.
-      """
-
-  dest: Optional[BatchJobDestinationDict]
-  """Configuration for the output data.
-      """
-
-
-BatchJobOrDict = Union[BatchJob, BatchJobDict]
-
-
-class GetBatchJobConfig(_common.BaseModel):
-  """Optional parameters."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class GetBatchJobConfigDict(TypedDict, total=False):
-  """Optional parameters."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-GetBatchJobConfigOrDict = Union[GetBatchJobConfig, GetBatchJobConfigDict]
-
-
-class _GetBatchJobParameters(_common.BaseModel):
-  """Config for batches.get parameters."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """,
-  )
-  config: Optional[GetBatchJobConfig] = Field(
-      default=None, description="""Optional parameters for the request."""
-  )
-
-
-class _GetBatchJobParametersDict(TypedDict, total=False):
-  """Config for batches.get parameters."""
-
-  name: Optional[str]
-  """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """
-
-  config: Optional[GetBatchJobConfigDict]
-  """Optional parameters for the request."""
-
-
-_GetBatchJobParametersOrDict = Union[
-    _GetBatchJobParameters, _GetBatchJobParametersDict
-]
-
-
-class CancelBatchJobConfig(_common.BaseModel):
-  """Optional parameters."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class CancelBatchJobConfigDict(TypedDict, total=False):
-  """Optional parameters."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-CancelBatchJobConfigOrDict = Union[
-    CancelBatchJobConfig, CancelBatchJobConfigDict
-]
-
-
-class _CancelBatchJobParameters(_common.BaseModel):
-  """Config for batches.cancel parameters."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """,
-  )
-  config: Optional[CancelBatchJobConfig] = Field(
-      default=None, description="""Optional parameters for the request."""
-  )
-
-
-class _CancelBatchJobParametersDict(TypedDict, total=False):
-  """Config for batches.cancel parameters."""
-
-  name: Optional[str]
-  """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """
-
-  config: Optional[CancelBatchJobConfigDict]
-  """Optional parameters for the request."""
-
-
-_CancelBatchJobParametersOrDict = Union[
-    _CancelBatchJobParameters, _CancelBatchJobParametersDict
-]
-
-
-class ListBatchJobsConfig(_common.BaseModel):
-  """Config for optional parameters."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  page_size: Optional[int] = Field(default=None, description="""""")
-  page_token: Optional[str] = Field(default=None, description="""""")
-  filter: Optional[str] = Field(default=None, description="""""")
-
-
-class ListBatchJobsConfigDict(TypedDict, total=False):
-  """Config for optional parameters."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  page_size: Optional[int]
-  """"""
-
-  page_token: Optional[str]
-  """"""
-
-  filter: Optional[str]
-  """"""
-
-
-ListBatchJobsConfigOrDict = Union[ListBatchJobsConfig, ListBatchJobsConfigDict]
-
-
-class _ListBatchJobsParameters(_common.BaseModel):
-  """Config for batches.list parameters."""
-
-  config: Optional[ListBatchJobsConfig] = Field(
-      default=None, description=""""""
-  )
-
-
-class _ListBatchJobsParametersDict(TypedDict, total=False):
-  """Config for batches.list parameters."""
-
-  config: Optional[ListBatchJobsConfigDict]
-  """"""
-
-
-_ListBatchJobsParametersOrDict = Union[
-    _ListBatchJobsParameters, _ListBatchJobsParametersDict
-]
-
-
-class ListBatchJobsResponse(_common.BaseModel):
-  """Config for batches.list return value."""
-
-  next_page_token: Optional[str] = Field(default=None, description="""""")
-  batch_jobs: Optional[list[BatchJob]] = Field(default=None, description="""""")
-
-
-class ListBatchJobsResponseDict(TypedDict, total=False):
-  """Config for batches.list return value."""
-
-  next_page_token: Optional[str]
-  """"""
-
-  batch_jobs: Optional[list[BatchJobDict]]
-  """"""
-
-
-ListBatchJobsResponseOrDict = Union[
-    ListBatchJobsResponse, ListBatchJobsResponseDict
-]
-
-
-class DeleteBatchJobConfig(_common.BaseModel):
-  """Optional parameters for models.get method."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class DeleteBatchJobConfigDict(TypedDict, total=False):
-  """Optional parameters for models.get method."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-DeleteBatchJobConfigOrDict = Union[
-    DeleteBatchJobConfig, DeleteBatchJobConfigDict
-]
-
-
-class _DeleteBatchJobParameters(_common.BaseModel):
-  """Config for batches.delete parameters."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """,
-  )
-  config: Optional[DeleteBatchJobConfig] = Field(
-      default=None, description="""Optional parameters for the request."""
-  )
-
-
-class _DeleteBatchJobParametersDict(TypedDict, total=False):
-  """Config for batches.delete parameters."""
-
-  name: Optional[str]
-  """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
-    """
-
-  config: Optional[DeleteBatchJobConfigDict]
-  """Optional parameters for the request."""
-
-
-_DeleteBatchJobParametersOrDict = Union[
-    _DeleteBatchJobParameters, _DeleteBatchJobParametersDict
-]
-
-
-class DeleteResourceJob(_common.BaseModel):
-  """The return value of delete operation."""
-
-  name: Optional[str] = Field(default=None, description="""""")
-  done: Optional[bool] = Field(default=None, description="""""")
-  error: Optional[JobError] = Field(default=None, description="""""")
-
-
-class DeleteResourceJobDict(TypedDict, total=False):
-  """The return value of delete operation."""
-
-  name: Optional[str]
-  """"""
-
-  done: Optional[bool]
-  """"""
-
-  error: Optional[JobErrorDict]
-  """"""
-
-
-DeleteResourceJobOrDict = Union[DeleteResourceJob, DeleteResourceJobDict]
-
-
-class GetOperationConfig(_common.BaseModel):
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class GetOperationConfigDict(TypedDict, total=False):
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-GetOperationConfigOrDict = Union[GetOperationConfig, GetOperationConfigDict]
-
-
-class _GetOperationParameters(_common.BaseModel):
-  """Parameters for the GET method."""
-
-  operation_name: Optional[str] = Field(
-      default=None,
-      description="""The server-assigned name for the operation.""",
-  )
-  config: Optional[GetOperationConfig] = Field(
-      default=None,
-      description="""Used to override the default configuration.""",
-  )
-
-
-class _GetOperationParametersDict(TypedDict, total=False):
-  """Parameters for the GET method."""
-
-  operation_name: Optional[str]
-  """The server-assigned name for the operation."""
-
-  config: Optional[GetOperationConfigDict]
-  """Used to override the default configuration."""
-
-
-_GetOperationParametersOrDict = Union[
-    _GetOperationParameters, _GetOperationParametersDict
-]
-
-
-class FetchPredictOperationConfig(_common.BaseModel):
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class FetchPredictOperationConfigDict(TypedDict, total=False):
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-FetchPredictOperationConfigOrDict = Union[
-    FetchPredictOperationConfig, FetchPredictOperationConfigDict
-]
-
-
-class _FetchPredictOperationParameters(_common.BaseModel):
-  """Parameters for the fetchPredictOperation method."""
-
-  operation_name: Optional[str] = Field(
-      default=None,
-      description="""The server-assigned name for the operation.""",
-  )
-  resource_name: Optional[str] = Field(default=None, description="""""")
-  config: Optional[FetchPredictOperationConfig] = Field(
-      default=None,
-      description="""Used to override the default configuration.""",
-  )
-
-
-class _FetchPredictOperationParametersDict(TypedDict, total=False):
-  """Parameters for the fetchPredictOperation method."""
-
-  operation_name: Optional[str]
-  """The server-assigned name for the operation."""
-
-  resource_name: Optional[str]
-  """"""
-
-  config: Optional[FetchPredictOperationConfigDict]
-  """Used to override the default configuration."""
-
-
-_FetchPredictOperationParametersOrDict = Union[
-    _FetchPredictOperationParameters, _FetchPredictOperationParametersDict
-]
-
-
-class TestTableItem(_common.BaseModel):
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The name of the test. This is used to derive the replay id.""",
-  )
-  parameters: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""The parameters to the test. Use pydantic models.""",
-  )
-  exception_if_mldev: Optional[str] = Field(
-      default=None,
-      description="""Expects an exception for MLDev matching the string.""",
-  )
-  exception_if_vertex: Optional[str] = Field(
-      default=None,
-      description="""Expects an exception for Vertex matching the string.""",
-  )
-  override_replay_id: Optional[str] = Field(
-      default=None,
-      description="""Use if you don't want to use the default replay id which is derived from the test name.""",
-  )
-  has_union: Optional[bool] = Field(
-      default=None,
-      description="""True if the parameters contain an unsupported union type. This test  will be skipped for languages that do not support the union type.""",
-  )
-  skip_in_api_mode: Optional[str] = Field(
-      default=None,
-      description="""When set to a reason string, this test will be skipped in the API mode. Use this flag for tests that can not be reproduced with the real API. E.g. a test that deletes a resource.""",
-  )
-  ignore_keys: Optional[list[str]] = Field(
-      default=None,
-      description="""Keys to ignore when comparing the request and response. This is useful for tests that are not deterministic.""",
-  )
-
-
-class TestTableItemDict(TypedDict, total=False):
-
-  name: Optional[str]
-  """The name of the test. This is used to derive the replay id."""
-
-  parameters: Optional[dict[str, Any]]
-  """The parameters to the test. Use pydantic models."""
-
-  exception_if_mldev: Optional[str]
-  """Expects an exception for MLDev matching the string."""
-
-  exception_if_vertex: Optional[str]
-  """Expects an exception for Vertex matching the string."""
-
-  override_replay_id: Optional[str]
-  """Use if you don't want to use the default replay id which is derived from the test name."""
-
-  has_union: Optional[bool]
-  """True if the parameters contain an unsupported union type. This test  will be skipped for languages that do not support the union type."""
-
-  skip_in_api_mode: Optional[str]
-  """When set to a reason string, this test will be skipped in the API mode. Use this flag for tests that can not be reproduced with the real API. E.g. a test that deletes a resource."""
-
-  ignore_keys: Optional[list[str]]
-  """Keys to ignore when comparing the request and response. This is useful for tests that are not deterministic."""
-
-
-TestTableItemOrDict = Union[TestTableItem, TestTableItemDict]
-
-
-class TestTableFile(_common.BaseModel):
-
-  comment: Optional[str] = Field(default=None, description="""""")
-  test_method: Optional[str] = Field(default=None, description="""""")
-  parameter_names: Optional[list[str]] = Field(default=None, description="""""")
-  test_table: Optional[list[TestTableItem]] = Field(
-      default=None, description=""""""
-  )
-
-
-class TestTableFileDict(TypedDict, total=False):
-
-  comment: Optional[str]
-  """"""
-
-  test_method: Optional[str]
-  """"""
-
-  parameter_names: Optional[list[str]]
-  """"""
-
-  test_table: Optional[list[TestTableItemDict]]
-  """"""
-
-
-TestTableFileOrDict = Union[TestTableFile, TestTableFileDict]
-
-
-class ReplayRequest(_common.BaseModel):
-  """Represents a single request in a replay."""
-
-  method: Optional[str] = Field(default=None, description="""""")
-  url: Optional[str] = Field(default=None, description="""""")
-  headers: Optional[dict[str, str]] = Field(default=None, description="""""")
-  body_segments: Optional[list[dict[str, Any]]] = Field(
-      default=None, description=""""""
-  )
-
-
-class ReplayRequestDict(TypedDict, total=False):
-  """Represents a single request in a replay."""
-
-  method: Optional[str]
-  """"""
-
-  url: Optional[str]
-  """"""
-
-  headers: Optional[dict[str, str]]
-  """"""
-
-  body_segments: Optional[list[dict[str, Any]]]
-  """"""
-
-
-ReplayRequestOrDict = Union[ReplayRequest, ReplayRequestDict]
-
-
-class ReplayResponse(_common.BaseModel):
-  """Represents a single response in a replay."""
-
-  status_code: Optional[int] = Field(default=None, description="""""")
-  headers: Optional[dict[str, str]] = Field(default=None, description="""""")
-  body_segments: Optional[list[dict[str, Any]]] = Field(
-      default=None, description=""""""
-  )
-  sdk_response_segments: Optional[list[dict[str, Any]]] = Field(
-      default=None, description=""""""
-  )
-
-
-class ReplayResponseDict(TypedDict, total=False):
-  """Represents a single response in a replay."""
-
-  status_code: Optional[int]
-  """"""
-
-  headers: Optional[dict[str, str]]
-  """"""
-
-  body_segments: Optional[list[dict[str, Any]]]
-  """"""
-
-  sdk_response_segments: Optional[list[dict[str, Any]]]
-  """"""
-
-
-ReplayResponseOrDict = Union[ReplayResponse, ReplayResponseDict]
-
-
-class ReplayInteraction(_common.BaseModel):
-  """Represents a single interaction, request and response in a replay."""
-
-  request: Optional[ReplayRequest] = Field(default=None, description="""""")
-  response: Optional[ReplayResponse] = Field(default=None, description="""""")
-
-
-class ReplayInteractionDict(TypedDict, total=False):
-  """Represents a single interaction, request and response in a replay."""
-
-  request: Optional[ReplayRequestDict]
-  """"""
-
-  response: Optional[ReplayResponseDict]
-  """"""
-
-
-ReplayInteractionOrDict = Union[ReplayInteraction, ReplayInteractionDict]
-
-
-class ReplayFile(_common.BaseModel):
-  """Represents a recorded session."""
-
-  replay_id: Optional[str] = Field(default=None, description="""""")
-  interactions: Optional[list[ReplayInteraction]] = Field(
-      default=None, description=""""""
-  )
-
-
-class ReplayFileDict(TypedDict, total=False):
-  """Represents a recorded session."""
-
-  replay_id: Optional[str]
-  """"""
-
-  interactions: Optional[list[ReplayInteractionDict]]
-  """"""
-
-
-ReplayFileOrDict = Union[ReplayFile, ReplayFileDict]
-
-
-class UploadFileConfig(_common.BaseModel):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  name: Optional[str] = Field(
-      default=None,
-      description="""The name of the file in the destination (e.g., 'files/sample-image'. If not provided one will be generated.""",
-  )
-  mime_type: Optional[str] = Field(
-      default=None,
-      description="""mime_type: The MIME type of the file. If not provided, it will be inferred from the file extension.""",
-  )
-  display_name: Optional[str] = Field(
-      default=None, description="""Optional display name of the file."""
-  )
-
-
-class UploadFileConfigDict(TypedDict, total=False):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  name: Optional[str]
-  """The name of the file in the destination (e.g., 'files/sample-image'. If not provided one will be generated."""
-
-  mime_type: Optional[str]
-  """mime_type: The MIME type of the file. If not provided, it will be inferred from the file extension."""
-
-  display_name: Optional[str]
-  """Optional display name of the file."""
-
-
-UploadFileConfigOrDict = Union[UploadFileConfig, UploadFileConfigDict]
-
-
-class DownloadFileConfig(_common.BaseModel):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-
-
-class DownloadFileConfigDict(TypedDict, total=False):
-  """Used to override the default configuration."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-
-DownloadFileConfigOrDict = Union[DownloadFileConfig, DownloadFileConfigDict]
-
-
-class UpscaleImageConfig(_common.BaseModel):
-  """Configuration for upscaling an image.
-
-  For more information on this configuration, refer to
-  the `Imagen API reference documentation
-  <https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api>`_.
-  """
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  include_rai_reason: Optional[bool] = Field(
-      default=None,
-      description="""Whether to include a reason for filtered-out images in the
-      response.""",
-  )
-  output_mime_type: Optional[str] = Field(
-      default=None,
-      description="""The image format that the output should be saved as.""",
-  )
-  output_compression_quality: Optional[int] = Field(
-      default=None,
-      description="""The level of compression if the ``output_mime_type`` is
-      ``image/jpeg``.""",
-  )
-
-
-class UpscaleImageConfigDict(TypedDict, total=False):
-  """Configuration for upscaling an image.
-
-  For more information on this configuration, refer to
-  the `Imagen API reference documentation
-  <https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api>`_.
-  """
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  include_rai_reason: Optional[bool]
-  """Whether to include a reason for filtered-out images in the
-      response."""
-
-  output_mime_type: Optional[str]
-  """The image format that the output should be saved as."""
-
-  output_compression_quality: Optional[int]
-  """The level of compression if the ``output_mime_type`` is
-      ``image/jpeg``."""
-
-
-UpscaleImageConfigOrDict = Union[UpscaleImageConfig, UpscaleImageConfigDict]
-
-
-class UpscaleImageParameters(_common.BaseModel):
-  """User-facing config UpscaleImageParameters."""
-
-  model: Optional[str] = Field(
-      default=None, description="""The model to use."""
-  )
-  image: Optional[Image] = Field(
-      default=None, description="""The input image to upscale."""
-  )
-  upscale_factor: Optional[str] = Field(
-      default=None,
-      description="""The factor to upscale the image (x2 or x4).""",
-  )
-  config: Optional[UpscaleImageConfig] = Field(
-      default=None, description="""Configuration for upscaling."""
-  )
-
-
-class UpscaleImageParametersDict(TypedDict, total=False):
-  """User-facing config UpscaleImageParameters."""
-
-  model: Optional[str]
-  """The model to use."""
-
-  image: Optional[ImageDict]
-  """The input image to upscale."""
-
-  upscale_factor: Optional[str]
-  """The factor to upscale the image (x2 or x4)."""
-
-  config: Optional[UpscaleImageConfigDict]
-  """Configuration for upscaling."""
-
-
-UpscaleImageParametersOrDict = Union[
-    UpscaleImageParameters, UpscaleImageParametersDict
-]
-
-
-class RawReferenceImage(_common.BaseModel):
-  """A raw reference image.
-
-  A raw reference image represents the base image to edit, provided by the user.
-  It can optionally be provided in addition to a mask reference image or
-  a style reference image.
-  """
-
-  reference_image: Optional[Image] = Field(
-      default=None,
-      description="""The reference image for the editing operation.""",
-  )
-  reference_id: Optional[int] = Field(
-      default=None, description="""The id of the reference image."""
-  )
-  reference_type: Optional[str] = Field(
-      default=None,
-      description="""The type of the reference image. Only set by the SDK.""",
-  )
-
-  @pydantic.model_validator(mode='before')
-  @classmethod
-  def _validate_mask_image_config(self, values):
-    if 'reference_type' in values:
-      raise ValueError('Cannot set internal reference_type field directly.')
-    values['reference_type'] = 'REFERENCE_TYPE_RAW'
-    return values
-
-
-class RawReferenceImageDict(TypedDict, total=False):
-  """A raw reference image.
-
-  A raw reference image represents the base image to edit, provided by the user.
-  It can optionally be provided in addition to a mask reference image or
-  a style reference image.
-  """
-
-  reference_image: Optional[ImageDict]
-  """The reference image for the editing operation."""
-
-  reference_id: Optional[int]
-  """The id of the reference image."""
-
-  reference_type: Optional[str]
-  """The type of the reference image. Only set by the SDK."""
-
-
-RawReferenceImageOrDict = Union[RawReferenceImage, RawReferenceImageDict]
-
-
-class MaskReferenceImage(_common.BaseModel):
-  """A mask reference image.
-
-  This encapsulates either a mask image provided by the user and configs for
-  the user provided mask, or only config parameters for the model to generate
-  a mask.
-
-  A mask image is an image whose non-zero values indicate where to edit the base
-  image. If the user provides a mask image, the mask must be in the same
-  dimensions as the raw image.
-  """
-
-  reference_image: Optional[Image] = Field(
-      default=None,
-      description="""The reference image for the editing operation.""",
-  )
-  reference_id: Optional[int] = Field(
-      default=None, description="""The id of the reference image."""
-  )
-  reference_type: Optional[str] = Field(
-      default=None,
-      description="""The type of the reference image. Only set by the SDK.""",
-  )
-  config: Optional[MaskReferenceConfig] = Field(
-      default=None,
-      description="""Configuration for the mask reference image.""",
-  )
-  """Re-map config to mask_reference_config to send to API."""
-  mask_image_config: Optional['MaskReferenceConfig'] = Field(
-      default=None, description=""""""
-  )
-
-  @pydantic.model_validator(mode='before')
-  @classmethod
-  def _validate_mask_image_config(self, values):
-    config = values.get('config', None)
-    values['mask_image_config'] = config
-    if 'reference_type' in values:
-      raise ValueError('Cannot set internal reference_type field directly.')
-    values['reference_type'] = 'REFERENCE_TYPE_MASK'
-    return values
-
-
-class MaskReferenceImageDict(TypedDict, total=False):
-  """A mask reference image.
-
-  This encapsulates either a mask image provided by the user and configs for
-  the user provided mask, or only config parameters for the model to generate
-  a mask.
-
-  A mask image is an image whose non-zero values indicate where to edit the base
-  image. If the user provides a mask image, the mask must be in the same
-  dimensions as the raw image.
-  """
-
-  reference_image: Optional[ImageDict]
-  """The reference image for the editing operation."""
-
-  reference_id: Optional[int]
-  """The id of the reference image."""
-
-  reference_type: Optional[str]
-  """The type of the reference image. Only set by the SDK."""
-
-  config: Optional[MaskReferenceConfigDict]
-  """Configuration for the mask reference image."""
-
-
-MaskReferenceImageOrDict = Union[MaskReferenceImage, MaskReferenceImageDict]
-
-
-class ControlReferenceImage(_common.BaseModel):
-  """A control reference image.
-
-  The image of the control reference image is either a control image provided
-  by the user, or a regular image which the backend will use to generate a
-  control image of. In the case of the latter, the
-  enable_control_image_computation field in the config should be set to True.
-
-  A control image is an image that represents a sketch image of areas for the
-  model to fill in based on the prompt.
-  """
-
-  reference_image: Optional[Image] = Field(
-      default=None,
-      description="""The reference image for the editing operation.""",
-  )
-  reference_id: Optional[int] = Field(
-      default=None, description="""The id of the reference image."""
-  )
-  reference_type: Optional[str] = Field(
-      default=None,
-      description="""The type of the reference image. Only set by the SDK.""",
-  )
-  config: Optional[ControlReferenceConfig] = Field(
-      default=None,
-      description="""Configuration for the control reference image.""",
-  )
-  """Re-map config to control_reference_config to send to API."""
-  control_image_config: Optional['ControlReferenceConfig'] = Field(
-      default=None, description=""""""
-  )
-
-  @pydantic.model_validator(mode='before')
-  @classmethod
-  def _validate_mask_image_config(self, values):
-    config = values.get('config', None)
-    values['control_image_config'] = config
-    if 'reference_type' in values:
-      raise ValueError('Cannot set internal reference_type field directly.')
-    values['reference_type'] = 'REFERENCE_TYPE_CONTROL'
-    return values
-
-
-class ControlReferenceImageDict(TypedDict, total=False):
-  """A control reference image.
-
-  The image of the control reference image is either a control image provided
-  by the user, or a regular image which the backend will use to generate a
-  control image of. In the case of the latter, the
-  enable_control_image_computation field in the config should be set to True.
-
-  A control image is an image that represents a sketch image of areas for the
-  model to fill in based on the prompt.
-  """
-
-  reference_image: Optional[ImageDict]
-  """The reference image for the editing operation."""
-
-  reference_id: Optional[int]
-  """The id of the reference image."""
-
-  reference_type: Optional[str]
-  """The type of the reference image. Only set by the SDK."""
-
-  config: Optional[ControlReferenceConfigDict]
-  """Configuration for the control reference image."""
-
-
-ControlReferenceImageOrDict = Union[
-    ControlReferenceImage, ControlReferenceImageDict
-]
-
-
-class StyleReferenceImage(_common.BaseModel):
-  """A style reference image.
-
-  This encapsulates a style reference image provided by the user, and
-  additionally optional config parameters for the style reference image.
-
-  A raw reference image can also be provided as a destination for the style to
-  be applied to.
-  """
-
-  reference_image: Optional[Image] = Field(
-      default=None,
-      description="""The reference image for the editing operation.""",
-  )
-  reference_id: Optional[int] = Field(
-      default=None, description="""The id of the reference image."""
-  )
-  reference_type: Optional[str] = Field(
-      default=None,
-      description="""The type of the reference image. Only set by the SDK.""",
-  )
-  config: Optional[StyleReferenceConfig] = Field(
-      default=None,
-      description="""Configuration for the style reference image.""",
-  )
-  """Re-map config to style_reference_config to send to API."""
-  style_image_config: Optional['StyleReferenceConfig'] = Field(
-      default=None, description=""""""
-  )
-
-  @pydantic.model_validator(mode='before')
-  @classmethod
-  def _validate_mask_image_config(self, values):
-    config = values.get('config', None)
-    values['style_image_config'] = config
-    if 'reference_type' in values:
-      raise ValueError('Cannot set internal reference_type field directly.')
-    values['reference_type'] = 'REFERENCE_TYPE_STYLE'
-    return values
-
-
-class StyleReferenceImageDict(TypedDict, total=False):
-  """A style reference image.
-
-  This encapsulates a style reference image provided by the user, and
-  additionally optional config parameters for the style reference image.
-
-  A raw reference image can also be provided as a destination for the style to
-  be applied to.
-  """
-
-  reference_image: Optional[ImageDict]
-  """The reference image for the editing operation."""
-
-  reference_id: Optional[int]
-  """The id of the reference image."""
-
-  reference_type: Optional[str]
-  """The type of the reference image. Only set by the SDK."""
-
-  config: Optional[StyleReferenceConfigDict]
-  """Configuration for the style reference image."""
-
-
-StyleReferenceImageOrDict = Union[StyleReferenceImage, StyleReferenceImageDict]
-
-
-class SubjectReferenceImage(_common.BaseModel):
-  """A subject reference image.
-
-  This encapsulates a subject reference image provided by the user, and
-  additionally optional config parameters for the subject reference image.
-
-  A raw reference image can also be provided as a destination for the subject to
-  be applied to.
-  """
-
-  reference_image: Optional[Image] = Field(
-      default=None,
-      description="""The reference image for the editing operation.""",
-  )
-  reference_id: Optional[int] = Field(
-      default=None, description="""The id of the reference image."""
-  )
-  reference_type: Optional[str] = Field(
-      default=None,
-      description="""The type of the reference image. Only set by the SDK.""",
-  )
-  config: Optional[SubjectReferenceConfig] = Field(
-      default=None,
-      description="""Configuration for the subject reference image.""",
-  )
-  """Re-map config to subject_reference_config to send to API."""
-  subject_image_config: Optional['SubjectReferenceConfig'] = Field(
-      default=None, description=""""""
-  )
-
-  @pydantic.model_validator(mode='before')
-  @classmethod
-  def _validate_mask_image_config(self, values):
-    config = values.get('config', None)
-    values['subject_image_config'] = config
-    if 'reference_type' in values:
-      raise ValueError('Cannot set internal reference_type field directly.')
-    values['reference_type'] = 'REFERENCE_TYPE_SUBJECT'
-    return values
-
-
-class SubjectReferenceImageDict(TypedDict, total=False):
-  """A subject reference image.
-
-  This encapsulates a subject reference image provided by the user, and
-  additionally optional config parameters for the subject reference image.
-
-  A raw reference image can also be provided as a destination for the subject to
-  be applied to.
-  """
-
-  reference_image: Optional[ImageDict]
-  """The reference image for the editing operation."""
-
-  reference_id: Optional[int]
-  """The id of the reference image."""
-
-  reference_type: Optional[str]
-  """The type of the reference image. Only set by the SDK."""
-
-  config: Optional[SubjectReferenceConfigDict]
-  """Configuration for the subject reference image."""
-
-
-SubjectReferenceImageOrDict = Union[
-    SubjectReferenceImage, SubjectReferenceImageDict
-]
-
-
-class LiveServerSetupComplete(_common.BaseModel):
-  """Sent in response to a `LiveGenerateContentSetup` message from the client."""
-
-  pass
-
-
-class LiveServerSetupCompleteDict(TypedDict, total=False):
-  """Sent in response to a `LiveGenerateContentSetup` message from the client."""
-
-  pass
-
-
-LiveServerSetupCompleteOrDict = Union[
-    LiveServerSetupComplete, LiveServerSetupCompleteDict
-]
-
-
-class Transcription(_common.BaseModel):
-  """Audio transcription in Server Conent."""
-
-  text: Optional[str] = Field(
-      default=None,
-      description="""Transcription text.
-      """,
-  )
-  finished: Optional[bool] = Field(
-      default=None,
-      description="""The bool indicates the end of the transcription.
-      """,
-  )
-
-
-class TranscriptionDict(TypedDict, total=False):
-  """Audio transcription in Server Conent."""
-
-  text: Optional[str]
-  """Transcription text.
-      """
-
-  finished: Optional[bool]
-  """The bool indicates the end of the transcription.
-      """
-
-
-TranscriptionOrDict = Union[Transcription, TranscriptionDict]
-
-
-class LiveServerContent(_common.BaseModel):
-  """Incremental server update generated by the model in response to client messages.
-
-  Content is generated as quickly as possible, and not in real time. Clients
-  may choose to buffer and play it out in real time.
-  """
-
-  model_turn: Optional[Content] = Field(
-      default=None,
-      description="""The content that the model has generated as part of the current conversation with the user.""",
-  )
-  turn_complete: Optional[bool] = Field(
-      default=None,
-      description="""If true, indicates that the model is done generating. Generation will only start in response to additional client messages. Can be set alongside `content`, indicating that the `content` is the last in the turn.""",
-  )
-  interrupted: Optional[bool] = Field(
-      default=None,
-      description="""If true, indicates that a client message has interrupted current model generation. If the client is playing out the content in realtime, this is a good signal to stop and empty the current queue.""",
-  )
-  generation_complete: Optional[bool] = Field(
-      default=None,
-      description="""If true, indicates that the model is done generating. When model is
-      interrupted while generating there will be no generation_complete message
-      in interrupted turn, it will go through interrupted > turn_complete.
-      When model assumes realtime playback there will be delay between
-      generation_complete and turn_complete that is caused by model
-      waiting for playback to finish. If true, indicates that the model
-      has finished generating all content. This is a signal to the client
-      that it can stop sending messages.""",
-  )
-  input_transcription: Optional[Transcription] = Field(
-      default=None,
-      description="""Input transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
-      model turn.""",
-  )
-  output_transcription: Optional[Transcription] = Field(
-      default=None,
-      description="""Output transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
-      model turn.
-      """,
-  )
-
-
-class LiveServerContentDict(TypedDict, total=False):
-  """Incremental server update generated by the model in response to client messages.
-
-  Content is generated as quickly as possible, and not in real time. Clients
-  may choose to buffer and play it out in real time.
-  """
-
-  model_turn: Optional[ContentDict]
-  """The content that the model has generated as part of the current conversation with the user."""
-
-  turn_complete: Optional[bool]
-  """If true, indicates that the model is done generating. Generation will only start in response to additional client messages. Can be set alongside `content`, indicating that the `content` is the last in the turn."""
-
-  interrupted: Optional[bool]
-  """If true, indicates that a client message has interrupted current model generation. If the client is playing out the content in realtime, this is a good signal to stop and empty the current queue."""
-
-  generation_complete: Optional[bool]
-  """If true, indicates that the model is done generating. When model is
-      interrupted while generating there will be no generation_complete message
-      in interrupted turn, it will go through interrupted > turn_complete.
-      When model assumes realtime playback there will be delay between
-      generation_complete and turn_complete that is caused by model
-      waiting for playback to finish. If true, indicates that the model
-      has finished generating all content. This is a signal to the client
-      that it can stop sending messages."""
-
-  input_transcription: Optional[TranscriptionDict]
-  """Input transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
-      model turn."""
-
-  output_transcription: Optional[TranscriptionDict]
-  """Output transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
-      model turn.
-      """
-
-
-LiveServerContentOrDict = Union[LiveServerContent, LiveServerContentDict]
-
-
-class LiveServerToolCall(_common.BaseModel):
-  """Request for the client to execute the `function_calls` and return the responses with the matching `id`s."""
-
-  function_calls: Optional[list[FunctionCall]] = Field(
-      default=None, description="""The function call to be executed."""
-  )
-
-
-class LiveServerToolCallDict(TypedDict, total=False):
-  """Request for the client to execute the `function_calls` and return the responses with the matching `id`s."""
-
-  function_calls: Optional[list[FunctionCallDict]]
-  """The function call to be executed."""
-
-
-LiveServerToolCallOrDict = Union[LiveServerToolCall, LiveServerToolCallDict]
-
-
-class LiveServerToolCallCancellation(_common.BaseModel):
-  """Notification for the client that a previously issued `ToolCallMessage` with the specified `id`s should have been not executed and should be cancelled.
-
-  If there were side-effects to those tool calls, clients may attempt to undo
-  the tool calls. This message occurs only in cases where the clients interrupt
-  server turns.
-  """
-
-  ids: Optional[list[str]] = Field(
-      default=None, description="""The ids of the tool calls to be cancelled."""
-  )
-
-
-class LiveServerToolCallCancellationDict(TypedDict, total=False):
-  """Notification for the client that a previously issued `ToolCallMessage` with the specified `id`s should have been not executed and should be cancelled.
-
-  If there were side-effects to those tool calls, clients may attempt to undo
-  the tool calls. This message occurs only in cases where the clients interrupt
-  server turns.
-  """
-
-  ids: Optional[list[str]]
-  """The ids of the tool calls to be cancelled."""
-
-
-LiveServerToolCallCancellationOrDict = Union[
-    LiveServerToolCallCancellation, LiveServerToolCallCancellationDict
-]
-
-
-class LiveServerMessage(_common.BaseModel):
-  """Response message for API call."""
-
-  setup_complete: Optional[LiveServerSetupComplete] = Field(
-      default=None,
-      description="""Sent in response to a `LiveClientSetup` message from the client.""",
-  )
-  server_content: Optional[LiveServerContent] = Field(
-      default=None,
-      description="""Content generated by the model in response to client messages.""",
-  )
-  tool_call: Optional[LiveServerToolCall] = Field(
-      default=None,
-      description="""Request for the client to execute the `function_calls` and return the responses with the matching `id`s.""",
-  )
-  tool_call_cancellation: Optional[LiveServerToolCallCancellation] = Field(
-      default=None,
-      description="""Notification for the client that a previously issued `ToolCallMessage` with the specified `id`s should have been not executed and should be cancelled.""",
-  )
-
-  @property
-  def text(self) -> Optional[str]:
-    """Returns the concatenation of all text parts in the response."""
-    if (
-        not self.server_content
-        or not self.server_content
-        or not self.server_content.model_turn
-        or not self.server_content.model_turn.parts
-    ):
-      return None
-    text = ''
-    for part in self.server_content.model_turn.parts:
-      if isinstance(part.text, str):
-        if isinstance(part.thought, bool) and part.thought:
-          continue
-        text += part.text
-    return text if text else None
-
-  @property
-  def data(self) -> Optional[bytes]:
-    """Returns the concatenation of all inline data parts in the response."""
-    if (
-        not self.server_content
-        or not self.server_content
-        or not self.server_content.model_turn
-        or not self.server_content.model_turn.parts
-    ):
-      return None
-    concatenated_data = b''
-    for part in self.server_content.model_turn.parts:
-      if part.inline_data and isinstance(part.inline_data.data, bytes):
-        concatenated_data += part.inline_data.data
-    return concatenated_data if len(concatenated_data) > 0 else None
-
-
-class LiveServerMessageDict(TypedDict, total=False):
-  """Response message for API call."""
-
-  setup_complete: Optional[LiveServerSetupCompleteDict]
-  """Sent in response to a `LiveClientSetup` message from the client."""
-
-  server_content: Optional[LiveServerContentDict]
-  """Content generated by the model in response to client messages."""
-
-  tool_call: Optional[LiveServerToolCallDict]
-  """Request for the client to execute the `function_calls` and return the responses with the matching `id`s."""
-
-  tool_call_cancellation: Optional[LiveServerToolCallCancellationDict]
-  """Notification for the client that a previously issued `ToolCallMessage` with the specified `id`s should have been not executed and should be cancelled."""
-
-
-LiveServerMessageOrDict = Union[LiveServerMessage, LiveServerMessageDict]
-
-
-class LiveClientSetup(_common.BaseModel):
-  """Message contains configuration that will apply for the duration of the streaming session."""
-
-  model: Optional[str] = Field(
-      default=None,
-      description="""
-      The fully qualified name of the publisher model or tuned model endpoint to
-      use.
-      """,
-  )
-  generation_config: Optional[GenerationConfig] = Field(
-      default=None,
-      description="""The generation configuration for the session.
-      Note: only a subset of fields are supported.
-      """,
-  )
-  system_instruction: Optional[Content] = Field(
-      default=None,
-      description="""The user provided system instructions for the model.
-      Note: only text should be used in parts and content in each part will be
-      in a separate paragraph.""",
-  )
-  tools: Optional[ToolListUnion] = Field(
-      default=None,
-      description=""" A list of `Tools` the model may use to generate the next response.
-
-      A `Tool` is a piece of code that enables the system to interact with
-      external systems to perform an action, or set of actions, outside of
-      knowledge and scope of the model.""",
-  )
-
-
-class LiveClientSetupDict(TypedDict, total=False):
-  """Message contains configuration that will apply for the duration of the streaming session."""
-
-  model: Optional[str]
-  """
-      The fully qualified name of the publisher model or tuned model endpoint to
-      use.
-      """
-
-  generation_config: Optional[GenerationConfigDict]
-  """The generation configuration for the session.
-      Note: only a subset of fields are supported.
-      """
-
-  system_instruction: Optional[ContentDict]
-  """The user provided system instructions for the model.
-      Note: only text should be used in parts and content in each part will be
-      in a separate paragraph."""
-
-  tools: Optional[ToolListUnionDict]
-  """ A list of `Tools` the model may use to generate the next response.
-
-      A `Tool` is a piece of code that enables the system to interact with
-      external systems to perform an action, or set of actions, outside of
-      knowledge and scope of the model."""
-
-
-LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
-
-
-class LiveClientContent(_common.BaseModel):
-  """Incremental update of the current conversation delivered from the client.
-
-  All the content here will unconditionally be appended to the conversation
-  history and used as part of the prompt to the model to generate content.
-
-  A message here will interrupt any current model generation.
-  """
-
-  turns: Optional[list[Content]] = Field(
-      default=None,
-      description="""The content appended to the current conversation with the model.
-
-      For single-turn queries, this is a single instance. For multi-turn
-      queries, this is a repeated field that contains conversation history and
-      latest request.
-      """,
-  )
-  turn_complete: Optional[bool] = Field(
-      default=None,
-      description="""If true, indicates that the server content generation should start with
-  the currently accumulated prompt. Otherwise, the server will await
-  additional messages before starting generation.""",
-  )
-
-
-class LiveClientContentDict(TypedDict, total=False):
-  """Incremental update of the current conversation delivered from the client.
-
-  All the content here will unconditionally be appended to the conversation
-  history and used as part of the prompt to the model to generate content.
-
-  A message here will interrupt any current model generation.
-  """
-
-  turns: Optional[list[ContentDict]]
-  """The content appended to the current conversation with the model.
-
-      For single-turn queries, this is a single instance. For multi-turn
-      queries, this is a repeated field that contains conversation history and
-      latest request.
-      """
-
-  turn_complete: Optional[bool]
-  """If true, indicates that the server content generation should start with
-  the currently accumulated prompt. Otherwise, the server will await
-  additional messages before starting generation."""
-
-
-LiveClientContentOrDict = Union[LiveClientContent, LiveClientContentDict]
-
-
-class LiveClientRealtimeInput(_common.BaseModel):
-  """User input that is sent in real time.
-
-  This is different from `LiveClientContent` in a few ways:
-
-    - Can be sent continuously without interruption to model generation.
-    - If there is a need to mix data interleaved across the
-      `LiveClientContent` and the `LiveClientRealtimeInput`, server attempts to
-      optimize for best response, but there are no guarantees.
-    - End of turn is not explicitly specified, but is rather derived from user
-      activity (for example, end of speech).
-    - Even before the end of turn, the data is processed incrementally
-      to optimize for a fast start of the response from the model.
-    - Is always assumed to be the user's input (cannot be used to populate
-      conversation history).
-  """
-
-  media_chunks: Optional[list[Blob]] = Field(
-      default=None, description="""Inlined bytes data for media input."""
-  )
-
-
-class LiveClientRealtimeInputDict(TypedDict, total=False):
-  """User input that is sent in real time.
-
-  This is different from `LiveClientContent` in a few ways:
-
-    - Can be sent continuously without interruption to model generation.
-    - If there is a need to mix data interleaved across the
-      `LiveClientContent` and the `LiveClientRealtimeInput`, server attempts to
-      optimize for best response, but there are no guarantees.
-    - End of turn is not explicitly specified, but is rather derived from user
-      activity (for example, end of speech).
-    - Even before the end of turn, the data is processed incrementally
-      to optimize for a fast start of the response from the model.
-    - Is always assumed to be the user's input (cannot be used to populate
-      conversation history).
-  """
-
-  media_chunks: Optional[list[BlobDict]]
-  """Inlined bytes data for media input."""
-
-
-LiveClientRealtimeInputOrDict = Union[
-    LiveClientRealtimeInput, LiveClientRealtimeInputDict
-]
-
-
-class LiveClientToolResponse(_common.BaseModel):
-  """Client generated response to a `ToolCall` received from the server.
-
-  Individual `FunctionResponse` objects are matched to the respective
-  `FunctionCall` objects by the `id` field.
-
-  Note that in the unary and server-streaming GenerateContent APIs function
-  calling happens by exchanging the `Content` parts, while in the bidi
-  GenerateContent APIs function calling happens over this dedicated set of
-  messages.
-  """
-
-  function_responses: Optional[list[FunctionResponse]] = Field(
-      default=None, description="""The response to the function calls."""
-  )
-
-
-class LiveClientToolResponseDict(TypedDict, total=False):
-  """Client generated response to a `ToolCall` received from the server.
-
-  Individual `FunctionResponse` objects are matched to the respective
-  `FunctionCall` objects by the `id` field.
-
-  Note that in the unary and server-streaming GenerateContent APIs function
-  calling happens by exchanging the `Content` parts, while in the bidi
-  GenerateContent APIs function calling happens over this dedicated set of
-  messages.
-  """
-
-  function_responses: Optional[list[FunctionResponseDict]]
-  """The response to the function calls."""
-
-
-LiveClientToolResponseOrDict = Union[
-    LiveClientToolResponse, LiveClientToolResponseDict
-]
-
-
-class LiveClientMessage(_common.BaseModel):
-  """Messages sent by the client in the API call."""
-
-  setup: Optional[LiveClientSetup] = Field(
-      default=None,
-      description="""Message to be sent by the system when connecting to the API. SDK users should not send this message.""",
-  )
-  client_content: Optional[LiveClientContent] = Field(
-      default=None,
-      description="""Incremental update of the current conversation delivered from the client.""",
-  )
-  realtime_input: Optional[LiveClientRealtimeInput] = Field(
-      default=None, description="""User input that is sent in real time."""
-  )
-  tool_response: Optional[LiveClientToolResponse] = Field(
-      default=None,
-      description="""Response to a `ToolCallMessage` received from the server.""",
-  )
-
-
-class LiveClientMessageDict(TypedDict, total=False):
-  """Messages sent by the client in the API call."""
-
-  setup: Optional[LiveClientSetupDict]
-  """Message to be sent by the system when connecting to the API. SDK users should not send this message."""
-
-  client_content: Optional[LiveClientContentDict]
-  """Incremental update of the current conversation delivered from the client."""
-
-  realtime_input: Optional[LiveClientRealtimeInputDict]
-  """User input that is sent in real time."""
-
-  tool_response: Optional[LiveClientToolResponseDict]
-  """Response to a `ToolCallMessage` received from the server."""
-
-
-LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
-
-
-class AudioTranscriptionConfig(_common.BaseModel):
-  """The audio transcription configuration in Setup."""
-
-  pass
-
-
-class AudioTranscriptionConfigDict(TypedDict, total=False):
-  """The audio transcription configuration in Setup."""
-
-  pass
-
-
-AudioTranscriptionConfigOrDict = Union[
-    AudioTranscriptionConfig, AudioTranscriptionConfigDict
-]
-
-
-class LiveConnectConfig(_common.BaseModel):
-  """Session config for the API connection."""
-
-  generation_config: Optional[GenerationConfig] = Field(
-      default=None,
-      description="""The generation configuration for the session.""",
-  )
-  response_modalities: Optional[list[Modality]] = Field(
-      default=None,
-      description="""The requested modalities of the response. Represents the set of
-      modalities that the model can return. Defaults to AUDIO if not specified.
-      """,
-  )
-  temperature: Optional[float] = Field(
-      default=None,
-      description="""Value that controls the degree of randomness in token selection.
-      Lower temperatures are good for prompts that require a less open-ended or
-      creative response, while higher temperatures can lead to more diverse or
-      creative results.
-      """,
-  )
-  top_p: Optional[float] = Field(
-      default=None,
-      description="""Tokens are selected from the most to least probable until the sum
-      of their probabilities equals this value. Use a lower value for less
-      random responses and a higher value for more random responses.
-      """,
-  )
-  top_k: Optional[float] = Field(
-      default=None,
-      description="""For each token selection step, the ``top_k`` tokens with the
-      highest probabilities are sampled. Then tokens are further filtered based
-      on ``top_p`` with the final token selected using temperature sampling. Use
-      a lower number for less random responses and a higher number for more
-      random responses.
-      """,
-  )
-  max_output_tokens: Optional[int] = Field(
-      default=None,
-      description="""Maximum number of tokens that can be generated in the response.
-      """,
-  )
-  seed: Optional[int] = Field(
-      default=None,
-      description="""When ``seed`` is fixed to a specific number, the model makes a best
-      effort to provide the same response for repeated requests. By default, a
-      random number is used.
-      """,
-  )
-  speech_config: Optional[SpeechConfig] = Field(
-      default=None,
-      description="""The speech generation configuration.
-      """,
-  )
-  system_instruction: Optional[Content] = Field(
-      default=None,
-      description="""The user provided system instructions for the model.
-      Note: only text should be used in parts and content in each part will be
-      in a separate paragraph.""",
-  )
-  tools: Optional[ToolListUnion] = Field(
-      default=None,
-      description="""A list of `Tools` the model may use to generate the next response.
-
-      A `Tool` is a piece of code that enables the system to interact with
-      external systems to perform an action, or set of actions, outside of
-      knowledge and scope of the model.""",
-  )
-  input_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
-      default=None,
-      description="""The transcription of the input aligns with the input audio language.
-      """,
-  )
-  output_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
-      default=None,
-      description="""The transcription of the output aligns with the language code
-      specified for the output audio.
-      """,
-  )
-
-
-class LiveConnectConfigDict(TypedDict, total=False):
-  """Session config for the API connection."""
-
-  generation_config: Optional[GenerationConfigDict]
-  """The generation configuration for the session."""
-
-  response_modalities: Optional[list[Modality]]
-  """The requested modalities of the response. Represents the set of
-      modalities that the model can return. Defaults to AUDIO if not specified.
-      """
-
-  temperature: Optional[float]
-  """Value that controls the degree of randomness in token selection.
-      Lower temperatures are good for prompts that require a less open-ended or
-      creative response, while higher temperatures can lead to more diverse or
-      creative results.
-      """
-
-  top_p: Optional[float]
-  """Tokens are selected from the most to least probable until the sum
-      of their probabilities equals this value. Use a lower value for less
-      random responses and a higher value for more random responses.
-      """
-
-  top_k: Optional[float]
-  """For each token selection step, the ``top_k`` tokens with the
-      highest probabilities are sampled. Then tokens are further filtered based
-      on ``top_p`` with the final token selected using temperature sampling. Use
-      a lower number for less random responses and a higher number for more
-      random responses.
-      """
-
-  max_output_tokens: Optional[int]
-  """Maximum number of tokens that can be generated in the response.
-      """
-
-  seed: Optional[int]
-  """When ``seed`` is fixed to a specific number, the model makes a best
-      effort to provide the same response for repeated requests. By default, a
-      random number is used.
-      """
-
-  speech_config: Optional[SpeechConfigDict]
-  """The speech generation configuration.
-      """
-
-  system_instruction: Optional[ContentDict]
-  """The user provided system instructions for the model.
-      Note: only text should be used in parts and content in each part will be
-      in a separate paragraph."""
-
-  tools: Optional[ToolListUnionDict]
-  """A list of `Tools` the model may use to generate the next response.
-
-      A `Tool` is a piece of code that enables the system to interact with
-      external systems to perform an action, or set of actions, outside of
-      knowledge and scope of the model."""
-
-  input_audio_transcription: Optional[AudioTranscriptionConfigDict]
-  """The transcription of the input aligns with the input audio language.
-      """
-
-  output_audio_transcription: Optional[AudioTranscriptionConfigDict]
-  """The transcription of the output aligns with the language code
-      specified for the output audio.
-      """
-
-
-LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
