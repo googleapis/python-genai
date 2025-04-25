@@ -704,6 +704,13 @@ def process_schema(
 
   handle_null_fields(schema)
 
+  # Fix for Issue #554: Pydantic v2 generates uniqueItems=True for sets,
+  # which is valid JSON Schema but causes issues downstream. Remove it.
+  # We check for both upper and lower case 'array' just in case.
+  schema_type_val = schema.get('type')
+  if schema_type_val == 'ARRAY' or schema_type_val == 'array':
+      schema.pop('uniqueItems', None)
+
   # After removing null fields, Optional fields with only one possible type
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}

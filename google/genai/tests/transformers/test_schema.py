@@ -78,6 +78,10 @@ class CountryInfoWithAnyOf(pydantic.BaseModel):
   restaurants_per_capita: Union[int, float]
 
 
+class ModelWithSet(pydantic.BaseModel):
+  int_set: set[int]
+
+
 @pytest.fixture
 @pytest.mark.parametrize('use_vertex', [True, False])
 def client(use_vertex):
@@ -636,3 +640,18 @@ def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
 
   transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering is None
+
+
+def test_t_schema_for_set(client):
+  """Tests t_schema handles sets correctly (Issue #554)."""
+  transformed_schema = _transformers.t_schema(client, ModelWithSet)
+  assert isinstance(transformed_schema, types.Schema)
+  assert transformed_schema.type == types.Type.OBJECT
+  assert 'int_set' in transformed_schema.properties
+  int_set_prop = transformed_schema.properties['int_set']
+  assert int_set_prop.type == types.Type.ARRAY
+  # Check that uniqueItems is NOT present after transformation
+  # Accessing the underlying dict because uniqueItems is not a field on types.Schema
+  assert 'uniqueItems' not in int_set_prop.model_dump(exclude_unset=True)
+  assert isinstance(int_set_prop.items, types.Schema)
+  assert int_set_prop.items.type == types.Type.INTEGER
