@@ -9224,6 +9224,11 @@ class LiveConnectConfig(_common.BaseModel):
       external systems to perform an action, or set of actions, outside of
       knowledge and scope of the model.""",
   )
+  tool_config: Optional[ToolConfig] = Field(
+      default=None,
+      description="""Configuration for the tools to use. This config is shared for all tools.
+      """,
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -9252,6 +9257,81 @@ class LiveConnectConfigDict(TypedDict, total=False):
       A `Tool` is a piece of code that enables the system to interact with
       external systems to perform an action, or set of actions, outside of
       knowledge and scope of the model."""
+
+  tool_config: Optional[ToolConfigDict]
+  """Configuration for the tools to use. This config is shared for all tools.
+      """
+
+
+class LiveConnectConfig(_common.BaseModel):
+  """Session config for the API connection."""
+
+  generation_config: Optional[GenerationConfig] = Field(
+      default=None,
+      description="""The generation configuration for the session.""",
+  )
+  response_modalities: Optional[list[Modality]] = Field(
+      default=None,
+      description="""The requested modalities of the response. Represents the set of
+      modalities that the model can return. Defaults to AUDIO if not specified.
+      """,
+  )
+  speech_config: Optional[SpeechConfig] = Field(
+      default=None,
+      description="""The speech generation configuration.
+      """,
+  )
+  system_instruction: Optional[Content] = Field(
+      default=None,
+      description="""The user provided system instructions for the model.
+      Note: only text should be used in parts and content in each part will be
+      in a separate paragraph.""",
+  )
+  tools: Optional[ToolListUnion] = Field(
+      default=None,
+      description="""A list of `Tools` the model may use to generate the next response.
+
+      A `Tool` is a piece of code that enables the system to interact with
+      external systems to perform an action, or set of actions, outside of
+      knowledge and scope of the model.""",
+  )
+  tool_config: Optional[ToolConfig] = Field(
+      default=None,
+      description="""Configuration for the tools to use. This config is shared for all tools.
+      """,
+  )
+
+
+class LiveConnectConfigDict(TypedDict, total=False):
+  """Session config for the API connection."""
+
+  generation_config: Optional[GenerationConfigDict]
+  """The generation configuration for the session."""
+
+  response_modalities: Optional[list[Modality]]
+  """The requested modalities of the response. Represents the set of
+      modalities that the model can return. Defaults to AUDIO if not specified.
+      """
+
+  speech_config: Optional[SpeechConfigDict]
+  """The speech generation configuration.
+      """
+
+  system_instruction: Optional[ContentDict]
+  """The user provided system instructions for the model.
+      Note: only text should be used in parts and content in each part will be
+      in a separate paragraph."""
+
+  tools: Optional[ToolListUnionDict]
+  """A list of `Tools` the model may use to generate the next response.
+
+      A `Tool` is a piece of code that enables the system to interact with
+      external systems to perform an action, or set of actions, outside of
+      knowledge and scope of the model."""
+
+  tool_config: Optional[ToolConfigDict]
+  """Configuration for the tools to use. This config is shared for all tools.
+      """
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]

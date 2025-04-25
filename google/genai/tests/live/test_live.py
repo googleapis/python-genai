@@ -651,6 +651,54 @@ def test_bidi_setup_to_api_with_config_tools_code_execution(
   assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
 
 
+def test_bidi_setup_to_api_with_tool_config(
+    mock_api_client,
+):
+  config = types.LiveConnectConfig(
+      generation_config=types.GenerationConfig(temperature=0.7),
+      response_modalities=['TEXT'],
+      system_instruction=types.Content(
+          parts=[types.Part(text='test instruction')], role='user'
+      ),
+      tools=[types.Tool(google_search_retrieval=types.GoogleSearchRetrieval())],
+      tool_config=types.ToolConfig(
+          function_calling_config=types.FunctionCallingConfig(
+              mode=types.FunctionCallingConfigMode.AUTO
+          )
+      ),
+  )
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'generationConfig': {
+              'temperature': 0.7,
+              'responseModalities': ['TEXT'],
+          },
+          'systemInstruction': {
+              'parts': [{'text': 'test instruction'}],
+              'role': 'user',
+          },
+          'tools': [{'googleSearchRetrieval': {}}],
+          'toolConfig': {
+              'functionCallingConfig': {
+                  'mode': 'AUTO',
+              },
+          },
+      }
+  }
+  # Test for mldev, config is a LiveConnectConfig
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+      model='test_model', config=config
+  )
+  assert result == expected_result
+
+  # Test for vertex, config is a LiveConnectConfig
+  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
+      model='test_model', config=config
+  )
+  assert result == expected_result
+
+
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_str(mock_api_client, mock_websocket, vertexai):
   session = live.AsyncSession(

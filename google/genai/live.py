@@ -48,6 +48,8 @@ from .models import _SpeechConfig_to_mldev
 from .models import _SpeechConfig_to_vertex
 from .models import _Tool_to_mldev
 from .models import _Tool_to_vertex
+from .models import _ToolConfig_to_mldev
+from .models import _ToolConfig_to_vertex
 
 try:
   from websockets.asyncio.client import ClientConnection  # type: ignore
@@ -742,6 +744,16 @@ class AsyncLive(_api_module.BaseModule):
               for item in t.t_tools(self._api_client, getv(config, ['tools']))
           ],
       )
+    if getv(config, ['tool_config']) is not None:
+      setv(
+          to_object,
+          ['toolConfig'],
+          _ToolConfig_to_mldev(
+              self._api_client,
+              getv(config, ['tool_config']),
+              to_object,
+          ),
+      )
 
     return_value = {'setup': {'model': model}}
     return_value['setup'].update(to_object)
@@ -821,6 +833,16 @@ class AsyncLive(_api_module.BaseModule):
               )
               for item in t.t_tools(self._api_client, getv(config, ['tools']))
           ],
+      )
+    if getv(config, ['tool_config']) is not None:
+      setv(
+          to_object,
+          ['toolConfig'],
+          _ToolConfig_to_vertex(
+              self._api_client,
+              getv(config, ['tool_config']),
+              to_object,
+          ),
       )
 
     return_value = {'setup': {'model': model}}
