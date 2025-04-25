@@ -864,6 +864,10 @@ class AsyncLive(_api_module.BaseModule):
         async for message in session.receive():
           print(message)
     """
+    # TODO(b/404946806): Remove this check once httpOptions is supported.
+    if config and 'http_options' in config:
+      raise ValueError('http_options is not supported for live connect.')
+
     base_url = self._api_client._websocket_base_url()
     if isinstance(base_url, bytes):
       base_url = base_url.decode('utf-8')

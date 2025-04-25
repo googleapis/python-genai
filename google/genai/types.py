@@ -10539,6 +10539,9 @@ LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
 class LiveConnectConfig(_common.BaseModel):
   """Session config for the API connection."""
 
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   generation_config: Optional[GenerationConfig] = Field(
       default=None,
       description="""The generation configuration for the session.""",
@@ -10640,6 +10643,9 @@ If included the server will send SessionResumptionUpdate messages.""",
 
 class LiveConnectConfigDict(TypedDict, total=False):
   """Session config for the API connection."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
 
   generation_config: Optional[GenerationConfigDict]
   """The generation configuration for the session."""
