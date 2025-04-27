@@ -892,15 +892,18 @@ class AsyncLive(_api_module.BaseModule):
 
       request = json.dumps(request_dict)
     else:
-      # Get bearer token through Application Default Credentials.
-      creds, _ = google.auth.default(  # type: ignore[no-untyped-call]
+      if not self._api_client._credentials:
+        # Get bearer token through Application Default Credentials.
+        creds, _ = google.auth.default(  # type: ignore[no-untyped-call]
           scopes=['https://www.googleapis.com/auth/cloud-platform']
-      )
-
+        )
+      else:
+        creds = self._api_client._credentials
       # creds.valid is False, and creds.token is None
       # Need to refresh credentials to populate those
-      auth_req = google.auth.transport.requests.Request()  # type: ignore[no-untyped-call]
-      creds.refresh(auth_req)
+      if not (creds.token and creds.valid):
+        auth_req = google.auth.transport.requests.Request()  # type: ignore[no-untyped-call]
+        creds.refresh(auth_req)
       bearer_token = creds.token
       headers = self._api_client._http_options.headers
       if headers is not None:

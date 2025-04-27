@@ -26,6 +26,7 @@ import warnings
 
 import pytest
 from websockets import client
+from google.oauth2.credentials import Credentials
 
 from ... import _api_client as api_client
 from ... import _common
@@ -65,7 +66,7 @@ def get_current_weather(location: str, unit: str):
   return 15 if unit == 'C' else 59
 
 
-def mock_api_client(vertexai=False):
+def mock_api_client(vertexai=False, credentials=None):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   if not vertexai:
     api_client.api_key = 'TEST_API_KEY'
@@ -77,6 +78,7 @@ def mock_api_client(vertexai=False):
     api_client.project = 'test_project'
 
   api_client._host = lambda: 'test_host'
+  api_client._credentials = credentials
   api_client._http_options = types.HttpOptions.model_validate(
       {'headers': {}}
   )  # Ensure headers exist
@@ -1500,3 +1502,58 @@ def test_parse_client_message_realtime_tool_response(
           ],
       }
   }
+
+
+@pytest.mark.asyncio
+async def test_connect_with_provided_credentials(mock_websocket):
+    # custom oauth2 credentials
+    credentials = Credentials(token="provided_fake_token")
+    # mock api client
+    client = mock_api_client(vertexai=True, credentials=credentials)
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None):
+        yield mock_websocket
+
+    @patch.object(live, "connect", new=mock_connect)
+    async def _test_connect():
+        live_module = live.AsyncLive(client)
+        async with live_module.connect(model="test-model"):
+            pass
+
+        assert "Authorization" in live_module._api_client._http_options.headers
+        assert (
+            live_module._api_client._http_options.headers["Authorization"]
+            == "Bearer provided_fake_token"
+        )
+
+    await _test_connect()
+
+
+@pytest.mark.asyncio
+async def test_connect_with_default_credentials(mock_websocket):
+    # mock api client
+    client = mock_api_client(vertexai=True, credentials=None)
+    # mock google auth cred
+    mock_google_auth_default = Mock(return_value=(None, None))
+    mock_creds = Mock(token="default_test_token")
+    mock_google_auth_default.return_value = (mock_creds, None)
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None):
+        yield mock_websocket
+
+    @patch("google.auth.default", new=mock_google_auth_default)
+    @patch.object(live, "connect", new=mock_connect)
+    async def _test_connect():
+        live_module = live.AsyncLive(client)
+        async with live_module.connect(model="test-model"):
+            pass
+
+        assert "Authorization" in live_module._api_client._http_options.headers
+        assert (
+            live_module._api_client._http_options.headers["Authorization"]
+            == "Bearer default_test_token"
+        )
+
+    await _test_connect()
