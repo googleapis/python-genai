@@ -246,7 +246,7 @@ class Chat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.chats.create(model='gemini-1.5-flash')
+      chat = client.chats.create(model='gemini-2.0-flash')
       response = chat.send_message('tell me a story')
     """
 
@@ -298,7 +298,7 @@ class Chat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.chats.create(model='gemini-1.5-flash')
+      chat = client.chats.create(model='gemini-2.0-flash')
       for chunk in chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
@@ -409,7 +409,7 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.aio.chats.create(model='gemini-1.5-flash')
+      chat = client.aio.chats.create(model='gemini-2.0-flash')
       response = await chat.send_message('tell me a story')
     """
     if not _is_part_type(message):
@@ -459,7 +459,7 @@ class AsyncChat(_BaseChat):
     Usage:
 
     .. code-block:: python
-      chat = client.aio.chats.create(model='gemini-1.5-flash')
+      chat = client.aio.chats.create(model='gemini-2.0-flash')
       async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
