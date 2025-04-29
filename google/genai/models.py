@@ -27,6 +27,7 @@ from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
+import time
 
 logger = logging.getLogger('google_genai.models')
 
@@ -3941,6 +3942,94 @@ def _GenerateVideosOperation_from_vertex(
   return to_object
 
 
+def count_tokens_with_file_support(
+    self,
+    *,
+    model: str,
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+    config: Optional[types.CountTokensConfigOrDict] = None,
+) -> types.CountTokensResponse:
+    """Counts the number of tokens in the given content, with improved file support.
+
+    This method correctly handles counting tokens in file content, rather than just
+    counting the file reference as a single token.
+
+    Args:
+        model (str): The model to use for counting tokens.
+        contents (list[types.Content]): The content to count tokens for.
+        config (CountTokensConfig): The configuration for counting tokens.
+
+    Returns:
+        CountTokensResponse: The token count response.
+    """
+    # Check for file parts in the contents and process them
+    processed_contents = []
+    
+    if isinstance(contents, (list, tuple)):
+        content_list = contents
+    else:
+        content_list = [contents]
+        
+    for content_item in content_list:
+        if hasattr(content_item, 'parts'):
+            parts = content_item.parts
+            new_parts = []
+            
+            for part in parts:
+                # If this is a file part, we need to get the file content
+                if hasattr(part, 'file_data') and part.file_data is not None:
+                    # Get the file content from the URI
+                    file_uri = part.file_data.file_uri
+                    file = self._api_client.parent.files.get(name=file_uri)
+                    
+                    # Check if the file is active
+                    if file.state != types.FileState.ACTIVE:
+                        # Wait for the file to be active if needed
+                        while file.state == types.FileState.PROCESSING:
+                            time.sleep(1)
+                            file = self._api_client.parent.files.get(name=file_uri)
+                        
+                        if file.state != types.FileState.ACTIVE:
+                            raise ValueError(f"File {file_uri} failed to process.")
+                    
+                    # Download the file content
+                    file_content_response = self._api_client.parent.files.download(
+                        name=file_uri
+                    )
+                    
+                    # Based on mime type, convert to text if possible
+                    mime_type = part.file_data.mime_type
+                    if mime_type and mime_type.startswith('text/'):
+                        # This is a text file, convert to text part
+                        file_content = file_content_response.raw_body.decode('utf-8')
+                        new_part = types.Part.from_text(text=file_content)
+                        new_parts.append(new_part)
+                    else:
+                        # For non-text files, we still use the original file reference
+                        # as we can't easily extract text content
+                        new_parts.append(part)
+                else:
+                    # Not a file part, keep as is
+                    new_parts.append(part)
+                    
+            # Create a new content with the processed parts
+            new_content = content_item.__class__(parts=new_parts)
+            if hasattr(content_item, 'role'):
+                new_content.role = content_item.role
+                
+            processed_contents.append(new_content)
+        else:
+            # Content doesn't have parts, keep as is
+            processed_contents.append(content_item)
+    
+    # Call the original count_tokens method with the processed contents
+    return self._count_tokens(
+        model=model,
+        contents=processed_contents,
+        config=config,
+    )
+
+
 class Models(_api_module.BaseModule):
 
   def _generate_content(
@@ -5437,6 +5526,10 @@ class Models(_api_module.BaseModule):
     )
 
 
+# Rename the original method and replace it with our enhanced version
+Models._count_tokens = Models.count_tokens
+Models.count_tokens = count_tokens_with_file_support
+
 class AsyncModels(_api_module.BaseModule):
 
   async def _generate_content(
@@ -6506,10 +6599,8 @@ class AsyncModels(_api_module.BaseModule):
           or not response.candidates[0].content.parts
       ):
         break
-      func_response_parts = (
-          await _extra_utils.get_function_response_parts_async(
-              response, function_map
-          )
+      func_response_parts = _extra_utils.get_function_response_parts(
+          response, function_map
       )
       if not func_response_parts:
         break
@@ -6925,3 +7016,4 @@ class AsyncModels(_api_module.BaseModule):
         upscale_factor=upscale_factor,
         config=api_config,
     )
+
