@@ -7593,7 +7593,7 @@ class _CreateCachedContentParameters(_common.BaseModel):
 
   model: Optional[str] = Field(
       default=None,
-      description="""ID of the model to use. Example: gemini-1.5-flash""",
+      description="""ID of the model to use. Example: gemini-2.0-flash""",
   )
   config: Optional[CreateCachedContentConfig] = Field(
       default=None,
@@ -7606,7 +7606,7 @@ class _CreateCachedContentParametersDict(TypedDict, total=False):
   """Parameters for caches.create method."""
 
   model: Optional[str]
-  """ID of the model to use. Example: gemini-1.5-flash"""
+  """ID of the model to use. Example: gemini-2.0-flash"""
 
   config: Optional[CreateCachedContentConfigDict]
   """Configuration that contains optional parameters.
