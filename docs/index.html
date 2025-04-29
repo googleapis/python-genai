@@ -1190,7 +1190,7 @@ data and use the <code class="docutils literal notranslate"><span class="pre">fr
     <span class="n">file_uris</span> <span class="o">=</span> <span class="p">[</span><span class="n">file1</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span> <span class="n">file2</span><span class="o">.</span><span class="n">uri</span><span class="p">]</span>
 
 <span class="n">cached_content</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-1.5-pro-002&#39;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.0-flash-001&#39;</span><span class="p">,</span>
     <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">CreateCachedContentConfig</span><span class="p">(</span>
         <span class="n">contents</span><span class="o">=</span><span class="p">[</span>
             <span class="n">types</span><span class="o">.</span><span class="n">Content</span><span class="p">(</span>
@@ -1223,7 +1223,7 @@ data and use the <code class="docutils literal notranslate"><span class="pre">fr
 <section id="id8">
 <h2>Generate Content<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-1.5-pro-002&#39;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.0-flash-001&#39;</span><span class="p">,</span>
     <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Summarize the pdfs&#39;</span><span class="p">,</span>
     <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">GenerateContentConfig</span><span class="p">(</span>
         <span class="n">cached_content</span><span class="o">=</span><span class="n">cached_content</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -1245,12 +1245,12 @@ tuning through <code class="docutils literal notranslate"><span class="pre">tune
 <li><p>Gemini Developer API supports tuning from inline examples</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">vertexai</span><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;gemini-1.5-pro-002&#39;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;gemini-2.0-flash-001&#39;</span>
     <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">TuningDataset</span><span class="p">(</span>
         <span class="n">gcs_uri</span><span class="o">=</span><span class="s1">&#39;gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl&#39;</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;models/gemini-1.0-pro-001&#39;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;models/gemini-2.0-flash-001&#39;</span>
     <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">TuningDataset</span><span class="p">(</span>
         <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
             <span class="n">types</span><span class="o">.</span><span class="n">TuningExample</span><span class="p">(</span>

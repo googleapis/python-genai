@@ -166,9 +166,6 @@ def _Schema_to_mldev(
   if getv(from_object, ['pattern']) is not None:
     raise ValueError('pattern parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['default']) is not None:
-    raise ValueError('default parameter is not supported in Gemini API.')
-
   if getv(from_object, ['max_length']) is not None:
     raise ValueError('max_length parameter is not supported in Gemini API.')
 
@@ -183,6 +180,9 @@ def _Schema_to_mldev(
 
   if getv(from_object, ['any_of']) is not None:
     setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
+
+  if getv(from_object, ['default']) is not None:
+    setv(to_object, ['default'], getv(from_object, ['default']))
 
   if getv(from_object, ['description']) is not None:
     setv(to_object, ['description'], getv(from_object, ['description']))
@@ -245,9 +245,6 @@ def _Schema_to_vertex(
   if getv(from_object, ['pattern']) is not None:
     setv(to_object, ['pattern'], getv(from_object, ['pattern']))
 
-  if getv(from_object, ['default']) is not None:
-    setv(to_object, ['default'], getv(from_object, ['default']))
-
   if getv(from_object, ['max_length']) is not None:
     setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
 
@@ -262,6 +259,9 @@ def _Schema_to_vertex(
 
   if getv(from_object, ['any_of']) is not None:
     setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
+
+  if getv(from_object, ['default']) is not None:
+    setv(to_object, ['default'], getv(from_object, ['default']))
 
   if getv(from_object, ['description']) is not None:
     setv(to_object, ['description'], getv(from_object, ['description']))

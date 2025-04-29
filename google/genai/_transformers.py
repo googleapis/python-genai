@@ -790,7 +790,7 @@ def t_schema(
   if not origin:
     return None
   if isinstance(origin, dict) and _is_type_dict_str_any(origin):
-    process_schema(origin, client, order_properties=False)
+    process_schema(origin, client)
     return types.Schema.model_validate(origin)
   if isinstance(origin, EnumMeta):
     return _process_enum(origin, client)
@@ -799,7 +799,7 @@ def t_schema(
       # response_schema value was coerced to an empty Schema instance because it did not adhere to the Schema field annotation
       raise ValueError(f'Unsupported schema type.')
     schema = origin.model_dump(exclude_unset=True)
-    process_schema(schema, client, order_properties=False)
+    process_schema(schema, client)
     return types.Schema.model_validate(schema)
 
   if (

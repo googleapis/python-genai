@@ -1050,7 +1050,7 @@ else:
     file_uris = [file1.uri, file2.uri]
 
 cached_content = client.caches.create(
-    model='gemini-1.5-pro-002',
+    model='gemini-2.0-flash-001',
     config=types.CreateCachedContentConfig(
         contents=[
             types.Content(
@@ -1083,7 +1083,7 @@ cached_content = client.caches.get(name=cached_content.name)
 
 ```python
 response = client.models.generate_content(
-    model='gemini-1.5-pro-002',
+    model='gemini-2.0-flash-001',
     contents='Summarize the pdfs',
     config=types.GenerateContentConfig(
         cached_content=cached_content.name,
@@ -1104,12 +1104,12 @@ tuning through `tune`.
 
 ```python
 if client.vertexai:
-    model = 'gemini-1.5-pro-002'
+    model = 'gemini-2.0-flash-001'
     training_dataset = types.TuningDataset(
         gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
     )
 else:
-    model = 'models/gemini-1.0-pro-001'
+    model = 'models/gemini-2.0-flash-001'
     training_dataset = types.TuningDataset(
         examples=[
             types.TuningExample(
@@ -1260,7 +1260,7 @@ Only supported in Vertex AI.
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
-    model='gemini-1.5-flash-002',
+    model='gemini-2.0-flash-001',
     src='bq://my-project.my-dataset.my-table',
 )
 
