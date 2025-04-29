@@ -635,6 +635,8 @@ class Files(_api_module.BaseModule):
             'Unknown mime type: Could not determine the mimetype for your'
             ' file\n please set the `mime_type` argument'
         )
+
+
       if hasattr(file, 'mode'):
         if 'b' not in file.mode:
           raise ValueError('The file must be opened in binary mode.')
@@ -647,13 +649,17 @@ class Files(_api_module.BaseModule):
       if not fs_path or not os.path.isfile(fs_path):
         raise FileNotFoundError(f'{file} is not a valid file path.')
       file_obj.size_bytes = os.path.getsize(fs_path)
+
+
       if file_obj.mime_type is None:
         file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
-        )
+
+      # If unknown or unsupported, fallback to text/plain
+      unsupported_mime_types = {"application/cu-seeme", "application/octet-stream", "binary/octet-stream"}
+      if file_obj.mime_type is None or file_obj.mime_type in unsupported_mime_types: 
+        print(f"Warning: Unrecognized or unsupported MIME type '{file_obj.mime_type}', defaulting to 'text/plain'.")
+        file_obj.mime_type = "text/plain"
+
 
     http_options: types.HttpOptions
     if config_model and config_model.http_options:
