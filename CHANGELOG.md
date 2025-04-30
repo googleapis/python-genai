@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.13.0](https://github.com/googleapis/python-genai/compare/v1.12.1...v1.13.0) (2025-04-30)
+
+
+### Features
+
+* Add models.delete and models.update to manage tuned models ([53a3282](https://github.com/googleapis/python-genai/commit/53a32824fcb8e8e516e2aaac1da4cc7c363020a3))
+* Add support for live grounding metadata ([b904cba](https://github.com/googleapis/python-genai/commit/b904cba686750906a020e17599d91aae9ee44f97))
+* Make min_property, max_property, min_length, max_length, example, patter fields available for Schema class when calling Gemini API ([52919cb](https://github.com/googleapis/python-genai/commit/52919cb1a22a580c9428a5d128e098324871fed4))
+* Support setting the default base URL in clients via set_default_base_urls() ([2b82d72](https://github.com/googleapis/python-genai/commit/2b82d729b0628812c048e87e79363419b6682fdf))
+* Support using the passed credentials in AsyncLive::connect ([#738](https://github.com/googleapis/python-genai/issues/738)) ([8f390cf](https://github.com/googleapis/python-genai/commit/8f390cf1a88ee11d8d01ac17f994f40adfabda2c))
+* Support using the passed credentials in AsyncLive::connect ([#738](https://github.com/googleapis/python-genai/issues/738)) ([568cfd2](https://github.com/googleapis/python-genai/commit/568cfd25479202ee816e6ebe0c350c3f8c9fd9a3))
+
+
+### Bug Fixes
+
+* Do not raise error for `default` field in Schema for Gemini API calls ([1d3d1c9](https://github.com/googleapis/python-genai/commit/1d3d1c9c01ffd9ae0d7f3c52b85470960aab23f5))
+* Set `propertyOrdering` when schema is specified as `dict` or `types.Schema`. ([48eebe0](https://github.com/googleapis/python-genai/commit/48eebe0dbe16a438074012da89d3b44ec5f05c5d))
+
+
+### Documentation
+
+* Add a link for where to find the Google Cloud project id, API key and location ([916bd6e](https://github.com/googleapis/python-genai/commit/916bd6e538950481832d263a3c979aa0f20acd49))
+
 ## [1.12.0](https://github.com/googleapis/python-genai/compare/v1.11.0...v1.12.0) (2025-04-23)
 
 
