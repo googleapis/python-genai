@@ -5454,13 +5454,58 @@ ModelOrDict = Union[Model, ModelDict]
 
 
 class ListModelsConfig(_common.BaseModel):
+  """Configuration for listing models."""
 
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
   page_size: Optional[int] = Field(default=None, description="""""")
   page_token: Optional[str] = Field(default=None, description="""""")
-  filter: Optional[str] = Field(default=None, description="""""")
+  filter: Optional[str] = Field(
+      default=None,
+      description="""    An expression for filtering the results of the request.
+
+    For Vertex AI this adheres to the filtering syntax described in
+    [AIP-160](https://google.aip.dev/160).
+
+    Supported fields for filtering:
+
+    * `model` (string): Represents the Model ID (the last segment of the Model's resource name).
+    * Supports `=` (equal to) and `!=` (not equal to) operators.
+    * Example: `model="123456789"` or `model!="my-old-model"`
+
+    * `display_name` (string): The user-friendly name of the model.
+    * Supports `=` and `!=` operators.
+    * Values with spaces should be quoted.
+    * Example: `displayName="My Production Model"` or `display_name!="Test Model"`
+
+    * `labels` (map): Filters based on the labels associated with the model.
+    * Key-value equality: `labels.key="value"`
+    * Example: `labels.google-vertex-llm-tuning-base-model-id="gemini-2_0-flash-001"`
+    * Key existence: `labels.key:*` or `labels:key`
+    * Example: `labels.tune-type:*`
+    * Keys containing spaces must be quoted.
+    * Example: `labels."team name"="Alpha"`
+
+    General Filtering Guidelines (from AIP-160):
+
+    * **Logical Operators**: `AND`, `OR`. Note: `OR` has higher precedence than `AND` (e.g., `a AND b OR c` is `a AND (b OR c)`). Use parentheses `()` for clarity.
+    * Example: `displayName="My Model" AND labels.status="ready"`
+    * **Negation**: `NOT` or `-`.
+    * Example: `NOT displayName="Old Model"` or `-labels.experimental:*`
+    * **String Wildcards**: Use `*` for wildcard matching in string comparisons.
+    * Example: `displayName="Experiment*"`
+
+    Combining Filters:
+    You can combine multiple conditions using logical operators.
+    Example: `display_name="My Vision Model" AND labels.task="image_classification" AND NOT labels.status="archived"`
+    Example: `base_model_name="models/text-bison" OR base_model_name="models/chat-bison"`
+
+    For a comprehensive understanding of the filtering syntax, including details on literals,
+    comparison operators for different types, traversal, and the "has" operator (`:`), please
+    refer to the [AIP-160 standard](https://google.aip.dev/160).
+""",
+  )
   query_base: Optional[bool] = Field(
       default=None,
       description="""Set true to list base models, false to list tuned models.""",
@@ -5468,6 +5513,7 @@ class ListModelsConfig(_common.BaseModel):
 
 
 class ListModelsConfigDict(TypedDict, total=False):
+  """Configuration for listing models."""
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
@@ -5479,7 +5525,48 @@ class ListModelsConfigDict(TypedDict, total=False):
   """"""
 
   filter: Optional[str]
-  """"""
+  """    An expression for filtering the results of the request.
+
+    For Vertex AI this adheres to the filtering syntax described in
+    [AIP-160](https://google.aip.dev/160).
+
+    Supported fields for filtering:
+
+    * `model` (string): Represents the Model ID (the last segment of the Model's resource name).
+    * Supports `=` (equal to) and `!=` (not equal to) operators.
+    * Example: `model="123456789"` or `model!="my-old-model"`
+
+    * `display_name` (string): The user-friendly name of the model.
+    * Supports `=` and `!=` operators.
+    * Values with spaces should be quoted.
+    * Example: `displayName="My Production Model"` or `display_name!="Test Model"`
+
+    * `labels` (map): Filters based on the labels associated with the model.
+    * Key-value equality: `labels.key="value"`
+    * Example: `labels.google-vertex-llm-tuning-base-model-id="gemini-2_0-flash-001"`
+    * Key existence: `labels.key:*` or `labels:key`
+    * Example: `labels.tune-type:*`
+    * Keys containing spaces must be quoted.
+    * Example: `labels."team name"="Alpha"`
+
+    General Filtering Guidelines (from AIP-160):
+
+    * **Logical Operators**: `AND`, `OR`. Note: `OR` has higher precedence than `AND` (e.g., `a AND b OR c` is `a AND (b OR c)`). Use parentheses `()` for clarity.
+    * Example: `displayName="My Model" AND labels.status="ready"`
+    * **Negation**: `NOT` or `-`.
+    * Example: `NOT displayName="Old Model"` or `-labels.experimental:*`
+    * **String Wildcards**: Use `*` for wildcard matching in string comparisons.
+    * Example: `displayName="Experiment*"`
+
+    Combining Filters:
+    You can combine multiple conditions using logical operators.
+    Example: `display_name="My Vision Model" AND labels.task="image_classification" AND NOT labels.status="archived"`
+    Example: `base_model_name="models/text-bison" OR base_model_name="models/chat-bison"`
+
+    For a comprehensive understanding of the filtering syntax, including details on literals,
+    comparison operators for different types, traversal, and the "has" operator (`:`), please
+    refer to the [AIP-160 standard](https://google.aip.dev/160).
+"""
 
   query_base: Optional[bool]
   """Set true to list base models, false to list tuned models."""
