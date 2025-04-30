@@ -9,7 +9,6 @@
 * Add support for live grounding metadata ([b904cba](https://github.com/googleapis/python-genai/commit/b904cba686750906a020e17599d91aae9ee44f97))
 * Make min_property, max_property, min_length, max_length, example, patter fields available for Schema class when calling Gemini API ([52919cb](https://github.com/googleapis/python-genai/commit/52919cb1a22a580c9428a5d128e098324871fed4))
 * Support setting the default base URL in clients via set_default_base_urls() ([2b82d72](https://github.com/googleapis/python-genai/commit/2b82d729b0628812c048e87e79363419b6682fdf))
-* Support using the passed credentials in AsyncLive::connect ([#738](https://github.com/googleapis/python-genai/issues/738)) ([8f390cf](https://github.com/googleapis/python-genai/commit/8f390cf1a88ee11d8d01ac17f994f40adfabda2c))
 * Support using the passed credentials in AsyncLive::connect ([#738](https://github.com/googleapis/python-genai/issues/738)) ([568cfd2](https://github.com/googleapis/python-genai/commit/568cfd25479202ee816e6ebe0c350c3f8c9fd9a3))
 
 
