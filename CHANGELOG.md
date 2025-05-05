@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.13.0](https://github.com/googleapis/python-genai/compare/v1.12.1...v1.13.0) (2025-04-30)
+
+
+### Features
+
+* Add models.delete and models.update to manage tuned models ([53a3282](https://github.com/googleapis/python-genai/commit/53a32824fcb8e8e516e2aaac1da4cc7c363020a3))
+* Add support for live grounding metadata ([b904cba](https://github.com/googleapis/python-genai/commit/b904cba686750906a020e17599d91aae9ee44f97))
+* Make min_property, max_property, min_length, max_length, example, patter fields available for Schema class when calling Gemini API ([52919cb](https://github.com/googleapis/python-genai/commit/52919cb1a22a580c9428a5d128e098324871fed4))
+* Support setting the default base URL in clients via set_default_base_urls() ([2b82d72](https://github.com/googleapis/python-genai/commit/2b82d729b0628812c048e87e79363419b6682fdf))
+* Support using the passed credentials in AsyncLive::connect ([#738](https://github.com/googleapis/python-genai/issues/738)) ([568cfd2](https://github.com/googleapis/python-genai/commit/568cfd25479202ee816e6ebe0c350c3f8c9fd9a3))
+
+
+### Bug Fixes
+
+* Do not raise error for `default` field in Schema for Gemini API calls ([1d3d1c9](https://github.com/googleapis/python-genai/commit/1d3d1c9c01ffd9ae0d7f3c52b85470960aab23f5))
+* Set `propertyOrdering` when schema is specified as `dict` or `types.Schema`. ([48eebe0](https://github.com/googleapis/python-genai/commit/48eebe0dbe16a438074012da89d3b44ec5f05c5d))
+
+
+### Documentation
+
+* Add a link for where to find the Google Cloud project id, API key and location ([916bd6e](https://github.com/googleapis/python-genai/commit/916bd6e538950481832d263a3c979aa0f20acd49))
+
+## [1.12.0](https://github.com/googleapis/python-genai/compare/v1.11.0...v1.12.0) (2025-04-23)
+
+
+### Features
+
+* Add additional realtime input fields ([bef6385](https://github.com/googleapis/python-genai/commit/bef638546d820911172581f0666ae0f1270085f5))
+* Add py.typed so MyPy interprets this as a typed library ([b137b4d](https://github.com/googleapis/python-genai/commit/b137b4dae363045ac1980d10cdda4712a309ef3c))
+* Automatically determine mime_type for Part.from_uri ([b9d3be1](https://github.com/googleapis/python-genai/commit/b9d3be1e87a3e4260c16a3c36e0c728b330f831a))
+* Generate _live_converters.py ([d526a08](https://github.com/googleapis/python-genai/commit/d526a08c6ed5dfee26d1332829cac114f0132d54))
+* Introduce from_json_schema classmethod to Schema class to allow conversion from JSONSchema class object to Schema class object ([899fa1a](https://github.com/googleapis/python-genai/commit/899fa1ae9a9ec7a5cf7d2dfe72267780fcc4fdc8))
+* Support `default` field in Schema when users call Gemini API ([1e56add](https://github.com/googleapis/python-genai/commit/1e56add36c9a1ebcb3499d9f3ea2a9af37edf3cd))
+
+
+### Documentation
+
+* Regenerate docs for 1.11.0 ([473bf4b](https://github.com/googleapis/python-genai/commit/473bf4b6b5a69e5324a5d4bac0fe852351338c43))
+
 ## [1.11.0](https://github.com/googleapis/python-genai/compare/v1.10.0...v1.11.0) (2025-04-16)
 
 

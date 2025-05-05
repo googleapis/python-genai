@@ -295,7 +295,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_mldev='not supported',
         ignore_keys=['parsed'],
     ),
 ]
@@ -636,27 +635,15 @@ def test_pydantic_schema_with_default_value(client):
     rating: int = 0
     city: Optional[str] = 'New York'
 
-  if client._api_client.vertexai:
-    response = client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='Can you recommend a restaurant for me?',
-        config={
-            'response_mime_type': 'application/json',
-            'response_schema': Restaurant,
-        },
-    )
-    assert isinstance(response.parsed, Restaurant)
-  else:
-    with pytest.raises(ValueError) as e:
-      client.models.generate_content(
-          model='gemini-1.5-flash',
-          contents='Can you recommend a restaurant for me?',
-          config={
-              'response_mime_type': 'application/json',
-              'response_schema': Restaurant,
-          },
-      )
-    assert 'Default value is not supported' in str(e)
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Can you recommend a restaurant for me?',
+      config={
+          'response_mime_type': 'application/json',
+          'response_schema': Restaurant,
+      },
+  )
+  assert isinstance(response.parsed, Restaurant)
 
 
 def test_repeated_pydantic_schema(client):

@@ -34,6 +34,13 @@ def _Part_to_mldev(
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
 
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -77,6 +84,13 @@ def _Part_to_vertex(
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -150,212 +164,6 @@ def _Content_to_vertex(
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _Schema_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['example']) is not None:
-    raise ValueError('example parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['pattern']) is not None:
-    raise ValueError('pattern parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['default']) is not None:
-    raise ValueError('default parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['max_length']) is not None:
-    raise ValueError('max_length parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['min_length']) is not None:
-    raise ValueError('min_length parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['min_properties']) is not None:
-    raise ValueError('min_properties parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['max_properties']) is not None:
-    raise ValueError('max_properties parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['any_of']) is not None:
-    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['enum']) is not None:
-    setv(to_object, ['enum'], getv(from_object, ['enum']))
-
-  if getv(from_object, ['format']) is not None:
-    setv(to_object, ['format'], getv(from_object, ['format']))
-
-  if getv(from_object, ['items']) is not None:
-    setv(to_object, ['items'], getv(from_object, ['items']))
-
-  if getv(from_object, ['max_items']) is not None:
-    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
-
-  if getv(from_object, ['maximum']) is not None:
-    setv(to_object, ['maximum'], getv(from_object, ['maximum']))
-
-  if getv(from_object, ['min_items']) is not None:
-    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
-
-  if getv(from_object, ['minimum']) is not None:
-    setv(to_object, ['minimum'], getv(from_object, ['minimum']))
-
-  if getv(from_object, ['nullable']) is not None:
-    setv(to_object, ['nullable'], getv(from_object, ['nullable']))
-
-  if getv(from_object, ['properties']) is not None:
-    setv(to_object, ['properties'], getv(from_object, ['properties']))
-
-  if getv(from_object, ['property_ordering']) is not None:
-    setv(
-        to_object,
-        ['propertyOrdering'],
-        getv(from_object, ['property_ordering']),
-    )
-
-  if getv(from_object, ['required']) is not None:
-    setv(to_object, ['required'], getv(from_object, ['required']))
-
-  if getv(from_object, ['title']) is not None:
-    setv(to_object, ['title'], getv(from_object, ['title']))
-
-  if getv(from_object, ['type']) is not None:
-    setv(to_object, ['type'], getv(from_object, ['type']))
-
-  return to_object
-
-
-def _Schema_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['example']) is not None:
-    setv(to_object, ['example'], getv(from_object, ['example']))
-
-  if getv(from_object, ['pattern']) is not None:
-    setv(to_object, ['pattern'], getv(from_object, ['pattern']))
-
-  if getv(from_object, ['default']) is not None:
-    setv(to_object, ['default'], getv(from_object, ['default']))
-
-  if getv(from_object, ['max_length']) is not None:
-    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
-
-  if getv(from_object, ['min_length']) is not None:
-    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
-
-  if getv(from_object, ['min_properties']) is not None:
-    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
-
-  if getv(from_object, ['max_properties']) is not None:
-    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
-
-  if getv(from_object, ['any_of']) is not None:
-    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['enum']) is not None:
-    setv(to_object, ['enum'], getv(from_object, ['enum']))
-
-  if getv(from_object, ['format']) is not None:
-    setv(to_object, ['format'], getv(from_object, ['format']))
-
-  if getv(from_object, ['items']) is not None:
-    setv(to_object, ['items'], getv(from_object, ['items']))
-
-  if getv(from_object, ['max_items']) is not None:
-    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
-
-  if getv(from_object, ['maximum']) is not None:
-    setv(to_object, ['maximum'], getv(from_object, ['maximum']))
-
-  if getv(from_object, ['min_items']) is not None:
-    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
-
-  if getv(from_object, ['minimum']) is not None:
-    setv(to_object, ['minimum'], getv(from_object, ['minimum']))
-
-  if getv(from_object, ['nullable']) is not None:
-    setv(to_object, ['nullable'], getv(from_object, ['nullable']))
-
-  if getv(from_object, ['properties']) is not None:
-    setv(to_object, ['properties'], getv(from_object, ['properties']))
-
-  if getv(from_object, ['property_ordering']) is not None:
-    setv(
-        to_object,
-        ['propertyOrdering'],
-        getv(from_object, ['property_ordering']),
-    )
-
-  if getv(from_object, ['required']) is not None:
-    setv(to_object, ['required'], getv(from_object, ['required']))
-
-  if getv(from_object, ['title']) is not None:
-    setv(to_object, ['title'], getv(from_object, ['title']))
-
-  if getv(from_object, ['type']) is not None:
-    setv(to_object, ['type'], getv(from_object, ['type']))
-
-  return to_object
-
-
-def _FunctionDeclaration_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['response']) is not None:
-    raise ValueError('response parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  return to_object
-
-
-def _FunctionDeclaration_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _Schema_to_vertex(
-            api_client, getv(from_object, ['response']), to_object
-        ),
-    )
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
 
   return to_object
 
@@ -458,22 +266,32 @@ def _GoogleSearchRetrieval_to_vertex(
   return to_object
 
 
+def _EnterpriseWebSearch_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _EnterpriseWebSearch_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
 def _Tool_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
@@ -497,8 +315,20 @@ def _Tool_to_mldev(
         ),
     )
 
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        getv(from_object, ['function_declarations']),
+    )
 
   return to_object
 
@@ -509,16 +339,6 @@ def _Tool_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(api_client, item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
@@ -542,8 +362,24 @@ def _Tool_to_vertex(
         ),
     )
 
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(
+        to_object,
+        ['enterpriseWebSearch'],
+        _EnterpriseWebSearch_to_vertex(
+            api_client, getv(from_object, ['enterprise_web_search']), to_object
+        ),
+    )
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        getv(from_object, ['function_declarations']),
+    )
 
   return to_object
 
@@ -900,8 +736,14 @@ def _LiveConnectConfig_to_mldev(
     )
 
   if getv(from_object, ['input_audio_transcription']) is not None:
-    raise ValueError(
-        'input_audio_transcription parameter is not supported in Gemini API.'
+    setv(
+        parent_object,
+        ['setup', 'inputAudioTranscription'],
+        _AudioTranscriptionConfig_to_mldev(
+            api_client,
+            getv(from_object, ['input_audio_transcription']),
+            to_object,
+        ),
     )
 
   if getv(from_object, ['output_audio_transcription']) is not None:
@@ -1132,6 +974,146 @@ def _LiveConnectParameters_to_vertex(
   return to_object
 
 
+def _ActivityStart_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _ActivityStart_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _ActivityEnd_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _ActivityEnd_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveSendRealtimeInputParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['media']) is not None:
+    setv(
+        to_object,
+        ['mediaChunks'],
+        t.t_blobs(api_client, getv(from_object, ['media'])),
+    )
+
+  if getv(from_object, ['audio']) is not None:
+    setv(
+        to_object,
+        ['audio'],
+        t.t_audio_blob(api_client, getv(from_object, ['audio'])),
+    )
+
+  if getv(from_object, ['audio_stream_end']) is not None:
+    setv(to_object, ['audioStreamEnd'], getv(from_object, ['audio_stream_end']))
+
+  if getv(from_object, ['video']) is not None:
+    setv(
+        to_object,
+        ['video'],
+        t.t_image_blob(api_client, getv(from_object, ['video'])),
+    )
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['activity_start']) is not None:
+    setv(
+        to_object,
+        ['activityStart'],
+        _ActivityStart_to_mldev(
+            api_client, getv(from_object, ['activity_start']), to_object
+        ),
+    )
+
+  if getv(from_object, ['activity_end']) is not None:
+    setv(
+        to_object,
+        ['activityEnd'],
+        _ActivityEnd_to_mldev(
+            api_client, getv(from_object, ['activity_end']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _LiveSendRealtimeInputParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['media']) is not None:
+    setv(
+        to_object,
+        ['mediaChunks'],
+        t.t_blobs(api_client, getv(from_object, ['media'])),
+    )
+
+  if getv(from_object, ['audio']) is not None:
+    raise ValueError('audio parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['audio_stream_end']) is not None:
+    setv(to_object, ['audioStreamEnd'], getv(from_object, ['audio_stream_end']))
+
+  if getv(from_object, ['video']) is not None:
+    raise ValueError('video parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['text']) is not None:
+    raise ValueError('text parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['activity_start']) is not None:
+    setv(
+        to_object,
+        ['activityStart'],
+        _ActivityStart_to_vertex(
+            api_client, getv(from_object, ['activity_start']), to_object
+        ),
+    )
+
+  if getv(from_object, ['activity_end']) is not None:
+    setv(
+        to_object,
+        ['activityEnd'],
+        _ActivityEnd_to_vertex(
+            api_client, getv(from_object, ['activity_end']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _LiveClientSetup_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1185,6 +1167,28 @@ def _LiveClientSetup_to_mldev(
         _ContextWindowCompressionConfig_to_mldev(
             api_client,
             getv(from_object, ['context_window_compression']),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['input_audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['inputAudioTranscription'],
+        _AudioTranscriptionConfig_to_mldev(
+            api_client,
+            getv(from_object, ['input_audio_transcription']),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['output_audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['outputAudioTranscription'],
+        _AudioTranscriptionConfig_to_mldev(
+            api_client,
+            getv(from_object, ['output_audio_transcription']),
             to_object,
         ),
     )
@@ -1249,6 +1253,28 @@ def _LiveClientSetup_to_vertex(
         ),
     )
 
+  if getv(from_object, ['input_audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['inputAudioTranscription'],
+        _AudioTranscriptionConfig_to_vertex(
+            api_client,
+            getv(from_object, ['input_audio_transcription']),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['output_audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['outputAudioTranscription'],
+        _AudioTranscriptionConfig_to_vertex(
+            api_client,
+            getv(from_object, ['output_audio_transcription']),
+            to_object,
+        ),
+    )
+
   return to_object
 
 
@@ -1296,46 +1322,6 @@ def _LiveClientContent_to_vertex(
   return to_object
 
 
-def _ActivityStart_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _ActivityStart_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _ActivityEnd_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _ActivityEnd_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _LiveClientRealtimeInput_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1344,6 +1330,36 @@ def _LiveClientRealtimeInput_to_mldev(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['media_chunks']) is not None:
     setv(to_object, ['mediaChunks'], getv(from_object, ['media_chunks']))
+
+  if getv(from_object, ['audio']) is not None:
+    setv(to_object, ['audio'], getv(from_object, ['audio']))
+
+  if getv(from_object, ['audio_stream_end']) is not None:
+    setv(to_object, ['audioStreamEnd'], getv(from_object, ['audio_stream_end']))
+
+  if getv(from_object, ['video']) is not None:
+    setv(to_object, ['video'], getv(from_object, ['video']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['activity_start']) is not None:
+    setv(
+        to_object,
+        ['activityStart'],
+        _ActivityStart_to_mldev(
+            api_client, getv(from_object, ['activity_start']), to_object
+        ),
+    )
+
+  if getv(from_object, ['activity_end']) is not None:
+    setv(
+        to_object,
+        ['activityEnd'],
+        _ActivityEnd_to_mldev(
+            api_client, getv(from_object, ['activity_end']), to_object
+        ),
+    )
 
   return to_object
 
@@ -1356,6 +1372,38 @@ def _LiveClientRealtimeInput_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['media_chunks']) is not None:
     setv(to_object, ['mediaChunks'], getv(from_object, ['media_chunks']))
+
+  if getv(from_object, ['audio']) is not None:
+    raise ValueError('audio parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['audio_stream_end']) is not None:
+    raise ValueError(
+        'audio_stream_end parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['video']) is not None:
+    raise ValueError('video parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['text']) is not None:
+    raise ValueError('text parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['activity_start']) is not None:
+    setv(
+        to_object,
+        ['activityStart'],
+        _ActivityStart_to_vertex(
+            api_client, getv(from_object, ['activity_start']), to_object
+        ),
+    )
+
+  if getv(from_object, ['activity_end']) is not None:
+    setv(
+        to_object,
+        ['activityEnd'],
+        _ActivityEnd_to_vertex(
+            api_client, getv(from_object, ['activity_end']), to_object
+        ),
+    )
 
   return to_object
 
@@ -1554,6 +1602,13 @@ def _Part_from_mldev(
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
 
+  if getv(from_object, ['thoughtSignature']) is not None:
+    setv(
+        to_object,
+        ['thought_signature'],
+        getv(from_object, ['thoughtSignature']),
+    )
+
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -1597,6 +1652,13 @@ def _Part_from_vertex(
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thoughtSignature']) is not None:
+    setv(
+        to_object,
+        ['thought_signature'],
+        getv(from_object, ['thoughtSignature']),
+    )
 
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
@@ -1725,6 +1787,13 @@ def _LiveServerContent_from_mldev(
   if getv(from_object, ['interrupted']) is not None:
     setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
 
+  if getv(from_object, ['groundingMetadata']) is not None:
+    setv(
+        to_object,
+        ['grounding_metadata'],
+        getv(from_object, ['groundingMetadata']),
+    )
+
   if getv(from_object, ['generationComplete']) is not None:
     setv(
         to_object,
@@ -1773,6 +1842,13 @@ def _LiveServerContent_from_vertex(
 
   if getv(from_object, ['interrupted']) is not None:
     setv(to_object, ['interrupted'], getv(from_object, ['interrupted']))
+
+  if getv(from_object, ['groundingMetadata']) is not None:
+    setv(
+        to_object,
+        ['grounding_metadata'],
+        getv(from_object, ['groundingMetadata']),
+    )
 
   if getv(from_object, ['generationComplete']) is not None:
     setv(

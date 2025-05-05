@@ -13,11 +13,11 @@
 # limitations under the License.
 #
 
+from ... import _api_client
 from ... import _transformers as t
 from ... import errors
-from .. import pytest_helper
 from ... import types
-from ... import _api_client
+from .. import pytest_helper
 
 
 test_table: list[pytest_helper.TestTableItem] = [
@@ -25,14 +25,26 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_generate_content_thought',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-pro-preview-03-25',
+            contents=t.t_contents(None, 'Explain the monty hall problem.'),
+            config={
+                'thinking_config': {'thinking_budget': 10000},
+            },
+        ),
+        exception_if_vertex='400',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_generate_content_thought_v1alpha',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-pro-preview-03-25',
             contents=t.t_contents(
-                None, 'Explain the monty hall problem.'
+                None, 'What is the sum of natural numbers from 1 to 100?'
             ),
             config={
                 'thinking_config': {'thinking_budget': 10000},
-            }
+                'http_options': {'api_version': 'v1alpha'},
+            },
         ),
-        exception_if_vertex='400',
+        exception_if_vertex='404',
     ),
 ]
 
@@ -45,8 +57,30 @@ pytestmark = pytest_helper.setup(
 )
 
 
-def test_no_thought_with_include_thoughts_v1alpha(client):
-  # Thoughts have been disabled in the API.
+def test_thought_signature_with_thinking_budget(client):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+    response = client.models.generate_content(
+        model='gemini-2.5-pro-preview-03-25',
+        contents='What is the sum of natural numbers from 1 to 100?',
+        config={
+            'thinking_config': {
+                'include_thoughts': True,
+                'thinking_budget': 10000,
+            },
+            'http_options': {'api_version': 'v1alpha'},
+        },
+    )
+    has_thought = False
+    if response.candidates:
+      for candidate in response.candidates:
+        for part in candidate.content.parts:
+          if part.thought:
+            has_thought = True
+            break
+    assert has_thought
+
+
+def test_thought_with_include_thoughts_v1alpha(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     response = client.models.generate_content(
         model='gemini-2.0-flash-thinking-exp',
@@ -63,7 +97,7 @@ def test_no_thought_with_include_thoughts_v1alpha(client):
           if part.thought:
             has_thought = True
             break
-    assert not has_thought
+    assert has_thought
 
 
 def test_no_thought_with_default_config(client):

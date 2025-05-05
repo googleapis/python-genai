@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import logging
 import sys
 import types as builtin_types
 import typing
-from typing import Any, Callable, Literal, Optional, Union, _UnionGenericAlias  # type: ignore
+from typing import Any, Callable, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
 import pydantic
 from pydantic import Field, field_validator, model_validator
 from typing_extensions import TypedDict
@@ -141,6 +141,18 @@ class Mode(_common.CaseInSensitiveEnum):
   MODE_DYNAMIC = 'MODE_DYNAMIC'
 
 
+class Type(_common.CaseInSensitiveEnum):
+  """Optional. The type of the data."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  STRING = 'STRING'
+  NUMBER = 'NUMBER'
+  INTEGER = 'INTEGER'
+  BOOLEAN = 'BOOLEAN'
+  ARRAY = 'ARRAY'
+  OBJECT = 'OBJECT'
+
+
 class FinishReason(_common.CaseInSensitiveEnum):
   """Output only. The reason why the model stopped generating tokens.
 
@@ -152,6 +164,7 @@ class FinishReason(_common.CaseInSensitiveEnum):
   MAX_TOKENS = 'MAX_TOKENS'
   SAFETY = 'SAFETY'
   RECITATION = 'RECITATION'
+  LANGUAGE = 'LANGUAGE'
   OTHER = 'OTHER'
   BLOCKLIST = 'BLOCKLIST'
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
@@ -627,6 +640,10 @@ class Part(_common.BaseModel):
       default=None,
       description="""Indicates if the part is thought from the model.""",
   )
+  thought_signature: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque signature for the thought so it can be reused in subsequent requests.""",
+  )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
       description="""Optional. Result of executing the [ExecutableCode].""",
@@ -723,6 +740,9 @@ class PartDict(TypedDict, total=False):
 
   thought: Optional[bool]
   """Indicates if the part is thought from the model."""
+
+  thought_signature: Optional[bytes]
+  """An opaque signature for the thought so it can be reused in subsequent requests."""
 
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
@@ -892,233 +912,386 @@ class HttpOptionsDict(TypedDict, total=False):
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
 
 
-class JSONSchemaType(Enum):
-  """The type of the data supported by JSON Schema.
+class ModelSelectionConfig(_common.BaseModel):
+  """Config for model selection."""
 
-  The values of the enums are lower case strings, while the values of the enums
-  for the Type class are upper case strings.
+  feature_selection_preference: Optional[FeatureSelectionPreference] = Field(
+      default=None, description="""Options for feature selection preference."""
+  )
+
+
+class ModelSelectionConfigDict(TypedDict, total=False):
+  """Config for model selection."""
+
+  feature_selection_preference: Optional[FeatureSelectionPreference]
+  """Options for feature selection preference."""
+
+
+ModelSelectionConfigOrDict = Union[
+    ModelSelectionConfig, ModelSelectionConfigDict
+]
+
+
+class SafetySetting(_common.BaseModel):
+  """Safety settings."""
+
+  method: Optional[HarmBlockMethod] = Field(
+      default=None,
+      description="""Determines if the harm block method uses probability or probability
+      and severity scores.""",
+  )
+  category: Optional[HarmCategory] = Field(
+      default=None, description="""Required. Harm category."""
+  )
+  threshold: Optional[HarmBlockThreshold] = Field(
+      default=None, description="""Required. The harm block threshold."""
+  )
+
+
+class SafetySettingDict(TypedDict, total=False):
+  """Safety settings."""
+
+  method: Optional[HarmBlockMethod]
+  """Determines if the harm block method uses probability or probability
+      and severity scores."""
+
+  category: Optional[HarmCategory]
+  """Required. Harm category."""
+
+  threshold: Optional[HarmBlockThreshold]
+  """Required. The harm block threshold."""
+
+
+SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
+
+
+class GoogleSearch(_common.BaseModel):
+  """Tool to support Google Search in Model. Powered by Google."""
+
+  pass
+
+
+class GoogleSearchDict(TypedDict, total=False):
+  """Tool to support Google Search in Model. Powered by Google."""
+
+  pass
+
+
+GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
+
+
+class DynamicRetrievalConfig(_common.BaseModel):
+  """Describes the options to customize dynamic retrieval."""
+
+  mode: Optional[DynamicRetrievalConfigMode] = Field(
+      default=None,
+      description="""The mode of the predictor to be used in dynamic retrieval.""",
+  )
+  dynamic_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used.""",
+  )
+
+
+class DynamicRetrievalConfigDict(TypedDict, total=False):
+  """Describes the options to customize dynamic retrieval."""
+
+  mode: Optional[DynamicRetrievalConfigMode]
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  dynamic_threshold: Optional[float]
+  """Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used."""
+
+
+DynamicRetrievalConfigOrDict = Union[
+    DynamicRetrievalConfig, DynamicRetrievalConfigDict
+]
+
+
+class GoogleSearchRetrieval(_common.BaseModel):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfig] = Field(
+      default=None,
+      description="""Specifies the dynamic retrieval configuration for the given source.""",
+  )
+
+
+class GoogleSearchRetrievalDict(TypedDict, total=False):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfigDict]
+  """Specifies the dynamic retrieval configuration for the given source."""
+
+
+GoogleSearchRetrievalOrDict = Union[
+    GoogleSearchRetrieval, GoogleSearchRetrievalDict
+]
+
+
+class EnterpriseWebSearch(_common.BaseModel):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
+
+  pass
+
+
+class EnterpriseWebSearchDict(TypedDict, total=False):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
+
+  pass
+
+
+EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
+
+
+class VertexAISearch(_common.BaseModel):
+  """Retrieve from Vertex AI Search datastore or engine for grounding.
+
+  datastore and engine are mutually exclusive. See
+  https://cloud.google.com/products/agent-builder
   """
 
-  NULL = 'null'
-  BOOLEAN = 'boolean'
-  OBJECT = 'object'
-  ARRAY = 'array'
-  NUMBER = 'number'
-  INTEGER = 'integer'
-  STRING = 'string'
+  datastore: Optional[str] = Field(
+      default=None,
+      description="""Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`""",
+  )
+  engine: Optional[str] = Field(
+      default=None,
+      description="""Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`""",
+  )
 
 
-class JSONSchema(pydantic.BaseModel):
-  """A subset of JSON Schema according to 2020-12 JSON Schema draft.
+class VertexAISearchDict(TypedDict, total=False):
+  """Retrieve from Vertex AI Search datastore or engine for grounding.
 
-  Represents a subset of a JSON Schema object that is used by the Gemini model.
-  The difference between this class and the Schema class is that this class is
-  compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
-  make API call to Gemini model.
+  datastore and engine are mutually exclusive. See
+  https://cloud.google.com/products/agent-builder
   """
 
-  type: Optional[Union[JSONSchemaType, list[JSONSchemaType]]] = Field(
+  datastore: Optional[str]
+  """Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`"""
+
+  engine: Optional[str]
+  """Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`"""
+
+
+VertexAISearchOrDict = Union[VertexAISearch, VertexAISearchDict]
+
+
+class VertexRagStoreRagResource(_common.BaseModel):
+  """The definition of the Rag resource."""
+
+  rag_corpus: Optional[str] = Field(
       default=None,
-      description="""Validation succeeds if the type of the instance matches the type represented by the given type, or matches at least one of the given types.""",
+      description="""Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`""",
   )
-  format: Optional[str] = Field(
+  rag_file_ids: Optional[list[str]] = Field(
       default=None,
-      description='Define semantic information about a string instance.',
-  )
-  title: Optional[str] = Field(
-      default=None,
-      description=(
-          'A preferably short description about the purpose of the instance'
-          ' described by the schema.'
-      ),
-  )
-  description: Optional[str] = Field(
-      default=None,
-      description=(
-          'An explanation about the purpose of the instance described by the'
-          ' schema.'
-      ),
-  )
-  default: Optional[Any] = Field(
-      default=None,
-      description=(
-          'This keyword can be used to supply a default JSON value associated'
-          ' with a particular schema.'
-      ),
-  )
-  items: Optional['JSONSchema'] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if each element of the instance not covered by'
-          ' prefixItems validates against this schema.'
-      ),
-  )
-  min_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is greater than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  max_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is less than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  enum: Optional[list[Any]] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the instance is equal to one of the elements'
-          ' in this keyword’s array value.'
-      ),
-  )
-  properties: Optional[dict[str, 'JSONSchema']] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if, for each name that appears in both the'
-          ' instance and as a name within this keyword’s value, the child'
-          ' instance for that name successfully validates against the'
-          ' corresponding schema.'
-      ),
-  )
-  required: Optional[list[str]] = Field(
-      default=None,
-      description=(
-          'An object instance is valid against this keyword if every item in'
-          ' the array is the name of a property in the instance.'
-      ),
-  )
-  min_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is greater'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is less'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  minimum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is greater than or equal'
-          ' to the given number.'
-      ),
-  )
-  maximum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is less than or equal to'
-          ' the given number.'
-      ),
-  )
-  min_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' greater than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' less than, or equal to, the value of this keyword.'
-      ),
-  )
-  pattern: Optional[str] = Field(
-      default=None,
-      description=(
-          'A string instance is considered valid if the regular expression'
-          ' matches the instance successfully.'
-      ),
-  )
-  any_of: Optional[list['JSONSchema']] = Field(
-      default=None,
-      description=(
-          'An instance validates successfully against this keyword if it'
-          ' validates successfully against at least one schema defined by this'
-          ' keyword’s value.'
-      ),
+      description="""Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field.""",
   )
 
 
-class Schema(_common.BaseModel):
-  """Schema that defines the format of input and output data.
+class VertexRagStoreRagResourceDict(TypedDict, total=False):
+  """The definition of the Rag resource."""
 
-  Represents a select subset of an OpenAPI 3.0 schema object.
-  """
+  rag_corpus: Optional[str]
+  """Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`"""
 
-  example: Optional[Any] = Field(
+  rag_file_ids: Optional[list[str]]
+  """Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field."""
+
+
+VertexRagStoreRagResourceOrDict = Union[
+    VertexRagStoreRagResource, VertexRagStoreRagResourceDict
+]
+
+
+class RagRetrievalConfigFilter(_common.BaseModel):
+  """Config for filters."""
+
+  metadata_filter: Optional[str] = Field(
+      default=None, description="""Optional. String for metadata filtering."""
+  )
+  vector_distance_threshold: Optional[float] = Field(
       default=None,
-      description="""Optional. Example of the object. Will only populated when the object is the root.""",
+      description="""Optional. Only returns contexts with vector distance smaller than the threshold.""",
   )
-  pattern: Optional[str] = Field(
+  vector_similarity_threshold: Optional[float] = Field(
       default=None,
-      description="""Optional. Pattern of the Type.STRING to restrict a string to a regular expression.""",
+      description="""Optional. Only returns contexts with vector similarity larger than the threshold.""",
   )
-  default: Optional[Any] = Field(
-      default=None, description="""Optional. Default value of the data."""
-  )
-  max_length: Optional[int] = Field(
+
+
+class RagRetrievalConfigFilterDict(TypedDict, total=False):
+  """Config for filters."""
+
+  metadata_filter: Optional[str]
+  """Optional. String for metadata filtering."""
+
+  vector_distance_threshold: Optional[float]
+  """Optional. Only returns contexts with vector distance smaller than the threshold."""
+
+  vector_similarity_threshold: Optional[float]
+  """Optional. Only returns contexts with vector similarity larger than the threshold."""
+
+
+RagRetrievalConfigFilterOrDict = Union[
+    RagRetrievalConfigFilter, RagRetrievalConfigFilterDict
+]
+
+
+class RagRetrievalConfigHybridSearch(_common.BaseModel):
+  """Config for Hybrid Search."""
+
+  alpha: Optional[float] = Field(
       default=None,
-      description="""Optional. Maximum length of the Type.STRING""",
+      description="""Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally.""",
   )
-  min_length: Optional[int] = Field(
+
+
+class RagRetrievalConfigHybridSearchDict(TypedDict, total=False):
+  """Config for Hybrid Search."""
+
+  alpha: Optional[float]
+  """Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally."""
+
+
+RagRetrievalConfigHybridSearchOrDict = Union[
+    RagRetrievalConfigHybridSearch, RagRetrievalConfigHybridSearchDict
+]
+
+
+class RagRetrievalConfigRankingLlmRanker(_common.BaseModel):
+  """Config for LlmRanker."""
+
+  model_name: Optional[str] = Field(
       default=None,
-      description="""Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING""",
+      description="""Optional. The model name used for ranking. Format: `gemini-1.5-pro`""",
   )
-  min_properties: Optional[int] = Field(
+
+
+class RagRetrievalConfigRankingLlmRankerDict(TypedDict, total=False):
+  """Config for LlmRanker."""
+
+  model_name: Optional[str]
+  """Optional. The model name used for ranking. Format: `gemini-1.5-pro`"""
+
+
+RagRetrievalConfigRankingLlmRankerOrDict = Union[
+    RagRetrievalConfigRankingLlmRanker, RagRetrievalConfigRankingLlmRankerDict
+]
+
+
+class RagRetrievalConfigRankingRankService(_common.BaseModel):
+  """Config for Rank Service."""
+
+  model_name: Optional[str] = Field(
       default=None,
-      description="""Optional. Minimum number of the properties for Type.OBJECT.""",
+      description="""Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`""",
   )
-  max_properties: Optional[int] = Field(
+
+
+class RagRetrievalConfigRankingRankServiceDict(TypedDict, total=False):
+  """Config for Rank Service."""
+
+  model_name: Optional[str]
+  """Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`"""
+
+
+RagRetrievalConfigRankingRankServiceOrDict = Union[
+    RagRetrievalConfigRankingRankService,
+    RagRetrievalConfigRankingRankServiceDict,
+]
+
+
+class RagRetrievalConfigRanking(_common.BaseModel):
+  """Config for ranking and reranking."""
+
+  llm_ranker: Optional[RagRetrievalConfigRankingLlmRanker] = Field(
+      default=None, description="""Optional. Config for LlmRanker."""
+  )
+  rank_service: Optional[RagRetrievalConfigRankingRankService] = Field(
+      default=None, description="""Optional. Config for Rank Service."""
+  )
+
+class RagRetrievalConfigRankingDict(TypedDict, total=False):
+  """Config for ranking and reranking."""
+
+  llm_ranker: Optional[RagRetrievalConfigRankingLlmRankerDict]
+  """Optional. Config for LlmRanker."""
+
+  rank_service: Optional[RagRetrievalConfigRankingRankServiceDict]
+  """Optional. Config for Rank Service."""
+
+
+RagRetrievalConfigRankingOrDict = Union[
+    RagRetrievalConfigRanking, RagRetrievalConfigRankingDict
+]
+
+
+class RagRetrievalConfig(_common.BaseModel):
+  """Specifies the context retrieval config."""
+
+  filter: Optional[RagRetrievalConfigFilter] = Field(
+      default=None, description="""Optional. Config for filters."""
+  )
+  hybrid_search: Optional[RagRetrievalConfigHybridSearch] = Field(
+      default=None, description="""Optional. Config for Hybrid Search."""
+  )
+  ranking: Optional[RagRetrievalConfigRanking] = Field(
       default=None,
-      description="""Optional. Maximum number of the properties for Type.OBJECT.""",
+      description="""Optional. Config for ranking and reranking.""",
   )
-  any_of: Optional[list['Schema']] = Field(
-      default=None,
-      alias="anyOf",
-      description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
-  )
-  description: Optional[str] = Field(
-      default=None, description="""Optional. The description of the data."""
-  )
-  enum: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}""",
-  )
-  format: Optional[str] = Field(
+  top_k: Optional[int] = Field(
       default=None,
       description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
       examples=["int32", "date-time"]
   )
-  items: Optional['Schema'] = Field(
+
+
+class RagRetrievalConfigDict(TypedDict, total=False):
+  """Specifies the context retrieval config."""
+
+  filter: Optional[RagRetrievalConfigFilterDict]
+  """Optional. Config for filters."""
+
+  hybrid_search: Optional[RagRetrievalConfigHybridSearchDict]
+  """Optional. Config for Hybrid Search."""
+
+  ranking: Optional[RagRetrievalConfigRankingDict]
+  """Optional. Config for ranking and reranking."""
+
+  top_k: Optional[int]
+  """Optional. The number of contexts to retrieve."""
+
+
+RagRetrievalConfigOrDict = Union[RagRetrievalConfig, RagRetrievalConfigDict]
+
+
+class VertexRagStore(_common.BaseModel):
+  """Retrieve from Vertex RAG Store for grounding."""
+
+  rag_corpora: Optional[list[str]] = Field(
       default=None,
-      description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
+      description="""Optional. Deprecated. Please use rag_resources instead.""",
   )
-  max_items: Optional[int] = Field(
+  rag_resources: Optional[list[VertexRagStoreRagResource]] = Field(
       default=None,
-      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
+      description="""Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support.""",
   )
-  maximum: Optional[float] = Field(
+  rag_retrieval_config: Optional[RagRetrievalConfig] = Field(
       default=None,
-      description="""Optional. Maximum value of the Type.INTEGER and Type.NUMBER""",
+      description="""Optional. The retrieval config for the Rag query.""",
   )
-  min_items: Optional[int] = Field(
+  similarity_top_k: Optional[int] = Field(
       default=None,
-      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
+      description="""Optional. Number of top k results to return from the selected corpora.""",
   )
-  minimum: Optional[float] = Field(
+  vector_distance_threshold: Optional[float] = Field(
       default=None,
-      description="""Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER""",
+      description="""Optional. Only return results with vector distance smaller than the threshold.""",
   )
+
   nullable: Optional[bool] = Field(
       default=None,
       description="""Deprecated. Use type arrays instead. Optional. Indicates if the value may be null.""",
@@ -1171,6 +1344,11 @@ class Schema(_common.BaseModel):
       alias="allOf",
       description="Value must validate against ALL subschemas"
   )
+    
+  any_of: Optional[list['Schema']] = Field(
+    default=None,
+    alias="anyOf",
+    description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
   
   one_of: Optional[list["Schema"]] = Field(
       default=None,
@@ -1492,8 +1670,676 @@ class SchemaDict(TypedDict, total=False):
   description: Optional[str]
   """Optional. The description of the data."""
 
+
+
+class VertexRagStoreDict(TypedDict, total=False):
+  """Retrieve from Vertex RAG Store for grounding."""
+
+  rag_corpora: Optional[list[str]]
+  """Optional. Deprecated. Please use rag_resources instead."""
+
+  rag_resources: Optional[list[VertexRagStoreRagResourceDict]]
+  """Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support."""
+
+  rag_retrieval_config: Optional[RagRetrievalConfigDict]
+  """Optional. The retrieval config for the Rag query."""
+
+  similarity_top_k: Optional[int]
+  """Optional. Number of top k results to return from the selected corpora."""
+
+  vector_distance_threshold: Optional[float]
+  """Optional. Only return results with vector distance smaller than the threshold."""
+
+
+VertexRagStoreOrDict = Union[VertexRagStore, VertexRagStoreDict]
+
+
+class Retrieval(_common.BaseModel):
+  """Defines a retrieval tool that model can call to access external knowledge."""
+
+  disable_attribution: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Deprecated. This option is no longer supported.""",
+  )
+  vertex_ai_search: Optional[VertexAISearch] = Field(
+      default=None,
+      description="""Set to use data source powered by Vertex AI Search.""",
+  )
+  vertex_rag_store: Optional[VertexRagStore] = Field(
+      default=None,
+      description="""Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService.""",
+  )
+
+
+class RetrievalDict(TypedDict, total=False):
+  """Defines a retrieval tool that model can call to access external knowledge."""
+
+  disable_attribution: Optional[bool]
+  """Optional. Deprecated. This option is no longer supported."""
+
+  vertex_ai_search: Optional[VertexAISearchDict]
+  """Set to use data source powered by Vertex AI Search."""
+
+  vertex_rag_store: Optional[VertexRagStoreDict]
+  """Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService."""
+
+
+RetrievalOrDict = Union[Retrieval, RetrievalDict]
+
+
+class ToolCodeExecution(_common.BaseModel):
+  """Tool that executes code generated by the model, and automatically returns the result to the model.
+
+  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
+  to this tool.
+  """
+
+  pass
+
+
+class ToolCodeExecutionDict(TypedDict, total=False):
+  """Tool that executes code generated by the model, and automatically returns the result to the model.
+
+  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
+  to this tool.
+  """
+
+  pass
+
+
+ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
+
+
+class JSONSchemaType(Enum):
+  """The type of the data supported by JSON Schema.
+
+  The values of the enums are lower case strings, while the values of the enums
+  for the Type class are upper case strings.
+  """
+
+  NULL = 'null'
+  BOOLEAN = 'boolean'
+  OBJECT = 'object'
+  ARRAY = 'array'
+  NUMBER = 'number'
+  INTEGER = 'integer'
+  STRING = 'string'
+
+
+class JSONSchema(pydantic.BaseModel):
+  """A subset of JSON Schema according to 2020-12 JSON Schema draft.
+
+  Represents a subset of a JSON Schema object that is used by the Gemini model.
+  The difference between this class and the Schema class is that this class is
+  compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
+  make API call to Gemini model.
+  """
+
+  type: Optional[Union[JSONSchemaType, list[JSONSchemaType]]] = Field(
+      default=None,
+      description="""Validation succeeds if the type of the instance matches the type represented by the given type, or matches at least one of the given types.""",
+  )
+  format: Optional[str] = Field(
+      default=None,
+      description='Define semantic information about a string instance.',
+  )
+  title: Optional[str] = Field(
+      default=None,
+      description=(
+          'A preferably short description about the purpose of the instance'
+          ' described by the schema.'
+      ),
+  )
+  description: Optional[str] = Field(
+      default=None,
+      description=(
+          'An explanation about the purpose of the instance described by the'
+          ' schema.'
+      ),
+  )
+  default: Optional[Any] = Field(
+      default=None,
+      description=(
+          'This keyword can be used to supply a default JSON value associated'
+          ' with a particular schema.'
+      ),
+  )
+  items: Optional['JSONSchema'] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if each element of the instance not covered by'
+          ' prefixItems validates against this schema.'
+      ),
+  )
+  min_items: Optional[int] = Field(
+      default=None,
+      description=(
+          'An array instance is valid if its size is greater than, or equal to,'
+          ' the value of this keyword.'
+      ),
+  )
+  max_items: Optional[int] = Field(
+      default=None,
+      description=(
+          'An array instance is valid if its size is less than, or equal to,'
+          ' the value of this keyword.'
+      ),
+  )
+  enum: Optional[list[Any]] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if the instance is equal to one of the elements'
+          ' in this keyword’s array value.'
+      ),
+  )
+  properties: Optional[dict[str, 'JSONSchema']] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if, for each name that appears in both the'
+          ' instance and as a name within this keyword’s value, the child'
+          ' instance for that name successfully validates against the'
+          ' corresponding schema.'
+      ),
+  )
+  required: Optional[list[str]] = Field(
+      default=None,
+      description=(
+          'An object instance is valid against this keyword if every item in'
+          ' the array is the name of a property in the instance.'
+      ),
+  )
+  min_properties: Optional[int] = Field(
+      default=None,
+      description=(
+          'An object instance is valid if its number of properties is greater'
+          ' than, or equal to, the value of this keyword.'
+      ),
+  )
+  max_properties: Optional[int] = Field(
+      default=None,
+      description=(
+          'An object instance is valid if its number of properties is less'
+          ' than, or equal to, the value of this keyword.'
+      ),
+  )
+  minimum: Optional[float] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if the numeric instance is greater than or equal'
+          ' to the given number.'
+      ),
+  )
+  maximum: Optional[float] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if the numeric instance is less than or equal to'
+          ' the given number.'
+      ),
+  )
+  min_length: Optional[int] = Field(
+      default=None,
+      description=(
+          'A string instance is valid against this keyword if its length is'
+          ' greater than, or equal to, the value of this keyword.'
+      ),
+  )
+  max_length: Optional[int] = Field(
+      default=None,
+      description=(
+          'A string instance is valid against this keyword if its length is'
+          ' less than, or equal to, the value of this keyword.'
+      ),
+  )
+  pattern: Optional[str] = Field(
+      default=None,
+      description=(
+          'A string instance is considered valid if the regular expression'
+          ' matches the instance successfully.'
+      ),
+  )
+  any_of: Optional[list['JSONSchema']] = Field(
+      default=None,
+      description=(
+          'An instance validates successfully against this keyword if it'
+          ' validates successfully against at least one schema defined by this'
+          ' keyword’s value.'
+      ),
+  )
+
+
+class Schema(_common.BaseModel):
+  """Schema is used to define the format of input/output data.
+
+  Represents a select subset of an [OpenAPI 3.0 schema
+  object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
+  be added in the future as needed.
+  """
+
+  any_of: Optional[list['Schema']] = Field(
+      default=None,
+      description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
+  )
+  default: Optional[Any] = Field(
+      default=None, description="""Optional. Default value of the data."""
+  )
+  description: Optional[str] = Field(
+      default=None, description="""Optional. The description of the data."""
+  )
+  enum: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}""",
+  )
+  example: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Example of the object. Will only populated when the object is the root.""",
+  )
+  format: Optional[str] = Field(
+      default=None,
+      description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
+  )
+  items: Optional['Schema'] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
+  )
+  max_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
+  )
+  max_length: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum length of the Type.STRING""",
+  )
+  max_properties: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the properties for Type.OBJECT.""",
+  )
+  maximum: Optional[float] = Field(
+      default=None,
+      description="""Optional. Maximum value of the Type.INTEGER and Type.NUMBER""",
+  )
+  min_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
+  )
+  min_length: Optional[int] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING""",
+  )
+  min_properties: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the properties for Type.OBJECT.""",
+  )
+  minimum: Optional[float] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER""",
+  )
+  nullable: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Indicates if the value may be null.""",
+  )
+  pattern: Optional[str] = Field(
+      default=None,
+      description="""Optional. Pattern of the Type.STRING to restrict a string to a regular expression.""",
+  )
+  properties: Optional[dict[str, 'Schema']] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
+  )
+  property_ordering: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
+  )
+  required: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Required properties of Type.OBJECT.""",
+  )
+  title: Optional[str] = Field(
+      default=None, description="""Optional. The title of the Schema."""
+  )
+  type: Optional[Type] = Field(
+      default=None, description="""Optional. The type of the data."""
+  )
+
+  @property
+  def json_schema(self) -> JSONSchema:
+    """Converts the Schema object to a JSONSchema object, that is compatible with 2020-12 JSON Schema draft.
+
+    If a Schema field is not supported by JSONSchema, it will be ignored.
+    """
+    json_schema_field_names: set[str] = set(JSONSchema.model_fields.keys())
+    schema_field_names: tuple[str] = (
+        'items',
+    )  # 'additional_properties' to come
+    list_schema_field_names: tuple[str] = (
+        'any_of',  # 'one_of', 'all_of', 'not' to come
+    )
+    dict_schema_field_names: tuple[str] = ('properties',)  # 'defs' to come
+
+    def convert_schema(schema: Union['Schema', dict[str, Any]]) -> JSONSchema:
+      if isinstance(schema, pydantic.BaseModel):
+        schema_dict = schema.model_dump()
+      else:
+        schema_dict = schema
+      json_schema = JSONSchema()
+      for field_name, field_value in schema_dict.items():
+        if field_value is None:
+          continue
+        elif field_name == 'nullable':
+          json_schema.type = JSONSchemaType.NULL
+        elif field_name not in json_schema_field_names:
+          continue
+        elif field_name == 'type':
+          if field_value == Type.TYPE_UNSPECIFIED:
+            continue
+          json_schema_type = JSONSchemaType(field_value.lower())
+          if json_schema.type is None:
+            json_schema.type = json_schema_type
+          elif isinstance(json_schema.type, JSONSchemaType):
+            existing_type: JSONSchemaType = json_schema.type
+            json_schema.type = [existing_type, json_schema_type]
+          elif isinstance(json_schema.type, list):
+            json_schema.type.append(json_schema_type)
+        elif field_name in schema_field_names:
+          schema_field_value: 'JSONSchema' = convert_schema(field_value)
+          setattr(json_schema, field_name, schema_field_value)
+        elif field_name in list_schema_field_names:
+          list_schema_field_value: list['JSONSchema'] = [
+              convert_schema(this_field_value)
+              for this_field_value in field_value
+          ]
+          setattr(json_schema, field_name, list_schema_field_value)
+        elif field_name in dict_schema_field_names:
+          dict_schema_field_value: dict[str, 'JSONSchema'] = {
+              key: convert_schema(value) for key, value in field_value.items()
+          }
+          setattr(json_schema, field_name, dict_schema_field_value)
+        else:
+          setattr(json_schema, field_name, field_value)
+
+      return json_schema
+
+    return convert_schema(self)
+
+  @classmethod
+  def from_json_schema(
+      cls,
+      *,
+      json_schema: JSONSchema,
+      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
+      raise_error_on_unsupported_field: bool = False,
+  ) -> 'Schema':
+    """Converts a JSONSchema object to a Schema object.
+
+    The JSONSchema is compatible with 2020-12 JSON Schema draft, specified by
+    OpenAPI 3.1.
+
+    Args:
+        json_schema: JSONSchema object to be converted.
+        api_option: API option to be used. If set to 'VERTEX_AI', the JSONSchema
+          will be converted to a Schema object that is compatible with Vertex AI
+          API. If set to 'GEMINI_API', the JSONSchema will be converted to a
+          Schema object that is compatible with Gemini API. Default is
+          'GEMINI_API'.
+        raise_error_on_unsupported_field: If set to True, an error will be
+          raised if the JSONSchema contains any unsupported fields. Default is
+          False.
+
+    Returns:
+        Schema object that is compatible with the specified API option.
+    Raises:
+        ValueError: If the JSONSchema contains any unsupported fields and
+          raise_error_on_unsupported_field is set to True. Or if the JSONSchema
+          is not compatible with the specified API option.
+    """
+    google_schema_field_names: set[str] = set(cls.model_fields.keys())
+    schema_field_names: tuple[str, ...] = (
+        'items',
+    )  # 'additional_properties' to come
+    list_schema_field_names: tuple[str, ...] = (
+        'any_of',  # 'one_of', 'all_of', 'not' to come
+    )
+    dict_schema_field_names: tuple[str, ...] = ('properties',)  # 'defs' to come
+
+    related_field_names_by_type: dict[str, tuple[str, ...]] = {
+        JSONSchemaType.NUMBER.value: (
+            'description',
+            'enum',
+            'format',
+            'maximum',
+            'minimum',
+            'title',
+        ),
+        JSONSchemaType.STRING.value: (
+            'description',
+            'enum',
+            'format',
+            'max_length',
+            'min_length',
+            'pattern',
+            'title',
+        ),
+        JSONSchemaType.OBJECT.value: (
+            'any_of',
+            'description',
+            'max_properties',
+            'min_properties',
+            'properties',
+            'required',
+            'title',
+        ),
+        JSONSchemaType.ARRAY.value: (
+            'description',
+            'items',
+            'max_items',
+            'min_items',
+            'title',
+        ),
+        JSONSchemaType.BOOLEAN.value: (
+            'description',
+            'title',
+        ),
+    }
+    # Treat `INTEGER` like `NUMBER`.
+    related_field_names_by_type[JSONSchemaType.INTEGER.value] = (
+        related_field_names_by_type[JSONSchemaType.NUMBER.value]
+    )
+
+    # placeholder for potential gemini api unsupported fields
+    gemini_api_unsupported_field_names: tuple[str, ...] = ()
+
+    def normalize_json_schema_type(
+        json_schema_type: Optional[
+            Union[JSONSchemaType, Sequence[JSONSchemaType], str, Sequence[str]]
+        ],
+    ) -> tuple[list[str], bool]:
+      """Returns (non_null_types, nullable)"""
+      if json_schema_type is None:
+        return [], False
+      if not isinstance(json_schema_type, Sequence):
+        json_schema_type = [json_schema_type]
+      non_null_types = []
+      nullable = False
+      for type_value in json_schema_type:
+        if isinstance(type_value, JSONSchemaType):
+          type_value = type_value.value
+        if type_value == JSONSchemaType.NULL.value:
+          nullable = True
+        else:
+          non_null_types.append(type_value)
+      return non_null_types, nullable
+
+    def raise_error_if_cannot_convert(
+        json_schema_dict: dict[str, Any],
+        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
+        raise_error_on_unsupported_field: bool,
+    ) -> None:
+      """Raises an error if the JSONSchema cannot be converted to the specified Schema object."""
+      if not raise_error_on_unsupported_field:
+        return
+      for field_name, field_value in json_schema_dict.items():
+        if field_value is None:
+          continue
+        if field_name not in google_schema_field_names:
+          raise ValueError((
+              f'JSONSchema field "{field_name}" is not supported by the '
+              'Schema object. And the "raise_error_on_unsupported_field" '
+              'argument is set to True. If you still want to convert '
+              'it into the Schema object, please either remove the field '
+              f'"{field_name}" from the JSONSchema object, or leave the '
+              '"raise_error_on_unsupported_field" unset.'
+          ))
+        if (
+            field_name in gemini_api_unsupported_field_names
+            and api_option == 'GEMINI_API'
+        ):
+          raise ValueError((
+              f'The "{field_name}" field is not supported by the Schema '
+              'object for GEMINI_API.'
+          ))
+
+    def copy_schema_fields(
+        json_schema_dict: dict[str, Any],
+        related_fields_to_copy: tuple[str, ...],
+        sub_schema_in_any_of: dict[str, Any],
+    ) -> None:
+      """Copies the fields from json_schema_dict to sub_schema_in_any_of."""
+      for field_name in related_fields_to_copy:
+        sub_schema_in_any_of[field_name] = json_schema_dict.get(
+            field_name, None
+        )
+
+    def convert_json_schema(
+        json_schema: JSONSchema,
+        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
+        raise_error_on_unsupported_field: bool,
+    ) -> 'Schema':
+      schema = Schema()
+      json_schema_dict = json_schema.model_dump()
+      raise_error_if_cannot_convert(
+          json_schema_dict=json_schema_dict,
+          api_option=api_option,
+          raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+      )
+
+      # At the highest level of the logic, there are two passes:
+      # Pass 1: the JSONSchema.type is union-like,
+      #         e.g. ['null', 'string', 'array'].
+      #         for this case, we need to split the JSONSchema into multiple
+      #         sub-schemas, and copy them into the any_of field of the Schema.
+      #         And when we copy the non-type fields into any_of field,
+      #         we only copy the fields related to the specific type.
+      #         Detailed logic is commented below with `Pass 1` keyword tag.
+      # Pass 2: the JSONSchema.type is not union-like,
+      #         e.g. 'string', ['string'], ['null', 'string'].
+      #         for this case, no splitting is needed. Detailed
+      #         logic is commented below with `Pass 2` keyword tag.
+      #
+      #
+      # Pass 1: the JSONSchema.type is union-like
+      #         e.g. ['null', 'string', 'array'].
+      non_null_types, nullable = normalize_json_schema_type(
+          json_schema_dict.get('type', None)
+      )
+      if len(non_null_types) > 1:
+        logger.warning(
+            'JSONSchema type is union-like, e.g. ["null", "string", "array"]. '
+            'Converting it into multiple sub-schemas, and copying them into '
+            'the any_of field of the Schema. The value of `default` field is '
+            'ignored because it is ambiguous to tell which sub-schema it '
+            'belongs to.'
+        )
+        reformed_json_schema = JSONSchema()
+        # start splitting the JSONSchema into multiple sub-schemas
+        any_of = []
+        if nullable:
+          schema.nullable = True
+        for normalized_type in non_null_types:
+          sub_schema_in_any_of = {'type': normalized_type}
+          related_field_names = related_field_names_by_type.get(normalized_type)
+          if related_field_names is not None:
+            copy_schema_fields(
+                json_schema_dict=json_schema_dict,
+                related_fields_to_copy=related_field_names,
+                sub_schema_in_any_of=sub_schema_in_any_of,
+            )
+          any_of.append(JSONSchema(**sub_schema_in_any_of))
+        reformed_json_schema.any_of = any_of
+        json_schema_dict = reformed_json_schema.model_dump()
+
+      # Pass 2: the JSONSchema.type is not union-like,
+      # e.g. 'string', ['string'], ['null', 'string'].
+      for field_name, field_value in json_schema_dict.items():
+        if field_value is None:
+          continue
+        if field_name in schema_field_names:
+          schema_field_value: 'Schema' = convert_json_schema(
+              json_schema=JSONSchema(**field_value),
+              api_option=api_option,
+              raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+          )
+          setattr(schema, field_name, schema_field_value)
+        elif field_name in list_schema_field_names:
+          list_schema_field_value: list['Schema'] = [
+              convert_json_schema(
+                  json_schema=JSONSchema(**this_field_value),
+                  api_option=api_option,
+                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              )
+              for this_field_value in field_value
+          ]
+          setattr(schema, field_name, list_schema_field_value)
+        elif field_name in dict_schema_field_names:
+          dict_schema_field_value: dict[str, 'Schema'] = {
+              key: convert_json_schema(
+                  json_schema=JSONSchema(**value),
+                  api_option=api_option,
+                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              )
+              for key, value in field_value.items()
+          }
+          setattr(schema, field_name, dict_schema_field_value)
+        elif field_name == 'type':
+          # non_null_types can only be empty or have one element.
+          # because already handled union-like case above.
+          non_null_types, nullable = normalize_json_schema_type(field_value)
+          if nullable:
+            schema.nullable = True
+          if non_null_types:
+            schema.type = Type(non_null_types[0])
+        else:
+          setattr(schema, field_name, field_value)
+
+      return schema
+
+    return convert_json_schema(
+        json_schema=json_schema,
+        api_option=api_option,
+        raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+    )
+
+
+class SchemaDict(TypedDict, total=False):
+  """Schema is used to define the format of input/output data.
+
+  Represents a select subset of an [OpenAPI 3.0 schema
+  object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
+  be added in the future as needed.
+  """
+
+  any_of: Optional[list['SchemaDict']]
+  """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
+
+  default: Optional[Any]
+  """Optional. Default value of the data."""
+
+  description: Optional[str]
+  """Optional. The description of the data."""
+
   enum: Optional[list[str]]
   """Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}"""
+
+  example: Optional[Any]
+  """Optional. Example of the object. Will only populated when the object is the root."""
 
   format: Optional[str]
   """Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc"""
@@ -1504,17 +2350,32 @@ class SchemaDict(TypedDict, total=False):
   max_items: Optional[int]
   """Optional. Maximum number of the elements for Type.ARRAY."""
 
+  max_length: Optional[int]
+  """Optional. Maximum length of the Type.STRING"""
+
+  max_properties: Optional[int]
+  """Optional. Maximum number of the properties for Type.OBJECT."""
+
   maximum: Optional[float]
   """Optional. Maximum value of the Type.INTEGER and Type.NUMBER"""
 
   min_items: Optional[int]
   """Optional. Minimum number of the elements for Type.ARRAY."""
 
+  min_length: Optional[int]
+  """Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"""
+
+  min_properties: Optional[int]
+  """Optional. Minimum number of the properties for Type.OBJECT."""
+
   minimum: Optional[float]
   """Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER"""
 
   nullable: Optional[bool]
   """Optional. Indicates if the value may be null."""
+
+  pattern: Optional[str]
+  """Optional. Pattern of the Type.STRING to restrict a string to a regular expression."""
 
   properties: Optional[dict[str, 'SchemaDict']]
   """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
@@ -1535,71 +2396,14 @@ class SchemaDict(TypedDict, total=False):
 SchemaOrDict = Union[Schema, SchemaDict]
 
 
-class ModelSelectionConfig(_common.BaseModel):
-  """Config for model selection."""
-
-  feature_selection_preference: Optional[FeatureSelectionPreference] = Field(
-      default=None, description="""Options for feature selection preference."""
-  )
-
-
-class ModelSelectionConfigDict(TypedDict, total=False):
-  """Config for model selection."""
-
-  feature_selection_preference: Optional[FeatureSelectionPreference]
-  """Options for feature selection preference."""
-
-
-ModelSelectionConfigOrDict = Union[
-    ModelSelectionConfig, ModelSelectionConfigDict
-]
-
-
-class SafetySetting(_common.BaseModel):
-  """Safety settings."""
-
-  method: Optional[HarmBlockMethod] = Field(
-      default=None,
-      description="""Determines if the harm block method uses probability or probability
-      and severity scores.""",
-  )
-  category: Optional[HarmCategory] = Field(
-      default=None, description="""Required. Harm category."""
-  )
-  threshold: Optional[HarmBlockThreshold] = Field(
-      default=None, description="""Required. The harm block threshold."""
-  )
-
-
-class SafetySettingDict(TypedDict, total=False):
-  """Safety settings."""
-
-  method: Optional[HarmBlockMethod]
-  """Determines if the harm block method uses probability or probability
-      and severity scores."""
-
-  category: Optional[HarmCategory]
-  """Required. Harm category."""
-
-  threshold: Optional[HarmBlockThreshold]
-  """Required. The harm block threshold."""
-
-
-SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
-
-
 class FunctionDeclaration(_common.BaseModel):
-  """Defines a function that the model can generate JSON inputs for.
+  """Structured representation of a function declaration as defined by the [OpenAPI 3.0 specification](https://spec.openapis.org/oas/v3.0.3).
 
-  The inputs are based on `OpenAPI 3.0 specifications
-  <https://spec.openapis.org/oas/v3.0.3>`_.
+  Included in this declaration are the function name, description, parameters
+  and response type. This FunctionDeclaration is a representation of a block of
+  code that can be used as a `Tool` by the model and executed by the client.
   """
 
-  response: Optional[Schema] = Field(
-      default=None,
-      description="""Describes the output from the function in the OpenAPI JSON Schema
-      Object format.""",
-  )
   description: Optional[str] = Field(
       default=None,
       description="""Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function.""",
@@ -1611,6 +2415,10 @@ class FunctionDeclaration(_common.BaseModel):
   parameters: Optional[Schema] = Field(
       default=None,
       description="""Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1""",
+  )
+  response: Optional[Schema] = Field(
+      default=None,
+      description="""Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function.""",
   )
 
   @classmethod
@@ -1698,15 +2506,12 @@ class FunctionDeclaration(_common.BaseModel):
 
 
 class FunctionDeclarationDict(TypedDict, total=False):
-  """Defines a function that the model can generate JSON inputs for.
+  """Structured representation of a function declaration as defined by the [OpenAPI 3.0 specification](https://spec.openapis.org/oas/v3.0.3).
 
-  The inputs are based on `OpenAPI 3.0 specifications
-  <https://spec.openapis.org/oas/v3.0.3>`_.
+  Included in this declaration are the function name, description, parameters
+  and response type. This FunctionDeclaration is a representation of a block of
+  code that can be used as a `Tool` by the model and executed by the client.
   """
-
-  response: Optional[SchemaDict]
-  """Describes the output from the function in the OpenAPI JSON Schema
-      Object format."""
 
   description: Optional[str]
   """Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function."""
@@ -1717,408 +2522,16 @@ class FunctionDeclarationDict(TypedDict, total=False):
   parameters: Optional[SchemaDict]
   """Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1"""
 
+  response: Optional[SchemaDict]
+  """Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function."""
+
 
 FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
-
-
-class GoogleSearch(_common.BaseModel):
-  """Tool to support Google Search in Model. Powered by Google."""
-
-  pass
-
-
-class GoogleSearchDict(TypedDict, total=False):
-  """Tool to support Google Search in Model. Powered by Google."""
-
-  pass
-
-
-GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
-
-
-class DynamicRetrievalConfig(_common.BaseModel):
-  """Describes the options to customize dynamic retrieval."""
-
-  mode: Optional[DynamicRetrievalConfigMode] = Field(
-      default=None,
-      description="""The mode of the predictor to be used in dynamic retrieval.""",
-  )
-  dynamic_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used.""",
-  )
-
-
-class DynamicRetrievalConfigDict(TypedDict, total=False):
-  """Describes the options to customize dynamic retrieval."""
-
-  mode: Optional[DynamicRetrievalConfigMode]
-  """The mode of the predictor to be used in dynamic retrieval."""
-
-  dynamic_threshold: Optional[float]
-  """Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used."""
-
-
-DynamicRetrievalConfigOrDict = Union[
-    DynamicRetrievalConfig, DynamicRetrievalConfigDict
-]
-
-
-class GoogleSearchRetrieval(_common.BaseModel):
-  """Tool to retrieve public web data for grounding, powered by Google."""
-
-  dynamic_retrieval_config: Optional[DynamicRetrievalConfig] = Field(
-      default=None,
-      description="""Specifies the dynamic retrieval configuration for the given source.""",
-  )
-
-
-class GoogleSearchRetrievalDict(TypedDict, total=False):
-  """Tool to retrieve public web data for grounding, powered by Google."""
-
-  dynamic_retrieval_config: Optional[DynamicRetrievalConfigDict]
-  """Specifies the dynamic retrieval configuration for the given source."""
-
-
-GoogleSearchRetrievalOrDict = Union[
-    GoogleSearchRetrieval, GoogleSearchRetrievalDict
-]
-
-
-class VertexAISearch(_common.BaseModel):
-  """Retrieve from Vertex AI Search datastore or engine for grounding.
-
-  datastore and engine are mutually exclusive. See
-  https://cloud.google.com/products/agent-builder
-  """
-
-  datastore: Optional[str] = Field(
-      default=None,
-      description="""Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`""",
-  )
-  engine: Optional[str] = Field(
-      default=None,
-      description="""Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`""",
-  )
-
-
-class VertexAISearchDict(TypedDict, total=False):
-  """Retrieve from Vertex AI Search datastore or engine for grounding.
-
-  datastore and engine are mutually exclusive. See
-  https://cloud.google.com/products/agent-builder
-  """
-
-  datastore: Optional[str]
-  """Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`"""
-
-  engine: Optional[str]
-  """Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`"""
-
-
-VertexAISearchOrDict = Union[VertexAISearch, VertexAISearchDict]
-
-
-class VertexRagStoreRagResource(_common.BaseModel):
-  """The definition of the Rag resource."""
-
-  rag_corpus: Optional[str] = Field(
-      default=None,
-      description="""Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`""",
-  )
-  rag_file_ids: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field.""",
-  )
-
-
-class VertexRagStoreRagResourceDict(TypedDict, total=False):
-  """The definition of the Rag resource."""
-
-  rag_corpus: Optional[str]
-  """Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`"""
-
-  rag_file_ids: Optional[list[str]]
-  """Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field."""
-
-
-VertexRagStoreRagResourceOrDict = Union[
-    VertexRagStoreRagResource, VertexRagStoreRagResourceDict
-]
-
-
-class RagRetrievalConfigFilter(_common.BaseModel):
-  """Config for filters."""
-
-  metadata_filter: Optional[str] = Field(
-      default=None, description="""Optional. String for metadata filtering."""
-  )
-  vector_distance_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. Only returns contexts with vector distance smaller than the threshold.""",
-  )
-  vector_similarity_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. Only returns contexts with vector similarity larger than the threshold.""",
-  )
-
-
-class RagRetrievalConfigFilterDict(TypedDict, total=False):
-  """Config for filters."""
-
-  metadata_filter: Optional[str]
-  """Optional. String for metadata filtering."""
-
-  vector_distance_threshold: Optional[float]
-  """Optional. Only returns contexts with vector distance smaller than the threshold."""
-
-  vector_similarity_threshold: Optional[float]
-  """Optional. Only returns contexts with vector similarity larger than the threshold."""
-
-
-RagRetrievalConfigFilterOrDict = Union[
-    RagRetrievalConfigFilter, RagRetrievalConfigFilterDict
-]
-
-
-class RagRetrievalConfigHybridSearch(_common.BaseModel):
-  """Config for Hybrid Search."""
-
-  alpha: Optional[float] = Field(
-      default=None,
-      description="""Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally.""",
-  )
-
-
-class RagRetrievalConfigHybridSearchDict(TypedDict, total=False):
-  """Config for Hybrid Search."""
-
-  alpha: Optional[float]
-  """Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally."""
-
-
-RagRetrievalConfigHybridSearchOrDict = Union[
-    RagRetrievalConfigHybridSearch, RagRetrievalConfigHybridSearchDict
-]
-
-
-class RagRetrievalConfigRankingLlmRanker(_common.BaseModel):
-  """Config for LlmRanker."""
-
-  model_name: Optional[str] = Field(
-      default=None,
-      description="""Optional. The model name used for ranking. Format: `gemini-1.5-pro`""",
-  )
-
-
-class RagRetrievalConfigRankingLlmRankerDict(TypedDict, total=False):
-  """Config for LlmRanker."""
-
-  model_name: Optional[str]
-  """Optional. The model name used for ranking. Format: `gemini-1.5-pro`"""
-
-
-RagRetrievalConfigRankingLlmRankerOrDict = Union[
-    RagRetrievalConfigRankingLlmRanker, RagRetrievalConfigRankingLlmRankerDict
-]
-
-
-class RagRetrievalConfigRankingRankService(_common.BaseModel):
-  """Config for Rank Service."""
-
-  model_name: Optional[str] = Field(
-      default=None,
-      description="""Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`""",
-  )
-
-
-class RagRetrievalConfigRankingRankServiceDict(TypedDict, total=False):
-  """Config for Rank Service."""
-
-  model_name: Optional[str]
-  """Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`"""
-
-
-RagRetrievalConfigRankingRankServiceOrDict = Union[
-    RagRetrievalConfigRankingRankService,
-    RagRetrievalConfigRankingRankServiceDict,
-]
-
-
-class RagRetrievalConfigRanking(_common.BaseModel):
-  """Config for ranking and reranking."""
-
-  llm_ranker: Optional[RagRetrievalConfigRankingLlmRanker] = Field(
-      default=None, description="""Optional. Config for LlmRanker."""
-  )
-  rank_service: Optional[RagRetrievalConfigRankingRankService] = Field(
-      default=None, description="""Optional. Config for Rank Service."""
-  )
-
-
-class RagRetrievalConfigRankingDict(TypedDict, total=False):
-  """Config for ranking and reranking."""
-
-  llm_ranker: Optional[RagRetrievalConfigRankingLlmRankerDict]
-  """Optional. Config for LlmRanker."""
-
-  rank_service: Optional[RagRetrievalConfigRankingRankServiceDict]
-  """Optional. Config for Rank Service."""
-
-
-RagRetrievalConfigRankingOrDict = Union[
-    RagRetrievalConfigRanking, RagRetrievalConfigRankingDict
-]
-
-
-class RagRetrievalConfig(_common.BaseModel):
-  """Specifies the context retrieval config."""
-
-  filter: Optional[RagRetrievalConfigFilter] = Field(
-      default=None, description="""Optional. Config for filters."""
-  )
-  hybrid_search: Optional[RagRetrievalConfigHybridSearch] = Field(
-      default=None, description="""Optional. Config for Hybrid Search."""
-  )
-  ranking: Optional[RagRetrievalConfigRanking] = Field(
-      default=None,
-      description="""Optional. Config for ranking and reranking.""",
-  )
-  top_k: Optional[int] = Field(
-      default=None,
-      description="""Optional. The number of contexts to retrieve.""",
-  )
-
-
-class RagRetrievalConfigDict(TypedDict, total=False):
-  """Specifies the context retrieval config."""
-
-  filter: Optional[RagRetrievalConfigFilterDict]
-  """Optional. Config for filters."""
-
-  hybrid_search: Optional[RagRetrievalConfigHybridSearchDict]
-  """Optional. Config for Hybrid Search."""
-
-  ranking: Optional[RagRetrievalConfigRankingDict]
-  """Optional. Config for ranking and reranking."""
-
-  top_k: Optional[int]
-  """Optional. The number of contexts to retrieve."""
-
-
-RagRetrievalConfigOrDict = Union[RagRetrievalConfig, RagRetrievalConfigDict]
-
-
-class VertexRagStore(_common.BaseModel):
-  """Retrieve from Vertex RAG Store for grounding."""
-
-  rag_corpora: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Deprecated. Please use rag_resources instead.""",
-  )
-  rag_resources: Optional[list[VertexRagStoreRagResource]] = Field(
-      default=None,
-      description="""Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support.""",
-  )
-  rag_retrieval_config: Optional[RagRetrievalConfig] = Field(
-      default=None,
-      description="""Optional. The retrieval config for the Rag query.""",
-  )
-  similarity_top_k: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of top k results to return from the selected corpora.""",
-  )
-  vector_distance_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. Only return results with vector distance smaller than the threshold.""",
-  )
-
-
-class VertexRagStoreDict(TypedDict, total=False):
-  """Retrieve from Vertex RAG Store for grounding."""
-
-  rag_corpora: Optional[list[str]]
-  """Optional. Deprecated. Please use rag_resources instead."""
-
-  rag_resources: Optional[list[VertexRagStoreRagResourceDict]]
-  """Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support."""
-
-  rag_retrieval_config: Optional[RagRetrievalConfigDict]
-  """Optional. The retrieval config for the Rag query."""
-
-  similarity_top_k: Optional[int]
-  """Optional. Number of top k results to return from the selected corpora."""
-
-  vector_distance_threshold: Optional[float]
-  """Optional. Only return results with vector distance smaller than the threshold."""
-
-
-VertexRagStoreOrDict = Union[VertexRagStore, VertexRagStoreDict]
-
-
-class Retrieval(_common.BaseModel):
-  """Defines a retrieval tool that model can call to access external knowledge."""
-
-  disable_attribution: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Deprecated. This option is no longer supported.""",
-  )
-  vertex_ai_search: Optional[VertexAISearch] = Field(
-      default=None,
-      description="""Set to use data source powered by Vertex AI Search.""",
-  )
-  vertex_rag_store: Optional[VertexRagStore] = Field(
-      default=None,
-      description="""Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService.""",
-  )
-
-
-class RetrievalDict(TypedDict, total=False):
-  """Defines a retrieval tool that model can call to access external knowledge."""
-
-  disable_attribution: Optional[bool]
-  """Optional. Deprecated. This option is no longer supported."""
-
-  vertex_ai_search: Optional[VertexAISearchDict]
-  """Set to use data source powered by Vertex AI Search."""
-
-  vertex_rag_store: Optional[VertexRagStoreDict]
-  """Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService."""
-
-
-RetrievalOrDict = Union[Retrieval, RetrievalDict]
-
-
-class ToolCodeExecution(_common.BaseModel):
-  """Tool that executes code generated by the model, and automatically returns the result to the model.
-
-  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
-  to this tool.
-  """
-
-  pass
-
-
-class ToolCodeExecutionDict(TypedDict, total=False):
-  """Tool that executes code generated by the model, and automatically returns the result to the model.
-
-  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
-  to this tool.
-  """
-
-  pass
-
-
-ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
 
 
 class Tool(_common.BaseModel):
   """Tool details of a tool that the model may use to generate a response."""
 
-  function_declarations: Optional[list[FunctionDeclaration]] = Field(
-      default=None,
-      description="""List of function declarations that the tool supports.""",
-  )
   retrieval: Optional[Retrieval] = Field(
       default=None,
       description="""Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation.""",
@@ -2132,17 +2545,23 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search.""",
   )
+  enterprise_web_search: Optional[EnterpriseWebSearch] = Field(
+      default=None,
+      description="""Optional. Enterprise web search tool type. Specialized retrieval
+      tool that is powered by Vertex AI Search and Sec4 compliance.""",
+  )
   code_execution: Optional[ToolCodeExecution] = Field(
       default=None,
       description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services.""",
+  )
+  function_declarations: Optional[list[FunctionDeclaration]] = Field(
+      default=None,
+      description="""Optional. Function tool type. One or more function declarations to be passed to the model along with the current user query. Model may decide to call a subset of these functions by populating FunctionCall in the response. User should provide a FunctionResponse for each function call in the next turn. Based on the function responses, Model will generate the final response back to the user. Maximum 128 function declarations can be provided.""",
   )
 
 
 class ToolDict(TypedDict, total=False):
   """Tool details of a tool that the model may use to generate a response."""
-
-  function_declarations: Optional[list[FunctionDeclarationDict]]
-  """List of function declarations that the tool supports."""
 
   retrieval: Optional[RetrievalDict]
   """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation."""
@@ -2154,8 +2573,15 @@ class ToolDict(TypedDict, total=False):
   google_search_retrieval: Optional[GoogleSearchRetrievalDict]
   """Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search."""
 
+  enterprise_web_search: Optional[EnterpriseWebSearchDict]
+  """Optional. Enterprise web search tool type. Specialized retrieval
+      tool that is powered by Vertex AI Search and Sec4 compliance."""
+
   code_execution: Optional[ToolCodeExecutionDict]
   """Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services."""
+
+  function_declarations: Optional[list[FunctionDeclarationDict]]
+  """Optional. Function tool type. One or more function declarations to be passed to the model along with the current user query. Model may decide to call a subset of these functions by populating FunctionCall in the response. User should provide a FunctionResponse for each function call in the next turn. Based on the function responses, Model will generate the final response back to the user. Maximum 128 function declarations can be provided."""
 
 
 ToolOrDict = Union[Tool, ToolDict]
@@ -5531,6 +5957,7 @@ ListModelsResponseOrDict = Union[ListModelsResponse, ListModelsResponseDict]
 
 
 class UpdateModelConfig(_common.BaseModel):
+  """Configuration for updating a tuned model."""
 
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
@@ -5540,6 +5967,7 @@ class UpdateModelConfig(_common.BaseModel):
 
 
 class UpdateModelConfigDict(TypedDict, total=False):
+  """Configuration for updating a tuned model."""
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
@@ -5555,12 +5983,14 @@ UpdateModelConfigOrDict = Union[UpdateModelConfig, UpdateModelConfigDict]
 
 
 class _UpdateModelParameters(_common.BaseModel):
+  """Configuration for updating a tuned model."""
 
   model: Optional[str] = Field(default=None, description="""""")
   config: Optional[UpdateModelConfig] = Field(default=None, description="""""")
 
 
 class _UpdateModelParametersDict(TypedDict, total=False):
+  """Configuration for updating a tuned model."""
 
   model: Optional[str]
   """"""
@@ -5575,6 +6005,7 @@ _UpdateModelParametersOrDict = Union[
 
 
 class DeleteModelConfig(_common.BaseModel):
+  """Configuration for deleting a tuned model."""
 
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
@@ -5582,6 +6013,7 @@ class DeleteModelConfig(_common.BaseModel):
 
 
 class DeleteModelConfigDict(TypedDict, total=False):
+  """Configuration for deleting a tuned model."""
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
@@ -5591,6 +6023,7 @@ DeleteModelConfigOrDict = Union[DeleteModelConfig, DeleteModelConfigDict]
 
 
 class _DeleteModelParameters(_common.BaseModel):
+  """Parameters for deleting a tuned model."""
 
   model: Optional[str] = Field(default=None, description="""""")
   config: Optional[DeleteModelConfig] = Field(
@@ -5599,6 +6032,7 @@ class _DeleteModelParameters(_common.BaseModel):
 
 
 class _DeleteModelParametersDict(TypedDict, total=False):
+  """Parameters for deleting a tuned model."""
 
   model: Optional[str]
   """"""
@@ -7572,7 +8006,7 @@ class _CreateCachedContentParameters(_common.BaseModel):
 
   model: Optional[str] = Field(
       default=None,
-      description="""ID of the model to use. Example: gemini-1.5-flash""",
+      description="""ID of the model to use. Example: gemini-2.0-flash""",
   )
   config: Optional[CreateCachedContentConfig] = Field(
       default=None,
@@ -7585,7 +8019,7 @@ class _CreateCachedContentParametersDict(TypedDict, total=False):
   """Parameters for caches.create method."""
 
   model: Optional[str]
-  """ID of the model to use. Example: gemini-1.5-flash"""
+  """ID of the model to use. Example: gemini-2.0-flash"""
 
   config: Optional[CreateCachedContentConfigDict]
   """Configuration that contains optional parameters.
@@ -9590,6 +10024,10 @@ class LiveServerContent(_common.BaseModel):
       default=None,
       description="""If true, indicates that a client message has interrupted current model generation. If the client is playing out the content in realtime, this is a good signal to stop and empty the current queue.""",
   )
+  grounding_metadata: Optional[GroundingMetadata] = Field(
+      default=None,
+      description="""Metadata returned to client when grounding is enabled.""",
+  )
   generation_complete: Optional[bool] = Field(
       default=None,
       description="""If true, indicates that the model is done generating. When model is
@@ -9631,6 +10069,9 @@ class LiveServerContentDict(TypedDict, total=False):
 
   interrupted: Optional[bool]
   """If true, indicates that a client message has interrupted current model generation. If the client is playing out the content in realtime, this is a good signal to stop and empty the current queue."""
+
+  grounding_metadata: Optional[GroundingMetadataDict]
+  """Metadata returned to client when grounding is enabled."""
 
   generation_complete: Optional[bool]
   """If true, indicates that the model is done generating. When model is
@@ -9907,11 +10348,23 @@ class LiveServerMessage(_common.BaseModel):
     ):
       return None
     text = ''
+    non_text_parts = []
     for part in self.server_content.model_turn.parts:
+      for field_name, field_value in part.model_dump(
+          exclude={'text', 'thought'}
+      ).items():
+        if field_value is not None:
+          non_text_parts.append(field_name)
       if isinstance(part.text, str):
         if isinstance(part.thought, bool) and part.thought:
           continue
         text += part.text
+    if non_text_parts:
+      logger.warning(
+          'Warning: there are non-text parts in the response:'
+          f' {non_text_parts}, returning concatenated text result from text'
+          ' parts, check out the non text parts for full response from model.'
+      )
     return text if text else None
 
   @property
@@ -9925,9 +10378,21 @@ class LiveServerMessage(_common.BaseModel):
     ):
       return None
     concatenated_data = b''
+    non_data_parts = []
     for part in self.server_content.model_turn.parts:
+      for field_name, field_value in part.model_dump(
+          exclude={'inline_data'}
+      ).items():
+        if field_value is not None:
+          non_data_parts.append(field_name)
       if part.inline_data and isinstance(part.inline_data.data, bytes):
         concatenated_data += part.inline_data.data
+    if non_data_parts:
+      logger.warning(
+          'Warning: there are non-data parts in the response:'
+          f' {non_data_parts}, returning concatenated data result from data'
+          ' parts, check out the non data parts for full response from model.'
+      )
     return concatenated_data if len(concatenated_data) > 0 else None
 
 
@@ -10205,6 +10670,17 @@ class LiveClientSetup(_common.BaseModel):
 
       If included, server will compress context window to fit into given length.""",
   )
+  input_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""The transcription of the input aligns with the input audio language.
+      """,
+  )
+  output_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""The transcription of the output aligns with the language code
+      specified for the output audio.
+      """,
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -10242,6 +10718,15 @@ class LiveClientSetupDict(TypedDict, total=False):
   """Configures context window compression mechanism.
 
       If included, server will compress context window to fit into given length."""
+
+  input_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """The transcription of the input aligns with the input audio language.
+      """
+
+  output_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """The transcription of the output aligns with the language code
+      specified for the output audio.
+      """
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -10365,6 +10850,33 @@ class LiveClientRealtimeInput(_common.BaseModel):
   media_chunks: Optional[list[Blob]] = Field(
       default=None, description="""Inlined bytes data for media input."""
   )
+  audio: Optional[Blob] = Field(
+      default=None, description="""The realtime audio input stream."""
+  )
+  audio_stream_end: Optional[bool] = Field(
+      default=None,
+      description="""
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[Blob] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
 
 
 class LiveClientRealtimeInputDict(TypedDict, total=False):
@@ -10386,6 +10898,32 @@ class LiveClientRealtimeInputDict(TypedDict, total=False):
 
   media_chunks: Optional[list[BlobDict]]
   """Inlined bytes data for media input."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
 
 
 LiveClientRealtimeInputOrDict = Union[
@@ -10689,4 +11227,85 @@ class LiveConnectParametersDict(TypedDict, total=False):
 
 LiveConnectParametersOrDict = Union[
     LiveConnectParameters, LiveConnectParametersDict
+]
+
+if _is_pillow_image_imported:
+  BlobImageUnion = Union[Blob, PIL_Image]
+else:
+  BlobImageUnion = Blob  # type: ignore[misc]
+
+
+BlobImageUnionDict = Union[BlobImageUnion, BlobDict]
+
+
+class LiveSendRealtimeInputParameters(_common.BaseModel):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnion] = Field(
+      default=None, description="""Realtime input to send to the session."""
+  )
+  audio: Optional[Blob] = Field(
+      default=None, description="""The realtime audio input stream."""
+  )
+  audio_stream_end: Optional[bool] = Field(
+      default=None,
+      description="""
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[BlobImageUnion] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
+
+
+class LiveSendRealtimeInputParametersDict(TypedDict, total=False):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnionDict]
+  """Realtime input to send to the session."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobImageUnionDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
+
+
+LiveSendRealtimeInputParametersOrDict = Union[
+    LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
 ]

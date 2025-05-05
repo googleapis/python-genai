@@ -181,35 +181,30 @@ def test_schema_with_no_null_fields_is_unchanged():
 
 
 @pytest.mark.parametrize('use_vertex', [True, False])
-def test_schema_with_default_value_raises_for_mldev(client):
+def test_schema_with_default_value(client):
 
-  if not client.vertexai:
-    with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client._api_client, CountryInfoWithDefaultValue)
-    assert 'Default value is not supported' in str(e)
-  else:
-    transformed_schema_vertex = _transformers.t_schema(
-        client._api_client, CountryInfoWithDefaultValue
-    )
-    expected_schema_vertex = types.Schema(
-        properties={
-            'name': types.Schema(
-                type='STRING',
-                title='Name',
-            ),
-            'population': types.Schema(
-                type='INTEGER',
-                default=0,
-                title='Population',
-            ),
-        },
-        type='OBJECT',
-        required=['name'],
-        title='CountryInfoWithDefaultValue',
-        property_ordering=['name', 'population'],
-    )
+  transformed_schema = _transformers.t_schema(
+      client._api_client, CountryInfoWithDefaultValue
+  )
+  expected_schema = types.Schema(
+      properties={
+          'name': types.Schema(
+              type='STRING',
+              title='Name',
+          ),
+          'population': types.Schema(
+              type='INTEGER',
+              default=0,
+              title='Population',
+          ),
+      },
+      type='OBJECT',
+      required=['name'],
+      title='CountryInfoWithDefaultValue',
+      property_ordering=['name', 'population'],
+  )
 
-    assert transformed_schema_vertex == expected_schema_vertex
+  assert transformed_schema == expected_schema
 
 
 def test_schema_with_any_of(client):
@@ -610,17 +605,25 @@ def test_t_schema_does_not_change_property_ordering_if_set(client):
   assert transformed_schema.property_ordering == custom_property_ordering
 
 
-def test_t_schema_does_not_set_property_ordering_for_json_schema(client):
-  """Tests t_schema doesn't set the property_ordering field for json schemas."""
+def test_t_schema_sets_property_ordering_for_json_schema(client):
+  """Tests t_schema sets the property_ordering field for json schemas."""
 
   schema = CountryInfo.model_json_schema()
 
   transformed_schema = _transformers.t_schema(client, schema)
-  assert transformed_schema.property_ordering is None
+  assert transformed_schema.property_ordering == [
+      'name',
+      'population',
+      'capital',
+      'continent',
+      'gdp',
+      'official_language',
+      'total_area_sq_mi',
+  ]
 
 
-def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
-  """Tests t_schema doesn't set the property_ordering field for Schema types."""
+def test_t_schema_sets_property_ordering_for_schema_type(client):
+  """Tests t_schema sets the property_ordering field for Schema types."""
 
   schema = types.Schema(
       properties={
@@ -639,10 +642,5 @@ def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
       title='CountryInfoWithDefaultValue',
   )
 
-  if client.vertexai:
-    transformed_schema = _transformers.t_schema(client, schema)
-    assert transformed_schema.property_ordering is None
-  else:
-    with pytest.raises(ValueError) as e:
-      _transformers.t_schema(client, schema)
-    assert 'Default value is not supported' in str(e)
+  transformed_schema = _transformers.t_schema(client, schema)
+  assert transformed_schema.property_ordering == ['name', 'population']

@@ -46,19 +46,6 @@ def _is_builtin_primitive_or_compound(
   return annotation in _py_builtin_type_to_schema_type.keys()
 
 
-def _raise_for_default_if_mldev(schema: types.Schema) -> None:
-  if schema.default is not None:
-    raise ValueError(
-        'Default value is not supported in function declaration schema for'
-        ' the Gemini API.'
-    )
-
-
-def _raise_if_schema_unsupported(api_option: Literal['VERTEX_AI', 'GEMINI_API'], schema: types.Schema) -> None:
-  if api_option == 'GEMINI_API':
-    _raise_for_default_if_mldev(schema)
-
-
 def _is_default_value_compatible(
     default_value: Any, annotation: inspect.Parameter.annotation  # type: ignore[valid-type]
 ) -> bool:
@@ -125,7 +112,6 @@ def _parse_schema_from_parameter(
         raise ValueError(default_value_error_msg)
       schema.default = param.default
     schema.type = _py_builtin_type_to_schema_type[param.annotation]
-    _raise_if_schema_unsupported(api_option, schema)
     return schema
   if (
       isinstance(param.annotation, VersionedUnionType)
@@ -166,7 +152,6 @@ def _parse_schema_from_parameter(
       if not _is_default_value_compatible(param.default, param.annotation):
         raise ValueError(default_value_error_msg)
       schema.default = param.default
-    _raise_if_schema_unsupported(api_option, schema)
     return schema
   if isinstance(param.annotation, _GenericAlias) or isinstance(
       param.annotation, builtin_types.GenericAlias
@@ -179,7 +164,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
     if origin is Literal:
       if not all(isinstance(arg, str) for arg in args):
@@ -192,7 +176,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
     if origin is list:
       schema.type = _py_builtin_type_to_schema_type[list]
@@ -209,7 +192,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
     if origin is Union:
       schema.any_of = []
@@ -259,7 +241,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
       # all other generic alias will be invoked in raise branch
   if (
@@ -284,7 +265,6 @@ def _parse_schema_from_parameter(
           func_name,
       )
     schema.required = _get_required_fields(schema)
-    _raise_if_schema_unsupported(api_option, schema)
     return schema
   raise ValueError(
       f'Failed to parse the parameter {param} of function {func_name} for'
