@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.14.0](https://github.com/googleapis/python-genai/compare/v1.13.0...v1.14.0) (2025-05-07)
+
+
+### Features
+
+* Add `Tool.enterprise_web_search` field ([731c5a3](https://github.com/googleapis/python-genai/commit/731c5a35ad4d48c324160e0686a6603d335ccd59))
+* Add support for Grounding with Google Maps ([1efc057](https://github.com/googleapis/python-genai/commit/1efc057b1daebbebab8c5601d6917341fba9c7c4))
+* Enable input transcription for Gemini API. ([157b16b](https://github.com/googleapis/python-genai/commit/157b16b8df40095b81e7206c7a16d03188744c37))
+
+
+### Bug Fixes
+
+* Add retry logic for missing x-goog-upload-status header for python ([5bb70fc](https://github.com/googleapis/python-genai/commit/5bb70fc6c16cdd5c1057033583e6f52beb53282e))
+* Fix resource warning raised by unclosed httpx client ([a3a6d34](https://github.com/googleapis/python-genai/commit/a3a6d34ae4d8fe614764c8368cbb71cdd9087506))
+* Raise ValueError when 'x-goog-upload-status' header is not present in file upload response ([dfdea36](https://github.com/googleapis/python-genai/commit/dfdea36b6f98d7cb59905a29f35f6bdee4aca359))
+
+
+### Documentation
+
+* Regenerate docs for 1.13.0 ([5269212](https://github.com/googleapis/python-genai/commit/5269212aa956955c4c85b4f46bbdcf1efcb07060))
+
 ## [1.13.0](https://github.com/googleapis/python-genai/compare/v1.12.1...v1.13.0) (2025-04-30)
 
 
