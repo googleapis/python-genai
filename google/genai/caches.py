@@ -30,6 +30,24 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.caches')
 
 
+def _Blob_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
 def _Part_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -41,6 +59,15 @@ def _Part_to_mldev(
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(
+        to_object,
+        ['inlineData'],
+        _Blob_to_mldev(
+            api_client, getv(from_object, ['inline_data']), to_object
+        ),
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -64,9 +91,6 @@ def _Part_to_mldev(
         ['functionResponse'],
         getv(from_object, ['function_response']),
     )
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
@@ -540,6 +564,24 @@ def _ListCachedContentsParameters_to_mldev(
   return to_object
 
 
+def _Blob_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
 def _Part_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -551,6 +593,15 @@ def _Part_to_vertex(
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(
+        to_object,
+        ['inlineData'],
+        _Blob_to_vertex(
+            api_client, getv(from_object, ['inline_data']), to_object
+        ),
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -574,9 +625,6 @@ def _Part_to_vertex(
         ['functionResponse'],
         getv(from_object, ['function_response']),
     )
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))

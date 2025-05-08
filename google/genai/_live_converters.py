@@ -22,6 +22,42 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 
+def _Blob_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _Blob_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
 def _Part_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -33,6 +69,15 @@ def _Part_to_mldev(
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(
+        to_object,
+        ['inlineData'],
+        _Blob_to_mldev(
+            api_client, getv(from_object, ['inline_data']), to_object
+        ),
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -56,9 +101,6 @@ def _Part_to_mldev(
         ['functionResponse'],
         getv(from_object, ['function_response']),
     )
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
@@ -78,6 +120,15 @@ def _Part_to_vertex(
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
 
+  if getv(from_object, ['inline_data']) is not None:
+    setv(
+        to_object,
+        ['inlineData'],
+        _Blob_to_vertex(
+            api_client, getv(from_object, ['inline_data']), to_object
+        ),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -100,9 +151,6 @@ def _Part_to_vertex(
         ['functionResponse'],
         getv(from_object, ['function_response']),
     )
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
@@ -1720,6 +1768,40 @@ def _LiveServerSetupComplete_from_vertex(
   return to_object
 
 
+def _Blob_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
+def _Blob_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['displayName']) is not None:
+    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
+
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
 def _Part_from_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1729,6 +1811,15 @@ def _Part_from_mldev(
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['inlineData']) is not None:
+    setv(
+        to_object,
+        ['inline_data'],
+        _Blob_from_mldev(
+            api_client, getv(from_object, ['inlineData']), to_object
+        ),
+    )
 
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
@@ -1752,9 +1843,6 @@ def _Part_from_mldev(
         ['function_response'],
         getv(from_object, ['functionResponse']),
     )
-
-  if getv(from_object, ['inlineData']) is not None:
-    setv(to_object, ['inline_data'], getv(from_object, ['inlineData']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
@@ -1774,6 +1862,15 @@ def _Part_from_vertex(
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
 
+  if getv(from_object, ['inlineData']) is not None:
+    setv(
+        to_object,
+        ['inline_data'],
+        _Blob_from_vertex(
+            api_client, getv(from_object, ['inlineData']), to_object
+        ),
+    )
+
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -1796,9 +1893,6 @@ def _Part_from_vertex(
         ['function_response'],
         getv(from_object, ['functionResponse']),
     )
-
-  if getv(from_object, ['inlineData']) is not None:
-    setv(to_object, ['inline_data'], getv(from_object, ['inlineData']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
