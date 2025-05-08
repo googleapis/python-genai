@@ -283,33 +283,6 @@ def _FunctionCallingConfig_to_mldev(
   return to_object
 
 
-def _LatLng_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['latitude']) is not None:
-    raise ValueError('latitude parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['longitude']) is not None:
-    raise ValueError('longitude parameter is not supported in Gemini API.')
-
-  return to_object
-
-
-def _RetrievalConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['lat_lng']) is not None:
-    raise ValueError('lat_lng parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _ToolConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -328,8 +301,8 @@ def _ToolConfig_to_mldev(
     )
 
   if getv(from_object, ['retrieval_config']) is not None:
-    raise ValueError(
-        'retrieval_config parameter is not supported in Gemini API.'
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -815,39 +788,6 @@ def _FunctionCallingConfig_to_vertex(
   return to_object
 
 
-def _LatLng_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['latitude']) is not None:
-    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
-
-  if getv(from_object, ['longitude']) is not None:
-    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
-
-  return to_object
-
-
-def _RetrievalConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['lat_lng']) is not None:
-    setv(
-        to_object,
-        ['latLng'],
-        _LatLng_to_vertex(
-            api_client, getv(from_object, ['lat_lng']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _ToolConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -867,11 +807,7 @@ def _ToolConfig_to_vertex(
 
   if getv(from_object, ['retrieval_config']) is not None:
     setv(
-        to_object,
-        ['retrievalConfig'],
-        _RetrievalConfig_to_vertex(
-            api_client, getv(from_object, ['retrieval_config']), to_object
-        ),
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
