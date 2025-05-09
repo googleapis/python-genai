@@ -25,6 +25,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_delete',
         parameters=types._DeleteFileParameters(name='files/1vx8znuf0yje'),
         exception_if_vertex='only supported in the Gemini Developer client',
+        skip_in_api_mode=(
+            'The files have a TTL, they cannot be reliably retrieved for a long'
+            ' time.'
+        ),
     ),
 ]
 
