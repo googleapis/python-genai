@@ -382,7 +382,7 @@ async def test_async_session_receive_audio(
       side_effect=[
           (
               '{"serverContent": {"modelTurn": {"parts":[{"inlineData":'
-              ' {"data": "MDAwMDAw", "mime_type": "audio/pcm" }}]}}}'
+              ' {"data": "MDAwMDAw", "mimeType": "audio/pcm" }}]}}}'
           ),
           '{"serverContent": {"turnComplete": true}}',
       ]

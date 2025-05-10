@@ -405,6 +405,38 @@ class TurnCoverage(_common.CaseInSensitiveEnum):
   TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
 
 
+class Blob(_common.BaseModel):
+  """Content blob."""
+
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is not currently used in the Gemini GenerateContent calls.""",
+  )
+  data: Optional[bytes] = Field(
+      default=None, description="""Required. Raw bytes."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class BlobDict(TypedDict, total=False):
+  """Content blob."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is not currently used in the Gemini GenerateContent calls."""
+
+  data: Optional[bytes]
+  """Required. Raw bytes."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+BlobOrDict = Union[Blob, BlobDict]
+
+
 class VideoMetadata(_common.BaseModel):
   """Metadata describes the input video content."""
 
@@ -588,31 +620,6 @@ class FunctionResponseDict(TypedDict, total=False):
 FunctionResponseOrDict = Union[FunctionResponse, FunctionResponseDict]
 
 
-class Blob(_common.BaseModel):
-  """Content blob."""
-
-  data: Optional[bytes] = Field(
-      default=None, description="""Required. Raw bytes."""
-  )
-  mime_type: Optional[str] = Field(
-      default=None,
-      description="""Required. The IANA standard MIME type of the source data.""",
-  )
-
-
-class BlobDict(TypedDict, total=False):
-  """Content blob."""
-
-  data: Optional[bytes]
-  """Required. Raw bytes."""
-
-  mime_type: Optional[str]
-  """Required. The IANA standard MIME type of the source data."""
-
-
-BlobOrDict = Union[Blob, BlobDict]
-
-
 class Part(_common.BaseModel):
   """A datatype containing media content.
 
@@ -627,6 +634,9 @@ class Part(_common.BaseModel):
   thought: Optional[bool] = Field(
       default=None,
       description="""Indicates if the part is thought from the model.""",
+  )
+  inline_data: Optional[Blob] = Field(
+      default=None, description="""Optional. Inlined bytes data."""
   )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
@@ -646,9 +656,6 @@ class Part(_common.BaseModel):
   function_response: Optional[FunctionResponse] = Field(
       default=None,
       description="""Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model.""",
-  )
-  inline_data: Optional[Blob] = Field(
-      default=None, description="""Optional. Inlined bytes data."""
   )
   text: Optional[str] = Field(
       default=None, description="""Optional. Text part (can be code)."""
@@ -725,6 +732,9 @@ class PartDict(TypedDict, total=False):
   thought: Optional[bool]
   """Indicates if the part is thought from the model."""
 
+  inline_data: Optional[BlobDict]
+  """Optional. Inlined bytes data."""
+
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
 
@@ -739,9 +749,6 @@ class PartDict(TypedDict, total=False):
 
   function_response: Optional[FunctionResponseDict]
   """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
-
-  inline_data: Optional[BlobDict]
-  """Optional. Inlined bytes data."""
 
   text: Optional[str]
   """Optional. Text part (can be code)."""
