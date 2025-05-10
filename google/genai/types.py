@@ -2246,7 +2246,7 @@ class FunctionDeclaration(_common.BaseModel):
         parameters_properties[name] = schema
     declaration = FunctionDeclaration(
         name=callable.__name__,
-        description=callable.__doc__,
+        description=inspect.cleandoc(callable.__doc__),
     )
     if parameters_properties:
       declaration.parameters = Schema(
