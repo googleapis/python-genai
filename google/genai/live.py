@@ -25,7 +25,24 @@ import warnings
 
 import google.auth
 import pydantic
-from websockets import ConnectionClosed
+
+# MODIFIED: Wrap all websockets imports in a single try-except ImportError block
+try:
+    from websockets import ConnectionClosed
+
+    # Original try-except block for different websockets APIs/versions is preserved inside
+    try:
+      from websockets.asyncio.client import ClientConnection
+      from websockets.asyncio.client import connect
+    except ModuleNotFoundError:
+      # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
+      from websockets.client import ClientConnection  # type: ignore
+      from websockets.client import connect  # type: ignore
+except ImportError:
+    raise ImportError(
+        "The `websockets` library is required for live, interactive sessions. "
+        "Please install it using `pip install google-genai[live]`."
+    )
 
 from . import _api_module
 from . import _common
@@ -39,14 +56,6 @@ from . import _live_converters as live_converters
 from .models import _Content_to_mldev
 from .models import _Content_to_vertex
 
-
-try:
-  from websockets.asyncio.client import ClientConnection
-  from websockets.asyncio.client import connect
-except ModuleNotFoundError:
-  # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
-  from websockets.client import ClientConnection  # type: ignore
-  from websockets.client import connect  # type: ignore
 
 logger = logging.getLogger('google_genai.live')
 
