@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/googleapis/python-genai/compare/v1.15.0...v1.15.1) (2025-05-13)
+
+
+### Documentation
+
+* Regenerate docs for 1.15.0 ([a3fc532](https://github.com/googleapis/python-genai/commit/a3fc532594eff8f01749f6275c506f7516e8ab73))
+
 ## [1.15.0](https://github.com/googleapis/python-genai/compare/v1.14.0...v1.15.0) (2025-05-13)
 
 
