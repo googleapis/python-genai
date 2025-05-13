@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.15.0](https://github.com/googleapis/python-genai/compare/v1.14.0...v1.15.0) (2025-05-13)
+
+
+### Features
+
+* Support display_name for Blob class when calling Vertex AI ([266da4a](https://github.com/googleapis/python-genai/commit/266da4aafa693866f5df9c8bbf53ffd2a5755c9f))
+* Support tuning checkpoints ([26a87ea](https://github.com/googleapis/python-genai/commit/26a87ea5cdb68cb6933a7432de5595ac6cda5f48))
+* Typo fixes in a few files. ([b9c9e32](https://github.com/googleapis/python-genai/commit/b9c9e32efaefdab54414a2bc1285b1014e7385fd))
+
+
+### Bug Fixes
+
+* Improve thread safety for sync requests (fixes [#775](https://github.com/googleapis/python-genai/issues/775)) ([d88b8d4](https://github.com/googleapis/python-genai/commit/d88b8d42785749c0bc2f846af6cbf2f3614c7e2c))
+
+
+### Documentation
+
+* Improve docs for response_mime_type and response_schema. Relate to [#297](https://github.com/googleapis/python-genai/issues/297) ([832b715](https://github.com/googleapis/python-genai/commit/832b71531dc29c3b13259e691a29a7d51327346d))
+* Regenerate docs for 1.14.0 ([32808f3](https://github.com/googleapis/python-genai/commit/32808f3d77c84cb25ee6fe1181bceb53b57adfcf))
+
 ## [1.14.0](https://github.com/googleapis/python-genai/compare/v1.13.0...v1.14.0) (2025-05-07)
 
 
