@@ -5,7 +5,6 @@
 
 ### Features
 
-* Add support for audio, video, text and session resumption in java. ([100e13d](https://github.com/googleapis/python-genai/commit/100e13d5c87e3e4640a998fab7d02b6ca684bfee))
 * Support display_name for Blob class when calling Vertex AI ([266da4a](https://github.com/googleapis/python-genai/commit/266da4aafa693866f5df9c8bbf53ffd2a5755c9f))
 * Support tuning checkpoints ([26a87ea](https://github.com/googleapis/python-genai/commit/26a87ea5cdb68cb6933a7432de5595ac6cda5f48))
 * Typo fixes in a few files. ([b9c9e32](https://github.com/googleapis/python-genai/commit/b9c9e32efaefdab54414a2bc1285b1014e7385fd))
