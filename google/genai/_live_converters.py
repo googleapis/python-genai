@@ -818,6 +818,7 @@ def _LiveConnectConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
   if getv(from_object, ['generation_config']) is not None:
     setv(
         parent_object,
@@ -962,6 +963,7 @@ def _LiveConnectConfig_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
   if getv(from_object, ['generation_config']) is not None:
     setv(
         parent_object,
