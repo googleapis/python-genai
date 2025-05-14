@@ -25,6 +25,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_get',
         parameters=types._GetFileParameters(name='files/vjvu9fwk2qj8'),
         exception_if_vertex='only supported in the Gemini Developer client',
+        skip_in_api_mode=(
+            'The files have a TTL, they cannot be reliably retrieved for a long'
+            ' time.'
+        ),
     ),
 ]
 
