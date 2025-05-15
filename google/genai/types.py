@@ -2428,13 +2428,12 @@ FunctionCallingConfigOrDict = Union[
 ]
 
 
-class LatLng(_common.BaseModel):
+class GoogleTypeLatLng(_common.BaseModel):
   """An object that represents a latitude/longitude pair.
 
   This is expressed as a pair of doubles to represent degrees latitude and
   degrees longitude. Unless specified otherwise, this object must conform to the
-  <a href="https://en.wikipedia.org/wiki/World_Geodetic_System#1984_version">
-  WGS84 standard</a>. Values must be within normalized ranges.
+  WGS84 standard. Values must be within normalized ranges.
   """
 
   latitude: Optional[float] = Field(
@@ -2443,42 +2442,47 @@ class LatLng(_common.BaseModel):
   )
   longitude: Optional[float] = Field(
       default=None,
-      description="""The longitude in degrees. It must be in the range [-180.0, +180.0]""",
+      description="""The longitude in degrees. It must be in the range [-180.0, +180.0].""",
   )
 
 
-class LatLngDict(TypedDict, total=False):
+class GoogleTypeLatLngDict(TypedDict, total=False):
   """An object that represents a latitude/longitude pair.
 
   This is expressed as a pair of doubles to represent degrees latitude and
   degrees longitude. Unless specified otherwise, this object must conform to the
-  <a href="https://en.wikipedia.org/wiki/World_Geodetic_System#1984_version">
-  WGS84 standard</a>. Values must be within normalized ranges.
+  WGS84 standard. Values must be within normalized ranges.
   """
 
   latitude: Optional[float]
   """The latitude in degrees. It must be in the range [-90.0, +90.0]."""
 
   longitude: Optional[float]
-  """The longitude in degrees. It must be in the range [-180.0, +180.0]"""
+  """The longitude in degrees. It must be in the range [-180.0, +180.0]."""
 
 
-LatLngOrDict = Union[LatLng, LatLngDict]
+GoogleTypeLatLngOrDict = Union[GoogleTypeLatLng, GoogleTypeLatLngDict]
 
 
 class RetrievalConfig(_common.BaseModel):
   """Retrieval config."""
 
-  lat_lng: Optional[LatLng] = Field(
-      default=None, description="""Optional. The location of the user."""
+  language_code: Optional[str] = Field(
+      default=None, description="""The language code of the user."""
+  )
+  lat_lng: Optional[GoogleTypeLatLng] = Field(
+      default=None, description="""The location of the user."""
   )
 
 
 class RetrievalConfigDict(TypedDict, total=False):
   """Retrieval config."""
 
-  lat_lng: Optional[LatLngDict]
-  """Optional. The location of the user."""
+  language_code: Optional[str]
+  """The language code of the user."""
+
+  lat_lng: Optional[GoogleTypeLatLngDict]
+  """The location of the user."""
 
 
 RetrievalConfigOrDict = Union[RetrievalConfig, RetrievalConfigDict]
