@@ -137,7 +137,7 @@ download the file in console.
 python code.
 
 ```python
-file = client.files.upload(file='a11.txt')
+file = client.files.upload(path='a11.txt')
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents=['Could you summarize this file?', file]
@@ -1086,8 +1086,8 @@ section above to initialize a client.
 ### Upload
 
 ```python
-file1 = client.files.upload(file='2312.11805v3.pdf')
-file2 = client.files.upload(file='2403.05530.pdf')
+file1 = client.files.upload(path='2312.11805v3.pdf')
+file2 = client.files.upload(path='2403.05530.pdf')
 
 print(file1)
 print(file2)
@@ -1096,14 +1096,14 @@ print(file2)
 ### Get
 
 ```python
-file1 = client.files.upload(file='2312.11805v3.pdf')
+file1 = client.files.upload(path='2312.11805v3.pdf')
 file_info = client.files.get(name=file1.name)
 ```
 
 ### Delete
 
 ```python
-file3 = client.files.upload(file='2312.11805v3.pdf')
+file3 = client.files.upload(path='2312.11805v3.pdf')
 
 client.files.delete(name=file3.name)
 ```
