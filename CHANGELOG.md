@@ -1,5 +1,57 @@
 # Changelog
 
+## [1.16.0](https://github.com/googleapis/python-genai/compare/v1.15.0...v1.16.0) (2025-05-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fix Lyria method name for JS, update parameters type
+
+### Features
+
+* Add `time range filter` to Google Search Tool ([b79c414](https://github.com/googleapis/python-genai/commit/b79c414f759b64f356d5510a3eb8bbc5af076db0))
+* Add basic support for async function calling. ([6258dad](https://github.com/googleapis/python-genai/commit/6258dad0f9634b5e40e6562353e1911fe3c2d1a6))
+* Add Files module with Files.upload, .get and .delete ([f4dd629](https://github.com/googleapis/python-genai/commit/f4dd6297a54089d572e1cfb67135bc4d78c68c19))
+* Add live proactivity_audio and enable_affective_dialog ([778d6a2](https://github.com/googleapis/python-genai/commit/778d6a20c924ea524a882af39bd66b13d9163598))
+* Add Lyria Realtime music generation support for Python ([e746417](https://github.com/googleapis/python-genai/commit/e746417efdf4f992bd57a1e0c6ec30f56c3305e6))
+* Add Lyria Realtime Music Types ([18d2407](https://github.com/googleapis/python-genai/commit/18d2407d59879468ce56780ae8d14f3a023b7cd7))
+* Add MCP telemetry usage to Python SDK. ([0bc6ab5](https://github.com/googleapis/python-genai/commit/0bc6ab51704da57fb2fdb9800ce5e781305b9a6a))
+* Add multi-speaker voice config ([1d73827](https://github.com/googleapis/python-genai/commit/1d73827df37f4350716837f5fc8ef0dfafcd1c4f))
+* Add support for lat/long in search. ([50ddf98](https://github.com/googleapis/python-genai/commit/50ddf98bb9f063c85668ea099f1fdd175f6350a4))
+* Add support for MCP in Python SDK. ([dcd7819](https://github.com/googleapis/python-genai/commit/dcd78192f920cce524c76c655c1e1c9327228d20))
+* Add support for MCP in Python SDK. ([3f531c3](https://github.com/googleapis/python-genai/commit/3f531c3fab24e3c5358001e08e62979870da33ae))
+* Add telemetry headers for synchronous calls with MCP ([638c7f4](https://github.com/googleapis/python-genai/commit/638c7f4b29365216e7c611d934af80d0ef0e6176))
+* Add Video FPS, and enable start/end_offset for MLDev ([bfaa1df](https://github.com/googleapis/python-genai/commit/bfaa1dfa56c76080805fab97079fe0ea5cab27c9))
+* Raises an error when there are duplicate tool names. ([301c699](https://github.com/googleapis/python-genai/commit/301c69940aea5ad41737b4331fe292af449a794a))
+* Support customer-managed encryption key in cached content ([e951337](https://github.com/googleapis/python-genai/commit/e951337b09b5ea26f13389a0e03e710ceabc6c42))
+* Support ephemeral token creation in Python ([141d540](https://github.com/googleapis/python-genai/commit/141d540aaad0fa423b4c932449e51a9bff658b43))
+* Support models.get/delete/update in Java ([aeaadf8](https://github.com/googleapis/python-genai/commit/aeaadf8f31dc30bfc61f36c431fc827481356f85))
+* Support Url Context Retrieval tool ([cbd1ea6](https://github.com/googleapis/python-genai/commit/cbd1ea6954823671241bfb897ceb6ee8d60ed08b))
+* Support using ephemeral token in Live session connection in Python ([141d540](https://github.com/googleapis/python-genai/commit/141d540aaad0fa423b4c932449e51a9bff658b43))
+
+
+### Bug Fixes
+
+* Clone config when parsing for MCP tools ([5feeb60](https://github.com/googleapis/python-genai/commit/5feeb60ab779e33dc062965d6962458dffb69615))
+* Fix imports if mcp is not installed ([e46eb05](https://github.com/googleapis/python-genai/commit/e46eb0533f01e34059c4ee1c7f384ba13f98e5ab))
+* Live tools ([032d1fe](https://github.com/googleapis/python-genai/commit/032d1fe7a3e16d68fd56b28e03267ceec1d0a991))
+* Prevent MCP label from being appended multiple times if they already exist ([974ba07](https://github.com/googleapis/python-genai/commit/974ba076a7ae5ba447a4d1b5d749f0fec70f5580))
+* Typo in error message. ([9a45bfd](https://github.com/googleapis/python-genai/commit/9a45bfd3842d0f44f917d89e1d71c04b5fe837d7))
+* Update parse_config_for_mcp_tools to remove the deep copy of the config and filter tools ([d4dd2bb](https://github.com/googleapis/python-genai/commit/d4dd2bb2b4126ca48c551684181336c10319fc3a))
+* Use inspect.cleandoc on function docstrings in generate_function_declaration. ([bc664d9](https://github.com/googleapis/python-genai/commit/bc664d9b1ee6bc1ff236daadcb0c771ef9931e92))
+
+
+### Documentation
+
+* Add docs for enum fields ([2634e01](https://github.com/googleapis/python-genai/commit/2634e016377272dfc512dd281f0e18bb91b527b4))
+* Regenerate docs for 1.15.0 ([a3fc532](https://github.com/googleapis/python-genai/commit/a3fc532594eff8f01749f6275c506f7516e8ab73))
+
+
+### Miscellaneous Chores
+
+* Fix Lyria method name for JS, update parameters type ([0a5d68d](https://github.com/googleapis/python-genai/commit/0a5d68da4c983ffa73624746786d6fd66d7fa290))
+* Release 1.16.0 ([181d5b7](https://github.com/googleapis/python-genai/commit/181d5b7eaa152241b30f7f5fa4e7544528f5bbde))
+
 ## [1.15.0](https://github.com/googleapis/python-genai/compare/v1.14.0...v1.15.0) (2025-05-13)
 
 
