@@ -3,10 +3,6 @@
 ## [1.16.0](https://github.com/googleapis/python-genai/compare/v1.15.0...v1.16.0) (2025-05-19)
 
 
-### ⚠ BREAKING CHANGES
-
-* Fix Lyria method name for JS, update parameters type
-
 ### Features
 
 * Add `time range filter` to Google Search Tool ([b79c414](https://github.com/googleapis/python-genai/commit/b79c414f759b64f356d5510a3eb8bbc5af076db0))
