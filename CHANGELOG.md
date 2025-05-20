@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.1](https://github.com/googleapis/python-genai/compare/v1.16.0...v1.16.1) (2025-05-20)
+
+
+### Bug Fixes
+
+* Fix broken tool use in generate content. ([bad81ad](https://github.com/googleapis/python-genai/commit/bad81adddb8783927c4aafef77e3c40e2553dd14))
+
 ## [1.16.0](https://github.com/googleapis/python-genai/compare/v1.15.0...v1.16.0) (2025-05-19)
 
 
