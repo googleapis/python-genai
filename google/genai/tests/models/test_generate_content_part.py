@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,7 +70,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'gs://generativeai-downloads/images/scones.jpg',
+                                    'file_uri': (
+                                        'gs://generativeai-downloads/images/scones.jpg'
+                                    ),
                                     'mime_type': 'image/jpeg',
                                 }
                             })
@@ -94,7 +96,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg',
+                                    'file_uri': (
+                                        'https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg'
+                                    ),
                                     'mime_type': 'image/jpeg',
                                 }
                             })
@@ -121,7 +125,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/q08l9on9u7d',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/q08l9on9u7d'
+                                    ),
                                     'mime_type': 'image/png',
                                 }
                             })
@@ -148,7 +154,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/tqbern1jkicb',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/tqbern1jkicb'
+                                    ),
                                     'mime_type': 'image/jpeg',
                                 }
                             })
@@ -177,7 +185,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/yiskd41szkfm',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/yiskd41szkfm'
+                                    ),
                                     'mime_type': 'application/pdf',
                                 }
                             })
@@ -210,7 +220,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/yu45gkirc8go',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/yu45gkirc8go'
+                                    ),
                                     'mime_type': 'video/mp4',
                                 }
                             })
@@ -244,12 +256,43 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/wqnax2ohl9bp',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/wqnax2ohl9bp'
+                                    ),
                                     'mime_type': 'audio/mp4',
                                 }
                             })
                         ],
                     },
+                ),
+            ],
+        ),
+        exception_if_vertex='403',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_mldev_video_offset_and_fps',
+        skip_in_api_mode=(
+            'Name of the file is hardcoded, only supporting replay mode.'
+        ),
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=[
+                types.Content(
+                    role='user',
+                    parts=[
+                        types.Part(text='summarize this video'),
+                        types.Part(
+                            file_data=types.FileData(
+                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/ansa0kyotrsw',
+                                mime_type= 'video/mp4',
+                            ),
+                            video_metadata=types.VideoMetadata(
+                                    start_offset='0s',
+                                    end_offset= '5s',
+                                    fps= 3,
+                            )
+                        )
+                    ]
                 ),
             ],
         ),
@@ -279,14 +322,15 @@ test_table: list[pytest_helper.TestTableItem] = [
                                 'video_metadata': {
                                     'start_offset': '0s',
                                     'end_offset': '10s',
-                                }
+                                    'fps': 3,
+                                },
                             })
                         ],
                     },
                 ),
             ],
         ),
-        exception_if_mldev='not supported',
+        exception_if_mldev='400',
     ),
     pytest_helper.TestTableItem(
         name='test_image_base64',

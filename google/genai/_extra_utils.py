@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,13 +24,29 @@ from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
 import pydantic
 
 from . import _common
+from . import _mcp_utils
 from . import errors
 from . import types
+from ._adapters import McpToGenAiToolAdapter
+
 
 if sys.version_info >= (3, 10):
   from types import UnionType
 else:
   UnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
+
+if typing.TYPE_CHECKING:
+  from mcp import ClientSession as McpClientSession
+  from mcp.types import Tool as McpTool
+else:
+  McpClientSession: typing.Type = Any
+  McpTool: typing.Type = Any
+  try:
+    from mcp import ClientSession as McpClientSession
+    from mcp.types import Tool as McpTool
+  except ImportError:
+    McpClientSession = None
+    McpTool = None
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -78,10 +94,13 @@ def format_destination(
 
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
+    mcp_to_genai_tool_adapters: Optional[
+        dict[str, McpToGenAiToolAdapter]
+    ] = None,
     is_caller_method_async: bool = False,
-) -> dict[str, Callable[..., Any]]:
+) -> dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]]:
   """Returns a function map from the config."""
-  function_map: dict[str, Callable[..., Any]] = {}
+  function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]] = {}
   if not config:
     return function_map
   config_model = _create_generate_content_config_model(config)
@@ -95,6 +114,17 @@ def get_function_map(
               f' invoke {tool.__name__} to get the function response.'
           )
         function_map[tool.__name__] = tool
+  if mcp_to_genai_tool_adapters:
+    if not is_caller_method_async:
+      raise errors.UnsupportedFunctionError(
+          'MCP tools are not supported in synchronous methods.'
+      )
+    for tool_name, _ in mcp_to_genai_tool_adapters.items():
+      if function_map.get(tool_name):
+        raise ValueError(
+            f'Tool {tool_name} is already defined for the request.'
+        )
+    function_map.update(mcp_to_genai_tool_adapters)
   return function_map
 
 
@@ -247,7 +277,7 @@ async def invoke_function_from_dict_args_async(
 
 def get_function_response_parts(
     response: types.GenerateContentResponse,
-    function_map: dict[str, Callable[..., Any]],
+    function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]],
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []
@@ -267,9 +297,10 @@ def get_function_response_parts(
         )
         func_response: dict[str, Any]
         try:
-          func_response = {
-              'result': invoke_function_from_dict_args(args, func)
-          }
+          if not isinstance(func, McpToGenAiToolAdapter):
+            func_response = {
+                'result': invoke_function_from_dict_args(args, func)
+            }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}
         func_response_part = types.Part.from_function_response(
@@ -278,9 +309,10 @@ def get_function_response_parts(
         func_response_parts.append(func_response_part)
   return func_response_parts
 
+
 async def get_function_response_parts_async(
     response: types.GenerateContentResponse,
-    function_map: dict[str, Callable[..., Any]],
+    function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]],
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []
@@ -300,7 +332,15 @@ async def get_function_response_parts_async(
         )
         func_response: dict[str, Any]
         try:
-          if inspect.iscoroutinefunction(func):
+          if isinstance(func, McpToGenAiToolAdapter):
+            mcp_tool_response = await func.call_tool(
+                types.FunctionCall(name=func_name, args=args)
+            )
+            if mcp_tool_response.isError:
+              func_response = {'error': mcp_tool_response}
+            else:
+              func_response = {'result': mcp_tool_response}
+          elif inspect.iscoroutinefunction(func):
             func_response = {
                 'result': await invoke_function_from_dict_args_async(args, func)
             }
@@ -401,3 +441,68 @@ def should_append_afc_history(
   if not config_model.automatic_function_calling:
     return True
   return not config_model.automatic_function_calling.ignore_call_history
+
+
+def parse_config_for_mcp_usage(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> Optional[types.GenerateContentConfig]:
+  """Returns a parsed config with an appended MCP header if MCP tools or sessions are used."""
+  if not config:
+    return None
+  config_model = _create_generate_content_config_model(config)
+  # Create a copy of the config model with the tools field cleared since some
+  # tools may not be pickleable.
+  config_model_copy = config_model.model_copy(update={'tools': None})
+  config_model_copy.tools = config_model.tools
+  if config_model.tools and _mcp_utils.has_mcp_tool_usage(config_model.tools):
+    if config_model_copy.http_options is None:
+      config_model_copy.http_options = types.HttpOptions(headers={})
+    if config_model_copy.http_options.headers is None:
+      config_model_copy.http_options.headers = {}
+    _mcp_utils.set_mcp_usage_header(config_model_copy.http_options.headers)
+
+  return config_model_copy
+
+
+async def parse_config_for_mcp_sessions(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> tuple[
+    Optional[types.GenerateContentConfig],
+    dict[str, McpToGenAiToolAdapter],
+]:
+  """Returns a parsed config with MCP sessions converted to GenAI tools.
+
+  Also returns a map of MCP tools to GenAI tool adapters to be used for AFC.
+  """
+  mcp_to_genai_tool_adapters: dict[str, McpToGenAiToolAdapter] = {}
+  parsed_config = parse_config_for_mcp_usage(config)
+  if not parsed_config:
+    return None, mcp_to_genai_tool_adapters
+  # Create a copy of the config model with the tools field cleared as they will
+  # be replaced with the MCP tools converted to GenAI tools.
+  parsed_config_copy = parsed_config.model_copy(update={'tools': None})
+  if parsed_config.tools:
+    parsed_config_copy.tools = []
+    for tool in parsed_config.tools:
+      if McpClientSession is not None and isinstance(tool, McpClientSession):
+        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+            tool, await tool.list_tools()
+        )
+        # Extend the config with the MCP session tools converted to GenAI tools.
+        parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+        for genai_tool in mcp_to_genai_tool_adapter.tools:
+          if genai_tool.function_declarations:
+            for function_declaration in genai_tool.function_declarations:
+              if function_declaration.name:
+                if mcp_to_genai_tool_adapters.get(function_declaration.name):
+                  raise ValueError(
+                      f'Tool {function_declaration.name} is already defined for'
+                      ' the request.'
+                  )
+                mcp_to_genai_tool_adapters[function_declaration.name] = (
+                    mcp_to_genai_tool_adapter
+                )
+      else:
+        parsed_config_copy.tools.append(tool)
+
+  return parsed_config_copy, mcp_to_genai_tool_adapters

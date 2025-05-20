@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ from .files import AsyncFiles, Files
 from .live import AsyncLive
 from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
+from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
 from .types import HttpOptions, HttpOptionsDict
 
@@ -45,6 +46,7 @@ class AsyncClient:
     self._batches = AsyncBatches(self._api_client)
     self._files = AsyncFiles(self._api_client)
     self._live = AsyncLive(self._api_client)
+    self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
 
   @property
@@ -74,6 +76,10 @@ class AsyncClient:
   @property
   def live(self) -> AsyncLive:
     return self._live
+
+  @property
+  def auth_tokens(self) -> AsyncTokens:
+    return self._tokens
 
   @property
   def operations(self) -> AsyncOperations:
@@ -226,6 +232,7 @@ class Client:
     self._caches = Caches(self._api_client)
     self._batches = Batches(self._api_client)
     self._files = Files(self._api_client)
+    self._tokens = Tokens(self._api_client)
     self._operations = Operations(self._api_client)
 
   @staticmethod
@@ -291,6 +298,10 @@ class Client:
   @property
   def files(self) -> Files:
     return self._files
+
+  @property
+  def auth_tokens(self) -> Tokens:
+    return self._tokens
 
   @property
   def operations(self) -> Operations:

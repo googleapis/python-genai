@@ -27,6 +27,7 @@ import time
 import types as builtin_types
 import typing
 from typing import Any, GenericAlias, Optional, Sequence, Union  # type: ignore[attr-defined]
+from ._mcp_utils import mcp_to_gemini_tool
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -46,6 +47,20 @@ else:
   VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
   _UNION_TYPES = (typing.Union,)
   from typing_extensions import TypeGuard
+
+if typing.TYPE_CHECKING:
+  from mcp import ClientSession as McpClientSession
+  from mcp.types import Tool as McpTool
+else:
+  McpClientSession: typing.Type = Any
+  McpTool: typing.Type = Any
+  try:
+    from mcp import ClientSession as McpClientSession
+    from mcp.types import Tool as McpTool
+  except ImportError:
+    McpClientSession = None
+    McpTool = None
+
 
 def _resource_name(
     client: _api_client.BaseApiClient,
@@ -211,7 +226,9 @@ def t_extract_models(
     return []
 
 
-def t_caches_model(api_client: _api_client.BaseApiClient, model: str) -> Optional[str]:
+def t_caches_model(
+    api_client: _api_client.BaseApiClient, model: str
+) -> Optional[str]:
   model = t_model(api_client, model)
   if not model:
     return None
@@ -262,9 +279,10 @@ def t_function_response(
     return function_response
   else:
     raise TypeError(
-        f'Could not parse input as FunctionResponse. Unsupported'
+        'Could not parse input as FunctionResponse. Unsupported'
         f' function_response type: {type(function_response)}'
     )
+
 
 def t_function_responses(
     function_responses: Union[
@@ -361,7 +379,9 @@ def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
 
 
 def t_parts(
-    parts: Optional[Union[list[types.PartUnionDict], types.PartUnionDict, list[types.Part]]],
+    parts: Optional[
+        Union[list[types.PartUnionDict], types.PartUnionDict, list[types.Part]]
+    ],
 ) -> list[types.Part]:
   #
   if parts is None or (isinstance(parts, list) and not parts):
@@ -442,9 +462,7 @@ def t_contents_for_embed(
             if part.text:
               text_parts.append(part.text)
             else:
-              logger.warning(
-                  f'Non-text part found, only returning text parts.'
-              )
+              logger.warning(f'Non-text part found, only returning text parts.')
     return text_parts
   else:
     return transformed_contents
@@ -471,7 +489,9 @@ def t_contents(
   result: list[types.Content] = []
   accumulated_parts: list[types.Part] = []
 
-  def _is_part(part: Union[types.PartUnionDict, Any]) -> TypeGuard[types.PartUnionDict]:
+  def _is_part(
+      part: Union[types.PartUnionDict, Any],
+  ) -> TypeGuard[types.PartUnionDict]:
     if (
         isinstance(part, str)
         or isinstance(part, types.File)
@@ -538,7 +558,7 @@ def t_contents(
         result.append(types.UserContent(parts=content))  # type: ignore[arg-type]
       else:
         result.append(content)
-    elif (_is_part(content)):
+    elif _is_part(content):
       _handle_current_part(result, accumulated_parts, content)
     elif isinstance(content, dict):
       # PactDict is already handled in _is_part
@@ -777,7 +797,9 @@ def _process_enum(
   return types.Schema.model_validate(enum_schema)
 
 
-def _is_type_dict_str_any(origin: Union[types.SchemaUnionDict, Any]) -> TypeGuard[dict[str, Any]]:
+def _is_type_dict_str_any(
+    origin: Union[types.SchemaUnionDict, Any],
+) -> TypeGuard[dict[str, Any]]:
   """Verifies the schema is of type dict[str, Any] for mypy type checking."""
   return isinstance(origin, dict) and all(
       isinstance(key, str) for key in origin
@@ -844,27 +866,32 @@ def t_speech_config(
             prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=origin)
         )
     )
-  if (
-      isinstance(origin, dict)
-      and 'voice_config' in origin
-      and origin['voice_config'] is not None
-      and 'prebuilt_voice_config' in origin['voice_config']
-      and origin['voice_config']['prebuilt_voice_config'] is not None
-      and 'voice_name' in origin['voice_config']['prebuilt_voice_config']
-  ):
-    return types.SpeechConfig(
-        voice_config=types.VoiceConfig(
-            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                voice_name=origin['voice_config']['prebuilt_voice_config'].get(
-                    'voice_name'
-                )
-            )
-        )
-    )
+  if isinstance(origin, dict):
+    return types.SpeechConfig.model_validate(origin)
+
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
 
 
-def t_tool(client: _api_client.BaseApiClient, origin: Any) -> Optional[Union[types.Tool, Any]]:
+def t_live_speech_config(
+    client: _api_client.BaseApiClient,
+    origin: types.SpeechConfigOrDict,
+) -> Optional[types.SpeechConfig]:
+  if isinstance(origin, types.SpeechConfig):
+    speech_config = origin
+  if isinstance(origin, dict):
+    speech_config = types.SpeechConfig.model_validate(origin)
+
+  if speech_config.multi_speaker_voice_config is not None:
+    raise ValueError(
+        'multi_speaker_voice_config is not supported in the live API.'
+    )
+
+  return speech_config
+
+
+def t_tool(
+    client: _api_client.BaseApiClient, origin: Any
+) -> Optional[Union[types.Tool, Any]]:
   if not origin:
     return None
   if inspect.isfunction(origin) or inspect.ismethod(origin):
@@ -875,13 +902,14 @@ def t_tool(client: _api_client.BaseApiClient, origin: Any) -> Optional[Union[typ
             )
         ]
     )
+  elif McpTool is not None and isinstance(origin, McpTool):
+    return mcp_to_gemini_tool(origin)
   elif isinstance(origin, dict):
     return types.Tool.model_validate(origin)
   else:
     return origin
 
 
-# Only support functions now.
 def t_tools(
     client: _api_client.BaseApiClient, origin: list[Any]
 ) -> list[types.Tool]:
@@ -911,7 +939,9 @@ def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(client: _api_client.BaseApiClient, src: str) -> types.BatchJobSource:
+def t_batch_job_source(
+    client: _api_client.BaseApiClient, src: str
+) -> types.BatchJobSource:
   if src.startswith('gs://'):
     return types.BatchJobSource(
         format='jsonl',
@@ -926,7 +956,9 @@ def t_batch_job_source(client: _api_client.BaseApiClient, src: str) -> types.Bat
     raise ValueError(f'Unsupported source: {src}')
 
 
-def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str) -> types.BatchJobDestination:
+def t_batch_job_destination(
+    client: _api_client.BaseApiClient, dest: str
+) -> types.BatchJobDestination:
   if dest.startswith('gs://'):
     return types.BatchJobDestination(
         format='jsonl',
@@ -960,7 +992,9 @@ LRO_POLLING_TIMEOUT_SECONDS = 900.0
 LRO_POLLING_MULTIPLIER = 1.5
 
 
-def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict[str, Any]) -> Any:
+def t_resolve_operation(
+    api_client: _api_client.BaseApiClient, struct: dict[str, Any]
+) -> Any:
   if (name := struct.get('name')) and '/operations/' in name:
     operation: dict[str, Any] = struct
     total_seconds = 0.0
@@ -1058,8 +1092,7 @@ def t_content_strict(content: types.ContentOrDict) -> types.Content:
     return content
   else:
     raise ValueError(
-        f'Could not convert input (type "{type(content)}") to '
-        '`types.Content`'
+        f'Could not convert input (type "{type(content)}") to `types.Content`'
     )
 
 

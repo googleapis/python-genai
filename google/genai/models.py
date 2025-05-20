@@ -21,7 +21,9 @@ from urllib.parse import urlencode
 from . import _api_module
 from . import _common
 from . import _extra_utils
+from . import _mcp_utils
 from . import _transformers as t
+from . import errors
 from . import types
 from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
@@ -29,6 +31,24 @@ from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
 logger = logging.getLogger('google_genai.models')
+
+
+def _VideoMetadata_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['end_offset']) is not None:
+    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+
+  if getv(from_object, ['start_offset']) is not None:
+    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+
+  return to_object
 
 
 def _Blob_to_mldev(
@@ -56,7 +76,13 @@ def _Part_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    raise ValueError('video_metadata parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['videoMetadata'],
+        _VideoMetadata_to_mldev(
+            api_client, getv(from_object, ['video_metadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -153,12 +179,59 @@ def _SafetySetting_to_mldev(
   return to_object
 
 
+def _FunctionDeclaration_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  return to_object
+
+
+def _Interval_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['start_time']) is not None:
+    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+
+  return to_object
+
+
 def _GoogleSearch_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object,
+        ['timeRangeFilter'],
+        _Interval_to_mldev(
+            api_client, getv(from_object, ['time_range_filter']), to_object
+        ),
+    )
 
   return to_object
 
@@ -271,12 +344,32 @@ def _GoogleMaps_to_mldev(
   return to_object
 
 
+def _UrlContext_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
 def _Tool_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
@@ -308,15 +401,17 @@ def _Tool_to_mldev(
   if getv(from_object, ['google_maps']) is not None:
     raise ValueError('google_maps parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['function_declarations']) is not None:
+  if getv(from_object, ['url_context']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
-        getv(from_object, ['function_declarations']),
+        ['urlContext'],
+        _UrlContext_to_mldev(
+            api_client, getv(from_object, ['url_context']), to_object
+        ),
     )
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -347,10 +442,10 @@ def _LatLng_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['latitude']) is not None:
-    raise ValueError('latitude parameter is not supported in Gemini API.')
+    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
 
   if getv(from_object, ['longitude']) is not None:
-    raise ValueError('longitude parameter is not supported in Gemini API.')
+    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
 
   return to_object
 
@@ -362,7 +457,11 @@ def _RetrievalConfig_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['lat_lng']) is not None:
-    raise ValueError('lat_lng parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['latLng'],
+        _LatLng_to_mldev(api_client, getv(from_object, ['lat_lng']), to_object),
+    )
 
   return to_object
 
@@ -385,8 +484,12 @@ def _ToolConfig_to_mldev(
     )
 
   if getv(from_object, ['retrieval_config']) is not None:
-    raise ValueError(
-        'retrieval_config parameter is not supported in Gemini API.'
+    setv(
+        to_object,
+        ['retrievalConfig'],
+        _RetrievalConfig_to_mldev(
+            api_client, getv(from_object, ['retrieval_config']), to_object
+        ),
     )
 
   return to_object
@@ -422,6 +525,46 @@ def _VoiceConfig_to_mldev(
   return to_object
 
 
+def _SpeakerVoiceConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_mldev(
+            api_client, getv(from_object, ['voice_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _MultiSpeakerVoiceConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    setv(
+        to_object,
+        ['speakerVoiceConfigs'],
+        [
+            _SpeakerVoiceConfig_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['speaker_voice_configs'])
+        ],
+    )
+
+  return to_object
+
+
 def _SpeechConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -434,6 +577,17 @@ def _SpeechConfig_to_mldev(
         ['voiceConfig'],
         _VoiceConfig_to_mldev(
             api_client, getv(from_object, ['voice_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    setv(
+        to_object,
+        ['multiSpeakerVoiceConfig'],
+        _MultiSpeakerVoiceConfig_to_mldev(
+            api_client,
+            getv(from_object, ['multi_speaker_voice_config']),
+            to_object,
         ),
     )
 
@@ -1180,6 +1334,24 @@ def _GenerateVideosParameters_to_mldev(
   return to_object
 
 
+def _VideoMetadata_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['end_offset']) is not None:
+    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+
+  if getv(from_object, ['start_offset']) is not None:
+    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+
+  return to_object
+
+
 def _Blob_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1205,7 +1377,13 @@ def _Part_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+    setv(
+        to_object,
+        ['videoMetadata'],
+        _VideoMetadata_to_vertex(
+            api_client, getv(from_object, ['video_metadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -1304,12 +1482,59 @@ def _SafetySetting_to_vertex(
   return to_object
 
 
+def _FunctionDeclaration_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    raise ValueError('behavior parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  return to_object
+
+
+def _Interval_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['start_time']) is not None:
+    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+
+  return to_object
+
+
 def _GoogleSearch_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object,
+        ['timeRangeFilter'],
+        _Interval_to_vertex(
+            api_client, getv(from_object, ['time_range_filter']), to_object
+        ),
+    )
 
   return to_object
 
@@ -1434,12 +1659,32 @@ def _GoogleMaps_to_vertex(
   return to_object
 
 
+def _UrlContext_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
 def _Tool_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_vertex(api_client, item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
@@ -1481,15 +1726,11 @@ def _Tool_to_vertex(
         ),
     )
 
+  if getv(from_object, ['url_context']) is not None:
+    raise ValueError('url_context parameter is not supported in Vertex AI.')
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        getv(from_object, ['function_declarations']),
-    )
 
   return to_object
 
@@ -1605,6 +1846,35 @@ def _VoiceConfig_to_vertex(
   return to_object
 
 
+def _SpeakerVoiceConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    raise ValueError('speaker parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['voice_config']) is not None:
+    raise ValueError('voice_config parameter is not supported in Vertex AI.')
+
+  return to_object
+
+
+def _MultiSpeakerVoiceConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    raise ValueError(
+        'speaker_voice_configs parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
 def _SpeechConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1618,6 +1888,11 @@ def _SpeechConfig_to_vertex(
         _VoiceConfig_to_vertex(
             api_client, getv(from_object, ['voice_config']), to_object
         ),
+    )
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    raise ValueError(
+        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
     )
 
   if getv(from_object, ['language_code']) is not None:
@@ -2821,6 +3096,29 @@ def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
 
+def _Behavior_to_vertex_enum_validate(enum_value: Any) -> None:
+  if enum_value in set(['UNSPECIFIED', 'BLOCKING', 'NON_BLOCKING']):
+    raise ValueError(f'{enum_value} enum value is not supported in Vertex AI.')
+
+
+def _VideoMetadata_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['endOffset']) is not None:
+    setv(to_object, ['end_offset'], getv(from_object, ['endOffset']))
+
+  if getv(from_object, ['startOffset']) is not None:
+    setv(to_object, ['start_offset'], getv(from_object, ['startOffset']))
+
+  return to_object
+
+
 def _Blob_from_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -2843,6 +3141,14 @@ def _Part_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['videoMetadata']) is not None:
+    setv(
+        to_object,
+        ['video_metadata'],
+        _VideoMetadata_from_mldev(
+            api_client, getv(from_object, ['videoMetadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -2919,6 +3225,44 @@ def _CitationMetadata_from_mldev(
   return to_object
 
 
+def _UrlMetadata_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrievedUrl']) is not None:
+    setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
+
+  if getv(from_object, ['urlRetrievalStatus']) is not None:
+    setv(
+        to_object,
+        ['url_retrieval_status'],
+        getv(from_object, ['urlRetrievalStatus']),
+    )
+
+  return to_object
+
+
+def _UrlContextMetadata_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['urlMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_metadata'],
+        [
+            _UrlMetadata_from_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['urlMetadata'])
+        ],
+    )
+
+  return to_object
+
+
 def _Candidate_from_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -2948,6 +3292,15 @@ def _Candidate_from_mldev(
 
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_context_metadata'],
+        _UrlContextMetadata_from_mldev(
+            api_client, getv(from_object, ['urlContextMetadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['avgLogprobs']) is not None:
     setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
@@ -3419,6 +3772,24 @@ def _GenerateVideosOperation_from_mldev(
   return to_object
 
 
+def _VideoMetadata_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['endOffset']) is not None:
+    setv(to_object, ['end_offset'], getv(from_object, ['endOffset']))
+
+  if getv(from_object, ['startOffset']) is not None:
+    setv(to_object, ['start_offset'], getv(from_object, ['startOffset']))
+
+  return to_object
+
+
 def _Blob_from_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -3444,7 +3815,13 @@ def _Part_from_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['videoMetadata']) is not None:
-    setv(to_object, ['video_metadata'], getv(from_object, ['videoMetadata']))
+    setv(
+        to_object,
+        ['video_metadata'],
+        _VideoMetadata_from_vertex(
+            api_client, getv(from_object, ['videoMetadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -3517,6 +3894,44 @@ def _CitationMetadata_from_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['citations']) is not None:
     setv(to_object, ['citations'], getv(from_object, ['citations']))
+
+  return to_object
+
+
+def _UrlMetadata_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrievedUrl']) is not None:
+    setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
+
+  if getv(from_object, ['urlRetrievalStatus']) is not None:
+    setv(
+        to_object,
+        ['url_retrieval_status'],
+        getv(from_object, ['urlRetrievalStatus']),
+    )
+
+  return to_object
+
+
+def _UrlContextMetadata_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['urlMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_metadata'],
+        [
+            _UrlMetadata_from_vertex(api_client, item, to_object)
+            for item in getv(from_object, ['urlMetadata'])
+        ],
+    )
 
   return to_object
 
@@ -5151,6 +5566,8 @@ class Models(_api_module.BaseModule):
 
     Some models support multimodal input and output.
 
+    Built-in MCP support is an experimental feature.
+
     Usage:
 
     .. code-block:: python
@@ -5186,11 +5603,22 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
-    if _extra_utils.should_disable_afc(config):
-      return self._generate_content(
-          model=model, contents=contents, config=config
+    parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
+    if (
+        parsed_config
+        and parsed_config.tools
+        and _mcp_utils.has_mcp_session_usage(parsed_config.tools)
+    ):
+      raise errors.UnsupportedFunctionError(
+          'MCP sessions are not supported in synchronous methods.'
       )
-    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
+    if _extra_utils.should_disable_afc(parsed_config):
+      return self._generate_content(
+          model=model, contents=contents, config=parsed_config
+      )
+    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
+        parsed_config
+    )
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
@@ -5200,14 +5628,14 @@ class Models(_api_module.BaseModule):
     while remaining_remote_calls_afc > 0:
       i += 1
       response = self._generate_content(
-          model=model, contents=contents, config=config
+          model=model, contents=contents, config=parsed_config
       )
       logger.info(f'AFC remote call {i} is done.')
       remaining_remote_calls_afc -= 1
       if remaining_remote_calls_afc == 0:
         logger.info('Reached max remote calls for automatic function calling.')
 
-      function_map = _extra_utils.get_function_map(config)
+      function_map = _extra_utils.get_function_map(parsed_config)
       if not function_map:
         break
       if not response:
@@ -5236,7 +5664,10 @@ class Models(_api_module.BaseModule):
         contents.append(func_response_content)  # type: ignore[arg-type]
       automatic_function_calling_history.append(func_call_content)
       automatic_function_calling_history.append(func_response_content)
-    if _extra_utils.should_append_afc_history(config) and response is not None:
+    if (
+        _extra_utils.should_append_afc_history(parsed_config)
+        and response is not None
+    ):
       response.automatic_function_calling_history = (
           automatic_function_calling_history
       )
@@ -5271,6 +5702,8 @@ class Models(_api_module.BaseModule):
 
     Some models support multimodal input and output.
 
+    Built-in MCP support is an experimental feature.
+
     Usage:
 
     .. code-block:: python
@@ -5306,13 +5739,24 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
-    if _extra_utils.should_disable_afc(config):
+    parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
+    if (
+        parsed_config
+        and parsed_config.tools
+        and _mcp_utils.has_mcp_session_usage(parsed_config.tools)
+    ):
+      raise errors.UnsupportedFunctionError(
+          'MCP sessions are not supported in synchronous methods.'
+      )
+    if _extra_utils.should_disable_afc(parsed_config):
       yield from self._generate_content_stream(
-          model=model, contents=contents, config=config
+          model=model, contents=contents, config=parsed_config
       )
       return
 
-    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
+    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
+        parsed_config
+    )
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
@@ -5323,14 +5767,14 @@ class Models(_api_module.BaseModule):
     while remaining_remote_calls_afc > 0:
       i += 1
       response = self._generate_content_stream(
-          model=model, contents=contents, config=config
+          model=model, contents=contents, config=parsed_config
       )
       logger.info(f'AFC remote call {i} is done.')
       remaining_remote_calls_afc -= 1
       if remaining_remote_calls_afc == 0:
         logger.info('Reached max remote calls for automatic function calling.')
 
-      function_map = _extra_utils.get_function_map(config)
+      function_map = _extra_utils.get_function_map(parsed_config)
 
       if i == 1:
         # First request gets a function call.
@@ -5355,7 +5799,7 @@ class Models(_api_module.BaseModule):
       else:
         #  Second request and beyond, yield chunks.
         for chunk in response:
-          if _extra_utils.should_append_afc_history(config):
+          if _extra_utils.should_append_afc_history(parsed_config):
             chunk.automatic_function_calling_history = (
                 automatic_function_calling_history
             )
@@ -6633,6 +7077,8 @@ class AsyncModels(_api_module.BaseModule):
 
     Some models support multimodal input and output.
 
+    Built-in MCP support is an experimental feature.
+
     Usage:
 
     .. code-block:: python
@@ -6658,11 +7104,17 @@ class AsyncModels(_api_module.BaseModule):
       print(response.text)
       # J'aime les bagels.
     """
-    if _extra_utils.should_disable_afc(config):
+    # Retrieve and cache any MCP sessions if provided.
+    parsed_config, mcp_to_genai_tool_adapters = (
+        await _extra_utils.parse_config_for_mcp_sessions(config)
+    )
+    if _extra_utils.should_disable_afc(parsed_config):
       return await self._generate_content(
-          model=model, contents=contents, config=config
+          model=model, contents=contents, config=parsed_config
       )
-    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
+    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
+        parsed_config
+    )
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
@@ -6670,14 +7122,14 @@ class AsyncModels(_api_module.BaseModule):
     response = types.GenerateContentResponse()
     while remaining_remote_calls_afc > 0:
       response = await self._generate_content(
-          model=model, contents=contents, config=config
+          model=model, contents=contents, config=parsed_config
       )
       remaining_remote_calls_afc -= 1
       if remaining_remote_calls_afc == 0:
         logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(
-          config, is_caller_method_async=True
+          parsed_config, mcp_to_genai_tool_adapters, is_caller_method_async=True
       )
       if not function_map:
         break
@@ -6710,7 +7162,10 @@ class AsyncModels(_api_module.BaseModule):
       automatic_function_calling_history.append(func_call_content)
       automatic_function_calling_history.append(func_response_content)
 
-    if _extra_utils.should_append_afc_history(config) and response is not None:
+    if (
+        _extra_utils.should_append_afc_history(parsed_config)
+        and response is not None
+    ):
       response.automatic_function_calling_history = (
           automatic_function_calling_history
       )
@@ -6744,6 +7199,8 @@ class AsyncModels(_api_module.BaseModule):
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Built-in MCP support is an experimental feature.
 
     Usage:
 
@@ -6780,16 +7237,20 @@ class AsyncModels(_api_module.BaseModule):
       # scones.
     """
 
-    if _extra_utils.should_disable_afc(config):
+    # Retrieve and cache any MCP sessions if provided.
+    parsed_config, mcp_to_genai_tool_adapters = (
+        await _extra_utils.parse_config_for_mcp_sessions(config)
+    )
+    if _extra_utils.should_disable_afc(parsed_config):
       response = await self._generate_content_stream(
-          model=model, contents=contents, config=config
+          model=model, contents=contents, config=parsed_config
       )
 
       async def base_async_generator(model, contents, config):  # type: ignore[no-untyped-def]
         async for chunk in response:  # type: ignore[attr-defined]
           yield chunk
 
-      return base_async_generator(model, contents, config)  # type: ignore[no-untyped-call, no-any-return]
+      return base_async_generator(model, contents, parsed_config)  # type: ignore[no-untyped-call, no-any-return]
 
     async def async_generator(model, contents, config):  # type: ignore[no-untyped-def]
       remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)
@@ -6813,7 +7274,7 @@ class AsyncModels(_api_module.BaseModule):
           )
 
         function_map = _extra_utils.get_function_map(
-            config, is_caller_method_async=True
+            config, mcp_to_genai_tool_adapters, is_caller_method_async=True
         )
 
         if i == 1:
@@ -6878,7 +7339,7 @@ class AsyncModels(_api_module.BaseModule):
           automatic_function_calling_history.append(func_call_content)
         automatic_function_calling_history.append(func_response_content)
 
-    return async_generator(model, contents, config)  # type: ignore[no-untyped-call, no-any-return]
+    return async_generator(model, contents, parsed_config)  # type: ignore[no-untyped-call, no-any-return]
 
   async def edit_image(
       self,

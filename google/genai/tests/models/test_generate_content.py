@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -229,6 +229,29 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_time_range_filter',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents(None, 'What is the QQQ stock price?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            time_range_filter=types.Interval(
+                                start_time=datetime.fromisoformat(
+                                    '2025-05-01T00:00:00Z'
+                                ),
+                                end_time=datetime.fromisoformat(
+                                    '2025-05-03T00:00:00Z'
+                                ),
+                            )
+                        )
+                    )
+                ]
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
@@ -242,9 +265,85 @@ test_table: list[pytest_helper.TestTableItem] = [
                         prebuilt_voice_config=types.PrebuiltVoiceConfig(
                             voice_name='charon'
                         )
-                        )
                     )
                 ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_speech_with_multi_speaker_voice_config',
+        exception_if_vertex='not supported',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents(
+                None, 'Alice says "Hi", Bob replies with "what\'s up"?'
+            ),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
+                        speaker_voice_configs=[
+                            types.SpeakerVoiceConfig(
+                                speaker='Alice',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='leda'
+                                    )
+                                ),
+                            ),
+                            types.SpeakerVoiceConfig(
+                                speaker='Bob',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='kore'
+                                    )
+                                ),
+                            ),
+                        ],
+                    )
+                ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_speech_error_with_speech_config_and_multi_speech_config',
+        exception_if_vertex='not supported',
+        exception_if_mldev='mutually exclusive',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents(
+                None, 'Alice says "Hi", Bob replies with "what\'s up"?'
+            ),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='puck'
+                        )
+                    ),
+                    multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
+                        speaker_voice_configs=[
+                            types.SpeakerVoiceConfig(
+                                speaker='Alice',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='leda'
+                                    )
+                                ),
+                            ),
+                            types.SpeakerVoiceConfig(
+                                speaker='Bob',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='kore'
+                                    )
+                                ),
+                            ),
+                        ],
+                    ),
+                ),
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -262,17 +361,24 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_audio_timestamp',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=[types.Content(
-                role='user',
-                parts=[
-                    types.Part(
-                        file_data=types.FileData(
-                            file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
-                            mime_type='audio/mpeg')),
-                    types.Part(text="""Can you transcribe this interview, in the
+            contents=[
+                types.Content(
+                    role='user',
+                    parts=[
+                        types.Part(
+                            file_data=types.FileData(
+                                file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
+                                mime_type='audio/mpeg',
+                            )
+                        ),
+                        types.Part(
+                            text="""Can you transcribe this interview, in the
                            format of timecode, speaker, caption. Use speaker A, 
-                           speaker B, etc. to identify speakers."""),]
-            )],
+                           speaker B, etc. to identify speakers."""
+                        ),
+                    ],
+                )
+            ],
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
         exception_if_mldev='not supported',

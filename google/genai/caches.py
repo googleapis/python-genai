@@ -30,6 +30,24 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.caches')
 
 
+def _VideoMetadata_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['end_offset']) is not None:
+    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+
+  if getv(from_object, ['start_offset']) is not None:
+    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+
+  return to_object
+
+
 def _Blob_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -55,7 +73,13 @@ def _Part_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    raise ValueError('video_metadata parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['videoMetadata'],
+        _VideoMetadata_to_mldev(
+            api_client, getv(from_object, ['video_metadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -120,12 +144,59 @@ def _Content_to_mldev(
   return to_object
 
 
+def _FunctionDeclaration_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  return to_object
+
+
+def _Interval_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['start_time']) is not None:
+    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+
+  return to_object
+
+
 def _GoogleSearch_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object,
+        ['timeRangeFilter'],
+        _Interval_to_mldev(
+            api_client, getv(from_object, ['time_range_filter']), to_object
+        ),
+    )
 
   return to_object
 
@@ -238,12 +309,32 @@ def _GoogleMaps_to_mldev(
   return to_object
 
 
+def _UrlContext_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
 def _Tool_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
@@ -275,15 +366,17 @@ def _Tool_to_mldev(
   if getv(from_object, ['google_maps']) is not None:
     raise ValueError('google_maps parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['function_declarations']) is not None:
+  if getv(from_object, ['url_context']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
-        getv(from_object, ['function_declarations']),
+        ['urlContext'],
+        _UrlContext_to_mldev(
+            api_client, getv(from_object, ['url_context']), to_object
+        ),
     )
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -314,10 +407,10 @@ def _LatLng_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['latitude']) is not None:
-    raise ValueError('latitude parameter is not supported in Gemini API.')
+    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
 
   if getv(from_object, ['longitude']) is not None:
-    raise ValueError('longitude parameter is not supported in Gemini API.')
+    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
 
   return to_object
 
@@ -329,7 +422,11 @@ def _RetrievalConfig_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['lat_lng']) is not None:
-    raise ValueError('lat_lng parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['latLng'],
+        _LatLng_to_mldev(api_client, getv(from_object, ['lat_lng']), to_object),
+    )
 
   return to_object
 
@@ -352,8 +449,12 @@ def _ToolConfig_to_mldev(
     )
 
   if getv(from_object, ['retrieval_config']) is not None:
-    raise ValueError(
-        'retrieval_config parameter is not supported in Gemini API.'
+    setv(
+        to_object,
+        ['retrievalConfig'],
+        _RetrievalConfig_to_mldev(
+            api_client, getv(from_object, ['retrieval_config']), to_object
+        ),
     )
 
   return to_object
@@ -416,6 +517,9 @@ def _CreateCachedContentConfig_to_mldev(
             api_client, getv(from_object, ['tool_config']), to_object
         ),
     )
+
+  if getv(from_object, ['kms_key_name']) is not None:
+    raise ValueError('kms_key_name parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -564,6 +668,24 @@ def _ListCachedContentsParameters_to_mldev(
   return to_object
 
 
+def _VideoMetadata_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['end_offset']) is not None:
+    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+
+  if getv(from_object, ['start_offset']) is not None:
+    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+
+  return to_object
+
+
 def _Blob_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -589,7 +711,13 @@ def _Part_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+    setv(
+        to_object,
+        ['videoMetadata'],
+        _VideoMetadata_to_vertex(
+            api_client, getv(from_object, ['video_metadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -654,12 +782,59 @@ def _Content_to_vertex(
   return to_object
 
 
+def _FunctionDeclaration_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    raise ValueError('behavior parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  return to_object
+
+
+def _Interval_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['start_time']) is not None:
+    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+
+  return to_object
+
+
 def _GoogleSearch_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object,
+        ['timeRangeFilter'],
+        _Interval_to_vertex(
+            api_client, getv(from_object, ['time_range_filter']), to_object
+        ),
+    )
 
   return to_object
 
@@ -784,12 +959,32 @@ def _GoogleMaps_to_vertex(
   return to_object
 
 
+def _UrlContext_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
 def _Tool_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_vertex(api_client, item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
@@ -831,15 +1026,11 @@ def _Tool_to_vertex(
         ),
     )
 
+  if getv(from_object, ['url_context']) is not None:
+    raise ValueError('url_context parameter is not supported in Vertex AI.')
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        getv(from_object, ['function_declarations']),
-    )
 
   return to_object
 
@@ -981,6 +1172,13 @@ def _CreateCachedContentConfig_to_vertex(
         _ToolConfig_to_vertex(
             api_client, getv(from_object, ['tool_config']), to_object
         ),
+    )
+
+  if getv(from_object, ['kms_key_name']) is not None:
+    setv(
+        parent_object,
+        ['encryption_spec', 'kmsKeyName'],
+        getv(from_object, ['kms_key_name']),
     )
 
   return to_object
@@ -1128,6 +1326,11 @@ def _ListCachedContentsParameters_to_vertex(
     )
 
   return to_object
+
+
+def _Behavior_to_vertex_enum_validate(enum_value: Any) -> None:
+  if enum_value in set(['UNSPECIFIED', 'BLOCKING', 'NON_BLOCKING']):
+    raise ValueError(f'{enum_value} enum value is not supported in Vertex AI.')
 
 
 def _CachedContent_from_mldev(

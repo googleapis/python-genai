@@ -132,6 +132,39 @@ async def test_function_response(mock_websocket, vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
+async def test_function_response_scheduling(mock_websocket, vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+  session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
+
+  input = types.FunctionResponse(
+      name='get_current_weather',
+      response={'temperature': 14.5, 'unit': 'C'},
+      will_continue=True,
+      scheduling=types.FunctionResponseScheduling.SILENT,
+  )
+  if not vertexai:
+    input.id = 'some-id'
+
+  with pytest_helper.exception_if_vertex(api_client, ValueError):
+    await session.send_tool_response(function_responses=input)
+  if vertexai:
+    return
+
+  mock_websocket.send.assert_called_once()
+  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  assert 'tool_response' in sent_data
+
+  assert (
+      sent_data['tool_response']['functionResponses'][0]['willContinue'] == True
+  )
+  assert (
+      sent_data['tool_response']['functionResponses'][0]['scheduling']
+      == 'SILENT'
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
 async def test_function_response_list(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -188,9 +221,6 @@ async def test_missing_id(mock_websocket, vertexai):
       'response': {'temperature': 99.9, 'unit': 'C'},
   }
 
-  if vertexai:
-    with pytest.raises(ValueError, match=".*not supported.*"):
-      await session.send_tool_response(function_responses=[input1, input2])
-  else:
+  if not vertexai:
     with pytest.raises(ValueError, match=".*must have.*"):
       await session.send_tool_response(function_responses=[input1, input2])

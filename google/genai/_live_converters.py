@@ -22,6 +22,229 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 
+def _PrebuiltVoiceConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_name']) is not None:
+    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
+
+  return to_object
+
+
+def _PrebuiltVoiceConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_name']) is not None:
+    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
+
+  return to_object
+
+
+def _VoiceConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prebuilt_voice_config']) is not None:
+    setv(
+        to_object,
+        ['prebuiltVoiceConfig'],
+        _PrebuiltVoiceConfig_to_mldev(
+            api_client, getv(from_object, ['prebuilt_voice_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _VoiceConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prebuilt_voice_config']) is not None:
+    setv(
+        to_object,
+        ['prebuiltVoiceConfig'],
+        _PrebuiltVoiceConfig_to_vertex(
+            api_client, getv(from_object, ['prebuilt_voice_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _SpeakerVoiceConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_mldev(
+            api_client, getv(from_object, ['voice_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _SpeakerVoiceConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    raise ValueError('speaker parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['voice_config']) is not None:
+    raise ValueError('voice_config parameter is not supported in Vertex AI.')
+
+  return to_object
+
+
+def _MultiSpeakerVoiceConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    setv(
+        to_object,
+        ['speakerVoiceConfigs'],
+        [
+            _SpeakerVoiceConfig_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['speaker_voice_configs'])
+        ],
+    )
+
+  return to_object
+
+
+def _MultiSpeakerVoiceConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    raise ValueError(
+        'speaker_voice_configs parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_mldev(
+            api_client, getv(from_object, ['voice_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    setv(
+        to_object,
+        ['multiSpeakerVoiceConfig'],
+        _MultiSpeakerVoiceConfig_to_mldev(
+            api_client,
+            getv(from_object, ['multi_speaker_voice_config']),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  return to_object
+
+
+def _SpeechConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_vertex(
+            api_client, getv(from_object, ['voice_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    raise ValueError(
+        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  return to_object
+
+
+def _VideoMetadata_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['end_offset']) is not None:
+    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+
+  if getv(from_object, ['start_offset']) is not None:
+    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+
+  return to_object
+
+
+def _VideoMetadata_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['end_offset']) is not None:
+    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+
+  if getv(from_object, ['start_offset']) is not None:
+    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+
+  return to_object
+
+
 def _Blob_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -65,7 +288,13 @@ def _Part_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    raise ValueError('video_metadata parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['videoMetadata'],
+        _VideoMetadata_to_mldev(
+            api_client, getv(from_object, ['video_metadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -115,7 +344,13 @@ def _Part_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+    setv(
+        to_object,
+        ['videoMetadata'],
+        _VideoMetadata_to_vertex(
+            api_client, getv(from_object, ['video_metadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -202,12 +437,98 @@ def _Content_to_vertex(
   return to_object
 
 
+def _FunctionDeclaration_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  return to_object
+
+
+def _FunctionDeclaration_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    raise ValueError('behavior parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  return to_object
+
+
+def _Interval_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['start_time']) is not None:
+    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+
+  return to_object
+
+
+def _Interval_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['start_time']) is not None:
+    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+
+  return to_object
+
+
 def _GoogleSearch_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object,
+        ['timeRangeFilter'],
+        _Interval_to_mldev(
+            api_client, getv(from_object, ['time_range_filter']), to_object
+        ),
+    )
 
   return to_object
 
@@ -218,6 +539,14 @@ def _GoogleSearch_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object,
+        ['timeRangeFilter'],
+        _Interval_to_vertex(
+            api_client, getv(from_object, ['time_range_filter']), to_object
+        ),
+    )
 
   return to_object
 
@@ -450,12 +779,42 @@ def _GoogleMaps_to_vertex(
   return to_object
 
 
+def _UrlContext_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _UrlContext_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
 def _Tool_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
@@ -487,15 +846,17 @@ def _Tool_to_mldev(
   if getv(from_object, ['google_maps']) is not None:
     raise ValueError('google_maps parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['function_declarations']) is not None:
+  if getv(from_object, ['url_context']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
-        getv(from_object, ['function_declarations']),
+        ['urlContext'],
+        _UrlContext_to_mldev(
+            api_client, getv(from_object, ['url_context']), to_object
+        ),
     )
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -506,6 +867,16 @@ def _Tool_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_vertex(api_client, item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
@@ -547,15 +918,11 @@ def _Tool_to_vertex(
         ),
     )
 
+  if getv(from_object, ['url_context']) is not None:
+    raise ValueError('url_context parameter is not supported in Vertex AI.')
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        getv(from_object, ['function_declarations']),
-    )
 
   return to_object
 
@@ -812,12 +1179,37 @@ def _ContextWindowCompressionConfig_to_vertex(
   return to_object
 
 
+def _ProactivityConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['proactive_audio']) is not None:
+    setv(to_object, ['proactiveAudio'], getv(from_object, ['proactive_audio']))
+
+  return to_object
+
+
+def _ProactivityConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['proactive_audio']) is not None:
+    setv(to_object, ['proactiveAudio'], getv(from_object, ['proactive_audio']))
+
+  return to_object
+
+
 def _LiveConnectConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
   if getv(from_object, ['generation_config']) is not None:
     setv(
         parent_object,
@@ -878,7 +1270,20 @@ def _LiveConnectConfig_to_mldev(
     setv(
         parent_object,
         ['setup', 'generationConfig', 'speechConfig'],
-        getv(from_object, ['speech_config']),
+        _SpeechConfig_to_mldev(
+            api_client,
+            t.t_live_speech_config(
+                api_client, getv(from_object, ['speech_config'])
+            ),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['enable_affective_dialog']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'generationConfig', 'enableAffectiveDialog'],
+        getv(from_object, ['enable_affective_dialog']),
     )
 
   if getv(from_object, ['system_instruction']) is not None:
@@ -953,6 +1358,15 @@ def _LiveConnectConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['proactivity']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'proactivity'],
+        _ProactivityConfig_to_mldev(
+            api_client, getv(from_object, ['proactivity']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -962,6 +1376,7 @@ def _LiveConnectConfig_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
   if getv(from_object, ['generation_config']) is not None:
     setv(
         parent_object,
@@ -1022,7 +1437,20 @@ def _LiveConnectConfig_to_vertex(
     setv(
         parent_object,
         ['setup', 'generationConfig', 'speechConfig'],
-        getv(from_object, ['speech_config']),
+        _SpeechConfig_to_vertex(
+            api_client,
+            t.t_live_speech_config(
+                api_client, getv(from_object, ['speech_config'])
+            ),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['enable_affective_dialog']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'generationConfig', 'enableAffectiveDialog'],
+        getv(from_object, ['enable_affective_dialog']),
     )
 
   if getv(from_object, ['system_instruction']) is not None:
@@ -1094,6 +1522,15 @@ def _LiveConnectConfig_to_vertex(
             api_client,
             getv(from_object, ['context_window_compression']),
             to_object,
+        ),
+    )
+
+  if getv(from_object, ['proactivity']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'proactivity'],
+        _ProactivityConfig_to_vertex(
+            api_client, getv(from_object, ['proactivity']), to_object
         ),
     )
 
@@ -1369,6 +1806,15 @@ def _LiveClientSetup_to_mldev(
         ),
     )
 
+  if getv(from_object, ['proactivity']) is not None:
+    setv(
+        to_object,
+        ['proactivity'],
+        _ProactivityConfig_to_mldev(
+            api_client, getv(from_object, ['proactivity']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -1448,6 +1894,15 @@ def _LiveClientSetup_to_vertex(
             api_client,
             getv(from_object, ['output_audio_transcription']),
             to_object,
+        ),
+    )
+
+  if getv(from_object, ['proactivity']) is not None:
+    setv(
+        to_object,
+        ['proactivity'],
+        _ProactivityConfig_to_vertex(
+            api_client, getv(from_object, ['proactivity']), to_object
         ),
     )
 
@@ -1590,6 +2045,12 @@ def _FunctionResponse_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['will_continue']) is not None:
+    setv(to_object, ['willContinue'], getv(from_object, ['will_continue']))
+
+  if getv(from_object, ['scheduling']) is not None:
+    setv(to_object, ['scheduling'], getv(from_object, ['scheduling']))
+
   if getv(from_object, ['id']) is not None:
     setv(to_object, ['id'], getv(from_object, ['id']))
 
@@ -1608,8 +2069,14 @@ def _FunctionResponse_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError('will_continue parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['scheduling']) is not None:
+    raise ValueError('scheduling parameter is not supported in Vertex AI.')
+
   if getv(from_object, ['id']) is not None:
-    raise ValueError('id parameter is not supported in Vertex AI.')
+    setv(to_object, ['id'], getv(from_object, ['id']))
 
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -1748,6 +2215,354 @@ def _LiveClientMessage_to_vertex(
   return to_object
 
 
+def _LiveMusicConnectParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(to_object, ['setup', 'model'], getv(from_object, ['model']))
+
+  return to_object
+
+
+def _LiveMusicConnectParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    raise ValueError('model parameter is not supported in Vertex AI.')
+
+  return to_object
+
+
+def _WeightedPrompt_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['weight']) is not None:
+    setv(to_object, ['weight'], getv(from_object, ['weight']))
+
+  return to_object
+
+
+def _WeightedPrompt_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['text']) is not None:
+    raise ValueError('text parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['weight']) is not None:
+    raise ValueError('weight parameter is not supported in Vertex AI.')
+
+  return to_object
+
+
+def _LiveMusicSetWeightedPromptsParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weighted_prompts']) is not None:
+    setv(
+        to_object,
+        ['weightedPrompts'],
+        [
+            _WeightedPrompt_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['weighted_prompts'])
+        ],
+    )
+
+  return to_object
+
+
+def _LiveMusicSetWeightedPromptsParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weighted_prompts']) is not None:
+    raise ValueError(
+        'weighted_prompts parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
+def _LiveMusicGenerationConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['top_k']) is not None:
+    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['guidance']) is not None:
+    setv(to_object, ['guidance'], getv(from_object, ['guidance']))
+
+  if getv(from_object, ['bpm']) is not None:
+    setv(to_object, ['bpm'], getv(from_object, ['bpm']))
+
+  if getv(from_object, ['density']) is not None:
+    setv(to_object, ['density'], getv(from_object, ['density']))
+
+  if getv(from_object, ['brightness']) is not None:
+    setv(to_object, ['brightness'], getv(from_object, ['brightness']))
+
+  if getv(from_object, ['scale']) is not None:
+    setv(to_object, ['scale'], getv(from_object, ['scale']))
+
+  if getv(from_object, ['mute_bass']) is not None:
+    setv(to_object, ['muteBass'], getv(from_object, ['mute_bass']))
+
+  if getv(from_object, ['mute_drums']) is not None:
+    setv(to_object, ['muteDrums'], getv(from_object, ['mute_drums']))
+
+  if getv(from_object, ['only_bass_and_drums']) is not None:
+    setv(
+        to_object,
+        ['onlyBassAndDrums'],
+        getv(from_object, ['only_bass_and_drums']),
+    )
+
+  if getv(from_object, ['music_generation_mode']) is not None:
+    setv(
+        to_object,
+        ['musicGenerationMode'],
+        getv(from_object, ['music_generation_mode']),
+    )
+
+  return to_object
+
+
+def _LiveMusicGenerationConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['temperature']) is not None:
+    raise ValueError('temperature parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['top_k']) is not None:
+    raise ValueError('top_k parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['seed']) is not None:
+    raise ValueError('seed parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['guidance']) is not None:
+    raise ValueError('guidance parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['bpm']) is not None:
+    raise ValueError('bpm parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['density']) is not None:
+    raise ValueError('density parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['brightness']) is not None:
+    raise ValueError('brightness parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['scale']) is not None:
+    raise ValueError('scale parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['mute_bass']) is not None:
+    raise ValueError('mute_bass parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['mute_drums']) is not None:
+    raise ValueError('mute_drums parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['only_bass_and_drums']) is not None:
+    raise ValueError(
+        'only_bass_and_drums parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['music_generation_mode']) is not None:
+    raise ValueError(
+        'music_generation_mode parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
+def _LiveMusicSetConfigParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['music_generation_config']) is not None:
+    setv(
+        to_object,
+        ['musicGenerationConfig'],
+        _LiveMusicGenerationConfig_to_mldev(
+            api_client,
+            getv(from_object, ['music_generation_config']),
+            to_object,
+        ),
+    )
+
+  return to_object
+
+
+def _LiveMusicSetConfigParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['music_generation_config']) is not None:
+    raise ValueError(
+        'music_generation_config parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
+def _LiveMusicClientSetup_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(to_object, ['model'], getv(from_object, ['model']))
+
+  return to_object
+
+
+def _LiveMusicClientSetup_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    raise ValueError('model parameter is not supported in Vertex AI.')
+
+  return to_object
+
+
+def _LiveMusicClientContent_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weighted_prompts']) is not None:
+    setv(
+        to_object,
+        ['weightedPrompts'],
+        [
+            _WeightedPrompt_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['weighted_prompts'])
+        ],
+    )
+
+  return to_object
+
+
+def _LiveMusicClientContent_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weighted_prompts']) is not None:
+    raise ValueError(
+        'weighted_prompts parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
+def _LiveMusicClientMessage_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['setup']) is not None:
+    setv(
+        to_object,
+        ['setup'],
+        _LiveMusicClientSetup_to_mldev(
+            api_client, getv(from_object, ['setup']), to_object
+        ),
+    )
+
+  if getv(from_object, ['client_content']) is not None:
+    setv(
+        to_object,
+        ['clientContent'],
+        _LiveMusicClientContent_to_mldev(
+            api_client, getv(from_object, ['client_content']), to_object
+        ),
+    )
+
+  if getv(from_object, ['music_generation_config']) is not None:
+    setv(
+        to_object,
+        ['musicGenerationConfig'],
+        _LiveMusicGenerationConfig_to_mldev(
+            api_client,
+            getv(from_object, ['music_generation_config']),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['playback_control']) is not None:
+    setv(
+        to_object, ['playbackControl'], getv(from_object, ['playback_control'])
+    )
+
+  return to_object
+
+
+def _LiveMusicClientMessage_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['setup']) is not None:
+    raise ValueError('setup parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['client_content']) is not None:
+    raise ValueError('client_content parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['music_generation_config']) is not None:
+    raise ValueError(
+        'music_generation_config parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['playback_control']) is not None:
+    raise ValueError(
+        'playback_control parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
 def _LiveServerSetupComplete_from_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1764,6 +2579,42 @@ def _LiveServerSetupComplete_from_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _VideoMetadata_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['endOffset']) is not None:
+    setv(to_object, ['end_offset'], getv(from_object, ['endOffset']))
+
+  if getv(from_object, ['startOffset']) is not None:
+    setv(to_object, ['start_offset'], getv(from_object, ['startOffset']))
+
+  return to_object
+
+
+def _VideoMetadata_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['endOffset']) is not None:
+    setv(to_object, ['end_offset'], getv(from_object, ['endOffset']))
+
+  if getv(from_object, ['startOffset']) is not None:
+    setv(to_object, ['start_offset'], getv(from_object, ['startOffset']))
 
   return to_object
 
@@ -1808,6 +2659,14 @@ def _Part_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['videoMetadata']) is not None:
+    setv(
+        to_object,
+        ['video_metadata'],
+        _VideoMetadata_from_mldev(
+            api_client, getv(from_object, ['videoMetadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -1857,7 +2716,13 @@ def _Part_from_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['videoMetadata']) is not None:
-    setv(to_object, ['video_metadata'], getv(from_object, ['videoMetadata']))
+    setv(
+        to_object,
+        ['video_metadata'],
+        _VideoMetadata_from_vertex(
+            api_client, getv(from_object, ['videoMetadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -1974,6 +2839,82 @@ def _Transcription_from_vertex(
   return to_object
 
 
+def _UrlMetadata_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrievedUrl']) is not None:
+    setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
+
+  if getv(from_object, ['urlRetrievalStatus']) is not None:
+    setv(
+        to_object,
+        ['url_retrieval_status'],
+        getv(from_object, ['urlRetrievalStatus']),
+    )
+
+  return to_object
+
+
+def _UrlMetadata_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrievedUrl']) is not None:
+    setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
+
+  if getv(from_object, ['urlRetrievalStatus']) is not None:
+    setv(
+        to_object,
+        ['url_retrieval_status'],
+        getv(from_object, ['urlRetrievalStatus']),
+    )
+
+  return to_object
+
+
+def _UrlContextMetadata_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['urlMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_metadata'],
+        [
+            _UrlMetadata_from_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['urlMetadata'])
+        ],
+    )
+
+  return to_object
+
+
+def _UrlContextMetadata_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['urlMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_metadata'],
+        [
+            _UrlMetadata_from_vertex(api_client, item, to_object)
+            for item in getv(from_object, ['urlMetadata'])
+        ],
+    )
+
+  return to_object
+
+
 def _LiveServerContent_from_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -2024,6 +2965,15 @@ def _LiveServerContent_from_mldev(
         ['output_transcription'],
         _Transcription_from_mldev(
             api_client, getv(from_object, ['outputTranscription']), to_object
+        ),
+    )
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_context_metadata'],
+        _UrlContextMetadata_from_mldev(
+            api_client, getv(from_object, ['urlContextMetadata']), to_object
         ),
     )
 
@@ -2605,5 +3555,330 @@ def _LiveServerMessage_from_vertex(
             to_object,
         ),
     )
+
+  return to_object
+
+
+def _LiveMusicServerSetupComplete_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveMusicServerSetupComplete_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _WeightedPrompt_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['weight']) is not None:
+    setv(to_object, ['weight'], getv(from_object, ['weight']))
+
+  return to_object
+
+
+def _WeightedPrompt_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveMusicClientContent_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weightedPrompts']) is not None:
+    setv(
+        to_object,
+        ['weighted_prompts'],
+        [
+            _WeightedPrompt_from_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['weightedPrompts'])
+        ],
+    )
+
+  return to_object
+
+
+def _LiveMusicClientContent_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveMusicGenerationConfig_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['topK']) is not None:
+    setv(to_object, ['top_k'], getv(from_object, ['topK']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['guidance']) is not None:
+    setv(to_object, ['guidance'], getv(from_object, ['guidance']))
+
+  if getv(from_object, ['bpm']) is not None:
+    setv(to_object, ['bpm'], getv(from_object, ['bpm']))
+
+  if getv(from_object, ['density']) is not None:
+    setv(to_object, ['density'], getv(from_object, ['density']))
+
+  if getv(from_object, ['brightness']) is not None:
+    setv(to_object, ['brightness'], getv(from_object, ['brightness']))
+
+  if getv(from_object, ['scale']) is not None:
+    setv(to_object, ['scale'], getv(from_object, ['scale']))
+
+  if getv(from_object, ['muteBass']) is not None:
+    setv(to_object, ['mute_bass'], getv(from_object, ['muteBass']))
+
+  if getv(from_object, ['muteDrums']) is not None:
+    setv(to_object, ['mute_drums'], getv(from_object, ['muteDrums']))
+
+  if getv(from_object, ['onlyBassAndDrums']) is not None:
+    setv(
+        to_object,
+        ['only_bass_and_drums'],
+        getv(from_object, ['onlyBassAndDrums']),
+    )
+
+  if getv(from_object, ['musicGenerationMode']) is not None:
+    setv(
+        to_object,
+        ['music_generation_mode'],
+        getv(from_object, ['musicGenerationMode']),
+    )
+
+  return to_object
+
+
+def _LiveMusicGenerationConfig_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveMusicSourceMetadata_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['clientContent']) is not None:
+    setv(
+        to_object,
+        ['client_content'],
+        _LiveMusicClientContent_from_mldev(
+            api_client, getv(from_object, ['clientContent']), to_object
+        ),
+    )
+
+  if getv(from_object, ['musicGenerationConfig']) is not None:
+    setv(
+        to_object,
+        ['music_generation_config'],
+        _LiveMusicGenerationConfig_from_mldev(
+            api_client, getv(from_object, ['musicGenerationConfig']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _LiveMusicSourceMetadata_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['clientContent']) is not None:
+    setv(
+        to_object,
+        ['client_content'],
+        _LiveMusicClientContent_from_vertex(
+            api_client, getv(from_object, ['clientContent']), to_object
+        ),
+    )
+
+  if getv(from_object, ['musicGenerationConfig']) is not None:
+    setv(
+        to_object,
+        ['music_generation_config'],
+        _LiveMusicGenerationConfig_from_vertex(
+            api_client, getv(from_object, ['musicGenerationConfig']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _AudioChunk_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  if getv(from_object, ['sourceMetadata']) is not None:
+    setv(
+        to_object,
+        ['source_metadata'],
+        _LiveMusicSourceMetadata_from_mldev(
+            api_client, getv(from_object, ['sourceMetadata']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _AudioChunk_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveMusicServerContent_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['audioChunks']) is not None:
+    setv(
+        to_object,
+        ['audio_chunks'],
+        [
+            _AudioChunk_from_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['audioChunks'])
+        ],
+    )
+
+  return to_object
+
+
+def _LiveMusicServerContent_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveMusicFilteredPrompt_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['filteredReason']) is not None:
+    setv(to_object, ['filtered_reason'], getv(from_object, ['filteredReason']))
+
+  return to_object
+
+
+def _LiveMusicFilteredPrompt_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _LiveMusicServerMessage_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['setupComplete']) is not None:
+    setv(
+        to_object,
+        ['setup_complete'],
+        _LiveMusicServerSetupComplete_from_mldev(
+            api_client, getv(from_object, ['setupComplete']), to_object
+        ),
+    )
+
+  if getv(from_object, ['serverContent']) is not None:
+    setv(
+        to_object,
+        ['server_content'],
+        _LiveMusicServerContent_from_mldev(
+            api_client, getv(from_object, ['serverContent']), to_object
+        ),
+    )
+
+  if getv(from_object, ['filteredPrompt']) is not None:
+    setv(
+        to_object,
+        ['filtered_prompt'],
+        _LiveMusicFilteredPrompt_from_mldev(
+            api_client, getv(from_object, ['filteredPrompt']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _LiveMusicServerMessage_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
 
   return to_object

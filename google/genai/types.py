@@ -55,6 +55,22 @@ else:
   except ImportError:
     PIL_Image = None
 
+_is_mcp_imported = False
+if typing.TYPE_CHECKING:
+  from mcp import types as mcp_types
+  from mcp import ClientSession as McpClientSession
+
+  _is_mcp_imported = True
+else:
+  McpClientSession: typing.Type = Any
+  try:
+    from mcp import types as mcp_types
+    from mcp import ClientSession as McpClientSession
+
+    _is_mcp_imported = True
+  except ImportError:
+    McpClientSession = None
+
 logger = logging.getLogger('google_genai.types')
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
@@ -64,27 +80,39 @@ class Outcome(_common.CaseInSensitiveEnum):
   """Required. Outcome of the code execution."""
 
   OUTCOME_UNSPECIFIED = 'OUTCOME_UNSPECIFIED'
+  """Unspecified status. This value should not be used."""
   OUTCOME_OK = 'OUTCOME_OK'
+  """Code execution completed successfully."""
   OUTCOME_FAILED = 'OUTCOME_FAILED'
+  """Code execution finished but with a failure. `stderr` should contain the reason."""
   OUTCOME_DEADLINE_EXCEEDED = 'OUTCOME_DEADLINE_EXCEEDED'
+  """Code execution ran for too long, and was cancelled. There may or may not be a partial output present."""
 
 
 class Language(_common.CaseInSensitiveEnum):
   """Required. Programming language of the `code`."""
 
   LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
+  """Unspecified language. This value should not be used."""
   PYTHON = 'PYTHON'
+  """Python >= 3.10, with numpy and simpy available."""
 
 
 class HarmCategory(_common.CaseInSensitiveEnum):
   """Required. Harm category."""
 
   HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
+  """The harm category is unspecified."""
   HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
+  """The harm category is hate speech."""
   HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
+  """The harm category is dangerous content."""
   HARM_CATEGORY_HARASSMENT = 'HARM_CATEGORY_HARASSMENT'
+  """The harm category is harassment."""
   HARM_CATEGORY_SEXUALLY_EXPLICIT = 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
+  """The harm category is sexually explicit content."""
   HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
+  """The harm category is civic integrity."""
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
@@ -95,26 +123,56 @@ class HarmBlockMethod(_common.CaseInSensitiveEnum):
   """
 
   HARM_BLOCK_METHOD_UNSPECIFIED = 'HARM_BLOCK_METHOD_UNSPECIFIED'
+  """The harm block method is unspecified."""
   SEVERITY = 'SEVERITY'
+  """The harm block method uses both probability and severity scores."""
   PROBABILITY = 'PROBABILITY'
+  """The harm block method uses the probability score."""
 
 
 class HarmBlockThreshold(_common.CaseInSensitiveEnum):
   """Required. The harm block threshold."""
 
   HARM_BLOCK_THRESHOLD_UNSPECIFIED = 'HARM_BLOCK_THRESHOLD_UNSPECIFIED'
+  """Unspecified harm block threshold."""
   BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  """Block low threshold and above (i.e. block more)."""
   BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  """Block medium threshold and above."""
   BLOCK_ONLY_HIGH = 'BLOCK_ONLY_HIGH'
+  """Block only high threshold (i.e. block less)."""
   BLOCK_NONE = 'BLOCK_NONE'
+  """Block none."""
   OFF = 'OFF'
+  """Turn off the safety filter."""
+
+
+class Type(_common.CaseInSensitiveEnum):
+  """Optional. The type of the data."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  """Not specified, should not be used."""
+  STRING = 'STRING'
+  """OpenAPI string type"""
+  NUMBER = 'NUMBER'
+  """OpenAPI number type"""
+  INTEGER = 'INTEGER'
+  """OpenAPI integer type"""
+  BOOLEAN = 'BOOLEAN'
+  """OpenAPI boolean type"""
+  ARRAY = 'ARRAY'
+  """OpenAPI array type"""
+  OBJECT = 'OBJECT'
+  """OpenAPI object type"""
 
 
 class Mode(_common.CaseInSensitiveEnum):
   """The mode of the predictor to be used in dynamic retrieval."""
 
   MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Always trigger retrieval."""
   MODE_DYNAMIC = 'MODE_DYNAMIC'
+  """Run retrieval only when system decides it is necessary."""
 
 
 class AuthType(_common.CaseInSensitiveEnum):
@@ -122,23 +180,17 @@ class AuthType(_common.CaseInSensitiveEnum):
 
   AUTH_TYPE_UNSPECIFIED = 'AUTH_TYPE_UNSPECIFIED'
   NO_AUTH = 'NO_AUTH'
+  """No Auth."""
   API_KEY_AUTH = 'API_KEY_AUTH'
+  """API Key Auth."""
   HTTP_BASIC_AUTH = 'HTTP_BASIC_AUTH'
+  """HTTP Basic Auth."""
   GOOGLE_SERVICE_ACCOUNT_AUTH = 'GOOGLE_SERVICE_ACCOUNT_AUTH'
+  """Google Service Account Auth."""
   OAUTH = 'OAUTH'
+  """OAuth auth."""
   OIDC_AUTH = 'OIDC_AUTH'
-
-
-class Type(_common.CaseInSensitiveEnum):
-  """Optional. The type of the data."""
-
-  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
-  STRING = 'STRING'
-  NUMBER = 'NUMBER'
-  INTEGER = 'INTEGER'
-  BOOLEAN = 'BOOLEAN'
-  ARRAY = 'ARRAY'
-  OBJECT = 'OBJECT'
+  """OpenID Connect (OIDC) Auth."""
 
 
 class FinishReason(_common.CaseInSensitiveEnum):
@@ -148,47 +200,74 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """
 
   FINISH_REASON_UNSPECIFIED = 'FINISH_REASON_UNSPECIFIED'
+  """The finish reason is unspecified."""
   STOP = 'STOP'
+  """Token generation reached a natural stopping point or a configured stop sequence."""
   MAX_TOKENS = 'MAX_TOKENS'
+  """Token generation reached the configured maximum output tokens."""
   SAFETY = 'SAFETY'
+  """Token generation stopped because the content potentially contains safety violations. NOTE: When streaming, [content][] is empty if content filters blocks the output."""
   RECITATION = 'RECITATION'
+  """The token generation stopped because of potential recitation."""
   LANGUAGE = 'LANGUAGE'
+  """The token generation stopped because of using an unsupported language."""
   OTHER = 'OTHER'
+  """All other reasons that stopped the token generation."""
   BLOCKLIST = 'BLOCKLIST'
+  """Token generation stopped because the content contains forbidden terms."""
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+  """Token generation stopped for potentially containing prohibited content."""
   SPII = 'SPII'
+  """Token generation stopped because the content potentially contains Sensitive Personally Identifiable Information (SPII)."""
   MALFORMED_FUNCTION_CALL = 'MALFORMED_FUNCTION_CALL'
+  """The function call generated by the model is invalid."""
   IMAGE_SAFETY = 'IMAGE_SAFETY'
+  """Token generation stopped because generated images have safety violations."""
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
   """Output only. Harm probability levels in the content."""
 
   HARM_PROBABILITY_UNSPECIFIED = 'HARM_PROBABILITY_UNSPECIFIED'
+  """Harm probability unspecified."""
   NEGLIGIBLE = 'NEGLIGIBLE'
+  """Negligible level of harm."""
   LOW = 'LOW'
+  """Low level of harm."""
   MEDIUM = 'MEDIUM'
+  """Medium level of harm."""
   HIGH = 'HIGH'
+  """High level of harm."""
 
 
 class HarmSeverity(_common.CaseInSensitiveEnum):
   """Output only. Harm severity levels in the content."""
 
   HARM_SEVERITY_UNSPECIFIED = 'HARM_SEVERITY_UNSPECIFIED'
+  """Harm severity unspecified."""
   HARM_SEVERITY_NEGLIGIBLE = 'HARM_SEVERITY_NEGLIGIBLE'
+  """Negligible level of harm severity."""
   HARM_SEVERITY_LOW = 'HARM_SEVERITY_LOW'
+  """Low level of harm severity."""
   HARM_SEVERITY_MEDIUM = 'HARM_SEVERITY_MEDIUM'
+  """Medium level of harm severity."""
   HARM_SEVERITY_HIGH = 'HARM_SEVERITY_HIGH'
+  """High level of harm severity."""
 
 
 class BlockedReason(_common.CaseInSensitiveEnum):
   """Output only. Blocked reason."""
 
   BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
+  """Unspecified blocked reason."""
   SAFETY = 'SAFETY'
+  """Candidates blocked due to safety."""
   OTHER = 'OTHER'
+  """Candidates blocked due to other reason."""
   BLOCKLIST = 'BLOCKLIST'
+  """Candidates blocked due to the terms which are included from the terminology blocklist."""
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+  """Candidates blocked due to prohibited content."""
 
 
 class TrafficType(_common.CaseInSensitiveEnum):
@@ -199,55 +278,85 @@ class TrafficType(_common.CaseInSensitiveEnum):
   """
 
   TRAFFIC_TYPE_UNSPECIFIED = 'TRAFFIC_TYPE_UNSPECIFIED'
+  """Unspecified request traffic type."""
   ON_DEMAND = 'ON_DEMAND'
+  """Type for Pay-As-You-Go traffic."""
   PROVISIONED_THROUGHPUT = 'PROVISIONED_THROUGHPUT'
+  """Type for Provisioned Throughput traffic."""
 
 
 class Modality(_common.CaseInSensitiveEnum):
   """Server content modalities."""
 
   MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  """The modality is unspecified."""
   TEXT = 'TEXT'
+  """Indicates the model should return text"""
   IMAGE = 'IMAGE'
+  """Indicates the model should return images."""
   AUDIO = 'AUDIO'
+  """Indicates the model should return images."""
 
 
 class MediaResolution(_common.CaseInSensitiveEnum):
   """The media resolution to use."""
 
   MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  """Media resolution has not been set"""
   MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  """Media resolution set to low (64 tokens)."""
   MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  """Media resolution set to medium (256 tokens)."""
   MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
+  """Media resolution set to high (zoomed reframing with 256 tokens)."""
 
 
 class JobState(_common.CaseInSensitiveEnum):
   """Job state."""
 
   JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
+  """The job state is unspecified."""
   JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
+  """The job has been just created or resumed and processing has not yet begun."""
   JOB_STATE_PENDING = 'JOB_STATE_PENDING'
+  """The service is preparing to run the job."""
   JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
+  """The job is in progress."""
   JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
+  """The job completed successfully."""
   JOB_STATE_FAILED = 'JOB_STATE_FAILED'
+  """The job failed."""
   JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
+  """The job is being cancelled. From this state the job may only go to either `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`."""
   JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
+  """The job has been cancelled."""
   JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
+  """The job has been stopped, and can be resumed."""
   JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
+  """The job has expired."""
   JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
+  """The job is being updated. Only jobs in the `JOB_STATE_RUNNING` state can be updated. After updating, the job goes back to the `JOB_STATE_RUNNING` state."""
   JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
+  """The job is partially succeeded, some results may be missing due to errors."""
 
 
 class AdapterSize(_common.CaseInSensitiveEnum):
   """Optional. Adapter size for tuning."""
 
   ADAPTER_SIZE_UNSPECIFIED = 'ADAPTER_SIZE_UNSPECIFIED'
+  """Adapter size is unspecified."""
   ADAPTER_SIZE_ONE = 'ADAPTER_SIZE_ONE'
+  """Adapter size 1."""
   ADAPTER_SIZE_TWO = 'ADAPTER_SIZE_TWO'
+  """Adapter size 2."""
   ADAPTER_SIZE_FOUR = 'ADAPTER_SIZE_FOUR'
+  """Adapter size 4."""
   ADAPTER_SIZE_EIGHT = 'ADAPTER_SIZE_EIGHT'
+  """Adapter size 8."""
   ADAPTER_SIZE_SIXTEEN = 'ADAPTER_SIZE_SIXTEEN'
+  """Adapter size 16."""
   ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
+  """Adapter size 32."""
 
 
 class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
@@ -261,20 +370,48 @@ class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   PRIORITIZE_COST = 'PRIORITIZE_COST'
 
 
+class Behavior(_common.CaseInSensitiveEnum):
+  """Defines the function behavior. Defaults to `BLOCKING`."""
+
+  UNSPECIFIED = 'UNSPECIFIED'
+  """This value is unused."""
+  BLOCKING = 'BLOCKING'
+  """If set, the system will wait to receive the function response before continuing the conversation."""
+  NON_BLOCKING = 'NON_BLOCKING'
+  """If set, the system will not wait to receive the function response. Instead, it will attempt to handle function responses as they become available while maintaining the conversation between the user and the model."""
+
+
 class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
   """Config for the dynamic retrieval config mode."""
 
   MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Always trigger retrieval."""
   MODE_DYNAMIC = 'MODE_DYNAMIC'
+  """Run retrieval only when system decides it is necessary."""
 
 
 class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
   """Config for the function calling config mode."""
 
   MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """The function calling config mode is unspecified. Should not be used."""
   AUTO = 'AUTO'
+  """Default model behavior, model decides to predict either function calls or natural language response."""
   ANY = 'ANY'
+  """Model is constrained to always predicting function calls only. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
   NONE = 'NONE'
+  """Model will not predict any function calls. Model behavior is same as when not passing any function declarations."""
+
+
+class UrlRetrievalStatus(_common.CaseInSensitiveEnum):
+  """Status of the url retrieval."""
+
+  URL_RETRIEVAL_STATUS_UNSPECIFIED = 'URL_RETRIEVAL_STATUS_UNSPECIFIED'
+  """Default value. This value is unused"""
+  URL_RETRIEVAL_STATUS_SUCCESS = 'URL_RETRIEVAL_STATUS_SUCCESS'
+  """Url retrieval is successful."""
+  URL_RETRIEVAL_STATUS_ERROR = 'URL_RETRIEVAL_STATUS_ERROR'
+  """Url retrieval is failed due to error."""
 
 
 class SafetyFilterLevel(_common.CaseInSensitiveEnum):
@@ -366,43 +503,168 @@ class MediaModality(_common.CaseInSensitiveEnum):
   """Server content modalities."""
 
   MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  """The modality is unspecified."""
   TEXT = 'TEXT'
+  """Plain text."""
   IMAGE = 'IMAGE'
+  """Images."""
   VIDEO = 'VIDEO'
+  """Video."""
   AUDIO = 'AUDIO'
+  """Audio."""
   DOCUMENT = 'DOCUMENT'
+  """Document, e.g. PDF."""
 
 
 class StartSensitivity(_common.CaseInSensitiveEnum):
   """Start of speech sensitivity."""
 
   START_SENSITIVITY_UNSPECIFIED = 'START_SENSITIVITY_UNSPECIFIED'
+  """The default is START_SENSITIVITY_LOW."""
   START_SENSITIVITY_HIGH = 'START_SENSITIVITY_HIGH'
+  """Automatic detection will detect the start of speech more often."""
   START_SENSITIVITY_LOW = 'START_SENSITIVITY_LOW'
+  """Automatic detection will detect the start of speech less often."""
 
 
 class EndSensitivity(_common.CaseInSensitiveEnum):
   """End of speech sensitivity."""
 
   END_SENSITIVITY_UNSPECIFIED = 'END_SENSITIVITY_UNSPECIFIED'
+  """The default is END_SENSITIVITY_LOW."""
   END_SENSITIVITY_HIGH = 'END_SENSITIVITY_HIGH'
+  """Automatic detection ends speech more often."""
   END_SENSITIVITY_LOW = 'END_SENSITIVITY_LOW'
+  """Automatic detection ends speech less often."""
 
 
 class ActivityHandling(_common.CaseInSensitiveEnum):
   """The different ways of handling user activity."""
 
   ACTIVITY_HANDLING_UNSPECIFIED = 'ACTIVITY_HANDLING_UNSPECIFIED'
+  """If unspecified, the default behavior is `START_OF_ACTIVITY_INTERRUPTS`."""
   START_OF_ACTIVITY_INTERRUPTS = 'START_OF_ACTIVITY_INTERRUPTS'
+  """If true, start of activity will interrupt the model's response (also called "barge in"). The model's current response will be cut-off in the moment of the interruption. This is the default behavior."""
   NO_INTERRUPTION = 'NO_INTERRUPTION'
+  """The model's response will not be interrupted."""
 
 
 class TurnCoverage(_common.CaseInSensitiveEnum):
   """Options about which input is included in the user's turn."""
 
   TURN_COVERAGE_UNSPECIFIED = 'TURN_COVERAGE_UNSPECIFIED'
+  """If unspecified, the default behavior is `TURN_INCLUDES_ONLY_ACTIVITY`."""
   TURN_INCLUDES_ONLY_ACTIVITY = 'TURN_INCLUDES_ONLY_ACTIVITY'
+  """The users turn only includes activity since the last turn, excluding inactivity (e.g. silence on the audio stream). This is the default behavior."""
   TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
+  """The users turn includes all realtime input since the last turn, including inactivity (e.g. silence on the audio stream)."""
+
+
+class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
+  """Specifies how the response should be scheduled in the conversation."""
+
+  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
+  """This value is unused."""
+  SILENT = 'SILENT'
+  """Only add the result to the conversation context, do not interrupt or trigger generation."""
+  WHEN_IDLE = 'WHEN_IDLE'
+  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
+  INTERRUPT = 'INTERRUPT'
+  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
+
+
+class Scale(_common.CaseInSensitiveEnum):
+  """Scale of the generated music."""
+
+  SCALE_UNSPECIFIED = 'SCALE_UNSPECIFIED'
+  """Default value. This value is unused."""
+  C_MAJOR_A_MINOR = 'C_MAJOR_A_MINOR'
+  """C major or A minor."""
+  D_FLAT_MAJOR_B_FLAT_MINOR = 'D_FLAT_MAJOR_B_FLAT_MINOR'
+  """Db major or Bb minor."""
+  D_MAJOR_B_MINOR = 'D_MAJOR_B_MINOR'
+  """D major or B minor."""
+  E_FLAT_MAJOR_C_MINOR = 'E_FLAT_MAJOR_C_MINOR'
+  """Eb major or C minor"""
+  E_MAJOR_D_FLAT_MINOR = 'E_MAJOR_D_FLAT_MINOR'
+  """E major or Db minor."""
+  F_MAJOR_D_MINOR = 'F_MAJOR_D_MINOR'
+  """F major or D minor."""
+  G_FLAT_MAJOR_E_FLAT_MINOR = 'G_FLAT_MAJOR_E_FLAT_MINOR'
+  """Gb major or Eb minor."""
+  G_MAJOR_E_MINOR = 'G_MAJOR_E_MINOR'
+  """G major or E minor."""
+  A_FLAT_MAJOR_F_MINOR = 'A_FLAT_MAJOR_F_MINOR'
+  """Ab major or F minor."""
+  A_MAJOR_G_FLAT_MINOR = 'A_MAJOR_G_FLAT_MINOR'
+  """A major or Gb minor."""
+  B_FLAT_MAJOR_G_MINOR = 'B_FLAT_MAJOR_G_MINOR'
+  """Bb major or G minor."""
+  B_MAJOR_A_FLAT_MINOR = 'B_MAJOR_A_FLAT_MINOR'
+  """B major or Ab minor."""
+
+
+class MusicGenerationMode(_common.CaseInSensitiveEnum):
+  """The mode of music generation."""
+
+  MUSIC_GENERATION_MODE_UNSPECIFIED = 'MUSIC_GENERATION_MODE_UNSPECIFIED'
+  """This value is unused."""
+  QUALITY = 'QUALITY'
+  """Steer text prompts to regions of latent space with higher quality
+      music."""
+  DIVERSITY = 'DIVERSITY'
+  """Steer text prompts to regions of latent space with a larger diversity
+      of music."""
+
+
+class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
+  """The playback control signal to apply to the music generation."""
+
+  PLAYBACK_CONTROL_UNSPECIFIED = 'PLAYBACK_CONTROL_UNSPECIFIED'
+  """This value is unused."""
+  PLAY = 'PLAY'
+  """Start generating the music."""
+  PAUSE = 'PAUSE'
+  """Hold the music generation. Use PLAY to resume from the current position."""
+  STOP = 'STOP'
+  """Stop the music generation and reset the context (prompts retained).
+      Use PLAY to restart the music generation."""
+  RESET_CONTEXT = 'RESET_CONTEXT'
+  """Reset the context of the music generation without stopping it.
+      Retains the current prompts and config."""
+
+
+class VideoMetadata(_common.BaseModel):
+  """Describes how the video in the Part should be used by the model."""
+
+  fps: Optional[float] = Field(
+      default=None,
+      description="""The frame rate of the video sent to the model. If not specified, the
+        default value will be 1.0. The fps range is (0.0, 24.0].""",
+  )
+  end_offset: Optional[str] = Field(
+      default=None, description="""Optional. The end offset of the video."""
+  )
+  start_offset: Optional[str] = Field(
+      default=None, description="""Optional. The start offset of the video."""
+  )
+
+
+class VideoMetadataDict(TypedDict, total=False):
+  """Describes how the video in the Part should be used by the model."""
+
+  fps: Optional[float]
+  """The frame rate of the video sent to the model. If not specified, the
+        default value will be 1.0. The fps range is (0.0, 24.0]."""
+
+  end_offset: Optional[str]
+  """Optional. The end offset of the video."""
+
+  start_offset: Optional[str]
+  """Optional. The start offset of the video."""
+
+
+VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
 
 
 class Blob(_common.BaseModel):
@@ -435,30 +697,6 @@ class BlobDict(TypedDict, total=False):
 
 
 BlobOrDict = Union[Blob, BlobDict]
-
-
-class VideoMetadata(_common.BaseModel):
-  """Metadata describes the input video content."""
-
-  end_offset: Optional[str] = Field(
-      default=None, description="""Optional. The end offset of the video."""
-  )
-  start_offset: Optional[str] = Field(
-      default=None, description="""Optional. The start offset of the video."""
-  )
-
-
-class VideoMetadataDict(TypedDict, total=False):
-  """Metadata describes the input video content."""
-
-  end_offset: Optional[str]
-  """Optional. The end offset of the video."""
-
-  start_offset: Optional[str]
-  """Optional. The start offset of the video."""
-
-
-VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
 
 
 class CodeExecutionResult(_common.BaseModel):
@@ -588,10 +826,17 @@ FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
 class FunctionResponse(_common.BaseModel):
   """A function response."""
 
+  will_continue: Optional[bool] = Field(
+      default=None,
+      description="""Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished.""",
+  )
+  scheduling: Optional[FunctionResponseScheduling] = Field(
+      default=None,
+      description="""Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.""",
+  )
   id: Optional[str] = Field(
       default=None,
-      description="""The id of the function call this response is for. Populated by the client
-   to match the corresponding function call `id`.""",
+      description="""Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`.""",
   )
   name: Optional[str] = Field(
       default=None,
@@ -606,9 +851,14 @@ class FunctionResponse(_common.BaseModel):
 class FunctionResponseDict(TypedDict, total=False):
   """A function response."""
 
+  will_continue: Optional[bool]
+  """Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished."""
+
+  scheduling: Optional[FunctionResponseScheduling]
+  """Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE."""
+
   id: Optional[str]
-  """The id of the function call this response is for. Populated by the client
-   to match the corresponding function call `id`."""
+  """Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`."""
 
   name: Optional[str]
   """Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name]."""
@@ -951,601 +1201,6 @@ class SafetySettingDict(TypedDict, total=False):
 
 
 SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
-
-
-class GoogleSearch(_common.BaseModel):
-  """Tool to support Google Search in Model. Powered by Google."""
-
-  pass
-
-
-class GoogleSearchDict(TypedDict, total=False):
-  """Tool to support Google Search in Model. Powered by Google."""
-
-  pass
-
-
-GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
-
-
-class DynamicRetrievalConfig(_common.BaseModel):
-  """Describes the options to customize dynamic retrieval."""
-
-  mode: Optional[DynamicRetrievalConfigMode] = Field(
-      default=None,
-      description="""The mode of the predictor to be used in dynamic retrieval.""",
-  )
-  dynamic_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used.""",
-  )
-
-
-class DynamicRetrievalConfigDict(TypedDict, total=False):
-  """Describes the options to customize dynamic retrieval."""
-
-  mode: Optional[DynamicRetrievalConfigMode]
-  """The mode of the predictor to be used in dynamic retrieval."""
-
-  dynamic_threshold: Optional[float]
-  """Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used."""
-
-
-DynamicRetrievalConfigOrDict = Union[
-    DynamicRetrievalConfig, DynamicRetrievalConfigDict
-]
-
-
-class GoogleSearchRetrieval(_common.BaseModel):
-  """Tool to retrieve public web data for grounding, powered by Google."""
-
-  dynamic_retrieval_config: Optional[DynamicRetrievalConfig] = Field(
-      default=None,
-      description="""Specifies the dynamic retrieval configuration for the given source.""",
-  )
-
-
-class GoogleSearchRetrievalDict(TypedDict, total=False):
-  """Tool to retrieve public web data for grounding, powered by Google."""
-
-  dynamic_retrieval_config: Optional[DynamicRetrievalConfigDict]
-  """Specifies the dynamic retrieval configuration for the given source."""
-
-
-GoogleSearchRetrievalOrDict = Union[
-    GoogleSearchRetrieval, GoogleSearchRetrievalDict
-]
-
-
-class EnterpriseWebSearch(_common.BaseModel):
-  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
-
-  pass
-
-
-class EnterpriseWebSearchDict(TypedDict, total=False):
-  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
-
-  pass
-
-
-EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
-
-
-class ApiKeyConfig(_common.BaseModel):
-  """Config for authentication with API key."""
-
-  api_key_string: Optional[str] = Field(
-      default=None,
-      description="""The API key to be used in the request directly.""",
-  )
-
-
-class ApiKeyConfigDict(TypedDict, total=False):
-  """Config for authentication with API key."""
-
-  api_key_string: Optional[str]
-  """The API key to be used in the request directly."""
-
-
-ApiKeyConfigOrDict = Union[ApiKeyConfig, ApiKeyConfigDict]
-
-
-class AuthConfigGoogleServiceAccountConfig(_common.BaseModel):
-  """Config for Google Service Account Authentication."""
-
-  service_account: Optional[str] = Field(
-      default=None,
-      description="""Optional. The service account that the extension execution service runs as. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified service account. - If not specified, the Vertex AI Extension Service Agent will be used to execute the Extension.""",
-  )
-
-
-class AuthConfigGoogleServiceAccountConfigDict(TypedDict, total=False):
-  """Config for Google Service Account Authentication."""
-
-  service_account: Optional[str]
-  """Optional. The service account that the extension execution service runs as. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified service account. - If not specified, the Vertex AI Extension Service Agent will be used to execute the Extension."""
-
-
-AuthConfigGoogleServiceAccountConfigOrDict = Union[
-    AuthConfigGoogleServiceAccountConfig,
-    AuthConfigGoogleServiceAccountConfigDict,
-]
-
-
-class AuthConfigHttpBasicAuthConfig(_common.BaseModel):
-  """Config for HTTP Basic Authentication."""
-
-  credential_secret: Optional[str] = Field(
-      default=None,
-      description="""Required. The name of the SecretManager secret version resource storing the base64 encoded credentials. Format: `projects/{project}/secrets/{secrete}/versions/{version}` - If specified, the `secretmanager.versions.access` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified resource.""",
-  )
-
-
-class AuthConfigHttpBasicAuthConfigDict(TypedDict, total=False):
-  """Config for HTTP Basic Authentication."""
-
-  credential_secret: Optional[str]
-  """Required. The name of the SecretManager secret version resource storing the base64 encoded credentials. Format: `projects/{project}/secrets/{secrete}/versions/{version}` - If specified, the `secretmanager.versions.access` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified resource."""
-
-
-AuthConfigHttpBasicAuthConfigOrDict = Union[
-    AuthConfigHttpBasicAuthConfig, AuthConfigHttpBasicAuthConfigDict
-]
-
-
-class AuthConfigOauthConfig(_common.BaseModel):
-  """Config for user oauth."""
-
-  access_token: Optional[str] = Field(
-      default=None,
-      description="""Access token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time.""",
-  )
-  service_account: Optional[str] = Field(
-      default=None,
-      description="""The service account used to generate access tokens for executing the Extension. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the provided service account.""",
-  )
-
-
-class AuthConfigOauthConfigDict(TypedDict, total=False):
-  """Config for user oauth."""
-
-  access_token: Optional[str]
-  """Access token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time."""
-
-  service_account: Optional[str]
-  """The service account used to generate access tokens for executing the Extension. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the provided service account."""
-
-
-AuthConfigOauthConfigOrDict = Union[
-    AuthConfigOauthConfig, AuthConfigOauthConfigDict
-]
-
-
-class AuthConfigOidcConfig(_common.BaseModel):
-  """Config for user OIDC auth."""
-
-  id_token: Optional[str] = Field(
-      default=None,
-      description="""OpenID Connect formatted ID token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time.""",
-  )
-  service_account: Optional[str] = Field(
-      default=None,
-      description="""The service account used to generate an OpenID Connect (OIDC)-compatible JWT token signed by the Google OIDC Provider (accounts.google.com) for extension endpoint (https://cloud.google.com/iam/docs/create-short-lived-credentials-direct#sa-credentials-oidc). - The audience for the token will be set to the URL in the server url defined in the OpenApi spec. - If the service account is provided, the service account should grant `iam.serviceAccounts.getOpenIdToken` permission to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents).""",
-  )
-
-
-class AuthConfigOidcConfigDict(TypedDict, total=False):
-  """Config for user OIDC auth."""
-
-  id_token: Optional[str]
-  """OpenID Connect formatted ID token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time."""
-
-  service_account: Optional[str]
-  """The service account used to generate an OpenID Connect (OIDC)-compatible JWT token signed by the Google OIDC Provider (accounts.google.com) for extension endpoint (https://cloud.google.com/iam/docs/create-short-lived-credentials-direct#sa-credentials-oidc). - The audience for the token will be set to the URL in the server url defined in the OpenApi spec. - If the service account is provided, the service account should grant `iam.serviceAccounts.getOpenIdToken` permission to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)."""
-
-
-AuthConfigOidcConfigOrDict = Union[
-    AuthConfigOidcConfig, AuthConfigOidcConfigDict
-]
-
-
-class AuthConfig(_common.BaseModel):
-  """Auth configuration to run the extension."""
-
-  api_key_config: Optional[ApiKeyConfig] = Field(
-      default=None, description="""Config for API key auth."""
-  )
-  auth_type: Optional[AuthType] = Field(
-      default=None, description="""Type of auth scheme."""
-  )
-  google_service_account_config: Optional[
-      AuthConfigGoogleServiceAccountConfig
-  ] = Field(
-      default=None, description="""Config for Google Service Account auth."""
-  )
-  http_basic_auth_config: Optional[AuthConfigHttpBasicAuthConfig] = Field(
-      default=None, description="""Config for HTTP Basic auth."""
-  )
-  oauth_config: Optional[AuthConfigOauthConfig] = Field(
-      default=None, description="""Config for user oauth."""
-  )
-  oidc_config: Optional[AuthConfigOidcConfig] = Field(
-      default=None, description="""Config for user OIDC auth."""
-  )
-
-
-class AuthConfigDict(TypedDict, total=False):
-  """Auth configuration to run the extension."""
-
-  api_key_config: Optional[ApiKeyConfigDict]
-  """Config for API key auth."""
-
-  auth_type: Optional[AuthType]
-  """Type of auth scheme."""
-
-  google_service_account_config: Optional[
-      AuthConfigGoogleServiceAccountConfigDict
-  ]
-  """Config for Google Service Account auth."""
-
-  http_basic_auth_config: Optional[AuthConfigHttpBasicAuthConfigDict]
-  """Config for HTTP Basic auth."""
-
-  oauth_config: Optional[AuthConfigOauthConfigDict]
-  """Config for user oauth."""
-
-  oidc_config: Optional[AuthConfigOidcConfigDict]
-  """Config for user OIDC auth."""
-
-
-AuthConfigOrDict = Union[AuthConfig, AuthConfigDict]
-
-
-class GoogleMaps(_common.BaseModel):
-  """Tool to support Google Maps in Model."""
-
-  auth_config: Optional[AuthConfig] = Field(
-      default=None,
-      description="""Optional. Auth config for the Google Maps tool.""",
-  )
-
-
-class GoogleMapsDict(TypedDict, total=False):
-  """Tool to support Google Maps in Model."""
-
-  auth_config: Optional[AuthConfigDict]
-  """Optional. Auth config for the Google Maps tool."""
-
-
-GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
-
-
-class VertexAISearch(_common.BaseModel):
-  """Retrieve from Vertex AI Search datastore or engine for grounding.
-
-  datastore and engine are mutually exclusive. See
-  https://cloud.google.com/products/agent-builder
-  """
-
-  datastore: Optional[str] = Field(
-      default=None,
-      description="""Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`""",
-  )
-  engine: Optional[str] = Field(
-      default=None,
-      description="""Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`""",
-  )
-
-
-class VertexAISearchDict(TypedDict, total=False):
-  """Retrieve from Vertex AI Search datastore or engine for grounding.
-
-  datastore and engine are mutually exclusive. See
-  https://cloud.google.com/products/agent-builder
-  """
-
-  datastore: Optional[str]
-  """Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`"""
-
-  engine: Optional[str]
-  """Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`"""
-
-
-VertexAISearchOrDict = Union[VertexAISearch, VertexAISearchDict]
-
-
-class VertexRagStoreRagResource(_common.BaseModel):
-  """The definition of the Rag resource."""
-
-  rag_corpus: Optional[str] = Field(
-      default=None,
-      description="""Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`""",
-  )
-  rag_file_ids: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field.""",
-  )
-
-
-class VertexRagStoreRagResourceDict(TypedDict, total=False):
-  """The definition of the Rag resource."""
-
-  rag_corpus: Optional[str]
-  """Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`"""
-
-  rag_file_ids: Optional[list[str]]
-  """Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field."""
-
-
-VertexRagStoreRagResourceOrDict = Union[
-    VertexRagStoreRagResource, VertexRagStoreRagResourceDict
-]
-
-
-class RagRetrievalConfigFilter(_common.BaseModel):
-  """Config for filters."""
-
-  metadata_filter: Optional[str] = Field(
-      default=None, description="""Optional. String for metadata filtering."""
-  )
-  vector_distance_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. Only returns contexts with vector distance smaller than the threshold.""",
-  )
-  vector_similarity_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. Only returns contexts with vector similarity larger than the threshold.""",
-  )
-
-
-class RagRetrievalConfigFilterDict(TypedDict, total=False):
-  """Config for filters."""
-
-  metadata_filter: Optional[str]
-  """Optional. String for metadata filtering."""
-
-  vector_distance_threshold: Optional[float]
-  """Optional. Only returns contexts with vector distance smaller than the threshold."""
-
-  vector_similarity_threshold: Optional[float]
-  """Optional. Only returns contexts with vector similarity larger than the threshold."""
-
-
-RagRetrievalConfigFilterOrDict = Union[
-    RagRetrievalConfigFilter, RagRetrievalConfigFilterDict
-]
-
-
-class RagRetrievalConfigHybridSearch(_common.BaseModel):
-  """Config for Hybrid Search."""
-
-  alpha: Optional[float] = Field(
-      default=None,
-      description="""Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally.""",
-  )
-
-
-class RagRetrievalConfigHybridSearchDict(TypedDict, total=False):
-  """Config for Hybrid Search."""
-
-  alpha: Optional[float]
-  """Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally."""
-
-
-RagRetrievalConfigHybridSearchOrDict = Union[
-    RagRetrievalConfigHybridSearch, RagRetrievalConfigHybridSearchDict
-]
-
-
-class RagRetrievalConfigRankingLlmRanker(_common.BaseModel):
-  """Config for LlmRanker."""
-
-  model_name: Optional[str] = Field(
-      default=None,
-      description="""Optional. The model name used for ranking. Format: `gemini-1.5-pro`""",
-  )
-
-
-class RagRetrievalConfigRankingLlmRankerDict(TypedDict, total=False):
-  """Config for LlmRanker."""
-
-  model_name: Optional[str]
-  """Optional. The model name used for ranking. Format: `gemini-1.5-pro`"""
-
-
-RagRetrievalConfigRankingLlmRankerOrDict = Union[
-    RagRetrievalConfigRankingLlmRanker, RagRetrievalConfigRankingLlmRankerDict
-]
-
-
-class RagRetrievalConfigRankingRankService(_common.BaseModel):
-  """Config for Rank Service."""
-
-  model_name: Optional[str] = Field(
-      default=None,
-      description="""Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`""",
-  )
-
-
-class RagRetrievalConfigRankingRankServiceDict(TypedDict, total=False):
-  """Config for Rank Service."""
-
-  model_name: Optional[str]
-  """Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`"""
-
-
-RagRetrievalConfigRankingRankServiceOrDict = Union[
-    RagRetrievalConfigRankingRankService,
-    RagRetrievalConfigRankingRankServiceDict,
-]
-
-
-class RagRetrievalConfigRanking(_common.BaseModel):
-  """Config for ranking and reranking."""
-
-  llm_ranker: Optional[RagRetrievalConfigRankingLlmRanker] = Field(
-      default=None, description="""Optional. Config for LlmRanker."""
-  )
-  rank_service: Optional[RagRetrievalConfigRankingRankService] = Field(
-      default=None, description="""Optional. Config for Rank Service."""
-  )
-
-
-class RagRetrievalConfigRankingDict(TypedDict, total=False):
-  """Config for ranking and reranking."""
-
-  llm_ranker: Optional[RagRetrievalConfigRankingLlmRankerDict]
-  """Optional. Config for LlmRanker."""
-
-  rank_service: Optional[RagRetrievalConfigRankingRankServiceDict]
-  """Optional. Config for Rank Service."""
-
-
-RagRetrievalConfigRankingOrDict = Union[
-    RagRetrievalConfigRanking, RagRetrievalConfigRankingDict
-]
-
-
-class RagRetrievalConfig(_common.BaseModel):
-  """Specifies the context retrieval config."""
-
-  filter: Optional[RagRetrievalConfigFilter] = Field(
-      default=None, description="""Optional. Config for filters."""
-  )
-  hybrid_search: Optional[RagRetrievalConfigHybridSearch] = Field(
-      default=None, description="""Optional. Config for Hybrid Search."""
-  )
-  ranking: Optional[RagRetrievalConfigRanking] = Field(
-      default=None,
-      description="""Optional. Config for ranking and reranking.""",
-  )
-  top_k: Optional[int] = Field(
-      default=None,
-      description="""Optional. The number of contexts to retrieve.""",
-  )
-
-
-class RagRetrievalConfigDict(TypedDict, total=False):
-  """Specifies the context retrieval config."""
-
-  filter: Optional[RagRetrievalConfigFilterDict]
-  """Optional. Config for filters."""
-
-  hybrid_search: Optional[RagRetrievalConfigHybridSearchDict]
-  """Optional. Config for Hybrid Search."""
-
-  ranking: Optional[RagRetrievalConfigRankingDict]
-  """Optional. Config for ranking and reranking."""
-
-  top_k: Optional[int]
-  """Optional. The number of contexts to retrieve."""
-
-
-RagRetrievalConfigOrDict = Union[RagRetrievalConfig, RagRetrievalConfigDict]
-
-
-class VertexRagStore(_common.BaseModel):
-  """Retrieve from Vertex RAG Store for grounding."""
-
-  rag_corpora: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Deprecated. Please use rag_resources instead.""",
-  )
-  rag_resources: Optional[list[VertexRagStoreRagResource]] = Field(
-      default=None,
-      description="""Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support.""",
-  )
-  rag_retrieval_config: Optional[RagRetrievalConfig] = Field(
-      default=None,
-      description="""Optional. The retrieval config for the Rag query.""",
-  )
-  similarity_top_k: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of top k results to return from the selected corpora.""",
-  )
-  vector_distance_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. Only return results with vector distance smaller than the threshold.""",
-  )
-
-
-class VertexRagStoreDict(TypedDict, total=False):
-  """Retrieve from Vertex RAG Store for grounding."""
-
-  rag_corpora: Optional[list[str]]
-  """Optional. Deprecated. Please use rag_resources instead."""
-
-  rag_resources: Optional[list[VertexRagStoreRagResourceDict]]
-  """Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support."""
-
-  rag_retrieval_config: Optional[RagRetrievalConfigDict]
-  """Optional. The retrieval config for the Rag query."""
-
-  similarity_top_k: Optional[int]
-  """Optional. Number of top k results to return from the selected corpora."""
-
-  vector_distance_threshold: Optional[float]
-  """Optional. Only return results with vector distance smaller than the threshold."""
-
-
-VertexRagStoreOrDict = Union[VertexRagStore, VertexRagStoreDict]
-
-
-class Retrieval(_common.BaseModel):
-  """Defines a retrieval tool that model can call to access external knowledge."""
-
-  disable_attribution: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Deprecated. This option is no longer supported.""",
-  )
-  vertex_ai_search: Optional[VertexAISearch] = Field(
-      default=None,
-      description="""Set to use data source powered by Vertex AI Search.""",
-  )
-  vertex_rag_store: Optional[VertexRagStore] = Field(
-      default=None,
-      description="""Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService.""",
-  )
-
-
-class RetrievalDict(TypedDict, total=False):
-  """Defines a retrieval tool that model can call to access external knowledge."""
-
-  disable_attribution: Optional[bool]
-  """Optional. Deprecated. This option is no longer supported."""
-
-  vertex_ai_search: Optional[VertexAISearchDict]
-  """Set to use data source powered by Vertex AI Search."""
-
-  vertex_rag_store: Optional[VertexRagStoreDict]
-  """Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService."""
-
-
-RetrievalOrDict = Union[Retrieval, RetrievalDict]
-
-
-class ToolCodeExecution(_common.BaseModel):
-  """Tool that executes code generated by the model, and automatically returns the result to the model.
-
-  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
-  to this tool.
-  """
-
-  pass
-
-
-class ToolCodeExecutionDict(TypedDict, total=False):
-  """Tool that executes code generated by the model, and automatically returns the result to the model.
-
-  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
-  to this tool.
-  """
-
-  pass
-
-
-ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
 
 
 class JSONSchemaType(Enum):
@@ -2195,13 +1850,15 @@ SchemaOrDict = Union[Schema, SchemaDict]
 
 
 class FunctionDeclaration(_common.BaseModel):
-  """Structured representation of a function declaration as defined by the [OpenAPI 3.0 specification](https://spec.openapis.org/oas/v3.0.3).
+  """Defines a function that the model can generate JSON inputs for.
 
-  Included in this declaration are the function name, description, parameters
-  and response type. This FunctionDeclaration is a representation of a block of
-  code that can be used as a `Tool` by the model and executed by the client.
+  The inputs are based on `OpenAPI 3.0 specifications
+  <https://spec.openapis.org/oas/v3.0.3>`_.
   """
 
+  behavior: Optional[Behavior] = Field(
+      default=None, description="""Defines the function behavior."""
+  )
   description: Optional[str] = Field(
       default=None,
       description="""Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function.""",
@@ -2225,6 +1882,7 @@ class FunctionDeclaration(_common.BaseModel):
       *,
       callable: Callable[..., Any],
       api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
+      behavior: Optional[Behavior] = None,
   ) -> 'FunctionDeclaration':
     """Converts a Callable to a FunctionDeclaration based on the API option.
 
@@ -2253,7 +1911,10 @@ class FunctionDeclaration(_common.BaseModel):
         parameters_properties[name] = schema
     declaration = FunctionDeclaration(
         name=callable.__name__,
-        description=callable.__doc__,
+        description=inspect.cleandoc(callable.__doc__)
+        if callable.__doc__
+        else callable.__doc__,
+        behavior=behavior,
     )
     if parameters_properties:
       declaration.parameters = Schema(
@@ -2291,25 +1952,28 @@ class FunctionDeclaration(_common.BaseModel):
       *,
       client: 'BaseApiClient',
       callable: Callable[..., Any],
+      behavior: Optional[Behavior] = None,
   ) -> 'FunctionDeclaration':
     """Converts a Callable to a FunctionDeclaration based on the client."""
     if client.vertexai:
       return cls.from_callable_with_api_option(
-          callable=callable, api_option='VERTEX_AI'
+          callable=callable, api_option='VERTEX_AI', behavior=behavior
       )
     else:
       return cls.from_callable_with_api_option(
-          callable=callable, api_option='GEMINI_API'
+          callable=callable, api_option='GEMINI_API', behavior=behavior
       )
 
 
 class FunctionDeclarationDict(TypedDict, total=False):
-  """Structured representation of a function declaration as defined by the [OpenAPI 3.0 specification](https://spec.openapis.org/oas/v3.0.3).
+  """Defines a function that the model can generate JSON inputs for.
 
-  Included in this declaration are the function name, description, parameters
-  and response type. This FunctionDeclaration is a representation of a block of
-  code that can be used as a `Tool` by the model and executed by the client.
+  The inputs are based on `OpenAPI 3.0 specifications
+  <https://spec.openapis.org/oas/v3.0.3>`_.
   """
+
+  behavior: Optional[Behavior]
+  """Defines the function behavior."""
 
   description: Optional[str]
   """Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function."""
@@ -2327,9 +1991,667 @@ class FunctionDeclarationDict(TypedDict, total=False):
 FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
 
 
+class Interval(_common.BaseModel):
+  """Represents a time interval, encoded as a start time (inclusive) and an end time (exclusive).
+
+  The start time must be less than or equal to the end time.
+  When the start equals the end time, the interval is an empty interval.
+  (matches no time)
+  When both start and end are unspecified, the interval matches any time.
+  """
+
+  start_time: Optional[datetime.datetime] = Field(
+      default=None, description="""The start time of the interval."""
+  )
+  end_time: Optional[datetime.datetime] = Field(
+      default=None, description="""The end time of the interval."""
+  )
+
+
+class IntervalDict(TypedDict, total=False):
+  """Represents a time interval, encoded as a start time (inclusive) and an end time (exclusive).
+
+  The start time must be less than or equal to the end time.
+  When the start equals the end time, the interval is an empty interval.
+  (matches no time)
+  When both start and end are unspecified, the interval matches any time.
+  """
+
+  start_time: Optional[datetime.datetime]
+  """The start time of the interval."""
+
+  end_time: Optional[datetime.datetime]
+  """The end time of the interval."""
+
+
+IntervalOrDict = Union[Interval, IntervalDict]
+
+
+class GoogleSearch(_common.BaseModel):
+  """Tool to support Google Search in Model. Powered by Google."""
+
+  time_range_filter: Optional[Interval] = Field(
+      default=None,
+      description="""Optional. Filter search results to a specific time range.
+      If customers set a start time, they must set an end time (and vice versa).
+      """,
+  )
+
+
+class GoogleSearchDict(TypedDict, total=False):
+  """Tool to support Google Search in Model. Powered by Google."""
+
+  time_range_filter: Optional[IntervalDict]
+  """Optional. Filter search results to a specific time range.
+      If customers set a start time, they must set an end time (and vice versa).
+      """
+
+
+GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
+
+
+class DynamicRetrievalConfig(_common.BaseModel):
+  """Describes the options to customize dynamic retrieval."""
+
+  mode: Optional[DynamicRetrievalConfigMode] = Field(
+      default=None,
+      description="""The mode of the predictor to be used in dynamic retrieval.""",
+  )
+  dynamic_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used.""",
+  )
+
+
+class DynamicRetrievalConfigDict(TypedDict, total=False):
+  """Describes the options to customize dynamic retrieval."""
+
+  mode: Optional[DynamicRetrievalConfigMode]
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  dynamic_threshold: Optional[float]
+  """Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used."""
+
+
+DynamicRetrievalConfigOrDict = Union[
+    DynamicRetrievalConfig, DynamicRetrievalConfigDict
+]
+
+
+class GoogleSearchRetrieval(_common.BaseModel):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfig] = Field(
+      default=None,
+      description="""Specifies the dynamic retrieval configuration for the given source.""",
+  )
+
+
+class GoogleSearchRetrievalDict(TypedDict, total=False):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfigDict]
+  """Specifies the dynamic retrieval configuration for the given source."""
+
+
+GoogleSearchRetrievalOrDict = Union[
+    GoogleSearchRetrieval, GoogleSearchRetrievalDict
+]
+
+
+class EnterpriseWebSearch(_common.BaseModel):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
+
+  pass
+
+
+class EnterpriseWebSearchDict(TypedDict, total=False):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
+
+  pass
+
+
+EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
+
+
+class ApiKeyConfig(_common.BaseModel):
+  """Config for authentication with API key."""
+
+  api_key_string: Optional[str] = Field(
+      default=None,
+      description="""The API key to be used in the request directly.""",
+  )
+
+
+class ApiKeyConfigDict(TypedDict, total=False):
+  """Config for authentication with API key."""
+
+  api_key_string: Optional[str]
+  """The API key to be used in the request directly."""
+
+
+ApiKeyConfigOrDict = Union[ApiKeyConfig, ApiKeyConfigDict]
+
+
+class AuthConfigGoogleServiceAccountConfig(_common.BaseModel):
+  """Config for Google Service Account Authentication."""
+
+  service_account: Optional[str] = Field(
+      default=None,
+      description="""Optional. The service account that the extension execution service runs as. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified service account. - If not specified, the Vertex AI Extension Service Agent will be used to execute the Extension.""",
+  )
+
+
+class AuthConfigGoogleServiceAccountConfigDict(TypedDict, total=False):
+  """Config for Google Service Account Authentication."""
+
+  service_account: Optional[str]
+  """Optional. The service account that the extension execution service runs as. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified service account. - If not specified, the Vertex AI Extension Service Agent will be used to execute the Extension."""
+
+
+AuthConfigGoogleServiceAccountConfigOrDict = Union[
+    AuthConfigGoogleServiceAccountConfig,
+    AuthConfigGoogleServiceAccountConfigDict,
+]
+
+
+class AuthConfigHttpBasicAuthConfig(_common.BaseModel):
+  """Config for HTTP Basic Authentication."""
+
+  credential_secret: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the SecretManager secret version resource storing the base64 encoded credentials. Format: `projects/{project}/secrets/{secrete}/versions/{version}` - If specified, the `secretmanager.versions.access` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified resource.""",
+  )
+
+
+class AuthConfigHttpBasicAuthConfigDict(TypedDict, total=False):
+  """Config for HTTP Basic Authentication."""
+
+  credential_secret: Optional[str]
+  """Required. The name of the SecretManager secret version resource storing the base64 encoded credentials. Format: `projects/{project}/secrets/{secrete}/versions/{version}` - If specified, the `secretmanager.versions.access` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified resource."""
+
+
+AuthConfigHttpBasicAuthConfigOrDict = Union[
+    AuthConfigHttpBasicAuthConfig, AuthConfigHttpBasicAuthConfigDict
+]
+
+
+class AuthConfigOauthConfig(_common.BaseModel):
+  """Config for user oauth."""
+
+  access_token: Optional[str] = Field(
+      default=None,
+      description="""Access token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time.""",
+  )
+  service_account: Optional[str] = Field(
+      default=None,
+      description="""The service account used to generate access tokens for executing the Extension. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the provided service account.""",
+  )
+
+
+class AuthConfigOauthConfigDict(TypedDict, total=False):
+  """Config for user oauth."""
+
+  access_token: Optional[str]
+  """Access token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time."""
+
+  service_account: Optional[str]
+  """The service account used to generate access tokens for executing the Extension. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the provided service account."""
+
+
+AuthConfigOauthConfigOrDict = Union[
+    AuthConfigOauthConfig, AuthConfigOauthConfigDict
+]
+
+
+class AuthConfigOidcConfig(_common.BaseModel):
+  """Config for user OIDC auth."""
+
+  id_token: Optional[str] = Field(
+      default=None,
+      description="""OpenID Connect formatted ID token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time.""",
+  )
+  service_account: Optional[str] = Field(
+      default=None,
+      description="""The service account used to generate an OpenID Connect (OIDC)-compatible JWT token signed by the Google OIDC Provider (accounts.google.com) for extension endpoint (https://cloud.google.com/iam/docs/create-short-lived-credentials-direct#sa-credentials-oidc). - The audience for the token will be set to the URL in the server url defined in the OpenApi spec. - If the service account is provided, the service account should grant `iam.serviceAccounts.getOpenIdToken` permission to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents).""",
+  )
+
+
+class AuthConfigOidcConfigDict(TypedDict, total=False):
+  """Config for user OIDC auth."""
+
+  id_token: Optional[str]
+  """OpenID Connect formatted ID token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time."""
+
+  service_account: Optional[str]
+  """The service account used to generate an OpenID Connect (OIDC)-compatible JWT token signed by the Google OIDC Provider (accounts.google.com) for extension endpoint (https://cloud.google.com/iam/docs/create-short-lived-credentials-direct#sa-credentials-oidc). - The audience for the token will be set to the URL in the server url defined in the OpenApi spec. - If the service account is provided, the service account should grant `iam.serviceAccounts.getOpenIdToken` permission to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)."""
+
+
+AuthConfigOidcConfigOrDict = Union[
+    AuthConfigOidcConfig, AuthConfigOidcConfigDict
+]
+
+
+class AuthConfig(_common.BaseModel):
+  """Auth configuration to run the extension."""
+
+  api_key_config: Optional[ApiKeyConfig] = Field(
+      default=None, description="""Config for API key auth."""
+  )
+  auth_type: Optional[AuthType] = Field(
+      default=None, description="""Type of auth scheme."""
+  )
+  google_service_account_config: Optional[
+      AuthConfigGoogleServiceAccountConfig
+  ] = Field(
+      default=None, description="""Config for Google Service Account auth."""
+  )
+  http_basic_auth_config: Optional[AuthConfigHttpBasicAuthConfig] = Field(
+      default=None, description="""Config for HTTP Basic auth."""
+  )
+  oauth_config: Optional[AuthConfigOauthConfig] = Field(
+      default=None, description="""Config for user oauth."""
+  )
+  oidc_config: Optional[AuthConfigOidcConfig] = Field(
+      default=None, description="""Config for user OIDC auth."""
+  )
+
+
+class AuthConfigDict(TypedDict, total=False):
+  """Auth configuration to run the extension."""
+
+  api_key_config: Optional[ApiKeyConfigDict]
+  """Config for API key auth."""
+
+  auth_type: Optional[AuthType]
+  """Type of auth scheme."""
+
+  google_service_account_config: Optional[
+      AuthConfigGoogleServiceAccountConfigDict
+  ]
+  """Config for Google Service Account auth."""
+
+  http_basic_auth_config: Optional[AuthConfigHttpBasicAuthConfigDict]
+  """Config for HTTP Basic auth."""
+
+  oauth_config: Optional[AuthConfigOauthConfigDict]
+  """Config for user oauth."""
+
+  oidc_config: Optional[AuthConfigOidcConfigDict]
+  """Config for user OIDC auth."""
+
+
+AuthConfigOrDict = Union[AuthConfig, AuthConfigDict]
+
+
+class GoogleMaps(_common.BaseModel):
+  """Tool to support Google Maps in Model."""
+
+  auth_config: Optional[AuthConfig] = Field(
+      default=None,
+      description="""Optional. Auth config for the Google Maps tool.""",
+  )
+
+
+class GoogleMapsDict(TypedDict, total=False):
+  """Tool to support Google Maps in Model."""
+
+  auth_config: Optional[AuthConfigDict]
+  """Optional. Auth config for the Google Maps tool."""
+
+
+GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
+
+
+class UrlContext(_common.BaseModel):
+  """Tool to support URL context retrieval."""
+
+  pass
+
+
+class UrlContextDict(TypedDict, total=False):
+  """Tool to support URL context retrieval."""
+
+  pass
+
+
+UrlContextOrDict = Union[UrlContext, UrlContextDict]
+
+
+class VertexAISearch(_common.BaseModel):
+  """Retrieve from Vertex AI Search datastore or engine for grounding.
+
+  datastore and engine are mutually exclusive. See
+  https://cloud.google.com/products/agent-builder
+  """
+
+  datastore: Optional[str] = Field(
+      default=None,
+      description="""Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`""",
+  )
+  engine: Optional[str] = Field(
+      default=None,
+      description="""Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`""",
+  )
+
+
+class VertexAISearchDict(TypedDict, total=False):
+  """Retrieve from Vertex AI Search datastore or engine for grounding.
+
+  datastore and engine are mutually exclusive. See
+  https://cloud.google.com/products/agent-builder
+  """
+
+  datastore: Optional[str]
+  """Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`"""
+
+  engine: Optional[str]
+  """Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`"""
+
+
+VertexAISearchOrDict = Union[VertexAISearch, VertexAISearchDict]
+
+
+class VertexRagStoreRagResource(_common.BaseModel):
+  """The definition of the Rag resource."""
+
+  rag_corpus: Optional[str] = Field(
+      default=None,
+      description="""Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`""",
+  )
+  rag_file_ids: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field.""",
+  )
+
+
+class VertexRagStoreRagResourceDict(TypedDict, total=False):
+  """The definition of the Rag resource."""
+
+  rag_corpus: Optional[str]
+  """Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`"""
+
+  rag_file_ids: Optional[list[str]]
+  """Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus field."""
+
+
+VertexRagStoreRagResourceOrDict = Union[
+    VertexRagStoreRagResource, VertexRagStoreRagResourceDict
+]
+
+
+class RagRetrievalConfigFilter(_common.BaseModel):
+  """Config for filters."""
+
+  metadata_filter: Optional[str] = Field(
+      default=None, description="""Optional. String for metadata filtering."""
+  )
+  vector_distance_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. Only returns contexts with vector distance smaller than the threshold.""",
+  )
+  vector_similarity_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. Only returns contexts with vector similarity larger than the threshold.""",
+  )
+
+
+class RagRetrievalConfigFilterDict(TypedDict, total=False):
+  """Config for filters."""
+
+  metadata_filter: Optional[str]
+  """Optional. String for metadata filtering."""
+
+  vector_distance_threshold: Optional[float]
+  """Optional. Only returns contexts with vector distance smaller than the threshold."""
+
+  vector_similarity_threshold: Optional[float]
+  """Optional. Only returns contexts with vector similarity larger than the threshold."""
+
+
+RagRetrievalConfigFilterOrDict = Union[
+    RagRetrievalConfigFilter, RagRetrievalConfigFilterDict
+]
+
+
+class RagRetrievalConfigHybridSearch(_common.BaseModel):
+  """Config for Hybrid Search."""
+
+  alpha: Optional[float] = Field(
+      default=None,
+      description="""Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally.""",
+  )
+
+
+class RagRetrievalConfigHybridSearchDict(TypedDict, total=False):
+  """Config for Hybrid Search."""
+
+  alpha: Optional[float]
+  """Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally."""
+
+
+RagRetrievalConfigHybridSearchOrDict = Union[
+    RagRetrievalConfigHybridSearch, RagRetrievalConfigHybridSearchDict
+]
+
+
+class RagRetrievalConfigRankingLlmRanker(_common.BaseModel):
+  """Config for LlmRanker."""
+
+  model_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The model name used for ranking. Format: `gemini-1.5-pro`""",
+  )
+
+
+class RagRetrievalConfigRankingLlmRankerDict(TypedDict, total=False):
+  """Config for LlmRanker."""
+
+  model_name: Optional[str]
+  """Optional. The model name used for ranking. Format: `gemini-1.5-pro`"""
+
+
+RagRetrievalConfigRankingLlmRankerOrDict = Union[
+    RagRetrievalConfigRankingLlmRanker, RagRetrievalConfigRankingLlmRankerDict
+]
+
+
+class RagRetrievalConfigRankingRankService(_common.BaseModel):
+  """Config for Rank Service."""
+
+  model_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`""",
+  )
+
+
+class RagRetrievalConfigRankingRankServiceDict(TypedDict, total=False):
+  """Config for Rank Service."""
+
+  model_name: Optional[str]
+  """Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`"""
+
+
+RagRetrievalConfigRankingRankServiceOrDict = Union[
+    RagRetrievalConfigRankingRankService,
+    RagRetrievalConfigRankingRankServiceDict,
+]
+
+
+class RagRetrievalConfigRanking(_common.BaseModel):
+  """Config for ranking and reranking."""
+
+  llm_ranker: Optional[RagRetrievalConfigRankingLlmRanker] = Field(
+      default=None, description="""Optional. Config for LlmRanker."""
+  )
+  rank_service: Optional[RagRetrievalConfigRankingRankService] = Field(
+      default=None, description="""Optional. Config for Rank Service."""
+  )
+
+
+class RagRetrievalConfigRankingDict(TypedDict, total=False):
+  """Config for ranking and reranking."""
+
+  llm_ranker: Optional[RagRetrievalConfigRankingLlmRankerDict]
+  """Optional. Config for LlmRanker."""
+
+  rank_service: Optional[RagRetrievalConfigRankingRankServiceDict]
+  """Optional. Config for Rank Service."""
+
+
+RagRetrievalConfigRankingOrDict = Union[
+    RagRetrievalConfigRanking, RagRetrievalConfigRankingDict
+]
+
+
+class RagRetrievalConfig(_common.BaseModel):
+  """Specifies the context retrieval config."""
+
+  filter: Optional[RagRetrievalConfigFilter] = Field(
+      default=None, description="""Optional. Config for filters."""
+  )
+  hybrid_search: Optional[RagRetrievalConfigHybridSearch] = Field(
+      default=None, description="""Optional. Config for Hybrid Search."""
+  )
+  ranking: Optional[RagRetrievalConfigRanking] = Field(
+      default=None,
+      description="""Optional. Config for ranking and reranking.""",
+  )
+  top_k: Optional[int] = Field(
+      default=None,
+      description="""Optional. The number of contexts to retrieve.""",
+  )
+
+
+class RagRetrievalConfigDict(TypedDict, total=False):
+  """Specifies the context retrieval config."""
+
+  filter: Optional[RagRetrievalConfigFilterDict]
+  """Optional. Config for filters."""
+
+  hybrid_search: Optional[RagRetrievalConfigHybridSearchDict]
+  """Optional. Config for Hybrid Search."""
+
+  ranking: Optional[RagRetrievalConfigRankingDict]
+  """Optional. Config for ranking and reranking."""
+
+  top_k: Optional[int]
+  """Optional. The number of contexts to retrieve."""
+
+
+RagRetrievalConfigOrDict = Union[RagRetrievalConfig, RagRetrievalConfigDict]
+
+
+class VertexRagStore(_common.BaseModel):
+  """Retrieve from Vertex RAG Store for grounding."""
+
+  rag_corpora: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Deprecated. Please use rag_resources instead.""",
+  )
+  rag_resources: Optional[list[VertexRagStoreRagResource]] = Field(
+      default=None,
+      description="""Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support.""",
+  )
+  rag_retrieval_config: Optional[RagRetrievalConfig] = Field(
+      default=None,
+      description="""Optional. The retrieval config for the Rag query.""",
+  )
+  similarity_top_k: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of top k results to return from the selected corpora.""",
+  )
+  vector_distance_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. Only return results with vector distance smaller than the threshold.""",
+  )
+
+
+class VertexRagStoreDict(TypedDict, total=False):
+  """Retrieve from Vertex RAG Store for grounding."""
+
+  rag_corpora: Optional[list[str]]
+  """Optional. Deprecated. Please use rag_resources instead."""
+
+  rag_resources: Optional[list[VertexRagStoreRagResourceDict]]
+  """Optional. The representation of the rag source. It can be used to specify corpus only or ragfiles. Currently only support one corpus or multiple files from one corpus. In the future we may open up multiple corpora support."""
+
+  rag_retrieval_config: Optional[RagRetrievalConfigDict]
+  """Optional. The retrieval config for the Rag query."""
+
+  similarity_top_k: Optional[int]
+  """Optional. Number of top k results to return from the selected corpora."""
+
+  vector_distance_threshold: Optional[float]
+  """Optional. Only return results with vector distance smaller than the threshold."""
+
+
+VertexRagStoreOrDict = Union[VertexRagStore, VertexRagStoreDict]
+
+
+class Retrieval(_common.BaseModel):
+  """Defines a retrieval tool that model can call to access external knowledge."""
+
+  disable_attribution: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Deprecated. This option is no longer supported.""",
+  )
+  vertex_ai_search: Optional[VertexAISearch] = Field(
+      default=None,
+      description="""Set to use data source powered by Vertex AI Search.""",
+  )
+  vertex_rag_store: Optional[VertexRagStore] = Field(
+      default=None,
+      description="""Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService.""",
+  )
+
+
+class RetrievalDict(TypedDict, total=False):
+  """Defines a retrieval tool that model can call to access external knowledge."""
+
+  disable_attribution: Optional[bool]
+  """Optional. Deprecated. This option is no longer supported."""
+
+  vertex_ai_search: Optional[VertexAISearchDict]
+  """Set to use data source powered by Vertex AI Search."""
+
+  vertex_rag_store: Optional[VertexRagStoreDict]
+  """Set to use data source powered by Vertex RAG store. User data is uploaded via the VertexRagDataService."""
+
+
+RetrievalOrDict = Union[Retrieval, RetrievalDict]
+
+
+class ToolCodeExecution(_common.BaseModel):
+  """Tool that executes code generated by the model, and automatically returns the result to the model.
+
+  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
+  to this tool.
+  """
+
+  pass
+
+
+class ToolCodeExecutionDict(TypedDict, total=False):
+  """Tool that executes code generated by the model, and automatically returns the result to the model.
+
+  See also [ExecutableCode]and [CodeExecutionResult] which are input and output
+  to this tool.
+  """
+
+  pass
+
+
+ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
+
+
 class Tool(_common.BaseModel):
   """Tool details of a tool that the model may use to generate a response."""
 
+  function_declarations: Optional[list[FunctionDeclaration]] = Field(
+      default=None,
+      description="""List of function declarations that the tool supports.""",
+  )
   retrieval: Optional[Retrieval] = Field(
       default=None,
       description="""Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation.""",
@@ -2353,18 +2675,21 @@ class Tool(_common.BaseModel):
       description="""Optional. Google Maps tool type. Specialized retrieval tool
       that is powered by Google Maps.""",
   )
+  url_context: Optional[UrlContext] = Field(
+      default=None,
+      description="""Optional. Tool to support URL context retrieval.""",
+  )
   code_execution: Optional[ToolCodeExecution] = Field(
       default=None,
       description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services.""",
-  )
-  function_declarations: Optional[list[FunctionDeclaration]] = Field(
-      default=None,
-      description="""Optional. Function tool type. One or more function declarations to be passed to the model along with the current user query. Model may decide to call a subset of these functions by populating FunctionCall in the response. User should provide a FunctionResponse for each function call in the next turn. Based on the function responses, Model will generate the final response back to the user. Maximum 128 function declarations can be provided.""",
   )
 
 
 class ToolDict(TypedDict, total=False):
   """Tool details of a tool that the model may use to generate a response."""
+
+  function_declarations: Optional[list[FunctionDeclarationDict]]
+  """List of function declarations that the tool supports."""
 
   retrieval: Optional[RetrievalDict]
   """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation."""
@@ -2384,16 +2709,25 @@ class ToolDict(TypedDict, total=False):
   """Optional. Google Maps tool type. Specialized retrieval tool
       that is powered by Google Maps."""
 
+  url_context: Optional[UrlContextDict]
+  """Optional. Tool to support URL context retrieval."""
+
   code_execution: Optional[ToolCodeExecutionDict]
   """Optional. CodeExecution tool type. Enables the model to execute code as part of generation. This field is only used by the Gemini Developer API services."""
 
-  function_declarations: Optional[list[FunctionDeclarationDict]]
-  """Optional. Function tool type. One or more function declarations to be passed to the model along with the current user query. Model may decide to call a subset of these functions by populating FunctionCall in the response. User should provide a FunctionResponse for each function call in the next turn. Based on the function responses, Model will generate the final response back to the user. Maximum 128 function declarations can be provided."""
-
 
 ToolOrDict = Union[Tool, ToolDict]
-ToolListUnion = list[Union[Tool, Callable[..., Any]]]
-ToolListUnionDict = list[Union[ToolDict, Callable[..., Any]]]
+if _is_mcp_imported:
+  ToolUnion = Union[Tool, Callable[..., Any], mcp_types.Tool, McpClientSession]
+  ToolUnionDict = Union[
+      ToolDict, Callable[..., Any], mcp_types.Tool, McpClientSession
+  ]
+else:
+  ToolUnion = Union[Tool, Callable[..., Any]]  # type: ignore[misc]
+  ToolUnionDict = Union[ToolDict, Callable[..., Any]]  # type: ignore[misc]
+
+ToolListUnion = list[ToolUnion]
+ToolListUnionDict = list[ToolUnionDict]
 
 SchemaUnion = Union[
     dict[Any, Any], type, Schema, builtin_types.GenericAlias, VersionedUnionType  # type: ignore[valid-type]
@@ -2518,9 +2852,7 @@ class PrebuiltVoiceConfig(_common.BaseModel):
   """The configuration for the prebuilt speaker to use."""
 
   voice_name: Optional[str] = Field(
-      default=None,
-      description="""The name of the prebuilt voice to use.
-      """,
+      default=None, description="""The name of the prebuilt voice to use."""
   )
 
 
@@ -2528,8 +2860,7 @@ class PrebuiltVoiceConfigDict(TypedDict, total=False):
   """The configuration for the prebuilt speaker to use."""
 
   voice_name: Optional[str]
-  """The name of the prebuilt voice to use.
-      """
+  """The name of the prebuilt voice to use."""
 
 
 PrebuiltVoiceConfigOrDict = Union[PrebuiltVoiceConfig, PrebuiltVoiceConfigDict]
@@ -2556,6 +2887,53 @@ class VoiceConfigDict(TypedDict, total=False):
 VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
 
 
+class SpeakerVoiceConfig(_common.BaseModel):
+  """The configuration for the speaker to use."""
+
+  speaker: Optional[str] = Field(
+      default=None,
+      description="""The name of the speaker to use. Should be the same as in the
+          prompt.""",
+  )
+  voice_config: Optional[VoiceConfig] = Field(
+      default=None, description="""The configuration for the voice to use."""
+  )
+
+
+class SpeakerVoiceConfigDict(TypedDict, total=False):
+  """The configuration for the speaker to use."""
+
+  speaker: Optional[str]
+  """The name of the speaker to use. Should be the same as in the
+          prompt."""
+
+  voice_config: Optional[VoiceConfigDict]
+  """The configuration for the voice to use."""
+
+
+SpeakerVoiceConfigOrDict = Union[SpeakerVoiceConfig, SpeakerVoiceConfigDict]
+
+
+class MultiSpeakerVoiceConfig(_common.BaseModel):
+  """The configuration for the multi-speaker setup."""
+
+  speaker_voice_configs: Optional[list[SpeakerVoiceConfig]] = Field(
+      default=None, description="""The configuration for the speaker to use."""
+  )
+
+
+class MultiSpeakerVoiceConfigDict(TypedDict, total=False):
+  """The configuration for the multi-speaker setup."""
+
+  speaker_voice_configs: Optional[list[SpeakerVoiceConfigDict]]
+  """The configuration for the speaker to use."""
+
+
+MultiSpeakerVoiceConfigOrDict = Union[
+    MultiSpeakerVoiceConfig, MultiSpeakerVoiceConfigDict
+]
+
+
 class SpeechConfig(_common.BaseModel):
   """The speech generation configuration."""
 
@@ -2563,6 +2941,12 @@ class SpeechConfig(_common.BaseModel):
       default=None,
       description="""The configuration for the speaker to use.
       """,
+  )
+  multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfig] = Field(
+      default=None,
+      description="""The configuration for the multi-speaker setup.
+          It is mutually exclusive with the voice_config field.
+          """,
   )
   language_code: Optional[str] = Field(
       default=None,
@@ -2578,6 +2962,11 @@ class SpeechConfigDict(TypedDict, total=False):
   voice_config: Optional[VoiceConfigDict]
   """The configuration for the speaker to use.
       """
+
+  multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfigDict]
+  """The configuration for the multi-speaker setup.
+          It is mutually exclusive with the voice_config field.
+          """
 
   language_code: Optional[str]
   """Language code (ISO 639. e.g. en-US) for the speech synthesization.
@@ -3434,6 +3823,48 @@ class CitationMetadataDict(TypedDict, total=False):
 CitationMetadataOrDict = Union[CitationMetadata, CitationMetadataDict]
 
 
+class UrlMetadata(_common.BaseModel):
+  """Context for a single url retrieval."""
+
+  retrieved_url: Optional[str] = Field(
+      default=None, description="""The URL retrieved by the tool."""
+  )
+  url_retrieval_status: Optional[UrlRetrievalStatus] = Field(
+      default=None, description="""Status of the url retrieval."""
+  )
+
+
+class UrlMetadataDict(TypedDict, total=False):
+  """Context for a single url retrieval."""
+
+  retrieved_url: Optional[str]
+  """The URL retrieved by the tool."""
+
+  url_retrieval_status: Optional[UrlRetrievalStatus]
+  """Status of the url retrieval."""
+
+
+UrlMetadataOrDict = Union[UrlMetadata, UrlMetadataDict]
+
+
+class UrlContextMetadata(_common.BaseModel):
+  """Metadata related to url context retrieval tool."""
+
+  url_metadata: Optional[list[UrlMetadata]] = Field(
+      default=None, description="""List of url context."""
+  )
+
+
+class UrlContextMetadataDict(TypedDict, total=False):
+  """Metadata related to url context retrieval tool."""
+
+  url_metadata: Optional[list[UrlMetadataDict]]
+  """List of url context."""
+
+
+UrlContextMetadataOrDict = Union[UrlContextMetadata, UrlContextMetadataDict]
+
+
 class GroundingChunkRetrievedContext(_common.BaseModel):
   """Chunk from context retrieved by the retrieval tools."""
 
@@ -3849,6 +4280,10 @@ class Candidate(_common.BaseModel):
       If empty, the model has not stopped generating the tokens.
       """,
   )
+  url_context_metadata: Optional[UrlContextMetadata] = Field(
+      default=None,
+      description="""Metadata related to url context retrieval tool.""",
+  )
   avg_logprobs: Optional[float] = Field(
       default=None,
       description="""Output only. Average log probability score of the candidate.""",
@@ -3893,6 +4328,9 @@ class CandidateDict(TypedDict, total=False):
   """The reason why the model stopped generating tokens.
       If empty, the model has not stopped generating the tokens.
       """
+
+  url_context_metadata: Optional[UrlContextMetadataDict]
+  """Metadata related to url context retrieval tool."""
 
   avg_logprobs: Optional[float]
   """Output only. Average log probability score of the candidate."""
@@ -4133,9 +4571,9 @@ class GenerateContentResponse(_common.BaseModel):
     if non_text_parts:
       logger.warning(
           'Warning: there are non-text parts in the response:'
-          f' {non_text_parts},returning concatenated {warn_property} result'
-          ' from text parts,check out the non text parts for full response'
-          ' from model.'
+          f' {non_text_parts}, returning concatenated {warn_property} result'
+          ' from text parts. Check the full candidates.content.parts accessor'
+          ' to get the full model response.'
       )
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
@@ -7987,6 +8425,18 @@ class CreateCachedContentConfig(_common.BaseModel):
       description="""Configuration for the tools to use. This config is shared for all tools.
       """,
   )
+  kms_key_name: Optional[str] = Field(
+      default=None,
+      description="""The Cloud KMS resource identifier of the customer managed
+      encryption key used to protect a resource.
+      The key needs to be in the same region as where the compute resource is
+      created. See
+      https://cloud.google.com/vertex-ai/docs/general/cmek for more
+      details. If this is set, then all created CachedContent objects
+      will be encrypted with the provided encryption key.
+      Allowed formats: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+      """,
+  )
 
 
 class CreateCachedContentConfigDict(TypedDict, total=False):
@@ -8019,6 +8469,17 @@ class CreateCachedContentConfigDict(TypedDict, total=False):
 
   tool_config: Optional[ToolConfigDict]
   """Configuration for the tools to use. This config is shared for all tools.
+      """
+
+  kms_key_name: Optional[str]
+  """The Cloud KMS resource identifier of the customer managed
+      encryption key used to protect a resource.
+      The key needs to be in the same region as where the compute resource is
+      created. See
+      https://cloud.google.com/vertex-ai/docs/general/cmek for more
+      details. If this is set, then all created CachedContent objects
+      will be encrypted with the provided encryption key.
+      Allowed formats: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
       """
 
 
@@ -10078,6 +10539,10 @@ class LiveServerContent(_common.BaseModel):
       model turn.
       """,
   )
+  url_context_metadata: Optional[UrlContextMetadata] = Field(
+      default=None,
+      description="""Metadata related to url context retrieval tool.""",
+  )
 
 
 class LiveServerContentDict(TypedDict, total=False):
@@ -10119,6 +10584,9 @@ class LiveServerContentDict(TypedDict, total=False):
       turn which means it doesn’t imply any ordering between transcription and
       model turn.
       """
+
+  url_context_metadata: Optional[UrlContextMetadataDict]
+  """Metadata related to url context retrieval tool."""
 
 
 LiveServerContentOrDict = Union[LiveServerContent, LiveServerContentDict]
@@ -10654,6 +11122,29 @@ AudioTranscriptionConfigOrDict = Union[
 ]
 
 
+class ProactivityConfig(_common.BaseModel):
+  """Config for proactivity features."""
+
+  proactive_audio: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, the model can reject responding to the last prompt. For
+        example, this allows the model to ignore out of context speech or to stay
+        silent if the user did not make a request, yet.""",
+  )
+
+
+class ProactivityConfigDict(TypedDict, total=False):
+  """Config for proactivity features."""
+
+  proactive_audio: Optional[bool]
+  """If enabled, the model can reject responding to the last prompt. For
+        example, this allows the model to ignore out of context speech or to stay
+        silent if the user did not make a request, yet."""
+
+
+ProactivityConfigOrDict = Union[ProactivityConfig, ProactivityConfigDict]
+
+
 class LiveClientSetup(_common.BaseModel):
   """Message contains configuration that will apply for the duration of the streaming session."""
 
@@ -10707,6 +11198,11 @@ class LiveClientSetup(_common.BaseModel):
       specified for the output audio.
       """,
   )
+  proactivity: Optional[ProactivityConfig] = Field(
+      default=None,
+      description="""Configures the proactivity of the model. This allows the model to respond proactively to
+    the input and to ignore irrelevant input.""",
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -10753,6 +11249,10 @@ class LiveClientSetupDict(TypedDict, total=False):
   """The transcription of the output aligns with the language code
       specified for the output audio.
       """
+
+  proactivity: Optional[ProactivityConfigDict]
+  """Configures the proactivity of the model. This allows the model to respond proactively to
+    the input and to ignore irrelevant input."""
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -11118,6 +11618,9 @@ LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
 class LiveConnectConfig(_common.BaseModel):
   """Session config for the API connection."""
 
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
   generation_config: Optional[GenerationConfig] = Field(
       default=None,
       description="""The generation configuration for the session.""",
@@ -11174,6 +11677,10 @@ class LiveConnectConfig(_common.BaseModel):
       description="""The speech generation configuration.
       """,
   )
+  enable_affective_dialog: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, the model will detect emotions and adapt its responses accordingly.""",
+  )
   system_instruction: Optional[ContentUnion] = Field(
       default=None,
       description="""The user provided system instructions for the model.
@@ -11215,10 +11722,18 @@ If included the server will send SessionResumptionUpdate messages.""",
 
       If included, server will compress context window to fit into given length.""",
   )
+  proactivity: Optional[ProactivityConfig] = Field(
+      default=None,
+      description="""Configures the proactivity of the model. This allows the model to respond proactively to
+    the input and to ignore irrelevant input.""",
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
   """Session config for the API connection."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
 
   generation_config: Optional[GenerationConfigDict]
   """The generation configuration for the session."""
@@ -11267,6 +11782,9 @@ class LiveConnectConfigDict(TypedDict, total=False):
   """The speech generation configuration.
       """
 
+  enable_affective_dialog: Optional[bool]
+  """If enabled, the model will detect emotions and adapt its responses accordingly."""
+
   system_instruction: Optional[ContentUnionDict]
   """The user provided system instructions for the model.
       Note: only text should be used in parts and content in each part will be
@@ -11301,6 +11819,10 @@ If included the server will send SessionResumptionUpdate messages."""
 
       If included, server will compress context window to fit into given length."""
 
+  proactivity: Optional[ProactivityConfigDict]
+  """Configures the proactivity of the model. This allows the model to respond proactively to
+    the input and to ignore irrelevant input."""
+
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
 
@@ -11334,4 +11856,604 @@ class LiveConnectParametersDict(TypedDict, total=False):
 
 LiveConnectParametersOrDict = Union[
     LiveConnectParameters, LiveConnectParametersDict
+]
+
+
+class LiveMusicClientSetup(_common.BaseModel):
+  """Message to be sent by the system when connecting to the API."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""The model's resource name. Format: `models/{model}`.""",
+  )
+
+
+class LiveMusicClientSetupDict(TypedDict, total=False):
+  """Message to be sent by the system when connecting to the API."""
+
+  model: Optional[str]
+  """The model's resource name. Format: `models/{model}`."""
+
+
+LiveMusicClientSetupOrDict = Union[
+    LiveMusicClientSetup, LiveMusicClientSetupDict
+]
+
+
+class WeightedPrompt(_common.BaseModel):
+  """Maps a prompt to a relative weight to steer music generation."""
+
+  text: Optional[str] = Field(default=None, description="""Text prompt.""")
+  weight: Optional[float] = Field(
+      default=None,
+      description="""Weight of the prompt. The weight is used to control the relative
+      importance of the prompt. Higher weights are more important than lower
+      weights.
+
+      Weight must not be 0. Weights of all weighted_prompts in this
+      LiveMusicClientContent message will be normalized.""",
+  )
+
+
+class WeightedPromptDict(TypedDict, total=False):
+  """Maps a prompt to a relative weight to steer music generation."""
+
+  text: Optional[str]
+  """Text prompt."""
+
+  weight: Optional[float]
+  """Weight of the prompt. The weight is used to control the relative
+      importance of the prompt. Higher weights are more important than lower
+      weights.
+
+      Weight must not be 0. Weights of all weighted_prompts in this
+      LiveMusicClientContent message will be normalized."""
+
+
+WeightedPromptOrDict = Union[WeightedPrompt, WeightedPromptDict]
+
+
+class LiveMusicClientContent(_common.BaseModel):
+  """User input to start or steer the music."""
+
+  weighted_prompts: Optional[list[WeightedPrompt]] = Field(
+      default=None, description="""Weighted prompts as the model input."""
+  )
+
+
+class LiveMusicClientContentDict(TypedDict, total=False):
+  """User input to start or steer the music."""
+
+  weighted_prompts: Optional[list[WeightedPromptDict]]
+  """Weighted prompts as the model input."""
+
+
+LiveMusicClientContentOrDict = Union[
+    LiveMusicClientContent, LiveMusicClientContentDict
+]
+
+
+class LiveMusicGenerationConfig(_common.BaseModel):
+  """Configuration for music generation."""
+
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Controls the variance in audio generation. Higher values produce
+      higher variance. Range is [0.0, 3.0].""",
+  )
+  top_k: Optional[int] = Field(
+      default=None,
+      description="""Controls how the model selects tokens for output. Samples the topK
+      tokens with the highest probabilities. Range is [1, 1000].""",
+  )
+  seed: Optional[int] = Field(
+      default=None,
+      description="""Seeds audio generation. If not set, the request uses a randomly
+      generated seed.""",
+  )
+  guidance: Optional[float] = Field(
+      default=None,
+      description="""Controls how closely the model follows prompts.
+      Higher guidance follows more closely, but will make transitions more
+      abrupt. Range is [0.0, 6.0].""",
+  )
+  bpm: Optional[int] = Field(
+      default=None, description="""Beats per minute. Range is [60, 200]."""
+  )
+  density: Optional[float] = Field(
+      default=None, description="""Density of sounds. Range is [0.0, 1.0]."""
+  )
+  brightness: Optional[float] = Field(
+      default=None,
+      description="""Brightness of the music. Range is [0.0, 1.0].""",
+  )
+  scale: Optional[Scale] = Field(
+      default=None, description="""Scale of the generated music."""
+  )
+  mute_bass: Optional[bool] = Field(
+      default=None,
+      description="""Whether the audio output should contain bass.""",
+  )
+  mute_drums: Optional[bool] = Field(
+      default=None,
+      description="""Whether the audio output should contain drums.""",
+  )
+  only_bass_and_drums: Optional[bool] = Field(
+      default=None,
+      description="""Whether the audio output should contain only bass and drums.""",
+  )
+  music_generation_mode: Optional[MusicGenerationMode] = Field(
+      default=None,
+      description="""The mode of music generation. Default mode is QUALITY.""",
+  )
+
+
+class LiveMusicGenerationConfigDict(TypedDict, total=False):
+  """Configuration for music generation."""
+
+  temperature: Optional[float]
+  """Controls the variance in audio generation. Higher values produce
+      higher variance. Range is [0.0, 3.0]."""
+
+  top_k: Optional[int]
+  """Controls how the model selects tokens for output. Samples the topK
+      tokens with the highest probabilities. Range is [1, 1000]."""
+
+  seed: Optional[int]
+  """Seeds audio generation. If not set, the request uses a randomly
+      generated seed."""
+
+  guidance: Optional[float]
+  """Controls how closely the model follows prompts.
+      Higher guidance follows more closely, but will make transitions more
+      abrupt. Range is [0.0, 6.0]."""
+
+  bpm: Optional[int]
+  """Beats per minute. Range is [60, 200]."""
+
+  density: Optional[float]
+  """Density of sounds. Range is [0.0, 1.0]."""
+
+  brightness: Optional[float]
+  """Brightness of the music. Range is [0.0, 1.0]."""
+
+  scale: Optional[Scale]
+  """Scale of the generated music."""
+
+  mute_bass: Optional[bool]
+  """Whether the audio output should contain bass."""
+
+  mute_drums: Optional[bool]
+  """Whether the audio output should contain drums."""
+
+  only_bass_and_drums: Optional[bool]
+  """Whether the audio output should contain only bass and drums."""
+
+  music_generation_mode: Optional[MusicGenerationMode]
+  """The mode of music generation. Default mode is QUALITY."""
+
+
+LiveMusicGenerationConfigOrDict = Union[
+    LiveMusicGenerationConfig, LiveMusicGenerationConfigDict
+]
+
+
+class LiveMusicClientMessage(_common.BaseModel):
+  """Messages sent by the client in the LiveMusicClientMessage call."""
+
+  setup: Optional[LiveMusicClientSetup] = Field(
+      default=None,
+      description="""Message to be sent in the first (and only in the first) `LiveMusicClientMessage`.
+      Clients should wait for a `LiveMusicSetupComplete` message before
+      sending any additional messages.""",
+  )
+  client_content: Optional[LiveMusicClientContent] = Field(
+      default=None, description="""User input to influence music generation."""
+  )
+  music_generation_config: Optional[LiveMusicGenerationConfig] = Field(
+      default=None, description="""Configuration for music generation."""
+  )
+  playback_control: Optional[LiveMusicPlaybackControl] = Field(
+      default=None,
+      description="""Playback control signal for the music generation.""",
+  )
+
+
+class LiveMusicClientMessageDict(TypedDict, total=False):
+  """Messages sent by the client in the LiveMusicClientMessage call."""
+
+  setup: Optional[LiveMusicClientSetupDict]
+  """Message to be sent in the first (and only in the first) `LiveMusicClientMessage`.
+      Clients should wait for a `LiveMusicSetupComplete` message before
+      sending any additional messages."""
+
+  client_content: Optional[LiveMusicClientContentDict]
+  """User input to influence music generation."""
+
+  music_generation_config: Optional[LiveMusicGenerationConfigDict]
+  """Configuration for music generation."""
+
+  playback_control: Optional[LiveMusicPlaybackControl]
+  """Playback control signal for the music generation."""
+
+
+LiveMusicClientMessageOrDict = Union[
+    LiveMusicClientMessage, LiveMusicClientMessageDict
+]
+
+
+class LiveMusicServerSetupComplete(_common.BaseModel):
+  """Sent in response to a `LiveMusicClientSetup` message from the client."""
+
+  pass
+
+
+class LiveMusicServerSetupCompleteDict(TypedDict, total=False):
+  """Sent in response to a `LiveMusicClientSetup` message from the client."""
+
+  pass
+
+
+LiveMusicServerSetupCompleteOrDict = Union[
+    LiveMusicServerSetupComplete, LiveMusicServerSetupCompleteDict
+]
+
+
+class LiveMusicSourceMetadata(_common.BaseModel):
+  """Prompts and config used for generating this audio chunk."""
+
+  client_content: Optional[LiveMusicClientContent] = Field(
+      default=None,
+      description="""Weighted prompts for generating this audio chunk.""",
+  )
+  music_generation_config: Optional[LiveMusicGenerationConfig] = Field(
+      default=None,
+      description="""Music generation config for generating this audio chunk.""",
+  )
+
+
+class LiveMusicSourceMetadataDict(TypedDict, total=False):
+  """Prompts and config used for generating this audio chunk."""
+
+  client_content: Optional[LiveMusicClientContentDict]
+  """Weighted prompts for generating this audio chunk."""
+
+  music_generation_config: Optional[LiveMusicGenerationConfigDict]
+  """Music generation config for generating this audio chunk."""
+
+
+LiveMusicSourceMetadataOrDict = Union[
+    LiveMusicSourceMetadata, LiveMusicSourceMetadataDict
+]
+
+
+class AudioChunk(_common.BaseModel):
+  """Representation of an audio chunk."""
+
+  data: Optional[bytes] = Field(
+      default=None, description="""Raw byets of audio data."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None, description="""MIME type of the audio chunk."""
+  )
+  source_metadata: Optional[LiveMusicSourceMetadata] = Field(
+      default=None,
+      description="""Prompts and config used for generating this audio chunk.""",
+  )
+
+
+class AudioChunkDict(TypedDict, total=False):
+  """Representation of an audio chunk."""
+
+  data: Optional[bytes]
+  """Raw byets of audio data."""
+
+  mime_type: Optional[str]
+  """MIME type of the audio chunk."""
+
+  source_metadata: Optional[LiveMusicSourceMetadataDict]
+  """Prompts and config used for generating this audio chunk."""
+
+
+AudioChunkOrDict = Union[AudioChunk, AudioChunkDict]
+
+
+class LiveMusicServerContent(_common.BaseModel):
+  """Server update generated by the model in response to client messages.
+
+  Content is generated as quickly as possible, and not in real time.
+  Clients may choose to buffer and play it out in real time.
+  """
+
+  audio_chunks: Optional[list[AudioChunk]] = Field(
+      default=None,
+      description="""The audio chunks that the model has generated.""",
+  )
+
+
+class LiveMusicServerContentDict(TypedDict, total=False):
+  """Server update generated by the model in response to client messages.
+
+  Content is generated as quickly as possible, and not in real time.
+  Clients may choose to buffer and play it out in real time.
+  """
+
+  audio_chunks: Optional[list[AudioChunkDict]]
+  """The audio chunks that the model has generated."""
+
+
+LiveMusicServerContentOrDict = Union[
+    LiveMusicServerContent, LiveMusicServerContentDict
+]
+
+
+class LiveMusicFilteredPrompt(_common.BaseModel):
+  """A prompt that was filtered with the reason."""
+
+  text: Optional[str] = Field(
+      default=None, description="""The text prompt that was filtered."""
+  )
+  filtered_reason: Optional[str] = Field(
+      default=None, description="""The reason the prompt was filtered."""
+  )
+
+
+class LiveMusicFilteredPromptDict(TypedDict, total=False):
+  """A prompt that was filtered with the reason."""
+
+  text: Optional[str]
+  """The text prompt that was filtered."""
+
+  filtered_reason: Optional[str]
+  """The reason the prompt was filtered."""
+
+
+LiveMusicFilteredPromptOrDict = Union[
+    LiveMusicFilteredPrompt, LiveMusicFilteredPromptDict
+]
+
+
+class LiveMusicServerMessage(_common.BaseModel):
+  """Response message for the LiveMusicClientMessage call."""
+
+  setup_complete: Optional[LiveMusicServerSetupComplete] = Field(
+      default=None,
+      description="""Message sent in response to a `LiveMusicClientSetup` message from the client.
+      Clients should wait for this message before sending any additional messages.""",
+  )
+  server_content: Optional[LiveMusicServerContent] = Field(
+      default=None,
+      description="""Content generated by the model in response to client messages.""",
+  )
+  filtered_prompt: Optional[LiveMusicFilteredPrompt] = Field(
+      default=None,
+      description="""A prompt that was filtered with the reason.""",
+  )
+
+
+class LiveMusicServerMessageDict(TypedDict, total=False):
+  """Response message for the LiveMusicClientMessage call."""
+
+  setup_complete: Optional[LiveMusicServerSetupCompleteDict]
+  """Message sent in response to a `LiveMusicClientSetup` message from the client.
+      Clients should wait for this message before sending any additional messages."""
+
+  server_content: Optional[LiveMusicServerContentDict]
+  """Content generated by the model in response to client messages."""
+
+  filtered_prompt: Optional[LiveMusicFilteredPromptDict]
+  """A prompt that was filtered with the reason."""
+
+
+LiveMusicServerMessageOrDict = Union[
+    LiveMusicServerMessage, LiveMusicServerMessageDict
+]
+
+
+class LiveMusicConnectParameters(_common.BaseModel):
+  """Parameters for connecting to the live API."""
+
+  model: Optional[str] = Field(
+      default=None, description="""The model's resource name."""
+  )
+
+
+class LiveMusicConnectParametersDict(TypedDict, total=False):
+  """Parameters for connecting to the live API."""
+
+  model: Optional[str]
+  """The model's resource name."""
+
+
+LiveMusicConnectParametersOrDict = Union[
+    LiveMusicConnectParameters, LiveMusicConnectParametersDict
+]
+
+
+class LiveMusicSetConfigParameters(_common.BaseModel):
+  """Parameters for setting config for the live music API."""
+
+  music_generation_config: Optional[LiveMusicGenerationConfig] = Field(
+      default=None, description="""Configuration for music generation."""
+  )
+
+
+class LiveMusicSetConfigParametersDict(TypedDict, total=False):
+  """Parameters for setting config for the live music API."""
+
+  music_generation_config: Optional[LiveMusicGenerationConfigDict]
+  """Configuration for music generation."""
+
+
+LiveMusicSetConfigParametersOrDict = Union[
+    LiveMusicSetConfigParameters, LiveMusicSetConfigParametersDict
+]
+
+
+class LiveMusicSetWeightedPromptsParameters(_common.BaseModel):
+  """Parameters for setting weighted prompts for the live music API."""
+
+  weighted_prompts: Optional[list[WeightedPrompt]] = Field(
+      default=None,
+      description="""A map of text prompts to weights to use for the generation request.""",
+  )
+
+
+class LiveMusicSetWeightedPromptsParametersDict(TypedDict, total=False):
+  """Parameters for setting weighted prompts for the live music API."""
+
+  weighted_prompts: Optional[list[WeightedPromptDict]]
+  """A map of text prompts to weights to use for the generation request."""
+
+
+LiveMusicSetWeightedPromptsParametersOrDict = Union[
+    LiveMusicSetWeightedPromptsParameters,
+    LiveMusicSetWeightedPromptsParametersDict,
+]
+
+
+class AuthToken(_common.BaseModel):
+  """Config for auth_tokens.create parameters."""
+
+  name: Optional[str] = Field(
+      default=None, description="""The name of the auth token."""
+  )
+
+
+class AuthTokenDict(TypedDict, total=False):
+  """Config for auth_tokens.create parameters."""
+
+  name: Optional[str]
+  """The name of the auth token."""
+
+
+AuthTokenOrDict = Union[AuthToken, AuthTokenDict]
+
+
+class LiveEphemeralParameters(_common.BaseModel):
+  """Config for LiveEphemeralParameters for Auth Token creation."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to configure in the ephemeral token for Live API.
+      For a list of models, see `Gemini models
+      <https://ai.google.dev/gemini-api/docs/models>`.""",
+  )
+  config: Optional[LiveConnectConfig] = Field(
+      default=None,
+      description="""Configuration specific to Live API connections created using this token.""",
+  )
+
+
+class LiveEphemeralParametersDict(TypedDict, total=False):
+  """Config for LiveEphemeralParameters for Auth Token creation."""
+
+  model: Optional[str]
+  """ID of the model to configure in the ephemeral token for Live API.
+      For a list of models, see `Gemini models
+      <https://ai.google.dev/gemini-api/docs/models>`."""
+
+  config: Optional[LiveConnectConfigDict]
+  """Configuration specific to Live API connections created using this token."""
+
+
+LiveEphemeralParametersOrDict = Union[
+    LiveEphemeralParameters, LiveEphemeralParametersDict
+]
+
+
+class CreateAuthTokenConfig(_common.BaseModel):
+  """Optional parameters."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  expire_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""An optional time after which, when using the resulting token,
+      messages in Live API sessions will be rejected. (Gemini may
+      preemptively close the session after this time.)
+
+      If not set then this defaults to 30 minutes in the future. If set, this
+      value must be less than 20 hours in the future.""",
+  )
+  new_session_expire_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""The time after which new Live API sessions using the token
+      resulting from this request will be rejected.
+
+      If not set this defaults to 60 seconds in the future. If set, this value
+      must be less than 20 hours in the future.""",
+  )
+  uses: Optional[int] = Field(
+      default=None,
+      description="""The number of times the token can be used. If this value is zero
+      then no limit is applied. Default is 1. Resuming a Live API session does
+      not count as a use.""",
+  )
+  live_ephemeral_parameters: Optional[LiveEphemeralParameters] = Field(
+      default=None,
+      description="""Configuration specific to Live API connections created using this token.""",
+  )
+  lock_additional_fields: Optional[list[str]] = Field(
+      default=None,
+      description="""Additional fields to lock in the effective LiveConnectParameters.""",
+  )
+
+
+class CreateAuthTokenConfigDict(TypedDict, total=False):
+  """Optional parameters."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  expire_time: Optional[datetime.datetime]
+  """An optional time after which, when using the resulting token,
+      messages in Live API sessions will be rejected. (Gemini may
+      preemptively close the session after this time.)
+
+      If not set then this defaults to 30 minutes in the future. If set, this
+      value must be less than 20 hours in the future."""
+
+  new_session_expire_time: Optional[datetime.datetime]
+  """The time after which new Live API sessions using the token
+      resulting from this request will be rejected.
+
+      If not set this defaults to 60 seconds in the future. If set, this value
+      must be less than 20 hours in the future."""
+
+  uses: Optional[int]
+  """The number of times the token can be used. If this value is zero
+      then no limit is applied. Default is 1. Resuming a Live API session does
+      not count as a use."""
+
+  live_ephemeral_parameters: Optional[LiveEphemeralParametersDict]
+  """Configuration specific to Live API connections created using this token."""
+
+  lock_additional_fields: Optional[list[str]]
+  """Additional fields to lock in the effective LiveConnectParameters."""
+
+
+CreateAuthTokenConfigOrDict = Union[
+    CreateAuthTokenConfig, CreateAuthTokenConfigDict
+]
+
+
+class CreateAuthTokenParameters(_common.BaseModel):
+  """Config for auth_tokens.create parameters."""
+
+  config: Optional[CreateAuthTokenConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
+
+
+class CreateAuthTokenParametersDict(TypedDict, total=False):
+  """Config for auth_tokens.create parameters."""
+
+  config: Optional[CreateAuthTokenConfigDict]
+  """Optional parameters for the request."""
+
+
+CreateAuthTokenParametersOrDict = Union[
+    CreateAuthTokenParameters, CreateAuthTokenParametersDict
 ]

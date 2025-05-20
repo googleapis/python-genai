@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 import logging
 import sys
 import typing
+
 import pydantic
 import pytest
 
@@ -120,7 +121,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'tools': [{
                     'retrieval': {
                         'vertex_ai_search': {
-                            'datastore': 'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                            'datastore': (
+                                'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                            )
                         }
                     }
                 }]
@@ -149,7 +152,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='retrieval',
         exception_if_vertex='400',
     ),
-     pytest_helper.TestTableItem(
+    pytest_helper.TestTableItem(
         name='test_vai_search_engine',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-001',
@@ -257,6 +260,42 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
             config={'tools': [{'code_execution': {}}]},
         ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_function_google_search_retrieval_with_long_lat',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=t.t_contents(None, 'what is the price of GOOG?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search_retrieval=types.GoogleSearchRetrieval(
+                            dynamic_retrieval_config=types.DynamicRetrievalConfig(
+                                mode='MODE_UNSPECIFIED'
+                            )
+                        )
+                    ),
+                ],
+                tool_config=types.ToolConfig(
+                    retrieval_config=types.RetrievalConfig(
+                        lat_lng=types.LatLngDict(
+                            latitude=37.7749, longitude=-122.4194
+                        )
+                    )
+                ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_url_context',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-04-17',
+            contents=t.t_contents(
+                None, 'what are the top headlines on https://news.google.com'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+        exception_if_vertex='not supported in Vertex AI',
     ),
 ]
 
@@ -464,7 +503,9 @@ async def test_disable_automatic_function_calling_stream_async(client):
 
 
 @pytest.mark.asyncio
-async def test_automatic_function_calling_no_function_response_stream_async(client):
+async def test_automatic_function_calling_no_function_response_stream_async(
+    client,
+):
   response = await client.aio.models.generate_content_stream(
       model='gemini-1.5-flash',
       contents='what is the weather in Boston?',
@@ -658,7 +699,7 @@ def test_automatic_function_calling_with_pydantic_model(client):
       contents='it is winter now, what is the weather in Boston?',
       config={
           'tools': [get_weather_pydantic_model],
-          'automatic_function_calling': {'ignore_call_history': True}
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
 
@@ -689,8 +730,9 @@ def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
   response = client.models.generate_content(
       model='gemini-1.5-flash',
       contents='it is winter now, what is the weather in Boston and New York?',
-      config={'tools': [get_weather_from_list_of_cities],
-              'automatic_function_calling': {'ignore_call_history': True},
+      config={
+          'tools': [get_weather_from_list_of_cities],
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
 
@@ -736,30 +778,34 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
         ),
         config={
             'tools': [get_information],
-            'automatic_function_calling': {'ignore_call_history': True}
+            'automatic_function_calling': {'ignore_call_history': True},
         },
     )
     assert 'Sundae' in response.text
     assert 'cat' in response.text
 
 
-def test_automatic_function_calling_with_parameterized_generic_union_type(client):
+def test_automatic_function_calling_with_parameterized_generic_union_type(
+    client,
+):
   def describe_cities(
       country: str,
       cities: typing.Optional[list[str]] = None,
   ) -> str:
-    "Given a country and an optional list of cities, describe the cities."
+    'Given a country and an optional list of cities, describe the cities.'
     if cities is None:
       return 'There are no cities to describe.'
     else:
-      return f'The cities in {country} are: {", ".join(cities)} and they are nice.'
+      return (
+          f'The cities in {country} are: {", ".join(cities)} and they are nice.'
+      )
 
   response = client.models.generate_content(
       model='gemini-1.5-flash',
-      contents=('Can you describe the city of San Francisco?'),
+      contents='Can you describe the city of San Francisco?',
       config={
           'tools': [describe_cities],
-          'automatic_function_calling': {'ignore_call_history': True}
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
   assert 'San Francisco' in response.text
@@ -794,7 +840,7 @@ def test_with_1_empty_tool(client):
         contents='What is the price of GOOG?.',
         config={
             'tools': [{}, get_stock_price],
-            'automatic_function_calling': {'ignore_call_history': True}
+            'automatic_function_calling': {'ignore_call_history': True},
         },
     )
 
@@ -819,7 +865,9 @@ async def test_vai_search_stream_async(client):
             'tools': [{
                 'retrieval': {
                     'vertex_ai_search': {
-                        'datastore': 'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                        'datastore': (
+                            'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                        )
                     }
                 }
             }]
@@ -835,7 +883,9 @@ async def test_vai_search_stream_async(client):
               'tools': [{
                   'retrieval': {
                       'vertex_ai_search': {
-                          'datastore': 'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                          'datastore': (
+                              'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                          )
                       }
                   }
               }]
@@ -855,7 +905,7 @@ def test_automatic_function_calling_with_coroutine_function(client):
         contents='what is the result of 1000/2?',
         config={
             'tools': [divide_integers],
-            'automatic_function_calling': {'ignore_call_history': True}
+            'automatic_function_calling': {'ignore_call_history': True},
         },
     )
 
@@ -868,13 +918,13 @@ async def test_automatic_function_calling_with_coroutine_function_async(
     return a // b
 
   response = await client.aio.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='what is the result of 1000/2?',
-        config={
-            'tools': [divide_integers],
-            'automatic_function_calling': {'ignore_call_history': True}
-        },
-    )
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config={
+          'tools': [divide_integers],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
 
   assert '500' in response.text
 
@@ -889,7 +939,7 @@ async def test_automatic_function_calling_async(client):
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True}
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
 
@@ -907,7 +957,12 @@ async def test_automatic_function_calling_async_with_exception(client):
       config={'tools': [divide_integers]},
   )
   assert response.automatic_function_calling_history
-  assert response.automatic_function_calling_history[-1].parts[0].function_response.response['error']
+  assert (
+      response.automatic_function_calling_history[-1]
+      .parts[0]
+      .function_response.response['error']
+  )
+
 
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_float_without_decimal(client):
@@ -971,7 +1026,9 @@ async def test_automatic_function_calling_async_with_async_function(client):
 
 
 @pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_async_function_stream(client):
+async def test_automatic_function_calling_async_with_async_function_stream(
+    client,
+):
   async def get_current_weather_async(city: str) -> str:
     """Returns the current weather in the city."""
 
@@ -1182,8 +1239,9 @@ def test_code_execution_tool(client):
 
   assert response.executable_code
   assert (
-      'prime' in response.code_execution_result.lower() or 
-      '5117' in response.code_execution_result)
+      'prime' in response.code_execution_result.lower()
+      or '5117' in response.code_execution_result
+  )
 
 
 def test_afc_logs_to_logger_instance(client, caplog):
