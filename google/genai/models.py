@@ -781,6 +781,13 @@ def _GenerateContentConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
   if getv(from_object, ['routing_config']) is not None:
     raise ValueError('routing_config parameter is not supported in Gemini API.')
 
@@ -2195,6 +2202,13 @@ def _GenerateContentConfig_to_vertex(
             t.t_schema(api_client, getv(from_object, ['response_schema'])),
             to_object,
         ),
+    )
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
     )
 
   if getv(from_object, ['routing_config']) is not None:
