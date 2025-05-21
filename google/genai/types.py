@@ -4584,6 +4584,28 @@ class GenerateContentResponse(_common.BaseModel):
     return self._get_text(warn_property='text')
 
   @property
+  def thoughts(self) -> Optional[str]:
+    """Returns the concatenation of all thought parts in the response."""
+    if (
+        not self.candidates
+        or not self.candidates[0].content
+        or not self.candidates[0].content.parts
+    ):
+      return None
+    if len(self.candidates) > 1:
+      logger.warning(
+          'Warning: there are multiple candidates in the response, returning'
+          ' thoughts from the first one.'
+      )
+    thoughts = [
+        part.text
+        for part in self.candidates[0].content.parts
+        if part.thought
+    ]
+    return "".join(thoughts) if thoughts else None
+
+
+  @property
   def function_calls(self) -> Optional[list[FunctionCall]]:
     """Returns the list of function calls in the response."""
     if (
