@@ -95,6 +95,7 @@ def test_1_candidate_text():
   )
 
   assert response.text == 'Hello1World1'
+  assert response.thoughts is None
 
 
 def test_all_empty_text_in_parts():
@@ -502,3 +503,20 @@ def test_code_execution_result_one_candidate():
   )
 
   assert response.code_execution_result == '"hello"'
+
+def test_no_thoughts_one_text():
+    response = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(
+                    parts=[
+                        types.Part(text='Hello1',thought=True),
+                        types.Part(text='World1'),
+                    ]
+                )
+            )
+        ]
+    )
+
+    assert response.text == 'World1'
+    assert response.thoughts == 'Hello1'
