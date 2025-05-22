@@ -1326,7 +1326,7 @@ def test_list_of_pydantic_schema_with_nested_list_class(client):
   assert isinstance(response.parsed[0].currency[0], CurrencyInfo)
 
 
-def test_response_schema_with_unsupported_type_raises(client):
+def test_response_schema_with_dict_of_pydantic_schema(client):
   class CountryInfo(BaseModel):
     population: int
     capital: str
@@ -1335,8 +1335,18 @@ def test_response_schema_with_unsupported_type_raises(client):
     official_language: str
     total_area_sq_mi: int
 
-  with pytest.raises(ValueError) as e:
-    client.models.generate_content(
+  if not client.vertexai:
+    with pytest.raises(ValueError) as e:
+      client.models.generate_content(
+          model='gemini-1.5-flash',
+          contents='Give me information for the United States, Canada, and Mexico.',
+          config=types.GenerateContentConfig(
+              response_mime_type='application/json',
+              response_schema=dict[str, CountryInfo],
+          )
+      )
+  else:
+    response = client.models.generate_content(
         model='gemini-1.5-flash',
         contents='Give me information for the United States, Canada, and Mexico.',
         config=types.GenerateContentConfig(
@@ -1344,8 +1354,20 @@ def test_response_schema_with_unsupported_type_raises(client):
             response_schema=dict[str, CountryInfo],
         )
     )
-    assert 'Unsupported schema type' in str(e)
-    assert 'GenericAlias' in str(e)
+    assert response.text
+
+
+def test_schema_with_unsupported_type_raises(client):
+  with pytest.raises(ValueError) as e:
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents='Give me information for the United States, Canada, and Mexico.',
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=types.Schema(),
+        )
+    )
+  assert 'Unsupported schema type' in str(e)
 
 
 def test_enum_schema_with_enum_mime_type(client):
@@ -1737,6 +1759,36 @@ def test_schema_from_model_schema(client):
   )
 
   response.text
+
+
+def test_schema_with_additional_properties(client):
+
+  class Foo(BaseModel):
+    bar: str
+    baz: int
+    qux: dict[str, str]
+
+  if client.vertexai:
+    response = client.models.generate_content(
+        model='gemini-2.0-flash',
+        contents='What is your name?',
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=Foo,
+        ),
+    )
+    assert response.text
+  else:
+    with pytest.raises(ValueError) as e:
+      client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='What is your name?',
+          config=types.GenerateContentConfig(
+              response_mime_type='application/json',
+              response_schema=Foo,
+          ),
+      )
+    assert 'additionalProperties is not supported in the Gemini API.' in str(e)
 
 
 def test_function(client):
