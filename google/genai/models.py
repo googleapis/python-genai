@@ -183,10 +183,10 @@ def _Schema_to_mldev(
     )
 
   if getv(from_object, ['defs']) is not None:
-    setv(to_object, ['defs'], getv(from_object, ['defs']))
+    raise ValueError('defs parameter is not supported in Gemini API.')
 
   if getv(from_object, ['ref']) is not None:
-    setv(to_object, ['ref'], getv(from_object, ['ref']))
+    raise ValueError('ref parameter is not supported in Gemini API.')
 
   if getv(from_object, ['any_of']) is not None:
     setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
