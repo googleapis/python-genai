@@ -178,10 +178,8 @@ def _Schema_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['additional_properties']) is not None:
-    setv(
-        to_object,
-        ['additionalProperties'],
-        getv(from_object, ['additional_properties']),
+    raise ValueError(
+        'additional_properties parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['defs']) is not None:
