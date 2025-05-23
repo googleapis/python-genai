@@ -2393,13 +2393,6 @@ def _LiveMusicGenerationConfig_to_mldev(
         getv(from_object, ['only_bass_and_drums']),
     )
 
-  if getv(from_object, ['music_generation_mode']) is not None:
-    setv(
-        to_object,
-        ['musicGenerationMode'],
-        getv(from_object, ['music_generation_mode']),
-    )
-
   return to_object
 
 
@@ -2442,11 +2435,6 @@ def _LiveMusicGenerationConfig_to_vertex(
   if getv(from_object, ['only_bass_and_drums']) is not None:
     raise ValueError(
         'only_bass_and_drums parameter is not supported in Vertex AI.'
-    )
-
-  if getv(from_object, ['music_generation_mode']) is not None:
-    raise ValueError(
-        'music_generation_mode parameter is not supported in Vertex AI.'
     )
 
   return to_object
@@ -3768,13 +3756,6 @@ def _LiveMusicGenerationConfig_from_mldev(
         to_object,
         ['only_bass_and_drums'],
         getv(from_object, ['onlyBassAndDrums']),
-    )
-
-  if getv(from_object, ['musicGenerationMode']) is not None:
-    setv(
-        to_object,
-        ['music_generation_mode'],
-        getv(from_object, ['musicGenerationMode']),
     )
 
   return to_object
