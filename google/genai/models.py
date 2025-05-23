@@ -123,6 +123,13 @@ def _Part_to_mldev(
         ),
     )
 
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -1543,6 +1550,13 @@ def _Part_to_vertex(
         _FileData_to_vertex(
             api_client, getv(from_object, ['file_data']), to_object
         ),
+    )
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
     )
 
   if getv(from_object, ['code_execution_result']) is not None:
@@ -3431,6 +3445,13 @@ def _Part_from_mldev(
         ),
     )
 
+  if getv(from_object, ['thoughtSignature']) is not None:
+    setv(
+        to_object,
+        ['thought_signature'],
+        getv(from_object, ['thoughtSignature']),
+    )
+
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -4126,6 +4147,13 @@ def _Part_from_vertex(
         _FileData_from_vertex(
             api_client, getv(from_object, ['fileData']), to_object
         ),
+    )
+
+  if getv(from_object, ['thoughtSignature']) is not None:
+    setv(
+        to_object,
+        ['thought_signature'],
+        getv(from_object, ['thoughtSignature']),
     )
 
   if getv(from_object, ['codeExecutionResult']) is not None:
