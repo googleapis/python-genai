@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/googleapis/python-genai/compare/v1.16.1...v1.17.0) (2025-05-22)
+
+
+### Features
+
+* Support new fields in FileData, GenerationConfig, GroundingChunkRetrievedContext, RetrievalConfig, Schema, TuningJob, VertexAISearch, ([b07c549](https://github.com/googleapis/python-genai/commit/b07c549fa0d380629e5e25956291cb0693b23c94))
+
 ## [1.16.1](https://github.com/googleapis/python-genai/compare/v1.16.0...v1.16.1) (2025-05-20)
 
 
