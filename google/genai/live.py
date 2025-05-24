@@ -944,7 +944,7 @@ class AsyncLive(_api_module.BaseModule):
 
     parameter_model = await _t_live_connect_config(self._api_client, config)
 
-    if self._api_client.api_key:
+    if self._api_client.api_key and not self._api_client.vertexai:
       api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
       if uri is None:
@@ -965,6 +965,19 @@ class AsyncLive(_api_module.BaseModule):
       setv(request_dict, ['setup', 'model'], transformed_model)
 
       request = json.dumps(request_dict)
+    elif self._api_client.api_key and self._api_client.vertexai:
+      # Headers already contains api key for express mode.
+      headers = self._api_client._http_options.headers
+      version = self._api_client._http_options.api_version
+      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+      request_dict = _common.convert_to_dict(
+          self._LiveSetup_to_vertex(
+              model=transformed_model,
+              config=parameter_model,
+          )
+      )
+      request = json.dumps(request_dict)
+      print("Request: ", request)
     else:
       if not self._api_client._credentials:
         # Get bearer token through Application Default Credentials.
