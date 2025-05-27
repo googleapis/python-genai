@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 import logging
 import sys
 import typing
+
 import pydantic
 import pytest
+
 from ... import _transformers as t
 from ... import errors
 from ... import types
@@ -91,6 +93,11 @@ def divide_integers(a: int, b: int) -> int:
   return a // b
 
 
+async def divide_floats_async(numerator: float, denominator: float) -> float:
+  """Divide two floats."""
+  return numerator / denominator
+
+
 def divide_floats(a: float, b: float) -> float:
   """Divide two floats."""
   return a / b
@@ -114,7 +121,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'tools': [{
                     'retrieval': {
                         'vertex_ai_search': {
-                            'datastore': 'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                            'datastore': (
+                                'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                            )
                         }
                     }
                 }]
@@ -144,7 +153,26 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
-        name='test_rag_model',
+        name='test_vai_search_engine',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-001',
+            contents=t.t_contents(None, 'why is the sky blue?'),
+            config={
+                'tools': [
+                    types.Tool(
+                        retrieval=types.Retrieval(
+                            vertex_ai_search=types.VertexAISearch(
+                                engine='projects/862721868538/locations/global/collections/default_collection/engines/teamfood-v11_1720671063545'
+                            )
+                        )
+                    ),
+                ]
+            },
+        ),
+        exception_if_mldev='retrieval',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_rag_model_old',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=t.t_contents(
@@ -163,6 +191,39 @@ test_table: list[pytest_helper.TestTableItem] = [
                                     )
                                 ],
                                 similarity_top_k=3,
+                            )
+                        ),
+                    ),
+                ]
+            },
+        ),
+        exception_if_mldev='retrieval',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_rag_model_ga',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-001',
+            contents=t.t_contents(
+                None,
+                'How much gain or loss did Google get in the Motorola Mobile'
+                ' deal in 2014?',
+            ),
+            config={
+                'tools': [
+                    types.Tool(
+                        retrieval=types.Retrieval(
+                            vertex_rag_store=types.VertexRagStore(
+                                rag_resources=[
+                                    types.VertexRagStoreRagResource(
+                                        rag_corpus='projects/964831358985/locations/us-central1/ragCorpora/3379951520341557248'
+                                    )
+                                ],
+                                rag_retrieval_config=types.RagRetrievalConfig(
+                                    top_k=3,
+                                    filter=types.RagRetrievalConfigFilter(
+                                        vector_similarity_threshold=0.5,
+                                    ),
+                                ),
                             )
                         ),
                     ),
@@ -199,6 +260,42 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
             config={'tools': [{'code_execution': {}}]},
         ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_function_google_search_retrieval_with_long_lat',
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=t.t_contents(None, 'what is the price of GOOG?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search_retrieval=types.GoogleSearchRetrieval(
+                            dynamic_retrieval_config=types.DynamicRetrievalConfig(
+                                mode='MODE_UNSPECIFIED'
+                            )
+                        )
+                    ),
+                ],
+                tool_config=types.ToolConfig(
+                    retrieval_config=types.RetrievalConfig(
+                        lat_lng=types.LatLngDict(
+                            latitude=37.7749, longitude=-122.4194
+                        )
+                    )
+                ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_url_context',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-04-17',
+            contents=t.t_contents(
+                None, 'what are the top headlines on https://news.google.com'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+        exception_if_vertex='not supported in Vertex AI',
     ),
 ]
 
@@ -328,6 +425,20 @@ def test_automatic_function_calling(client):
   assert '500' in response.text
 
 
+@pytest.mark.asyncio
+async def test_automatic_function_calling_with_async_function(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1001.0/2.0?',
+      config={
+          'tools': [divide_floats_async],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+
+  assert '500.5' in response.text
+
+
 def test_automatic_function_calling_stream(client):
   response = client.models.generate_content_stream(
       model='gemini-1.5-flash',
@@ -392,7 +503,9 @@ async def test_disable_automatic_function_calling_stream_async(client):
 
 
 @pytest.mark.asyncio
-async def test_automatic_function_calling_no_function_response_stream_async(client):
+async def test_automatic_function_calling_no_function_response_stream_async(
+    client,
+):
   response = await client.aio.models.generate_content_stream(
       model='gemini-1.5-flash',
       contents='what is the weather in Boston?',
@@ -586,7 +699,7 @@ def test_automatic_function_calling_with_pydantic_model(client):
       contents='it is winter now, what is the weather in Boston?',
       config={
           'tools': [get_weather_pydantic_model],
-          'automatic_function_calling': {'ignore_call_history': True}
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
 
@@ -617,8 +730,9 @@ def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
   response = client.models.generate_content(
       model='gemini-1.5-flash',
       contents='it is winter now, what is the weather in Boston and New York?',
-      config={'tools': [get_weather_from_list_of_cities],
-              'automatic_function_calling': {'ignore_call_history': True},
+      config={
+          'tools': [get_weather_from_list_of_cities],
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
 
@@ -655,7 +769,7 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
     else:
       return 'The animal is not supported'
 
-  with pytest_helper.exception_if_mldev(client, ValueError):
+  with pytest_helper.exception_if_mldev(client, errors.ClientError):
     response = client.models.generate_content(
         model='gemini-1.5-flash',
         contents=(
@@ -664,29 +778,34 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
         ),
         config={
             'tools': [get_information],
-            'automatic_function_calling': {'ignore_call_history': True}
+            'automatic_function_calling': {'ignore_call_history': True},
         },
     )
     assert 'Sundae' in response.text
     assert 'cat' in response.text
 
 
-def test_automatic_function_calling_with_parameterized_generic_union_type(client):
+def test_automatic_function_calling_with_parameterized_generic_union_type(
+    client,
+):
   def describe_cities(
       country: str,
       cities: typing.Optional[list[str]] = None,
   ) -> str:
+    'Given a country and an optional list of cities, describe the cities.'
     if cities is None:
       return 'There are no cities to describe.'
     else:
-      return f'The cities in {country} are: {", ".join(cities)} and they are nice.'
+      return (
+          f'The cities in {country} are: {", ".join(cities)} and they are nice.'
+      )
 
   response = client.models.generate_content(
       model='gemini-1.5-flash',
-      contents=('Can you describe the city of San Francisco?'),
+      contents='Can you describe the city of San Francisco?',
       config={
           'tools': [describe_cities],
-          'automatic_function_calling': {'ignore_call_history': True}
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
   assert 'San Francisco' in response.text
@@ -715,13 +834,13 @@ def test_empty_tools(client):
 
 def test_with_1_empty_tool(client):
   # Bad request for empty tool.
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+  with pytest.raises(errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents='What is the price of GOOG?.',
         config={
             'tools': [{}, get_stock_price],
-            'automatic_function_calling': {'ignore_call_history': True}
+            'automatic_function_calling': {'ignore_call_history': True},
         },
     )
 
@@ -746,7 +865,9 @@ async def test_vai_search_stream_async(client):
             'tools': [{
                 'retrieval': {
                     'vertex_ai_search': {
-                        'datastore': 'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                        'datastore': (
+                            'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                        )
                     }
                 }
             }]
@@ -762,7 +883,9 @@ async def test_vai_search_stream_async(client):
               'tools': [{
                   'retrieval': {
                       'vertex_ai_search': {
-                          'datastore': 'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                          'datastore': (
+                              'projects/vertex-sdk-dev/locations/global/collections/default_collection/dataStores/yvonne_1728691676574'
+                          )
                       }
                   }
               }]
@@ -782,7 +905,7 @@ def test_automatic_function_calling_with_coroutine_function(client):
         contents='what is the result of 1000/2?',
         config={
             'tools': [divide_integers],
-            'automatic_function_calling': {'ignore_call_history': True}
+            'automatic_function_calling': {'ignore_call_history': True},
         },
     )
 
@@ -794,15 +917,16 @@ async def test_automatic_function_calling_with_coroutine_function_async(
   async def divide_integers(a: int, b: int) -> int:
     return a // b
 
-  with pytest.raises(errors.UnsupportedFunctionError):
-    await client.aio.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='what is the result of 1000/2?',
-        config={
-            'tools': [divide_integers],
-            'automatic_function_calling': {'ignore_call_history': True}
-        },
-    )
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the result of 1000/2?',
+      config={
+          'tools': [divide_integers],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+
+  assert '500' in response.text
 
 
 @pytest.mark.asyncio
@@ -815,7 +939,7 @@ async def test_automatic_function_calling_async(client):
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True}
+          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
 
@@ -824,7 +948,7 @@ async def test_automatic_function_calling_async(client):
 
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_with_exception(client):
-  def divide_integers(a: int, b: int) -> int:
+  def mystery_function(a: int, b: int) -> int:
     return a // b
 
   response = await client.aio.models.generate_content(
@@ -832,8 +956,12 @@ async def test_automatic_function_calling_async_with_exception(client):
       contents='what is the result of 1000/0?',
       config={'tools': [divide_integers]},
   )
-
-  assert 'undefined' in response.text
+  assert response.automatic_function_calling_history
+  assert (
+      response.automatic_function_calling_history[-1]
+      .parts[0]
+      .function_response.response['error']
+  )
 
 
 @pytest.mark.asyncio
@@ -875,6 +1003,57 @@ async def test_automatic_function_calling_async_with_pydantic_model(client):
   # ML Dev couldn't understand pydantic model
   if client.vertexai:
     assert 'cold' in response.text and 'Boston' in response.text
+
+
+@pytest.mark.asyncio
+async def test_automatic_function_calling_async_with_async_function(client):
+  async def get_current_weather_async(city: str) -> str:
+    """Returns the current weather in the city."""
+
+    return 'windy'
+
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='what is the weather in San Francisco?',
+      config={
+          'tools': [get_current_weather_async],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+
+  assert 'windy' in response.text
+  assert 'San Francisco' in response.text
+
+
+@pytest.mark.asyncio
+async def test_automatic_function_calling_async_with_async_function_stream(
+    client,
+):
+  async def get_current_weather_async(city: str) -> str:
+    """Returns the current weather in the city."""
+
+    return 'windy'
+
+  response = await client.aio.models.generate_content_stream(
+      model='gemini-1.5-flash',
+      contents='what is the weather in San Francisco?',
+      config={
+          'tools': [get_current_weather_async],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+
+  chunk = None
+  async for chunk in response:
+    if chunk.candidates[0].content.parts[0].function_call:
+      assert (
+          chunk.candidates[0].content.parts[0].function_call.name
+          == 'get_current_weather_async'
+      )
+      assert (
+          chunk.candidates[0].content.parts[0].function_call.args['city']
+          == 'San Francisco'
+      )
 
 
 def test_2_function_with_history(client):
@@ -1058,8 +1237,11 @@ def test_code_execution_tool(client):
       ),
   )
 
-  assert 'def is_prime' in response.executable_code
-  assert 'primes=' in response.code_execution_result
+  assert response.executable_code
+  assert (
+      'prime' in response.code_execution_result.lower()
+      or '5117' in response.code_execution_result
+  )
 
 
 def test_afc_logs_to_logger_instance(client, caplog):

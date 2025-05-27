@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import datetime
 import enum
 import functools
 import typing
-from typing import Union
+from typing import Any, Callable, Optional, Union
 import uuid
 import warnings
 
@@ -31,7 +31,7 @@ from . import _api_client
 from . import errors
 
 
-def set_value_by_path(data, keys, value):
+def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: Any) -> None:
   """Examples:
 
   set_value_by_path({}, ['a', 'b'], v)
@@ -46,54 +46,57 @@ def set_value_by_path(data, keys, value):
   for i, key in enumerate(keys[:-1]):
     if key.endswith('[]'):
       key_name = key[:-2]
-      if key_name not in data:
+      if data is not None and key_name not in data:
         if isinstance(value, list):
           data[key_name] = [{} for _ in range(len(value))]
         else:
           raise ValueError(
               f'value {value} must be a list given an array path {key}'
           )
-      if isinstance(value, list):
+      if isinstance(value, list) and data is not None:
         for j, d in enumerate(data[key_name]):
           set_value_by_path(d, keys[i + 1 :], value[j])
       else:
-        for d in data[key_name]:
-          set_value_by_path(d, keys[i + 1 :], value)
+        if data is not None:
+          for d in data[key_name]:
+            set_value_by_path(d, keys[i + 1 :], value)
       return
     elif key.endswith('[0]'):
       key_name = key[:-3]
-      if key_name not in data:
+      if data is not None and key_name not in data:
         data[key_name] = [{}]
-      set_value_by_path(data[key_name][0], keys[i + 1 :], value)
+      if data is not None:
+        set_value_by_path(data[key_name][0], keys[i + 1 :], value)
       return
+    if data is not None:
+      data = data.setdefault(key, {})
 
-    data = data.setdefault(key, {})
-
-  existing_data = data.get(keys[-1])
-  # If there is an existing value, merge, not overwrite.
-  if existing_data is not None:
-    # Don't overwrite existing non-empty value with new empty value.
-    # This is triggered when handling tuning datasets.
-    if not value:
-      pass
-    # Don't fail when overwriting value with same value
-    elif value == existing_data:
-      pass
-    # Instead of overwriting dictionary with another dictionary, merge them.
-    # This is important for handling training and validation datasets in tuning.
-    elif isinstance(existing_data, dict) and isinstance(value, dict):
-      # Merging dictionaries. Consider deep merging in the future.
-      existing_data.update(value)
+  if data is not None:
+    existing_data = data.get(keys[-1])
+    # If there is an existing value, merge, not overwrite.
+    if existing_data is not None:
+      # Don't overwrite existing non-empty value with new empty value.
+      # This is triggered when handling tuning datasets.
+      if not value:
+        pass
+      # Don't fail when overwriting value with same value
+      elif value == existing_data:
+        pass
+      # Instead of overwriting dictionary with another dictionary, merge them.
+      # This is important for handling training and validation datasets in tuning.
+      elif isinstance(existing_data, dict) and isinstance(value, dict):
+        # Merging dictionaries. Consider deep merging in the future.
+        existing_data.update(value)
+      else:
+        raise ValueError(
+            f'Cannot set value for an existing key. Key: {keys[-1]};'
+            f' Existing value: {existing_data}; New value: {value}.'
+        )
     else:
-      raise ValueError(
-          f'Cannot set value for an existing key. Key: {keys[-1]};'
-          f' Existing value: {existing_data}; New value: {value}.'
-      )
-  else:
-    data[keys[-1]] = value
+      data[keys[-1]] = value
 
 
-def get_value_by_path(data: object, keys: list[str]):
+def get_value_by_path(data: Any, keys: list[str]) -> Any:
   """Examples:
 
   get_value_by_path({'a': {'b': v}}, ['a', 'b'])
@@ -128,7 +131,7 @@ def get_value_by_path(data: object, keys: list[str]):
   return data
 
 
-def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
+def convert_to_dict(obj: object) -> Any:
   """Recursively converts a given object to a dictionary.
 
   If the object is a Pydantic model, it uses the model's `model_dump()` method.
@@ -137,7 +140,9 @@ def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
     obj: The object to convert.
 
   Returns:
-    A dictionary representation of the object.
+    A dictionary representation of the object, a list of objects if a list is
+    passed, or the object itself if it is not a dictionary, list, or Pydantic
+    model.
   """
   if isinstance(obj, pydantic.BaseModel):
     return obj.model_dump(exclude_none=True)
@@ -150,7 +155,7 @@ def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
 
 
 def _remove_extra_fields(
-    model: pydantic.BaseModel, response: dict[str, object]
+    model: Any, response: dict[str, object]
 ) -> None:
   """Removes extra fields from the response that are not in the model.
 
@@ -225,7 +230,7 @@ class CaseInSensitiveEnum(str, enum.Enum):
   """Case insensitive enum."""
 
   @classmethod
-  def _missing_(cls, value):
+  def _missing_(cls, value: Any) -> Any:
     try:
       return cls[value.upper()]  # Try to access directly with uppercase
     except KeyError:
@@ -293,12 +298,12 @@ def encode_unserializable_types(data: dict[str, object]) -> dict[str, object]:
   return processed_data
 
 
-def experimental_warning(message: str):
+def experimental_warning(message: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
   """Experimental warning, only warns once."""
-  def decorator(func):
+  def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
     warning_done = False
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
       nonlocal warning_done
       if not warning_done:
         warning_done = True

@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='models/8533706666867163136'
         ),
         exception_if_mldev='404',
+        skip_in_api_mode='cannot be deleted for multiple times',
     ),
     pytest_helper.TestTableItem(
         name='test_delete_model_with_http_options_in_method',
@@ -44,6 +45,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_vertex=TEST_API_VERSION,
         exception_if_mldev='404',
+        skip_in_api_mode='cannot be deleted for multiple times',
     ),
     pytest_helper.TestTableItem(
         name='test_delete_tuned_model',
@@ -51,6 +53,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='tunedModels/generate-num-9598'
         ),
         exception_if_vertex='404',
+        skip_in_api_mode='cannot be deleted for multiple times',
     ),
 ]
 pytestmark = pytest_helper.setup(

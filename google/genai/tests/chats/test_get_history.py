@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
 
 
 from unittest import mock
-from ... import types
-from ... import client
-from ... import models
-from ... import chats
 
 import pytest
+
+from ... import chats
+from ... import client
+from ... import models
+from ... import types
 
 AFC_HISTORY = [
     types.Content(
@@ -40,7 +41,7 @@ AFC_HISTORY = [
 ]
 
 
-pytest_plugins = ('pytest_asyncio')
+pytest_plugins = 'pytest_asyncio'
 
 
 @pytest.fixture
@@ -56,95 +57,111 @@ def mock_api_client(vertexai=False):
 @pytest.fixture
 def mock_generate_content_invalid_content():
   with mock.patch.object(
-    models.Models, 'generate_content'
-    ) as mock_generate_content:
-      mock_generate_content.return_value = types.GenerateContentResponse(
-          candidates=[types.Candidate(content=types.Content(
-              role='model',
-              parts=[types.Part(text='')],
-          ))]
-      )
-      yield mock_generate_content
+      models.Models, 'generate_content'
+  ) as mock_generate_content:
+    mock_generate_content.return_value = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(
+                    role='model',
+                    parts=[types.Part(text='')],
+                )
+            )
+        ]
+    )
+    yield mock_generate_content
 
 
 @pytest.fixture
 def mock_generate_content_empty_content():
   with mock.patch.object(
-    models.Models, 'generate_content'
-    ) as mock_generate_content:
-      mock_generate_content.return_value = types.GenerateContentResponse(
-          candidates=[]
-      )
-      yield mock_generate_content
+      models.Models, 'generate_content'
+  ) as mock_generate_content:
+    mock_generate_content.return_value = types.GenerateContentResponse(
+        candidates=[]
+    )
+    yield mock_generate_content
 
 
 @pytest.fixture
 def mock_generate_content_stream_invalid_content():
   with mock.patch.object(
       models.Models, 'generate_content_stream'
-    ) as mock_generate_content:
-      mock_generate_content.return_value = [types.GenerateContentResponse(
-          candidates=[types.Candidate(content=types.Content(
-              role='model',
-              parts=[types.Part(text='')],
-          ))]
-      )]
-      yield mock_generate_content
+  ) as mock_generate_content:
+    mock_generate_content.return_value = [
+        types.GenerateContentResponse(
+            candidates=[
+                types.Candidate(
+                    content=types.Content(
+                        role='model',
+                        parts=[types.Part(text='')],
+                    )
+                )
+            ]
+        )
+    ]
+    yield mock_generate_content
 
 
 @pytest.fixture
 def mock_generate_content_stream_empty_content():
   with mock.patch.object(
       models.Models, 'generate_content_stream'
-    ) as mock_generate_content:
-      mock_generate_content.return_value = [types.GenerateContentResponse(
-          candidates=[]
-      )]
-      yield mock_generate_content
+  ) as mock_generate_content:
+    mock_generate_content.return_value = [
+        types.GenerateContentResponse(candidates=[])
+    ]
+    yield mock_generate_content
 
 
 @pytest.fixture
 def mock_generate_content_afc_history():
   with mock.patch.object(
-    models.Models, 'generate_content'
-    ) as mock_generate_content:
-      mock_generate_content.return_value = types.GenerateContentResponse(
-          candidates=[types.Candidate(content=types.Content(
-              role='model',
-              parts=[types.Part.from_text(text='afc output')],
-          ))],
-          automatic_function_calling_history=AFC_HISTORY,
-      )
-      yield mock_generate_content
+      models.Models, 'generate_content'
+  ) as mock_generate_content:
+    mock_generate_content.return_value = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(
+                    role='model',
+                    parts=[types.Part.from_text(text='afc output')],
+                )
+            )
+        ],
+        automatic_function_calling_history=AFC_HISTORY,
+    )
+    yield mock_generate_content
 
 
 @pytest.fixture
 def mock_generate_content_stream_afc_history():
   with mock.patch.object(
-    models.Models, 'generate_content_stream'
-    ) as mock_generate_content:
-      mock_generate_content.return_value = [types.GenerateContentResponse(
-          candidates=[types.Candidate(content=types.Content(
-              role='model',
-              parts=[types.Part.from_text(text='afc output')],
-          ),
-          finish_reason=types.FinishReason.STOP
-          )],
-          automatic_function_calling_history=AFC_HISTORY,
-      )]
-      yield mock_generate_content
+      models.Models, 'generate_content_stream'
+  ) as mock_generate_content:
+    mock_generate_content.return_value = [
+        types.GenerateContentResponse(
+            candidates=[
+                types.Candidate(
+                    content=types.Content(
+                        role='model',
+                        parts=[types.Part.from_text(text='afc output')],
+                    ),
+                    finish_reason=types.FinishReason.STOP,
+                )
+            ],
+            automatic_function_calling_history=AFC_HISTORY,
+        )
+    ]
+    yield mock_generate_content
 
 
 def test_history_start_with_model_content():
   history = [
       types.Content(
           role='model',
-          parts=[types.Part.from_text(text='Hello there! how can I help you?')]
+          parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
-      types.Content(
-          role='user',
-          parts=[types.Part.from_text(text='Hello')]
-      ),
+      types.Content(role='user', parts=[types.Part.from_text(text='Hello')]),
   ]
 
   models_module = models.Models(mock_api_client)
@@ -157,13 +174,10 @@ def test_history_start_with_model_content():
 
 def test_unrecognized_role_in_history():
   history = [
-      types.Content(
-          role='user',
-          parts=[types.Part.from_text(text='Hello')]
-      ),
+      types.Content(role='user', parts=[types.Part.from_text(text='Hello')]),
       types.Content(
           role='invalid_role',
-          parts=[types.Part.from_text(text='Hello there! how can I help you?')]
+          parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
   ]
 
@@ -177,7 +191,9 @@ def test_unrecognized_role_in_history():
 
 def test_sync_chat_create():
   history = [
-      types.Content(role='user', parts=[types.Part.from_text(text='user input turn 1')]),
+      types.Content(
+          role='user', parts=[types.Part.from_text(text='user input turn 1')]
+      ),
       types.Content(
           role='model',
           parts=[types.Part.from_text(text='model output turn 1')],
@@ -202,7 +218,9 @@ def test_sync_chat_create():
 
 def test_async_chat_create():
   history = [
-      types.Content(role='user', parts=[types.Part.from_text(text='user input turn 1')]),
+      types.Content(
+          role='user', parts=[types.Part.from_text(text='user input turn 1')]
+      ),
       types.Content(
           role='model',
           parts=[types.Part.from_text(text='model output turn 1')],
@@ -227,6 +245,68 @@ def test_async_chat_create():
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
+
+
+def test_sync_chat_create_with_history_dict():
+  history = [
+      {'role': 'user', 'parts': [{'text': 'user input turn 1'}]},
+      {'role': 'model', 'parts': [{'text': 'model output turn 1'}]},
+      {'role': 'user', 'parts': [{'text': 'user input turn 2'}]},
+      {'role': 'model', 'parts': [{'text': 'model output turn 2'}]},
+  ]
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  expected_history = [
+      types.Content(
+          role='user', parts=[types.Part.from_text(text='user input turn 1')]
+      ),
+      types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output turn 1')],
+      ),
+      types.Content(
+          role='user', parts=[types.Part.from_text(text='user input turn 2')]
+      ),
+      types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output turn 2')],
+      ),
+  ]
+  assert chat.get_history() == expected_history
+  assert chat.get_history(curated=True) == expected_history
+
+
+def test_async_chat_create_with_history_dict():
+  history = [
+      {'role': 'user', 'parts': [{'text': 'user input turn 1'}]},
+      {'role': 'model', 'parts': [{'text': 'model output turn 1'}]},
+      {'role': 'user', 'parts': [{'text': 'user input turn 2'}]},
+      {'role': 'model', 'parts': [{'text': 'model output turn 2'}]},
+  ]
+  models_module = models.AsyncModels(mock_api_client)
+  chats_module = chats.AsyncChats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  expected_history = [
+      types.Content(
+          role='user', parts=[types.Part.from_text(text='user input turn 1')]
+      ),
+      types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output turn 1')],
+      ),
+      types.Content(
+          role='user', parts=[types.Part.from_text(text='user input turn 2')]
+      ),
+      types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output turn 2')],
+      ),
+  ]
+  assert chat.get_history() == expected_history
+  assert chat.get_history(curated=True) == expected_history
 
 
 def test_history_with_invalid_turns():
@@ -264,7 +344,9 @@ def test_history_with_invalid_turns():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=comprehensive_history)
+  chat = chats_module.create(
+      model='gemini-1.5-flash', history=comprehensive_history
+  )
 
   assert chat.get_history() == comprehensive_history
   assert chat.get_history(curated=True) == curated_history
@@ -272,7 +354,7 @@ def test_history_with_invalid_turns():
 
 def test_chat_with_invalid_content(mock_generate_content_invalid_content):
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module) 
+  chats_module = chats.Chats(modules=models_module)
   chat = chats_module.create(model='gemini-1.5-flash')
 
   chat.send_message('Hello')
@@ -290,7 +372,7 @@ def test_chat_with_invalid_content(mock_generate_content_invalid_content):
 
 def test_chat_with_empty_content(mock_generate_content_empty_content):
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module) 
+  chats_module = chats.Chats(modules=models_module)
   chat = chats_module.create(model='gemini-1.5-flash')
 
   chat.send_message('Hello')
@@ -306,9 +388,11 @@ def test_chat_with_empty_content(mock_generate_content_empty_content):
   assert not chat.get_history(curated=True)
 
 
-def test_chat_stream_with_invalid_content(mock_generate_content_stream_invalid_content):
+def test_chat_stream_with_invalid_content(
+    mock_generate_content_stream_invalid_content,
+):
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module) 
+  chats_module = chats.Chats(modules=models_module)
   chat = chats_module.create(model='gemini-1.5-flash')
 
   chunks = chat.send_message_stream('Hello')
@@ -326,12 +410,14 @@ def test_chat_stream_with_invalid_content(mock_generate_content_stream_invalid_c
   assert not chat.get_history(curated=True)
 
 
-def test_chat_stream_with_empty_content(mock_generate_content_stream_empty_content):
+def test_chat_stream_with_empty_content(
+    mock_generate_content_stream_empty_content,
+):
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module) 
+  chats_module = chats.Chats(modules=models_module)
   chat = chats_module.create(model='gemini-1.5-flash')
 
-  chunks =chat.send_message_stream('Hello')
+  chunks = chat.send_message_stream('Hello')
   for chunk in chunks:
     pass
 

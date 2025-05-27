@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, Optional, TypeGuard, Union  # type: ignore[attr-defined]
+from typing import Any, GenericAlias, Optional, Sequence, Union  # type: ignore[attr-defined]
+from ._mcp_utils import mcp_to_gemini_tool
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -41,9 +42,24 @@ logger = logging.getLogger('google_genai._transformers')
 if sys.version_info >= (3, 10):
   VersionedUnionType = builtin_types.UnionType
   _UNION_TYPES = (typing.Union, builtin_types.UnionType)
+  from typing import TypeGuard
 else:
-  VersionedUnionType = typing._UnionGenericAlias
+  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
   _UNION_TYPES = (typing.Union,)
+  from typing_extensions import TypeGuard
+
+if typing.TYPE_CHECKING:
+  from mcp import ClientSession as McpClientSession
+  from mcp.types import Tool as McpTool
+else:
+  McpClientSession: typing.Type = Any
+  McpTool: typing.Type = Any
+  try:
+    from mcp import ClientSession as McpClientSession
+    from mcp.types import Tool as McpTool
+  except ImportError:
+    McpClientSession = None
+    McpTool = None
 
 
 def _resource_name(
@@ -52,7 +68,7 @@ def _resource_name(
     *,
     collection_identifier: str,
     collection_hierarchy_depth: int = 2,
-):
+) -> str:
   # pylint: disable=line-too-long
   """Prepends resource name with project, location, collection_identifier if needed.
 
@@ -139,7 +155,7 @@ def _resource_name(
       return resource_name
 
 
-def t_model(client: _api_client.BaseApiClient, model: str):
+def t_model(client: _api_client.BaseApiClient, model: str) -> str:
   if not model:
     raise ValueError('model is required.')
   if client.vertexai:
@@ -180,17 +196,26 @@ def t_models_url(
 
 def t_extract_models(
     api_client: _api_client.BaseApiClient,
-    response: dict[str, list[types.ModelDict]],
-) -> Optional[list[types.ModelDict]]:
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
   if not response:
     return []
-  elif response.get('models') is not None:
-    return response.get('models')
-  elif response.get('tunedModels') is not None:
-    return response.get('tunedModels')
-  elif response.get('publisherModels') is not None:
-    return response.get('publisherModels')
-  elif (
+
+  models: Optional[list[dict[str, Any]]] = response.get('models')
+  if models is not None:
+    return models
+
+  tuned_models: Optional[list[dict[str, Any]]] = response.get('tunedModels')
+  if tuned_models is not None:
+    return tuned_models
+
+  publisher_models: Optional[list[dict[str, Any]]] = response.get(
+      'publisherModels'
+  )
+  if publisher_models is not None:
+    return publisher_models
+
+  if (
       response.get('httpHeaders') is not None
       and response.get('jsonPayload') is None
   ):
@@ -201,7 +226,9 @@ def t_extract_models(
     return []
 
 
-def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
+def t_caches_model(
+    api_client: _api_client.BaseApiClient, model: str
+) -> Optional[str]:
   model = t_model(api_client, model)
   if not model:
     return None
@@ -216,7 +243,7 @@ def t_caches_model(api_client: _api_client.BaseApiClient, model: str):
     return model
 
 
-def pil_to_blob(img) -> types.Blob:
+def pil_to_blob(img: Any) -> types.Blob:
   PngImagePlugin: Optional[builtin_types.ModuleType]
   try:
     import PIL.PngImagePlugin
@@ -239,6 +266,91 @@ def pil_to_blob(img) -> types.Blob:
   bytesio.seek(0)
   data = bytesio.read()
   return types.Blob(mime_type=mime_type, data=data)
+
+
+def t_function_response(
+    function_response: types.FunctionResponseOrDict,
+) -> types.FunctionResponse:
+  if not function_response:
+    raise ValueError('function_response is required.')
+  if isinstance(function_response, dict):
+    return types.FunctionResponse.model_validate(function_response)
+  elif isinstance(function_response, types.FunctionResponse):
+    return function_response
+  else:
+    raise TypeError(
+        'Could not parse input as FunctionResponse. Unsupported'
+        f' function_response type: {type(function_response)}'
+    )
+
+
+def t_function_responses(
+    function_responses: Union[
+        types.FunctionResponseOrDict,
+        Sequence[types.FunctionResponseOrDict],
+    ],
+) -> list[types.FunctionResponse]:
+  if not function_responses:
+    raise ValueError('function_responses are required.')
+  if isinstance(function_responses, Sequence):
+    return [t_function_response(response) for response in function_responses]
+  else:
+    return [t_function_response(function_responses)]
+
+
+def t_blobs(
+    api_client: _api_client.BaseApiClient,
+    blobs: Union[types.BlobImageUnionDict, list[types.BlobImageUnionDict]],
+) -> list[types.Blob]:
+  if isinstance(blobs, list):
+    return [t_blob(api_client, blob) for blob in blobs]
+  else:
+    return [t_blob(api_client, blobs)]
+
+
+def t_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
+) -> types.Blob:
+  try:
+    import PIL.Image
+
+    PIL_Image = PIL.Image.Image
+  except ImportError:
+    PIL_Image = None
+
+  if not blob:
+    raise ValueError('blob is required.')
+
+  if isinstance(blob, types.Blob):
+    return blob
+
+  if isinstance(blob, dict):
+    return types.Blob.model_validate(blob)
+
+  if PIL_Image is not None and isinstance(blob, PIL_Image):
+    return pil_to_blob(blob)
+
+  raise TypeError(
+      f'Could not parse input as Blob. Unsupported blob type: {type(blob)}'
+  )
+
+
+def t_image_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
+) -> types.Blob:
+  blob = t_blob(api_client, blob)
+  if blob.mime_type and blob.mime_type.startswith('image/'):
+    return blob
+  raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
+
+
+def t_audio_blob(
+    api_client: _api_client.BaseApiClient, blob: types.BlobOrDict
+) -> types.Blob:
+  blob = t_blob(api_client, blob)
+  if blob.mime_type and blob.mime_type.startswith('audio/'):
+    return blob
+  raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
 
 
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
@@ -267,7 +379,9 @@ def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
 
 
 def t_parts(
-    parts: Optional[Union[list[types.PartUnionDict], types.PartUnionDict, list[types.Part]]],
+    parts: Optional[
+        Union[list[types.PartUnionDict], types.PartUnionDict, list[types.Part]]
+    ],
 ) -> list[types.Part]:
   #
   if parts is None or (isinstance(parts, list) and not parts):
@@ -348,9 +462,7 @@ def t_contents_for_embed(
             if part.text:
               text_parts.append(part.text)
             else:
-              logger.warning(
-                  f'Non-text part found, only returning text parts.'
-              )
+              logger.warning(f'Non-text part found, only returning text parts.')
     return text_parts
   else:
     return transformed_contents
@@ -377,7 +489,9 @@ def t_contents(
   result: list[types.Content] = []
   accumulated_parts: list[types.Part] = []
 
-  def _is_part(part: Union[types.PartUnionDict, Any]) -> TypeGuard[types.PartUnionDict]:
+  def _is_part(
+      part: Union[types.PartUnionDict, Any],
+  ) -> TypeGuard[types.PartUnionDict]:
     if (
         isinstance(part, str)
         or isinstance(part, types.File)
@@ -404,7 +518,7 @@ def t_contents(
   def _append_accumulated_parts_as_content(
       result: list[types.Content],
       accumulated_parts: list[types.Part],
-  ):
+  ) -> None:
     if not accumulated_parts:
       return
     result.append(
@@ -418,7 +532,7 @@ def t_contents(
       result: list[types.Content],
       accumulated_parts: list[types.Part],
       current_part: types.PartUnionDict,
-  ):
+  ) -> None:
     current_part = t_part(current_part)
     if _is_user_part(current_part) == _are_user_parts(accumulated_parts):
       accumulated_parts.append(current_part)
@@ -444,7 +558,7 @@ def t_contents(
         result.append(types.UserContent(parts=content))  # type: ignore[arg-type]
       else:
         result.append(content)
-    elif (_is_part(content)):
+    elif _is_part(content):
       _handle_current_part(result, accumulated_parts, content)
     elif isinstance(content, dict):
       # PactDict is already handled in _is_part
@@ -457,7 +571,7 @@ def t_contents(
   return result
 
 
-def handle_null_fields(schema: dict[str, Any]):
+def handle_null_fields(schema: dict[str, Any]) -> None:
   """Process null fields in the schema so it is compatible with OpenAPI.
 
   The OpenAPI spec does not support 'type: 'null' in the schema. This function
@@ -516,16 +630,30 @@ def handle_null_fields(schema: dict[str, Any]):
           del schema['anyOf']
 
 
+def _raise_for_unsupported_schema_type(origin: Any) -> None:
+  """Raises an error if the schema type is unsupported."""
+  raise ValueError(f'Unsupported schema type: {origin}')
+
+
+def _raise_for_unsupported_mldev_properties(schema: Any, client: _api_client.BaseApiClient) -> None:
+  if not client.vertexai and (
+      schema.get('additionalProperties')
+      or schema.get('additional_properties')
+  ):
+    raise ValueError(
+        'additionalProperties is not supported in the Gemini API.'
+    )
+
+
 def process_schema(
     schema: dict[str, Any],
     client: _api_client.BaseApiClient,
     defs: Optional[dict[str, Any]] = None,
     *,
     order_properties: bool = True,
-):
+) -> None:
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
-  - Removes the `title` field from the schema if the client is not vertexai.
   - Inlines the $defs.
 
   Example of a schema before and after (with mldev):
@@ -569,77 +697,75 @@ def process_schema(
         'items': {
           'properties': {
             'continent': {
-                'type': 'string'
+              'title': 'Continent',
+              'type': 'string'
             },
             'gdp': {
-                'type': 'integer'}
+              'title': 'Gdp',
+              'type': 'integer'
             },
           }
           'required':['continent', 'gdp'],
+          'title': 'CountryInfo',
           'type': 'object'
         },
         'type': 'array'
     }
   """
-  if not client.vertexai:
-    schema.pop('title', None)
-
-    if schema.get('default') is not None:
-      raise ValueError(
-          'Default value is not supported in the response schema for the Gemini'
-          ' API.'
-      )
-
   if schema.get('title') == 'PlaceholderLiteralEnum':
-    schema.pop('title', None)
+    del schema['title']
 
-  # If a dict is provided directly to response_schema, it may use `any_of`
-  # instead of `anyOf`. Otherwise model_json_schema() uses `anyOf`
-  if schema.get('any_of', None) is not None:
-    schema['anyOf'] = schema.pop('any_of')
+  _raise_for_unsupported_mldev_properties(schema, client)
+
+  # Standardize spelling for relevant schema fields.  For example, if a dict is
+  # provided directly to response_schema, it may use `any_of` instead of `anyOf.
+  # Otherwise, model_json_schema() uses `anyOf`.
+  for from_name, to_name in [
+      ('additional_properties', 'additionalProperties'),
+      ('any_of', 'anyOf'),
+      ('prefix_items', 'prefixItems'),
+      ('property_ordering', 'propertyOrdering'),
+  ]:
+    if (value := schema.pop(from_name, None)) is not None:
+      schema[to_name] = value
 
   if defs is None:
     defs = schema.pop('$defs', {})
     for _, sub_schema in defs.items():
-      process_schema(sub_schema, client, defs)
+      # We can skip the '$ref' check, because JSON schema forbids a '$ref' from
+      # directly referencing another '$ref':
+      # https://json-schema.org/understanding-json-schema/structuring#recursion
+      process_schema(
+          sub_schema, client, defs, order_properties=order_properties
+      )
 
   handle_null_fields(schema)
 
   # After removing null fields, Optional fields with only one possible type
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
-  schema_ref = schema.get('$ref', None)
-  if schema_ref is not None:
-    ref = defs[schema_ref.split('defs/')[-1]]
-    for schema_key in list(ref.keys()):
-      schema[schema_key] = ref[schema_key]
-    del schema['$ref']
+  if (ref := schema.pop('$ref', None)) is not None:
+    schema.update(defs[ref.split('defs/')[-1]])
 
-  any_of = schema.get('anyOf', None)
-  if any_of is not None:
-    if client and not client.vertexai:
-      raise ValueError(
-          'AnyOf is not supported in the response schema for the Gemini API.'
-      )
-    for sub_schema in any_of:
-      # $ref is present in any_of if the schema is a union of Pydantic classes
-      ref_key = sub_schema.get('$ref', None)
-      if ref_key is None:
-        process_schema(sub_schema, client, defs)
-      else:
-        ref = defs[ref_key.split('defs/')[-1]]
-        any_of.append(ref)
-    schema['anyOf'] = [item for item in any_of if '$ref' not in item]
+  def _recurse(sub_schema: dict[str, Any]) -> dict[str, Any]:
+    """Returns the processed `sub_schema`, resolving its '$ref' if any."""
+    if (ref := sub_schema.pop('$ref', None)) is not None:
+      sub_schema = defs[ref.split('defs/')[-1]]
+    process_schema(sub_schema, client, defs, order_properties=order_properties)
+    return sub_schema
+
+  if (any_of := schema.get('anyOf')) is not None:
+    schema['anyOf'] = [_recurse(sub_schema) for sub_schema in any_of]
     return
 
-  schema_type = schema.get('type', None)
+  schema_type = schema.get('type')
   if isinstance(schema_type, Enum):
     schema_type = schema_type.value
   schema_type = schema_type.upper()
 
   # model_json_schema() returns a schema with a 'const' field when a Literal with one value is provided as a pydantic field
   # For example `genre: Literal['action']` becomes: {'const': 'action', 'title': 'Genre', 'type': 'string'}
-  const = schema.get('const', None)
+  const = schema.get('const')
   if const is not None:
     if schema_type == 'STRING':
       schema['enum'] = [const]
@@ -648,38 +774,25 @@ def process_schema(
       raise ValueError('Literal values must be strings.')
 
   if schema_type == 'OBJECT':
-    properties = schema.get('properties', None)
-    if properties is None:
-      return
-    for name, sub_schema in properties.items():
-      ref_key = sub_schema.get('$ref', None)
-      if ref_key is None:
-        process_schema(sub_schema, client, defs)
-      else:
-        ref = defs[ref_key.split('defs/')[-1]]
-        process_schema(ref, client, defs)
-        properties[name] = ref
-    if (
-        len(properties.items()) > 1
-        and order_properties
-        and all(
-            ordering_key not in schema
-            for ordering_key in ['property_ordering', 'propertyOrdering']
-        )
-    ):
-      property_names = list(properties.keys())
-      schema['property_ordering'] = property_names
+    if (properties := schema.get('properties')) is not None:
+      for name, sub_schema in list(properties.items()):
+        properties[name] = _recurse(sub_schema)
+      if (
+          len(properties.items()) > 1
+          and order_properties
+          and 'propertyOrdering' not in schema
+      ):
+        schema['property_ordering'] = list(properties.keys())
+    if (additional := schema.get('additionalProperties')) is not None:
+      # It is legal to set 'additionalProperties' to a bool:
+      # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
+      if isinstance(additional, dict):
+        schema['additionalProperties'] = _recurse(additional)
   elif schema_type == 'ARRAY':
-    sub_schema = schema.get('items', None)
-    if sub_schema is None:
-      return
-    ref_key = sub_schema.get('$ref', None)
-    if ref_key is None:
-      process_schema(sub_schema, client, defs)
-    else:
-      ref = defs[ref_key.split('defs/')[-1]]
-      process_schema(ref, client, defs)
-      schema['items'] = ref
+    if (items := schema.get('items')) is not None:
+      schema['items'] = _recurse(items)
+    if (prefixes := schema.get('prefixItems')) is not None:
+      schema['prefixItems'] = [_recurse(prefix) for prefix in prefixes]
 
 
 def _process_enum(
@@ -701,7 +814,9 @@ def _process_enum(
   return types.Schema.model_validate(enum_schema)
 
 
-def _is_type_dict_str_any(origin: Union[types.SchemaUnionDict, Any]) -> TypeGuard[dict[str, Any]]:
+def _is_type_dict_str_any(
+    origin: Union[types.SchemaUnionDict, Any],
+) -> TypeGuard[dict[str, Any]]:
   """Verifies the schema is of type dict[str, Any] for mypy type checking."""
   return isinstance(origin, dict) and all(
       isinstance(key, str) for key in origin
@@ -714,16 +829,17 @@ def t_schema(
   if not origin:
     return None
   if isinstance(origin, dict) and _is_type_dict_str_any(origin):
-    process_schema(origin, client, order_properties=False)
+    process_schema(origin, client)
     return types.Schema.model_validate(origin)
   if isinstance(origin, EnumMeta):
     return _process_enum(origin, client)
   if isinstance(origin, types.Schema):
     if dict(origin) == dict(types.Schema()):
-      # response_schema value was coerced to an empty Schema instance because it did not adhere to the Schema field annotation
-      raise ValueError(f'Unsupported schema type.')
+      # response_schema value was coerced to an empty Schema instance because
+      # it did not adhere to the Schema field annotation
+      _raise_for_unsupported_schema_type(origin)
     schema = origin.model_dump(exclude_unset=True)
-    process_schema(schema, client, order_properties=False)
+    process_schema(schema, client)
     return types.Schema.model_validate(schema)
 
   if (
@@ -768,27 +884,32 @@ def t_speech_config(
             prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=origin)
         )
     )
-  if (
-      isinstance(origin, dict)
-      and 'voice_config' in origin
-      and origin['voice_config'] is not None
-      and 'prebuilt_voice_config' in origin['voice_config']
-      and origin['voice_config']['prebuilt_voice_config'] is not None
-      and 'voice_name' in origin['voice_config']['prebuilt_voice_config']
-  ):
-    return types.SpeechConfig(
-        voice_config=types.VoiceConfig(
-            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                voice_name=origin['voice_config']['prebuilt_voice_config'].get(
-                    'voice_name'
-                )
-            )
-        )
-    )
+  if isinstance(origin, dict):
+    return types.SpeechConfig.model_validate(origin)
+
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
 
 
-def t_tool(client: _api_client.BaseApiClient, origin) -> Optional[types.Tool]:
+def t_live_speech_config(
+    client: _api_client.BaseApiClient,
+    origin: types.SpeechConfigOrDict,
+) -> Optional[types.SpeechConfig]:
+  if isinstance(origin, types.SpeechConfig):
+    speech_config = origin
+  if isinstance(origin, dict):
+    speech_config = types.SpeechConfig.model_validate(origin)
+
+  if speech_config.multi_speaker_voice_config is not None:
+    raise ValueError(
+        'multi_speaker_voice_config is not supported in the live API.'
+    )
+
+  return speech_config
+
+
+def t_tool(
+    client: _api_client.BaseApiClient, origin: Any
+) -> Optional[Union[types.Tool, Any]]:
   if not origin:
     return None
   if inspect.isfunction(origin) or inspect.ismethod(origin):
@@ -799,11 +920,14 @@ def t_tool(client: _api_client.BaseApiClient, origin) -> Optional[types.Tool]:
             )
         ]
     )
+  elif McpTool is not None and isinstance(origin, McpTool):
+    return mcp_to_gemini_tool(origin)
+  elif isinstance(origin, dict):
+    return types.Tool.model_validate(origin)
   else:
     return origin
 
 
-# Only support functions now.
 def t_tools(
     client: _api_client.BaseApiClient, origin: list[Any]
 ) -> list[types.Tool]:
@@ -829,11 +953,13 @@ def t_tools(
   return tools
 
 
-def t_cached_content_name(client: _api_client.BaseApiClient, name: str):
+def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
+def t_batch_job_source(
+    client: _api_client.BaseApiClient, src: str
+) -> types.BatchJobSource:
   if src.startswith('gs://'):
     return types.BatchJobSource(
         format='jsonl',
@@ -848,7 +974,9 @@ def t_batch_job_source(client: _api_client.BaseApiClient, src: str):
     raise ValueError(f'Unsupported source: {src}')
 
 
-def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
+def t_batch_job_destination(
+    client: _api_client.BaseApiClient, dest: str
+) -> types.BatchJobDestination:
   if dest.startswith('gs://'):
     return types.BatchJobDestination(
         format='jsonl',
@@ -863,7 +991,7 @@ def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str):
     raise ValueError(f'Unsupported destination: {dest}')
 
 
-def t_batch_job_name(client: _api_client.BaseApiClient, name: str):
+def t_batch_job_name(client: _api_client.BaseApiClient, name: str) -> str:
   if not client.vertexai:
     return name
 
@@ -882,7 +1010,9 @@ LRO_POLLING_TIMEOUT_SECONDS = 900.0
 LRO_POLLING_MULTIPLIER = 1.5
 
 
-def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
+def t_resolve_operation(
+    api_client: _api_client.BaseApiClient, struct: dict[str, Any]
+) -> Any:
   if (name := struct.get('name')) and '/operations/' in name:
     operation: dict[str, Any] = struct
     total_seconds = 0.0
@@ -891,7 +1021,7 @@ def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
       if total_seconds > LRO_POLLING_TIMEOUT_SECONDS:
         raise RuntimeError(f'Operation {name} timed out.\n{operation}')
       # TODO(b/374433890): Replace with LRO module once it's available.
-      operation = api_client.request(
+      operation = api_client.request(  # type: ignore[assignment]
           http_method='GET', path=name, request_dict={}
       )
       time.sleep(delay_seconds)
@@ -913,7 +1043,7 @@ def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict):
 def t_file_name(
     api_client: _api_client.BaseApiClient,
     name: Optional[Union[str, types.File, types.Video, types.GeneratedVideo]],
-):
+) -> str:
   # Remove the files/ prefix since it's added to the url path.
   if isinstance(name, types.File):
     name = name.name
@@ -971,3 +1101,64 @@ def t_bytes(api_client: _api_client.BaseApiClient, data: bytes) -> str:
   if not isinstance(data, bytes):
     return data
   return base64.b64encode(data).decode('ascii')
+
+
+def t_content_strict(content: types.ContentOrDict) -> types.Content:
+  if isinstance(content, dict):
+    return types.Content.model_validate(content)
+  elif isinstance(content, types.Content):
+    return content
+  else:
+    raise ValueError(
+        f'Could not convert input (type "{type(content)}") to `types.Content`'
+    )
+
+
+def t_contents_strict(
+    contents: Union[Sequence[types.ContentOrDict], types.ContentOrDict],
+) -> list[types.Content]:
+  if isinstance(contents, Sequence):
+    return [t_content_strict(content) for content in contents]
+  else:
+    return [t_content_strict(contents)]
+
+
+def t_client_content(
+    turns: Optional[
+        Union[Sequence[types.ContentOrDict], types.ContentOrDict]
+    ] = None,
+    turn_complete: bool = True,
+) -> types.LiveClientContent:
+  if turns is None:
+    return types.LiveClientContent(turn_complete=turn_complete)
+
+  try:
+    return types.LiveClientContent(
+        turns=t_contents_strict(contents=turns),
+        turn_complete=turn_complete,
+    )
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(turns)}") to '
+        '`types.LiveClientContent`'
+    ) from e
+
+
+def t_tool_response(
+    input: Union[
+        types.FunctionResponseOrDict,
+        Sequence[types.FunctionResponseOrDict],
+    ],
+) -> types.LiveClientToolResponse:
+  if not input:
+    raise ValueError(f'A tool response is required, got: \n{input}')
+
+  try:
+    return types.LiveClientToolResponse(
+        function_responses=t_function_responses(function_responses=input)
+    )
+  except Exception as e:
+    raise ValueError(
+        f'Could not convert input (type "{type(input)}") to '
+        '`types.LiveClientToolResponse`'
+    ) from e

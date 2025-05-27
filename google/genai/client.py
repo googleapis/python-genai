@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ from typing import Optional, Union
 import google.auth
 import pydantic
 
-from ._api_client import BaseApiClient, HttpOptions, HttpOptionsDict
+from ._api_client import BaseApiClient
+from ._base_url import get_base_url
 from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
@@ -28,7 +29,9 @@ from .files import AsyncFiles, Files
 from .live import AsyncLive
 from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
+from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
+from .types import HttpOptions, HttpOptionsDict
 
 
 class AsyncClient:
@@ -43,6 +46,7 @@ class AsyncClient:
     self._batches = AsyncBatches(self._api_client)
     self._files = AsyncFiles(self._api_client)
     self._live = AsyncLive(self._api_client)
+    self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
 
   @property
@@ -74,8 +78,13 @@ class AsyncClient:
     return self._live
 
   @property
+  def auth_tokens(self) -> AsyncTokens:
+    return self._tokens
+
+  @property
   def operations(self) -> AsyncOperations:
     return self._operations
+
 
 class DebugConfig(pydantic.BaseModel):
   """Configuration options that change client network behavior when testing."""
@@ -113,26 +122,29 @@ class Client:
   Attributes:
     api_key: The `API key <https://ai.google.dev/gemini-api/docs/api-key>`_ to
       use for authentication. Applies to the Gemini Developer API only.
-    vertexai: Indicates whether the client should use the Vertex AI
-      API endpoints. Defaults to False (uses Gemini Developer API endpoints).
+    vertexai: Indicates whether the client should use the Vertex AI API
+      endpoints. Defaults to False (uses Gemini Developer API endpoints).
       Applies to the Vertex AI API only.
     credentials: The credentials to use for authentication when calling the
       Vertex AI APIs. Credentials can be obtained from environment variables and
-      default credentials. For more information, see
-      `Set up Application Default Credentials
+      default credentials. For more information, see `Set up Application Default
+      Credentials
       <https://cloud.google.com/docs/authentication/provide-credentials-adc>`_.
       Applies to the Vertex AI API only.
-    project: The `Google Cloud project ID <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to
-      use for quota. Can be obtained from environment variables (for example,
+    project: The `Google Cloud project ID
+      <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to use
+      for quota. Can be obtained from environment variables (for example,
       ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
-    location: The `location <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
+      Find your `Google Cloud project ID <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
+    location: The `location
+      <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
       to send API requests to (for example, ``us-central1``). Can be obtained
       from environment variables. Applies to the Vertex AI API only.
     debug_config: Config settings that control network behavior of the client.
       This is typically used when running test code.
     http_options: Http options to use for the client. These options will be
-      applied to all requests made by the client. Example usage:
-      `client = genai.Client(http_options=types.HttpOptions(api_version='v1'))`.
+      applied to all requests made by the client. Example usage: `client =
+      genai.Client(http_options=types.HttpOptions(api_version='v1'))`.
 
   Usage for the Gemini Developer API:
 
@@ -194,6 +206,15 @@ class Client:
     """
 
     self._debug_config = debug_config or DebugConfig()
+    if isinstance(http_options, dict):
+      http_options = HttpOptions(**http_options)
+
+    base_url = get_base_url(vertexai or False, http_options)
+    if base_url:
+      if http_options:
+        http_options.base_url = base_url
+      else:
+        http_options = HttpOptions(base_url=base_url)
 
     self._api_client = self._get_api_client(
         vertexai=vertexai,
@@ -211,6 +232,7 @@ class Client:
     self._caches = Caches(self._api_client)
     self._batches = Batches(self._api_client)
     self._files = Files(self._api_client)
+    self._tokens = Tokens(self._api_client)
     self._operations = Operations(self._api_client)
 
   @staticmethod
@@ -222,17 +244,17 @@ class Client:
       location: Optional[str] = None,
       debug_config: Optional[DebugConfig] = None,
       http_options: Optional[HttpOptions] = None,
-  ):
+  ) -> BaseApiClient:
     if debug_config and debug_config.client_mode in [
         'record',
         'replay',
         'auto',
     ]:
       return ReplayApiClient(
-          mode=debug_config.client_mode,
-          replay_id=debug_config.replay_id,
+          mode=debug_config.client_mode,  # type: ignore[arg-type]
+          replay_id=debug_config.replay_id,  # type: ignore[arg-type]
           replays_directory=debug_config.replays_directory,
-          vertexai=vertexai,
+          vertexai=vertexai,  # type: ignore[arg-type]
           api_key=api_key,
           credentials=credentials,
           project=project,
@@ -276,6 +298,10 @@ class Client:
   @property
   def files(self) -> Files:
     return self._files
+
+  @property
+  def auth_tokens(self) -> Tokens:
+    return self._tokens
 
   @property
   def operations(self) -> Operations:

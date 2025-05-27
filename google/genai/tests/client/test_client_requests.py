@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ def test_build_request_appends_to_user_agent_headers(monkeypatch):
       'test/path',
       {'key': 'value'},
       api_client.HttpOptionsDict(
-          url='test/url',
+          base_url='test/url',
           api_version='1',
           headers={'user-agent': 'test-user-agent'},
       ),
@@ -115,7 +115,7 @@ def test_build_request_appends_to_goog_api_client_headers(monkeypatch):
       'test/path',
       {'key': 'value'},
       api_client.HttpOptionsDict(
-          url='test/url',
+          base_url='test/url',
           api_version='1',
           headers={'x-goog-api-client': 'test-goog-api-client'},
       ),
@@ -136,7 +136,7 @@ def test_build_request_keeps_sdk_version_headers(monkeypatch):
       'test/path',
       {'key': 'value'},
       api_client.HttpOptionsDict(
-          url='test/url',
+          base_url='test/url',
           api_version='1',
           headers=headers_to_inject,
       ),

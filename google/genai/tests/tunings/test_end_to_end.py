@@ -22,9 +22,9 @@ def test_tune_until_success(client):
 
   if client._api_client.vertexai:
     job = client.tunings.tune(
-        base_model="gemini-1.5-pro-002",
+        base_model="gemini-2.0-flash-001",
         training_dataset=genai_types.TuningDataset(
-            gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl",
         ),
     )
   else:
@@ -48,7 +48,7 @@ def test_tune_until_success(client):
 
   while not job.has_ended:
     # Skipping the sleep for when in replay mode.
-    if not isinstance(client._api_client, _replay_api_client.ReplayApiClient):
+    if client._api_client._mode not in ("replay", "auto"):
       time.sleep(60)
     job = client.tunings.get(name=job.name)
 

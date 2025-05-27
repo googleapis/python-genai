@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,6 +93,13 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE_PARTIAL_MODEL_1.model = (
     'models/gemini-1.5-pro-001'
 )
 
+_CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_CMEK = deepcopy(
+    _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI
+)
+_CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_CMEK.config.kms_key_name = (
+    'projects/test-project/locations/us-central1/keyRings/test-keyring/cryptoKeys/test-key'
+)
+
 if sys.version_info >= (3, 11):
   _EXPIRE_TIME = datetime.datetime.fromisoformat('2024-12-20T00:00:00Z')
 else:
@@ -136,6 +143,12 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_caches_create_with_gcs_uri',
         exception_if_mldev='INVALID_ARGUMENT',
         parameters=_CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI,
+    ),
+    pytest_helper.TestTableItem(
+        name='test_caches_create_with_gcs_uri_cmek',
+        exception_if_mldev='not supported',
+        exception_if_vertex='INVALID_ARGUMENT',  # The key is invalid.
+        parameters=_CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_CMEK,
     ),
     pytest_helper.TestTableItem(
         name='test_caches_create_with_gcs_uri_expire_time',

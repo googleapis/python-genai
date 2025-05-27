@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ from . import types
 if sys.version_info >= (3, 10):
   VersionedUnionType = builtin_types.UnionType
 else:
-  VersionedUnionType = typing._UnionGenericAlias
+  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
 
 _py_builtin_type_to_schema_type = {
     str: types.Type.STRING,
@@ -46,28 +46,6 @@ def _is_builtin_primitive_or_compound(
   return annotation in _py_builtin_type_to_schema_type.keys()
 
 
-def _raise_for_any_of_if_mldev(schema: types.Schema):
-  if schema.any_of:
-    raise ValueError(
-        'AnyOf is not supported in function declaration schema for'
-        ' the Gemini API.'
-    )
-
-
-def _raise_for_default_if_mldev(schema: types.Schema):
-  if schema.default is not None:
-    raise ValueError(
-        'Default value is not supported in function declaration schema for'
-        ' the Gemini API.'
-    )
-
-
-def _raise_if_schema_unsupported(api_option: Literal['VERTEX_AI', 'GEMINI_API'], schema: types.Schema):
-  if api_option == 'GEMINI_API':
-    _raise_for_any_of_if_mldev(schema)
-    _raise_for_default_if_mldev(schema)
-
-
 def _is_default_value_compatible(
     default_value: Any, annotation: inspect.Parameter.annotation  # type: ignore[valid-type]
 ) -> bool:
@@ -81,16 +59,16 @@ def _is_default_value_compatible(
       or isinstance(annotation, VersionedUnionType)
   ):
     origin = get_origin(annotation)
-    if origin in (Union, VersionedUnionType):
+    if origin in (Union, VersionedUnionType):  # type: ignore[comparison-overlap]
       return any(
           _is_default_value_compatible(default_value, arg)
           for arg in get_args(annotation)
       )
 
-    if origin is dict:
+    if origin is dict:  # type: ignore[comparison-overlap]
       return isinstance(default_value, dict)
 
-    if origin is list:
+    if origin is list:  # type: ignore[comparison-overlap]
       if not isinstance(default_value, list):
         return False
       # most tricky case, element in list is union type
@@ -106,7 +84,7 @@ def _is_default_value_compatible(
           for item in default_value
       )
 
-    if origin is Literal:
+    if origin is Literal:  # type: ignore[comparison-overlap]
       return default_value in get_args(annotation)
 
   # return False for any other unrecognized annotation
@@ -134,7 +112,6 @@ def _parse_schema_from_parameter(
         raise ValueError(default_value_error_msg)
       schema.default = param.default
     schema.type = _py_builtin_type_to_schema_type[param.annotation]
-    _raise_if_schema_unsupported(api_option, schema)
     return schema
   if (
       isinstance(param.annotation, VersionedUnionType)
@@ -175,7 +152,6 @@ def _parse_schema_from_parameter(
       if not _is_default_value_compatible(param.default, param.annotation):
         raise ValueError(default_value_error_msg)
       schema.default = param.default
-    _raise_if_schema_unsupported(api_option, schema)
     return schema
   if isinstance(param.annotation, _GenericAlias) or isinstance(
       param.annotation, builtin_types.GenericAlias
@@ -188,7 +164,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
     if origin is Literal:
       if not all(isinstance(arg, str) for arg in args):
@@ -201,7 +176,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
     if origin is list:
       schema.type = _py_builtin_type_to_schema_type[list]
@@ -218,7 +192,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
     if origin is Union:
       schema.any_of = []
@@ -268,7 +241,6 @@ def _parse_schema_from_parameter(
         if not _is_default_value_compatible(param.default, param.annotation):
           raise ValueError(default_value_error_msg)
         schema.default = param.default
-      _raise_if_schema_unsupported(api_option, schema)
       return schema
       # all other generic alias will be invoked in raise branch
   if (
@@ -292,14 +264,12 @@ def _parse_schema_from_parameter(
           ),
           func_name,
       )
-    if api_option == 'VERTEX_AI':
-      schema.required = _get_required_fields(schema)
-    _raise_if_schema_unsupported(api_option, schema)
+    schema.required = _get_required_fields(schema)
     return schema
   raise ValueError(
       f'Failed to parse the parameter {param} of function {func_name} for'
       ' automatic function calling.Automatic function calling works best with'
-      ' simpler function signature schema,consider manually parse your'
+      ' simpler function signature schema, consider manually parsing your'
       f' function declaration for function {func_name}.'
   )
 

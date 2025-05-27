@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,7 +70,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'gs://generativeai-downloads/images/scones.jpg',
+                                    'file_uri': (
+                                        'gs://generativeai-downloads/images/scones.jpg'
+                                    ),
                                     'mime_type': 'image/jpeg',
                                 }
                             })
@@ -94,7 +96,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg',
+                                    'file_uri': (
+                                        'https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg'
+                                    ),
                                     'mime_type': 'image/jpeg',
                                 }
                             })
@@ -121,7 +125,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/q08l9on9u7d',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/q08l9on9u7d'
+                                    ),
                                     'mime_type': 'image/png',
                                 }
                             })
@@ -148,7 +154,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/tqbern1jkicb',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/tqbern1jkicb'
+                                    ),
                                     'mime_type': 'image/jpeg',
                                 }
                             })
@@ -177,7 +185,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/yiskd41szkfm',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/yiskd41szkfm'
+                                    ),
                                     'mime_type': 'application/pdf',
                                 }
                             })
@@ -210,7 +220,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/yu45gkirc8go',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/yu45gkirc8go'
+                                    ),
                                     'mime_type': 'video/mp4',
                                 }
                             })
@@ -244,12 +256,43 @@ test_table: list[pytest_helper.TestTableItem] = [
                         'parts': [
                             types.PartDict({
                                 'file_data': {
-                                    'file_uri': 'https://generativelanguage.googleapis.com/v1beta/files/wqnax2ohl9bp',
+                                    'file_uri': (
+                                        'https://generativelanguage.googleapis.com/v1beta/files/wqnax2ohl9bp'
+                                    ),
                                     'mime_type': 'audio/mp4',
                                 }
                             })
                         ],
                     },
+                ),
+            ],
+        ),
+        exception_if_vertex='403',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_mldev_video_offset_and_fps',
+        skip_in_api_mode=(
+            'Name of the file is hardcoded, only supporting replay mode.'
+        ),
+        parameters=types._GenerateContentParameters(
+            model='gemini-1.5-flash',
+            contents=[
+                types.Content(
+                    role='user',
+                    parts=[
+                        types.Part(text='summarize this video'),
+                        types.Part(
+                            file_data=types.FileData(
+                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/ansa0kyotrsw',
+                                mime_type= 'video/mp4',
+                            ),
+                            video_metadata=types.VideoMetadata(
+                                    start_offset='0s',
+                                    end_offset= '5s',
+                                    fps= 3,
+                            )
+                        )
+                    ]
                 ),
             ],
         ),
@@ -272,21 +315,22 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'gs://vertexsdk-gcs/test_video2.mp4'
+                                        'gs://generativeai-downloads/videos/Big_Buck_Bunny.mp4'
                                     ),
                                     'mime_type': 'video/mp4',
                                 },
                                 'video_metadata': {
                                     'start_offset': '0s',
                                     'end_offset': '10s',
-                                }
+                                    'fps': 3,
+                                },
                             })
                         ],
                     },
                 ),
             ],
         ),
-        exception_if_mldev='not supported',
+        exception_if_mldev='400',
     ),
     pytest_helper.TestTableItem(
         name='test_image_base64',
@@ -455,7 +499,7 @@ def test_model_content_text(client):
 
 
 def test_from_uploaded_file_uri(client):
-  try:
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents=[
@@ -466,19 +510,31 @@ def test_from_uploaded_file_uri(client):
             ),
         ],
     )
-  except errors.ClientError as e:
-    print('\nclient is:>>>>>>>>', client)
-    print(e)
 
-def test_from_uri_error(client):
-  # missing mime_type
-  with pytest.raises(TypeError):
+
+def test_from_uri_inferred_mime_type(client):
+  # gs://generativeai-downloads/images/scones.jpg isn't supported in MLDev
+  with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents=[
             'What is this image about?',
             types.Part.from_uri(
                 file_uri='gs://generativeai-downloads/images/scones.jpg'
+            ),
+        ],
+    )
+
+
+def test_from_uri_invalid_inferred_mime_type(client):
+  # Throws ValueError if mime_type cannot be inferred.
+  with pytest.raises(ValueError):
+    client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=[
+            'What is this image about?',
+            types.Part.from_uri(
+                file_uri='uri/without/mime/type'
             ),
         ],
     )

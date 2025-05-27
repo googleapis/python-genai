@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_vertexai",
         parameters=genai_types._GetTuningJobParameters(
-            name="projects/801452371447/locations/us-central1/tuningJobs/5608183405364641792"
+            name="projects/801452371447/locations/us-central1/tuningJobs/4303478340632707072"
         ),
         exception_if_mldev="Not Found",
     ),
@@ -47,7 +47,7 @@ pytest_plugins = ("pytest_asyncio",)
 def test_helper_properties(client):
   if client._api_client.vertexai:
     job = client.tunings.get(
-        name="projects/801452371447/locations/us-central1/tuningJobs/5608183405364641792"
+        name="projects/801452371447/locations/us-central1/tuningJobs/4303478340632707072",
     )
   else:
     job = client.tunings.get(

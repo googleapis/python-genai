@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from .. import pytest_helper
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_not_empty',
-        exception_if_vertex='only supported in the default client',
+        exception_if_vertex='only supported in the Gemini Developer client',
         parameters=types._ListFilesParameters(
             config=types.ListFilesConfig(
                 page_size=2,
