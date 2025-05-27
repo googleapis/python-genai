@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+    <!-- Generated with Sphinx 8.2.1 and Furo 2024.08.06 -->
         <title>google - Google Gen AI SDK documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
@@ -273,6 +273,7 @@
 <li class="toctree-l1"><a class="reference internal" href="genai.html">Submodules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.client">genai.client module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.client.AsyncClient"><code class="docutils literal notranslate"><span class="pre">AsyncClient</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.auth_tokens"><code class="docutils literal notranslate"><span class="pre">AsyncClient.auth_tokens</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.batches"><code class="docutils literal notranslate"><span class="pre">AsyncClient.batches</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.caches"><code class="docutils literal notranslate"><span class="pre">AsyncClient.caches</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.chats"><code class="docutils literal notranslate"><span class="pre">AsyncClient.chats</span></code></a></li>
@@ -292,6 +293,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.debug_config"><code class="docutils literal notranslate"><span class="pre">Client.debug_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.http_options"><code class="docutils literal notranslate"><span class="pre">Client.http_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.aio"><code class="docutils literal notranslate"><span class="pre">Client.aio</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.auth_tokens"><code class="docutils literal notranslate"><span class="pre">Client.auth_tokens</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.batches"><code class="docutils literal notranslate"><span class="pre">Client.batches</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.caches"><code class="docutils literal notranslate"><span class="pre">Client.caches</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.chats"><code class="docutils literal notranslate"><span class="pre">Client.chats</span></code></a></li>
@@ -391,6 +393,7 @@
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.live">genai.live module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.live.AsyncLive"><code class="docutils literal notranslate"><span class="pre">AsyncLive</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.live.AsyncLive.connect"><code class="docutils literal notranslate"><span class="pre">AsyncLive.connect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.live.AsyncLive.music"><code class="docutils literal notranslate"><span class="pre">AsyncLive.music</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.live.AsyncSession"><code class="docutils literal notranslate"><span class="pre">AsyncSession</span></code></a><ul>
@@ -403,6 +406,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.live.AsyncSession.start_stream"><code class="docutils literal notranslate"><span class="pre">AsyncSession.start_stream()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.live.live_ephemeral_connect"><code class="docutils literal notranslate"><span class="pre">live_ephemeral_connect()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.models">genai.models module</a><ul>
@@ -484,6 +488,18 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ApiKeyConfigDict.api_key_string"><code class="docutils literal notranslate"><span class="pre">ApiKeyConfigDict.api_key_string</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AudioChunk"><code class="docutils literal notranslate"><span class="pre">AudioChunk</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AudioChunk.data"><code class="docutils literal notranslate"><span class="pre">AudioChunk.data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AudioChunk.mime_type"><code class="docutils literal notranslate"><span class="pre">AudioChunk.mime_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AudioChunk.source_metadata"><code class="docutils literal notranslate"><span class="pre">AudioChunk.source_metadata</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AudioChunkDict"><code class="docutils literal notranslate"><span class="pre">AudioChunkDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AudioChunkDict.data"><code class="docutils literal notranslate"><span class="pre">AudioChunkDict.data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AudioChunkDict.mime_type"><code class="docutils literal notranslate"><span class="pre">AudioChunkDict.mime_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AudioChunkDict.source_metadata"><code class="docutils literal notranslate"><span class="pre">AudioChunkDict.source_metadata</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AudioTranscriptionConfig"><code class="docutils literal notranslate"><span class="pre">AudioTranscriptionConfig</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AudioTranscriptionConfigDict"><code class="docutils literal notranslate"><span class="pre">AudioTranscriptionConfigDict</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AuthConfig"><code class="docutils literal notranslate"><span class="pre">AuthConfig</span></code></a><ul>
@@ -538,6 +554,14 @@
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AuthConfigOidcConfigDict"><code class="docutils literal notranslate"><span class="pre">AuthConfigOidcConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AuthConfigOidcConfigDict.id_token"><code class="docutils literal notranslate"><span class="pre">AuthConfigOidcConfigDict.id_token</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AuthConfigOidcConfigDict.service_account"><code class="docutils literal notranslate"><span class="pre">AuthConfigOidcConfigDict.service_account</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AuthToken"><code class="docutils literal notranslate"><span class="pre">AuthToken</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AuthToken.name"><code class="docutils literal notranslate"><span class="pre">AuthToken.name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AuthTokenDict"><code class="docutils literal notranslate"><span class="pre">AuthTokenDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AuthTokenDict.name"><code class="docutils literal notranslate"><span class="pre">AuthTokenDict.name</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AuthType"><code class="docutils literal notranslate"><span class="pre">AuthType</span></code></a><ul>
@@ -630,6 +654,12 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BatchJobSourceDict.gcs_uri"><code class="docutils literal notranslate"><span class="pre">BatchJobSourceDict.gcs_uri</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Behavior"><code class="docutils literal notranslate"><span class="pre">Behavior</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Behavior.BLOCKING"><code class="docutils literal notranslate"><span class="pre">Behavior.BLOCKING</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Behavior.NON_BLOCKING"><code class="docutils literal notranslate"><span class="pre">Behavior.NON_BLOCKING</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Behavior.UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">Behavior.UNSPECIFIED</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Blob"><code class="docutils literal notranslate"><span class="pre">Blob</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Blob.data"><code class="docutils literal notranslate"><span class="pre">Blob.data</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Blob.display_name"><code class="docutils literal notranslate"><span class="pre">Blob.display_name</span></code></a></li>
@@ -705,6 +735,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Candidate.logprobs_result"><code class="docutils literal notranslate"><span class="pre">Candidate.logprobs_result</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Candidate.safety_ratings"><code class="docutils literal notranslate"><span class="pre">Candidate.safety_ratings</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Candidate.token_count"><code class="docutils literal notranslate"><span class="pre">Candidate.token_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Candidate.url_context_metadata"><code class="docutils literal notranslate"><span class="pre">Candidate.url_context_metadata</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CandidateDict"><code class="docutils literal notranslate"><span class="pre">CandidateDict</span></code></a><ul>
@@ -718,6 +749,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CandidateDict.logprobs_result"><code class="docutils literal notranslate"><span class="pre">CandidateDict.logprobs_result</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CandidateDict.safety_ratings"><code class="docutils literal notranslate"><span class="pre">CandidateDict.safety_ratings</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CandidateDict.token_count"><code class="docutils literal notranslate"><span class="pre">CandidateDict.token_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CandidateDict.url_context_metadata"><code class="docutils literal notranslate"><span class="pre">CandidateDict.url_context_metadata</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Checkpoint"><code class="docutils literal notranslate"><span class="pre">Checkpoint</span></code></a><ul>
@@ -879,6 +911,32 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CountTokensResponseDict.total_tokens"><code class="docutils literal notranslate"><span class="pre">CountTokensResponseDict.total_tokens</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfig"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfig.expire_time"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfig.expire_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfig.http_options"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfig.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfig.live_ephemeral_parameters"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfig.live_ephemeral_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfig.lock_additional_fields"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfig.lock_additional_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfig.new_session_expire_time"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfig.new_session_expire_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfig.uses"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfig.uses</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfigDict"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfigDict.expire_time"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfigDict.expire_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfigDict.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfigDict.live_ephemeral_parameters"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfigDict.live_ephemeral_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfigDict.lock_additional_fields"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfigDict.lock_additional_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfigDict.new_session_expire_time"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfigDict.new_session_expire_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenConfigDict.uses"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenConfigDict.uses</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenParameters"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenParameters.config"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenParameters.config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenParametersDict"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenParametersDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateAuthTokenParametersDict.config"><code class="docutils literal notranslate"><span class="pre">CreateAuthTokenParametersDict.config</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfig"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfig.dest"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfig.dest</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfig.display_name"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfig.display_name</span></code></a></li>
@@ -896,6 +954,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig.display_name"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig.display_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig.expire_time"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig.expire_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig.http_options"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig.kms_key_name"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig.kms_key_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig.system_instruction"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig.system_instruction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig.tool_config"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig.tool_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig.tools"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig.tools</span></code></a></li>
@@ -907,6 +966,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfigDict.display_name"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfigDict.display_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfigDict.expire_time"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfigDict.expire_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfigDict.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfigDict.kms_key_name"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfigDict.kms_key_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfigDict.system_instruction"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfigDict.system_instruction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfigDict.tool_config"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfigDict.tool_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfigDict.tools"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfigDict.tools</span></code></a></li>
@@ -1382,6 +1442,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.behavior"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.behavior</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.description"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.name"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.parameters"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.parameters</span></code></a></li>
@@ -1391,6 +1452,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.behavior"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.behavior</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.description"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.name"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.parameters"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.parameters</span></code></a></li>
@@ -1401,12 +1463,23 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponse.id"><code class="docutils literal notranslate"><span class="pre">FunctionResponse.id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponse.name"><code class="docutils literal notranslate"><span class="pre">FunctionResponse.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponse.response"><code class="docutils literal notranslate"><span class="pre">FunctionResponse.response</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponse.scheduling"><code class="docutils literal notranslate"><span class="pre">FunctionResponse.scheduling</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponse.will_continue"><code class="docutils literal notranslate"><span class="pre">FunctionResponse.will_continue</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.FunctionResponseDict"><code class="docutils literal notranslate"><span class="pre">FunctionResponseDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseDict.id"><code class="docutils literal notranslate"><span class="pre">FunctionResponseDict.id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseDict.name"><code class="docutils literal notranslate"><span class="pre">FunctionResponseDict.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseDict.response"><code class="docutils literal notranslate"><span class="pre">FunctionResponseDict.response</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseDict.scheduling"><code class="docutils literal notranslate"><span class="pre">FunctionResponseDict.scheduling</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseDict.will_continue"><code class="docutils literal notranslate"><span class="pre">FunctionResponseDict.will_continue</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.FunctionResponseScheduling"><code class="docutils literal notranslate"><span class="pre">FunctionResponseScheduling</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseScheduling.INTERRUPT"><code class="docutils literal notranslate"><span class="pre">FunctionResponseScheduling.INTERRUPT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseScheduling.SCHEDULING_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">FunctionResponseScheduling.SCHEDULING_UNSPECIFIED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseScheduling.SILENT"><code class="docutils literal notranslate"><span class="pre">FunctionResponseScheduling.SILENT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionResponseScheduling.WHEN_IDLE"><code class="docutils literal notranslate"><span class="pre">FunctionResponseScheduling.WHEN_IDLE</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig</span></code></a><ul>
@@ -1797,8 +1870,14 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleRpcStatusDict.message"><code class="docutils literal notranslate"><span class="pre">GoogleRpcStatusDict.message</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GoogleSearch"><code class="docutils literal notranslate"><span class="pre">GoogleSearch</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GoogleSearchDict"><code class="docutils literal notranslate"><span class="pre">GoogleSearchDict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GoogleSearch"><code class="docutils literal notranslate"><span class="pre">GoogleSearch</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearch.time_range_filter"><code class="docutils literal notranslate"><span class="pre">GoogleSearch.time_range_filter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GoogleSearchDict"><code class="docutils literal notranslate"><span class="pre">GoogleSearchDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearchDict.time_range_filter"><code class="docutils literal notranslate"><span class="pre">GoogleSearchDict.time_range_filter</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GoogleSearchRetrieval"><code class="docutils literal notranslate"><span class="pre">GoogleSearchRetrieval</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearchRetrieval.dynamic_retrieval_config"><code class="docutils literal notranslate"><span class="pre">GoogleSearchRetrieval.dynamic_retrieval_config</span></code></a></li>
 </ul>
@@ -1963,6 +2042,16 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ImagePromptLanguage.hi"><code class="docutils literal notranslate"><span class="pre">ImagePromptLanguage.hi</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ImagePromptLanguage.ja"><code class="docutils literal notranslate"><span class="pre">ImagePromptLanguage.ja</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ImagePromptLanguage.ko"><code class="docutils literal notranslate"><span class="pre">ImagePromptLanguage.ko</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Interval"><code class="docutils literal notranslate"><span class="pre">Interval</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Interval.end_time"><code class="docutils literal notranslate"><span class="pre">Interval.end_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Interval.start_time"><code class="docutils literal notranslate"><span class="pre">Interval.start_time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.IntervalDict"><code class="docutils literal notranslate"><span class="pre">IntervalDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.IntervalDict.end_time"><code class="docutils literal notranslate"><span class="pre">IntervalDict.end_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.IntervalDict.start_time"><code class="docutils literal notranslate"><span class="pre">IntervalDict.start_time</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.JSONSchema"><code class="docutils literal notranslate"><span class="pre">JSONSchema</span></code></a><ul>
@@ -2207,6 +2296,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.input_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.input_audio_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.model"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.output_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.output_audio_transcription</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.proactivity</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.session_resumption"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.session_resumption</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.system_instruction"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.system_instruction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.tools"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.tools</span></code></a></li>
@@ -2218,6 +2308,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.input_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.input_audio_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.model"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.output_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.output_audio_transcription</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.proactivity</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.session_resumption"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.session_resumption</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.system_instruction"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.system_instruction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.tools"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.tools</span></code></a></li>
@@ -2233,11 +2324,14 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.context_window_compression"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.context_window_compression</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.enable_affective_dialog"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.enable_affective_dialog</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.generation_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.generation_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.http_options"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.http_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.input_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.input_audio_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.max_output_tokens"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.max_output_tokens</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.media_resolution"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.media_resolution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.output_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.output_audio_transcription</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.proactivity</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.realtime_input_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.realtime_input_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.response_modalities"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.response_modalities</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.seed"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.seed</span></code></a></li>
@@ -2252,11 +2346,14 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.context_window_compression"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.context_window_compression</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.enable_affective_dialog"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.enable_affective_dialog</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.generation_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.generation_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.http_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.input_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.input_audio_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.max_output_tokens"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.max_output_tokens</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.media_resolution"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.media_resolution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.output_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.output_audio_transcription</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.proactivity</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.realtime_input_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.realtime_input_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.response_modalities"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.response_modalities</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.seed"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.seed</span></code></a></li>
@@ -2277,6 +2374,150 @@
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveConnectParametersDict"><code class="docutils literal notranslate"><span class="pre">LiveConnectParametersDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectParametersDict.config"><code class="docutils literal notranslate"><span class="pre">LiveConnectParametersDict.config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectParametersDict.model"><code class="docutils literal notranslate"><span class="pre">LiveConnectParametersDict.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveEphemeralParameters"><code class="docutils literal notranslate"><span class="pre">LiveEphemeralParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveEphemeralParameters.config"><code class="docutils literal notranslate"><span class="pre">LiveEphemeralParameters.config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveEphemeralParameters.model"><code class="docutils literal notranslate"><span class="pre">LiveEphemeralParameters.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveEphemeralParametersDict"><code class="docutils literal notranslate"><span class="pre">LiveEphemeralParametersDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveEphemeralParametersDict.config"><code class="docutils literal notranslate"><span class="pre">LiveEphemeralParametersDict.config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveEphemeralParametersDict.model"><code class="docutils literal notranslate"><span class="pre">LiveEphemeralParametersDict.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientContent"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientContent</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientContent.weighted_prompts"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientContent.weighted_prompts</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientContentDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientContentDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientContentDict.weighted_prompts"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientContentDict.weighted_prompts</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessage"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessage</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessage.client_content"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessage.client_content</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessage.music_generation_config"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessage.music_generation_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessage.playback_control"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessage.playback_control</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessage.setup"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessage.setup</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessageDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessageDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessageDict.client_content"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessageDict.client_content</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessageDict.music_generation_config"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessageDict.music_generation_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessageDict.playback_control"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessageDict.playback_control</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientMessageDict.setup"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientMessageDict.setup</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientSetup"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientSetup</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientSetup.model"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientSetup.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientSetupDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientSetupDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicClientSetupDict.model"><code class="docutils literal notranslate"><span class="pre">LiveMusicClientSetupDict.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicConnectParameters"><code class="docutils literal notranslate"><span class="pre">LiveMusicConnectParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicConnectParameters.model"><code class="docutils literal notranslate"><span class="pre">LiveMusicConnectParameters.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicConnectParametersDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicConnectParametersDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicConnectParametersDict.model"><code class="docutils literal notranslate"><span class="pre">LiveMusicConnectParametersDict.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicFilteredPrompt"><code class="docutils literal notranslate"><span class="pre">LiveMusicFilteredPrompt</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicFilteredPrompt.filtered_reason"><code class="docutils literal notranslate"><span class="pre">LiveMusicFilteredPrompt.filtered_reason</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicFilteredPrompt.text"><code class="docutils literal notranslate"><span class="pre">LiveMusicFilteredPrompt.text</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicFilteredPromptDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicFilteredPromptDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicFilteredPromptDict.filtered_reason"><code class="docutils literal notranslate"><span class="pre">LiveMusicFilteredPromptDict.filtered_reason</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicFilteredPromptDict.text"><code class="docutils literal notranslate"><span class="pre">LiveMusicFilteredPromptDict.text</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.bpm"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.bpm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.brightness"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.brightness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.density"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.density</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.guidance"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.guidance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.music_generation_mode"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.music_generation_mode</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.mute_bass"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.mute_bass</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.mute_drums"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.mute_drums</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.only_bass_and_drums"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.only_bass_and_drums</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.scale"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.scale</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.seed"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.temperature"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.temperature</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfig.top_k"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfig.top_k</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.bpm"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.bpm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.brightness"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.brightness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.density"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.density</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.guidance"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.guidance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.music_generation_mode"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.music_generation_mode</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.mute_bass"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.mute_bass</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.mute_drums"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.mute_drums</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.only_bass_and_drums"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.only_bass_and_drums</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.scale"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.scale</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.seed"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.temperature"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.temperature</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicGenerationConfigDict.top_k"><code class="docutils literal notranslate"><span class="pre">LiveMusicGenerationConfigDict.top_k</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicPlaybackControl"><code class="docutils literal notranslate"><span class="pre">LiveMusicPlaybackControl</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicPlaybackControl.PAUSE"><code class="docutils literal notranslate"><span class="pre">LiveMusicPlaybackControl.PAUSE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicPlaybackControl.PLAY"><code class="docutils literal notranslate"><span class="pre">LiveMusicPlaybackControl.PLAY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicPlaybackControl.PLAYBACK_CONTROL_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">LiveMusicPlaybackControl.PLAYBACK_CONTROL_UNSPECIFIED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicPlaybackControl.RESET_CONTEXT"><code class="docutils literal notranslate"><span class="pre">LiveMusicPlaybackControl.RESET_CONTEXT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicPlaybackControl.STOP"><code class="docutils literal notranslate"><span class="pre">LiveMusicPlaybackControl.STOP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerContent"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerContent</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerContent.audio_chunks"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerContent.audio_chunks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerContentDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerContentDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerContentDict.audio_chunks"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerContentDict.audio_chunks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessage"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessage</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessage.filtered_prompt"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessage.filtered_prompt</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessage.server_content"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessage.server_content</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessage.setup_complete"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessage.setup_complete</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessageDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessageDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessageDict.filtered_prompt"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessageDict.filtered_prompt</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessageDict.server_content"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessageDict.server_content</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerMessageDict.setup_complete"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerMessageDict.setup_complete</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerSetupComplete"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerSetupComplete</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicServerSetupCompleteDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicServerSetupCompleteDict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetConfigParameters"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetConfigParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetConfigParameters.music_generation_config"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetConfigParameters.music_generation_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetConfigParametersDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetConfigParametersDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetConfigParametersDict.music_generation_config"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetConfigParametersDict.music_generation_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetWeightedPromptsParameters"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetWeightedPromptsParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetWeightedPromptsParameters.weighted_prompts"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetWeightedPromptsParameters.weighted_prompts</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetWeightedPromptsParametersDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetWeightedPromptsParametersDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSetWeightedPromptsParametersDict.weighted_prompts"><code class="docutils literal notranslate"><span class="pre">LiveMusicSetWeightedPromptsParametersDict.weighted_prompts</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicSourceMetadata"><code class="docutils literal notranslate"><span class="pre">LiveMusicSourceMetadata</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSourceMetadata.client_content"><code class="docutils literal notranslate"><span class="pre">LiveMusicSourceMetadata.client_content</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSourceMetadata.music_generation_config"><code class="docutils literal notranslate"><span class="pre">LiveMusicSourceMetadata.music_generation_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveMusicSourceMetadataDict"><code class="docutils literal notranslate"><span class="pre">LiveMusicSourceMetadataDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSourceMetadataDict.client_content"><code class="docutils literal notranslate"><span class="pre">LiveMusicSourceMetadataDict.client_content</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveMusicSourceMetadataDict.music_generation_config"><code class="docutils literal notranslate"><span class="pre">LiveMusicSourceMetadataDict.music_generation_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveSendRealtimeInputParameters"><code class="docutils literal notranslate"><span class="pre">LiveSendRealtimeInputParameters</span></code></a><ul>
@@ -2307,6 +2548,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContent.model_turn"><code class="docutils literal notranslate"><span class="pre">LiveServerContent.model_turn</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContent.output_transcription"><code class="docutils literal notranslate"><span class="pre">LiveServerContent.output_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContent.turn_complete"><code class="docutils literal notranslate"><span class="pre">LiveServerContent.turn_complete</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContent.url_context_metadata"><code class="docutils literal notranslate"><span class="pre">LiveServerContent.url_context_metadata</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveServerContentDict"><code class="docutils literal notranslate"><span class="pre">LiveServerContentDict</span></code></a><ul>
@@ -2317,6 +2559,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContentDict.model_turn"><code class="docutils literal notranslate"><span class="pre">LiveServerContentDict.model_turn</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContentDict.output_transcription"><code class="docutils literal notranslate"><span class="pre">LiveServerContentDict.output_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContentDict.turn_complete"><code class="docutils literal notranslate"><span class="pre">LiveServerContentDict.turn_complete</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveServerContentDict.url_context_metadata"><code class="docutils literal notranslate"><span class="pre">LiveServerContentDict.url_context_metadata</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveServerGoAway"><code class="docutils literal notranslate"><span class="pre">LiveServerGoAway</span></code></a><ul>
@@ -2525,6 +2768,20 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ModelSelectionConfigDict.feature_selection_preference"><code class="docutils literal notranslate"><span class="pre">ModelSelectionConfigDict.feature_selection_preference</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.MultiSpeakerVoiceConfig"><code class="docutils literal notranslate"><span class="pre">MultiSpeakerVoiceConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.MultiSpeakerVoiceConfig.speaker_voice_configs"><code class="docutils literal notranslate"><span class="pre">MultiSpeakerVoiceConfig.speaker_voice_configs</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.MultiSpeakerVoiceConfigDict"><code class="docutils literal notranslate"><span class="pre">MultiSpeakerVoiceConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.MultiSpeakerVoiceConfigDict.speaker_voice_configs"><code class="docutils literal notranslate"><span class="pre">MultiSpeakerVoiceConfigDict.speaker_voice_configs</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.MusicGenerationMode"><code class="docutils literal notranslate"><span class="pre">MusicGenerationMode</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.MusicGenerationMode.DIVERSITY"><code class="docutils literal notranslate"><span class="pre">MusicGenerationMode.DIVERSITY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.MusicGenerationMode.MUSIC_GENERATION_MODE_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">MusicGenerationMode.MUSIC_GENERATION_MODE_UNSPECIFIED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.MusicGenerationMode.QUALITY"><code class="docutils literal notranslate"><span class="pre">MusicGenerationMode.QUALITY</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Operation"><code class="docutils literal notranslate"><span class="pre">Operation</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Operation.done"><code class="docutils literal notranslate"><span class="pre">Operation.done</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Operation.error"><code class="docutils literal notranslate"><span class="pre">Operation.error</span></code></a></li>
@@ -2601,6 +2858,14 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.PrebuiltVoiceConfigDict"><code class="docutils literal notranslate"><span class="pre">PrebuiltVoiceConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PrebuiltVoiceConfigDict.voice_name"><code class="docutils literal notranslate"><span class="pre">PrebuiltVoiceConfigDict.voice_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ProactivityConfig"><code class="docutils literal notranslate"><span class="pre">ProactivityConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ProactivityConfig.proactive_audio"><code class="docutils literal notranslate"><span class="pre">ProactivityConfig.proactive_audio</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ProactivityConfigDict"><code class="docutils literal notranslate"><span class="pre">ProactivityConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ProactivityConfigDict.proactive_audio"><code class="docutils literal notranslate"><span class="pre">ProactivityConfigDict.proactive_audio</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.RagRetrievalConfig"><code class="docutils literal notranslate"><span class="pre">RagRetrievalConfig</span></code></a><ul>
@@ -2812,6 +3077,22 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SafetySettingDict.threshold"><code class="docutils literal notranslate"><span class="pre">SafetySettingDict.threshold</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Scale"><code class="docutils literal notranslate"><span class="pre">Scale</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.A_FLAT_MAJOR_F_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.A_FLAT_MAJOR_F_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.A_MAJOR_G_FLAT_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.A_MAJOR_G_FLAT_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.B_FLAT_MAJOR_G_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.B_FLAT_MAJOR_G_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.B_MAJOR_A_FLAT_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.B_MAJOR_A_FLAT_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.C_MAJOR_A_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.C_MAJOR_A_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.D_FLAT_MAJOR_B_FLAT_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.D_FLAT_MAJOR_B_FLAT_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.D_MAJOR_B_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.D_MAJOR_B_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.E_FLAT_MAJOR_C_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.E_FLAT_MAJOR_C_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.E_MAJOR_D_FLAT_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.E_MAJOR_D_FLAT_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.F_MAJOR_D_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.F_MAJOR_D_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.G_FLAT_MAJOR_E_FLAT_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.G_FLAT_MAJOR_E_FLAT_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.G_MAJOR_E_MINOR"><code class="docutils literal notranslate"><span class="pre">Scale.G_MAJOR_E_MINOR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Scale.SCALE_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">Scale.SCALE_UNSPECIFIED</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Schema"><code class="docutils literal notranslate"><span class="pre">Schema</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Schema.any_of"><code class="docutils literal notranslate"><span class="pre">Schema.any_of</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Schema.default"><code class="docutils literal notranslate"><span class="pre">Schema.default</span></code></a></li>
@@ -2905,13 +3186,25 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SlidingWindowDict.target_tokens"><code class="docutils literal notranslate"><span class="pre">SlidingWindowDict.target_tokens</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.SpeakerVoiceConfig"><code class="docutils literal notranslate"><span class="pre">SpeakerVoiceConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeakerVoiceConfig.speaker"><code class="docutils literal notranslate"><span class="pre">SpeakerVoiceConfig.speaker</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeakerVoiceConfig.voice_config"><code class="docutils literal notranslate"><span class="pre">SpeakerVoiceConfig.voice_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.SpeakerVoiceConfigDict"><code class="docutils literal notranslate"><span class="pre">SpeakerVoiceConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeakerVoiceConfigDict.speaker"><code class="docutils literal notranslate"><span class="pre">SpeakerVoiceConfigDict.speaker</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeakerVoiceConfigDict.voice_config"><code class="docutils literal notranslate"><span class="pre">SpeakerVoiceConfigDict.voice_config</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.SpeechConfig"><code class="docutils literal notranslate"><span class="pre">SpeechConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeechConfig.language_code"><code class="docutils literal notranslate"><span class="pre">SpeechConfig.language_code</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeechConfig.multi_speaker_voice_config"><code class="docutils literal notranslate"><span class="pre">SpeechConfig.multi_speaker_voice_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeechConfig.voice_config"><code class="docutils literal notranslate"><span class="pre">SpeechConfig.voice_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.SpeechConfigDict"><code class="docutils literal notranslate"><span class="pre">SpeechConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeechConfigDict.language_code"><code class="docutils literal notranslate"><span class="pre">SpeechConfigDict.language_code</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeechConfigDict.multi_speaker_voice_config"><code class="docutils literal notranslate"><span class="pre">SpeechConfigDict.multi_speaker_voice_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.SpeechConfigDict.voice_config"><code class="docutils literal notranslate"><span class="pre">SpeechConfigDict.voice_config</span></code></a></li>
 </ul>
 </li>
@@ -3132,6 +3425,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Tool.google_search"><code class="docutils literal notranslate"><span class="pre">Tool.google_search</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Tool.google_search_retrieval"><code class="docutils literal notranslate"><span class="pre">Tool.google_search_retrieval</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Tool.retrieval"><code class="docutils literal notranslate"><span class="pre">Tool.retrieval</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Tool.url_context"><code class="docutils literal notranslate"><span class="pre">Tool.url_context</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ToolCodeExecution"><code class="docutils literal notranslate"><span class="pre">ToolCodeExecution</span></code></a></li>
@@ -3154,6 +3448,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ToolDict.google_search"><code class="docutils literal notranslate"><span class="pre">ToolDict.google_search</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ToolDict.google_search_retrieval"><code class="docutils literal notranslate"><span class="pre">ToolDict.google_search_retrieval</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ToolDict.retrieval"><code class="docutils literal notranslate"><span class="pre">ToolDict.retrieval</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ToolDict.url_context"><code class="docutils literal notranslate"><span class="pre">ToolDict.url_context</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TrafficType"><code class="docutils literal notranslate"><span class="pre">TrafficType</span></code></a><ul>
@@ -3386,6 +3681,32 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageResponseDict.generated_images"><code class="docutils literal notranslate"><span class="pre">UpscaleImageResponseDict.generated_images</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UrlContext"><code class="docutils literal notranslate"><span class="pre">UrlContext</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UrlContextDict"><code class="docutils literal notranslate"><span class="pre">UrlContextDict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UrlContextMetadata"><code class="docutils literal notranslate"><span class="pre">UrlContextMetadata</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlContextMetadata.url_metadata"><code class="docutils literal notranslate"><span class="pre">UrlContextMetadata.url_metadata</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UrlContextMetadataDict"><code class="docutils literal notranslate"><span class="pre">UrlContextMetadataDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlContextMetadataDict.url_metadata"><code class="docutils literal notranslate"><span class="pre">UrlContextMetadataDict.url_metadata</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UrlMetadata"><code class="docutils literal notranslate"><span class="pre">UrlMetadata</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlMetadata.retrieved_url"><code class="docutils literal notranslate"><span class="pre">UrlMetadata.retrieved_url</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlMetadata.url_retrieval_status"><code class="docutils literal notranslate"><span class="pre">UrlMetadata.url_retrieval_status</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UrlMetadataDict"><code class="docutils literal notranslate"><span class="pre">UrlMetadataDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlMetadataDict.retrieved_url"><code class="docutils literal notranslate"><span class="pre">UrlMetadataDict.retrieved_url</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlMetadataDict.url_retrieval_status"><code class="docutils literal notranslate"><span class="pre">UrlMetadataDict.url_retrieval_status</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UrlRetrievalStatus"><code class="docutils literal notranslate"><span class="pre">UrlRetrievalStatus</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlRetrievalStatus.URL_RETRIEVAL_STATUS_ERROR"><code class="docutils literal notranslate"><span class="pre">UrlRetrievalStatus.URL_RETRIEVAL_STATUS_ERROR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlRetrievalStatus.URL_RETRIEVAL_STATUS_SUCCESS"><code class="docutils literal notranslate"><span class="pre">UrlRetrievalStatus.URL_RETRIEVAL_STATUS_SUCCESS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UrlRetrievalStatus.URL_RETRIEVAL_STATUS_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">UrlRetrievalStatus.URL_RETRIEVAL_STATUS_UNSPECIFIED</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UsageMetadata"><code class="docutils literal notranslate"><span class="pre">UsageMetadata</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UsageMetadata.cache_tokens_details"><code class="docutils literal notranslate"><span class="pre">UsageMetadata.cache_tokens_details</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UsageMetadata.cached_content_token_count"><code class="docutils literal notranslate"><span class="pre">UsageMetadata.cached_content_token_count</span></code></a></li>
@@ -3471,11 +3792,13 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.VideoMetadata"><code class="docutils literal notranslate"><span class="pre">VideoMetadata</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.VideoMetadata.end_offset"><code class="docutils literal notranslate"><span class="pre">VideoMetadata.end_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.VideoMetadata.fps"><code class="docutils literal notranslate"><span class="pre">VideoMetadata.fps</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.VideoMetadata.start_offset"><code class="docutils literal notranslate"><span class="pre">VideoMetadata.start_offset</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.VideoMetadataDict"><code class="docutils literal notranslate"><span class="pre">VideoMetadataDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.VideoMetadataDict.end_offset"><code class="docutils literal notranslate"><span class="pre">VideoMetadataDict.end_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.VideoMetadataDict.fps"><code class="docutils literal notranslate"><span class="pre">VideoMetadataDict.fps</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.VideoMetadataDict.start_offset"><code class="docutils literal notranslate"><span class="pre">VideoMetadataDict.start_offset</span></code></a></li>
 </ul>
 </li>
@@ -3485,6 +3808,16 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.VoiceConfigDict"><code class="docutils literal notranslate"><span class="pre">VoiceConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.VoiceConfigDict.prebuilt_voice_config"><code class="docutils literal notranslate"><span class="pre">VoiceConfigDict.prebuilt_voice_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.WeightedPrompt"><code class="docutils literal notranslate"><span class="pre">WeightedPrompt</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WeightedPrompt.text"><code class="docutils literal notranslate"><span class="pre">WeightedPrompt.text</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WeightedPrompt.weight"><code class="docutils literal notranslate"><span class="pre">WeightedPrompt.weight</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.WeightedPromptDict"><code class="docutils literal notranslate"><span class="pre">WeightedPromptDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WeightedPromptDict.text"><code class="docutils literal notranslate"><span class="pre">WeightedPromptDict.text</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WeightedPromptDict.weight"><code class="docutils literal notranslate"><span class="pre">WeightedPromptDict.weight</span></code></a></li>
 </ul>
 </li>
 </ul>
