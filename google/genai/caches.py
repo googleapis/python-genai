@@ -66,6 +66,24 @@ def _Blob_to_mldev(
   return to_object
 
 
+def _FileData_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
 def _Part_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -93,6 +111,15 @@ def _Part_to_mldev(
         ),
     )
 
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_mldev(
+            api_client, getv(from_object, ['file_data']), to_object
+        ),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -102,9 +129,6 @@ def _Part_to_mldev(
 
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
 
   if getv(from_object, ['function_call']) is not None:
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
@@ -428,6 +452,9 @@ def _RetrievalConfig_to_mldev(
         _LatLng_to_mldev(api_client, getv(from_object, ['lat_lng']), to_object),
     )
 
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
   return to_object
 
 
@@ -704,6 +731,24 @@ def _Blob_to_vertex(
   return to_object
 
 
+def _FileData_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
 def _Part_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -731,6 +776,15 @@ def _Part_to_vertex(
         ),
     )
 
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_vertex(
+            api_client, getv(from_object, ['file_data']), to_object
+        ),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -740,9 +794,6 @@ def _Part_to_vertex(
 
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
 
   if getv(from_object, ['function_call']) is not None:
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
@@ -1083,6 +1134,9 @@ def _RetrievalConfig_to_vertex(
             api_client, getv(from_object, ['lat_lng']), to_object
         ),
     )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
 
   return to_object
 

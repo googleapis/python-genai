@@ -69,6 +69,24 @@ def _Blob_to_mldev(
   return to_object
 
 
+def _FileData_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
 def _Part_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -96,6 +114,15 @@ def _Part_to_mldev(
         ),
     )
 
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_mldev(
+            api_client, getv(from_object, ['file_data']), to_object
+        ),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -105,9 +132,6 @@ def _Part_to_mldev(
 
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
 
   if getv(from_object, ['function_call']) is not None:
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
@@ -143,6 +167,96 @@ def _Content_to_mldev(
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
+def _Schema_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['additional_properties']) is not None:
+    raise ValueError(
+        'additional_properties parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['defs']) is not None:
+    raise ValueError('defs parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['ref']) is not None:
+    raise ValueError('ref parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['any_of']) is not None:
+    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
+
+  if getv(from_object, ['default']) is not None:
+    setv(to_object, ['default'], getv(from_object, ['default']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['enum']) is not None:
+    setv(to_object, ['enum'], getv(from_object, ['enum']))
+
+  if getv(from_object, ['example']) is not None:
+    setv(to_object, ['example'], getv(from_object, ['example']))
+
+  if getv(from_object, ['format']) is not None:
+    setv(to_object, ['format'], getv(from_object, ['format']))
+
+  if getv(from_object, ['items']) is not None:
+    setv(to_object, ['items'], getv(from_object, ['items']))
+
+  if getv(from_object, ['max_items']) is not None:
+    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
+
+  if getv(from_object, ['max_length']) is not None:
+    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
+
+  if getv(from_object, ['max_properties']) is not None:
+    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
+
+  if getv(from_object, ['maximum']) is not None:
+    setv(to_object, ['maximum'], getv(from_object, ['maximum']))
+
+  if getv(from_object, ['min_items']) is not None:
+    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
+
+  if getv(from_object, ['min_length']) is not None:
+    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
+
+  if getv(from_object, ['min_properties']) is not None:
+    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
+
+  if getv(from_object, ['minimum']) is not None:
+    setv(to_object, ['minimum'], getv(from_object, ['minimum']))
+
+  if getv(from_object, ['nullable']) is not None:
+    setv(to_object, ['nullable'], getv(from_object, ['nullable']))
+
+  if getv(from_object, ['pattern']) is not None:
+    setv(to_object, ['pattern'], getv(from_object, ['pattern']))
+
+  if getv(from_object, ['properties']) is not None:
+    setv(to_object, ['properties'], getv(from_object, ['properties']))
+
+  if getv(from_object, ['property_ordering']) is not None:
+    setv(
+        to_object,
+        ['propertyOrdering'],
+        getv(from_object, ['property_ordering']),
+    )
+
+  if getv(from_object, ['required']) is not None:
+    setv(to_object, ['required'], getv(from_object, ['required']))
+
+  if getv(from_object, ['title']) is not None:
+    setv(to_object, ['title'], getv(from_object, ['title']))
+
+  if getv(from_object, ['type']) is not None:
+    setv(to_object, ['type'], getv(from_object, ['type']))
 
   return to_object
 
@@ -463,6 +577,9 @@ def _RetrievalConfig_to_mldev(
         _LatLng_to_mldev(api_client, getv(from_object, ['lat_lng']), to_object),
     )
 
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
   return to_object
 
 
@@ -688,7 +805,11 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['responseSchema'],
-        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+        _Schema_to_mldev(
+            api_client,
+            t.t_schema(api_client, getv(from_object, ['response_schema'])),
+            to_object,
+        ),
     )
 
   if getv(from_object, ['routing_config']) is not None:
@@ -1370,6 +1491,24 @@ def _Blob_to_vertex(
   return to_object
 
 
+def _FileData_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
 def _Part_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1397,6 +1536,15 @@ def _Part_to_vertex(
         ),
     )
 
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_vertex(
+            api_client, getv(from_object, ['file_data']), to_object
+        ),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -1406,9 +1554,6 @@ def _Part_to_vertex(
 
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
 
   if getv(from_object, ['function_call']) is not None:
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
@@ -1444,6 +1589,98 @@ def _Content_to_vertex(
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
+def _Schema_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['additional_properties']) is not None:
+    setv(
+        to_object,
+        ['additionalProperties'],
+        getv(from_object, ['additional_properties']),
+    )
+
+  if getv(from_object, ['defs']) is not None:
+    setv(to_object, ['defs'], getv(from_object, ['defs']))
+
+  if getv(from_object, ['ref']) is not None:
+    setv(to_object, ['ref'], getv(from_object, ['ref']))
+
+  if getv(from_object, ['any_of']) is not None:
+    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
+
+  if getv(from_object, ['default']) is not None:
+    setv(to_object, ['default'], getv(from_object, ['default']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['enum']) is not None:
+    setv(to_object, ['enum'], getv(from_object, ['enum']))
+
+  if getv(from_object, ['example']) is not None:
+    setv(to_object, ['example'], getv(from_object, ['example']))
+
+  if getv(from_object, ['format']) is not None:
+    setv(to_object, ['format'], getv(from_object, ['format']))
+
+  if getv(from_object, ['items']) is not None:
+    setv(to_object, ['items'], getv(from_object, ['items']))
+
+  if getv(from_object, ['max_items']) is not None:
+    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
+
+  if getv(from_object, ['max_length']) is not None:
+    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
+
+  if getv(from_object, ['max_properties']) is not None:
+    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
+
+  if getv(from_object, ['maximum']) is not None:
+    setv(to_object, ['maximum'], getv(from_object, ['maximum']))
+
+  if getv(from_object, ['min_items']) is not None:
+    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
+
+  if getv(from_object, ['min_length']) is not None:
+    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
+
+  if getv(from_object, ['min_properties']) is not None:
+    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
+
+  if getv(from_object, ['minimum']) is not None:
+    setv(to_object, ['minimum'], getv(from_object, ['minimum']))
+
+  if getv(from_object, ['nullable']) is not None:
+    setv(to_object, ['nullable'], getv(from_object, ['nullable']))
+
+  if getv(from_object, ['pattern']) is not None:
+    setv(to_object, ['pattern'], getv(from_object, ['pattern']))
+
+  if getv(from_object, ['properties']) is not None:
+    setv(to_object, ['properties'], getv(from_object, ['properties']))
+
+  if getv(from_object, ['property_ordering']) is not None:
+    setv(
+        to_object,
+        ['propertyOrdering'],
+        getv(from_object, ['property_ordering']),
+    )
+
+  if getv(from_object, ['required']) is not None:
+    setv(to_object, ['required'], getv(from_object, ['required']))
+
+  if getv(from_object, ['title']) is not None:
+    setv(to_object, ['title'], getv(from_object, ['title']))
+
+  if getv(from_object, ['type']) is not None:
+    setv(to_object, ['type'], getv(from_object, ['type']))
 
   return to_object
 
@@ -1784,6 +2021,9 @@ def _RetrievalConfig_to_vertex(
         ),
     )
 
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
   return to_object
 
 
@@ -1992,7 +2232,11 @@ def _GenerateContentConfig_to_vertex(
     setv(
         to_object,
         ['responseSchema'],
-        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+        _Schema_to_vertex(
+            api_client,
+            t.t_schema(api_client, getv(from_object, ['response_schema'])),
+            to_object,
+        ),
     )
 
   if getv(from_object, ['routing_config']) is not None:
@@ -3135,6 +3379,22 @@ def _Blob_from_mldev(
   return to_object
 
 
+def _FileData_from_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['fileUri']) is not None:
+    setv(to_object, ['file_uri'], getv(from_object, ['fileUri']))
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
 def _Part_from_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -3162,6 +3422,15 @@ def _Part_from_mldev(
         ),
     )
 
+  if getv(from_object, ['fileData']) is not None:
+    setv(
+        to_object,
+        ['file_data'],
+        _FileData_from_mldev(
+            api_client, getv(from_object, ['fileData']), to_object
+        ),
+    )
+
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -3171,9 +3440,6 @@ def _Part_from_mldev(
 
   if getv(from_object, ['executableCode']) is not None:
     setv(to_object, ['executable_code'], getv(from_object, ['executableCode']))
-
-  if getv(from_object, ['fileData']) is not None:
-    setv(to_object, ['file_data'], getv(from_object, ['fileData']))
 
   if getv(from_object, ['functionCall']) is not None:
     setv(to_object, ['function_call'], getv(from_object, ['functionCall']))
@@ -3808,6 +4074,24 @@ def _Blob_from_vertex(
   return to_object
 
 
+def _FileData_from_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['displayName']) is not None:
+    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
+
+  if getv(from_object, ['fileUri']) is not None:
+    setv(to_object, ['file_uri'], getv(from_object, ['fileUri']))
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
 def _Part_from_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -3835,6 +4119,15 @@ def _Part_from_vertex(
         ),
     )
 
+  if getv(from_object, ['fileData']) is not None:
+    setv(
+        to_object,
+        ['file_data'],
+        _FileData_from_vertex(
+            api_client, getv(from_object, ['fileData']), to_object
+        ),
+    )
+
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -3844,9 +4137,6 @@ def _Part_from_vertex(
 
   if getv(from_object, ['executableCode']) is not None:
     setv(to_object, ['executable_code'], getv(from_object, ['executableCode']))
-
-  if getv(from_object, ['fileData']) is not None:
-    setv(to_object, ['file_data'], getv(from_object, ['fileData']))
 
   if getv(from_object, ['functionCall']) is not None:
     setv(to_object, ['function_call'], getv(from_object, ['functionCall']))

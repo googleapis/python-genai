@@ -18,6 +18,7 @@
 import base64
 import copy
 import datetime
+import enum
 import inspect
 import io
 import json
@@ -35,6 +36,55 @@ from ._api_client import HttpResponse
 from ._common import BaseModel
 from .types import HttpOptions, HttpOptionsOrDict
 from .types import GenerateVideosOperation
+
+
+def to_snake_case(name: str) -> str:
+  """Converts a string from camelCase or PascalCase to snake_case."""
+
+  if not isinstance(name, str):
+    name = str(name)
+  s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+  return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def _normalize_json_case(obj: Any) -> Any:
+  if isinstance(obj, dict):
+    return {
+        to_snake_case(k): _normalize_json_case(v)
+        for k, v in obj.items()
+    }
+  elif isinstance(obj, list):
+    return [_normalize_json_case(item) for item in obj]
+  elif isinstance(obj, enum.Enum):
+    return obj.value
+  else:
+    return obj
+
+
+def _equals_ignore_key_case(obj1: Any, obj2: Any) -> bool:
+  """Compares two Python objects for equality ignoring key casing.
+
+  Returns:
+      bool: True if the two objects are equal regardless of key casing
+  (camelCase vs. snake_case). For example, the following are considered equal:
+
+  {'my_key': 'my_value'}
+  {'myKey': 'my_value'}
+
+  This also considers enums and strings with the same value as equal.
+  For example, the following are considered equal:
+
+  {'type': <Type.STRING: 'STRING'>}}
+  {'type': 'STRING'}
+  """
+
+  normalized_obj_1 = _normalize_json_case(obj1)
+  normalized_obj_2 = _normalize_json_case(obj2)
+
+  if normalized_obj_1 == normalized_obj_2:
+    return True
+  else:
+    return False
 
 
 def _redact_version_numbers(version_string: str) -> str:
@@ -358,7 +408,7 @@ class ReplayApiClient(BaseApiClient):
 
     actual_request_body = [request_data_copy]
     expected_request_body = interaction.request.body_segments
-    assert actual_request_body == expected_request_body, (
+    assert _equals_ignore_key_case(actual_request_body, expected_request_body), (
         'Request body mismatch:\n'
         f'Actual: {actual_request_body}\n'
         f'Expected: {expected_request_body}'

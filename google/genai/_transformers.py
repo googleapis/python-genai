@@ -630,6 +630,21 @@ def handle_null_fields(schema: dict[str, Any]) -> None:
           del schema['anyOf']
 
 
+def _raise_for_unsupported_schema_type(origin: Any) -> None:
+  """Raises an error if the schema type is unsupported."""
+  raise ValueError(f'Unsupported schema type: {origin}')
+
+
+def _raise_for_unsupported_mldev_properties(schema: Any, client: _api_client.BaseApiClient) -> None:
+  if not client.vertexai and (
+      schema.get('additionalProperties')
+      or schema.get('additional_properties')
+  ):
+    raise ValueError(
+        'additionalProperties is not supported in the Gemini API.'
+    )
+
+
 def process_schema(
     schema: dict[str, Any],
     client: _api_client.BaseApiClient,
@@ -699,6 +714,8 @@ def process_schema(
   """
   if schema.get('title') == 'PlaceholderLiteralEnum':
     del schema['title']
+
+  _raise_for_unsupported_mldev_properties(schema, client)
 
   # Standardize spelling for relevant schema fields.  For example, if a dict is
   # provided directly to response_schema, it may use `any_of` instead of `anyOf.
@@ -818,8 +835,9 @@ def t_schema(
     return _process_enum(origin, client)
   if isinstance(origin, types.Schema):
     if dict(origin) == dict(types.Schema()):
-      # response_schema value was coerced to an empty Schema instance because it did not adhere to the Schema field annotation
-      raise ValueError(f'Unsupported schema type.')
+      # response_schema value was coerced to an empty Schema instance because
+      # it did not adhere to the Schema field annotation
+      _raise_for_unsupported_schema_type(origin)
     schema = origin.model_dump(exclude_unset=True)
     process_schema(schema, client)
     return types.Schema.model_validate(schema)
