@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.17.0](https://github.com/googleapis/python-genai/compare/v1.16.1...v1.17.0) (2025-05-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove unsupported Lyria enum for music generation mode
+
+### Features
+
+* Add generate_audio field for private testing of video generation ([c2bccf3](https://github.com/googleapis/python-genai/commit/c2bccf373806be03c4e69973df8157dba6a2d0dc))
+* Send automatic function calling None responses as NULL to the model ([8446e3d](https://github.com/googleapis/python-genai/commit/8446e3deb514fd0bbc929d8dc8bcf79264bc0b45))
+* Support API keys for live in VertexAI mode ([5b5a750](https://github.com/googleapis/python-genai/commit/5b5a750fb25a2cdece16ca4027364ff0c9a591ef))
+* Support new fields in FileData, GenerationConfig, GroundingChunkRetrievedContext, RetrievalConfig, Schema, TuningJob, VertexAISearch, ([b07c549](https://github.com/googleapis/python-genai/commit/b07c549fa0d380629e5e25956291cb0693b23c94))
+
+
+### Documentation
+
+* Fix comment typo for Modality.AUDIO ([d16cf1e](https://github.com/googleapis/python-genai/commit/d16cf1e9b1c2d210b911d3b3f7da5da891148c39)), closes [#620](https://github.com/googleapis/python-genai/issues/620)
+* Fix README typo. ([59ae8e0](https://github.com/googleapis/python-genai/commit/59ae8e0d18449b4eba109cfc5697d62b149eda6d))
+
+
+### Miscellaneous Chores
+
+* Remove unsupported Lyria enum for music generation mode ([98ff507](https://github.com/googleapis/python-genai/commit/98ff507d368d48066c701256c60718b620b098e2))
+
 ## [1.16.1](https://github.com/googleapis/python-genai/compare/v1.16.0...v1.16.1) (2025-05-20)
 
 
