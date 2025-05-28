@@ -1417,6 +1417,9 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['enhance_prompt']) is not None:
     raise ValueError('enhance_prompt parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['generate_audio']) is not None:
+    raise ValueError('generate_audio parameter is not supported in Gemini API.')
+
   return to_object
 
 
@@ -3280,6 +3283,13 @@ def _GenerateVideosConfig_to_vertex(
         parent_object,
         ['parameters', 'enhancePrompt'],
         getv(from_object, ['enhance_prompt']),
+    )
+
+  if getv(from_object, ['generate_audio']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'generateAudio'],
+        getv(from_object, ['generate_audio']),
     )
 
   return to_object
