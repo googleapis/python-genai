@@ -297,7 +297,7 @@ class Modality(_common.CaseInSensitiveEnum):
   IMAGE = 'IMAGE'
   """Indicates the model should return images."""
   AUDIO = 'AUDIO'
-  """Indicates the model should return images."""
+  """Indicates the model should return audio."""
 
 
 class MediaResolution(_common.CaseInSensitiveEnum):
@@ -604,19 +604,6 @@ class Scale(_common.CaseInSensitiveEnum):
   """Bb major or G minor."""
   B_MAJOR_A_FLAT_MINOR = 'B_MAJOR_A_FLAT_MINOR'
   """B major or Ab minor."""
-
-
-class MusicGenerationMode(_common.CaseInSensitiveEnum):
-  """The mode of music generation."""
-
-  MUSIC_GENERATION_MODE_UNSPECIFIED = 'MUSIC_GENERATION_MODE_UNSPECIFIED'
-  """This value is unused."""
-  QUALITY = 'QUALITY'
-  """Steer text prompts to regions of latent space with higher quality
-      music."""
-  DIVERSITY = 'DIVERSITY'
-  """Steer text prompts to regions of latent space with a larger diversity
-      of music."""
 
 
 class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
@@ -12157,10 +12144,6 @@ class LiveMusicGenerationConfig(_common.BaseModel):
       default=None,
       description="""Whether the audio output should contain only bass and drums.""",
   )
-  music_generation_mode: Optional[MusicGenerationMode] = Field(
-      default=None,
-      description="""The mode of music generation. Default mode is QUALITY.""",
-  )
 
 
 class LiveMusicGenerationConfigDict(TypedDict, total=False):
@@ -12203,9 +12186,6 @@ class LiveMusicGenerationConfigDict(TypedDict, total=False):
 
   only_bass_and_drums: Optional[bool]
   """Whether the audio output should contain only bass and drums."""
-
-  music_generation_mode: Optional[MusicGenerationMode]
-  """The mode of music generation. Default mode is QUALITY."""
 
 
 LiveMusicGenerationConfigOrDict = Union[
