@@ -6996,6 +6996,10 @@ class GenerateVideosConfig(_common.BaseModel):
   enhance_prompt: Optional[bool] = Field(
       default=None, description="""Whether to use the prompt rewriting logic."""
   )
+  generate_audio: Optional[bool] = Field(
+      default=None,
+      description="""Whether to generate audio along with the video.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -7036,6 +7040,9 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   enhance_prompt: Optional[bool]
   """Whether to use the prompt rewriting logic."""
+
+  generate_audio: Optional[bool]
+  """Whether to generate audio along with the video."""
 
 
 GenerateVideosConfigOrDict = Union[
