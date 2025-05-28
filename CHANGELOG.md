@@ -3,7 +3,7 @@
 ## [1.17.0](https://github.com/googleapis/python-genai/compare/v1.16.1...v1.17.0) (2025-05-28)
 
 
-### ⚠ BREAKING CHANGES
+### ⚠ BREAKING CHANGES TO EXPERIMENTAL FEATURES
 
 * Remove unsupported Lyria enum for music generation mode
 
