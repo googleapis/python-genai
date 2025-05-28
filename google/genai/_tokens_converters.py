@@ -1599,7 +1599,7 @@ def _LiveConnectConfig_to_vertex(
   return to_object
 
 
-def _LiveEphemeralParameters_to_mldev(
+def _LiveConnectConstraints_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1624,7 +1624,7 @@ def _LiveEphemeralParameters_to_mldev(
   return to_object
 
 
-def _LiveEphemeralParameters_to_vertex(
+def _LiveConnectConstraints_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1659,13 +1659,13 @@ def _CreateAuthTokenConfig_to_mldev(
   if getv(from_object, ['uses']) is not None:
     setv(parent_object, ['uses'], getv(from_object, ['uses']))
 
-  if getv(from_object, ['live_ephemeral_parameters']) is not None:
+  if getv(from_object, ['live_connect_constraints']) is not None:
     setv(
         parent_object,
         ['bidiGenerateContentSetup'],
-        _LiveEphemeralParameters_to_mldev(
+        _LiveConnectConstraints_to_mldev(
             api_client,
-            getv(from_object, ['live_ephemeral_parameters']),
+            getv(from_object, ['live_connect_constraints']),
             to_object,
         ),
     )
@@ -1698,9 +1698,9 @@ def _CreateAuthTokenConfig_to_vertex(
   if getv(from_object, ['uses']) is not None:
     raise ValueError('uses parameter is not supported in Vertex AI.')
 
-  if getv(from_object, ['live_ephemeral_parameters']) is not None:
+  if getv(from_object, ['live_connect_constraints']) is not None:
     raise ValueError(
-        'live_ephemeral_parameters parameter is not supported in Vertex AI.'
+        'live_connect_constraints parameter is not supported in Vertex AI.'
     )
 
   if getv(from_object, ['lock_additional_fields']) is not None:
