@@ -297,7 +297,7 @@ class Modality(_common.CaseInSensitiveEnum):
   IMAGE = 'IMAGE'
   """Indicates the model should return images."""
   AUDIO = 'AUDIO'
-  """Indicates the model should return images."""
+  """Indicates the model should return audio."""
 
 
 class MediaResolution(_common.CaseInSensitiveEnum):
