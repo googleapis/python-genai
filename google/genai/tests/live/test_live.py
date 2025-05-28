@@ -600,8 +600,8 @@ async def test_bidi_setup_to_api_no_config(vertexai):
   expected_result = {'setup': {}}
   if vertexai:
     expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
-    expected_result['setup']['generationConfig'] = {}
-    expected_result['setup']['generationConfig']['responseModalities'] = ["AUDIO"]
+    expected_result['setup']['generation_config'] = {}
+    expected_result['setup']['generation_config']['response_modalities'] = ["AUDIO"]
   else:
     expected_result['setup']['model'] = 'models/test_model'
   assert result == expected_result
@@ -614,28 +614,28 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
   expected_result = {
       'setup': {
           'model': 'models/test_model',
-          'generationConfig': {
-              'speechConfig': {
+          'generation_config': {
+              'speech_config': {
                   # Note: the snake_casing is different from the usual camelCase
                   # here. This is because speechConfig is an unmodified proto
                   # defined in the discovery doc, so it doesn't need to/from
                   # converters. The API is insensitive to the case format.
                   # This looks wrong, but it is okay/correct.
-                  'voiceConfig': {
-                      'prebuiltVoiceConfig': {'voiceName': 'en-default'}
+                  'voice_config': {
+                      'prebuilt_voice_config': {'voice_name': 'en-default'}
                   },
-                  'languageCode': 'en-US',
+                  'language_code': 'en-US',
               },
-              'enableAffectiveDialog': True,
+              'enable_affective_dialog': True,
               'temperature': 0.7,
-              'topP': 0.8,
-              'topK': 9.0,
-              'maxOutputTokens': 10,
-              'mediaResolution': 'MEDIA_RESOLUTION_MEDIUM',
+              'top_p': 0.8,
+              'top_k': 9.0,
+              'max_output_tokens': 10,
+              'media_resolution': 'MEDIA_RESOLUTION_MEDIUM',
               'seed': 13,
           },
-          'proactivity': {'proactiveAudio': True},
-          'systemInstruction': {
+          'proactivity': {'proactive_audio': True},
+          'system_instruction': {
               'parts': [
                   {
                       'text': 'test instruction',
@@ -650,7 +650,7 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
         'projects/test_project/locations/us-central1/'
         'publishers/google/models/test_model'
     )
-    expected_result['setup']['generationConfig']['responseModalities'] = [
+    expected_result['setup']['generation_config']['response_modalities'] = [
         'AUDIO'
     ]
   else:
@@ -760,7 +760,7 @@ async def test_bidi_setup_to_api_with_system_instruction_as_content_type(
   expected_result = {
       'setup': {
           'model': 'test_model',
-          'systemInstruction': {
+          'system_instruction': {
               'parts': [{'text': 'test instruction'}],
               'role': 'user',
           },
@@ -770,8 +770,8 @@ async def test_bidi_setup_to_api_with_system_instruction_as_content_type(
     expected_result['setup'][
         'model'
     ] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
-    expected_result['setup']['generationConfig'] = {}
-    expected_result['setup']['generationConfig']['responseModalities'] = [
+    expected_result['setup']['generation_config'] = {}
+    expected_result['setup']['generation_config']['response_modalities'] = [
         'AUDIO'
     ]
   else:
@@ -797,15 +797,15 @@ async def test_bidi_setup_to_api_with_config_tools_google_search(vertexai):
   config = types.LiveConnectConfig(**config_dict)
   expected_result = {
       'setup': {
-          'generationConfig': {
+          'generation_config': {
               'temperature': 0.7,
-              'responseModalities': ['TEXT'],
+              'response_modalities': ['TEXT'],
           },
-          'systemInstruction': {
+          'system_instruction': {
               'parts': [{'text': 'test instruction'}],
               'role': 'user',
           },
-          'tools': [{'googleSearch': {}}],
+          'tools': [{'google_search': {}}],
       }
   }
   if vertexai:
@@ -841,15 +841,15 @@ async def test_bidi_setup_to_api_with_config_tools_with_no_mcp(vertexai):
   config = types.LiveConnectConfig(**config_dict)
   expected_result = {
       'setup': {
-          'generationConfig': {
+          'generation_config': {
               'temperature': 0.7,
-              'responseModalities': ['TEXT'],
+              'response_modalities': ['TEXT'],
           },
-          'systemInstruction': {
+          'system_instruction': {
               'parts': [{'text': 'test instruction'}],
               'role': 'user',
           },
-          'tools': [{'googleSearch': {}}],
+          'tools': [{'google_search': {}}],
       }
   }
   if vertexai:
@@ -890,17 +890,17 @@ async def test_bidi_setup_to_api_with_context_window_compression(
   )
   expected_result = {
       'setup': {
-          'generationConfig': {
+          'generation_config': {
               'temperature': 0.7,
-              'responseModalities': ['TEXT'],
+              'response_modalities': ['TEXT'],
           },
-          'systemInstruction': {
+          'system_instruction': {
               'parts': [{'text': 'test instruction'}],
               'role': 'user',
           },
-           'contextWindowCompression': {
-              'triggerTokens': 1000,
-              'slidingWindow': {'targetTokens': 10},
+           'context_window_compression': {
+              'trigger_tokens': 1000,
+              'sliding_window': {'target_tokens': 10},
           }
       }
   }
@@ -929,7 +929,7 @@ async def test_bidi_setup_to_api_with_config_tools_function_declaration(
       'setup': {
           'model': 'test_model',
           'tools': [{
-              'functionDeclarations': [{
+              'function_declarations': [{
                   'parameters': {
                       'type': 'OBJECT',
                       'properties': {
@@ -953,10 +953,10 @@ async def test_bidi_setup_to_api_with_config_tools_function_declaration(
       model='test_model', config=config
   )
 
-  assert result['setup']['tools'][0]['functionDeclarations'][0][
+  assert result['setup']['tools'][0]['function_declarations'][0][
       'description'
   ] == (
-      expected_result['setup']['tools'][0]['functionDeclarations'][0][
+      expected_result['setup']['tools'][0]['function_declarations'][0][
           'description'
       ]
   )
@@ -966,10 +966,10 @@ async def test_bidi_setup_to_api_with_config_tools_function_declaration(
       model='test_model', config=config
   )
 
-  assert result['setup']['tools'][0]['functionDeclarations'][0][
+  assert result['setup']['tools'][0]['function_declarations'][0][
       'description'
   ] == (
-      expected_result['setup']['tools'][0]['functionDeclarations'][0][
+      expected_result['setup']['tools'][0]['function_declarations'][0][
           'description'
       ]
   )
@@ -989,7 +989,7 @@ async def test_bidi_setup_to_api_with_config_tools_function_directly(
       'setup': {
           'model': 'test_model',
           'tools': [{
-              'functionDeclarations': [{
+              'function_declarations': [{
                   'parameters': {
                       'type': 'OBJECT',
                       'properties': {
@@ -1013,10 +1013,10 @@ async def test_bidi_setup_to_api_with_config_tools_function_directly(
       model='test_model', config=config
   )
 
-  assert result['setup']['tools'][0]['functionDeclarations'][0][
+  assert result['setup']['tools'][0]['function_declarations'][0][
       'description'
   ] == (
-      expected_result['setup']['tools'][0]['functionDeclarations'][0][
+      expected_result['setup']['tools'][0]['function_declarations'][0][
           'description'
       ]
   )
@@ -1026,10 +1026,10 @@ async def test_bidi_setup_to_api_with_config_tools_function_directly(
       model='test_model', config=config
   )
 
-  assert result['setup']['tools'][0]['functionDeclarations'][0][
+  assert result['setup']['tools'][0]['function_declarations'][0][
       'description'
   ] == (
-      expected_result['setup']['tools'][0]['functionDeclarations'][0][
+      expected_result['setup']['tools'][0]['function_declarations'][0][
           'description'
       ]
   )
@@ -1058,7 +1058,7 @@ async def test_bidi_setup_to_api_with_tools_function_behavior(vertexai):
     return
 
   assert (
-      result['setup']['tools'][0]['functionDeclarations'][0]['behavior']
+      result['setup']['tools'][0]['function_declarations'][0]['behavior']
       == 'NON_BLOCKING'
   )
 
@@ -1075,7 +1075,7 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
       'setup': {
           'model': 'models/test_model',
           'tools': [{
-              'functionDeclarations': [{
+              'function_declarations': [{
                   'parameters': {
                       'type': 'OBJECT',
                       'properties': {
@@ -1092,8 +1092,8 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
   }
   expected_result_vertexai = {
       'setup': {
-          'generationConfig': {
-              'responseModalities': [
+          'generation_config': {
+              'response_modalities': [
                   'AUDIO',
               ],
           },
@@ -1101,7 +1101,7 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
               'projects/test_project/locations/us-central1/publishers/google/models/test_model'
           ),
           'tools': [{
-              'functionDeclarations': [{
+              'function_declarations': [{
                   'parameters': {
                       'type': 'OBJECT',
                       'properties': {
@@ -1172,7 +1172,7 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
       'setup': {
           'model': 'models/test_model',
           'tools': [{
-              'functionDeclarations': [{
+              'function_declarations': [{
                   'parameters': {
                       'type': 'OBJECT',
                       'properties': {
@@ -1189,8 +1189,8 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
   }
   expected_result_vertexai = {
       'setup': {
-          'generationConfig': {
-              'responseModalities': [
+          'generation_config': {
+              'response_modalities': [
                   'AUDIO',
               ],
           },
@@ -1198,7 +1198,7 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
               'projects/test_project/locations/us-central1/publishers/google/models/test_model'
           ),
           'tools': [{
-              'functionDeclarations': [{
+              'function_declarations': [{
                   'parameters': {
                       'type': 'OBJECT',
                       'properties': {
@@ -1241,7 +1241,7 @@ async def test_bidi_setup_to_api_with_config_tools_code_execution(
       'setup': {
           'model': 'test_model',
           'tools': [{
-              'codeExecution': {},
+              'code_execution': {},
           }],
       }
   }
@@ -1274,16 +1274,16 @@ async def test_bidi_setup_to_api_with_realtime_input_config(vertexai):
   expected_result = {
       'setup': {
           'model': 'test_model',
-          'realtimeInputConfig': {
-              'automaticActivityDetection': {
+          'realtime_input_config': {
+              'automatic_activity_detection': {
                   'disabled': True,
-                  'startOfSpeechSensitivity': 'START_SENSITIVITY_HIGH',
-                  'endOfSpeechSensitivity': 'END_SENSITIVITY_HIGH',
-                  'prefixPaddingMs': 20,
-                  'silenceDurationMs': 100,
+                  'start_of_speech_sensitivity': 'START_SENSITIVITY_HIGH',
+                  'end_of_speech_sensitivity': 'END_SENSITIVITY_HIGH',
+                  'prefix_padding_ms': 20,
+                  'silence_duration_ms': 100,
               },
-              'activityHandling': 'NO_INTERRUPTION',
-              'turnCoverage': 'TURN_INCLUDES_ALL_INPUT',
+              'activity_handling': 'NO_INTERRUPTION',
+              'turn_coverage': 'TURN_INCLUDES_ALL_INPUT',
           },
       }
   }
@@ -1294,8 +1294,8 @@ async def test_bidi_setup_to_api_with_realtime_input_config(vertexai):
   )
 
   assert (
-      result['setup']['realtimeInputConfig']
-      == expected_result['setup']['realtimeInputConfig']
+      result['setup']['realtime_input_config']
+      == expected_result['setup']['realtime_input_config']
   )
 
 
@@ -1309,7 +1309,7 @@ async def test_bidi_setup_to_api_with_input_transcription(vertexai):
   expected_result = {
       'setup': {
           'model': 'test_model',
-          'inputAudioTranscription': {},
+          'input_audio_transcription': {},
       }
   }
 
@@ -1318,8 +1318,8 @@ async def test_bidi_setup_to_api_with_input_transcription(vertexai):
   )
 
   assert (
-      result['setup']['inputAudioTranscription']
-      == expected_result['setup']['inputAudioTranscription']
+      result['setup']['input_audio_transcription']
+      == expected_result['setup']['input_audio_transcription']
   )
 
 
@@ -1333,7 +1333,7 @@ async def test_bidi_setup_to_api_with_output_transcription(vertexai):
   expected_result = {
       'setup': {
           'model': 'test_model',
-          'outputAudioTranscription': {},
+          'output_audio_transcription': {},
       }
   }
 
@@ -1343,8 +1343,8 @@ async def test_bidi_setup_to_api_with_output_transcription(vertexai):
   )
 
   assert (
-      result['setup']['outputAudioTranscription']
-      == expected_result['setup']['outputAudioTranscription']
+      result['setup']['output_audio_transcription']
+      == expected_result['setup']['output_audio_transcription']
   )
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -1357,7 +1357,7 @@ async def test_bidi_setup_to_api_with_media_resolution(vertexai):
   expected_result = {
       'setup': {
           'model': 'test_model',
-          'generationConfig': {'mediaResolution':'MEDIA_RESOLUTION_LOW'},
+          'generation_config': {'media_resolution':'MEDIA_RESOLUTION_LOW'},
       }
   }
 
@@ -1367,8 +1367,8 @@ async def test_bidi_setup_to_api_with_media_resolution(vertexai):
   )
 
   assert (
-      result['setup']['generationConfig']['mediaResolution']
-      == expected_result['setup']['generationConfig']['mediaResolution']
+      result['setup']['generation_config']['media_resolution']
+      == expected_result['setup']['generation_config']['media_resolution']
   )
 
 
@@ -1379,8 +1379,8 @@ async def test_bidi_setup_publishers(
 ):
   expected_result = {
       'setup': {
-         'generationConfig': {
-             'responseModalities': [
+         'generation_config': {
+             'response_modalities': [
                  'AUDIO',
              ],
          },
@@ -1408,7 +1408,7 @@ async def test_bidi_setup_generation_config_warning(
         model='models/test_model',
         config={'generation_config': {'temperature': 0.7}})
 
-  assert result['setup']['generationConfig']['temperature'] == 0.7
+  assert result['setup']['generation_config']['temperature'] == 0.7
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
@@ -1425,14 +1425,14 @@ async def test_bidi_setup_to_api_with_session_resumption(vertexai):
   )
   expected_result = {
       'setup': {
-          'sessionResumption': {
+          'session_resumption': {
               'handle': 'test_handle',
           },
       }
   }
   if vertexai:
-    expected_result['setup']['generationConfig'] = {
-        'responseModalities': [
+    expected_result['setup']['generation_config'] = {
+        'response_modalities': [
             'AUDIO',
         ],
     }
@@ -1459,15 +1459,15 @@ async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
 
   expected_result = {
       'setup': {
-          'sessionResumption': {
+          'session_resumption': {
               'handle': 'test_handle',
               'transparent': True,
           },
       }
   }
   if vertexai:
-    expected_result['setup']['generationConfig'] = {
-        'responseModalities': [
+    expected_result['setup']['generation_config'] = {
+        'response_modalities': [
             'AUDIO',
         ],
     }

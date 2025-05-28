@@ -38,7 +38,7 @@ def _GetOperationParameters_to_mldev(
   if getv(from_object, ['operation_name']) is not None:
     setv(
         to_object,
-        ['_url', 'operationName'],
+        ['_url', 'operation_name'],
         getv(from_object, ['operation_name']),
     )
 
@@ -57,7 +57,7 @@ def _GetOperationParameters_to_vertex(
   if getv(from_object, ['operation_name']) is not None:
     setv(
         to_object,
-        ['_url', 'operationName'],
+        ['_url', 'operation_name'],
         getv(from_object, ['operation_name']),
     )
 
@@ -74,12 +74,12 @@ def _FetchPredictOperationParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['operation_name']) is not None:
-    setv(to_object, ['operationName'], getv(from_object, ['operation_name']))
+    setv(to_object, ['operation_name'], getv(from_object, ['operation_name']))
 
   if getv(from_object, ['resource_name']) is not None:
     setv(
         to_object,
-        ['_url', 'resourceName'],
+        ['_url', 'resource_name'],
         getv(from_object, ['resource_name']),
     )
 
@@ -334,18 +334,18 @@ class Operations(_api_module.BaseModule):
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = '{operationName}'.format_map(request_url_dict)
+        path = '{operation_name}'.format_map(request_url_dict)
       else:
-        path = '{operationName}'
+        path = '{operation_name}'
     else:
       request_dict = _GetOperationParameters_to_mldev(
           self._api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = '{operationName}'.format_map(request_url_dict)
+        path = '{operation_name}'.format_map(request_url_dict)
       else:
-        path = '{operationName}'
+        path = '{operation_name}'
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -404,11 +404,11 @@ class Operations(_api_module.BaseModule):
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = '{resourceName}:fetchPredictOperation'.format_map(
+        path = '{resource_name}:fetchPredictOperation'.format_map(
             request_url_dict
         )
       else:
-        path = '{resourceName}:fetchPredictOperation'
+        path = '{resource_name}:fetchPredictOperation'
 
     query_params = request_dict.get('_query')
     if query_params:
@@ -504,18 +504,18 @@ class AsyncOperations(_api_module.BaseModule):
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = '{operationName}'.format_map(request_url_dict)
+        path = '{operation_name}'.format_map(request_url_dict)
       else:
-        path = '{operationName}'
+        path = '{operation_name}'
     else:
       request_dict = _GetOperationParameters_to_mldev(
           self._api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = '{operationName}'.format_map(request_url_dict)
+        path = '{operation_name}'.format_map(request_url_dict)
       else:
-        path = '{operationName}'
+        path = '{operation_name}'
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -574,11 +574,11 @@ class AsyncOperations(_api_module.BaseModule):
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = '{resourceName}:fetchPredictOperation'.format_map(
+        path = '{resource_name}:fetchPredictOperation'.format_map(
             request_url_dict
         )
       else:
-        path = '{resourceName}:fetchPredictOperation'
+        path = '{resource_name}:fetchPredictOperation'
 
     query_params = request_dict.get('_query')
     if query_params:

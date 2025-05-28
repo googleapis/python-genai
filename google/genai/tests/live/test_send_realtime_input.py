@@ -49,7 +49,7 @@ def mock_websocket():
   websocket = mock.AsyncMock(spec=client.ClientConnection)
   websocket.send = mock.AsyncMock()
   websocket.recv = mock.AsyncMock(
-      return_value='{"serverContent": {"turnComplete": true}}'
+      return_value='{"server_content": {"turn_complete": true}}'
   )  # Default response
   websocket.close = mock.AsyncMock()
   return websocket
@@ -68,9 +68,9 @@ async def test_send_media_blob_dict(mock_websocket, vertexai):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
 
-  assert sent_data['realtime_input']['mediaChunks'][0]['data'] == 'AAAAAAAA'
+  assert sent_data['realtime_input']['media_chunks'][0]['data'] == 'AAAAAAAA'
   assert (
-      sent_data['realtime_input']['mediaChunks'][0]['mime_type'] == 'audio/pcm'
+      sent_data['realtime_input']['media_chunks'][0]['mime_type'] == 'audio/pcm'
   )
 
 
@@ -87,9 +87,9 @@ async def test_send_media_blob(mock_websocket, vertexai):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
 
-  assert sent_data['realtime_input']['mediaChunks'][0]['data'] == 'AAAAAAAA'
+  assert sent_data['realtime_input']['media_chunks'][0]['data'] == 'AAAAAAAA'
   assert (
-      sent_data['realtime_input']['mediaChunks'][0]['mime_type'] == 'audio/pcm'
+      sent_data['realtime_input']['media_chunks'][0]['mime_type'] == 'audio/pcm'
   )
 
 
@@ -106,7 +106,7 @@ async def test_send_media_image(mock_websocket, vertexai):
   assert 'realtime_input' in sent_data
 
   assert (
-      sent_data['realtime_input']['mediaChunks'][0]['mime_type'] == 'image/jpeg'
+      sent_data['realtime_input']['media_chunks'][0]['mime_type'] == 'image/jpeg'
   )
 
 
@@ -177,7 +177,7 @@ async def test_send_audio_stream_end(mock_websocket, vertexai):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
 
-  assert sent_data['realtime_input']['audioStreamEnd'] == True
+  assert sent_data['realtime_input']['audio_stream_end'] == True
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -252,7 +252,7 @@ async def test_send_activity_start(mock_websocket, vertexai, activity):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
 
-  assert sent_data['realtime_input']['activityStart'] == {}
+  assert sent_data['realtime_input']['activity_start'] == {}
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -268,7 +268,7 @@ async def test_send_activity_end(mock_websocket, vertexai, activity):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
 
-  assert sent_data['realtime_input']['activityEnd'] == {}
+  assert sent_data['realtime_input']['activity_end'] == {}
 
 
 @pytest.mark.parametrize('vertexai', [True, False])

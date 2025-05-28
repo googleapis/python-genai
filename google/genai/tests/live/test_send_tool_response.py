@@ -51,7 +51,7 @@ def mock_websocket():
   websocket = mock.AsyncMock(spec=client.ClientConnection)
   websocket.send = mock.AsyncMock()
   websocket.recv = mock.AsyncMock(
-      return_value='{"serverContent": {"turnComplete": true}}'
+      return_value='{"server_content": {"turn_complete": true}}'
   )  # Default response
   websocket.close = mock.AsyncMock()
   return websocket
@@ -80,17 +80,17 @@ async def test_function_response_dict(mock_websocket, vertexai):
   assert 'tool_response' in sent_data
 
   assert (
-      sent_data['tool_response']['functionResponses'][0]['name']
+      sent_data['tool_response']['function_responses'][0]['name']
       == 'get_current_weather'
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response'][
+      sent_data['tool_response']['function_responses'][0]['response'][
           'temperature'
       ]
       == 14.5
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response']['unit']
+      sent_data['tool_response']['function_responses'][0]['response']['unit']
       == 'C'
   )
 
@@ -115,17 +115,17 @@ async def test_function_response(mock_websocket, vertexai):
   assert 'tool_response' in sent_data
 
   assert (
-      sent_data['tool_response']['functionResponses'][0]['name']
+      sent_data['tool_response']['function_responses'][0]['name']
       == 'get_current_weather'
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response'][
+      sent_data['tool_response']['function_responses'][0]['response'][
           'temperature'
       ]
       == 14.5
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response']['unit']
+      sent_data['tool_response']['function_responses'][0]['response']['unit']
       == 'C'
   )
 
@@ -155,10 +155,10 @@ async def test_function_response_scheduling(mock_websocket, vertexai):
   assert 'tool_response' in sent_data
 
   assert (
-      sent_data['tool_response']['functionResponses'][0]['willContinue'] == True
+      sent_data['tool_response']['function_responses'][0]['will_continue'] == True
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['scheduling']
+      sent_data['tool_response']['function_responses'][0]['scheduling']
       == 'SILENT'
   )
 
@@ -188,15 +188,15 @@ async def test_function_response_list(mock_websocket, vertexai):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'tool_response' in sent_data
 
-  assert len(sent_data['tool_response']['functionResponses']) == 2
+  assert len(sent_data['tool_response']['function_responses']) == 2
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response'][
+      sent_data['tool_response']['function_responses'][0]['response'][
           'temperature'
       ]
       == 14.5
   )
   assert (
-      sent_data['tool_response']['functionResponses'][1]['response'][
+      sent_data['tool_response']['function_responses'][1]['response'][
           'temperature'
       ]
       == 99.9

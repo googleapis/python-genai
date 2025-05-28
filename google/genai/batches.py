@@ -38,15 +38,15 @@ def _BatchJobSource_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['format']) is not None:
-    setv(to_object, ['instancesFormat'], getv(from_object, ['format']))
+    setv(to_object, ['instances_format'], getv(from_object, ['format']))
 
   if getv(from_object, ['gcs_uri']) is not None:
-    setv(to_object, ['gcsSource', 'uris'], getv(from_object, ['gcs_uri']))
+    setv(to_object, ['gcs_source', 'uris'], getv(from_object, ['gcs_uri']))
 
   if getv(from_object, ['bigquery_uri']) is not None:
     setv(
         to_object,
-        ['bigquerySource', 'inputUri'],
+        ['bigquery_source', 'input_uri'],
         getv(from_object, ['bigquery_uri']),
     )
 
@@ -60,19 +60,19 @@ def _BatchJobDestination_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['format']) is not None:
-    setv(to_object, ['predictionsFormat'], getv(from_object, ['format']))
+    setv(to_object, ['predictions_format'], getv(from_object, ['format']))
 
   if getv(from_object, ['gcs_uri']) is not None:
     setv(
         to_object,
-        ['gcsDestination', 'outputUriPrefix'],
+        ['gcs_destination', 'output_uri_prefix'],
         getv(from_object, ['gcs_uri']),
     )
 
   if getv(from_object, ['bigquery_uri']) is not None:
     setv(
         to_object,
-        ['bigqueryDestination', 'outputUri'],
+        ['bigquery_destination', 'output_uri'],
         getv(from_object, ['bigquery_uri']),
     )
 
@@ -87,12 +87,12 @@ def _CreateBatchJobConfig_to_vertex(
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(parent_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['dest']) is not None:
     setv(
         parent_object,
-        ['outputConfig'],
+        ['output_config'],
         _BatchJobDestination_to_vertex(
             api_client,
             t.t_batch_job_destination(api_client, getv(from_object, ['dest'])),
@@ -119,7 +119,7 @@ def _CreateBatchJobParameters_to_vertex(
   if getv(from_object, ['src']) is not None:
     setv(
         to_object,
-        ['inputConfig'],
+        ['input_config'],
         _BatchJobSource_to_vertex(
             api_client,
             t.t_batch_job_source(api_client, getv(from_object, ['src'])),
@@ -186,13 +186,13 @@ def _ListBatchJobsConfig_to_vertex(
 
   if getv(from_object, ['page_size']) is not None:
     setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+        parent_object, ['_query', 'page_size'], getv(from_object, ['page_size'])
     )
 
   if getv(from_object, ['page_token']) is not None:
     setv(
         parent_object,
-        ['_query', 'pageToken'],
+        ['_query', 'page_token'],
         getv(from_object, ['page_token']),
     )
 

@@ -43,10 +43,10 @@ def _VideoMetadata_to_mldev(
     setv(to_object, ['fps'], getv(from_object, ['fps']))
 
   if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+    setv(to_object, ['end_offset'], getv(from_object, ['end_offset']))
 
   if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+    setv(to_object, ['start_offset'], getv(from_object, ['start_offset']))
 
   return to_object
 
@@ -64,7 +64,7 @@ def _Blob_to_mldev(
     setv(to_object, ['data'], getv(from_object, ['data']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -79,10 +79,10 @@ def _FileData_to_mldev(
     raise ValueError('display_name parameter is not supported in Gemini API.')
 
   if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+    setv(to_object, ['file_uri'], getv(from_object, ['file_uri']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -96,7 +96,7 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(
         to_object,
-        ['videoMetadata'],
+        ['video_metadata'],
         _VideoMetadata_to_mldev(
             api_client, getv(from_object, ['video_metadata']), to_object
         ),
@@ -108,7 +108,7 @@ def _Part_to_mldev(
   if getv(from_object, ['inline_data']) is not None:
     setv(
         to_object,
-        ['inlineData'],
+        ['inline_data'],
         _Blob_to_mldev(
             api_client, getv(from_object, ['inline_data']), to_object
         ),
@@ -117,7 +117,7 @@ def _Part_to_mldev(
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
-        ['fileData'],
+        ['file_data'],
         _FileData_to_mldev(
             api_client, getv(from_object, ['file_data']), to_object
         ),
@@ -126,20 +126,20 @@ def _Part_to_mldev(
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
-        ['codeExecutionResult'],
+        ['code_execution_result'],
         getv(from_object, ['code_execution_result']),
     )
 
   if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+    setv(to_object, ['executable_code'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+    setv(to_object, ['function_call'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['function_response']) is not None:
     setv(
         to_object,
-        ['functionResponse'],
+        ['function_response'],
         getv(from_object, ['function_response']),
     )
 
@@ -189,7 +189,7 @@ def _Schema_to_mldev(
     raise ValueError('ref parameter is not supported in Gemini API.')
 
   if getv(from_object, ['any_of']) is not None:
-    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
+    setv(to_object, ['any_of'], getv(from_object, ['any_of']))
 
   if getv(from_object, ['default']) is not None:
     setv(to_object, ['default'], getv(from_object, ['default']))
@@ -210,25 +210,25 @@ def _Schema_to_mldev(
     setv(to_object, ['items'], getv(from_object, ['items']))
 
   if getv(from_object, ['max_items']) is not None:
-    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
+    setv(to_object, ['max_items'], getv(from_object, ['max_items']))
 
   if getv(from_object, ['max_length']) is not None:
-    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
+    setv(to_object, ['max_length'], getv(from_object, ['max_length']))
 
   if getv(from_object, ['max_properties']) is not None:
-    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
+    setv(to_object, ['max_properties'], getv(from_object, ['max_properties']))
 
   if getv(from_object, ['maximum']) is not None:
     setv(to_object, ['maximum'], getv(from_object, ['maximum']))
 
   if getv(from_object, ['min_items']) is not None:
-    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
+    setv(to_object, ['min_items'], getv(from_object, ['min_items']))
 
   if getv(from_object, ['min_length']) is not None:
-    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
+    setv(to_object, ['min_length'], getv(from_object, ['min_length']))
 
   if getv(from_object, ['min_properties']) is not None:
-    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
+    setv(to_object, ['min_properties'], getv(from_object, ['min_properties']))
 
   if getv(from_object, ['minimum']) is not None:
     setv(to_object, ['minimum'], getv(from_object, ['minimum']))
@@ -245,7 +245,7 @@ def _Schema_to_mldev(
   if getv(from_object, ['property_ordering']) is not None:
     setv(
         to_object,
-        ['propertyOrdering'],
+        ['property_ordering'],
         getv(from_object, ['property_ordering']),
     )
 
@@ -324,10 +324,10 @@ def _Interval_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+    setv(to_object, ['start_time'], getv(from_object, ['start_time']))
 
   if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+    setv(to_object, ['end_time'], getv(from_object, ['end_time']))
 
   return to_object
 
@@ -341,7 +341,7 @@ def _GoogleSearch_to_mldev(
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object,
-        ['timeRangeFilter'],
+        ['time_range_filter'],
         _Interval_to_mldev(
             api_client, getv(from_object, ['time_range_filter']), to_object
         ),
@@ -362,7 +362,7 @@ def _DynamicRetrievalConfig_to_mldev(
   if getv(from_object, ['dynamic_threshold']) is not None:
     setv(
         to_object,
-        ['dynamicThreshold'],
+        ['dynamic_threshold'],
         getv(from_object, ['dynamic_threshold']),
     )
 
@@ -378,7 +378,7 @@ def _GoogleSearchRetrieval_to_mldev(
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
     setv(
         to_object,
-        ['dynamicRetrievalConfig'],
+        ['dynamic_retrieval_config'],
         _DynamicRetrievalConfig_to_mldev(
             api_client,
             getv(from_object, ['dynamic_retrieval_config']),
@@ -421,27 +421,27 @@ def _AuthConfig_to_mldev(
     raise ValueError('api_key_config parameter is not supported in Gemini API.')
 
   if getv(from_object, ['auth_type']) is not None:
-    setv(to_object, ['authType'], getv(from_object, ['auth_type']))
+    setv(to_object, ['auth_type'], getv(from_object, ['auth_type']))
 
   if getv(from_object, ['google_service_account_config']) is not None:
     setv(
         to_object,
-        ['googleServiceAccountConfig'],
+        ['google_service_account_config'],
         getv(from_object, ['google_service_account_config']),
     )
 
   if getv(from_object, ['http_basic_auth_config']) is not None:
     setv(
         to_object,
-        ['httpBasicAuthConfig'],
+        ['http_basic_auth_config'],
         getv(from_object, ['http_basic_auth_config']),
     )
 
   if getv(from_object, ['oauth_config']) is not None:
-    setv(to_object, ['oauthConfig'], getv(from_object, ['oauth_config']))
+    setv(to_object, ['oauth_config'], getv(from_object, ['oauth_config']))
 
   if getv(from_object, ['oidc_config']) is not None:
-    setv(to_object, ['oidcConfig'], getv(from_object, ['oidc_config']))
+    setv(to_object, ['oidc_config'], getv(from_object, ['oidc_config']))
 
   return to_object
 
@@ -477,7 +477,7 @@ def _Tool_to_mldev(
   if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
+        ['function_declarations'],
         [
             _FunctionDeclaration_to_mldev(api_client, item, to_object)
             for item in getv(from_object, ['function_declarations'])
@@ -490,7 +490,7 @@ def _Tool_to_mldev(
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
+        ['google_search'],
         _GoogleSearch_to_mldev(
             api_client, getv(from_object, ['google_search']), to_object
         ),
@@ -499,7 +499,7 @@ def _Tool_to_mldev(
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
-        ['googleSearchRetrieval'],
+        ['google_search_retrieval'],
         _GoogleSearchRetrieval_to_mldev(
             api_client,
             getv(from_object, ['google_search_retrieval']),
@@ -518,14 +518,14 @@ def _Tool_to_mldev(
   if getv(from_object, ['url_context']) is not None:
     setv(
         to_object,
-        ['urlContext'],
+        ['url_context'],
         _UrlContext_to_mldev(
             api_client, getv(from_object, ['url_context']), to_object
         ),
     )
 
   if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+    setv(to_object, ['code_execution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -542,7 +542,7 @@ def _FunctionCallingConfig_to_mldev(
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
-        ['allowedFunctionNames'],
+        ['allowed_function_names'],
         getv(from_object, ['allowed_function_names']),
     )
 
@@ -573,12 +573,12 @@ def _RetrievalConfig_to_mldev(
   if getv(from_object, ['lat_lng']) is not None:
     setv(
         to_object,
-        ['latLng'],
+        ['lat_lng'],
         _LatLng_to_mldev(api_client, getv(from_object, ['lat_lng']), to_object),
     )
 
   if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+    setv(to_object, ['language_code'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -592,7 +592,7 @@ def _ToolConfig_to_mldev(
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
-        ['functionCallingConfig'],
+        ['function_calling_config'],
         _FunctionCallingConfig_to_mldev(
             api_client,
             getv(from_object, ['function_calling_config']),
@@ -603,7 +603,7 @@ def _ToolConfig_to_mldev(
   if getv(from_object, ['retrieval_config']) is not None:
     setv(
         to_object,
-        ['retrievalConfig'],
+        ['retrieval_config'],
         _RetrievalConfig_to_mldev(
             api_client, getv(from_object, ['retrieval_config']), to_object
         ),
@@ -619,7 +619,7 @@ def _PrebuiltVoiceConfig_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
+    setv(to_object, ['voice_name'], getv(from_object, ['voice_name']))
 
   return to_object
 
@@ -633,7 +633,7 @@ def _VoiceConfig_to_mldev(
   if getv(from_object, ['prebuilt_voice_config']) is not None:
     setv(
         to_object,
-        ['prebuiltVoiceConfig'],
+        ['prebuilt_voice_config'],
         _PrebuiltVoiceConfig_to_mldev(
             api_client, getv(from_object, ['prebuilt_voice_config']), to_object
         ),
@@ -654,7 +654,7 @@ def _SpeakerVoiceConfig_to_mldev(
   if getv(from_object, ['voice_config']) is not None:
     setv(
         to_object,
-        ['voiceConfig'],
+        ['voice_config'],
         _VoiceConfig_to_mldev(
             api_client, getv(from_object, ['voice_config']), to_object
         ),
@@ -672,7 +672,7 @@ def _MultiSpeakerVoiceConfig_to_mldev(
   if getv(from_object, ['speaker_voice_configs']) is not None:
     setv(
         to_object,
-        ['speakerVoiceConfigs'],
+        ['speaker_voice_configs'],
         [
             _SpeakerVoiceConfig_to_mldev(api_client, item, to_object)
             for item in getv(from_object, ['speaker_voice_configs'])
@@ -691,7 +691,7 @@ def _SpeechConfig_to_mldev(
   if getv(from_object, ['voice_config']) is not None:
     setv(
         to_object,
-        ['voiceConfig'],
+        ['voice_config'],
         _VoiceConfig_to_mldev(
             api_client, getv(from_object, ['voice_config']), to_object
         ),
@@ -700,7 +700,7 @@ def _SpeechConfig_to_mldev(
   if getv(from_object, ['multi_speaker_voice_config']) is not None:
     setv(
         to_object,
-        ['multiSpeakerVoiceConfig'],
+        ['multi_speaker_voice_config'],
         _MultiSpeakerVoiceConfig_to_mldev(
             api_client,
             getv(from_object, ['multi_speaker_voice_config']),
@@ -709,7 +709,7 @@ def _SpeechConfig_to_mldev(
     )
 
   if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+    setv(to_object, ['language_code'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -722,11 +722,11 @@ def _ThinkingConfig_to_mldev(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['include_thoughts']) is not None:
     setv(
-        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+        to_object, ['include_thoughts'], getv(from_object, ['include_thoughts'])
     )
 
   if getv(from_object, ['thinking_budget']) is not None:
-    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
+    setv(to_object, ['thinking_budget'], getv(from_object, ['thinking_budget']))
 
   return to_object
 
@@ -741,7 +741,7 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
-        ['systemInstruction'],
+        ['system_instruction'],
         _Content_to_mldev(
             api_client,
             t.t_content(api_client, getv(from_object, ['system_instruction'])),
@@ -753,26 +753,28 @@ def _GenerateContentConfig_to_mldev(
     setv(to_object, ['temperature'], getv(from_object, ['temperature']))
 
   if getv(from_object, ['top_p']) is not None:
-    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+    setv(to_object, ['top_p'], getv(from_object, ['top_p']))
 
   if getv(from_object, ['top_k']) is not None:
-    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+    setv(to_object, ['top_k'], getv(from_object, ['top_k']))
 
   if getv(from_object, ['candidate_count']) is not None:
-    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
+    setv(to_object, ['candidate_count'], getv(from_object, ['candidate_count']))
 
   if getv(from_object, ['max_output_tokens']) is not None:
     setv(
-        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
+        to_object,
+        ['max_output_tokens'],
+        getv(from_object, ['max_output_tokens']),
     )
 
   if getv(from_object, ['stop_sequences']) is not None:
-    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+    setv(to_object, ['stop_sequences'], getv(from_object, ['stop_sequences']))
 
   if getv(from_object, ['response_logprobs']) is not None:
     setv(
         to_object,
-        ['responseLogprobs'],
+        ['response_logprobs'],
         getv(from_object, ['response_logprobs']),
     )
 
@@ -781,13 +783,13 @@ def _GenerateContentConfig_to_mldev(
 
   if getv(from_object, ['presence_penalty']) is not None:
     setv(
-        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+        to_object, ['presence_penalty'], getv(from_object, ['presence_penalty'])
     )
 
   if getv(from_object, ['frequency_penalty']) is not None:
     setv(
         to_object,
-        ['frequencyPenalty'],
+        ['frequency_penalty'],
         getv(from_object, ['frequency_penalty']),
     )
 
@@ -797,14 +799,14 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['response_mime_type']) is not None:
     setv(
         to_object,
-        ['responseMimeType'],
+        ['response_mime_type'],
         getv(from_object, ['response_mime_type']),
     )
 
   if getv(from_object, ['response_schema']) is not None:
     setv(
         to_object,
-        ['responseSchema'],
+        ['response_schema'],
         _Schema_to_mldev(
             api_client,
             t.t_schema(api_client, getv(from_object, ['response_schema'])),
@@ -823,7 +825,7 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['safety_settings']) is not None:
     setv(
         parent_object,
-        ['safetySettings'],
+        ['safety_settings'],
         [
             _SafetySetting_to_mldev(api_client, item, to_object)
             for item in getv(from_object, ['safety_settings'])
@@ -843,7 +845,7 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['tool_config']) is not None:
     setv(
         parent_object,
-        ['toolConfig'],
+        ['tool_config'],
         _ToolConfig_to_mldev(
             api_client, getv(from_object, ['tool_config']), to_object
         ),
@@ -855,7 +857,7 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['cached_content']) is not None:
     setv(
         parent_object,
-        ['cachedContent'],
+        ['cached_content'],
         t.t_cached_content_name(
             api_client, getv(from_object, ['cached_content'])
         ),
@@ -864,19 +866,19 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['response_modalities']) is not None:
     setv(
         to_object,
-        ['responseModalities'],
+        ['response_modalities'],
         getv(from_object, ['response_modalities']),
     )
 
   if getv(from_object, ['media_resolution']) is not None:
     setv(
-        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+        to_object, ['media_resolution'], getv(from_object, ['media_resolution'])
     )
 
   if getv(from_object, ['speech_config']) is not None:
     setv(
         to_object,
-        ['speechConfig'],
+        ['speech_config'],
         _SpeechConfig_to_mldev(
             api_client,
             t.t_speech_config(api_client, getv(from_object, ['speech_config'])),
@@ -892,7 +894,7 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['thinking_config']) is not None:
     setv(
         to_object,
-        ['thinkingConfig'],
+        ['thinking_config'],
         _ThinkingConfig_to_mldev(
             api_client, getv(from_object, ['thinking_config']), to_object
         ),
@@ -929,7 +931,7 @@ def _GenerateContentParameters_to_mldev(
   if getv(from_object, ['config']) is not None:
     setv(
         to_object,
-        ['generationConfig'],
+        ['generation_config'],
         _GenerateContentConfig_to_mldev(
             api_client, getv(from_object, ['config']), to_object
         ),
@@ -948,7 +950,7 @@ def _EmbedContentConfig_to_mldev(
   if getv(from_object, ['task_type']) is not None:
     setv(
         parent_object,
-        ['requests[]', 'taskType'],
+        ['requests[]', 'task_type'],
         getv(from_object, ['task_type']),
     )
 
@@ -958,7 +960,7 @@ def _EmbedContentConfig_to_mldev(
   if getv(from_object, ['output_dimensionality']) is not None:
     setv(
         parent_object,
-        ['requests[]', 'outputDimensionality'],
+        ['requests[]', 'output_dimensionality'],
         getv(from_object, ['output_dimensionality']),
     )
 
@@ -1026,21 +1028,21 @@ def _GenerateImagesConfig_to_mldev(
   if getv(from_object, ['number_of_images']) is not None:
     setv(
         parent_object,
-        ['parameters', 'sampleCount'],
+        ['parameters', 'sample_count'],
         getv(from_object, ['number_of_images']),
     )
 
   if getv(from_object, ['aspect_ratio']) is not None:
     setv(
         parent_object,
-        ['parameters', 'aspectRatio'],
+        ['parameters', 'aspect_ratio'],
         getv(from_object, ['aspect_ratio']),
     )
 
   if getv(from_object, ['guidance_scale']) is not None:
     setv(
         parent_object,
-        ['parameters', 'guidanceScale'],
+        ['parameters', 'guidance_scale'],
         getv(from_object, ['guidance_scale']),
     )
 
@@ -1053,7 +1055,7 @@ def _GenerateImagesConfig_to_mldev(
     )
     setv(
         parent_object,
-        ['parameters', 'safetySetting'],
+        ['parameters', 'safety_setting'],
         getv(from_object, ['safety_filter_level']),
     )
 
@@ -1063,21 +1065,21 @@ def _GenerateImagesConfig_to_mldev(
     )
     setv(
         parent_object,
-        ['parameters', 'personGeneration'],
+        ['parameters', 'person_generation'],
         getv(from_object, ['person_generation']),
     )
 
   if getv(from_object, ['include_safety_attributes']) is not None:
     setv(
         parent_object,
-        ['parameters', 'includeSafetyAttributes'],
+        ['parameters', 'include_safety_attributes'],
         getv(from_object, ['include_safety_attributes']),
     )
 
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
-        ['parameters', 'includeRaiReason'],
+        ['parameters', 'include_rai_reason'],
         getv(from_object, ['include_rai_reason']),
     )
 
@@ -1091,14 +1093,14 @@ def _GenerateImagesConfig_to_mldev(
   if getv(from_object, ['output_mime_type']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'mimeType'],
+        ['parameters', 'output_options', 'mime_type'],
         getv(from_object, ['output_mime_type']),
     )
 
   if getv(from_object, ['output_compression_quality']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'compressionQuality'],
+        ['parameters', 'output_options', 'compression_quality'],
         getv(from_object, ['output_compression_quality']),
     )
 
@@ -1167,13 +1169,13 @@ def _ListModelsConfig_to_mldev(
 
   if getv(from_object, ['page_size']) is not None:
     setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+        parent_object, ['_query', 'page_size'], getv(from_object, ['page_size'])
     )
 
   if getv(from_object, ['page_token']) is not None:
     setv(
         parent_object,
-        ['_query', 'pageToken'],
+        ['_query', 'page_token'],
         getv(from_object, ['page_token']),
     )
 
@@ -1216,7 +1218,7 @@ def _UpdateModelConfig_to_mldev(
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(parent_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['description']) is not None:
     setv(parent_object, ['description'], getv(from_object, ['description']))
@@ -1224,7 +1226,7 @@ def _UpdateModelConfig_to_mldev(
   if getv(from_object, ['default_checkpoint_id']) is not None:
     setv(
         parent_object,
-        ['defaultCheckpointId'],
+        ['default_checkpoint_id'],
         getv(from_object, ['default_checkpoint_id']),
     )
 
@@ -1347,12 +1349,12 @@ def _Image_to_mldev(
   if getv(from_object, ['image_bytes']) is not None:
     setv(
         to_object,
-        ['bytesBase64Encoded'],
+        ['bytes_base64_encoded'],
         t.t_bytes(api_client, getv(from_object, ['image_bytes'])),
     )
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -1367,7 +1369,7 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['number_of_videos']) is not None:
     setv(
         parent_object,
-        ['parameters', 'sampleCount'],
+        ['parameters', 'sample_count'],
         getv(from_object, ['number_of_videos']),
     )
 
@@ -1380,7 +1382,7 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['duration_seconds']) is not None:
     setv(
         parent_object,
-        ['parameters', 'durationSeconds'],
+        ['parameters', 'duration_seconds'],
         getv(from_object, ['duration_seconds']),
     )
 
@@ -1390,7 +1392,7 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['aspect_ratio']) is not None:
     setv(
         parent_object,
-        ['parameters', 'aspectRatio'],
+        ['parameters', 'aspect_ratio'],
         getv(from_object, ['aspect_ratio']),
     )
 
@@ -1400,7 +1402,7 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['person_generation']) is not None:
     setv(
         parent_object,
-        ['parameters', 'personGeneration'],
+        ['parameters', 'person_generation'],
         getv(from_object, ['person_generation']),
     )
 
@@ -1410,7 +1412,7 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['negative_prompt']) is not None:
     setv(
         parent_object,
-        ['parameters', 'negativePrompt'],
+        ['parameters', 'negative_prompt'],
         getv(from_object, ['negative_prompt']),
     )
 
@@ -1468,10 +1470,10 @@ def _VideoMetadata_to_vertex(
     setv(to_object, ['fps'], getv(from_object, ['fps']))
 
   if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+    setv(to_object, ['end_offset'], getv(from_object, ['end_offset']))
 
   if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+    setv(to_object, ['start_offset'], getv(from_object, ['start_offset']))
 
   return to_object
 
@@ -1483,13 +1485,13 @@ def _Blob_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(to_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['data']) is not None:
     setv(to_object, ['data'], getv(from_object, ['data']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -1501,13 +1503,13 @@ def _FileData_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(to_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+    setv(to_object, ['file_uri'], getv(from_object, ['file_uri']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -1521,7 +1523,7 @@ def _Part_to_vertex(
   if getv(from_object, ['video_metadata']) is not None:
     setv(
         to_object,
-        ['videoMetadata'],
+        ['video_metadata'],
         _VideoMetadata_to_vertex(
             api_client, getv(from_object, ['video_metadata']), to_object
         ),
@@ -1533,7 +1535,7 @@ def _Part_to_vertex(
   if getv(from_object, ['inline_data']) is not None:
     setv(
         to_object,
-        ['inlineData'],
+        ['inline_data'],
         _Blob_to_vertex(
             api_client, getv(from_object, ['inline_data']), to_object
         ),
@@ -1542,7 +1544,7 @@ def _Part_to_vertex(
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
-        ['fileData'],
+        ['file_data'],
         _FileData_to_vertex(
             api_client, getv(from_object, ['file_data']), to_object
         ),
@@ -1551,20 +1553,20 @@ def _Part_to_vertex(
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
-        ['codeExecutionResult'],
+        ['code_execution_result'],
         getv(from_object, ['code_execution_result']),
     )
 
   if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+    setv(to_object, ['executable_code'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+    setv(to_object, ['function_call'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['function_response']) is not None:
     setv(
         to_object,
-        ['functionResponse'],
+        ['function_response'],
         getv(from_object, ['function_response']),
     )
 
@@ -1605,7 +1607,7 @@ def _Schema_to_vertex(
   if getv(from_object, ['additional_properties']) is not None:
     setv(
         to_object,
-        ['additionalProperties'],
+        ['additional_properties'],
         getv(from_object, ['additional_properties']),
     )
 
@@ -1616,7 +1618,7 @@ def _Schema_to_vertex(
     setv(to_object, ['ref'], getv(from_object, ['ref']))
 
   if getv(from_object, ['any_of']) is not None:
-    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
+    setv(to_object, ['any_of'], getv(from_object, ['any_of']))
 
   if getv(from_object, ['default']) is not None:
     setv(to_object, ['default'], getv(from_object, ['default']))
@@ -1637,25 +1639,25 @@ def _Schema_to_vertex(
     setv(to_object, ['items'], getv(from_object, ['items']))
 
   if getv(from_object, ['max_items']) is not None:
-    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
+    setv(to_object, ['max_items'], getv(from_object, ['max_items']))
 
   if getv(from_object, ['max_length']) is not None:
-    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
+    setv(to_object, ['max_length'], getv(from_object, ['max_length']))
 
   if getv(from_object, ['max_properties']) is not None:
-    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
+    setv(to_object, ['max_properties'], getv(from_object, ['max_properties']))
 
   if getv(from_object, ['maximum']) is not None:
     setv(to_object, ['maximum'], getv(from_object, ['maximum']))
 
   if getv(from_object, ['min_items']) is not None:
-    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
+    setv(to_object, ['min_items'], getv(from_object, ['min_items']))
 
   if getv(from_object, ['min_length']) is not None:
-    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
+    setv(to_object, ['min_length'], getv(from_object, ['min_length']))
 
   if getv(from_object, ['min_properties']) is not None:
-    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
+    setv(to_object, ['min_properties'], getv(from_object, ['min_properties']))
 
   if getv(from_object, ['minimum']) is not None:
     setv(to_object, ['minimum'], getv(from_object, ['minimum']))
@@ -1672,7 +1674,7 @@ def _Schema_to_vertex(
   if getv(from_object, ['property_ordering']) is not None:
     setv(
         to_object,
-        ['propertyOrdering'],
+        ['property_ordering'],
         getv(from_object, ['property_ordering']),
     )
 
@@ -1697,7 +1699,7 @@ def _ModelSelectionConfig_to_vertex(
   if getv(from_object, ['feature_selection_preference']) is not None:
     setv(
         to_object,
-        ['featureSelectionPreference'],
+        ['feature_selection_preference'],
         getv(from_object, ['feature_selection_preference']),
     )
 
@@ -1753,10 +1755,10 @@ def _Interval_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+    setv(to_object, ['start_time'], getv(from_object, ['start_time']))
 
   if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+    setv(to_object, ['end_time'], getv(from_object, ['end_time']))
 
   return to_object
 
@@ -1770,7 +1772,7 @@ def _GoogleSearch_to_vertex(
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object,
-        ['timeRangeFilter'],
+        ['time_range_filter'],
         _Interval_to_vertex(
             api_client, getv(from_object, ['time_range_filter']), to_object
         ),
@@ -1791,7 +1793,7 @@ def _DynamicRetrievalConfig_to_vertex(
   if getv(from_object, ['dynamic_threshold']) is not None:
     setv(
         to_object,
-        ['dynamicThreshold'],
+        ['dynamic_threshold'],
         getv(from_object, ['dynamic_threshold']),
     )
 
@@ -1807,7 +1809,7 @@ def _GoogleSearchRetrieval_to_vertex(
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
     setv(
         to_object,
-        ['dynamicRetrievalConfig'],
+        ['dynamic_retrieval_config'],
         _DynamicRetrievalConfig_to_vertex(
             api_client,
             getv(from_object, ['dynamic_retrieval_config']),
@@ -1835,7 +1837,7 @@ def _ApiKeyConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['api_key_string']) is not None:
-    setv(to_object, ['apiKeyString'], getv(from_object, ['api_key_string']))
+    setv(to_object, ['api_key_string'], getv(from_object, ['api_key_string']))
 
   return to_object
 
@@ -1849,34 +1851,34 @@ def _AuthConfig_to_vertex(
   if getv(from_object, ['api_key_config']) is not None:
     setv(
         to_object,
-        ['apiKeyConfig'],
+        ['api_key_config'],
         _ApiKeyConfig_to_vertex(
             api_client, getv(from_object, ['api_key_config']), to_object
         ),
     )
 
   if getv(from_object, ['auth_type']) is not None:
-    setv(to_object, ['authType'], getv(from_object, ['auth_type']))
+    setv(to_object, ['auth_type'], getv(from_object, ['auth_type']))
 
   if getv(from_object, ['google_service_account_config']) is not None:
     setv(
         to_object,
-        ['googleServiceAccountConfig'],
+        ['google_service_account_config'],
         getv(from_object, ['google_service_account_config']),
     )
 
   if getv(from_object, ['http_basic_auth_config']) is not None:
     setv(
         to_object,
-        ['httpBasicAuthConfig'],
+        ['http_basic_auth_config'],
         getv(from_object, ['http_basic_auth_config']),
     )
 
   if getv(from_object, ['oauth_config']) is not None:
-    setv(to_object, ['oauthConfig'], getv(from_object, ['oauth_config']))
+    setv(to_object, ['oauth_config'], getv(from_object, ['oauth_config']))
 
   if getv(from_object, ['oidc_config']) is not None:
-    setv(to_object, ['oidcConfig'], getv(from_object, ['oidc_config']))
+    setv(to_object, ['oidc_config'], getv(from_object, ['oidc_config']))
 
   return to_object
 
@@ -1890,7 +1892,7 @@ def _GoogleMaps_to_vertex(
   if getv(from_object, ['auth_config']) is not None:
     setv(
         to_object,
-        ['authConfig'],
+        ['auth_config'],
         _AuthConfig_to_vertex(
             api_client, getv(from_object, ['auth_config']), to_object
         ),
@@ -1918,7 +1920,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
+        ['function_declarations'],
         [
             _FunctionDeclaration_to_vertex(api_client, item, to_object)
             for item in getv(from_object, ['function_declarations'])
@@ -1931,7 +1933,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
+        ['google_search'],
         _GoogleSearch_to_vertex(
             api_client, getv(from_object, ['google_search']), to_object
         ),
@@ -1940,7 +1942,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
-        ['googleSearchRetrieval'],
+        ['google_search_retrieval'],
         _GoogleSearchRetrieval_to_vertex(
             api_client,
             getv(from_object, ['google_search_retrieval']),
@@ -1951,7 +1953,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['enterprise_web_search']) is not None:
     setv(
         to_object,
-        ['enterpriseWebSearch'],
+        ['enterprise_web_search'],
         _EnterpriseWebSearch_to_vertex(
             api_client, getv(from_object, ['enterprise_web_search']), to_object
         ),
@@ -1960,7 +1962,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_maps']) is not None:
     setv(
         to_object,
-        ['googleMaps'],
+        ['google_maps'],
         _GoogleMaps_to_vertex(
             api_client, getv(from_object, ['google_maps']), to_object
         ),
@@ -1970,7 +1972,7 @@ def _Tool_to_vertex(
     raise ValueError('url_context parameter is not supported in Vertex AI.')
 
   if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+    setv(to_object, ['code_execution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -1987,7 +1989,7 @@ def _FunctionCallingConfig_to_vertex(
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
-        ['allowedFunctionNames'],
+        ['allowed_function_names'],
         getv(from_object, ['allowed_function_names']),
     )
 
@@ -2018,14 +2020,14 @@ def _RetrievalConfig_to_vertex(
   if getv(from_object, ['lat_lng']) is not None:
     setv(
         to_object,
-        ['latLng'],
+        ['lat_lng'],
         _LatLng_to_vertex(
             api_client, getv(from_object, ['lat_lng']), to_object
         ),
     )
 
   if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+    setv(to_object, ['language_code'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -2039,7 +2041,7 @@ def _ToolConfig_to_vertex(
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
-        ['functionCallingConfig'],
+        ['function_calling_config'],
         _FunctionCallingConfig_to_vertex(
             api_client,
             getv(from_object, ['function_calling_config']),
@@ -2050,7 +2052,7 @@ def _ToolConfig_to_vertex(
   if getv(from_object, ['retrieval_config']) is not None:
     setv(
         to_object,
-        ['retrievalConfig'],
+        ['retrieval_config'],
         _RetrievalConfig_to_vertex(
             api_client, getv(from_object, ['retrieval_config']), to_object
         ),
@@ -2066,7 +2068,7 @@ def _PrebuiltVoiceConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
+    setv(to_object, ['voice_name'], getv(from_object, ['voice_name']))
 
   return to_object
 
@@ -2080,7 +2082,7 @@ def _VoiceConfig_to_vertex(
   if getv(from_object, ['prebuilt_voice_config']) is not None:
     setv(
         to_object,
-        ['prebuiltVoiceConfig'],
+        ['prebuilt_voice_config'],
         _PrebuiltVoiceConfig_to_vertex(
             api_client, getv(from_object, ['prebuilt_voice_config']), to_object
         ),
@@ -2127,7 +2129,7 @@ def _SpeechConfig_to_vertex(
   if getv(from_object, ['voice_config']) is not None:
     setv(
         to_object,
-        ['voiceConfig'],
+        ['voice_config'],
         _VoiceConfig_to_vertex(
             api_client, getv(from_object, ['voice_config']), to_object
         ),
@@ -2139,7 +2141,7 @@ def _SpeechConfig_to_vertex(
     )
 
   if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+    setv(to_object, ['language_code'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -2152,11 +2154,11 @@ def _ThinkingConfig_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['include_thoughts']) is not None:
     setv(
-        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+        to_object, ['include_thoughts'], getv(from_object, ['include_thoughts'])
     )
 
   if getv(from_object, ['thinking_budget']) is not None:
-    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
+    setv(to_object, ['thinking_budget'], getv(from_object, ['thinking_budget']))
 
   return to_object
 
@@ -2171,7 +2173,7 @@ def _GenerateContentConfig_to_vertex(
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
-        ['systemInstruction'],
+        ['system_instruction'],
         _Content_to_vertex(
             api_client,
             t.t_content(api_client, getv(from_object, ['system_instruction'])),
@@ -2183,26 +2185,28 @@ def _GenerateContentConfig_to_vertex(
     setv(to_object, ['temperature'], getv(from_object, ['temperature']))
 
   if getv(from_object, ['top_p']) is not None:
-    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+    setv(to_object, ['top_p'], getv(from_object, ['top_p']))
 
   if getv(from_object, ['top_k']) is not None:
-    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+    setv(to_object, ['top_k'], getv(from_object, ['top_k']))
 
   if getv(from_object, ['candidate_count']) is not None:
-    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
+    setv(to_object, ['candidate_count'], getv(from_object, ['candidate_count']))
 
   if getv(from_object, ['max_output_tokens']) is not None:
     setv(
-        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
+        to_object,
+        ['max_output_tokens'],
+        getv(from_object, ['max_output_tokens']),
     )
 
   if getv(from_object, ['stop_sequences']) is not None:
-    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+    setv(to_object, ['stop_sequences'], getv(from_object, ['stop_sequences']))
 
   if getv(from_object, ['response_logprobs']) is not None:
     setv(
         to_object,
-        ['responseLogprobs'],
+        ['response_logprobs'],
         getv(from_object, ['response_logprobs']),
     )
 
@@ -2211,13 +2215,13 @@ def _GenerateContentConfig_to_vertex(
 
   if getv(from_object, ['presence_penalty']) is not None:
     setv(
-        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+        to_object, ['presence_penalty'], getv(from_object, ['presence_penalty'])
     )
 
   if getv(from_object, ['frequency_penalty']) is not None:
     setv(
         to_object,
-        ['frequencyPenalty'],
+        ['frequency_penalty'],
         getv(from_object, ['frequency_penalty']),
     )
 
@@ -2227,14 +2231,14 @@ def _GenerateContentConfig_to_vertex(
   if getv(from_object, ['response_mime_type']) is not None:
     setv(
         to_object,
-        ['responseMimeType'],
+        ['response_mime_type'],
         getv(from_object, ['response_mime_type']),
     )
 
   if getv(from_object, ['response_schema']) is not None:
     setv(
         to_object,
-        ['responseSchema'],
+        ['response_schema'],
         _Schema_to_vertex(
             api_client,
             t.t_schema(api_client, getv(from_object, ['response_schema'])),
@@ -2243,12 +2247,12 @@ def _GenerateContentConfig_to_vertex(
     )
 
   if getv(from_object, ['routing_config']) is not None:
-    setv(to_object, ['routingConfig'], getv(from_object, ['routing_config']))
+    setv(to_object, ['routing_config'], getv(from_object, ['routing_config']))
 
   if getv(from_object, ['model_selection_config']) is not None:
     setv(
         to_object,
-        ['modelConfig'],
+        ['model_config'],
         _ModelSelectionConfig_to_vertex(
             api_client, getv(from_object, ['model_selection_config']), to_object
         ),
@@ -2257,7 +2261,7 @@ def _GenerateContentConfig_to_vertex(
   if getv(from_object, ['safety_settings']) is not None:
     setv(
         parent_object,
-        ['safetySettings'],
+        ['safety_settings'],
         [
             _SafetySetting_to_vertex(api_client, item, to_object)
             for item in getv(from_object, ['safety_settings'])
@@ -2277,7 +2281,7 @@ def _GenerateContentConfig_to_vertex(
   if getv(from_object, ['tool_config']) is not None:
     setv(
         parent_object,
-        ['toolConfig'],
+        ['tool_config'],
         _ToolConfig_to_vertex(
             api_client, getv(from_object, ['tool_config']), to_object
         ),
@@ -2289,7 +2293,7 @@ def _GenerateContentConfig_to_vertex(
   if getv(from_object, ['cached_content']) is not None:
     setv(
         parent_object,
-        ['cachedContent'],
+        ['cached_content'],
         t.t_cached_content_name(
             api_client, getv(from_object, ['cached_content'])
         ),
@@ -2298,19 +2302,19 @@ def _GenerateContentConfig_to_vertex(
   if getv(from_object, ['response_modalities']) is not None:
     setv(
         to_object,
-        ['responseModalities'],
+        ['response_modalities'],
         getv(from_object, ['response_modalities']),
     )
 
   if getv(from_object, ['media_resolution']) is not None:
     setv(
-        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+        to_object, ['media_resolution'], getv(from_object, ['media_resolution'])
     )
 
   if getv(from_object, ['speech_config']) is not None:
     setv(
         to_object,
-        ['speechConfig'],
+        ['speech_config'],
         _SpeechConfig_to_vertex(
             api_client,
             t.t_speech_config(api_client, getv(from_object, ['speech_config'])),
@@ -2319,12 +2323,12 @@ def _GenerateContentConfig_to_vertex(
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
-    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
+    setv(to_object, ['audio_timestamp'], getv(from_object, ['audio_timestamp']))
 
   if getv(from_object, ['thinking_config']) is not None:
     setv(
         to_object,
-        ['thinkingConfig'],
+        ['thinking_config'],
         _ThinkingConfig_to_vertex(
             api_client, getv(from_object, ['thinking_config']), to_object
         ),
@@ -2361,7 +2365,7 @@ def _GenerateContentParameters_to_vertex(
   if getv(from_object, ['config']) is not None:
     setv(
         to_object,
-        ['generationConfig'],
+        ['generation_config'],
         _GenerateContentConfig_to_vertex(
             api_client, getv(from_object, ['config']), to_object
         ),
@@ -2390,21 +2394,21 @@ def _EmbedContentConfig_to_vertex(
   if getv(from_object, ['output_dimensionality']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputDimensionality'],
+        ['parameters', 'output_dimensionality'],
         getv(from_object, ['output_dimensionality']),
     )
 
   if getv(from_object, ['mime_type']) is not None:
     setv(
         parent_object,
-        ['instances[]', 'mimeType'],
+        ['instances[]', 'mime_type'],
         getv(from_object, ['mime_type']),
     )
 
   if getv(from_object, ['auto_truncate']) is not None:
     setv(
         parent_object,
-        ['parameters', 'autoTruncate'],
+        ['parameters', 'auto_truncate'],
         getv(from_object, ['auto_truncate']),
     )
 
@@ -2453,35 +2457,35 @@ def _GenerateImagesConfig_to_vertex(
   if getv(from_object, ['output_gcs_uri']) is not None:
     setv(
         parent_object,
-        ['parameters', 'storageUri'],
+        ['parameters', 'storage_uri'],
         getv(from_object, ['output_gcs_uri']),
     )
 
   if getv(from_object, ['negative_prompt']) is not None:
     setv(
         parent_object,
-        ['parameters', 'negativePrompt'],
+        ['parameters', 'negative_prompt'],
         getv(from_object, ['negative_prompt']),
     )
 
   if getv(from_object, ['number_of_images']) is not None:
     setv(
         parent_object,
-        ['parameters', 'sampleCount'],
+        ['parameters', 'sample_count'],
         getv(from_object, ['number_of_images']),
     )
 
   if getv(from_object, ['aspect_ratio']) is not None:
     setv(
         parent_object,
-        ['parameters', 'aspectRatio'],
+        ['parameters', 'aspect_ratio'],
         getv(from_object, ['aspect_ratio']),
     )
 
   if getv(from_object, ['guidance_scale']) is not None:
     setv(
         parent_object,
-        ['parameters', 'guidanceScale'],
+        ['parameters', 'guidance_scale'],
         getv(from_object, ['guidance_scale']),
     )
 
@@ -2491,28 +2495,28 @@ def _GenerateImagesConfig_to_vertex(
   if getv(from_object, ['safety_filter_level']) is not None:
     setv(
         parent_object,
-        ['parameters', 'safetySetting'],
+        ['parameters', 'safety_setting'],
         getv(from_object, ['safety_filter_level']),
     )
 
   if getv(from_object, ['person_generation']) is not None:
     setv(
         parent_object,
-        ['parameters', 'personGeneration'],
+        ['parameters', 'person_generation'],
         getv(from_object, ['person_generation']),
     )
 
   if getv(from_object, ['include_safety_attributes']) is not None:
     setv(
         parent_object,
-        ['parameters', 'includeSafetyAttributes'],
+        ['parameters', 'include_safety_attributes'],
         getv(from_object, ['include_safety_attributes']),
     )
 
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
-        ['parameters', 'includeRaiReason'],
+        ['parameters', 'include_rai_reason'],
         getv(from_object, ['include_rai_reason']),
     )
 
@@ -2526,28 +2530,28 @@ def _GenerateImagesConfig_to_vertex(
   if getv(from_object, ['output_mime_type']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'mimeType'],
+        ['parameters', 'output_options', 'mime_type'],
         getv(from_object, ['output_mime_type']),
     )
 
   if getv(from_object, ['output_compression_quality']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'compressionQuality'],
+        ['parameters', 'output_options', 'compression_quality'],
         getv(from_object, ['output_compression_quality']),
     )
 
   if getv(from_object, ['add_watermark']) is not None:
     setv(
         parent_object,
-        ['parameters', 'addWatermark'],
+        ['parameters', 'add_watermark'],
         getv(from_object, ['add_watermark']),
     )
 
   if getv(from_object, ['enhance_prompt']) is not None:
     setv(
         parent_object,
-        ['parameters', 'enhancePrompt'],
+        ['parameters', 'enhance_prompt'],
         getv(from_object, ['enhance_prompt']),
     )
 
@@ -2589,17 +2593,17 @@ def _Image_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    setv(to_object, ['gcsUri'], getv(from_object, ['gcs_uri']))
+    setv(to_object, ['gcs_uri'], getv(from_object, ['gcs_uri']))
 
   if getv(from_object, ['image_bytes']) is not None:
     setv(
         to_object,
-        ['bytesBase64Encoded'],
+        ['bytes_base64_encoded'],
         t.t_bytes(api_client, getv(from_object, ['image_bytes'])),
     )
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -2611,11 +2615,11 @@ def _MaskReferenceConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mask_mode']) is not None:
-    setv(to_object, ['maskMode'], getv(from_object, ['mask_mode']))
+    setv(to_object, ['mask_mode'], getv(from_object, ['mask_mode']))
 
   if getv(from_object, ['segmentation_classes']) is not None:
     setv(
-        to_object, ['maskClasses'], getv(from_object, ['segmentation_classes'])
+        to_object, ['mask_classes'], getv(from_object, ['segmentation_classes'])
     )
 
   if getv(from_object, ['mask_dilation']) is not None:
@@ -2631,12 +2635,12 @@ def _ControlReferenceConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['control_type']) is not None:
-    setv(to_object, ['controlType'], getv(from_object, ['control_type']))
+    setv(to_object, ['control_type'], getv(from_object, ['control_type']))
 
   if getv(from_object, ['enable_control_image_computation']) is not None:
     setv(
         to_object,
-        ['computeControl'],
+        ['compute_control'],
         getv(from_object, ['enable_control_image_computation']),
     )
 
@@ -2652,7 +2656,7 @@ def _StyleReferenceConfig_to_vertex(
   if getv(from_object, ['style_description']) is not None:
     setv(
         to_object,
-        ['styleDescription'],
+        ['style_description'],
         getv(from_object, ['style_description']),
     )
 
@@ -2666,12 +2670,12 @@ def _SubjectReferenceConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['subject_type']) is not None:
-    setv(to_object, ['subjectType'], getv(from_object, ['subject_type']))
+    setv(to_object, ['subject_type'], getv(from_object, ['subject_type']))
 
   if getv(from_object, ['subject_description']) is not None:
     setv(
         to_object,
-        ['subjectDescription'],
+        ['subject_description'],
         getv(from_object, ['subject_description']),
     )
 
@@ -2687,22 +2691,22 @@ def _ReferenceImageAPI_to_vertex(
   if getv(from_object, ['reference_image']) is not None:
     setv(
         to_object,
-        ['referenceImage'],
+        ['reference_image'],
         _Image_to_vertex(
             api_client, getv(from_object, ['reference_image']), to_object
         ),
     )
 
   if getv(from_object, ['reference_id']) is not None:
-    setv(to_object, ['referenceId'], getv(from_object, ['reference_id']))
+    setv(to_object, ['reference_id'], getv(from_object, ['reference_id']))
 
   if getv(from_object, ['reference_type']) is not None:
-    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
+    setv(to_object, ['reference_type'], getv(from_object, ['reference_type']))
 
   if getv(from_object, ['mask_image_config']) is not None:
     setv(
         to_object,
-        ['maskImageConfig'],
+        ['mask_image_config'],
         _MaskReferenceConfig_to_vertex(
             api_client, getv(from_object, ['mask_image_config']), to_object
         ),
@@ -2711,7 +2715,7 @@ def _ReferenceImageAPI_to_vertex(
   if getv(from_object, ['control_image_config']) is not None:
     setv(
         to_object,
-        ['controlImageConfig'],
+        ['control_image_config'],
         _ControlReferenceConfig_to_vertex(
             api_client, getv(from_object, ['control_image_config']), to_object
         ),
@@ -2720,7 +2724,7 @@ def _ReferenceImageAPI_to_vertex(
   if getv(from_object, ['style_image_config']) is not None:
     setv(
         to_object,
-        ['styleImageConfig'],
+        ['style_image_config'],
         _StyleReferenceConfig_to_vertex(
             api_client, getv(from_object, ['style_image_config']), to_object
         ),
@@ -2729,7 +2733,7 @@ def _ReferenceImageAPI_to_vertex(
   if getv(from_object, ['subject_image_config']) is not None:
     setv(
         to_object,
-        ['subjectImageConfig'],
+        ['subject_image_config'],
         _SubjectReferenceConfig_to_vertex(
             api_client, getv(from_object, ['subject_image_config']), to_object
         ),
@@ -2748,35 +2752,35 @@ def _EditImageConfig_to_vertex(
   if getv(from_object, ['output_gcs_uri']) is not None:
     setv(
         parent_object,
-        ['parameters', 'storageUri'],
+        ['parameters', 'storage_uri'],
         getv(from_object, ['output_gcs_uri']),
     )
 
   if getv(from_object, ['negative_prompt']) is not None:
     setv(
         parent_object,
-        ['parameters', 'negativePrompt'],
+        ['parameters', 'negative_prompt'],
         getv(from_object, ['negative_prompt']),
     )
 
   if getv(from_object, ['number_of_images']) is not None:
     setv(
         parent_object,
-        ['parameters', 'sampleCount'],
+        ['parameters', 'sample_count'],
         getv(from_object, ['number_of_images']),
     )
 
   if getv(from_object, ['aspect_ratio']) is not None:
     setv(
         parent_object,
-        ['parameters', 'aspectRatio'],
+        ['parameters', 'aspect_ratio'],
         getv(from_object, ['aspect_ratio']),
     )
 
   if getv(from_object, ['guidance_scale']) is not None:
     setv(
         parent_object,
-        ['parameters', 'guidanceScale'],
+        ['parameters', 'guidance_scale'],
         getv(from_object, ['guidance_scale']),
     )
 
@@ -2786,28 +2790,28 @@ def _EditImageConfig_to_vertex(
   if getv(from_object, ['safety_filter_level']) is not None:
     setv(
         parent_object,
-        ['parameters', 'safetySetting'],
+        ['parameters', 'safety_setting'],
         getv(from_object, ['safety_filter_level']),
     )
 
   if getv(from_object, ['person_generation']) is not None:
     setv(
         parent_object,
-        ['parameters', 'personGeneration'],
+        ['parameters', 'person_generation'],
         getv(from_object, ['person_generation']),
     )
 
   if getv(from_object, ['include_safety_attributes']) is not None:
     setv(
         parent_object,
-        ['parameters', 'includeSafetyAttributes'],
+        ['parameters', 'include_safety_attributes'],
         getv(from_object, ['include_safety_attributes']),
     )
 
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
-        ['parameters', 'includeRaiReason'],
+        ['parameters', 'include_rai_reason'],
         getv(from_object, ['include_rai_reason']),
     )
 
@@ -2821,28 +2825,28 @@ def _EditImageConfig_to_vertex(
   if getv(from_object, ['output_mime_type']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'mimeType'],
+        ['parameters', 'output_options', 'mime_type'],
         getv(from_object, ['output_mime_type']),
     )
 
   if getv(from_object, ['output_compression_quality']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'compressionQuality'],
+        ['parameters', 'output_options', 'compression_quality'],
         getv(from_object, ['output_compression_quality']),
     )
 
   if getv(from_object, ['edit_mode']) is not None:
     setv(
         parent_object,
-        ['parameters', 'editMode'],
+        ['parameters', 'edit_mode'],
         getv(from_object, ['edit_mode']),
     )
 
   if getv(from_object, ['base_steps']) is not None:
     setv(
         parent_object,
-        ['parameters', 'editConfig', 'baseSteps'],
+        ['parameters', 'edit_config', 'base_steps'],
         getv(from_object, ['base_steps']),
     )
 
@@ -2868,7 +2872,7 @@ def _EditImageParameters_to_vertex(
   if getv(from_object, ['reference_images']) is not None:
     setv(
         to_object,
-        ['instances[0]', 'referenceImages'],
+        ['instances[0]', 'reference_images'],
         [
             _ReferenceImageAPI_to_vertex(api_client, item, to_object)
             for item in getv(from_object, ['reference_images'])
@@ -2897,28 +2901,28 @@ def _UpscaleImageAPIConfig_to_vertex(
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
-        ['parameters', 'includeRaiReason'],
+        ['parameters', 'include_rai_reason'],
         getv(from_object, ['include_rai_reason']),
     )
 
   if getv(from_object, ['output_mime_type']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'mimeType'],
+        ['parameters', 'output_options', 'mime_type'],
         getv(from_object, ['output_mime_type']),
     )
 
   if getv(from_object, ['output_compression_quality']) is not None:
     setv(
         parent_object,
-        ['parameters', 'outputOptions', 'compressionQuality'],
+        ['parameters', 'output_options', 'compression_quality'],
         getv(from_object, ['output_compression_quality']),
     )
 
   if getv(from_object, ['number_of_images']) is not None:
     setv(
         parent_object,
-        ['parameters', 'sampleCount'],
+        ['parameters', 'sample_count'],
         getv(from_object, ['number_of_images']),
     )
 
@@ -2951,7 +2955,7 @@ def _UpscaleImageAPIParameters_to_vertex(
   if getv(from_object, ['upscale_factor']) is not None:
     setv(
         to_object,
-        ['parameters', 'upscaleConfig', 'upscaleFactor'],
+        ['parameters', 'upscale_config', 'upscale_factor'],
         getv(from_object, ['upscale_factor']),
     )
 
@@ -2995,13 +2999,13 @@ def _ListModelsConfig_to_vertex(
 
   if getv(from_object, ['page_size']) is not None:
     setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+        parent_object, ['_query', 'page_size'], getv(from_object, ['page_size'])
     )
 
   if getv(from_object, ['page_token']) is not None:
     setv(
         parent_object,
-        ['_query', 'pageToken'],
+        ['_query', 'page_token'],
         getv(from_object, ['page_token']),
     )
 
@@ -3044,7 +3048,7 @@ def _UpdateModelConfig_to_vertex(
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(parent_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['description']) is not None:
     setv(parent_object, ['description'], getv(from_object, ['description']))
@@ -3052,7 +3056,7 @@ def _UpdateModelConfig_to_vertex(
   if getv(from_object, ['default_checkpoint_id']) is not None:
     setv(
         parent_object,
-        ['defaultCheckpointId'],
+        ['default_checkpoint_id'],
         getv(from_object, ['default_checkpoint_id']),
     )
 
@@ -3113,7 +3117,7 @@ def _CountTokensConfig_to_vertex(
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
-        ['systemInstruction'],
+        ['system_instruction'],
         _Content_to_vertex(
             api_client,
             t.t_content(api_client, getv(from_object, ['system_instruction'])),
@@ -3134,7 +3138,7 @@ def _CountTokensConfig_to_vertex(
   if getv(from_object, ['generation_config']) is not None:
     setv(
         parent_object,
-        ['generationConfig'],
+        ['generation_config'],
         getv(from_object, ['generation_config']),
     )
 
@@ -3219,14 +3223,14 @@ def _GenerateVideosConfig_to_vertex(
   if getv(from_object, ['number_of_videos']) is not None:
     setv(
         parent_object,
-        ['parameters', 'sampleCount'],
+        ['parameters', 'sample_count'],
         getv(from_object, ['number_of_videos']),
     )
 
   if getv(from_object, ['output_gcs_uri']) is not None:
     setv(
         parent_object,
-        ['parameters', 'storageUri'],
+        ['parameters', 'storage_uri'],
         getv(from_object, ['output_gcs_uri']),
     )
 
@@ -3236,7 +3240,7 @@ def _GenerateVideosConfig_to_vertex(
   if getv(from_object, ['duration_seconds']) is not None:
     setv(
         parent_object,
-        ['parameters', 'durationSeconds'],
+        ['parameters', 'duration_seconds'],
         getv(from_object, ['duration_seconds']),
     )
 
@@ -3246,7 +3250,7 @@ def _GenerateVideosConfig_to_vertex(
   if getv(from_object, ['aspect_ratio']) is not None:
     setv(
         parent_object,
-        ['parameters', 'aspectRatio'],
+        ['parameters', 'aspect_ratio'],
         getv(from_object, ['aspect_ratio']),
     )
 
@@ -3260,35 +3264,35 @@ def _GenerateVideosConfig_to_vertex(
   if getv(from_object, ['person_generation']) is not None:
     setv(
         parent_object,
-        ['parameters', 'personGeneration'],
+        ['parameters', 'person_generation'],
         getv(from_object, ['person_generation']),
     )
 
   if getv(from_object, ['pubsub_topic']) is not None:
     setv(
         parent_object,
-        ['parameters', 'pubsubTopic'],
+        ['parameters', 'pubsub_topic'],
         getv(from_object, ['pubsub_topic']),
     )
 
   if getv(from_object, ['negative_prompt']) is not None:
     setv(
         parent_object,
-        ['parameters', 'negativePrompt'],
+        ['parameters', 'negative_prompt'],
         getv(from_object, ['negative_prompt']),
     )
 
   if getv(from_object, ['enhance_prompt']) is not None:
     setv(
         parent_object,
-        ['parameters', 'enhancePrompt'],
+        ['parameters', 'enhance_prompt'],
         getv(from_object, ['enhance_prompt']),
     )
 
   if getv(from_object, ['generate_audio']) is not None:
     setv(
         parent_object,
-        ['parameters', 'generateAudio'],
+        ['parameters', 'generate_audio'],
         getv(from_object, ['generate_audio']),
     )
 

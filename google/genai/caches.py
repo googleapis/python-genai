@@ -40,10 +40,10 @@ def _VideoMetadata_to_mldev(
     setv(to_object, ['fps'], getv(from_object, ['fps']))
 
   if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+    setv(to_object, ['end_offset'], getv(from_object, ['end_offset']))
 
   if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+    setv(to_object, ['start_offset'], getv(from_object, ['start_offset']))
 
   return to_object
 
@@ -61,7 +61,7 @@ def _Blob_to_mldev(
     setv(to_object, ['data'], getv(from_object, ['data']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -76,10 +76,10 @@ def _FileData_to_mldev(
     raise ValueError('display_name parameter is not supported in Gemini API.')
 
   if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+    setv(to_object, ['file_uri'], getv(from_object, ['file_uri']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -93,7 +93,7 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(
         to_object,
-        ['videoMetadata'],
+        ['video_metadata'],
         _VideoMetadata_to_mldev(
             api_client, getv(from_object, ['video_metadata']), to_object
         ),
@@ -105,7 +105,7 @@ def _Part_to_mldev(
   if getv(from_object, ['inline_data']) is not None:
     setv(
         to_object,
-        ['inlineData'],
+        ['inline_data'],
         _Blob_to_mldev(
             api_client, getv(from_object, ['inline_data']), to_object
         ),
@@ -114,7 +114,7 @@ def _Part_to_mldev(
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
-        ['fileData'],
+        ['file_data'],
         _FileData_to_mldev(
             api_client, getv(from_object, ['file_data']), to_object
         ),
@@ -123,20 +123,20 @@ def _Part_to_mldev(
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
-        ['codeExecutionResult'],
+        ['code_execution_result'],
         getv(from_object, ['code_execution_result']),
     )
 
   if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+    setv(to_object, ['executable_code'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+    setv(to_object, ['function_call'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['function_response']) is not None:
     setv(
         to_object,
-        ['functionResponse'],
+        ['function_response'],
         getv(from_object, ['function_response']),
     )
 
@@ -199,10 +199,10 @@ def _Interval_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+    setv(to_object, ['start_time'], getv(from_object, ['start_time']))
 
   if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+    setv(to_object, ['end_time'], getv(from_object, ['end_time']))
 
   return to_object
 
@@ -216,7 +216,7 @@ def _GoogleSearch_to_mldev(
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object,
-        ['timeRangeFilter'],
+        ['time_range_filter'],
         _Interval_to_mldev(
             api_client, getv(from_object, ['time_range_filter']), to_object
         ),
@@ -237,7 +237,7 @@ def _DynamicRetrievalConfig_to_mldev(
   if getv(from_object, ['dynamic_threshold']) is not None:
     setv(
         to_object,
-        ['dynamicThreshold'],
+        ['dynamic_threshold'],
         getv(from_object, ['dynamic_threshold']),
     )
 
@@ -253,7 +253,7 @@ def _GoogleSearchRetrieval_to_mldev(
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
     setv(
         to_object,
-        ['dynamicRetrievalConfig'],
+        ['dynamic_retrieval_config'],
         _DynamicRetrievalConfig_to_mldev(
             api_client,
             getv(from_object, ['dynamic_retrieval_config']),
@@ -296,27 +296,27 @@ def _AuthConfig_to_mldev(
     raise ValueError('api_key_config parameter is not supported in Gemini API.')
 
   if getv(from_object, ['auth_type']) is not None:
-    setv(to_object, ['authType'], getv(from_object, ['auth_type']))
+    setv(to_object, ['auth_type'], getv(from_object, ['auth_type']))
 
   if getv(from_object, ['google_service_account_config']) is not None:
     setv(
         to_object,
-        ['googleServiceAccountConfig'],
+        ['google_service_account_config'],
         getv(from_object, ['google_service_account_config']),
     )
 
   if getv(from_object, ['http_basic_auth_config']) is not None:
     setv(
         to_object,
-        ['httpBasicAuthConfig'],
+        ['http_basic_auth_config'],
         getv(from_object, ['http_basic_auth_config']),
     )
 
   if getv(from_object, ['oauth_config']) is not None:
-    setv(to_object, ['oauthConfig'], getv(from_object, ['oauth_config']))
+    setv(to_object, ['oauth_config'], getv(from_object, ['oauth_config']))
 
   if getv(from_object, ['oidc_config']) is not None:
-    setv(to_object, ['oidcConfig'], getv(from_object, ['oidc_config']))
+    setv(to_object, ['oidc_config'], getv(from_object, ['oidc_config']))
 
   return to_object
 
@@ -352,7 +352,7 @@ def _Tool_to_mldev(
   if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
+        ['function_declarations'],
         [
             _FunctionDeclaration_to_mldev(api_client, item, to_object)
             for item in getv(from_object, ['function_declarations'])
@@ -365,7 +365,7 @@ def _Tool_to_mldev(
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
+        ['google_search'],
         _GoogleSearch_to_mldev(
             api_client, getv(from_object, ['google_search']), to_object
         ),
@@ -374,7 +374,7 @@ def _Tool_to_mldev(
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
-        ['googleSearchRetrieval'],
+        ['google_search_retrieval'],
         _GoogleSearchRetrieval_to_mldev(
             api_client,
             getv(from_object, ['google_search_retrieval']),
@@ -393,14 +393,14 @@ def _Tool_to_mldev(
   if getv(from_object, ['url_context']) is not None:
     setv(
         to_object,
-        ['urlContext'],
+        ['url_context'],
         _UrlContext_to_mldev(
             api_client, getv(from_object, ['url_context']), to_object
         ),
     )
 
   if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+    setv(to_object, ['code_execution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -417,7 +417,7 @@ def _FunctionCallingConfig_to_mldev(
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
-        ['allowedFunctionNames'],
+        ['allowed_function_names'],
         getv(from_object, ['allowed_function_names']),
     )
 
@@ -448,12 +448,12 @@ def _RetrievalConfig_to_mldev(
   if getv(from_object, ['lat_lng']) is not None:
     setv(
         to_object,
-        ['latLng'],
+        ['lat_lng'],
         _LatLng_to_mldev(api_client, getv(from_object, ['lat_lng']), to_object),
     )
 
   if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+    setv(to_object, ['language_code'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -467,7 +467,7 @@ def _ToolConfig_to_mldev(
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
-        ['functionCallingConfig'],
+        ['function_calling_config'],
         _FunctionCallingConfig_to_mldev(
             api_client,
             getv(from_object, ['function_calling_config']),
@@ -478,7 +478,7 @@ def _ToolConfig_to_mldev(
   if getv(from_object, ['retrieval_config']) is not None:
     setv(
         to_object,
-        ['retrievalConfig'],
+        ['retrieval_config'],
         _RetrievalConfig_to_mldev(
             api_client, getv(from_object, ['retrieval_config']), to_object
         ),
@@ -498,10 +498,10 @@ def _CreateCachedContentConfig_to_mldev(
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
 
   if getv(from_object, ['expire_time']) is not None:
-    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
+    setv(parent_object, ['expire_time'], getv(from_object, ['expire_time']))
 
   if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(parent_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['contents']) is not None:
     setv(
@@ -518,7 +518,7 @@ def _CreateCachedContentConfig_to_mldev(
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
-        ['systemInstruction'],
+        ['system_instruction'],
         _Content_to_mldev(
             api_client,
             t.t_content(api_client, getv(from_object, ['system_instruction'])),
@@ -539,7 +539,7 @@ def _CreateCachedContentConfig_to_mldev(
   if getv(from_object, ['tool_config']) is not None:
     setv(
         parent_object,
-        ['toolConfig'],
+        ['tool_config'],
         _ToolConfig_to_mldev(
             api_client, getv(from_object, ['tool_config']), to_object
         ),
@@ -625,7 +625,7 @@ def _UpdateCachedContentConfig_to_mldev(
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
 
   if getv(from_object, ['expire_time']) is not None:
-    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
+    setv(parent_object, ['expire_time'], getv(from_object, ['expire_time']))
 
   return to_object
 
@@ -664,13 +664,13 @@ def _ListCachedContentsConfig_to_mldev(
 
   if getv(from_object, ['page_size']) is not None:
     setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+        parent_object, ['_query', 'page_size'], getv(from_object, ['page_size'])
     )
 
   if getv(from_object, ['page_token']) is not None:
     setv(
         parent_object,
-        ['_query', 'pageToken'],
+        ['_query', 'page_token'],
         getv(from_object, ['page_token']),
     )
 
@@ -705,10 +705,10 @@ def _VideoMetadata_to_vertex(
     setv(to_object, ['fps'], getv(from_object, ['fps']))
 
   if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+    setv(to_object, ['end_offset'], getv(from_object, ['end_offset']))
 
   if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+    setv(to_object, ['start_offset'], getv(from_object, ['start_offset']))
 
   return to_object
 
@@ -720,13 +720,13 @@ def _Blob_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(to_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['data']) is not None:
     setv(to_object, ['data'], getv(from_object, ['data']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -738,13 +738,13 @@ def _FileData_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(to_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+    setv(to_object, ['file_uri'], getv(from_object, ['file_uri']))
 
   if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+    setv(to_object, ['mime_type'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -758,7 +758,7 @@ def _Part_to_vertex(
   if getv(from_object, ['video_metadata']) is not None:
     setv(
         to_object,
-        ['videoMetadata'],
+        ['video_metadata'],
         _VideoMetadata_to_vertex(
             api_client, getv(from_object, ['video_metadata']), to_object
         ),
@@ -770,7 +770,7 @@ def _Part_to_vertex(
   if getv(from_object, ['inline_data']) is not None:
     setv(
         to_object,
-        ['inlineData'],
+        ['inline_data'],
         _Blob_to_vertex(
             api_client, getv(from_object, ['inline_data']), to_object
         ),
@@ -779,7 +779,7 @@ def _Part_to_vertex(
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
-        ['fileData'],
+        ['file_data'],
         _FileData_to_vertex(
             api_client, getv(from_object, ['file_data']), to_object
         ),
@@ -788,20 +788,20 @@ def _Part_to_vertex(
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
-        ['codeExecutionResult'],
+        ['code_execution_result'],
         getv(from_object, ['code_execution_result']),
     )
 
   if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+    setv(to_object, ['executable_code'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+    setv(to_object, ['function_call'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['function_response']) is not None:
     setv(
         to_object,
-        ['functionResponse'],
+        ['function_response'],
         getv(from_object, ['function_response']),
     )
 
@@ -864,10 +864,10 @@ def _Interval_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+    setv(to_object, ['start_time'], getv(from_object, ['start_time']))
 
   if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+    setv(to_object, ['end_time'], getv(from_object, ['end_time']))
 
   return to_object
 
@@ -881,7 +881,7 @@ def _GoogleSearch_to_vertex(
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object,
-        ['timeRangeFilter'],
+        ['time_range_filter'],
         _Interval_to_vertex(
             api_client, getv(from_object, ['time_range_filter']), to_object
         ),
@@ -902,7 +902,7 @@ def _DynamicRetrievalConfig_to_vertex(
   if getv(from_object, ['dynamic_threshold']) is not None:
     setv(
         to_object,
-        ['dynamicThreshold'],
+        ['dynamic_threshold'],
         getv(from_object, ['dynamic_threshold']),
     )
 
@@ -918,7 +918,7 @@ def _GoogleSearchRetrieval_to_vertex(
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
     setv(
         to_object,
-        ['dynamicRetrievalConfig'],
+        ['dynamic_retrieval_config'],
         _DynamicRetrievalConfig_to_vertex(
             api_client,
             getv(from_object, ['dynamic_retrieval_config']),
@@ -946,7 +946,7 @@ def _ApiKeyConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['api_key_string']) is not None:
-    setv(to_object, ['apiKeyString'], getv(from_object, ['api_key_string']))
+    setv(to_object, ['api_key_string'], getv(from_object, ['api_key_string']))
 
   return to_object
 
@@ -960,34 +960,34 @@ def _AuthConfig_to_vertex(
   if getv(from_object, ['api_key_config']) is not None:
     setv(
         to_object,
-        ['apiKeyConfig'],
+        ['api_key_config'],
         _ApiKeyConfig_to_vertex(
             api_client, getv(from_object, ['api_key_config']), to_object
         ),
     )
 
   if getv(from_object, ['auth_type']) is not None:
-    setv(to_object, ['authType'], getv(from_object, ['auth_type']))
+    setv(to_object, ['auth_type'], getv(from_object, ['auth_type']))
 
   if getv(from_object, ['google_service_account_config']) is not None:
     setv(
         to_object,
-        ['googleServiceAccountConfig'],
+        ['google_service_account_config'],
         getv(from_object, ['google_service_account_config']),
     )
 
   if getv(from_object, ['http_basic_auth_config']) is not None:
     setv(
         to_object,
-        ['httpBasicAuthConfig'],
+        ['http_basic_auth_config'],
         getv(from_object, ['http_basic_auth_config']),
     )
 
   if getv(from_object, ['oauth_config']) is not None:
-    setv(to_object, ['oauthConfig'], getv(from_object, ['oauth_config']))
+    setv(to_object, ['oauth_config'], getv(from_object, ['oauth_config']))
 
   if getv(from_object, ['oidc_config']) is not None:
-    setv(to_object, ['oidcConfig'], getv(from_object, ['oidc_config']))
+    setv(to_object, ['oidc_config'], getv(from_object, ['oidc_config']))
 
   return to_object
 
@@ -1001,7 +1001,7 @@ def _GoogleMaps_to_vertex(
   if getv(from_object, ['auth_config']) is not None:
     setv(
         to_object,
-        ['authConfig'],
+        ['auth_config'],
         _AuthConfig_to_vertex(
             api_client, getv(from_object, ['auth_config']), to_object
         ),
@@ -1029,7 +1029,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
+        ['function_declarations'],
         [
             _FunctionDeclaration_to_vertex(api_client, item, to_object)
             for item in getv(from_object, ['function_declarations'])
@@ -1042,7 +1042,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
+        ['google_search'],
         _GoogleSearch_to_vertex(
             api_client, getv(from_object, ['google_search']), to_object
         ),
@@ -1051,7 +1051,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
-        ['googleSearchRetrieval'],
+        ['google_search_retrieval'],
         _GoogleSearchRetrieval_to_vertex(
             api_client,
             getv(from_object, ['google_search_retrieval']),
@@ -1062,7 +1062,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['enterprise_web_search']) is not None:
     setv(
         to_object,
-        ['enterpriseWebSearch'],
+        ['enterprise_web_search'],
         _EnterpriseWebSearch_to_vertex(
             api_client, getv(from_object, ['enterprise_web_search']), to_object
         ),
@@ -1071,7 +1071,7 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_maps']) is not None:
     setv(
         to_object,
-        ['googleMaps'],
+        ['google_maps'],
         _GoogleMaps_to_vertex(
             api_client, getv(from_object, ['google_maps']), to_object
         ),
@@ -1081,7 +1081,7 @@ def _Tool_to_vertex(
     raise ValueError('url_context parameter is not supported in Vertex AI.')
 
   if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+    setv(to_object, ['code_execution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -1098,7 +1098,7 @@ def _FunctionCallingConfig_to_vertex(
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
-        ['allowedFunctionNames'],
+        ['allowed_function_names'],
         getv(from_object, ['allowed_function_names']),
     )
 
@@ -1129,14 +1129,14 @@ def _RetrievalConfig_to_vertex(
   if getv(from_object, ['lat_lng']) is not None:
     setv(
         to_object,
-        ['latLng'],
+        ['lat_lng'],
         _LatLng_to_vertex(
             api_client, getv(from_object, ['lat_lng']), to_object
         ),
     )
 
   if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+    setv(to_object, ['language_code'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -1150,7 +1150,7 @@ def _ToolConfig_to_vertex(
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
-        ['functionCallingConfig'],
+        ['function_calling_config'],
         _FunctionCallingConfig_to_vertex(
             api_client,
             getv(from_object, ['function_calling_config']),
@@ -1161,7 +1161,7 @@ def _ToolConfig_to_vertex(
   if getv(from_object, ['retrieval_config']) is not None:
     setv(
         to_object,
-        ['retrievalConfig'],
+        ['retrieval_config'],
         _RetrievalConfig_to_vertex(
             api_client, getv(from_object, ['retrieval_config']), to_object
         ),
@@ -1181,10 +1181,10 @@ def _CreateCachedContentConfig_to_vertex(
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
 
   if getv(from_object, ['expire_time']) is not None:
-    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
+    setv(parent_object, ['expire_time'], getv(from_object, ['expire_time']))
 
   if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+    setv(parent_object, ['display_name'], getv(from_object, ['display_name']))
 
   if getv(from_object, ['contents']) is not None:
     setv(
@@ -1201,7 +1201,7 @@ def _CreateCachedContentConfig_to_vertex(
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
-        ['systemInstruction'],
+        ['system_instruction'],
         _Content_to_vertex(
             api_client,
             t.t_content(api_client, getv(from_object, ['system_instruction'])),
@@ -1222,7 +1222,7 @@ def _CreateCachedContentConfig_to_vertex(
   if getv(from_object, ['tool_config']) is not None:
     setv(
         parent_object,
-        ['toolConfig'],
+        ['tool_config'],
         _ToolConfig_to_vertex(
             api_client, getv(from_object, ['tool_config']), to_object
         ),
@@ -1231,7 +1231,7 @@ def _CreateCachedContentConfig_to_vertex(
   if getv(from_object, ['kms_key_name']) is not None:
     setv(
         parent_object,
-        ['encryption_spec', 'kmsKeyName'],
+        ['encryption_spec', 'kms_key_name'],
         getv(from_object, ['kms_key_name']),
     )
 
@@ -1312,7 +1312,7 @@ def _UpdateCachedContentConfig_to_vertex(
     setv(parent_object, ['ttl'], getv(from_object, ['ttl']))
 
   if getv(from_object, ['expire_time']) is not None:
-    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
+    setv(parent_object, ['expire_time'], getv(from_object, ['expire_time']))
 
   return to_object
 
@@ -1351,13 +1351,13 @@ def _ListCachedContentsConfig_to_vertex(
 
   if getv(from_object, ['page_size']) is not None:
     setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+        parent_object, ['_query', 'page_size'], getv(from_object, ['page_size'])
     )
 
   if getv(from_object, ['page_token']) is not None:
     setv(
         parent_object,
-        ['_query', 'pageToken'],
+        ['_query', 'page_token'],
         getv(from_object, ['page_token']),
     )
 
