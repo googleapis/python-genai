@@ -944,7 +944,7 @@ class AsyncLive(_api_module.BaseModule):
 
     parameter_model = await _t_live_connect_config(self._api_client, config)
 
-    if self._api_client.api_key:
+    if self._api_client.api_key and not self._api_client.vertexai:
       api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
       if uri is None:
@@ -953,6 +953,28 @@ class AsyncLive(_api_module.BaseModule):
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_mldev(
+              api_client=self._api_client,
+              from_object=types.LiveConnectParameters(
+                  model=transformed_model,
+                  config=parameter_model,
+              ).model_dump(exclude_none=True),
+          )
+      )
+      del request_dict['config']
+
+      setv(request_dict, ['setup', 'model'], transformed_model)
+
+      request = json.dumps(request_dict)
+    elif self._api_client.api_key and self._api_client.vertexai:
+      # Headers already contains api key for express mode.
+      api_key = self._api_client.api_key
+      version = self._api_client._http_options.api_version
+      if uri is None:
+        uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+      headers = self._api_client._http_options.headers
+
+      request_dict = _common.convert_to_dict(
+          live_converters._LiveConnectParameters_to_vertex(
               api_client=self._api_client,
               from_object=types.LiveConnectParameters(
                   model=transformed_model,

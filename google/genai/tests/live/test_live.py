@@ -151,6 +151,7 @@ def test_mldev_from_env(monkeypatch):
   assert not client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.api_key == api_key
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
 def test_vertex_from_env(monkeypatch):
@@ -165,6 +166,26 @@ def test_vertex_from_env(monkeypatch):
   assert client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.project == project_id
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert 'x-goog-api-key' not in client.aio.live._api_client._http_options.headers
+
+
+def test_vertex_api_key_from_env(monkeypatch):
+  api_key = 'google_api_key'
+  monkeypatch.setenv('GOOGLE_GENAI_USE_VERTEXAI', 'true')
+  monkeypatch.setenv('GOOGLE_API_KEY', api_key)
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables. Tests in client/test_client_initialization.py provide
+  # comprehensive coverage for proj/location and api key precedence.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client()
+
+  assert client.aio.live._api_client.vertexai
+  assert client.aio.live._api_client.api_key == api_key
+  assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
 def test_websocket_base_url():
