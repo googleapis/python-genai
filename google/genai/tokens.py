@@ -44,15 +44,15 @@ def _convert_bidi_setup_to_token_setup(
     request_dict: dict[str, Any],
     config: Optional[types.CreateAuthTokenConfigOrDict] = None,
 ) -> Dict[str, Any]:
-  """Converts bidiGenerateContentSetup."""
-  bidi_setup = request_dict.get('bidiGenerateContentSetup')
+  """Converts bidi_generate_content_setup."""
+  bidi_setup = request_dict.get('bidi_generate_content_setup')
   if bidi_setup and bidi_setup.get('setup'):
     # Handling mismatch between AuthToken service and
     # BidiGenerateContent service
-    request_dict['bidiGenerateContentSetup'] = bidi_setup.get('setup')
+    request_dict['bidi_generate_content_setup'] = bidi_setup.get('setup')
 
-    # Convert non null bidiGenerateContentSetup to field_mask
-    field_mask = _get_field_masks(request_dict['bidiGenerateContentSetup'])
+    # Convert non null bidi_generate_content_setup to field_mask
+    field_mask = _get_field_masks(request_dict['bidi_generate_content_setup'])
 
     if (
         isinstance(config, dict)
@@ -64,7 +64,7 @@ def _convert_bidi_setup_to_token_setup(
         and not config.lock_additional_fields  # pylint: disable=literal-comparison
     ):
       # Empty list, lock non null fields
-      request_dict['fieldMask'] = field_mask
+      request_dict['field_mask'] = field_mask
     elif (
         isinstance(config, dict)
         and config.get('lock_additional_fields') is None
@@ -72,39 +72,39 @@ def _convert_bidi_setup_to_token_setup(
         isinstance(config, types.CreateAuthTokenConfig)
         and config.lock_additional_fields is None
     ):
-      # None. Global lock. unset fieldMask
-      request_dict.pop('fieldMask', None)
-    elif request_dict['fieldMask']:
+      # None. Global lock. unset field_mask
+      request_dict.pop('field_mask', None)
+    elif request_dict['field_mask']:
       # Lock non null + additional fields
       additional_fields_list: Optional[List[str]] = request_dict.get(
-          'fieldMask'
+          'field_mask'
       )
       generation_config_list = types.GenerationConfig().model_dump().keys()
       if additional_fields_list:
         field_mask_list = []
         for field in additional_fields_list:
           if field in generation_config_list:
-            field = f'generationConfig.{field}'
+            field = f'generation_config.{field}'
           field_mask_list.append(field)
       else:
         field_mask_list = []
-      request_dict['fieldMask'] = (
+      request_dict['field_mask'] = (
           field_mask + ',' + ','.join(field_mask_list)
           if field_mask_list
           else field_mask
       )
     else:
       # Lock all fields
-      request_dict.pop('fieldMask', None)
+      request_dict.pop('field_mask', None)
   else:
-    field_mask = request_dict.get('fieldMask', [])
+    field_mask = request_dict.get('field_mask', [])
     field_mask_str = ','.join(field_mask)
     if field_mask:
-      request_dict['fieldMask'] = field_mask_str
+      request_dict['field_mask'] = field_mask_str
     else:
-      request_dict.pop('fieldMask', None)
-  if not request_dict.get('bidiGenerateContentSetup'):
-    request_dict.pop('bidiGenerateContentSetup', None)
+      request_dict.pop('field_mask', None)
+  if not request_dict.get('bidi_generate_content_setup'):
+    request_dict.pop('bidi_generate_content_setup', None)
 
   return request_dict
 

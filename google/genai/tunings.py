@@ -54,13 +54,13 @@ def _ListTuningJobsConfig_to_mldev(
 
   if getv(from_object, ['page_size']) is not None:
     setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+        parent_object, ['_query', 'page_size'], getv(from_object, ['page_size'])
     )
 
   if getv(from_object, ['page_token']) is not None:
     setv(
         parent_object,
-        ['_query', 'pageToken'],
+        ['_query', 'page_token'],
         getv(from_object, ['page_token']),
     )
 
@@ -95,7 +95,7 @@ def _TuningExample_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['text_input']) is not None:
-    setv(to_object, ['textInput'], getv(from_object, ['text_input']))
+    setv(to_object, ['text_input'], getv(from_object, ['text_input']))
 
   if getv(from_object, ['output']) is not None:
     setv(to_object, ['output'], getv(from_object, ['output']))
@@ -152,7 +152,7 @@ def _CreateTuningJobConfig_to_mldev(
   if getv(from_object, ['tuned_model_display_name']) is not None:
     setv(
         parent_object,
-        ['displayName'],
+        ['display_name'],
         getv(from_object, ['tuned_model_display_name']),
     )
 
@@ -162,14 +162,14 @@ def _CreateTuningJobConfig_to_mldev(
   if getv(from_object, ['epoch_count']) is not None:
     setv(
         parent_object,
-        ['tuningTask', 'hyperparameters', 'epochCount'],
+        ['tuning_task', 'hyperparameters', 'epoch_count'],
         getv(from_object, ['epoch_count']),
     )
 
   if getv(from_object, ['learning_rate_multiplier']) is not None:
     setv(
         to_object,
-        ['tuningTask', 'hyperparameters', 'learningRateMultiplier'],
+        ['tuning_task', 'hyperparameters', 'learning_rate_multiplier'],
         getv(from_object, ['learning_rate_multiplier']),
     )
 
@@ -184,14 +184,14 @@ def _CreateTuningJobConfig_to_mldev(
   if getv(from_object, ['batch_size']) is not None:
     setv(
         parent_object,
-        ['tuningTask', 'hyperparameters', 'batchSize'],
+        ['tuning_task', 'hyperparameters', 'batch_size'],
         getv(from_object, ['batch_size']),
     )
 
   if getv(from_object, ['learning_rate']) is not None:
     setv(
         parent_object,
-        ['tuningTask', 'hyperparameters', 'learningRate'],
+        ['tuning_task', 'hyperparameters', 'learning_rate'],
         getv(from_object, ['learning_rate']),
     )
 
@@ -205,12 +205,12 @@ def _CreateTuningJobParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['base_model']) is not None:
-    setv(to_object, ['baseModel'], getv(from_object, ['base_model']))
+    setv(to_object, ['base_model'], getv(from_object, ['base_model']))
 
   if getv(from_object, ['training_dataset']) is not None:
     setv(
         to_object,
-        ['tuningTask', 'trainingData'],
+        ['tuning_task', 'training_data'],
         _TuningDataset_to_mldev(
             api_client, getv(from_object, ['training_dataset']), to_object
         ),
@@ -252,13 +252,13 @@ def _ListTuningJobsConfig_to_vertex(
 
   if getv(from_object, ['page_size']) is not None:
     setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+        parent_object, ['_query', 'page_size'], getv(from_object, ['page_size'])
     )
 
   if getv(from_object, ['page_token']) is not None:
     setv(
         parent_object,
-        ['_query', 'pageToken'],
+        ['_query', 'page_token'],
         getv(from_object, ['page_token']),
     )
 
@@ -310,7 +310,7 @@ def _TuningDataset_to_vertex(
   if getv(from_object, ['gcs_uri']) is not None:
     setv(
         parent_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
+        ['supervised_tuning_spec', 'training_dataset_uri'],
         getv(from_object, ['gcs_uri']),
     )
 
@@ -327,7 +327,7 @@ def _TuningValidationDataset_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    setv(to_object, ['validationDatasetUri'], getv(from_object, ['gcs_uri']))
+    setv(to_object, ['validation_dataset_uri'], getv(from_object, ['gcs_uri']))
 
   return to_object
 
@@ -342,7 +342,7 @@ def _CreateTuningJobConfig_to_vertex(
   if getv(from_object, ['validation_dataset']) is not None:
     setv(
         parent_object,
-        ['supervisedTuningSpec'],
+        ['supervised_tuning_spec'],
         _TuningValidationDataset_to_vertex(
             api_client, getv(from_object, ['validation_dataset']), to_object
         ),
@@ -351,7 +351,7 @@ def _CreateTuningJobConfig_to_vertex(
   if getv(from_object, ['tuned_model_display_name']) is not None:
     setv(
         parent_object,
-        ['tunedModelDisplayName'],
+        ['tuned_model_display_name'],
         getv(from_object, ['tuned_model_display_name']),
     )
 
@@ -361,28 +361,32 @@ def _CreateTuningJobConfig_to_vertex(
   if getv(from_object, ['epoch_count']) is not None:
     setv(
         parent_object,
-        ['supervisedTuningSpec', 'hyperParameters', 'epochCount'],
+        ['supervised_tuning_spec', 'hyper_parameters', 'epoch_count'],
         getv(from_object, ['epoch_count']),
     )
 
   if getv(from_object, ['learning_rate_multiplier']) is not None:
     setv(
         parent_object,
-        ['supervisedTuningSpec', 'hyperParameters', 'learningRateMultiplier'],
+        [
+            'supervised_tuning_spec',
+            'hyper_parameters',
+            'learning_rate_multiplier',
+        ],
         getv(from_object, ['learning_rate_multiplier']),
     )
 
   if getv(from_object, ['export_last_checkpoint_only']) is not None:
     setv(
         parent_object,
-        ['supervisedTuningSpec', 'exportLastCheckpointOnly'],
+        ['supervised_tuning_spec', 'export_last_checkpoint_only'],
         getv(from_object, ['export_last_checkpoint_only']),
     )
 
   if getv(from_object, ['adapter_size']) is not None:
     setv(
         parent_object,
-        ['supervisedTuningSpec', 'hyperParameters', 'adapterSize'],
+        ['supervised_tuning_spec', 'hyper_parameters', 'adapter_size'],
         getv(from_object, ['adapter_size']),
     )
 
@@ -402,12 +406,12 @@ def _CreateTuningJobParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['base_model']) is not None:
-    setv(to_object, ['baseModel'], getv(from_object, ['base_model']))
+    setv(to_object, ['base_model'], getv(from_object, ['base_model']))
 
   if getv(from_object, ['training_dataset']) is not None:
     setv(
         to_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
+        ['supervised_tuning_spec', 'training_dataset_uri'],
         _TuningDataset_to_vertex(
             api_client, getv(from_object, ['training_dataset']), to_object
         ),

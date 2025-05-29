@@ -63,8 +63,7 @@ def mock_api_client(vertexai=False, credentials=None):
 def mock_websocket():
   websocket = AsyncMock(spec=client.ClientConnection)
   websocket.send = AsyncMock()
-  websocket.recv = AsyncMock(
-      return_value=b"""{
+  websocket.recv = AsyncMock(return_value=b"""{
   "serverContent": {
     "audioChunks": [
       {
@@ -88,8 +87,7 @@ def mock_websocket():
       }
     ]
   }
-}"""
-  )  # Default response
+}""")  # Default response
   websocket.close = AsyncMock()
   return websocket
 
@@ -158,48 +156,50 @@ def test_websocket_base_url():
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_send_weighted_prompts(
-    mock_websocket, vertexai
-):
+async def test_async_session_send_weighted_prompts(mock_websocket, vertexai):
   session = live_music.AsyncMusicSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
   if vertexai:
     with pytest.raises(NotImplementedError):
-      await session.set_weighted_prompts(prompts=[types.WeightedPrompt(text='Jazz', weight=1)])
+      await session.set_weighted_prompts(
+          prompts=[types.WeightedPrompt(text='Jazz', weight=1)]
+      )
     return
-  await session.set_weighted_prompts(prompts=[types.WeightedPrompt(text='Jazz', weight=1)])
+  await session.set_weighted_prompts(
+      prompts=[types.WeightedPrompt(text='Jazz', weight=1)]
+  )
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
-  assert 'clientContent' in sent_data
-  assert sent_data['clientContent']['weightedPrompts'][0]['text'] == 'Jazz'
-  assert sent_data['clientContent']['weightedPrompts'][0]['weight'] == 1
+  assert 'client_content' in sent_data
+  assert sent_data['client_content']['weighted_prompts'][0]['text'] == 'Jazz'
+  assert sent_data['client_content']['weighted_prompts'][0]['weight'] == 1
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_send_config(
-    mock_websocket, vertexai
-):
+async def test_async_session_send_config(mock_websocket, vertexai):
   session = live_music.AsyncMusicSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
   if vertexai:
     with pytest.raises(NotImplementedError):
-      await session.set_music_generation_config(config=types.LiveMusicGenerationConfig(bpm=140))
+      await session.set_music_generation_config(
+          config=types.LiveMusicGenerationConfig(bpm=140)
+      )
     return
-  await session.set_music_generation_config(config=types.LiveMusicGenerationConfig(bpm=140))
+  await session.set_music_generation_config(
+      config=types.LiveMusicGenerationConfig(bpm=140)
+  )
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
-  assert 'musicGenerationConfig' in sent_data
-  assert sent_data['musicGenerationConfig']['bpm'] == 140
+  assert 'music_generation_config' in sent_data
+  assert sent_data['music_generation_config']['bpm'] == 140
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_control_signal_play(
-    mock_websocket, vertexai
-):
+async def test_async_session_control_signal_play(mock_websocket, vertexai):
   session = live_music.AsyncMusicSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -210,15 +210,13 @@ async def test_async_session_control_signal_play(
   await session.play()
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
-  assert 'playbackControl' in sent_data
-  assert 'PLAY' in sent_data['playbackControl']
+  assert 'playback_control' in sent_data
+  assert 'PLAY' in sent_data['playback_control']
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_control_signal_pause(
-    mock_websocket, vertexai
-):
+async def test_async_session_control_signal_pause(mock_websocket, vertexai):
   session = live_music.AsyncMusicSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -229,15 +227,13 @@ async def test_async_session_control_signal_pause(
   await session.pause()
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
-  assert 'playbackControl' in sent_data
-  assert 'PAUSE' in sent_data['playbackControl']
+  assert 'playback_control' in sent_data
+  assert 'PAUSE' in sent_data['playback_control']
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_control_signal_stop(
-    mock_websocket, vertexai
-):
+async def test_async_session_control_signal_stop(mock_websocket, vertexai):
   session = live_music.AsyncMusicSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -248,8 +244,8 @@ async def test_async_session_control_signal_stop(
   await session.stop()
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
-  assert 'playbackControl' in sent_data
-  assert 'STOP' in sent_data['playbackControl']
+  assert 'playback_control' in sent_data
+  assert 'STOP' in sent_data['playback_control']
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -267,13 +263,13 @@ async def test_async_session_control_signal_reset_context(
   await session.reset_context()
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
-  assert 'playbackControl' in sent_data
-  assert 'RESET_CONTEXT' in sent_data['playbackControl']
+  assert 'playback_control' in sent_data
+  assert 'RESET_CONTEXT' in sent_data['playback_control']
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_receive( mock_websocket, vertexai):
+async def test_async_session_receive(mock_websocket, vertexai):
   session = live_music.AsyncMusicSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -288,17 +284,21 @@ async def test_async_session_receive( mock_websocket, vertexai):
     # Data contains decoded b64 audio
     assert audio_chunk.data == b'gelbanana'
     assert audio_chunk.mime_type == 'audio/l16;rate=48000;channels=2'
-    assert audio_chunk.source_metadata.client_content.weighted_prompts[0].text == 'Jazz'
-    assert audio_chunk.source_metadata.client_content.weighted_prompts[0].weight == 1
+    assert (
+        audio_chunk.source_metadata.client_content.weighted_prompts[0].text
+        == 'Jazz'
+    )
+    assert (
+        audio_chunk.source_metadata.client_content.weighted_prompts[0].weight
+        == 1
+    )
     assert audio_chunk.source_metadata.music_generation_config.bpm == 140
     break
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_receive_error(
-     mock_websocket, vertexai
-):
+async def test_async_session_receive_error(mock_websocket, vertexai):
   mock_websocket.recv = AsyncMock(return_value='invalid json')
   session = live_music.AsyncMusicSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -309,7 +309,7 @@ async def test_async_session_receive_error(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_close( mock_websocket, vertexai):
+async def test_async_session_close(mock_websocket, vertexai):
   session = live_music.AsyncMusicSession(
       mock_api_client(vertexai=vertexai), mock_websocket
   )
@@ -323,13 +323,11 @@ async def test_setup_to_api(vertexai):
   if vertexai:
     with pytest.raises(NotImplementedError):
       await get_connect_message(
-          mock_api_client(vertexai=vertexai),
-          model='test_model'
+          mock_api_client(vertexai=vertexai), model='test_model'
       )
     return
   result = await get_connect_message(
-      mock_api_client(vertexai=vertexai),
-      model='test_model'
+      mock_api_client(vertexai=vertexai), model='test_model'
   )
   expected_result = {'setup': {}}
   if vertexai:

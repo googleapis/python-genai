@@ -408,7 +408,7 @@ class AsyncSession:
       tool_response_dict = live_converters._LiveClientToolResponse_to_mldev(
           api_client=self._api_client, from_object=tool_response
       )
-      for response in tool_response_dict.get('functionResponses', []):
+      for response in tool_response_dict.get('function_responses', []):
         if response.get('id') is None:
           raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
 
@@ -1027,13 +1027,13 @@ class AsyncLive(_api_module.BaseModule):
 
       if (
           getv(
-              request_dict, ['setup', 'generationConfig', 'responseModalities']
+              request_dict, ['setup', 'generation_config', 'response_modalities']
           )
           is None
       ):
         setv(
             request_dict,
-            ['setup', 'generationConfig', 'responseModalities'],
+            ['setup', 'generation_config', 'response_modalities'],
             ['AUDIO'],
         )
 
