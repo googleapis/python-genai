@@ -63,13 +63,8 @@ def _extract_curated_history(
   """Extracts the curated (valid) history from a comprehensive history.
 
   The comprehensive history contains all turns (user input and model responses),
-  including any invalid or rejected model outputs.  This function filters
-  that history to return only the valid turns.
-
-  A "turn" starts with one user input (a single content) and then follows by
-  corresponding model response (which may consist of multiple contents).
-  Turns are assumed to alternate: user input, model output, user input, model
-  output, etc.
+  including any invalid or rejected model outputs. This function filters that
+  history to return only the valid turns.
 
   Args:
       comprehensive_history: A list representing the complete chat history.
@@ -84,8 +79,6 @@ def _extract_curated_history(
   length = len(comprehensive_history)
   i = 0
   current_input = comprehensive_history[i]
-  if current_input.role != "user":
-    raise ValueError("History must start with a user turn.")
   while i < length:
     if comprehensive_history[i].role not in ["user", "model"]:
       raise ValueError(
@@ -94,6 +87,7 @@ def _extract_curated_history(
 
     if comprehensive_history[i].role == "user":
       current_input = comprehensive_history[i]
+      curated_history.append(current_input)
       i += 1
     else:
       current_output = []
@@ -104,8 +98,9 @@ def _extract_curated_history(
           is_valid = False
         i += 1
       if is_valid:
-        curated_history.append(current_input)
         curated_history.extend(current_output)
+      elif curated_history:
+        curated_history.pop()
   return curated_history
 
 
