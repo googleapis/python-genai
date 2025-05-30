@@ -1867,3 +1867,34 @@ async def test_connect_with_default_credentials(mock_websocket):
         )
 
     await _test_connect()
+
+
+@pytest.mark.parametrize('vertexai', [False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_auth_tokens(mock_websocket, vertexai):
+    api_client_mock = mock_api_client(vertexai=vertexai)
+    api_client_mock.api_key = 'auth_tokens/TEST_AUTH_TOKEN'
+    result = await get_connect_message(
+        api_client_mock,
+        model='test_model'
+    )
+
+    mock_ws = AsyncMock()
+    mock_ws.send = AsyncMock()
+    mock_ws.recv = AsyncMock(return_value=b'some response')
+    uri_capture = {}  # Capture the uri here
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None):
+        uri_capture['uri'] = uri # Capture the uri
+        yield mock_ws
+
+    with patch.object(live, 'ws_connect', new=mock_connect):
+      live_module = live.AsyncLive(api_client_mock)
+      async with live_module.connect(
+          model='test_model',
+      ):
+        pass
+
+    assert 'access_token=auth_tokens/TEST_AUTH_TOKEN' in uri_capture['uri']
+    assert 'BidiGenerateContentConstrained' in uri_capture['uri']
