@@ -15,7 +15,7 @@
 
 ### ⚠ BREAKING CHANGES TO EXPERIMENTAL FEATURES
 
-* Removed 'live_ephemeral_connect`, ephemeral auth tokend can now be used as API keys ([db1d7ee](https://github.com/googleapis/python-genai/commit/db1d7eec869525d41ffc7b1570bd597b12fab323))
+* Removed `live_ephemeral_connect`, ephemeral auth tokens can now be used as API keys ([db1d7ee](https://github.com/googleapis/python-genai/commit/db1d7eec869525d41ffc7b1570bd597b12fab323))
 * Rename LiveEphemeralParameters to LiveConnectConstraints. ([6719faf](https://github.com/googleapis/python-genai/commit/6719faf6be905b192397cfc361283f2bb9cad8de))
 
 
