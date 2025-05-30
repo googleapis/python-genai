@@ -160,7 +160,7 @@ class _BaseChat:
         # Because the AFC input contains the entire curated chat history in
         # addition to the new user input, we need to truncate the AFC history
         # to deduplicate the existing chat history.
-        automatic_function_calling_history[len(self._curated_history):]
+        automatic_function_calling_history[len(self._curated_history) :]
         if automatic_function_calling_history
         else [user_input]
     )
@@ -328,7 +328,7 @@ class Chat(_BaseChat):
         yield chunk
       automatic_function_calling_history = (
           chunk.automatic_function_calling_history
-          if chunk.automatic_function_calling_history
+          if chunk is not None and chunk.automatic_function_calling_history
           else []
       )
       self.record_history(
@@ -495,9 +495,12 @@ class AsyncChat(_BaseChat):
       self.record_history(
           user_input=input_content,
           model_output=output_contents,
-          automatic_function_calling_history=chunk.automatic_function_calling_history if chunk.automatic_function_calling_history else [],
+          automatic_function_calling_history=chunk.automatic_function_calling_history
+          if chunk is not None and chunk.automatic_function_calling_history
+          else [],
           is_valid=is_valid,
       )
+
     return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 
 

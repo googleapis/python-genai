@@ -6105,7 +6105,8 @@ class Models(_api_module.BaseModule):
             )
           yield chunk
         if (
-            not chunk.candidates
+            chunk is None
+            or not chunk.candidates
             or not chunk.candidates[0].content
             or not chunk.candidates[0].content.parts
         ):
@@ -6120,7 +6121,7 @@ class Models(_api_module.BaseModule):
         break
 
       # Append function response parts to contents for the next request.
-      if chunk.candidates is not None:
+      if chunk is not None and chunk.candidates is not None:
         func_call_content = chunk.candidates[0].content
         func_response_content = types.Content(
             role='user',
@@ -7609,7 +7610,8 @@ class AsyncModels(_api_module.BaseModule):
               )
             yield chunk
           if (
-              not chunk.candidates
+              chunk is None
+              or not chunk.candidates
               or not chunk.candidates[0].content
               or not chunk.candidates[0].content.parts
           ):
@@ -7623,6 +7625,8 @@ class AsyncModels(_api_module.BaseModule):
         if not func_response_parts:
           break
 
+        if chunk is None:
+          continue
         # Append function response parts to contents for the next request.
         func_call_content = chunk.candidates[0].content
         func_response_content = types.Content(

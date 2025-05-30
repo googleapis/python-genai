@@ -761,7 +761,8 @@ def process_schema(
   schema_type = schema.get('type')
   if isinstance(schema_type, Enum):
     schema_type = schema_type.value
-  schema_type = schema_type.upper()
+  if isinstance(schema_type, str):
+    schema_type = schema_type.upper()
 
   # model_json_schema() returns a schema with a 'const' field when a Literal with one value is provided as a pydantic field
   # For example `genre: Literal['action']` becomes: {'const': 'action', 'title': 'Genre', 'type': 'string'}
