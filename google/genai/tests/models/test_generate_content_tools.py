@@ -297,6 +297,51 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_vertex='not supported in Vertex AI',
     ),
+    pytest_helper.TestTableItem( 
+        # https://github.com/googleapis/python-genai/issues/830
+        # - models started returning empty thought in response to queries
+        #   containing tools.
+        # - The API needs to accept any Content response it sends (otherwise
+        #   chat breaks)
+        # - MLDev is not returning the, so it's okay that MLDev doesn't accept
+        #   them?
+        # - This is also important to configm forward compatibility.
+        #   when the models start returning thought_signature, those will get
+        #   dropped by the SDK leaving a `{'thought: True}` part. 
+        name='test_chat_tools_empty_thoughts',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-05-20',
+            contents=[types.Content.model_validate(item) for item in [
+                    {
+                        'parts': [{'text': 'Who won the 1955 world cup?'}],
+                        'role': 'user',
+                    },
+                    {
+                        'parts': [
+                            {'thought': True},
+                            {
+                                'text': (
+                                    'The FIFA World Cup is held every four'
+                                    ' years. The 1954 FIFA World Cup was won by'
+                                    ' West Germany, who defeated Hungary in the'
+                                    ' final.'
+                                )
+                            },
+                        ],
+                        'role': 'model',
+                    },
+                    {
+                        'parts': [{
+                            'text': 'What was the population of canada in 1955?'
+                        }],
+                        'role': 'user',
+                    },
+                ]],
+            config={
+                'tools': [{'function_declarations': function_declarations}],
+            },
+        ),
+    ),
 ]
 
 
@@ -1285,3 +1330,29 @@ def test_suppress_logs_with_sdk_logger(client, caplog):
       },
   )
   assert not caplog.text
+
+
+def test_tools_chat_curation(client, caplog):
+  caplog.set_level(logging.DEBUG, logger='google_genai.models')
+  sdk_logger = logging.getLogger('google_genai.models')
+  sdk_logger.setLevel(logging.ERROR)
+
+  config={
+      'tools': [{'function_declarations': function_declarations}],
+  }
+
+  chat = client.chats.create(
+      model='gemini-2.5-flash-preview-05-20',
+      config=config,
+  )
+
+  response = chat.send_message(
+    message='Who won the 1955 world cup?',
+  )
+
+  response = chat.send_message(
+    message='What was the population of canada in 1955?',
+  )
+
+  history = chat.get_history(curated=True)
+  assert len(history) == 4

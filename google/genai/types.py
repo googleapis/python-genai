@@ -889,6 +889,10 @@ class Part(_common.BaseModel):
   file_data: Optional[FileData] = Field(
       default=None, description="""Optional. URI based data."""
   )
+  thought_signature: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque signature for the thought so it can be reused in subsequent requests.""",
+  )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
       description="""Optional. Result of executing the [ExecutableCode].""",
@@ -985,6 +989,9 @@ class PartDict(TypedDict, total=False):
 
   file_data: Optional[FileDataDict]
   """Optional. URI based data."""
+
+  thought_signature: Optional[bytes]
+  """An opaque signature for the thought so it can be reused in subsequent requests."""
 
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
