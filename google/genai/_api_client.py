@@ -234,7 +234,7 @@ class HttpResponse:
             chunk = chunk.decode('utf-8')
           if chunk.startswith('data: '):
             chunk = chunk[len('data: ') :]
-          yield json.loads(chunk)
+            yield json.loads(chunk)
 
   async def async_segments(self) -> AsyncIterator[Any]:
     if isinstance(self.response_stream, list):
@@ -256,7 +256,7 @@ class HttpResponse:
               chunk = chunk.decode('utf-8')
             if chunk.startswith('data: '):
               chunk = chunk[len('data: ') :]
-            yield json.loads(chunk)
+              yield json.loads(chunk)
       else:
         raise ValueError('Error parsing streaming response.')
 
