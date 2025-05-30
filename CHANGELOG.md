@@ -9,11 +9,16 @@
 * Include UNEXPECTED_TOOL_CALL enum value to FinishReason for Vertex AI APIs. ([ccbc66e](https://github.com/googleapis/python-genai/commit/ccbc66e199b23cecf3a4bd0680c6a52b1260cedb))
 * Support ephemeral auth tokens as API keys for live connections in Python. ([db1d7ee](https://github.com/googleapis/python-genai/commit/db1d7eec869525d41ffc7b1570bd597b12fab323))
 
-
 ### Bug Fixes
 
 * Ignore struct types when performing forward compatibility field filtering ([7024011](https://github.com/googleapis/python-genai/commit/702401102a34e21e94201c9cc48aa7fe2db68958))
+
+### ⚠ BREAKING CHANGES TO EXPERIMENTAL FEATURES
+
+* Removed 'live_ephemeral_connect`, ephemeral auth tokend can now be used as API keys ([db1d7ee](https://github.com/googleapis/python-genai/commit/db1d7eec869525d41ffc7b1570bd597b12fab323))
 * Rename LiveEphemeralParameters to LiveConnectConstraints. ([6719faf](https://github.com/googleapis/python-genai/commit/6719faf6be905b192397cfc361283f2bb9cad8de))
+
+
 
 ## [1.17.0](https://github.com/googleapis/python-genai/compare/v1.16.1...v1.17.0) (2025-05-28)
 
