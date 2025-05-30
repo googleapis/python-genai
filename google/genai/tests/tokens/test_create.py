@@ -42,7 +42,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -60,7 +60,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -79,7 +79,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -98,7 +98,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -128,7 +128,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'lock_additional_fields': ['output_audio_transcription'],
-                'live_ephemeral_parameters': {},
+                'live_connect_constraints': {},
             },
         ),
         exception_if_vertex='only supported in the Gemini Developer client',

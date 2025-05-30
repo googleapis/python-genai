@@ -12523,8 +12523,8 @@ class AuthTokenDict(TypedDict, total=False):
 AuthTokenOrDict = Union[AuthToken, AuthTokenDict]
 
 
-class LiveEphemeralParameters(_common.BaseModel):
-  """Config for LiveEphemeralParameters for Auth Token creation."""
+class LiveConnectConstraints(_common.BaseModel):
+  """Config for LiveConnectConstraints for Auth Token creation."""
 
   model: Optional[str] = Field(
       default=None,
@@ -12538,8 +12538,8 @@ class LiveEphemeralParameters(_common.BaseModel):
   )
 
 
-class LiveEphemeralParametersDict(TypedDict, total=False):
-  """Config for LiveEphemeralParameters for Auth Token creation."""
+class LiveConnectConstraintsDict(TypedDict, total=False):
+  """Config for LiveConnectConstraints for Auth Token creation."""
 
   model: Optional[str]
   """ID of the model to configure in the ephemeral token for Live API.
@@ -12550,8 +12550,8 @@ class LiveEphemeralParametersDict(TypedDict, total=False):
   """Configuration specific to Live API connections created using this token."""
 
 
-LiveEphemeralParametersOrDict = Union[
-    LiveEphemeralParameters, LiveEphemeralParametersDict
+LiveConnectConstraintsOrDict = Union[
+    LiveConnectConstraints, LiveConnectConstraintsDict
 ]
 
 
@@ -12584,7 +12584,7 @@ class CreateAuthTokenConfig(_common.BaseModel):
       then no limit is applied. Default is 1. Resuming a Live API session does
       not count as a use.""",
   )
-  live_ephemeral_parameters: Optional[LiveEphemeralParameters] = Field(
+  live_connect_constraints: Optional[LiveConnectConstraints] = Field(
       default=None,
       description="""Configuration specific to Live API connections created using this token.""",
   )
@@ -12620,7 +12620,7 @@ class CreateAuthTokenConfigDict(TypedDict, total=False):
       then no limit is applied. Default is 1. Resuming a Live API session does
       not count as a use."""
 
-  live_ephemeral_parameters: Optional[LiveEphemeralParametersDict]
+  live_connect_constraints: Optional[LiveConnectConstraintsDict]
   """Configuration specific to Live API connections created using this token."""
 
   lock_additional_fields: Optional[list[str]]
