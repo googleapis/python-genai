@@ -1,3 +1,18 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import sys
 from enum import Enum
 from typing import List, Optional, Union
@@ -82,8 +97,7 @@ def test_empty_list_of_pydantic_schema(client):
         recipe_name: str
         ingredients: List[str]
 
-    # Note: This test is artificial since the model would likely return actual recipes,
-    # but we're testing the type annotation support, not the model's behavior
+    # Note: I am only testing the type annotation support, not the model's behavior
 
     # Create a mock response with an empty list
     response = types.GenerateContentResponse()
@@ -120,7 +134,7 @@ def test_list_with_optional_fields(client):
     # Even if the optional fields are None, the type annotation should work
     recipe = response.parsed[0]
     assert isinstance(recipe.recipe_name, str)
-    # Optional fields may or may not be None
+
     assert recipe.prep_time_minutes is None or isinstance(recipe.prep_time_minutes, int)
 
 

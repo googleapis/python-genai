@@ -1,3 +1,18 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 """Tests to verify that mypy correctly handles list[pydantic.BaseModel] in response.parsed."""
 
 from typing import List, cast
@@ -27,11 +42,11 @@ def test_mypy_with_list_pydantic():
     # Create a mock response (simulating what we'd get from the API)
     response = types.GenerateContentResponse()
 
-    # Before the fix, this next line would cause a mypy error:
+    # Before the fix[issue #886], this next line would cause a mypy error:
     # Incompatible types in assignment (expression has type "List[Recipe]",
     # variable has type "Optional[Union[BaseModel, Dict[Any, Any], Enum]]")
     #
-    # With our fix adding list[pydantic.BaseModel] to the Union, this is now valid:
+    # With the fix adding list[pydantic.BaseModel] to the Union, this is now valid:
     response.parsed = [
         Recipe(
             recipe_name="Chocolate Chip Cookies",
@@ -48,16 +63,16 @@ def test_mypy_with_list_pydantic():
         # and require a cast:
         # parsed_items = cast(list[Recipe], response.parsed)
 
-        # With our fix, we can directly use it as a list without casting:
+        # With the fix, we can directly use it as a list without casting:
         recipes = response.parsed
 
-        # We can iterate over the list without casting
+        # Now iteration over the list without casting is possible
         for recipe in recipes:
             logger.info(f"Recipe: {recipe.recipe_name}")
             for ingredient in recipe.ingredients:
                 logger.info(f" - {ingredient}")
 
-        # We can access elements by index without casting
+        # Also accessing elements by index without casting is possible
         first_recipe = recipes[0]
         logger.info(f"First recipe: {first_recipe.recipe_name}")
 
@@ -74,12 +89,16 @@ def test_with_pydantic_inheritance():
     response = types.GenerateContentResponse()
 
     # Before the fix, this would require a cast with mypy
-    # Now it works directly with our enhanced type annotation
+    # Now it works directly with the enhanced type annotation
     response.parsed = [
         Recipe(
-            name="Chocolate Chip Cookies", ingredients=["Flour", "Sugar", "Chocolate"]
+            name="Chocolate Chip Cookies",
+            ingredients=["Flour", "Sugar", "Chocolate"],
         ),
-        Recipe(name="Oatmeal Cookies", ingredients=["Oats", "Flour", "Brown Sugar"]),
+        Recipe(
+            name="Oatmeal Cookies",
+            ingredients=["Oats", "Flour", "Brown Sugar"],
+        ),
     ]
 
     if response.parsed is not None:
@@ -157,7 +176,7 @@ def old_approach_with_cast():
     ]
 
     if response.parsed is not None:
-        # Before our fix, you'd need this cast for mypy to be happy
+        # Before the fix, you'd need this cast for mypy to work successfully
         recipes = cast(List[Recipe], response.parsed)
 
         # Using the cast list
