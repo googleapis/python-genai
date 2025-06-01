@@ -1234,14 +1234,14 @@ class JSONSchema(pydantic.BaseModel):
       default=None,
       description=(
           'Validation succeeds if the instance is equal to one of the elements'
-          ' in this keyword's array value.'
+          ' in this keyword’s array value.'
       ),
   )
   properties: Optional[dict[str, 'JSONSchema']] = Field(
       default=None,
       description=(
           'Validation succeeds if, for each name that appears in both the'
-          ' instance and as a name within this keyword's value, the child'
+          ' instance and as a name within this keyword’s value, the child'
           ' instance for that name successfully validates against the'
           ' corresponding schema.'
       ),
@@ -1307,10 +1307,9 @@ class JSONSchema(pydantic.BaseModel):
       description=(
           'An instance validates successfully against this keyword if it'
           ' validates successfully against at least one schema defined by this'
-          ' keyword's value.'
+          ' keyword’s value.'
       ),
   )
-
 
 class Schema(_common.BaseModel):
   """Schema is used to define the format of input/output data.
@@ -11567,6 +11566,795 @@ This should only be sent when automatic activity detection is enabled
 (which is the default).
 
 The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[Blob] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
+
+
+class LiveClientRealtimeInputDict(TypedDict, total=False):
+  """User input that is sent in real time.
+
+  This is different from `LiveClientContent` in a few ways:
+
+    - Can be sent continuously without interruption to model generation.
+    - If there is a need to mix data interleaved across the
+      `LiveClientContent` and the `LiveClientRealtimeInput`, server attempts to
+      optimize for best response, but there are no guarantees.
+    - End of turn is not explicitly specified, but is rather derived from user
+      activity (for example, end of speech).
+    - Even before the end of turn, the data is processed incrementally
+      to optimize for a fast start of the response from the model.
+    - Is always assumed to be the user's input (cannot be used to populate
+      conversation history).
+  """
+
+  media_chunks: Optional[list[BlobDict]]
+  """Inlined bytes data for media input."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
+
+
+LiveClientRealtimeInputOrDict = Union[
+    LiveClientRealtimeInput, LiveClientRealtimeInputDict
+]
+
+if _is_pillow_image_imported:
+  BlobImageUnion = Union[Blob, PIL_Image]
+else:
+  BlobImageUnion = Blob  # type: ignore[misc]
+
+
+BlobImageUnionDict = Union[BlobImageUnion, BlobDict]
+
+
+class LiveSendRealtimeInputParameters(_common.BaseModel):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnion] = Field(
+      default=None, description="""Realtime input to send to the session."""
+  )
+  audio: Optional[Blob] = Field(
+      default=None, description="""The realtime audio input stream."""
+  )
+  audio_stream_end: Optional[bool] = Field(
+      default=None,
+      description="""
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[BlobImageUnion] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
+
+
+class LiveSendRealtimeInputParametersDict(TypedDict, total=False):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnionDict]
+  """Realtime input to send to the session."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobImageUnionDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
+
+
+LiveSendRealtimeInputParametersOrDict = Union[
+    LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
+]
+
+
+class LiveClientToolResponse(_common.BaseModel):
+  """Client generated response to a `ToolCall` received from the server.
+
+  Individual `FunctionResponse` objects are matched to the respective
+  `FunctionCall` objects by the `id` field.
+
+  Note that in the unary and server-streaming GenerateContent APIs function
+  calling happens by exchanging the `Content` parts, while in the bidi
+  GenerateContent APIs function calling happens over this dedicated set of
+  messages.
+  """
+
+  function_responses: Optional[list[FunctionResponse]] = Field(
+      default=None, description="""The response to the function calls."""
+  )
+
+
+class LiveClientToolResponseDict(TypedDict, total=False):
+  """Client generated response to a `ToolCall` received from the server.
+
+  Individual `FunctionResponse` objects are matched to the respective
+  `FunctionCall` objects by the `id` field.
+
+  Note that in the unary and server-streaming GenerateContent APIs function
+  calling happens by exchanging the `Content` parts, while in the bidi
+  GenerateContent APIs function calling happens over this dedicated set of
+  messages.
+  """
+
+  function_responses: Optional[list[FunctionResponseDict]]
+  """The response to the function calls."""
+
+
+LiveClientToolResponseOrDict = Union[
+    LiveClientToolResponse, LiveClientToolResponseDict
+]
+
+
+class LiveClientMessage(_common.BaseModel):
+  """Messages sent by the client in the API call."""
+
+  setup: Optional[LiveClientSetup] = Field(
+      default=None,
+      description="""Message to be sent by the system when connecting to the API. SDK users should not send this message.""",
+  )
+  client_content: Optional[LiveClientContent] = Field(
+      default=None,
+      description="""Incremental update of the current conversation delivered from the client.""",
+  )
+  realtime_input: Optional[LiveClientRealtimeInput] = Field(
+      default=None, description="""User input that is sent in real time."""
+  )
+  tool_response: Optional[LiveClientToolResponse] = Field(
+      default=None,
+      description="""Response to a `ToolCallMessage` received from the server.""",
+  )
+
+
+class LiveClientMessageDict(TypedDict, total=False):
+  """Messages sent by the client in the API call."""
+
+  setup: Optional[LiveClientSetupDict]
+  """Message to be sent by the system when connecting to the API. SDK users should not send this message."""
+
+  client_content: Optional[LiveClientContentDict]
+  """Incremental update of the current conversation delivered from the client."""
+
+  realtime_input: Optional[LiveClientRealtimeInputDict]
+  """User input that is sent in real time."""
+
+  tool_response: Optional[LiveClientToolResponseDict]
+  """Response to a `ToolCallMessage` received from the server."""
+
+
+LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
+
+
+class LiveConnectConfig(_common.BaseModel):
+  """Session config for the API connection."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  generation_config: Optional[GenerationConfig] = Field(
+      default=None,
+      description="""The generation configuration for the session.""",
+  )
+  response_modalities: Optional[list[Modality]] = Field(
+      default=None,
+      description="""The requested modalities of the response. Represents the set of
+      modalities that the model can return. Defaults to AUDIO if not specified.
+      """,
+  )
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Value that controls the degree of randomness in token selection.
+      Lower temperatures are good for prompts that require a less open-ended or
+      creative response, while higher temperatures can lead to more diverse or
+      creative results.
+      """,
+  )
+  top_p: Optional[float] = Field(
+      default=None,
+      description="""Tokens are selected from the most to least probable until the sum
+      of their probabilities equals this value. Use a lower value for less
+      random responses and a higher value for more random responses.
+      """,
+  )
+  top_k: Optional[float] = Field(
+      default=None,
+      description="""For each token selection step, the ``top_k`` tokens with the
+      highest probabilities are sampled. Then tokens are further filtered based
+      on ``top_p`` with the final token selected using temperature sampling. Use
+      a lower number for less random responses and a higher number for more
+      random responses.
+      """,
+  )
+  max_output_tokens: Optional[int] = Field(
+      default=None,
+      description="""Maximum number of tokens that can be generated in the response.
+      """,
+  )
+  media_resolution: Optional[MediaResolution] = Field(
+      default=None,
+      description="""If specified, the media resolution specified will be used.
+      """,
+  )
+  seed: Optional[int] = Field(
+      default=None,
+      description="""When ``seed`` is fixed to a specific number, the model makes a best
+      effort to provide the same response for repeated requests. By default, a
+      random number is used.
+      """,
+  )
+  speech_config: Optional[SpeechConfig] = Field(
+      default=None,
+      description="""The speech generation configuration.
+      """,
+  )
+  enable_affective_dialog: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, the model will detect emotions and adapt its responses accordingly.""",
+  )
+  system_instruction: Optional[ContentUnion] = Field(
+      default=None,
+      description="""The user provided system instructions for the model.
+      Note: only text should be used in parts and content in each part will be
+      in a separate paragraph.""",
+  )
+  tools: Optional[ToolListUnion] = Field(
+      default=None,
+      description="""A list of `Tools` the model may use to generate the next response.
+
+      A `Tool` is a piece of code that enables the system to interact with
+      external systems to perform an action, or set of actions, outside of
+      knowledge and scope of the model.""",
+  )
+  session_resumption: Optional[SessionResumptionConfig] = Field(
+      default=None,
+      description="""Configures session resumption mechanism.
+
+If included the server will send SessionResumptionUpdate messages.""",
+  )
+  input_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""The transcription of the input aligns with the input audio language.
+      """,
+  )
+  output_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""The transcription of the output aligns with the language code
+      specified for the output audio.
+      """,
+  )
+  realtime_input_config: Optional[RealtimeInputConfig] = Field(
+      default=None,
+      description="""Configures the realtime input behavior in BidiGenerateContent.""",
+  )
+  context_window_compression: Optional[ContextWindowCompressionConfig] = Field(
+      default=None,
+      description="""Configures context window compression mechanism.
+
+      If included, server will compress context window to fit into given length.""",
+  )
+  proactivity: Optional[ProactivityConfig] = Field(
+      default=None,
+      description="""Configures the proactivity of the model. This allows the model to respond proactively to
+    the input and to ignore irrelevant input.""",
+  )
+
+
+class LiveConnectConfigDict(TypedDict, total=False):
+  """Session config for the API connection."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  generation_config: Optional[GenerationConfigDict]
+  """The generation configuration for the session."""
+
+  response_modalities: Optional[list[Modality]]
+  """The requested modalities of the response. Represents the set of
+      modalities that the model can return. Defaults to AUDIO if not specified.
+      """
+
+  temperature: Optional[float]
+  """Value that controls the degree of randomness in token selection.
+      Lower temperatures are good for prompts that require a less open-ended or
+      creative response, while higher temperatures can lead to more diverse or
+      creative results.
+      """
+
+  top_p: Optional[float]
+  """Tokens are selected from the most to least probable until the sum
+      of their probabilities equals this value. Use a lower value for less
+      random responses and a higher value for more random responses.
+      """
+
+  top_k: Optional[float]
+  """For each token selection step, the ``top_k`` tokens with the
+      highest probabilities are sampled. Then tokens are further filtered based
+      on ``top_p`` with the final token selected using temperature sampling. Use
+      a lower number for less random responses and a higher number for more
+      random responses.
+      """
+
+  max_output_tokens: Optional[int]
+  """Maximum number of tokens that can be generated in the response.
+      """
+
+  media_resolution: Optional[MediaResolution]
+  """If specified, the media resolution specified will be used.
+      """
+
+  seed: Optional[int]
+  """When ``seed`` is fixed to a specific number, the model makes a best
+      effort to provide the same response for repeated requests. By default, a
+      random number is used.
+      """
+
+  speech_config: Optional[SpeechConfigDict]
+  """The speech generation configuration.
+      """
+
+  enable_affective_dialog: Optional[bool]
+  """If enabled, the model will detect emotions and adapt its responses accordingly."""
+
+  system_instruction: Optional[ContentUnionDict]
+  """The user provided system instructions for the model.
+      Note: only text should be used in parts and content in each part will be
+      in a separate paragraph."""
+
+  tools: Optional[ToolListUnionDict]
+  """A list of `Tools` the model may use to generate the next response.
+
+      A `Tool` is a piece of code that enables the system to interact with
+      external systems to perform an action, or set of actions, outside of
+      knowledge and scope of the model."""
+
+  session_resumption: Optional[SessionResumptionConfigDict]
+  """Configures session resumption mechanism.
+
+If included the server will send SessionResumptionUpdate messages."""
+
+  input_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """The transcription of the input aligns with the input audio language.
+      """
+
+  output_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """The transcription of the output aligns with the language code
+      specified for the output audio.
+      """
+
+  realtime_input_config: Optional[RealtimeInputConfigDict]
+  """Configures the realtime input behavior in BidiGenerateContent."""
+
+  context_window_compression: Optional[ContextWindowCompressionConfigDict]
+  """Configures context window compression mechanism.
+
+      If included, server will compress context window to fit into given length."""
+
+  proactivity: Optional[ProactivityConfigDict]
+  """Configures the proactivity of the model. This allows the model to respond proactively to
+    the input and to ignore irrelevant input."""
+
+
+LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
+
+
+class LiveConnectParameters(_common.BaseModel):
+  """Parameters for connecting to the live API."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  config: Optional[LiveConnectConfig] = Field(
+      default=None,
+      description="""Optional configuration parameters for the request.
+      """,
+  )
+
+
+class LiveConnectParametersDict(TypedDict, total=False):
+  """Parameters for connecting to the live API."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  config: Optional[LiveConnectConfigDict]
+  """Optional configuration parameters for the request.
+      """
+
+
+LiveConnectParametersOrDict = Union[
+    LiveConnectParameters, LiveConnectParametersDict
+]
+
+
+class LiveMusicClientSetup(_common.BaseModel):
+  """Message to be sent by the system when connecting to the API."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""The model's resource name. Format: `models/{model}`.""",
+  )
+
+
+class LiveMusicClientSetupDict(TypedDict, total=False):
+  """Message to be sent by the system when connecting to the API."""
+
+  model: Optional[str]
+  """The model's resource name. Format: `models/{model}`."""
+
+
+LiveMusicClientSetupOrDict = Union[
+    LiveMusicClientSetup, LiveMusicClientSetupDict
+]
+
+
+class WeightedPrompt(_common.BaseModel):
+  """Maps a prompt to a relative weight to steer music generation."""
+
+  text: Optional[str] = Field(default=None, description="""Text prompt.""")
+  weight: Optional[float] = Field(
+      default=None,
+      description="""Weight of the prompt. The weight is used to control the relative
+      importance of the prompt. Higher weights are more important than lower
+      weights.
+
+      Weight must not be 0. Weights of all weighted_prompts in this
+      LiveMusicClientContent message will be normalized.""",
+  )
+
+
+class WeightedPromptDict(TypedDict, total=False):
+  """Maps a prompt to a relative weight to steer music generation."""
+
+  text: Optional[str]
+  """Text prompt."""
+
+  weight: Optional[float]
+  """Weight of the prompt. The weight is used to control the relative
+      importance of the prompt. Higher weights are more important than lower
+      weights.
+
+      Weight must not be 0. Weights of all weighted_prompts in this
+      LiveMusicClientContent message will be normalized."""
+
+
+WeightedPromptOrDict = Union[WeightedPrompt, WeightedPromptDict]
+
+
+class LiveMusicClientContent(_common.BaseModel):
+  """User input to start or steer the music."""
+
+  weighted_prompts: Optional[list[WeightedPrompt]] = Field(
+      default=None, description="""Weighted prompts as the model input."""
+  )
+
+
+class LiveMusicClientContentDict(TypedDict, total=False):
+  """User input to start or steer the music."""
+
+  weighted_prompts: Optional[list[WeightedPromptDict]]
+  """Weighted prompts as the model input."""
+
+
+LiveMusicClientContentOrDict = Union[
+    LiveMusicClientContent, LiveMusicClientContentDict
+]
+
+
+class LiveMusicGenerationConfig(_common.BaseModel):
+  """Configuration for music generation."""
+
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Controls the variance in audio generation. Higher values produce
+      higher variance. Range is [0.0, 3.0].""",
+  )
+  top_k: Optional[int] = Field(
+      default=None,
+      description="""Controls how the model selects tokens for output. Samples the topK
+      tokens with the highest probabilities. Range is [1, 1000].""",
+  )
+  seed: Optional[int] = Field(
+      default=None,
+      description="""Seeds audio generation. If not set, the request uses a randomly
+      generated seed.""",
+  )
+  guidance: Optional[float] = Field(
+      default=None,
+      description="""Controls how closely the model follows prompts.
+      Higher guidance follows more closely, but will make transitions more
+      abrupt. Range is [0.0, 6.0].""",
+  )
+  bpm: Optional[int] = Field(
+      default=None, description="""Beats per minute. Range is [60, 200]."""
+  )
+  density: Optional[float] = Field(
+      default=None, description="""Density of sounds. Range is [0.0, 1.0]."""
+  )
+  brightness: Optional[float] = Field(
+      default=None,
+      description="""Brightness of the music. Range is [0.0, 1.0].""",
+  )
+  scale: Optional[Scale] = Field(
+      default=None, description="""Scale of the generated music."""
+  )
+  mute_bass: Optional[bool] = Field(
+      default=None,
+      description="""Whether the audio output should contain bass.""",
+  )
+  mute_drums: Optional[bool] = Field(
+      default=None,
+      description="""Whether the audio output should contain drums.""",
+  )
+  only_bass_and_drums: Optional[bool] = Field(
+      default=None,
+      description="""Whether the audio output should contain only bass and drums.""",
+  )
+
+
+class LiveMusicGenerationConfigDict(TypedDict, total=False):
+  """Configuration for music generation."""
+
+  temperature: Optional[float]
+  """Controls the variance in audio generation. Higher values produce
+      higher variance. Range is [0.0, 3.0]."""
+
+  top_k: Optional[int]
+  """Controls how the model selects tokens for output. Samples the topK
+      tokens with the highest probabilities. Range is [1, 1000]."""
+
+  seed: Optional[int]
+  """Seeds audio generation. If not set, the request uses a randomly
+      generated seed."""
+
+  guidance: Optional[float]
+  """Controls how closely the model follows prompts.
+      Higher guidance follows more closely, but will make transitions more
+      abrupt. Range is [0.0, 6.0]."""
+
+  bpm: Optional[int]
+  """Beats per minute. Range is [60, 200]."""
+
+  density: Optional[float]
+  """Density of sounds. Range is [0.0, 1.0]."""
+
+  brightness: Optional[float]
+  """Brightness of the music. Range is [0.0, 1.0]."""
+
+  scale: Optional[Scale]
+  """Scale of the generated music."""
+
+  mute_bass: Optional[bool]
+  """Whether the audio output should contain bass."""
+
+  mute_drums: Optional[bool]
+  """Whether the audio output should contain drums."""
+
+  only_bass_and_drums: Optional[bool]
+  """Whether the audio output should contain only bass and drums."""
+
+
+LiveMusicGenerationConfigOrDict = Union[
+    LiveMusicGenerationConfig, LiveMusicGenerationConfigDict
+]
+
+
+class LiveMusicClientMessage(_common.BaseModel):
+  """Messages sent by the client in the LiveMusicClientMessage call."""
+
+  setup: Optional[LiveMusicClientSetup] = Field(
+      default=None,
+      description="""Message to be sent in the first (and only in the first) `LiveMusicClientMessage`.
+      Clients should wait for a `LiveMusicSetupComplete` message before
+      sending any additional messages.""",
+  )
+  client_content: Optional[LiveMusicClientContent] = Field(
+      default=None, description="""User input to influence music generation."""
+  )
+  music_generation_config: Optional[LiveMusicGenerationConfig] = Field(
+      default=None, description="""Configuration for music generation."""
+  )
+  playback_control: Optional[LiveMusicPlaybackControl] = Field(
+      default=None,
+      description="""Playback control signal for the music generation.""",
+  )
+
+
+class LiveMusicClientMessageDict(TypedDict, total=False):
+  """Messages sent by the client in the LiveMusicClientMessage call."""
+
+  setup: Optional[LiveMusicClientSetupDict]
+  """Message to be sent in the first (and only in the first) `LiveMusicClientMessage`.
+      Clients should wait for a `LiveMusicSetupComplete` message before
+      sending any additional messages."""
+
+  client_content: Optional[LiveMusicClientContentDict]
+  """User input to influence music generation."""
+
+  music_generation_config: Optional[LiveMusicGenerationConfigDict]
+  """Configuration for music generation."""
+
+  playback_control: Optional[LiveMusicPlaybackControl]
+  """Playback control signal for the music generation."""
+
+
+LiveMusicClientMessageOrDict = Union[
+    LiveMusicClientMessage, LiveMusicClientMessageDict
+]
+
+
+class LiveMusicServerSetupComplete(_common.BaseModel):
+  """Sent in response to a `LiveMusicClientSetup` message from the client."""
+
+  pass
+
+
+class LiveMusicServerSetupCompleteDict(TypedDict, total=False):
+  """Sent in response to a `LiveMusicClientSetup` message from the client."""
+
+  pass
+
+
+LiveMusicServerSetupCompleteOrDict = Union[
+    LiveMusicServerSetupComplete, LiveMusicServerSetupCompleteDict
+]
+
+
+class LiveMusicSourceMetadata(_common.BaseModel):
+  """Prompts and config used for generating this audio chunk."""
+
+  client_content: Optional[LiveMusicClientContent] = Field(
+      default=None,
+      description="""Weighted prompts for generating this audio chunk.""",
+  )
+  music_generation_config: Optional[LiveMusicGenerationConfig] = Field(
+      default=None,
+      description="""Music generation config for generating this audio chunk.""",
+  )
+
+
+class LiveMusicSourceMetadataDict(TypedDict, total=False):
+  """Prompts and config used for generating this audio chunk."""
+
+  client_content: Optional[LiveMusicClientContentDict]
+  """Weighted prompts for generating this audio chunk."""
+
+  music_generation_config: Optional[LiveMusicGenerationConfigDict]
+  """Music generation config for generating this audio chunk."""
+
+
+LiveMusicSourceMetadataOrDict = Union[
+    LiveMusicSourceMetadata, LiveMusicSourceMetadataDict
+]
+
+
+class AudioChunk(_common.BaseModel):
+  """Representation of an audio chunk."""
+
+  data: Optional[bytes] = Field(
+      default=None, description="""Raw byets of audio data."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None, description="""MIME type of the audio chunk."""
+  )
+  source_metadata: Optional[LiveMusicSourceMetadata] = Field(
+      default=None,
+      description="""Prompts and config used for generating this audio chunk.""",
+  )
+
+
+class AudioChunkDict(TypedDict, total=False):
+  """Representation of an audio chunk."""
+
+  data: Optional[bytes]
+  """Raw byets of audio data."""
+
+  mime_type: Optional[str]
+  """MIME type of the audio chunk."""
+
+  source_metadata: Optional[LiveMusicSourceMetadataDict]
+  """Prompts and config used for generating this audio chunk."""
+
+
+AudioChunkOrDict = Union[AudioChunk, AudioChunkDict]
+
+
+class LiveMusicServerContent(_common.BaseModel):
+  """Server update generated by the model in response to client messages.
+
+  Content is generated as quickly as possible, and not in real time.
+  Clients may choose to buffer and play it out in real time.
+  """
+
+  audio_chunks: Optional[list[AudioChunk]] = Field(
+      default=None,
+      description="""The audio chunks that the model has generated.""",
+  )
+
+
+class LiveMusicServerContentDict(TypedDict, total=False):
+  """Server update generated by the model in response to client messages.
+
+  Content is generated as quickly as possible, and not in real time.
+  Clients may choose to buffer and play it out in real time.
+  """
+
+  audio_chunks: Optional[list[AudioChunkDict]]
+  """The audio chunks that the model has generated."""
+
+
+LiveMusicServerContentOrDict = Union[
+    LiveMusicServerContent, LiveMusicServerContentDict
+]
 
 
 class LiveMusicFilteredPrompt(_common.BaseModel):
