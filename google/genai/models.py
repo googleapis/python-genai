@@ -4882,8 +4882,8 @@ def _process_contents_for_generation(
 
     This is an internal function used by generate_content and similar methods.
     It processes the contents to:
-    1. Transform them into a standard format
-    2. Ensure all file objects are in the ACTIVE state
+    - Transform them into a standard format
+    - Ensure all file objects are in the ACTIVE state
 
     Args:
       api_client: The API client to use for requests.
@@ -4892,7 +4892,7 @@ def _process_contents_for_generation(
     Returns:
       The processed contents.
     """
-    # First, transform the contents into a standard format
+    # transform the contents into a standard format
     processed_contents = t.t_contents(api_client, contents)
 
     # Process any file objects within the contents to ensure they're in ACTIVE state

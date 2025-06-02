@@ -1156,160 +1156,161 @@ HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
 
 
 class JSONSchemaType(Enum):
-  """The type of the data supported by JSON Schema.
+    """The type of the data supported by JSON Schema.
 
   The values of the enums are lower case strings, while the values of the enums
   for the Type class are upper case strings.
   """
 
-  NULL = 'null'
-  BOOLEAN = 'boolean'
-  OBJECT = 'object'
-  ARRAY = 'array'
-  NUMBER = 'number'
-  INTEGER = 'integer'
-  STRING = 'string'
+    NULL = 'null'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    STRING = 'string'
 
 
 class JSONSchema(pydantic.BaseModel):
-  """A subset of JSON Schema according to 2020-12 JSON Schema draft.
+    """A subset of JSON Schema according to 2020-12 JSON Schema draft.
 
-  Represents a subset of a JSON Schema object that is used by the Gemini model.
-  The difference between this class and the Schema class is that this class is
-  compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
-  make API call to Gemini model.
-  """
+    Represents a subset of a JSON Schema object that is used by the Gemini model.
+    The difference between this class and the Schema class is that this class is
+    compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
+    make API call to Gemini model.
+    """
 
-  type: Optional[Union[JSONSchemaType, list[JSONSchemaType]]] = Field(
-      default=None,
-      description="""Validation succeeds if the type of the instance matches the type represented by the given type, or matches at least one of the given types.""",
-  )
-  format: Optional[str] = Field(
-      default=None,
-      description='Define semantic information about a string instance.',
-  )
-  title: Optional[str] = Field(
-      default=None,
-      description=(
-          'A preferably short description about the purpose of the instance'
-          ' described by the schema.'
-      ),
-  )
-  description: Optional[str] = Field(
-      default=None,
-      description=(
-          'An explanation about the purpose of the instance described by the'
-          ' schema.'
-      ),
-  )
-  default: Optional[Any] = Field(
-      default=None,
-      description=(
-          'This keyword can be used to supply a default JSON value associated'
-          ' with a particular schema.'
-      ),
-  )
-  items: Optional['JSONSchema'] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if each element of the instance not covered by'
-          ' prefixItems validates against this schema.'
-      ),
-  )
-  min_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is greater than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  max_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is less than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  enum: Optional[list[Any]] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the instance is equal to one of the elements'
-          ' in this keyword’s array value.'
-      ),
-  )
-  properties: Optional[dict[str, 'JSONSchema']] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if, for each name that appears in both the'
-          ' instance and as a name within this keyword’s value, the child'
-          ' instance for that name successfully validates against the'
-          ' corresponding schema.'
-      ),
-  )
-  required: Optional[list[str]] = Field(
-      default=None,
-      description=(
-          'An object instance is valid against this keyword if every item in'
-          ' the array is the name of a property in the instance.'
-      ),
-  )
-  min_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is greater'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is less'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  minimum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is greater than or equal'
-          ' to the given number.'
-      ),
-  )
-  maximum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is less than or equal to'
-          ' the given number.'
-      ),
-  )
-  min_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' greater than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' less than, or equal to, the value of this keyword.'
-      ),
-  )
-  pattern: Optional[str] = Field(
-      default=None,
-      description=(
-          'A string instance is considered valid if the regular expression'
-          ' matches the instance successfully.'
-      ),
-  )
-  any_of: Optional[list['JSONSchema']] = Field(
-      default=None,
-      description=(
-          'An instance validates successfully against this keyword if it'
-          ' validates successfully against at least one schema defined by this'
-          ' keyword’s value.'
-      ),
-  )
+    type: Optional[Union[JSONSchemaType, list[JSONSchemaType]]] = Field(
+        default=None,
+        description="""Validation succeeds if the type of the instance matches the type represented by the given type, or matches at least one of the given types.""",
+    )
+    format: Optional[str] = Field(
+        default=None,
+        description="Define semantic information about a string instance.",
+    )
+    title: Optional[str] = Field(
+        default=None,
+        description=(
+            "A preferably short description about the purpose of the instance"
+            " described by the schema."
+        ),
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description=(
+            "An explanation about the purpose of the instance described by the"
+            " schema."
+        ),
+    )
+    default: Optional[Any] = Field(
+        default=None,
+        description=(
+            "This keyword can be used to supply a default JSON value associated"
+            " with a particular schema."
+        ),
+    )
+    items: Optional["JSONSchema"] = Field(
+        default=None,
+        description=(
+            "Validation succeeds if each element of the instance not covered by"
+            " prefixItems validates against this schema."
+        ),
+    )
+    min_items: Optional[int] = Field(
+        default=None,
+        description=(
+            "An array instance is valid if its size is greater than, or equal to,"
+            " the value of this keyword."
+        ),
+    )
+    max_items: Optional[int] = Field(
+        default=None,
+        description=(
+            "An array instance is valid if its size is less than, or equal to,"
+            " the value of this keyword."
+        ),
+    )
+    enum: Optional[list[Any]] = Field(
+        default=None,
+        description=(
+            "Validation succeeds if the instance is equal to one of the elements"
+            " in this keyword’s array value."
+        ),
+    )
+    properties: Optional[dict[str, "JSONSchema"]] = Field(
+        default=None,
+        description=(
+            "Validation succeeds if, for each name that appears in both the"
+            " instance and as a name within this keyword’s value, the child"
+            " instance for that name successfully validates against the"
+            " corresponding schema."
+        ),
+    )
+    required: Optional[list[str]] = Field(
+        default=None,
+        description=(
+            "An object instance is valid against this keyword if every item in"
+            " the array is the name of a property in the instance."
+        ),
+    )
+    min_properties: Optional[int] = Field(
+        default=None,
+        description=(
+            "An object instance is valid if its number of properties is greater"
+            " than, or equal to, the value of this keyword."
+        ),
+    )
+    max_properties: Optional[int] = Field(
+        default=None,
+        description=(
+            "An object instance is valid if its number of properties is less"
+            " than, or equal to, the value of this keyword."
+        ),
+    )
+    minimum: Optional[float] = Field(
+        default=None,
+        description=(
+            "Validation succeeds if the numeric instance is greater than or equal"
+            " to the given number."
+        ),
+    )
+    maximum: Optional[float] = Field(
+        default=None,
+        description=(
+            "Validation succeeds if the numeric instance is less than or equal to"
+            " the given number."
+        ),
+    )
+    min_length: Optional[int] = Field(
+        default=None,
+        description=(
+            "A string instance is valid against this keyword if its length is"
+            " greater than, or equal to, the value of this keyword."
+        ),
+    )
+    max_length: Optional[int] = Field(
+        default=None,
+        description=(
+            "A string instance is valid against this keyword if its length is"
+            " less than, or equal to, the value of this keyword."
+        ),
+    )
+    pattern: Optional[str] = Field(
+        default=None,
+        description=(
+            "A string instance is considered valid if the regular expression"
+            " matches the instance successfully."
+        ),
+    )
+    any_of: Optional[list["JSONSchema"]] = Field(
+        default=None,
+        description=(
+            "An instance validates successfully against this keyword if it"
+            " validates successfully against at least one schema defined by this"
+            " keyword’s value."
+        ),
+    )
+
 
 class Schema(_common.BaseModel):
   """Schema is used to define the format of input/output data.

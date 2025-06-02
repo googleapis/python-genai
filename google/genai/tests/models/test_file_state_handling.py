@@ -45,7 +45,7 @@ class TestFileStateHandling(unittest.TestCase):
     @mock.patch("google.genai.files._File_from_mldev")
     def test_ensure_file_active_with_processing_file(self, mock_file_from_mldev):
         """Test that _ensure_file_active properly handles a file in PROCESSING state."""
-        # Mock the response for file state check
+
         response_mock = mock.MagicMock()
         response_mock.json = {
             "file": {
@@ -65,12 +65,10 @@ class TestFileStateHandling(unittest.TestCase):
             "state": types.FileState.ACTIVE,
         }
 
-        # Call the function
         result = _ensure_file_active(
             self.api_client, self.file_obj, max_retries=1, retry_delay_seconds=0.1
         )
 
-        # Verify the file state was checked
         self.api_client.call_api.assert_called_once_with(
             method="GET",
             url="files/test123",
@@ -82,7 +80,7 @@ class TestFileStateHandling(unittest.TestCase):
 
     def test_ensure_file_active_with_failed_file(self):
         """Test that _ensure_file_active properly handles a file in FAILED state."""
-        # Mock the response for file state check with a FAILED state
+
         response_mock = mock.MagicMock()
         response_mock.json = {
             "file": {
@@ -103,13 +101,12 @@ class TestFileStateHandling(unittest.TestCase):
 
         self.api_client.call_api.side_effect = mock_call_api
 
-        # Call the function and expect it to raise FileProcessingError
+
         with pytest.raises(errors.FileProcessingError) as excinfo:
             _ensure_file_active(
                 self.api_client, self.file_obj, max_retries=1, retry_delay_seconds=0.1
             )
 
-        # Verify the error message
         assert "File processing failed" in str(excinfo.value)
 
     def test_ensure_file_active_with_retries_exhausted(self):
@@ -140,7 +137,6 @@ class TestFileStateHandling(unittest.TestCase):
 
     def test_ensure_file_active_with_already_active_file(self):
         """Test that _ensure_file_active returns immediately for an already ACTIVE file."""
-        # Create a file that's already ACTIVE
         active_file = types.File(
             name="files/active123",
             display_name="Active File",
@@ -148,7 +144,6 @@ class TestFileStateHandling(unittest.TestCase):
             state=types.FileState.ACTIVE,
         )
 
-        # Call the function
         result = _ensure_file_active(
             self.api_client, active_file, max_retries=1, retry_delay_seconds=0.1
         )
@@ -172,62 +167,53 @@ class TestProcessContentsFunction(unittest.TestCase):
             display_name="Processing File",
             mime_type="video/mp4",
             uri="https://example.com/files/processing123",
-            state=types.FileState.PROCESSING,
+            state=types.FileState.PROCESSING
         )
         self.active_file = types.File(
             name="files/active123",
             display_name="Active File",
             mime_type="video/mp4",
             uri="https://example.com/files/active123",
-            state=types.FileState.ACTIVE,
+            state=types.FileState.ACTIVE
         )
 
     def test_process_contents_with_files(self):
         """Test that _process_contents_for_generation can handle various file scenarios."""
-        # We'll test three cases:
-        # 1. File directly in content list
-        # 2. File in content parts
-        # 3. Multiple files in different parts
-
-        # Create test data
+        # Scenarios:
+        # - File directly in content list
+        # - File in content parts
+        # - Multiple files in different parts
+        
+        # Test data
         file_in_list = [self.processing_file, "Process this file"]
-
+        
         file_in_parts = types.Content(
             role="user",
-            parts=[types.Part(text="Here's a video:"), self.processing_file],
+            parts=[types.Part(text="Here's a video:"), self.processing_file]
         )
-
+        
         multiple_files = [
             types.Content(
                 role="user",
-                parts=[types.Part(text="First video:"), self.processing_file],
+                parts=[types.Part(text="First video:"), self.processing_file]
             ),
             types.Content(
-                role="user", parts=[types.Part(text="Second video:"), self.active_file]
-            ),
+                role="user",
+                parts=[types.Part(text="Second video:"), self.active_file]
+            )
         ]
-
+        
         # Mock _ensure_file_active to return the file unchanged
         # This allows us to test the function without changing file states
-        with mock.patch(
-            "google.genai.models._ensure_file_active",
-            side_effect=lambda client, file: file,
-        ):
-
+        with mock.patch("google.genai.models._ensure_file_active", 
+                      side_effect=lambda client, file: file):
+            
             # Test all three cases
             for test_content in [file_in_list, file_in_parts, multiple_files]:
-                with mock.patch(
-                    "google.genai.models.t.t_contents",
-                    return_value=(
-                        test_content
-                        if isinstance(test_content, list)
-                        else [test_content]
-                    ),
-                ):
+                with mock.patch("google.genai.models.t.t_contents", 
+                              return_value=test_content if isinstance(test_content, list) else [test_content]):
                     # Just verify it runs without errors
-                    result = _process_contents_for_generation(
-                        self.api_client, test_content
-                    )
+                    result = _process_contents_for_generation(self.api_client, test_content)
                     # Basic assertion that we got something back
                     self.assertTrue(result)
 
