@@ -18,12 +18,12 @@
 
 import warnings
 import inspect
+import typing
 
 import pytest
 
 from ... import _common
 from ... import errors
-
 
 
 def test_warn_once():
@@ -50,3 +50,14 @@ def test_warn_at_call_line():
   assert captured_warnings[0].lineno == call_line
 
 
+def test_is_struct_type():
+  assert _common._is_struct_type(list[dict[str, typing.Any]])
+  assert _common._is_struct_type(typing.List[typing.Dict[str, typing.Any]])
+  assert not _common._is_struct_type(list[dict[str, int]])
+  assert not _common._is_struct_type(list[dict[int, typing.Any]])
+  assert not _common._is_struct_type(list[str])
+  assert not _common._is_struct_type(dict[str, typing.Any])
+  assert not _common._is_struct_type(typing.List[typing.Dict[str, int]])
+  assert not _common._is_struct_type(typing.List[typing.Dict[int, typing.Any]])
+  assert not _common._is_struct_type(typing.List[str])
+  assert not _common._is_struct_type(typing.Dict[str, typing.Any])

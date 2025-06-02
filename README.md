@@ -117,7 +117,7 @@ Pydantic model types are available in the `types` module.
 
 ## Models
 
-The `client.models` modules exposes model inferencing and model getters.
+The `client.models` module exposes model inferencing and model getters.
 See the 'Create a client' section above to initialize a client.
 
 ### Generate Content

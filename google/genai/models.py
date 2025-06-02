@@ -123,6 +123,13 @@ def _Part_to_mldev(
         ),
     )
 
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -1546,6 +1553,13 @@ def _Part_to_vertex(
         _FileData_to_vertex(
             api_client, getv(from_object, ['file_data']), to_object
         ),
+    )
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
     )
 
   if getv(from_object, ['code_execution_result']) is not None:
@@ -3441,6 +3455,13 @@ def _Part_from_mldev(
         ),
     )
 
+  if getv(from_object, ['thoughtSignature']) is not None:
+    setv(
+        to_object,
+        ['thought_signature'],
+        getv(from_object, ['thoughtSignature']),
+    )
+
   if getv(from_object, ['codeExecutionResult']) is not None:
     setv(
         to_object,
@@ -4136,6 +4157,13 @@ def _Part_from_vertex(
         _FileData_from_vertex(
             api_client, getv(from_object, ['fileData']), to_object
         ),
+    )
+
+  if getv(from_object, ['thoughtSignature']) is not None:
+    setv(
+        to_object,
+        ['thought_signature'],
+        getv(from_object, ['thoughtSignature']),
     )
 
   if getv(from_object, ['codeExecutionResult']) is not None:
@@ -6105,7 +6133,8 @@ class Models(_api_module.BaseModule):
             )
           yield chunk
         if (
-            not chunk.candidates
+            chunk is None
+            or not chunk.candidates
             or not chunk.candidates[0].content
             or not chunk.candidates[0].content.parts
         ):
@@ -6120,7 +6149,7 @@ class Models(_api_module.BaseModule):
         break
 
       # Append function response parts to contents for the next request.
-      if chunk.candidates is not None:
+      if chunk is not None and chunk.candidates is not None:
         func_call_content = chunk.candidates[0].content
         func_response_content = types.Content(
             role='user',
@@ -7609,7 +7638,8 @@ class AsyncModels(_api_module.BaseModule):
               )
             yield chunk
           if (
-              not chunk.candidates
+              chunk is None
+              or not chunk.candidates
               or not chunk.candidates[0].content
               or not chunk.candidates[0].content.parts
           ):
@@ -7623,6 +7653,8 @@ class AsyncModels(_api_module.BaseModule):
         if not func_response_parts:
           break
 
+        if chunk is None:
+          continue
         # Append function response parts to contents for the next request.
         func_call_content = chunk.candidates[0].content
         func_response_content = types.Content(

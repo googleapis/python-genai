@@ -20,7 +20,7 @@ import datetime
 import enum
 import functools
 import typing
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Union, get_origin, get_args
 import uuid
 import warnings
 
@@ -154,6 +154,38 @@ def convert_to_dict(obj: object) -> Any:
     return obj
 
 
+def _is_struct_type(annotation: type) -> bool:
+  """Checks if the given annotation is list[dict[str, typing.Any]]
+  or typing.List[typing.Dict[str, typing.Any]].
+
+  This maps to Struct type in the API.
+  """
+  outer_origin = get_origin(annotation)
+  outer_args = get_args(annotation)
+
+  if outer_origin is not list: # Python 3.9+ normalizes list
+    return False
+
+  if not outer_args or len(outer_args) != 1:
+    return False
+
+  inner_annotation = outer_args[0]
+
+  inner_origin = get_origin(inner_annotation)
+  inner_args = get_args(inner_annotation)
+
+  if inner_origin is not dict: # Python 3.9+ normalizes to dict
+    return False
+
+  if not inner_args or len(inner_args) != 2:
+    # dict should have exactly two type arguments
+    return False
+
+  # Check if the dict arguments are str and typing.Any
+  key_type, value_type = inner_args
+  return key_type is str and value_type is typing.Any
+
+
 def _remove_extra_fields(
     model: Any, response: dict[str, object]
 ) -> None:
@@ -188,6 +220,9 @@ def _remove_extra_fields(
     if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
       _remove_extra_fields(annotation, value)
     elif isinstance(value, list):
+      if _is_struct_type(annotation):
+        continue
+
       for item in value:
         # assume a list of dict is list of BaseModel
         if isinstance(item, dict):

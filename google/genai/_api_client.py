@@ -64,6 +64,11 @@ MAX_RETRY_COUNT = 3
 INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
 
+
+class EphemeralTokenAPIKeyError(ValueError):
+  """Error raised when the API key is invalid."""
+
+
 def _append_library_version_headers(headers: dict[str, str]) -> None:
   """Appends the telemetry header to the headers dict."""
   library_label = f'google-genai-sdk/{version.__version__}'
@@ -625,6 +630,11 @@ class BaseApiClient:
         base_url,
         versioned_path,
     )
+
+    if self.api_key and self.api_key.startswith('auth_tokens/'):
+      raise EphemeralTokenAPIKeyError(
+          'Ephemeral tokens can only be used with the live API.'
+      )
 
     timeout_in_seconds = _get_timeout_in_seconds(patched_http_options.timeout)
 
