@@ -2636,6 +2636,10 @@ class VertexRagStore(_common.BaseModel):
       default=None,
       description="""Optional. Only return results with vector distance smaller than the threshold.""",
   )
+  store_context: Optional[bool] = Field(
+      default=False,
+      description="""Optional. Whether to store the context in the specified RAG corpus above. Currently only supported for Gemini Multimodal Live API.""",
+  )
 
 
 class VertexRagStoreDict(TypedDict, total=False):
@@ -2655,6 +2659,9 @@ class VertexRagStoreDict(TypedDict, total=False):
 
   vector_distance_threshold: Optional[float]
   """Optional. Only return results with vector distance smaller than the threshold."""
+
+  store_context: Optional[bool]
+  """Optional. Whether to store the context in the specified RAG corpus above. Currently only supported for Gemini Multimodal Live API."""
 
 
 VertexRagStoreOrDict = Union[VertexRagStore, VertexRagStoreDict]
