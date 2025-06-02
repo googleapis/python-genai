@@ -22,6 +22,19 @@ import pydantic
 import pytest
 from ... import types
 
+_is_mcp_imported = False
+if typing.TYPE_CHECKING:
+  from mcp import types as mcp_types
+
+  _is_mcp_imported = True
+else:
+  try:
+    from mcp import types as mcp_types
+
+    _is_mcp_imported = True
+  except ImportError:
+    mcp_types = None
+
 
 class SubPart(types.Part):
   pass
@@ -99,6 +112,154 @@ def test_factory_method_from_code_execution_result_part():
   assert my_part.code_execution_result.outcome == 'OUTCOME_OK'
   assert my_part.code_execution_result.output == 'print("hello")'
   assert isinstance(my_part, SubPart)
+
+
+def test_factory_method_from_mcp_call_tool_function_response_on_error():
+  if not _is_mcp_imported:
+    return
+
+  call_tool_result = mcp_types.CallToolResult(
+      content=[],
+      isError=True,
+  )
+  my_function_response = types.FunctionResponse.from_mcp_response(
+      name='func_name', response=call_tool_result
+  )
+  assert my_function_response.name == 'func_name'
+  assert my_function_response.response == {'error': 'MCP response is error.'}
+  assert isinstance(my_function_response, types.FunctionResponse)
+
+
+def test_factory_method_from_mcp_call_tool_function_response_text():
+  if not _is_mcp_imported:
+    return
+
+  call_tool_result = mcp_types.CallToolResult(
+      content=[
+          mcp_types.TextContent(type='text', text='hello'),
+          mcp_types.TextContent(type='text', text=' world'),
+      ],
+  )
+  my_function_response = types.FunctionResponse.from_mcp_response(
+      name='func_name', response=call_tool_result
+  )
+  assert my_function_response.name == 'func_name'
+  assert my_function_response.response == {
+      'result': [
+          mcp_types.TextContent(type='text', text='hello'),
+          mcp_types.TextContent(type='text', text=' world'),
+      ]
+  }
+  assert isinstance(my_function_response, types.FunctionResponse)
+
+
+def test_factory_method_from_mcp_call_tool_function_response_inline_data():
+  if not _is_mcp_imported:
+    return
+
+  call_tool_result = mcp_types.CallToolResult(
+      content=[
+          mcp_types.ImageContent(
+              type='image',
+              data='MTIz',
+              mimeType='text/plain',
+          ),
+          mcp_types.ImageContent(
+              type='image',
+              data='NDU2',
+              mimeType='text/plain',
+          ),
+      ],
+  )
+  my_function_response = types.FunctionResponse.from_mcp_response(
+      name='func_name', response=call_tool_result
+  )
+  assert my_function_response.name == 'func_name'
+  assert my_function_response.response == {
+      'result': [
+          mcp_types.ImageContent(
+              type='image',
+              data='MTIz',
+              mimeType='text/plain',
+          ),
+          mcp_types.ImageContent(
+              type='image',
+              data='NDU2',
+              mimeType='text/plain',
+          ),
+      ]
+  }
+  assert isinstance(my_function_response, types.FunctionResponse)
+
+
+def test_factory_method_from_mcp_call_tool_function_response_combined_content():
+  if not _is_mcp_imported:
+    return
+
+  call_tool_result = mcp_types.CallToolResult(
+      content=[
+          mcp_types.TextContent(
+              type='text',
+              text='Hello',
+          ),
+          mcp_types.ImageContent(
+              type='image',
+              data='NDU2',
+              mimeType='text/plain',
+          ),
+      ],
+  )
+  my_function_response = types.FunctionResponse.from_mcp_response(
+      name='func_name', response=call_tool_result
+  )
+  assert my_function_response.name == 'func_name'
+  assert my_function_response.response == {
+      'result': [
+          mcp_types.TextContent(
+              type='text',
+              text='Hello',
+          ),
+          mcp_types.ImageContent(
+              type='image',
+              data='NDU2',
+              mimeType='text/plain',
+          ),
+      ]
+  }
+  assert isinstance(my_function_response, types.FunctionResponse)
+
+
+def test_factory_method_from_mcp_call_tool_function_response_embedded_resource():
+  if not _is_mcp_imported:
+    return
+
+  call_tool_result = mcp_types.CallToolResult(
+      content=[
+          mcp_types.EmbeddedResource(
+              type='resource',
+              resource=mcp_types.TextResourceContents(
+                  uri='https://generativelanguage.googleapis.com/v1beta/files/ansa0kyotrsw',
+                  text='hello',
+              ),
+          ),
+      ],
+  )
+  my_function_response = types.FunctionResponse.from_mcp_response(
+      name='func_name', response=call_tool_result
+  )
+  assert my_function_response.name == 'func_name'
+  assert my_function_response.response == {
+      'result': [
+          mcp_types.EmbeddedResource(
+              type='resource',
+              resource=mcp_types.TextResourceContents(
+                  uri='https://generativelanguage.googleapis.com/v1beta/files/ansa0kyotrsw',
+                  text='hello',
+              ),
+          ),
+      ]
+  }
+  assert isinstance(my_function_response, types.FunctionResponse)
 
 
 class FakeClient:
@@ -318,8 +479,8 @@ def test_built_in_union_type():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -365,8 +526,8 @@ def test_built_in_union_type_all_py_versions():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -704,8 +865,8 @@ def test_generic_alias_complex_array():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -756,8 +917,8 @@ def test_generic_alias_complex_array_all_py_versions():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -1008,7 +1169,7 @@ def test_generic_alias_object():
           properties={
               'a': types.Schema(type='OBJECT'),
           },
-          required=['a']
+          required=['a'],
       ),
       description='test generic alias object.',
   )
@@ -1315,8 +1476,8 @@ def test_pydantic_model_in_union_type():
   ]
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -1463,8 +1624,8 @@ def test_type_union():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -1527,8 +1688,8 @@ def test_type_union_all_py_versions():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -1829,8 +1990,8 @@ def test_type_nullable():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
@@ -1878,8 +2039,8 @@ def test_type_nullable_all_py_versions():
   )
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
+      client=mldev_client, callable=func_under_test
+  )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )

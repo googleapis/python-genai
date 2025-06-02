@@ -59,17 +59,21 @@ _is_mcp_imported = False
 if typing.TYPE_CHECKING:
   from mcp import types as mcp_types
   from mcp import ClientSession as McpClientSession
+  from mcp.types import CallToolResult as McpCallToolResult
 
   _is_mcp_imported = True
 else:
   McpClientSession: typing.Type = Any
+  McpCallToolResult: typing.Type = Any
   try:
     from mcp import types as mcp_types
     from mcp import ClientSession as McpClientSession
+    from mcp.types import CallToolResult as McpCallToolResult
 
     _is_mcp_imported = True
   except ImportError:
     McpClientSession = None
+    McpCallToolResult = None
 
 logger = logging.getLogger('google_genai.types')
 
@@ -844,6 +848,21 @@ class FunctionResponse(_common.BaseModel):
       default=None,
       description="""Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output.""",
   )
+
+  @classmethod
+  def from_mcp_response(
+      cls, *, name: str, response: McpCallToolResult
+  ) -> 'FunctionResponse':
+    if not _is_mcp_imported:
+      raise ValueError(
+          'MCP response is not supported. Please ensure that the MCP library is'
+          ' imported.'
+      )
+
+    if response.isError:
+      return cls(name=name, response={'error': 'MCP response is error.'})
+    else:
+      return cls(name=name, response={'result': response.content})
 
 
 class FunctionResponseDict(TypedDict, total=False):
