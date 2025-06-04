@@ -82,6 +82,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 aspect_ratio="16:9",
                 person_generation="allow_adult",
                 negative_prompt="ugly, low quality",
+                enhance_prompt=True,
             ),
         ),
     ),
