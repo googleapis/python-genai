@@ -59,17 +59,21 @@ _is_mcp_imported = False
 if typing.TYPE_CHECKING:
   from mcp import types as mcp_types
   from mcp import ClientSession as McpClientSession
+  from mcp.types import CallToolResult as McpCallToolResult
 
   _is_mcp_imported = True
 else:
   McpClientSession: typing.Type = Any
+  McpCallToolResult: typing.Type = Any
   try:
     from mcp import types as mcp_types
     from mcp import ClientSession as McpClientSession
+    from mcp.types import CallToolResult as McpCallToolResult
 
     _is_mcp_imported = True
   except ImportError:
     McpClientSession = None
+    McpCallToolResult = None
 
 logger = logging.getLogger('google_genai.types')
 
@@ -844,6 +848,21 @@ class FunctionResponse(_common.BaseModel):
       default=None,
       description="""Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output.""",
   )
+
+  @classmethod
+  def from_mcp_response(
+      cls, *, name: str, response: McpCallToolResult
+  ) -> 'FunctionResponse':
+    if not _is_mcp_imported:
+      raise ValueError(
+          'MCP response is not supported. Please ensure that the MCP library is'
+          ' imported.'
+      )
+
+    if response.isError:
+      return cls(name=name, response={'error': 'MCP response is error.'})
+    else:
+      return cls(name=name, response={'result': response.content})
 
 
 class FunctionResponseDict(TypedDict, total=False):
@@ -1925,12 +1944,16 @@ class FunctionDeclaration(_common.BaseModel):
     from . import _automatic_function_calling_util
 
     parameters_properties = {}
+    annotation_under_future = typing.get_type_hints(callable)
     for name, param in inspect.signature(callable).parameters.items():
       if param.kind in (
           inspect.Parameter.POSITIONAL_OR_KEYWORD,
           inspect.Parameter.KEYWORD_ONLY,
           inspect.Parameter.POSITIONAL_ONLY,
       ):
+        # This snippet catches the case when type hints are stored as strings
+        if isinstance(param.annotation, str):
+          param = param.replace(annotation=annotation_under_future[name])
         schema = _automatic_function_calling_util._parse_schema_from_parameter(
             api_option, param, callable.__name__
         )
@@ -1952,6 +1975,7 @@ class FunctionDeclaration(_common.BaseModel):
               declaration.parameters
           )
       )
+    # TODO: b/421991354 - Remove this check once the bug is fixed.
     if api_option == 'GEMINI_API':
       return declaration
 
@@ -1959,14 +1983,21 @@ class FunctionDeclaration(_common.BaseModel):
     if return_annotation is inspect._empty:
       return declaration
 
+    return_value = inspect.Parameter(
+        'return_value',
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        annotation=return_annotation,
+    )
+
+    # This snippet catches the case when type hints are stored as strings
+    if isinstance(return_value.annotation, str):
+      return_value = return_value.replace(
+          annotation=annotation_under_future['return']
+      )
     declaration.response = (
         _automatic_function_calling_util._parse_schema_from_parameter(
             api_option,
-            inspect.Parameter(
-                'return_value',
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=return_annotation,
-            ),
+            return_value,
             callable.__name__,
         )
     )
