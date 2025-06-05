@@ -68,8 +68,8 @@ class EphemeralTokenAPIKeyError(ValueError):
   """Error raised when the API key is invalid."""
 
 
-# This method checks for the API key in the environment variables. Google API
-# key is precedenced over Gemini API key.
+# This method checks for the API key in the environment variables. When both
+# GOOGLE_API_KEY and GEMINI_API_KEY are set, GOOGLE_API_KEY is used.
 def _get_env_api_key() -> Optional[str]:
   """Gets the API key from environment variables, prioritizing GOOGLE_API_KEY.
 
@@ -79,12 +79,16 @@ def _get_env_api_key() -> Optional[str]:
   """
   env_google_api_key = os.environ.get('GOOGLE_API_KEY', None)
   env_gemini_api_key = os.environ.get('GEMINI_API_KEY', None)
-  if env_google_api_key and env_gemini_api_key:
+  if (
+      env_google_api_key
+      and env_gemini_api_key
+      and env_google_api_key != env_gemini_api_key
+  ):
     logger.warning(
-        'Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using'
-        ' GOOGLE_API_KEY.'
+        'Conflicting values found for GOOGLE_API_KEY and GEMINI_API_KEY. Using'
+        ' GOOGLE_API_KEY. If you intend to use Gemini API, please set your key'
+        ' through GOOGLE_API_KEY and unset GEMINI_API_KEY.'
     )
-
   return env_google_api_key or env_gemini_api_key or None
 
 
