@@ -7663,8 +7663,10 @@ class AsyncModels(_api_module.BaseModule):
               or not chunk.candidates[0].content.parts
           ):
             break
-          func_response_parts = _extra_utils.get_function_response_parts(
-              chunk, function_map
+          func_response_parts = (
+              await _extra_utils.get_function_response_parts_async(
+                  chunk, function_map
+              )
           )
         if not function_map:
           break
