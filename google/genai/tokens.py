@@ -143,6 +143,7 @@ class Tokens(_api_module.BaseModule):
     Usage:
 
     .. code-block:: python
+
       # Case 1: If LiveEphemeralParameters is unset, unlock LiveConnectConfig
       # when using the token in Live API sessions. Each session connection can
       # use a different configuration.
@@ -154,6 +155,7 @@ class Tokens(_api_module.BaseModule):
       auth_token = client.tokens.create(config=config)
 
     .. code-block:: python
+
       # Case 2: If LiveEphemeralParameters is set, lock all fields in
       # LiveConnectConfig when using the token in Live API sessions. For
       # example, changing `output_audio_transcription` in the Live API
@@ -170,7 +172,9 @@ class Tokens(_api_module.BaseModule):
               ),
           )
       )
-      .. code-block:: python
+
+    .. code-block:: python
+
       # Case 3: If LiveEphemeralParameters is set and lockAdditionalFields is
       # empty, lock LiveConnectConfig with set fields (e.g.
       # system_instruction in this example) when using the token in Live API
@@ -187,7 +191,8 @@ class Tokens(_api_module.BaseModule):
           )
       )
 
-      .. code-block:: python
+    .. code-block:: python
+
       # Case 4: If LiveEphemeralParameters is set and lockAdditionalFields is
       # set, lock LiveConnectConfig with set and additional fields (e.g.
       # system_instruction, temperature in this example) when using the token
