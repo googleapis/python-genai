@@ -7155,6 +7155,30 @@ class Video(_common.BaseModel):
       default=None, description="""Video encoding, for example "video/mp4"."""
   )
 
+  @classmethod
+  def from_file(
+      cls, *, location: str, mime_type: Optional[str] = None
+  ) -> 'Video':
+    """Loads a video from a local file.
+
+    Args:
+        location: The local path to load the video from.
+        mime_type: The MIME type of the video. If not provided, the MIME type
+          will be automatically determined.
+
+    Returns:
+        A loaded video as an `Video` object.
+    """
+    import mimetypes  # pylint: disable=g-import-not-at-top
+    import pathlib  # pylint: disable=g-import-not-at-top
+
+    video_bytes = pathlib.Path(location).read_bytes()
+
+    if not mime_type:
+      mime_type, _ = mimetypes.guess_type(location)
+    video = cls(video_bytes=video_bytes, mime_type=mime_type)
+    return video
+
   def save(
       self,
       path: str,
