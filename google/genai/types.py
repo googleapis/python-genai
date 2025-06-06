@@ -2632,6 +2632,10 @@ class VertexRagStore(_common.BaseModel):
       default=None,
       description="""Optional. Number of top k results to return from the selected corpora.""",
   )
+  store_context: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Currently only supported for Gemini Multimodal Live API. In Gemini Multimodal Live API, if `store_context` bool is specified, Gemini will leverage it to automatically memorize the interactions between the client and Gemini, and retrieve context when needed to augment the response generation for users' ongoing and future interactions.""",
+  )
   vector_distance_threshold: Optional[float] = Field(
       default=None,
       description="""Optional. Only return results with vector distance smaller than the threshold.""",
@@ -2652,6 +2656,9 @@ class VertexRagStoreDict(TypedDict, total=False):
 
   similarity_top_k: Optional[int]
   """Optional. Number of top k results to return from the selected corpora."""
+
+  store_context: Optional[bool]
+  """Optional. Currently only supported for Gemini Multimodal Live API. In Gemini Multimodal Live API, if `store_context` bool is specified, Gemini will leverage it to automatically memorize the interactions between the client and Gemini, and retrieve context when needed to augment the response generation for users' ongoing and future interactions."""
 
   vector_distance_threshold: Optional[float]
   """Optional. Only return results with vector distance smaller than the threshold."""
