@@ -1562,7 +1562,7 @@ class _IpythonUtils:
         </script>
     """
 
-    from IPython.core.display import display
+    from IPython.display import display
     from IPython.display import HTML
 
     display(HTML(html))
