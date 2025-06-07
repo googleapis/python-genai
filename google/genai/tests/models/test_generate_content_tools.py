@@ -295,7 +295,6 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
             config={'tools': [{'url_context': {}}]},
         ),
-        exception_if_vertex='not supported in Vertex AI',
     ),
     pytest_helper.TestTableItem( 
         # https://github.com/googleapis/python-genai/issues/830

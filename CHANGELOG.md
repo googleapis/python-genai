@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.19.0](https://github.com/googleapis/python-genai/compare/v1.18.0...v1.19.0) (2025-06-04)
+
+
+### Features
+
+* Add enhance_prompt field for Gemini Developer API generate_videos ([92ca562](https://github.com/googleapis/python-genai/commit/92ca562e21216bd1dcd29ea113fc302b9982536f))
+* Add FunctionResponse.from_mcp_response() convenience function for parsing MCP responses to send to subsequent model calls. ([e1b980d](https://github.com/googleapis/python-genai/commit/e1b980d63e19396be1d9128cb7bab200eb5269c5))
+* Enable url_context for Vertex ([99551c9](https://github.com/googleapis/python-genai/commit/99551c9bc009998bbc277f5ac919e3bab039a97e))
+* **python:** Support `GEMINI_API_KEY` as environment variable for setting API key. ([ae2392c](https://github.com/googleapis/python-genai/commit/ae2392c4c0afc87c86b3abd11d89e6441a854470))
+
+
+### Bug Fixes
+
+* Enable FunctionDeclaration parser when future is imported ([589b520](https://github.com/googleapis/python-genai/commit/589b5205e89a030bc5565b290fe175c599b99195))
+
 ## [1.18.0](https://github.com/googleapis/python-genai/compare/v1.17.0...v1.18.0) (2025-05-30)
 
 
