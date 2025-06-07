@@ -15,6 +15,7 @@
 
 """Error classes for the GenAI SDK."""
 
+import aiohttp
 from typing import Any, Optional, TYPE_CHECKING, Union
 import httpx
 import json
@@ -109,9 +110,11 @@ class APIError(Exception):
       cls, response: Union['ReplayResponse', httpx.Response]
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
-    if response.status_code == 200:
-      return
+
+    status_code = 0
     if isinstance(response, httpx.Response):
+      if response.status_code == 200:
+        return
       try:
         await response.aread()
         response_json = response.json()
@@ -121,10 +124,22 @@ class APIError(Exception):
             'message': message,
             'status': response.reason_phrase,
         }
+      status_code = response.status_code
+    elif isinstance(response, aiohttp.ClientResponse):
+      if response.status == 200:
+        return
+      try:
+        response_json = await response.json()
+      except aiohttp.client_exceptions.ContentTypeError:
+        message = await response.text()
+        response_json = {
+            'message': message,
+            'status': response.reason,
+        }
+      status_code = response.status
     else:
       response_json = response.body_segments[0].get('error', {})
 
-    status_code = response.status_code
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
