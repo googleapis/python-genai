@@ -22,6 +22,7 @@ import json
 
 if TYPE_CHECKING:
   from .replay_api_client import ReplayResponse
+  import aiohttp
 
 
 class APIError(Exception):
@@ -36,7 +37,9 @@ class APIError(Exception):
       self,
       code: int,
       response_json: Any,
-      response: Optional[Union['ReplayResponse', httpx.Response]] = None,
+      response: Optional[
+          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+      ] = None,
   ):
     self.response = response
     self.details = response_json
@@ -106,12 +109,17 @@ class APIError(Exception):
 
   @classmethod
   async def raise_for_async_response(
-      cls, response: Union['ReplayResponse', httpx.Response]
+      cls,
+      response: Union[
+          'ReplayResponse', httpx.Response, 'aiohttp.ClientResponse'
+      ],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
-    if response.status_code == 200:
-      return
+    status_code = 0
+    response_json = None
     if isinstance(response, httpx.Response):
+      if response.status_code == 200:
+        return
       try:
         await response.aread()
         response_json = response.json()
@@ -121,10 +129,28 @@ class APIError(Exception):
             'message': message,
             'status': response.reason_phrase,
         }
+      status_code = response.status_code
     else:
-      response_json = response.body_segments[0].get('error', {})
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
 
-    status_code = response.status_code
+        if isinstance(response, aiohttp.ClientResponse):
+          if response.status == 200:
+            return
+          try:
+            response_json = await response.json()
+          except aiohttp.client_exceptions.ContentTypeError:
+            message = await response.text()
+            response_json = {
+                'message': message,
+                'status': response.reason,
+            }
+          status_code = response.status
+        else:
+          response_json = response.body_segments[0].get('error', {})
+      except ImportError:
+        response_json = response.body_segments[0].get('error', {})
+
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:

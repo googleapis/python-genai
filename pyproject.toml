@@ -35,6 +35,9 @@ dependencies = [
     "typing-extensions>=4.11.0, <5.0.0",
 ]
 
+[project.optional-dependencies]
+aiohttp = ["aiohttp<4.0.0"]
+
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
 
