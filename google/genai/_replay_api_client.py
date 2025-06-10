@@ -454,12 +454,7 @@ class ReplayApiClient(BaseApiClient):
     if isinstance(response_model, list):
       response_model = response_model[0]
     print('response_model: ', response_model.model_dump(exclude_none=True))
-    if isinstance(response_model, GenerateVideosOperation):
-      actual = response_model.model_dump(
-          exclude={'result'}, exclude_none=True, mode='json'
-      )
-    else:
-      actual = response_model.model_dump(exclude_none=True, mode='json')
+    actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]

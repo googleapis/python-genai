@@ -6996,152 +6996,6 @@ ComputeTokensResponseOrDict = Union[
 ]
 
 
-class GenerateVideosConfig(_common.BaseModel):
-  """Configuration for generating videos."""
-
-  http_options: Optional[HttpOptions] = Field(
-      default=None, description="""Used to override HTTP request options."""
-  )
-  number_of_videos: Optional[int] = Field(
-      default=None, description="""Number of output videos."""
-  )
-  output_gcs_uri: Optional[str] = Field(
-      default=None,
-      description="""The gcs bucket where to save the generated videos.""",
-  )
-  fps: Optional[int] = Field(
-      default=None, description="""Frames per second for video generation."""
-  )
-  duration_seconds: Optional[int] = Field(
-      default=None,
-      description="""Duration of the clip for video generation in seconds.""",
-  )
-  seed: Optional[int] = Field(
-      default=None,
-      description="""The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result.""",
-  )
-  aspect_ratio: Optional[str] = Field(
-      default=None,
-      description="""The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported.""",
-  )
-  resolution: Optional[str] = Field(
-      default=None,
-      description="""The resolution for the generated video. 1280x720, 1920x1080 are supported.""",
-  )
-  person_generation: Optional[str] = Field(
-      default=None,
-      description="""Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult.""",
-  )
-  pubsub_topic: Optional[str] = Field(
-      default=None,
-      description="""The pubsub topic where to publish the video generation progress.""",
-  )
-  negative_prompt: Optional[str] = Field(
-      default=None,
-      description="""Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video.""",
-  )
-  enhance_prompt: Optional[bool] = Field(
-      default=None, description="""Whether to use the prompt rewriting logic."""
-  )
-  generate_audio: Optional[bool] = Field(
-      default=None,
-      description="""Whether to generate audio along with the video.""",
-  )
-
-
-class GenerateVideosConfigDict(TypedDict, total=False):
-  """Configuration for generating videos."""
-
-  http_options: Optional[HttpOptionsDict]
-  """Used to override HTTP request options."""
-
-  number_of_videos: Optional[int]
-  """Number of output videos."""
-
-  output_gcs_uri: Optional[str]
-  """The gcs bucket where to save the generated videos."""
-
-  fps: Optional[int]
-  """Frames per second for video generation."""
-
-  duration_seconds: Optional[int]
-  """Duration of the clip for video generation in seconds."""
-
-  seed: Optional[int]
-  """The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result."""
-
-  aspect_ratio: Optional[str]
-  """The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported."""
-
-  resolution: Optional[str]
-  """The resolution for the generated video. 1280x720, 1920x1080 are supported."""
-
-  person_generation: Optional[str]
-  """Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult."""
-
-  pubsub_topic: Optional[str]
-  """The pubsub topic where to publish the video generation progress."""
-
-  negative_prompt: Optional[str]
-  """Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video."""
-
-  enhance_prompt: Optional[bool]
-  """Whether to use the prompt rewriting logic."""
-
-  generate_audio: Optional[bool]
-  """Whether to generate audio along with the video."""
-
-
-GenerateVideosConfigOrDict = Union[
-    GenerateVideosConfig, GenerateVideosConfigDict
-]
-
-
-class _GenerateVideosParameters(_common.BaseModel):
-  """Class that represents the parameters for generating an image."""
-
-  model: Optional[str] = Field(
-      default=None,
-      description="""ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
-  )
-  prompt: Optional[str] = Field(
-      default=None,
-      description="""The text prompt for generating the videos. Optional for image to video use cases.""",
-  )
-  image: Optional[Image] = Field(
-      default=None,
-      description="""The input image for generating the videos.
-      Optional if prompt is provided.""",
-  )
-  config: Optional[GenerateVideosConfig] = Field(
-      default=None, description="""Configuration for generating videos."""
-  )
-
-
-class _GenerateVideosParametersDict(TypedDict, total=False):
-  """Class that represents the parameters for generating an image."""
-
-  model: Optional[str]
-  """ID of the model to use. For a list of models, see `Google models
-    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
-
-  prompt: Optional[str]
-  """The text prompt for generating the videos. Optional for image to video use cases."""
-
-  image: Optional[ImageDict]
-  """The input image for generating the videos.
-      Optional if prompt is provided."""
-
-  config: Optional[GenerateVideosConfigDict]
-  """Configuration for generating videos."""
-
-
-_GenerateVideosParametersOrDict = Union[
-    _GenerateVideosParameters, _GenerateVideosParametersDict
-]
-
-
 class Video(_common.BaseModel):
   """A generated video."""
 
@@ -7243,6 +7097,168 @@ class VideoDict(TypedDict, total=False):
 
 
 VideoOrDict = Union[Video, VideoDict]
+
+
+class GenerateVideosConfig(_common.BaseModel):
+  """Configuration for generating videos."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  number_of_videos: Optional[int] = Field(
+      default=None, description="""Number of output videos."""
+  )
+  output_gcs_uri: Optional[str] = Field(
+      default=None,
+      description="""The gcs bucket where to save the generated videos.""",
+  )
+  fps: Optional[int] = Field(
+      default=None, description="""Frames per second for video generation."""
+  )
+  duration_seconds: Optional[int] = Field(
+      default=None,
+      description="""Duration of the clip for video generation in seconds.""",
+  )
+  seed: Optional[int] = Field(
+      default=None,
+      description="""The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result.""",
+  )
+  aspect_ratio: Optional[str] = Field(
+      default=None,
+      description="""The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported.""",
+  )
+  resolution: Optional[str] = Field(
+      default=None,
+      description="""The resolution for the generated video. 1280x720, 1920x1080 are supported.""",
+  )
+  person_generation: Optional[str] = Field(
+      default=None,
+      description="""Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult.""",
+  )
+  pubsub_topic: Optional[str] = Field(
+      default=None,
+      description="""The pubsub topic where to publish the video generation progress.""",
+  )
+  negative_prompt: Optional[str] = Field(
+      default=None,
+      description="""Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video.""",
+  )
+  enhance_prompt: Optional[bool] = Field(
+      default=None, description="""Whether to use the prompt rewriting logic."""
+  )
+  generate_audio: Optional[bool] = Field(
+      default=None,
+      description="""Whether to generate audio along with the video.""",
+  )
+  last_frame: Optional[Image] = Field(
+      default=None,
+      description="""Image to use as the last frame of generated videos. Only supported for image to video use cases.""",
+  )
+
+
+class GenerateVideosConfigDict(TypedDict, total=False):
+  """Configuration for generating videos."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  number_of_videos: Optional[int]
+  """Number of output videos."""
+
+  output_gcs_uri: Optional[str]
+  """The gcs bucket where to save the generated videos."""
+
+  fps: Optional[int]
+  """Frames per second for video generation."""
+
+  duration_seconds: Optional[int]
+  """Duration of the clip for video generation in seconds."""
+
+  seed: Optional[int]
+  """The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result."""
+
+  aspect_ratio: Optional[str]
+  """The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported."""
+
+  resolution: Optional[str]
+  """The resolution for the generated video. 1280x720, 1920x1080 are supported."""
+
+  person_generation: Optional[str]
+  """Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult."""
+
+  pubsub_topic: Optional[str]
+  """The pubsub topic where to publish the video generation progress."""
+
+  negative_prompt: Optional[str]
+  """Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video."""
+
+  enhance_prompt: Optional[bool]
+  """Whether to use the prompt rewriting logic."""
+
+  generate_audio: Optional[bool]
+  """Whether to generate audio along with the video."""
+
+  last_frame: Optional[ImageDict]
+  """Image to use as the last frame of generated videos. Only supported for image to video use cases."""
+
+
+GenerateVideosConfigOrDict = Union[
+    GenerateVideosConfig, GenerateVideosConfigDict
+]
+
+
+class _GenerateVideosParameters(_common.BaseModel):
+  """Class that represents the parameters for generating videos."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  prompt: Optional[str] = Field(
+      default=None,
+      description="""The text prompt for generating the videos. Optional for image to video use cases.""",
+  )
+  image: Optional[Image] = Field(
+      default=None,
+      description="""The input image for generating the videos.
+      Optional if prompt or video is provided.""",
+  )
+  video: Optional[Video] = Field(
+      default=None,
+      description="""The input video for video extension use cases.
+      Optional if prompt or image is provided.""",
+  )
+  config: Optional[GenerateVideosConfig] = Field(
+      default=None, description="""Configuration for generating videos."""
+  )
+
+
+class _GenerateVideosParametersDict(TypedDict, total=False):
+  """Class that represents the parameters for generating videos."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  prompt: Optional[str]
+  """The text prompt for generating the videos. Optional for image to video use cases."""
+
+  image: Optional[ImageDict]
+  """The input image for generating the videos.
+      Optional if prompt or video is provided."""
+
+  video: Optional[VideoDict]
+  """The input video for video extension use cases.
+      Optional if prompt or image is provided."""
+
+  config: Optional[GenerateVideosConfigDict]
+  """Configuration for generating videos."""
+
+
+_GenerateVideosParametersOrDict = Union[
+    _GenerateVideosParameters, _GenerateVideosParametersDict
+]
 
 
 class GeneratedVideo(_common.BaseModel):
