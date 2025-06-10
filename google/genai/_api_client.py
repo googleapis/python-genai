@@ -63,6 +63,8 @@ try:
 except ImportError:
   pass
 
+# internal comment
+
 
 if TYPE_CHECKING:
   from multidict import CIMultiDictProxy
