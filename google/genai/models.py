@@ -1985,7 +1985,13 @@ def _Tool_to_vertex(
     )
 
   if getv(from_object, ['url_context']) is not None:
-    raise ValueError('url_context parameter is not supported in Vertex AI.')
+    setv(
+        to_object,
+        ['urlContext'],
+        _UrlContext_to_vertex(
+            api_client, getv(from_object, ['url_context']), to_object
+        ),
+    )
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -4297,6 +4303,15 @@ def _Candidate_from_vertex(
 
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_context_metadata'],
+        _UrlContextMetadata_from_vertex(
+            api_client, getv(from_object, ['urlContextMetadata']), to_object
+        ),
+    )
 
   if getv(from_object, ['avgLogprobs']) is not None:
     setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
@@ -7648,8 +7663,10 @@ class AsyncModels(_api_module.BaseModule):
               or not chunk.candidates[0].content.parts
           ):
             break
-          func_response_parts = _extra_utils.get_function_response_parts(
-              chunk, function_map
+          func_response_parts = (
+              await _extra_utils.get_function_response_parts_async(
+                  chunk, function_map
+              )
           )
         if not function_map:
           break

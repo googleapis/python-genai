@@ -421,7 +421,7 @@ async def test_generate_content_stream_with_function_tools_used_async(
 
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
-  assert mock_get_function_response_parts_async.call_count == 1
+  assert mock_get_function_response_parts_async.call_count == 2
 
   assert chunk is not None
   for i in range(len(chunk.automatic_function_calling_history)):
@@ -453,7 +453,7 @@ async def test_generate_content_stream_with_function_async_function_used_async(
 
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
-  assert mock_get_function_response_parts_async.call_count == 1
+  assert mock_get_function_response_parts_async.call_count == 2
 
   assert chunk is not None
   for i in range(len(chunk.automatic_function_calling_history)):

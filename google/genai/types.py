@@ -2632,6 +2632,10 @@ class VertexRagStore(_common.BaseModel):
       default=None,
       description="""Optional. Number of top k results to return from the selected corpora.""",
   )
+  store_context: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Currently only supported for Gemini Multimodal Live API. In Gemini Multimodal Live API, if `store_context` bool is specified, Gemini will leverage it to automatically memorize the interactions between the client and Gemini, and retrieve context when needed to augment the response generation for users' ongoing and future interactions.""",
+  )
   vector_distance_threshold: Optional[float] = Field(
       default=None,
       description="""Optional. Only return results with vector distance smaller than the threshold.""",
@@ -2652,6 +2656,9 @@ class VertexRagStoreDict(TypedDict, total=False):
 
   similarity_top_k: Optional[int]
   """Optional. Number of top k results to return from the selected corpora."""
+
+  store_context: Optional[bool]
+  """Optional. Currently only supported for Gemini Multimodal Live API. In Gemini Multimodal Live API, if `store_context` bool is specified, Gemini will leverage it to automatically memorize the interactions between the client and Gemini, and retrieve context when needed to augment the response generation for users' ongoing and future interactions."""
 
   vector_distance_threshold: Optional[float]
   """Optional. Only return results with vector distance smaller than the threshold."""
@@ -7125,6 +7132,30 @@ class Video(_common.BaseModel):
   mime_type: Optional[str] = Field(
       default=None, description="""Video encoding, for example "video/mp4"."""
   )
+
+  @classmethod
+  def from_file(
+      cls, *, location: str, mime_type: Optional[str] = None
+  ) -> 'Video':
+    """Loads a video from a local file.
+
+    Args:
+        location: The local path to load the video from.
+        mime_type: The MIME type of the video. If not provided, the MIME type
+          will be automatically determined.
+
+    Returns:
+        A loaded video as an `Video` object.
+    """
+    import mimetypes  # pylint: disable=g-import-not-at-top
+    import pathlib  # pylint: disable=g-import-not-at-top
+
+    video_bytes = pathlib.Path(location).read_bytes()
+
+    if not mime_type:
+      mime_type, _ = mimetypes.guess_type(location)
+    video = cls(video_bytes=video_bytes, mime_type=mime_type)
+    return video
 
   def save(
       self,

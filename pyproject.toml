@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=
 
 [project]
 name = "google-genai"
-version = "1.18.0"
+version = "1.19.0"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -35,6 +35,9 @@ dependencies = [
     "websockets>=13.0.0, <15.1.0",
     "typing-extensions>=4.11.0, <5.0.0",
 ]
+
+[project.optional-dependencies]
+aiohttp = ["aiohttp<4.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
