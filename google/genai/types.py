@@ -2375,6 +2375,42 @@ class UrlContextDict(TypedDict, total=False):
 UrlContextOrDict = Union[UrlContext, UrlContextDict]
 
 
+class VertexAISearchDataStoreSpec(_common.BaseModel):
+  """Define data stores within engine to filter on in a search call and configurations for those data stores.
+
+  For more information, see
+  https://cloud.google.com/generative-ai-app-builder/docs/reference/rpc/google.cloud.discoveryengine.v1#datastorespec
+  """
+
+  data_store: Optional[str] = Field(
+      default=None,
+      description="""Full resource name of DataStore, such as Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`""",
+  )
+  filter: Optional[str] = Field(
+      default=None,
+      description="""Optional. Filter specification to filter documents in the data store specified by data_store field. For more information on filtering, see [Filtering](https://cloud.google.com/generative-ai-app-builder/docs/filter-search-metadata)""",
+  )
+
+
+class VertexAISearchDataStoreSpecDict(TypedDict, total=False):
+  """Define data stores within engine to filter on in a search call and configurations for those data stores.
+
+  For more information, see
+  https://cloud.google.com/generative-ai-app-builder/docs/reference/rpc/google.cloud.discoveryengine.v1#datastorespec
+  """
+
+  data_store: Optional[str]
+  """Full resource name of DataStore, such as Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`"""
+
+  filter: Optional[str]
+  """Optional. Filter specification to filter documents in the data store specified by data_store field. For more information on filtering, see [Filtering](https://cloud.google.com/generative-ai-app-builder/docs/filter-search-metadata)"""
+
+
+VertexAISearchDataStoreSpecOrDict = Union[
+    VertexAISearchDataStoreSpec, VertexAISearchDataStoreSpecDict
+]
+
+
 class VertexAISearch(_common.BaseModel):
   """Retrieve from Vertex AI Search datastore or engine for grounding.
 
@@ -2382,6 +2418,10 @@ class VertexAISearch(_common.BaseModel):
   https://cloud.google.com/products/agent-builder
   """
 
+  data_store_specs: Optional[list[VertexAISearchDataStoreSpec]] = Field(
+      default=None,
+      description="""Specifications that define the specific DataStores to be searched, along with configurations for those data stores. This is only considered for Engines with multiple data stores. It should only be set if engine is used.""",
+  )
   datastore: Optional[str] = Field(
       default=None,
       description="""Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`""",
@@ -2406,6 +2446,9 @@ class VertexAISearchDict(TypedDict, total=False):
   datastore and engine are mutually exclusive. See
   https://cloud.google.com/products/agent-builder
   """
+
+  data_store_specs: Optional[list[VertexAISearchDataStoreSpecDict]]
+  """Specifications that define the specific DataStores to be searched, along with configurations for those data stores. This is only considered for Engines with multiple data stores. It should only be set if engine is used."""
 
   datastore: Optional[str]
   """Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`"""
