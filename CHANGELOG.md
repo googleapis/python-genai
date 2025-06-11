@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.20.0](https://github.com/googleapis/python-genai/compare/v1.19.0...v1.20.0) (2025-06-11)
+
+
+### Features
+
+* Add datastore_spec field for VertexAISearch ([a26d998](https://github.com/googleapis/python-genai/commit/a26d99815fc471d73f9aa1a628a65ba6c67d94b6))
+* Add support for Veo frame interpolation and video extension ([1648dda](https://github.com/googleapis/python-genai/commit/1648dda65ef8ce0056f61312f3a508ef81fa99a1))
+* Add Video.from_file() support in Python SDK ([7eb5b07](https://github.com/googleapis/python-genai/commit/7eb5b07bf1ffb16761825d96b4c1a536bc395701))
+* RAG - Introducing context storing for Gemini Live API. ([c00c4a9](https://github.com/googleapis/python-genai/commit/c00c4a9bf534bf742950294973e1fcd0979230d0))
+* Use aiohttp in async APIs to lower latency if aiohttp is installed, otherwise use default httpx in async APIs ([2f448bc](https://github.com/googleapis/python-genai/commit/2f448bc2b8d2b09b6abc0ddba829610c227cf979))
+
+
+### Bug Fixes
+
+* **chats:** Relax the constraint on chat turns ([046fa87](https://github.com/googleapis/python-genai/commit/046fa87d5d048cf619e3c40320b592990edeebfb))
+* Make function calls asynchronous in subsequent AFC calls ([3e429a0](https://github.com/googleapis/python-genai/commit/3e429a0fd66387b17f30584cc780f8781c3cd53d))
+
+
+### Documentation
+
+* Generate docs for 1.19.0 ([4df9230](https://github.com/googleapis/python-genai/commit/4df9230944e21474b9c31d771f3d109b195aef71))
+
 ## [1.19.0](https://github.com/googleapis/python-genai/compare/v1.18.0...v1.19.0) (2025-06-04)
 
 
