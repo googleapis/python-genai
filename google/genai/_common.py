@@ -253,7 +253,21 @@ class BaseModel(pydantic.BaseModel):
     # To maintain forward compatibility, we need to remove extra fields from
     # the response.
     # We will provide another mechanism to allow users to access these fields.
-    _remove_extra_fields(cls, response)
+
+    # For Agent Engine we don't want to call _remove_all_fields because the
+    # user may pass a dict that is not a subclass of BaseModel.
+    # If more modules require we skip this, we may want a different approach
+    should_skip_removing_fields = (
+        kwargs is not None and
+        'config' in kwargs and
+        kwargs['config'] is not None and
+        isinstance(kwargs['config'], dict) and
+        'include_all_fields' in kwargs['config']
+        and kwargs['config']['include_all_fields']
+    )
+
+    if not should_skip_removing_fields:
+      _remove_extra_fields(cls, response)
     validated_response = cls.model_validate(response)
     return validated_response
 
