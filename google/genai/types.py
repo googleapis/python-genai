@@ -3389,6 +3389,10 @@ class GenerateContentConfig(_common.BaseModel):
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
+  should_return_http_response: Optional[bool] = Field(
+      default=None,
+      description=""" If true, the raw HTTP response will be returned in the 'sdk_http_response' field.""",
+  )
   system_instruction: Optional[ContentUnion] = Field(
       default=None,
       description="""Instructions for the model to steer it toward better performance.
@@ -3585,6 +3589,9 @@ class GenerateContentConfigDict(TypedDict, total=False):
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
+  should_return_http_response: Optional[bool]
+  """ If true, the raw HTTP response will be returned in the 'sdk_http_response' field."""
+
   system_instruction: Optional[ContentUnionDict]
   """Instructions for the model to steer it toward better performance.
       For example, "Answer as concisely as possible" or "Don't use technical
@@ -3779,6 +3786,32 @@ class _GenerateContentParametersDict(TypedDict, total=False):
 _GenerateContentParametersOrDict = Union[
     _GenerateContentParameters, _GenerateContentParametersDict
 ]
+
+
+class HttpResponse(_common.BaseModel):
+  """A wrapper class for the http response."""
+
+  headers: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Used to retain the processed HTTP headers in the response.""",
+  )
+  body: Optional[str] = Field(
+      default=None,
+      description="""The raw HTTP response body, in JSON format.""",
+  )
+
+
+class HttpResponseDict(TypedDict, total=False):
+  """A wrapper class for the http response."""
+
+  headers: Optional[dict[str, str]]
+  """Used to retain the processed HTTP headers in the response."""
+
+  body: Optional[str]
+  """The raw HTTP response body, in JSON format."""
+
+
+HttpResponseOrDict = Union[HttpResponse, HttpResponseDict]
 
 
 class GoogleTypeDate(_common.BaseModel):
@@ -4646,6 +4679,9 @@ GenerateContentResponseUsageMetadataOrDict = Union[
 class GenerateContentResponse(_common.BaseModel):
   """Response message for PredictionService.GenerateContent."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   candidates: Optional[list[Candidate]] = Field(
       default=None,
       description="""Response variations returned by the model.
@@ -4897,6 +4933,9 @@ class GenerateContentResponse(_common.BaseModel):
 
 class GenerateContentResponseDict(TypedDict, total=False):
   """Response message for PredictionService.GenerateContent."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   candidates: Optional[list[CandidateDict]]
   """Response variations returned by the model.
@@ -9216,6 +9255,10 @@ class CreateFileConfig(_common.BaseModel):
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
+  should_return_http_response: Optional[bool] = Field(
+      default=None,
+      description=""" If true, the raw HTTP response will be returned in the 'sdk_http_response' field.""",
+  )
 
 
 class CreateFileConfigDict(TypedDict, total=False):
@@ -9223,6 +9266,9 @@ class CreateFileConfigDict(TypedDict, total=False):
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
+
+  should_return_http_response: Optional[bool]
+  """ If true, the raw HTTP response will be returned in the 'sdk_http_response' field."""
 
 
 CreateFileConfigOrDict = Union[CreateFileConfig, CreateFileConfigDict]
@@ -9269,17 +9315,16 @@ _CreateFileParametersOrDict = Union[
 class CreateFileResponse(_common.BaseModel):
   """Response for the create file method."""
 
-  http_headers: Optional[dict[str, str]] = Field(
-      default=None,
-      description="""Used to retain the HTTP headers in the request""",
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
   )
 
 
 class CreateFileResponseDict(TypedDict, total=False):
   """Response for the create file method."""
 
-  http_headers: Optional[dict[str, str]]
-  """Used to retain the HTTP headers in the request"""
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
 
 CreateFileResponseOrDict = Union[CreateFileResponse, CreateFileResponseDict]
