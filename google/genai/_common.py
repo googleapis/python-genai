@@ -248,12 +248,24 @@ class BaseModel(pydantic.BaseModel):
 
   @classmethod
   def _from_response(
-      cls: typing.Type[T], *, response: dict[str, object], kwargs: dict[str, object]
+      cls: typing.Type[T],
+      *,
+      response: dict[str, object],
+      kwargs: dict[str, object],
+      options: Optional[dict[str, Any]] = None,
   ) -> T:
     # To maintain forward compatibility, we need to remove extra fields from
     # the response.
     # We will provide another mechanism to allow users to access these fields.
-    _remove_extra_fields(cls, response)
+    should_skip_removal = (
+        kwargs is not None and
+        'config' in kwargs and
+        kwargs['config'] is not None and
+        isinstance(kwargs['config'], dict) and
+        kwargs['config'].get('include_all_fields', False)
+    )
+    if not should_skip_removal:
+      _remove_extra_fields(cls, response)
     validated_response = cls.model_validate(response)
     return validated_response
 
