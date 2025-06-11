@@ -57,11 +57,15 @@ from .types import HttpOptions
 from .types import HttpOptionsDict
 from .types import HttpOptionsOrDict
 
-has_aiohttp = True
+has_aiohttp = False
 try:
   import aiohttp
+  has_aiohttp = True
 except ImportError:
-  has_aiohttp = False
+  pass
+
+# internal comment
+
 
 if TYPE_CHECKING:
   from multidict import CIMultiDictProxy
