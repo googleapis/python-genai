@@ -104,6 +104,7 @@ def get_value_by_path(data: Any, keys: list[str]) -> Any:
   get_value_by_path({'a': {'b': [{'c': v1}, {'c': v2}]}}, ['a', 'b[]', 'c'])
     -> [v1, v2]
   """
+  print('data: ', data)
   if keys == ['_self']:
     return data
   for i, key in enumerate(keys):
