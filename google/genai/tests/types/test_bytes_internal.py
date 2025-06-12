@@ -15,6 +15,7 @@
 
 
 import base64
+import json
 from unittest import mock
 
 import pytest
@@ -76,9 +77,12 @@ def test_base64_pydantic_input_success(
     client, mock_request_method, encode_unserializable_types_method, bytes_input
 ):
   mock_request_method.return_value = {
-      'candidates': [
-          {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
-      ]
+      'headers': {},
+      'body': json.dumps({
+          'candidates': [
+              {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
+          ]
+      }),
   }
 
   response = client.models.generate_content(
@@ -116,10 +120,12 @@ def test_base64_pydantic_input_success(
 @pytest.mark.parametrize('bytes_input', [_RAW_BYTES, _BASE64_URL_SAFE])
 def test_base64_dict_input_success(client, mock_request_method, encode_unserializable_types_method, bytes_input):
   mock_request_method.return_value = {
-      'candidates': [
-          {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
-      ]
-  }
+      'headers': {},
+      'body': json.dumps({
+          'candidates': [
+              {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
+          ]})
+      }
 
   response = client.models.generate_content(
       model='gemini-1.5-flash-001',
@@ -195,17 +201,20 @@ def test_base64_dict_input_failure(client):
 @pytest.mark.usefixtures('client', 'mock_request_method',)
 def test_base64_pydantic_output_success(client, mock_request_method):
   mock_request_method.return_value = {
-      'candidates': [{
-          'content': {
-              'parts': [{
-                  'inlineData': {
-                      'data': _BASE64_URL_SAFE,
-                      'mimeType': 'image/png',
-                  }
-              }],
-              'role': 'model',
-          }
-      }]
+      'headers': {},
+      'body': json.dumps({
+          'candidates': [{
+              'content': {
+                  'parts': [{
+                      'inlineData': {
+                          'data': _BASE64_URL_SAFE,
+                          'mimeType': 'image/png',
+                      }
+                  }],
+                  'role': 'model',
+              }
+          }]
+      }),
   }
 
   response = client.models.generate_content(
@@ -231,17 +240,20 @@ def test_base64_pydantic_output_success(client, mock_request_method):
 @pytest.mark.usefixtures('client', 'mock_request_method')
 def test_base64_pydantic_output_failure(client, mock_request_method):
   mock_request_method.return_value = {
-      'candidates': [{
-          'content': {
-              'parts': [{
-                  'inlineData': {
-                      'data': _BASE64_NOT_URL_SAFE,
-                      'mimeType': 'image/png',
-                  }
-              }],
-              'role': 'model',
-          }
-      }]
+      'headers': {},
+      'body': json.dumps({
+          'candidates': [{
+              'content': {
+                  'parts': [{
+                      'inlineData': {
+                          'data': _BASE64_NOT_URL_SAFE,
+                          'mimeType': 'image/png',
+                      }
+                  }],
+                  'role': 'model',
+              }
+          }]
+      }),
   }
 
   with pytest.raises(ValueError, match='Data should be valid base64'):
