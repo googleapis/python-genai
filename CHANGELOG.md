@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.21.0](https://github.com/googleapis/python-genai/compare/v1.20.0...v1.21.0) (2025-06-13)
+
+
+### Features
+
+* Enable json schema for controlled output and function declaration. ([624c8e7](https://github.com/googleapis/python-genai/commit/624c8e75fd1e3048bed3ab9a9a333387bc570f01))
+
+
+### Bug Fixes
+
+* Update aiohttp client's SSL handling and configure trust_env by default to match httpx ([462dd3e](https://github.com/googleapis/python-genai/commit/462dd3e33b8334198508aefc3090242e3bcd2727))
+
+
+### Documentation
+
+* Add proxy instruction ([f90af49](https://github.com/googleapis/python-genai/commit/f90af49ffaab6ee468d6b973bd3d72287c163db0))
+* Regenerate docs for 1.20.0 ([66f198a](https://github.com/googleapis/python-genai/commit/66f198a34668bd597ae5c721dcf08c6807d0fa19))
+
 ## [1.20.0](https://github.com/googleapis/python-genai/compare/v1.19.0...v1.20.0) (2025-06-11)
 
 
