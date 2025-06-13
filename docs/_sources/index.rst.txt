@@ -115,6 +115,33 @@ To set the API version to `v1alpha` for the Gemini Developer API:
     )
 
 
+Proxy
+^^^^^^^
+
+When you use the default httpx client, both sync and async use
+ `urllib.request.getproxies` from environment variables.
+Before client initialization, you may set proxy (and optional SSL_CERT_FILE)
+by setting the environment variables:
+
+.. code:: bash
+
+    export HTTPS_PROXY='http://username:password@proxy_uri:port'
+    export SSL_CERT_FILE='client.pem'
+
+
+If you need `socks5` proxy. httpx supports `socks5` proxy if you pass it via
+args to httpx.Client(). You can pass it through the following way:
+
+.. code:: python
+
+    http_options = types.HttpOptions(
+        client_args=...,
+        async_client_args=..,.
+    )
+
+    client=Client(..., http_options=http_options)
+
+
 Types
 -----
 

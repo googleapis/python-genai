@@ -353,6 +353,29 @@ and <cite>GOOGLE_CLOUD_LOCATION</cite>, as shown below:</p>
 </pre></div>
 </div>
 </section>
+<section id="proxy">
+<h3>Proxy<a class="headerlink" href="#proxy" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>When you use the default httpx client, both sync and async use</dt><dd><p><cite>urllib.request.getproxies</cite> from environment variables.</p>
+</dd>
+</dl>
+<p>Before client initialization, you may set proxy (and optional SSL_CERT_FILE)
+by setting the environment variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">HTTPS_PROXY</span><span class="o">=</span><span class="s1">&#39;http://username:password@proxy_uri:port&#39;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SSL_CERT_FILE</span><span class="o">=</span><span class="s1">&#39;client.pem&#39;</span>
+</pre></div>
+</div>
+<p>If you need <cite>socks5</cite> proxy. httpx supports <cite>socks5</cite> proxy if you pass it via
+args to httpx.Client(). You can pass it through the following way:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">http_options</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">HttpOptions</span><span class="p">(</span>
+    <span class="n">client_args</span><span class="o">=...</span><span class="p">,</span>
+    <span class="n">async_client_args</span><span class="o">=..</span><span class="p">,</span><span class="o">.</span>
+<span class="p">)</span>
+
+<span class="n">client</span><span class="o">=</span><span class="n">Client</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">http_options</span><span class="o">=</span><span class="n">http_options</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="types">
 <h2>Types<a class="headerlink" href="#types" title="Link to this heading">¶</a></h2>
@@ -5335,6 +5358,7 @@ initialize a client.</p>
 <li><a class="reference internal" href="#imports">Imports</a></li>
 <li><a class="reference internal" href="#create-a-client">Create a client</a><ul>
 <li><a class="reference internal" href="#api-selection">API Selection</a></li>
+<li><a class="reference internal" href="#proxy">Proxy</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#types">Types</a></li>
