@@ -517,8 +517,22 @@ def _FunctionDeclaration_to_mldev(
   if getv(from_object, ['parameters']) is not None:
     setv(to_object, ['parameters'], getv(from_object, ['parameters']))
 
+  if getv(from_object, ['parameters_json_schema']) is not None:
+    setv(
+        to_object,
+        ['parametersJsonSchema'],
+        getv(from_object, ['parameters_json_schema']),
+    )
+
   if getv(from_object, ['response']) is not None:
     setv(to_object, ['response'], getv(from_object, ['response']))
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
 
   return to_object
 
@@ -541,8 +555,22 @@ def _FunctionDeclaration_to_vertex(
   if getv(from_object, ['parameters']) is not None:
     setv(to_object, ['parameters'], getv(from_object, ['parameters']))
 
+  if getv(from_object, ['parameters_json_schema']) is not None:
+    setv(
+        to_object,
+        ['parametersJsonSchema'],
+        getv(from_object, ['parameters_json_schema']),
+    )
+
   if getv(from_object, ['response']) is not None:
     setv(to_object, ['response'], getv(from_object, ['response']))
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
 
   return to_object
 
