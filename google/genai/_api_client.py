@@ -25,6 +25,7 @@ import copy
 from dataclasses import dataclass
 import datetime
 import http
+import inspect
 import io
 import json
 import logging
@@ -34,7 +35,7 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, AsyncIterator, Optional, TYPE_CHECKING, Tuple, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
@@ -509,6 +510,11 @@ class BaseApiClient:
     )
     self._httpx_client = SyncHttpxClient(**client_args)
     self._async_httpx_client = AsyncHttpxClient(**async_client_args)
+    if has_aiohttp:
+      # Do it once at the genai.Client level. Share among all requests.
+      self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
+          self._http_options
+      )
 
   @staticmethod
   def _ensure_httpx_ssl_ctx(
@@ -561,7 +567,12 @@ class BaseApiClient:
       if not args or not args.get(verify):
         args = (args or {}).copy()
         args[verify] = ctx
-      return args
+      # Drop the args that isn't used by the httpx client.
+      copied_args = args.copy()
+      for key in copied_args.copy():
+        if key not in inspect.signature(httpx.Client.__init__).parameters:
+          del copied_args[key]
+      return copied_args
 
     return (
         _maybe_set(args, ctx),
@@ -581,7 +592,7 @@ class BaseApiClient:
       An async aiohttp ClientSession._request args.
     """
 
-    verify = 'verify'
+    verify = 'ssl'  # keep it consistent with httpx.
     async_args = options.async_client_args
     ctx = async_args.get(verify) if async_args else None
 
@@ -613,10 +624,16 @@ class BaseApiClient:
       """
       if not args or not args.get(verify):
         args = (args or {}).copy()
-        args['ssl'] = ctx
-      else:
-        args['ssl'] = args.pop(verify)
-      return args
+        args[verify] = ctx
+      # Drop the args that isn't in the aiohttp RequestOptions.
+      copied_args = args.copy()
+      for key in copied_args.copy():
+        if (
+            key
+            not in inspect.signature(aiohttp.ClientSession._request).parameters
+        ):
+          del copied_args[key]
+      return copied_args
 
     return _maybe_set(async_args, ctx)
 
@@ -819,30 +836,16 @@ class BaseApiClient:
       if has_aiohttp:
         session = aiohttp.ClientSession(
             headers=http_request.headers,
+            trust_env=True,
         )
-        if self._http_options.async_client_args:
-          # When using aiohttp request options with ssl context, the latency will higher than using httpx.
-          # Use it only if necessary. Otherwise, httpx asyncclient is faster.
-          async_client_args = self._ensure_aiohttp_ssl_ctx(
-              self._http_options
-          )
-          response = await session.request(
-              method=http_request.method,
-              url=http_request.url,
-              headers=http_request.headers,
-              data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
-              **async_client_args,
-          )
-        else:
-          # Aiohttp performs better than httpx w/o ssl context.
-          response = await session.request(
-              method=http_request.method,
-              url=http_request.url,
-              headers=http_request.headers,
-              data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
-          )
+        response = await session.request(
+            method=http_request.method,
+            url=http_request.url,
+            headers=http_request.headers,
+            data=data,
+            timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+            **self._async_client_session_request_args,
+        )
         await errors.APIError.raise_for_async_response(response)
         return HttpResponse(response.headers, response)
       else:
@@ -862,39 +865,20 @@ class BaseApiClient:
         return HttpResponse(client_response.headers, client_response)
     else:
       if has_aiohttp:
-        if self._http_options.async_client_args:
-          # Note that when using aiohttp request options with ssl context, the
-          # latency will higher than using httpx async client with ssl context.
-          async_client_args = self._ensure_aiohttp_ssl_ctx(
-              self._http_options
+        async with aiohttp.ClientSession(
+            headers=http_request.headers,
+            trust_env=True,
+        ) as session:
+          response = await session.request(
+              method=http_request.method,
+              url=http_request.url,
+              headers=http_request.headers,
+              data=data,
+              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              **self._async_client_session_request_args,
           )
-          async with aiohttp.ClientSession(
-              headers=http_request.headers
-          ) as session:
-            response = await session.request(
-                method=http_request.method,
-                url=http_request.url,
-                headers=http_request.headers,
-                data=data,
-                timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
-                **async_client_args,
-            )
-            await errors.APIError.raise_for_async_response(response)
-            return HttpResponse(response.headers, [await response.text()])
-        else:
-          # Aiohttp performs better than httpx if not using ssl context.
-          async with aiohttp.ClientSession(
-              headers=http_request.headers
-          ) as session:
-            response = await session.request(
-                method=http_request.method,
-                url=http_request.url,
-                headers=http_request.headers,
-                data=data,
-                timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
-            )
-            await errors.APIError.raise_for_async_response(response)
-            return HttpResponse(response.headers, [await response.text()])
+          await errors.APIError.raise_for_async_response(response)
+          return HttpResponse(response.headers, [await response.text()])
       else:
         # aiohttp is not available. Fall back to httpx.
         client_response = await self._async_httpx_client.request(
@@ -1192,7 +1176,8 @@ class BaseApiClient:
     # Upload the file in chunks
     if has_aiohttp:  # pylint: disable=g-import-not-at-top
       async with aiohttp.ClientSession(
-          headers=self._http_options.headers
+          headers=self._http_options.headers,
+          trust_env=True,
       ) as session:
         while True:
           if isinstance(file, io.IOBase):
@@ -1367,7 +1352,10 @@ class BaseApiClient:
         data = http_request.data
 
     if has_aiohttp:
-      async with aiohttp.ClientSession(headers=http_request.headers) as session:
+      async with aiohttp.ClientSession(
+          headers=http_request.headers,
+          trust_env=True,
+      ) as session:
         response = await session.request(
             method=http_request.method,
             url=http_request.url,
