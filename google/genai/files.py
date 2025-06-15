@@ -597,7 +597,7 @@ class Files(_api_module.BaseModule):
   def upload(
       self,
       *,
-      file: Union[str, pathlib.Path, os.PathLike[str], io.IOBase],
+      file: str | os.PathLike[str] | io.IOBase,
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file using a supported file service.
@@ -1069,7 +1069,7 @@ class AsyncFiles(_api_module.BaseModule):
   async def upload(
       self,
       *,
-      file: Union[str, pathlib.Path, os.PathLike[str], io.IOBase],
+      file: str | os.PathLike[str] | io.IOBase,
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file asynchronously using a supported file service.
