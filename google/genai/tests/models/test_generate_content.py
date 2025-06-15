@@ -414,6 +414,18 @@ pytestmark = pytest_helper.setup(
 pytest_plugins = ('pytest_asyncio',)
 
 
+def test_sync_with_full_response(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.generate_content(
@@ -426,12 +438,42 @@ async def test_async(client):
   assert response.text
 
 
+@pytest.mark.asyncio
+async def test_async_with_full_response(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+
+
 def test_sync_stream(client):
   response = client.models.generate_content_stream(
       model='gemini-1.5-flash',
       contents='Tell me a story in 300 words.',
       config={
           'http_options': test_http_options,
+      },
+  )
+  chunks = 0
+  for part in response:
+    chunks += 1
+    assert part.text is not None or part.candidates[0].finish_reason
+
+  assert chunks > 2
+
+
+def test_sync_stream_with_should_return_http_response_config(client):
+  response = client.models.generate_content_stream(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+          'should_return_http_response': True,
       },
   )
   chunks = 0
