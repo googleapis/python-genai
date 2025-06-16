@@ -758,6 +758,11 @@ class BaseApiClient:
     _populate_server_timeout_header(
         patched_http_options.headers, timeout_in_seconds
     )
+
+    # Apply extras_request_provider if available
+    if hasattr(patched_http_options, 'extras_request_provider') and patched_http_options.extras_request_provider:
+      request_dict = patched_http_options.extras_request_provider(request_dict)
+
     return HttpRequest(
         method=http_method,
         url=url,

@@ -17,6 +17,7 @@
 import copy
 import pytest
 from ... import _transformers as t
+from ... import errors
 from ... import types
 from .. import pytest_helper
 from . import constants
@@ -102,6 +103,30 @@ async def test_async(client):
       model=_COUNT_TOKENS_PARAMS.model, contents=_COUNT_TOKENS_PARAMS.contents
   )
   assert response
+
+
+def test_extras_request_provider(client):
+  def add_extra_field(body: dict[str, any]) -> dict[str, any]:
+    body['systemInstruction'] = {
+        'parts': [{'text': 'you are a chatbot.'}],
+        'role': 'user',
+    }
+    return body
+
+  if client._api_client.vertexai:
+    response = client.models.count_tokens(
+        model=_COUNT_TOKENS_PARAMS.model,
+        contents=_COUNT_TOKENS_PARAMS.contents,
+        config={'http_options': {'extras_request_provider': add_extra_field}},
+    )
+    assert response.total_tokens
+  else:
+    with pytest.raises(errors.ClientError):
+      client.models.count_tokens(
+          model=_COUNT_TOKENS_PARAMS.model,
+          contents=_COUNT_TOKENS_PARAMS.contents,
+          config={'http_options': {'extras_request_provider': add_extra_field}},
+      )
 
 
 def test_different_model_names(client):

@@ -1123,6 +1123,17 @@ class ContentDict(TypedDict, total=False):
 
 ContentOrDict = Union[Content, ContentDict]
 
+ExtrasRequestProvider = Callable[[dict[str, any]], dict[str, any]]
+"""
+A function type that allows users to add extra fields to the request body.
+This is useful for adding fields that are not yet supported by the SDK.
+
+Args:
+    body: The original request body as a dictionary.
+
+Returns:
+    The modified request body as a dictionary.
+"""
 
 class HttpOptions(_common.BaseModel):
   """HTTP options to be used in each of the requests."""
@@ -1147,6 +1158,11 @@ class HttpOptions(_common.BaseModel):
   async_client_args: Optional[dict[str, Any]] = Field(
       default=None, description="""Args passed to the async HTTP client."""
   )
+  extras_request_provider: Optional[ExtrasRequestProvider] = Field(
+      default=None, description="""
+      Optional. ExtrasRequestProvider is a function that allows users to add extra fields to the request body. 
+    This is useful for adding fields that are not yet supported by the SDK.
+   """)
 
 
 class HttpOptionsDict(TypedDict, total=False):
