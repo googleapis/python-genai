@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,25 +16,73 @@
 
 """Tests for client initialization."""
 
+import logging
+import os
+import ssl
+
+import certifi
 import google.auth
 from google.auth import credentials
-import logging
 import pytest
 
 from ... import _api_client as api_client
+from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 
 
-def test_ml_dev_from_env(monkeypatch):
-  api_key = "google_api_key"
-  monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+def test_ml_dev_from_gemini_env_only(monkeypatch):
+  api_key = "gemini_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", api_key)
+  monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
 
   client = Client()
 
   assert not client.models._api_client.vertexai
   assert client.models._api_client.api_key == api_key
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+
+def test_ml_dev_from_gemini_env_with_google_env_empty(monkeypatch):
+  api_key = "gemini_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", api_key)
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
+
+  client = Client()
+
+  assert not client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+
+def test_ml_dev_from_google_env_only(monkeypatch):
+  api_key = "google_api_key"
+  monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+  monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+  client = Client()
+
+  assert not client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+
+def test_ml_dev_both_env_key_set(monkeypatch, caplog):
+  caplog.set_level(logging.DEBUG, logger="google_genai._api_client")
+  google_api_key = "google_api_key"
+  gemini_api_key = "gemini_api_key"
+  monkeypatch.setenv("GOOGLE_API_KEY", google_api_key)
+  monkeypatch.setenv("GEMINI_API_KEY", gemini_api_key)
+
+  client = Client()
+
+  assert not client.models._api_client.vertexai
+  assert client.models._api_client.api_key == google_api_key
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert (
+      "Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY."
+      in caplog.text
+  )
 
 
 def test_ml_dev_from_constructor():
@@ -141,7 +189,7 @@ def test_constructor_with_invalid_http_options_key():
     _ = Client(api_key="google_api_key", http_options=mldev_http_options)
   except Exception as e:
     assert isinstance(e, ValueError)
-    assert "Invalid http_options" in str(e)
+    assert "invalid_version_key" in str(e)
 
   # Expect value error when HTTPOptions is provided as a dict and contains
   # an invalid key.
@@ -154,7 +202,7 @@ def test_constructor_with_invalid_http_options_key():
     )
   except Exception as e:
     assert isinstance(e, ValueError)
-    assert "Invalid http_options" in str(e)
+    assert "invalid_header_key" in str(e)
 
 
 def test_constructor_with_http_options_as_pydantic_type():
@@ -271,6 +319,8 @@ def test_invalid_vertexai_constructor_empty(monkeypatch):
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
     monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
     monkeypatch.setenv("GOOGLE_API_KEY", "")
+    monkeypatch.setenv("GEMINI_API_KEY", "")
+
     def mock_auth_default(scopes=None):
       return None, None
 
@@ -281,6 +331,7 @@ def test_invalid_vertexai_constructor_empty(monkeypatch):
 def test_invalid_mldev_constructor_empty(monkeypatch):
   with pytest.raises(ValueError):
     monkeypatch.setenv("GOOGLE_API_KEY", "")
+    monkeypatch.setenv("GEMINI_API_KEY", "")
     Client()
 
 
@@ -316,10 +367,7 @@ def test_invalid_vertexai_constructor3(monkeypatch):
     m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
     project_id = "fake_project_id"
     with pytest.raises(ValueError):
-      Client(
-          vertexai=True,
-          project=project_id
-      )
+      Client(vertexai=True, project=project_id)
 
 
 def test_vertexai_explicit_arg_precedence1(monkeypatch):
@@ -376,16 +424,22 @@ def test_invalid_mldev_constructor():
     assert isinstance(e, ValueError)
 
 
-def test_mldev_explicit_arg_precedence(monkeypatch):
+def test_mldev_explicit_arg_precedence(monkeypatch, caplog):
+  caplog.set_level(logging.DEBUG, logger="google_genai._api_client")
   api_key = "constructor_api_key"
 
-  monkeypatch.setenv("GOOGLE_API_KEY", "env_api_key")
+  monkeypatch.setenv("GOOGLE_API_KEY", "google_env_api_key")
+  monkeypatch.setenv("GEMINI_API_KEY", "gemini_env_api_key")
 
   client = Client(api_key=api_key)
 
   assert not client.models._api_client.vertexai
   assert client.models._api_client.api_key == api_key
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert (
+      "Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY."
+      in caplog.text
+  )
 
 
 def test_replay_client_ml_dev_from_env(monkeypatch, use_vertex: bool):
@@ -457,14 +511,15 @@ def test_vertexai_apikey_from_constructor(monkeypatch):
   assert not client.models._api_client.project
   assert not client.models._api_client.location
   assert client.models._api_client.api_key == api_key
-  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert "aiplatform" in client._api_client._http_options.base_url
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
-def test_vertexai_apikey_from_env(monkeypatch):
+def test_vertexai_apikey_from_env_google_api_key_only(monkeypatch):
   # Vertex AI Express mode uses API key on Vertex AI.
   api_key = "vertexai_api_key"
   monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+  monkeypatch.delenv("GEMINI_API_KEY", raising=False)
 
   # Due to proj/location taking precedence, need to clear proj/location env
   # variables.
@@ -477,8 +532,77 @@ def test_vertexai_apikey_from_env(monkeypatch):
   assert client.models._api_client.api_key == api_key
   assert not client.models._api_client.project
   assert not client.models._api_client.location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert "aiplatform" in client._api_client._http_options.base_url
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+
+def test_vertexai_apikey_from_env_gemini_api_key_only(monkeypatch):
+  # Vertex AI Express mode uses API key on Vertex AI.
+  api_key = "vertexai_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", api_key)
+  monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client(vertexai=True)
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert "aiplatform" in client._api_client._http_options.base_url
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+
+def test_vertexai_apikey_from_env_gemini_api_key_with_google_api_key_empty(monkeypatch):
+  # Vertex AI Express mode uses API key on Vertex AI.
+  api_key = "vertexai_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", api_key)
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client(vertexai=True)
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert "aiplatform" in client._api_client._http_options.base_url
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+
+def test_vertexai_apikey_from_env_both_api_keys(monkeypatch,  caplog):
+  caplog.set_level(logging.DEBUG, logger="google_genai._api_client")
+  # Vertex AI Express mode uses API key on Vertex AI.
+  google_api_key = "google_api_key"
+  gemini_api_key = "vertexai_api_key"
+  monkeypatch.setenv("GEMINI_API_KEY", gemini_api_key)
+  monkeypatch.setenv("GOOGLE_API_KEY", google_api_key)
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client(vertexai=True)
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == google_api_key
+  assert not client.models._api_client.project
+  assert not client.models._api_client.location
+  assert "aiplatform" in client._api_client._http_options.base_url
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+  assert (
+      "Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY."
+      in caplog.text
+  )
 
 
 def test_vertexai_apikey_invalid_constructor1():
@@ -512,7 +636,7 @@ def test_vertexai_apikey_combo1(monkeypatch):
   assert client.models._api_client.api_key == api_key
   assert not client.models._api_client.project
   assert not client.models._api_client.location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert "aiplatform" in client._api_client._http_options.base_url
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
@@ -532,7 +656,7 @@ def test_vertexai_apikey_combo2(monkeypatch):
   assert not client.models._api_client.api_key
   assert client.models._api_client.project == project_id
   assert client.models._api_client.location == location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert "aiplatform" in client._api_client._http_options.base_url
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
@@ -552,7 +676,7 @@ def test_vertexai_apikey_combo3(monkeypatch):
   assert not client.models._api_client.api_key
   assert client.models._api_client.project == project_id
   assert client.models._api_client.location == location
-  assert "aiplatform" in client._api_client._http_options["base_url"]
+  assert "aiplatform" in client._api_client._http_options.base_url
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
@@ -568,14 +692,14 @@ def test_vertexai_global_endpoint(monkeypatch):
   assert client.models._api_client.vertexai
   assert client.models._api_client.project == project_id
   assert client.models._api_client.location == location
-  assert client.models._api_client._http_options["base_url"] == (
+  assert client.models._api_client._http_options.base_url == (
       "https://aiplatform.googleapis.com/"
   )
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
 def test_client_logs_to_logger_instance(monkeypatch, caplog):
-  caplog.set_level(logging.DEBUG, logger='google_genai._api_client')
+  caplog.set_level(logging.DEBUG, logger="google_genai._api_client")
 
   project_id = "fake_project_id"
   location = "fake-location"
@@ -585,5 +709,328 @@ def test_client_logs_to_logger_instance(monkeypatch, caplog):
 
   _ = Client(vertexai=True, api_key=api_key)
 
-  assert 'INFO' in caplog.text
-  assert 'The user provided Vertex AI API key will take precedence' in caplog.text
+  assert "INFO" in caplog.text
+  assert (
+      "The user provided Vertex AI API key will take precedence" in caplog.text
+  )
+
+
+def test_client_ssl_context_implicit_initialization():
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(api_client.HttpOptions())
+  )
+
+  assert client_args["verify"]
+  assert isinstance(client_args["verify"], ssl.SSLContext)
+  try:
+    import aiohttp  # pylint: disable=g-import-not-at-top
+
+    async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
+        api_client.HttpOptions()
+    )
+    assert async_client_args["ssl"]
+    assert isinstance(async_client_args["ssl"], ssl.SSLContext)
+  except ImportError:
+    assert async_client_args["verify"]
+    assert isinstance(async_client_args["verify"], ssl.SSLContext)
+
+
+def test_client_ssl_context_explicit_initialization_same_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+      capath=os.environ.get("SSL_CERT_DIR"),
+  )
+
+  options = api_client.HttpOptions(
+      client_args={"verify": ctx}, async_client_args={"verify": ctx}
+  )
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(options)
+  )
+
+  assert client_args["verify"] == ctx
+  try:
+    import aiohttp  # pylint: disable=g-import-not-at-top
+
+    async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
+        options
+    )
+    assert async_client_args["ssl"] == ctx
+  except ImportError:
+    assert async_client_args["verify"] == ctx
+
+
+def test_client_ssl_context_explicit_initialization_separate_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+      capath=os.environ.get("SSL_CERT_DIR"),
+  )
+
+  async_ctx = ssl.create_default_context(
+      cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+      capath=os.environ.get("SSL_CERT_DIR"),
+  )
+
+  options = api_client.HttpOptions(
+      client_args={"verify": ctx}, async_client_args={"verify": async_ctx}
+  )
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(options)
+  )
+
+  assert client_args["verify"] == ctx
+  try:
+    import aiohttp  # pylint: disable=g-import-not-at-top
+
+    async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
+        options
+    )
+    assert async_client_args["ssl"] == async_ctx
+  except ImportError:
+    assert async_client_args["verify"] == async_ctx
+
+
+def test_client_ssl_context_explicit_initialization_sync_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+      capath=os.environ.get("SSL_CERT_DIR"),
+  )
+
+  options = api_client.HttpOptions(client_args={"verify": ctx})
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(options)
+  )
+
+  assert client_args["verify"] == ctx
+  try:
+    import aiohttp  # pylint: disable=g-import-not-at-top
+
+    async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
+        options
+    )
+    assert async_client_args["ssl"]
+  except ImportError:
+    assert async_client_args["verify"] == ctx
+
+
+def test_client_ssl_context_explicit_initialization_async_args():
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+      capath=os.environ.get("SSL_CERT_DIR"),
+  )
+
+  options = api_client.HttpOptions(async_client_args={"verify": ctx})
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(options)
+  )
+
+  assert client_args["verify"] == ctx
+  try:
+    import aiohttp  # pylint: disable=g-import-not-at-top
+
+    async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
+        options
+    )
+    assert async_client_args["ssl"] == ctx
+  except ImportError:
+    assert async_client_args["verify"] == ctx
+
+
+def test_constructor_with_base_url_from_http_options():
+  mldev_http_options = {
+      "base_url": "https://placeholder-fake-url.com/",
+  }
+  vertexai_http_options = {
+      "base_url": (
+          "https://{self.location}-aiplatform.googleapis.com/{{api_version}}/"
+      ),
+  }
+
+  mldev_client = Client(
+      api_key="google_api_key", http_options=mldev_http_options
+  )
+  assert not mldev_client.models._api_client.vertexai
+  assert (
+      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      == "https://placeholder-fake-url.com/"
+  )
+
+  vertexai_client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+      http_options=vertexai_http_options,
+  )
+  assert vertexai_client.models._api_client.vertexai
+  assert (
+      vertexai_client.models._api_client.get_read_only_http_options()[
+          "base_url"
+      ]
+      == "https://{self.location}-aiplatform.googleapis.com/{{api_version}}/"
+  )
+
+
+def test_constructor_with_base_url_from_set_default_base_urls():
+  base_url.set_default_base_urls(
+      gemini_url="https://gemini-base-url.com/",
+      vertex_url="https://vertex-base-url.com/",
+  )
+  mldev_client = Client(api_key="google_api_key")
+  assert not mldev_client.models._api_client.vertexai
+  assert (
+      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      == "https://gemini-base-url.com/"
+  )
+
+  vertexai_client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+  )
+  assert vertexai_client.models._api_client.vertexai
+  assert (
+      vertexai_client.models._api_client.get_read_only_http_options()[
+          "base_url"
+      ]
+      == "https://vertex-base-url.com/"
+  )
+  base_url.set_default_base_urls(gemini_url=None, vertex_url=None)
+
+
+def test_constructor_with_constructor_base_url_overrides_set_default_base_urls():
+  mldev_http_options = {
+      "base_url": "https://gemini-constructor-base-url.com/",
+  }
+  vertexai_http_options = {
+      "base_url": "https://vertex-constructor-base-url.com/",
+  }
+
+  base_url.set_default_base_urls(
+      gemini_url="https://gemini-base-url.com/",
+      vertex_url="https://vertex-base-url.com/",
+  )
+  mldev_client = Client(
+      api_key="google_api_key", http_options=mldev_http_options
+  )
+  assert not mldev_client.models._api_client.vertexai
+  assert (
+      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      == "https://gemini-constructor-base-url.com/"
+  )
+
+  vertexai_client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+      http_options=vertexai_http_options,
+  )
+  assert vertexai_client.models._api_client.vertexai
+  assert (
+      vertexai_client.models._api_client.get_read_only_http_options()[
+          "base_url"
+      ]
+      == "https://vertex-constructor-base-url.com/"
+  )
+  base_url.set_default_base_urls(gemini_url=None, vertex_url=None)
+
+
+def test_constructor_with_constructor_base_url_overrides_environment_variables(
+    monkeypatch,
+):
+  monkeypatch.setenv(
+      "GOOGLE_GEMINI_BASE_URL", "https://gemini-env-base-url.com/"
+  )
+  monkeypatch.setenv(
+      "GOOGLE_VERTEX_BASE_URL", "https://vertex-env-base-url.com/"
+  )
+
+  mldev_http_options = {
+      "base_url": "https://gemini-constructor-base-url.com/",
+  }
+  vertexai_http_options = {
+      "base_url": "https://vertex-constructor-base-url.com/",
+  }
+
+  mldev_client = Client(
+      api_key="google_api_key", http_options=mldev_http_options
+  )
+  assert not mldev_client.models._api_client.vertexai
+  assert (
+      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      == "https://gemini-constructor-base-url.com/"
+  )
+
+  vertexai_client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+      http_options=vertexai_http_options,
+  )
+  assert vertexai_client.models._api_client.vertexai
+  assert (
+      vertexai_client.models._api_client.get_read_only_http_options()[
+          "base_url"
+      ]
+      == "https://vertex-constructor-base-url.com/"
+  )
+  base_url.set_default_base_urls(gemini_url=None, vertex_url=None)
+
+
+def test_constructor_with_base_url_from_set_default_base_urls_overrides_environment_variables(
+    monkeypatch,
+):
+  monkeypatch.setenv(
+      "GOOGLE_GEMINI_BASE_URL", "https://gemini-env-base-url.com/"
+  )
+  monkeypatch.setenv(
+      "GOOGLE_VERTEX_BASE_URL", "https://vertex-env-base-url.com/"
+  )
+
+  base_url.set_default_base_urls(
+      gemini_url="https://gemini-base-url.com/",
+      vertex_url="https://vertex-base-url.com/",
+  )
+  mldev_client = Client(api_key="google_api_key")
+  assert not mldev_client.models._api_client.vertexai
+  assert (
+      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      == "https://gemini-base-url.com/"
+  )
+
+  vertexai_client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+  )
+  assert vertexai_client.models._api_client.vertexai
+  assert (
+      vertexai_client.models._api_client.get_read_only_http_options()[
+          "base_url"
+      ]
+      == "https://vertex-base-url.com/"
+  )
+
+
+def test_constructor_with_base_url_from_environment_variables(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GEMINI_BASE_URL", "https://gemini-base-url.com/")
+  monkeypatch.setenv("GOOGLE_VERTEX_BASE_URL", "https://vertex-base-url.com/")
+
+  mldev_client = Client(api_key="google_api_key")
+  assert not mldev_client.models._api_client.vertexai
+  assert (
+      mldev_client.models._api_client.get_read_only_http_options()["base_url"]
+      == "https://gemini-base-url.com/"
+  )
+
+  vertexai_client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+  )
+  assert vertexai_client.models._api_client.vertexai
+  assert (
+      vertexai_client.models._api_client.get_read_only_http_options()[
+          "base_url"
+      ]
+      == "https://vertex-base-url.com/"
+  )

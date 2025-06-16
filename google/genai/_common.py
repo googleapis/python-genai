@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import datetime
 import enum
 import functools
 import typing
-from typing import Union
+from typing import Any, Callable, Optional, Union, get_origin, get_args
 import uuid
 import warnings
 
@@ -31,7 +31,7 @@ from . import _api_client
 from . import errors
 
 
-def set_value_by_path(data, keys, value):
+def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: Any) -> None:
   """Examples:
 
   set_value_by_path({}, ['a', 'b'], v)
@@ -46,54 +46,57 @@ def set_value_by_path(data, keys, value):
   for i, key in enumerate(keys[:-1]):
     if key.endswith('[]'):
       key_name = key[:-2]
-      if key_name not in data:
+      if data is not None and key_name not in data:
         if isinstance(value, list):
           data[key_name] = [{} for _ in range(len(value))]
         else:
           raise ValueError(
               f'value {value} must be a list given an array path {key}'
           )
-      if isinstance(value, list):
+      if isinstance(value, list) and data is not None:
         for j, d in enumerate(data[key_name]):
           set_value_by_path(d, keys[i + 1 :], value[j])
       else:
-        for d in data[key_name]:
-          set_value_by_path(d, keys[i + 1 :], value)
+        if data is not None:
+          for d in data[key_name]:
+            set_value_by_path(d, keys[i + 1 :], value)
       return
     elif key.endswith('[0]'):
       key_name = key[:-3]
-      if key_name not in data:
+      if data is not None and key_name not in data:
         data[key_name] = [{}]
-      set_value_by_path(data[key_name][0], keys[i + 1 :], value)
+      if data is not None:
+        set_value_by_path(data[key_name][0], keys[i + 1 :], value)
       return
+    if data is not None:
+      data = data.setdefault(key, {})
 
-    data = data.setdefault(key, {})
-
-  existing_data = data.get(keys[-1])
-  # If there is an existing value, merge, not overwrite.
-  if existing_data is not None:
-    # Don't overwrite existing non-empty value with new empty value.
-    # This is triggered when handling tuning datasets.
-    if not value:
-      pass
-    # Don't fail when overwriting value with same value
-    elif value == existing_data:
-      pass
-    # Instead of overwriting dictionary with another dictionary, merge them.
-    # This is important for handling training and validation datasets in tuning.
-    elif isinstance(existing_data, dict) and isinstance(value, dict):
-      # Merging dictionaries. Consider deep merging in the future.
-      existing_data.update(value)
+  if data is not None:
+    existing_data = data.get(keys[-1])
+    # If there is an existing value, merge, not overwrite.
+    if existing_data is not None:
+      # Don't overwrite existing non-empty value with new empty value.
+      # This is triggered when handling tuning datasets.
+      if not value:
+        pass
+      # Don't fail when overwriting value with same value
+      elif value == existing_data:
+        pass
+      # Instead of overwriting dictionary with another dictionary, merge them.
+      # This is important for handling training and validation datasets in tuning.
+      elif isinstance(existing_data, dict) and isinstance(value, dict):
+        # Merging dictionaries. Consider deep merging in the future.
+        existing_data.update(value)
+      else:
+        raise ValueError(
+            f'Cannot set value for an existing key. Key: {keys[-1]};'
+            f' Existing value: {existing_data}; New value: {value}.'
+        )
     else:
-      raise ValueError(
-          f'Cannot set value for an existing key. Key: {keys[-1]};'
-          f' Existing value: {existing_data}; New value: {value}.'
-      )
-  else:
-    data[keys[-1]] = value
+      data[keys[-1]] = value
 
 
-def get_value_by_path(data: object, keys: list[str]):
+def get_value_by_path(data: Any, keys: list[str]) -> Any:
   """Examples:
 
   get_value_by_path({'a': {'b': v}}, ['a', 'b'])
@@ -128,7 +131,7 @@ def get_value_by_path(data: object, keys: list[str]):
   return data
 
 
-def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
+def convert_to_dict(obj: object) -> Any:
   """Recursively converts a given object to a dictionary.
 
   If the object is a Pydantic model, it uses the model's `model_dump()` method.
@@ -137,7 +140,9 @@ def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
     obj: The object to convert.
 
   Returns:
-    A dictionary representation of the object.
+    A dictionary representation of the object, a list of objects if a list is
+    passed, or the object itself if it is not a dictionary, list, or Pydantic
+    model.
   """
   if isinstance(obj, pydantic.BaseModel):
     return obj.model_dump(exclude_none=True)
@@ -149,8 +154,40 @@ def convert_to_dict(obj: dict[str, object]) -> dict[str, object]:
     return obj
 
 
+def _is_struct_type(annotation: type) -> bool:
+  """Checks if the given annotation is list[dict[str, typing.Any]]
+  or typing.List[typing.Dict[str, typing.Any]].
+
+  This maps to Struct type in the API.
+  """
+  outer_origin = get_origin(annotation)
+  outer_args = get_args(annotation)
+
+  if outer_origin is not list: # Python 3.9+ normalizes list
+    return False
+
+  if not outer_args or len(outer_args) != 1:
+    return False
+
+  inner_annotation = outer_args[0]
+
+  inner_origin = get_origin(inner_annotation)
+  inner_args = get_args(inner_annotation)
+
+  if inner_origin is not dict: # Python 3.9+ normalizes to dict
+    return False
+
+  if not inner_args or len(inner_args) != 2:
+    # dict should have exactly two type arguments
+    return False
+
+  # Check if the dict arguments are str and typing.Any
+  key_type, value_type = inner_args
+  return key_type is str and value_type is typing.Any
+
+
 def _remove_extra_fields(
-    model: pydantic.BaseModel, response: dict[str, object]
+    model: Any, response: dict[str, object]
 ) -> None:
   """Removes extra fields from the response that are not in the model.
 
@@ -183,10 +220,15 @@ def _remove_extra_fields(
     if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
       _remove_extra_fields(annotation, value)
     elif isinstance(value, list):
+      if _is_struct_type(annotation):
+        continue
+
       for item in value:
         # assume a list of dict is list of BaseModel
         if isinstance(item, dict):
           _remove_extra_fields(typing.get_args(annotation)[0], item)
+
+T = typing.TypeVar('T', bound='BaseModel')
 
 
 class BaseModel(pydantic.BaseModel):
@@ -201,16 +243,31 @@ class BaseModel(pydantic.BaseModel):
       arbitrary_types_allowed=True,
       ser_json_bytes='base64',
       val_json_bytes='base64',
+      ignored_types=(typing.TypeVar,)
   )
 
   @classmethod
   def _from_response(
-      cls, *, response: dict[str, object], kwargs: dict[str, object]
-  ) -> 'BaseModel':
+      cls: typing.Type[T], *, response: dict[str, object], kwargs: dict[str, object]
+  ) -> T:
     # To maintain forward compatibility, we need to remove extra fields from
     # the response.
     # We will provide another mechanism to allow users to access these fields.
-    _remove_extra_fields(cls, response)
+
+    # For Agent Engine we don't want to call _remove_all_fields because the
+    # user may pass a dict that is not a subclass of BaseModel.
+    # If more modules require we skip this, we may want a different approach
+    should_skip_removing_fields = (
+        kwargs is not None and
+        'config' in kwargs and
+        kwargs['config'] is not None and
+        isinstance(kwargs['config'], dict) and
+        'include_all_fields' in kwargs['config']
+        and kwargs['config']['include_all_fields']
+    )
+
+    if not should_skip_removing_fields:
+      _remove_extra_fields(cls, response)
     validated_response = cls.model_validate(response)
     return validated_response
 
@@ -222,7 +279,7 @@ class CaseInSensitiveEnum(str, enum.Enum):
   """Case insensitive enum."""
 
   @classmethod
-  def _missing_(cls, value):
+  def _missing_(cls, value: Any) -> Any:
     try:
       return cls[value.upper()]  # Try to access directly with uppercase
     except KeyError:
@@ -290,12 +347,12 @@ def encode_unserializable_types(data: dict[str, object]) -> dict[str, object]:
   return processed_data
 
 
-def experimental_warning(message: str):
+def experimental_warning(message: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
   """Experimental warning, only warns once."""
-  def decorator(func):
+  def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
     warning_done = False
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
       nonlocal warning_done
       if not warning_done:
         warning_done = True

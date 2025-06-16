@@ -24,20 +24,20 @@ from ... import types
 
 def test_none():
   with pytest.raises(ValueError):
-    t.t_part(None, None)
+    t.t_part(None)
 
 
 def test_empty_string():
-  assert t.t_part(None, '') == types.Part(text='')
+  assert t.t_part('') == types.Part(text='')
 
 
 def test_string():
-  assert t.t_part(None, 'test') == types.Part(text='test')
+  assert t.t_part('test') == types.Part(text='test')
 
 
 def test_file():
   assert t.t_part(
-      None, types.File(uri='gs://test', mime_type='image/png')
+      types.File(uri='gs://test', mime_type='image/png')
   ) == types.Part(
       file_data=types.FileData(file_uri='gs://test', mime_type='image/png')
   )
@@ -45,33 +45,33 @@ def test_file():
 
 def test_file_no_uri():
   with pytest.raises(ValueError):
-    t.t_part(None, types.File(mime_type='image/png'))
+    t.t_part(types.File(mime_type='image/png'))
 
 
 def test_file_no_mime_type():
   with pytest.raises(ValueError):
-    t.t_part(None, types.File(uri='gs://test'))
+    t.t_part(types.File(uri='gs://test'))
 
 
 def test_empty_dict():
-  assert t.t_part(None, {}) == types.Part()
+  assert t.t_part({}) == types.Part()
 
 
 def test_dict():
-  assert t.t_part(None, {'text': 'test'}) == types.Part(text='test')
+  assert t.t_part({'text': 'test'}) == types.Part(text='test')
 
 
 def test_invalid_dict():
   with pytest.raises(pydantic.ValidationError):
-    t.t_part(None, {'invalid_key': 'test'})
+    t.t_part({'invalid_key': 'test'})
 
 
 def test_part():
-  assert t.t_part(None, types.Part(text='test')) == types.Part(text='test')
+  assert t.t_part(types.Part(text='test')) == types.Part(text='test')
 
 
 def test_int():
   try:
-    t.t_part(None, 1)
+    t.t_part(1)
   except ValueError as e:
     assert 'Unsupported content part type: <class \'int\'>' in str(e)

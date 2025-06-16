@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -205,9 +205,14 @@ async def test_image_upload_with_config_async(client):
 async def test_image_upload_with_config_dict_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = await client.aio.files.upload(
-        file='tests/data/google.png', config={'display_name': 'test_image'}
+        file='tests/data/google.png',
+        config={
+            'display_name': 'test_image',
+            'http_options': {'timeout': '8000'},
+        },
     )
     assert file.name.startswith('files/')
+
 
 @pytest.mark.asyncio
 async def test_image_upload_with_bytesio_async(client):

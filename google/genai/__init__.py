@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 
 """Google Gen AI SDK"""
 
+from . import version
 from .client import Client
-from . import  version
+
 
 __version__ = version.__version__
 

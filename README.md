@@ -1,17 +1,23 @@
 # Google Gen AI SDK
 
 [![PyPI version](https://img.shields.io/pypi/v/google-genai.svg)](https://pypi.org/project/google-genai/)
+![Python support](https://img.shields.io/pypi/pyversions/google-genai)
+[![PyPI - Downloads](https://img.shields.io/pypi/dw/google-genai)](https://pypistats.org/packages/google-genai)
 
 --------
 **Documentation:** https://googleapis.github.io/python-genai/
 
 -----
 
-Google Gen AI Python SDK provides an interface for developers to integrate Google's generative models into their Python applications. It supports the [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview) APIs.
+Google Gen AI Python SDK provides an interface for developers to integrate
+Google's generative models into their Python applications. It supports the
+[Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
+[Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
+APIs.
 
 ## Installation
 
-```cmd
+```sh
 pip install google-genai
 ```
 
@@ -28,11 +34,15 @@ Please run one of the following code blocks to create a client for
 different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)).
 
 ```python
+from google import genai
+
 # Only run this block for Gemini Developer API
 client = genai.Client(api_key='GEMINI_API_KEY')
 ```
 
 ```python
+from google import genai
+
 # Only run this block for Vertex AI API
 client = genai.Client(
     vertexai=True, project='your-project-id', location='us-central1'
@@ -42,17 +52,17 @@ client = genai.Client(
 **(Optional) Using environment variables:**
 
 You can create a client by configuring the necessary environment variables.
-Configuration setup instructions depends on whether you're using the Gemini API
-on Vertex AI or the ML Dev Gemini API.
+Configuration setup instructions depends on whether you're using the Gemini
+Developer API or the Gemini API in Vertex AI.
 
-**ML Dev Gemini API:** Set `GOOGLE_API_KEY` as shown below:
+**Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
 
 ```bash
 export GOOGLE_API_KEY='your-api-key'
 ```
 
-**Vertex AI API:** Set `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`
-and `GOOGLE_CLOUD_LOCATION`, as shown below:
+**Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
+`GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 ```bash
 export GOOGLE_GENAI_USE_VERTEXAI=true
@@ -61,6 +71,8 @@ export GOOGLE_CLOUD_LOCATION='us-central1'
 ```
 
 ```python
+from google import genai
+
 client = genai.Client()
 ```
 
@@ -74,6 +86,9 @@ To set the API version use `http_options`. For example, to set the API version
 to `v1` for Vertex AI:
 
 ```python
+from google import genai
+from google.genai import types
+
 client = genai.Client(
     vertexai=True,
     project='your-project-id',
@@ -85,10 +100,38 @@ client = genai.Client(
 To set the API version to `v1alpha` for the Gemini Developer API:
 
 ```python
+from google import genai
+from google.genai import types
+
 client = genai.Client(
     api_key='GEMINI_API_KEY',
     http_options=types.HttpOptions(api_version='v1alpha')
 )
+```
+
+### Proxy
+
+When you use the default httpx client, both sync and async use
+ `urllib.request.getproxies` from environment variables.
+Before client initialization, you may set proxy (and optional SSL_CERT_FILE) by setting the environment variables:
+
+
+```bash
+export HTTPS_PROXY='http://username:password@proxy_uri:port'
+export SSL_CERT_FILE='client.pem'
+```
+
+If you need `socks5` proxy. httpx [supports](https://www.python-httpx.org/advanced/proxies/#socks) `socks5` proxy if you pass it via
+args to `httpx.Client()`. You can pass it through the following way:
+
+```python
+
+http_options = types.HttpOptions(
+    client_args=...,
+    async_client_args=..,.
+)
+
+client=Client(..., http_options=http_options).
 ```
 
 ## Types
@@ -99,7 +142,8 @@ Pydantic model types are available in the `types` module.
 
 ## Models
 
-The `client.models` modules exposes model inferencing and model getters.
+The `client.models` module exposes model inferencing and model getters.
+See the 'Create a client' section above to initialize a client.
 
 ### Generate Content
 
@@ -112,7 +156,7 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-#### with uploaded file (Gemini API only)
+#### with uploaded file (Gemini Developer API only)
 download the file in console.
 
 ```sh
@@ -130,45 +174,227 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-#### How to structure `contents`
-There are several ways to structure the `contents` in your request.
+#### How to structure `contents` argument for `generate_content`
+The SDK always converts the inputs to the `contents` argument into
+`list[types.Content]`.
+The following shows some common ways to provide your inputs.
 
-Provide a single string as shown in the text example above:
+##### Provide a `list[types.Content]`
+This is the canonical way to provide contents, SDK will not do any conversion.
+
+##### Provide a `types.Content` instance
 
 ```python
-contents='Can you recommend some things to do in Boston and New York in the winter?'
+from google.genai import types
+
+contents = types.Content(
+  role='user',
+  parts=[types.Part.from_text(text='Why is the sky blue?')]
+)
 ```
 
-Provide a single `Content` instance with multiple `Part` instances:
+SDK converts this to
 
 ```python
-contents=types.Content(parts=[
-    types.Part.from_text(text='Can you recommend some things to do in Boston in the winter?'),
-    types.Part.from_text(text='Can you recommend some things to do in New York in the winter?')
-], role='user')
+[
+  types.Content(
+    role='user',
+    parts=[types.Part.from_text(text='Why is the sky blue?')]
+  )
+]
 ```
 
-When sending more than one input type, provide a list with multiple `Content`
-instances:
+##### Provide a string
 
 ```python
-contents=[
-    'What is this a picture of?',
+contents='Why is the sky blue?'
+```
+
+The SDK will assume this is a text part, and it converts this into the following:
+
+```python
+[
+  types.UserContent(
+    parts=[
+      types.Part.from_text(text='Why is the sky blue?')
+    ]
+  )
+]
+```
+
+Where a `types.UserContent` is a subclass of `types.Content`, it sets the
+`role` field to be `user`.
+
+##### Provide a list of string
+
+```python
+contents=['Why is the sky blue?', 'Why is the cloud white?']
+```
+
+The SDK assumes these are 2 text parts, it converts this into a single content,
+like the following:
+
+```python
+[
+  types.UserContent(
+    parts=[
+      types.Part.from_text(text='Why is the sky blue?'),
+      types.Part.from_text(text='Why is the cloud white?'),
+    ]
+  )
+]
+```
+
+Where a `types.UserContent` is a subclass of `types.Content`, the
+`role` field in `types.UserContent` is fixed to be `user`.
+
+##### Provide a function call part
+
+```python
+from google.genai import types
+
+contents = types.Part.from_function_call(
+  name='get_weather_by_location',
+  args={'location': 'Boston'}
+)
+```
+
+The SDK converts a function call part to a content with a `model` role:
+
+```python
+[
+  types.ModelContent(
+    parts=[
+      types.Part.from_function_call(
+        name='get_weather_by_location',
+        args={'location': 'Boston'}
+      )
+    ]
+  )
+]
+```
+
+Where a `types.ModelContent` is a subclass of `types.Content`, the
+`role` field in `types.ModelContent` is fixed to be `model`.
+
+##### Provide a list of function call parts
+
+```python
+from google.genai import types
+
+contents = [
+  types.Part.from_function_call(
+    name='get_weather_by_location',
+    args={'location': 'Boston'}
+  ),
+  types.Part.from_function_call(
+    name='get_weather_by_location',
+    args={'location': 'New York'}
+  ),
+]
+```
+
+The SDK converts a list of function call parts to the a content with a `model` role:
+
+```python
+[
+  types.ModelContent(
+    parts=[
+      types.Part.from_function_call(
+        name='get_weather_by_location',
+        args={'location': 'Boston'}
+      ),
+      types.Part.from_function_call(
+        name='get_weather_by_location',
+        args={'location': 'New York'}
+      )
+    ]
+  )
+]
+```
+
+Where a `types.ModelContent` is a subclass of `types.Content`, the
+`role` field in `types.ModelContent` is fixed to be `model`.
+
+##### Provide a non function call part
+
+```python
+from google.genai import types
+
+contents = types.Part.from_uri(
+  file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+  mime_type: 'image/jpeg',
+)
+```
+
+The SDK converts all non function call parts into a content with a `user` role.
+
+```python
+[
+  types.UserContent(parts=[
     types.Part.from_uri(
-        file_uri='gs://generativeai-downloads/images/scones.jpg',
-        mime_type='image/jpeg',
-    ),
-],
+     file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+      mime_type: 'image/jpeg',
+    )
+  ])
+]
 ```
+
+##### Provide a list of non function call parts
+
+```python
+from google.genai import types
+
+contents = [
+  types.Part.from_text('What is this image about?'),
+  types.Part.from_uri(
+    file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+    mime_type: 'image/jpeg',
+  )
+]
+```
+
+The SDK will convert the list of parts into a content with a `user` role
+
+```python
+[
+  types.UserContent(
+    parts=[
+      types.Part.from_text('What is this image about?'),
+      types.Part.from_uri(
+        file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+        mime_type: 'image/jpeg',
+      )
+    ]
+  )
+]
+```
+
+##### Mix types in contents
+
+You can also provide a list of `types.ContentUnion`. The SDK leaves items of
+`types.Content` as is, it groups consecutive non function call parts into a
+single `types.UserContent`, and it groups consecutive function call parts into
+a single `types.ModelContent`.
+
+If you put a list within a list, the inner list can only contain
+`types.PartUnion` items. The SDK will convert the inner list into a single
+`types.UserContent`.
 
 ### System Instructions and Other Configs
 
 The output of the model can be influenced by several optional settings
-available in generate_content's config parameter. For example, the
-variability and length of the output can be influenced by the temperature
-and max_output_tokens respectively.
+available in generate_content's config parameter. For example, increasing
+`max_output_tokens` is essential for longer model responses. To make a model more
+deterministic, lowering the `temperature` parameter reduces randomness, with
+values near 0 minimizing variability. Capabilities and parameter defaults for
+each model is shown in the
+[Vertex AI docs](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash)
+and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models) respectively.
 
 ```python
+from google.genai import types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='high',
@@ -187,6 +413,8 @@ All API methods support Pydantic types for parameters as well as
 dictionaries. You can get the type from `google.genai.types`.
 
 ```python
+from google.genai import types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents=types.Part.from_text(text='Why is the sky blue?'),
@@ -223,7 +451,7 @@ pager.next_page()
 print(pager[0])
 ```
 
-#### Async
+#### List Base Models (Asynchronous)
 
 ```python
 async for job in await client.aio.models.list():
@@ -241,6 +469,8 @@ print(async_pager[0])
 ### Safety Settings
 
 ```python
+from google.genai import types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='Say something bad.',
@@ -264,6 +494,8 @@ You can pass a Python function directly and it will be automatically
 called and responded by default.
 
 ```python
+from google.genai import types
+
 def get_current_weather(location: str) -> str:
     """Returns the current weather.
 
@@ -287,6 +519,8 @@ automatic function calling, you can disable automatic function calling
 as follows:
 
 ```python
+from google.genai import types
+
 response = client.models.generate_content(
   model='gemini-2.0-flash-001',
   contents='What is the weather like in Boston?',
@@ -315,6 +549,8 @@ The following example shows how to declare a function and pass it as a tool.
 Then you will receive a function call part in the response.
 
 ```python
+from google.genai import types
+
 function = types.FunctionDeclaration(
     name='get_current_weather',
     description='Get the current weather in a given location',
@@ -347,6 +583,8 @@ the model.
 The following example shows how to do it for a simple function invocation.
 
 ```python
+from google.genai import types
+
 user_prompt_content = types.Content(
     role='user',
     parts=[types.Part.from_text(text='What is the weather like in Boston?')],
@@ -399,6 +637,8 @@ maximum remote call for automatic function calling (default to 10 times).
 If you'd like to disable automatic function calling in `ANY` mode:
 
 ```python
+from google.genai import types
+
 def get_current_weather(location: str) -> str:
     """Returns the current weather.
 
@@ -427,6 +667,8 @@ configure the maximum remote calls to be `x + 1`.
 Assuming you prefer `1` turn for automatic function calling.
 
 ```python
+from google.genai import types
+
 def get_current_weather(location: str) -> str:
     """Returns the current weather.
 
@@ -451,12 +693,17 @@ response = client.models.generate_content(
 ```
 ### JSON Response Schema
 
+However you define your schema, don't duplicate it in your input prompt,
+including by giving examples of expected JSON output. If you do, the generated
+output might be lower in quality.
+
 #### Pydantic Model Schema support
 
 Schemas can be provided as Pydantic Models.
 
 ```python
 from pydantic import BaseModel
+from google.genai import types
 
 
 class CountryInfo(BaseModel):
@@ -481,6 +728,8 @@ print(response.text)
 ```
 
 ```python
+from google.genai import types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='Give me information for the United States.',
@@ -540,7 +789,8 @@ print(response.text)
 
 #### JSON Response
 
-You can also set response_mime_type to 'application/json', the response will be identical but in quotes.
+You can also set response_mime_type to 'application/json', the response will be
+identical but in quotes.
 
 ```python
 from enum import Enum
@@ -563,7 +813,10 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-### Streaming
+### Generate Content (Synchronous Streaming)
+
+Generate content in a streaming format so that the model outputs streams back
+to you, rather than being returned as one chunk.
 
 #### Streaming for text content
 
@@ -580,6 +833,8 @@ If your image is stored in [Google Cloud Storage](https://cloud.google.com/stora
 you can use the `from_uri` class method to create a `Part` object.
 
 ```python
+from google.genai import types
+
 for chunk in client.models.generate_content_stream(
     model='gemini-2.0-flash-001',
     contents=[
@@ -597,6 +852,8 @@ If your image is stored in your local file system, you can read it in as bytes
 data and use the `from_bytes` class method to create a `Part` object.
 
 ```python
+from google.genai import types
+
 YOUR_IMAGE_PATH = 'your_image_path'
 YOUR_IMAGE_MIME_TYPE = 'your_image_mime_type'
 with open(YOUR_IMAGE_PATH, 'rb') as f:
@@ -612,10 +869,10 @@ for chunk in client.models.generate_content_stream(
     print(chunk.text, end='')
 ```
 
-### Async
+### Generate Content (Asynchronous Non Streaming)
 
 `client.aio` exposes all the analogous [`async` methods](https://docs.python.org/3/library/asyncio.html)
-that are available on `client`
+that are available on `client`. Note that it applies to all the modules.
 
 For example, `client.aio.models.generate_content` is the `async` version
 of `client.models.generate_content`
@@ -628,7 +885,8 @@ response = await client.aio.models.generate_content(
 print(response.text)
 ```
 
-### Streaming
+### Generate Content (Asynchronous Streaming)
+
 
 ```python
 async for chunk in await client.aio.models.generate_content_stream(
@@ -680,6 +938,8 @@ print(response)
 ```
 
 ```python
+from google.genai import types
+
 # multiple contents with config
 response = client.models.embed_content(
     model='text-embedding-004',
@@ -697,6 +957,8 @@ print(response)
 Support for generate images in Gemini Developer API is behind an allowlist
 
 ```python
+from google.genai import types
+
 # Generate Image
 response1 = client.models.generate_images(
     model='imagen-3.0-generate-002',
@@ -715,6 +977,8 @@ response1.generated_images[0].image.show()
 Upscale image is only supported in Vertex AI.
 
 ```python
+from google.genai import types
+
 # Upscale the generated image from above
 response2 = client.models.upscale_image(
     model='imagen-3.0-generate-001',
@@ -736,6 +1000,7 @@ Edit image is only supported in Vertex AI.
 
 ```python
 # Edit the generated image from above
+from google.genai import types
 from google.genai.types import RawReferenceImage, MaskReferenceImage
 
 raw_ref_image = RawReferenceImage(
@@ -773,6 +1038,8 @@ response3.generated_images[0].image.show()
 Support for generate videos in Vertex and Gemini Developer API is behind an allowlist
 
 ```python
+from google.genai import types
+
 # Create operation
 operation = client.models.generate_videos(
     model='veo-2.0-generate-001',
@@ -796,17 +1063,22 @@ video.show()
 
 ## Chats
 
-Create a chat session to start a multi-turn conversations with the model.
+Create a chat session to start a multi-turn conversations with the model. Then,
+use `chat.send_message` function multiple times within the same chat session so
+that it can reflect on its previous responses (i.e., engage in an ongoing
+ conversation). See the 'Create a client' section above to initialize a client.
 
-### Send Message
+### Send Message (Synchronous Non-Streaming)
 
 ```python
 chat = client.chats.create(model='gemini-2.0-flash-001')
 response = chat.send_message('tell me a story')
 print(response.text)
+response = chat.send_message('summarize the story you told me in 1 sentence')
+print(response.text)
 ```
 
-### Streaming
+### Send Message (Synchronous Streaming)
 
 ```python
 chat = client.chats.create(model='gemini-2.0-flash-001')
@@ -814,7 +1086,7 @@ for chunk in chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
 
-### Async
+### Send Message (Asynchronous Non-Streaming)
 
 ```python
 chat = client.aio.chats.create(model='gemini-2.0-flash-001')
@@ -822,7 +1094,7 @@ response = await chat.send_message('tell me a story')
 print(response.text)
 ```
 
-### Async Streaming
+### Send Message (Asynchronous Streaming)
 
 ```python
 chat = client.aio.chats.create(model='gemini-2.0-flash-001')
@@ -832,7 +1104,8 @@ async for chunk in await chat.send_message_stream('tell me a story'):
 
 ## Files
 
-Files are only supported in Gemini Developer API.
+Files are only supported in Gemini Developer API. See the 'Create a client'
+section above to initialize a client.
 
 ```cmd
 !gsutil cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
@@ -866,11 +1139,14 @@ client.files.delete(name=file3.name)
 
 ## Caches
 
-`client.caches` contains the control plane APIs for cached content
+`client.caches` contains the control plane APIs for cached content. See the
+'Create a client' section above to initialize a client.
 
 ### Create
 
 ```python
+from google.genai import types
+
 if client.vertexai:
     file_uris = [
         'gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf',
@@ -880,7 +1156,7 @@ else:
     file_uris = [file1.uri, file2.uri]
 
 cached_content = client.caches.create(
-    model='gemini-1.5-pro-002',
+    model='gemini-2.0-flash-001',
     config=types.CreateCachedContentConfig(
         contents=[
             types.Content(
@@ -912,8 +1188,10 @@ cached_content = client.caches.get(name=cached_content.name)
 ### Generate Content with Caches
 
 ```python
+from google.genai import types
+
 response = client.models.generate_content(
-    model='gemini-1.5-pro-002',
+    model='gemini-2.0-flash-001',
     contents='Summarize the pdfs',
     config=types.GenerateContentConfig(
         cached_content=cached_content.name,
@@ -925,7 +1203,8 @@ print(response.text)
 ## Tunings
 
 `client.tunings` contains tuning job APIs and supports supervised fine
-tuning through `tune`.
+tuning through `tune`. See the 'Create a client' section above to initialize a
+client.
 
 ### Tune
 
@@ -933,13 +1212,15 @@ tuning through `tune`.
 -   Gemini Developer API supports tuning from inline examples
 
 ```python
+from google.genai import types
+
 if client.vertexai:
-    model = 'gemini-1.5-pro-002'
+    model = 'gemini-2.0-flash-001'
     training_dataset = types.TuningDataset(
         gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
     )
 else:
-    model = 'models/gemini-1.0-pro-001'
+    model = 'models/gemini-2.0-flash-001'
     training_dataset = types.TuningDataset(
         examples=[
             types.TuningExample(
@@ -952,6 +1233,8 @@ else:
 ```
 
 ```python
+from google.genai import types
+
 tuning_job = client.tunings.tune(
     base_model=model,
     training_dataset=training_dataset,
@@ -1038,6 +1321,8 @@ print(async_pager[0])
 ### Update Tuned Model
 
 ```python
+from google.genai import types
+
 model = pager[0]
 
 model = client.models.update(
@@ -1083,14 +1368,15 @@ print(async_pager[0])
 
 ## Batch Prediction
 
-Only supported in Vertex AI.
+Only supported in Vertex AI. See the 'Create a client' section above to
+initialize a client.
 
 ### Create
 
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
-    model='gemini-1.5-flash-002',
+    model='gemini-2.0-flash-001',
     src='bq://my-project.my-dataset.my-table',
 )
 

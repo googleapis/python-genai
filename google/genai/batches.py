@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 import logging
 from typing import Any, Optional, Union
 from urllib.parse import urlencode
+
 from . import _api_module
 from . import _common
 from . import _extra_utils
@@ -31,29 +32,11 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.batches')
 
 
-def _BatchJobSource_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['format']) is not None:
-    raise ValueError('format parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['bigquery_uri']) is not None:
-    raise ValueError('bigquery_uri parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _BatchJobSource_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['format']) is not None:
     setv(to_object, ['instancesFormat'], getv(from_object, ['format']))
@@ -71,29 +54,11 @@ def _BatchJobSource_to_vertex(
   return to_object
 
 
-def _BatchJobDestination_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['format']) is not None:
-    raise ValueError('format parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['bigquery_uri']) is not None:
-    raise ValueError('bigquery_uri parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _BatchJobDestination_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['format']) is not None:
     setv(to_object, ['predictionsFormat'], getv(from_object, ['format']))
@@ -115,27 +80,11 @@ def _BatchJobDestination_to_vertex(
   return to_object
 
 
-def _CreateBatchJobConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['dest']) is not None:
-    raise ValueError('dest parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _CreateBatchJobConfig_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['display_name']) is not None:
@@ -155,35 +104,11 @@ def _CreateBatchJobConfig_to_vertex(
   return to_object
 
 
-def _CreateBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    raise ValueError('model parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['src']) is not None:
-    raise ValueError('src parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateBatchJobConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _CreateBatchJobParameters_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -215,26 +140,11 @@ def _CreateBatchJobParameters_to_vertex(
   return to_object
 
 
-def _GetBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    raise ValueError('name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
 def _GetBatchJobParameters_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
@@ -242,21 +152,6 @@ def _GetBatchJobParameters_to_vertex(
         ['_url', 'name'],
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _CancelBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    raise ValueError('name parameter is not supported in Gemini API.')
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
@@ -266,9 +161,9 @@ def _CancelBatchJobParameters_to_mldev(
 
 def _CancelBatchJobParameters_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
@@ -283,36 +178,11 @@ def _CancelBatchJobParameters_to_vertex(
   return to_object
 
 
-def _ListBatchJobsConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  if getv(from_object, ['filter']) is not None:
-    raise ValueError('filter parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _ListBatchJobsConfig_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
@@ -333,23 +203,11 @@ def _ListBatchJobsConfig_to_vertex(
   return to_object
 
 
-def _ListBatchJobsParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _ListBatchJobsParameters_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     setv(
@@ -363,26 +221,11 @@ def _ListBatchJobsParameters_to_vertex(
   return to_object
 
 
-def _DeleteBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    raise ValueError('name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
 def _DeleteBatchJobParameters_to_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
@@ -397,21 +240,11 @@ def _DeleteBatchJobParameters_to_vertex(
   return to_object
 
 
-def _JobError_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _JobError_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -425,21 +258,11 @@ def _JobError_from_vertex(
   return to_object
 
 
-def _BatchJobSource_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _BatchJobSource_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['instancesFormat']) is not None:
     setv(to_object, ['format'], getv(from_object, ['instancesFormat']))
@@ -457,21 +280,11 @@ def _BatchJobSource_from_vertex(
   return to_object
 
 
-def _BatchJobDestination_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _BatchJobDestination_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictionsFormat']) is not None:
     setv(to_object, ['format'], getv(from_object, ['predictionsFormat']))
@@ -493,21 +306,11 @@ def _BatchJobDestination_from_vertex(
   return to_object
 
 
-def _BatchJob_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _BatchJob_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -563,23 +366,11 @@ def _BatchJob_from_vertex(
   return to_object
 
 
-def _ListBatchJobsResponse_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  return to_object
-
-
 def _ListBatchJobsResponse_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
@@ -597,21 +388,11 @@ def _ListBatchJobsResponse_from_vertex(
   return to_object
 
 
-def _DeleteResourceJob_from_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _DeleteResourceJob_from_vertex(
     api_client: BaseApiClient,
-    from_object: Union[dict, object],
-    parent_object: Optional[dict] = None,
-) -> dict:
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -665,11 +446,12 @@ class Batches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -680,8 +462,6 @@ class Batches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
-    else:
-      response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -734,11 +514,12 @@ class Batches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -749,8 +530,6 @@ class Batches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
-    else:
-      response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -804,11 +583,12 @@ class Batches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -843,11 +623,12 @@ class Batches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -858,10 +639,6 @@ class Batches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _ListBatchJobsResponse_from_vertex(
-          self._api_client, response_dict
-      )
-    else:
-      response_dict = _ListBatchJobsResponse_from_mldev(
           self._api_client, response_dict
       )
 
@@ -918,11 +695,12 @@ class Batches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -933,10 +711,6 @@ class Batches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _DeleteResourceJob_from_vertex(
-          self._api_client, response_dict
-      )
-    else:
-      response_dict = _DeleteResourceJob_from_mldev(
           self._api_client, response_dict
       )
 
@@ -970,7 +744,7 @@ class Batches(_api_module.BaseModule):
     .. code-block:: python
 
       batch_job = client.batches.create(
-          model="gemini-1.5-flash",
+          model="gemini-2.0-flash-001",
           src="gs://path/to/input/data",
       )
       print(batch_job.state)
@@ -998,6 +772,8 @@ class Batches(_api_module.BaseModule):
       for batch_job in batch_jobs:
         print(f"Batch job: {batch_job.name}, state {batch_job.state}")
     """
+    if config is None:
+      config = types.ListBatchJobsConfig()
     return Pager(
         'batch_jobs',
         self._list,
@@ -1040,11 +816,12 @@ class AsyncBatches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -1055,8 +832,6 @@ class AsyncBatches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
-    else:
-      response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1109,11 +884,12 @@ class AsyncBatches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -1124,8 +900,6 @@ class AsyncBatches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
-    else:
-      response_dict = _BatchJob_from_mldev(self._api_client, response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1179,11 +953,12 @@ class AsyncBatches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -1218,11 +993,12 @@ class AsyncBatches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -1233,10 +1009,6 @@ class AsyncBatches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _ListBatchJobsResponse_from_vertex(
-          self._api_client, response_dict
-      )
-    else:
-      response_dict = _ListBatchJobsResponse_from_mldev(
           self._api_client, response_dict
       )
 
@@ -1293,11 +1065,12 @@ class AsyncBatches(_api_module.BaseModule):
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
 
-    http_options: Optional[types.HttpOptionsOrDict] = None
-    if isinstance(config, dict):
-      http_options = config.get('http_options', None)
-    elif hasattr(config, 'http_options') and config is not None:
-      http_options = config.http_options
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -1308,10 +1081,6 @@ class AsyncBatches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _DeleteResourceJob_from_vertex(
-          self._api_client, response_dict
-      )
-    else:
-      response_dict = _DeleteResourceJob_from_mldev(
           self._api_client, response_dict
       )
 
@@ -1345,7 +1114,7 @@ class AsyncBatches(_api_module.BaseModule):
     .. code-block:: python
 
       batch_job = await client.aio.batches.create(
-          model="gemini-1.5-flash",
+          model="gemini-2.0-flash-001",
           src="gs://path/to/input/data",
       )
     """
@@ -1373,6 +1142,8 @@ class AsyncBatches(_api_module.BaseModule):
       await batch_jobs_pager.next_page()
       print(f"next page: {batch_jobs_pager.page}")
     """
+    if config is None:
+      config = types.ListBatchJobsConfig()
     return AsyncPager(
         'batch_jobs',
         self._list,

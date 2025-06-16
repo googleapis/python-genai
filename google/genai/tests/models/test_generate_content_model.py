@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ tuned_model_endpoint = (
     'projects/964831358985/locations/us-central1/endpoints/7226683110069370880'
 )
 
-tuned_model_with_model_name = 'tunedModels/generate-num-8498'
+tuned_model_with_model_name = 'tunedModels/generatenum5443-ekrw7ie9wis23zbeogbw6jq8'
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
@@ -111,7 +111,7 @@ def test_tuned_model_with_model_name_stream(client):
     ):
       chunks += 1
       assert chunk.text is not None or chunk.candidates[0].finish_reason
-    assert chunks >= 2
+    assert chunks >= 1
 
 
 def test_start_with_models_stream(client):

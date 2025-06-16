@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,16 +49,16 @@ test_table: list[pytest_helper.TestTableItem] = [
             prompt='Red skateboard',
             config={
                 'aspect_ratio': '1:1',
-                'negative_prompt': 'human',
                 'guidance_scale': 15.0,
                 'safety_filter_level': 'BLOCK_MEDIUM_AND_ABOVE',
                 'number_of_images': 1,
                 'person_generation': 'DONT_ALLOW',
-                'include_safety_attributes': False,
+                'include_safety_attributes': True,
                 'include_rai_reason': True,
                 'output_mime_type': 'image/jpeg',
                 'output_compression_quality': 80,
-                # The below parameters are not supported in Google AI.
+                # The below parameters are not supported in Gemini Developer API.
+                'negative_prompt': 'human',
                 'add_watermark': False,
                 'seed': 1337,
                 'language': 'en',
@@ -145,14 +145,14 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_all_mldev_config_parameters',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
-            prompt='Robot holding a red skateboard',
+            prompt='Red skateboard',
             config={
                 'aspect_ratio': '1:1',
                 'guidance_scale': 15.0,
                 'safety_filter_level': 'BLOCK_LOW_AND_ABOVE',
                 'number_of_images': 1,
                 'person_generation': 'DONT_ALLOW',
-                'include_safety_attributes': False,
+                'include_safety_attributes': True,
                 'include_rai_reason': True,
                 'output_mime_type': 'image/jpeg',
                 'output_compression_quality': 80,
@@ -173,6 +173,15 @@ async def test_simple_prompt_async(client):
   response = await client.aio.models.generate_images(
       model=IMAGEN_MODEL_LATEST,
       prompt='Red skateboard',
-      config={'number_of_images': 1, 'output_mime_type': 'image/jpeg'},
+      config={
+          'number_of_images': 1,
+          'output_mime_type': 'image/jpeg',
+          'include_safety_attributes': True,
+          'include_rai_reason': True,
+      },
   )
+
   assert response.generated_images[0].image.image_bytes
+  # TODO(tangmatthew): Re-enable this check once the bug is fixed.
+  assert len(response.generated_images) == 1
+  assert response.positive_prompt_safety_attributes.content_type == 'Positive Prompt'

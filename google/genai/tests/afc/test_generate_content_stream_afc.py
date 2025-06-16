@@ -85,6 +85,15 @@ def get_current_weather(location: str) -> str:
   return 'windy'
 
 
+async def get_current_weather_async(location: str) -> str:
+  """Returns the current weather.
+
+  Args:
+    location: The location of a city and state, e.g. "San Francisco, CA".
+  """
+  return 'windy'
+
+
 def get_aqi_from_city(location: str) -> str:
   """Returns the aqi index of a city.
 
@@ -115,6 +124,16 @@ def mock_get_function_response_parts_none():
 
 
 @pytest.fixture
+def mock_get_function_response_parts_none_async():
+  with mock.patch.object(
+      _extra_utils,
+      'get_function_response_parts_async',
+  ) as mock_get_function_response_parts_none_async:
+    mock_get_function_response_parts_none_async.return_value = None
+    yield mock_get_function_response_parts_none_async
+
+
+@pytest.fixture
 def mock_get_function_response_parts() -> list[types.Part]:
   with mock.patch.object(
       _extra_utils, 'get_function_response_parts'
@@ -124,6 +143,18 @@ def mock_get_function_response_parts() -> list[types.Part]:
         [],  # Breaks when the function response is not returned.
     ]
     yield mock_get_function_response_parts
+
+
+@pytest.fixture
+def mock_get_function_response_parts_async() -> list[types.Part]:
+  with mock.patch.object(
+      _extra_utils, 'get_function_response_parts_async'
+  ) as mock_get_function_response_parts_async:
+    mock_get_function_response_parts_async.side_effect = [
+        [TEST_FUNCTION_RESPONSE_PART],
+        [],  # Breaks when the function response is not returned.
+    ]
+    yield mock_get_function_response_parts_async
 
 
 @pytest.fixture
@@ -346,7 +377,7 @@ async def test_generate_content_stream_afc_disabled_async(
 @pytest.mark.asyncio
 async def test_generate_content_stream_no_function_response_async(
     mock_generate_content_stream_no_afc_async,
-    mock_get_function_response_parts_none,
+    mock_get_function_response_parts_none_async,
 ):
   """Test when function tools are provided and function responses are not returned.
 
@@ -364,13 +395,13 @@ async def test_generate_content_stream_no_function_response_async(
 
   assert mock_generate_content_stream_no_afc_async.call_count == 1
 
-  assert mock_get_function_response_parts_none.call_count == 1
+  assert mock_get_function_response_parts_none_async.call_count == 1
 
 
 @pytest.mark.asyncio
 async def test_generate_content_stream_with_function_tools_used_async(
     mock_generate_content_stream_with_afc_async,
-    mock_get_function_response_parts,
+    mock_get_function_response_parts_async,
 ):
   """Test when function tools are provided and function responses are returned.
 
@@ -390,7 +421,39 @@ async def test_generate_content_stream_with_function_tools_used_async(
 
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
-  assert mock_get_function_response_parts.call_count == 2
+  assert mock_get_function_response_parts_async.call_count == 2
+
+  assert chunk is not None
+  for i in range(len(chunk.automatic_function_calling_history)):
+    assert chunk.automatic_function_calling_history[i].model_dump(
+        exclude_none=True
+    ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
+
+
+@pytest.mark.asyncio
+async def test_generate_content_stream_with_function_async_function_used_async(
+    mock_generate_content_stream_with_afc_async,
+    mock_get_function_response_parts_async,
+):
+  """Test when function tools are provided and function responses are returned.
+
+  Expected to answer weather based on function response.
+  """
+  models_instance = models.AsyncModels(api_client_=mock_api_client)
+  config = types.GenerateContentConfig(tools=[get_current_weather_async])
+  stream = await models_instance.generate_content_stream(
+      model='test_model',
+      contents='what is the weather in San Francisco?',
+      config=config,
+  )
+
+  chunk = None
+  async for chunk in stream:
+    assert chunk.text == TEST_AFC_TEXT_PART.text
+
+  assert mock_generate_content_stream_with_afc_async.call_count == 2
+
+  assert mock_get_function_response_parts_async.call_count == 2
 
   assert chunk is not None
   for i in range(len(chunk.automatic_function_calling_history)):

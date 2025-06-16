@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,20 @@ import pytest
 from .. import pytest_helper
 from ... import errors
 from ... import types
+
+try:
+  from mcp import types as mcp_types
+  from mcp import ClientSession as McpClientSession
+except ImportError as e:
+  import sys
+
+  if sys.version_info < (3, 10):
+    raise ImportError(
+        'MCP Tool requires Python 3.10 or above. Please upgrade your Python'
+        ' version.'
+    ) from e
+  else:
+    raise e
 
 
 IMAGE_FILE_PATH = os.path.abspath(
@@ -207,6 +221,23 @@ def test_with_afc_history(client):
 
   assert chat_history[3].role == 'model'
   assert '51' in chat_history[3].parts[0].text
+
+
+def test_existing_chat_history_extends_afc_history(client):
+  chat = client.chats.create(
+      model='gemini-2.0-flash-exp',
+      config={'tools': [divide_intergers_with_customized_math_rule]},
+  )
+  _ = chat.send_message('hello')
+  _ = chat.send_message('could you help me with a math problem?')
+  _ = chat.send_message('what is the result of 100/2?')
+  chat_history = chat.get_history()
+  content_strings = []
+  for content in chat_history:
+    content_strings.append(content.model_dump_json())
+
+  # checks that the history is not duplicated
+  assert len(content_strings) == len(set(content_strings))
 
 
 @pytest.mark.skipif(
@@ -598,7 +629,8 @@ async def test_async_stream_config_override(client):
   ):
     request_config_text += chunk.text
   default_config_text = ''
-  async for chunk in await chat.send_message_stream('tell me a story in 100 words'):
+
+  async for chunk in await chat.send_message_stream('tell me family friendly story in 100 words'):
     default_config_text += chunk.text
 
   assert json.loads(request_config_text)
@@ -642,5 +674,95 @@ async def test_async_stream_send_2_messages(client):
     pass
   async for chunk in await chat.send_message_stream(
       'write a unit test for the function'
+  ):
+    pass
+
+
+def test_mcp_tools(client):
+  chat = client.chats.create(
+      model='gemini-2.0-flash-exp',
+      config={'tools': [
+              mcp_types.Tool(
+                  name='get_weather',
+                  description='Get the weather in a city.',
+                  inputSchema={
+                      'type': 'object',
+                      'properties': {'location': {'type': 'string'}},
+                  },
+              )
+          ],},
+  )
+  response = chat.send_message('What is the weather in Boston?');
+  response = chat.send_message('What is the weather in San Francisco?');
+
+
+
+def test_mcp_tools_stream(client):
+  chat = client.chats.create(
+      model='gemini-2.0-flash-exp',
+      config={'tools': [
+          mcp_types.Tool(
+              name='get_weather',
+              description='Get the weather in a city.',
+              inputSchema={
+                  'type': 'object',
+                  'properties': {'location': {'type': 'string'}},
+              },
+          )
+        ],
+      },
+  )
+  for chunk in chat.send_message_stream(
+    'What is the weather in Boston?'
+  ):
+    pass
+  for chunk in chat.send_message_stream(
+    'What is the weather in San Francisco?'
+  ):
+    pass
+
+
+@pytest.mark.asyncio
+async def test_async_mcp_tools(client):
+  chat = client.aio.chats.create(
+        model='gemini-2.0-flash-exp',
+        config={'tools': [
+                mcp_types.Tool(
+                    name='get_weather',
+                    description='Get the weather in a city.',
+                    inputSchema={
+                        'type': 'object',
+                        'properties': {'location': {'type': 'string'}},
+                    },
+                )
+            ],},
+    )
+  await chat.send_message('What is the weather in Boston?');
+  await chat.send_message('What is the weather in San Francisco?');
+
+
+@pytest.mark.asyncio
+async def test_async_mcp_tools_stream(client):
+  chat = client.aio.chats.create(
+      model='gemini-2.0-flash-exp',
+      config={'tools': [
+          mcp_types.Tool(
+              name='get_weather',
+              description='Get the weather in a city.',
+              inputSchema={
+                  'type': 'object',
+                  'properties': {'location': {'type': 'string'}},
+              },
+          )
+        ],
+      },
+  )
+
+  async for chunk in await chat.send_message_stream(
+    'What is the weather in Boston?'
+  ):
+    pass
+  async for chunk in await chat.send_message_stream(
+    'What is the weather in San Francisco?'
   ):
     pass

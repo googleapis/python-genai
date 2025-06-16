@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +15,40 @@
 
 
 """Tests for live.py."""
+import contextlib
 import json
-from typing import AsyncIterator
+import typing
+from typing import Any, AsyncIterator
 from unittest import mock
 from unittest.mock import AsyncMock
+from unittest.mock import Mock
+from unittest.mock import patch
+import warnings
 
+from google.oauth2.credentials import Credentials
 import pytest
 from websockets import client
 
 from ... import _api_client as api_client
+from ... import _common
 from ... import Client
 from ... import client as gl_client
 from ... import live
 from ... import types
+from .. import pytest_helper
+
+if typing.TYPE_CHECKING:
+  from mcp import types as mcp_types
+  from mcp import ClientSession as McpClientSession
+else:
+  mcp_types: typing.Type = Any
+  McpClientSession: typing.Type = Any
+  try:
+    from mcp import types as mcp_types
+    from mcp import ClientSession as McpClientSession
+  except ImportError:
+    mcp_types = None
+    McpClientSession = None
 
 
 function_declarations = [{
@@ -54,13 +75,24 @@ def get_current_weather(location: str, unit: str):
   return 15 if unit == 'C' else 59
 
 
-@pytest.fixture
-def mock_api_client(vertexai=False):
+def mock_api_client(vertexai=False, credentials=None):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
-  api_client.api_key = 'TEST_API_KEY'
+  if not vertexai:
+    api_client.api_key = 'TEST_API_KEY'
+    api_client.location = None
+    api_client.project = None
+  else:
+    api_client.api_key = None
+    api_client.location = 'us-central1'
+    api_client.project = 'test_project'
+
   api_client._host = lambda: 'test_host'
-  api_client._http_options = {'headers': {}}  # Ensure headers exist
+  api_client._credentials = credentials
+  api_client._http_options = types.HttpOptions.model_validate(
+      {'headers': {}}
+  )  # Ensure headers exist
   api_client.vertexai = vertexai
+  api_client._api_client = api_client
   return api_client
 
 
@@ -73,6 +105,37 @@ def mock_websocket():
   )  # Default response
   websocket.close = AsyncMock()
   return websocket
+
+
+async def get_connect_message(api_client, model, config=None):
+  if config is None:
+    config = {}
+  mock_ws = AsyncMock()
+  mock_ws.send = AsyncMock()
+  mock_ws.recv = AsyncMock(return_value=b'some response')
+
+  mock_google_auth_default = Mock(return_value=(None, None))
+  mock_creds = Mock(token='test_token')
+  mock_google_auth_default.return_value = (mock_creds, None)
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None):
+    yield mock_ws
+
+  @patch('google.auth.default', new=mock_google_auth_default)
+  @patch.object(live, 'ws_connect', new=mock_connect)
+  async def _test_connect():
+    live_module = live.AsyncLive(api_client)
+    async with live_module.connect(
+        model=model,
+        config=config,
+    ):
+      pass
+
+    mock_ws.send.assert_called_once()
+    return json.loads(mock_ws.send.call_args[0][0])
+
+  return await _test_connect()
 
 
 async def _async_iterator_to_list(async_iter):
@@ -88,6 +151,7 @@ def test_mldev_from_env(monkeypatch):
   assert not client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.api_key == api_key
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
 def test_vertex_from_env(monkeypatch):
@@ -102,6 +166,26 @@ def test_vertex_from_env(monkeypatch):
   assert client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.project == project_id
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert 'x-goog-api-key' not in client.aio.live._api_client._http_options.headers
+
+
+def test_vertex_api_key_from_env(monkeypatch):
+  api_key = 'google_api_key'
+  monkeypatch.setenv('GOOGLE_GENAI_USE_VERTEXAI', 'true')
+  monkeypatch.setenv('GOOGLE_API_KEY', api_key)
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables. Tests in client/test_client_initialization.py provide
+  # comprehensive coverage for proj/location and api key precedence.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client()
+
+  assert client.aio.live._api_client.vertexai
+  assert client.aio.live._api_client.api_key == api_key
+  assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
 def test_websocket_base_url():
@@ -116,7 +200,7 @@ def test_websocket_base_url():
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_text(
-    mock_api_client, mock_websocket, vertexai
+    mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -130,7 +214,7 @@ async def test_async_session_send_text(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_content_dict(
-    mock_api_client, mock_websocket, vertexai
+    mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -148,7 +232,7 @@ async def test_async_session_send_content_dict(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_content(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -165,7 +249,7 @@ async def test_async_session_send_content(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_bytes(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -181,7 +265,7 @@ async def test_async_session_send_bytes(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_blob(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -197,7 +281,7 @@ async def test_async_session_send_blob(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_realtime_input(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -214,7 +298,7 @@ async def test_async_session_send_realtime_input(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_tool_response(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -248,7 +332,7 @@ async def test_async_session_send_tool_response(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_input_none(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -263,7 +347,7 @@ async def test_async_session_send_input_none(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_send_error(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -277,7 +361,7 @@ async def test_async_session_send_error(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_receive(mock_api_client, mock_websocket, vertexai):
+async def test_async_session_receive( mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -289,7 +373,7 @@ async def test_async_session_receive(mock_api_client, mock_websocket, vertexai):
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_receive_error(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   mock_websocket.recv = AsyncMock(return_value='invalid json')
   session = live.AsyncSession(
@@ -302,7 +386,7 @@ async def test_async_session_receive_error(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_receive_text(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   mock_websocket.recv = AsyncMock(
       side_effect=[
@@ -323,13 +407,13 @@ async def test_async_session_receive_text(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_receive_audio(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   mock_websocket.recv = AsyncMock(
       side_effect=[
           (
               '{"serverContent": {"modelTurn": {"parts":[{"inlineData":'
-              ' {"data": "MDAwMDAw", "mime_type": "audio/pcm" }}]}}}'
+              ' {"data": "MDAwMDAw", "mimeType": "audio/pcm" }}]}}}'
           ),
           '{"serverContent": {"turnComplete": true}}',
       ]
@@ -356,7 +440,7 @@ async def test_async_session_receive_audio(
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_receive_tool_call(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   mock_websocket.recv = AsyncMock(
       side_effect=[
@@ -387,8 +471,96 @@ async def test_async_session_receive_tool_call(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
+async def test_async_session_receive_transcription(
+     mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"serverContent": {"inputTranscription": {"text": "test_input", "finished": true}}}',
+          '{"serverContent": {"outputTranscription": {"text": "test_output", "finished": false}}}',
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  assert isinstance(messages[0], types.LiveServerMessage)
+  assert messages[0].server_content.input_transcription.text == 'test_input'
+  assert messages[0].server_content.input_transcription.finished == True
+
+  assert isinstance(messages[1], types.LiveServerMessage)
+  assert messages[1].server_content.output_transcription.text == 'test_output'
+  assert messages[1].server_content.output_transcription.finished == False
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_go_away(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"goAway": {"timeLeft": "10s"}}',
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+  expected_result = types.LiveServerMessage(
+      go_away=types.LiveServerGoAway(time_left='10s'),
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  message = messages[0]
+
+  assert isinstance(message, types.LiveServerMessage)
+  assert message == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_resumption_update(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          """{
+                "sessionResumptionUpdate": {
+                    "newHandle": "test_handle",
+                    "resumable": "true",
+                    "lastConsumedClientMessageIndex": "123456789"
+                }
+          }""",
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+
+  expected_result = types.LiveServerMessage(
+      session_resumption_update=types.LiveServerSessionResumptionUpdate(
+          new_handle='test_handle',
+          resumable=True,
+          last_consumed_client_message_index=123456789
+      ),
+  )
+
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  message = messages[0]
+
+  assert isinstance(message, types.LiveServerMessage)
+  assert message == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
 async def test_async_session_start_stream(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
 
   session = live.AsyncSession(
@@ -407,7 +579,7 @@ async def test_async_session_start_stream(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_close(mock_api_client, mock_websocket, vertexai):
+async def test_async_session_close( mock_websocket, vertexai):
   session = live.AsyncSession(
       mock_api_client(vertexai=vertexai), mock_websocket
   )
@@ -415,81 +587,216 @@ async def test_async_session_close(mock_api_client, mock_websocket, vertexai):
   mock_websocket.close.assert_called_once()
 
 
-def test_bidi_setup_to_api_no_config(mock_api_client):
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
-      model='test_model'
-  )
-  expected_result = {'setup': {'model': 'test_model'}}
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_no_config(vertexai):
+  with warnings.catch_warnings():
+    # Make sure there are no warnings cause by default values.
+    warnings.simplefilter('error')
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model'
+    )
+  expected_result = {'setup': {}}
+  if vertexai:
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+    expected_result['setup']['generationConfig'] = {}
+    expected_result['setup']['generationConfig']['responseModalities'] = ["AUDIO"]
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
   assert result == expected_result
 
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
-      model='test_model'
-  )
-  expected_result = {
-      'setup': {
-          'model': 'test_model',
-          'generationConfig': {'responseModalities': ['AUDIO']},
-      }
-  }
-  assert result == expected_result
 
-
-def test_bidi_setup_to_api_speech_config(mock_api_client):
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_speech_config(vertexai):
 
   expected_result = {
       'setup': {
-          'model': 'test_model',
+          'model': 'models/test_model',
           'generationConfig': {
               'speechConfig': {
+                  # Note: the snake_casing is different from the usual camelCase
+                  # here. This is because speechConfig is an unmodified proto
+                  # defined in the discovery doc, so it doesn't need to/from
+                  # converters. The API is insensitive to the case format.
+                  # This looks wrong, but it is okay/correct.
                   'voiceConfig': {
                       'prebuiltVoiceConfig': {'voiceName': 'en-default'}
-                  }
-              }
+                  },
+                  'languageCode': 'en-US',
+              },
+              'enableAffectiveDialog': True,
+              'temperature': 0.7,
+              'topP': 0.8,
+              'topK': 9.0,
+              'maxOutputTokens': 10,
+              'mediaResolution': 'MEDIA_RESOLUTION_MEDIUM',
+              'seed': 13,
+          },
+          'proactivity': {'proactiveAudio': True},
+          'systemInstruction': {
+              'parts': [
+                  {
+                      'text': 'test instruction',
+                  },
+              ],
+              'role': 'user',
           },
       }
   }
-  config_dict = {'speech_config': 'en-default'}
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
-      model='test_model', config=config_dict
+  if vertexai:
+    expected_result['setup']['model'] = (
+        'projects/test_project/locations/us-central1/'
+        'publishers/google/models/test_model'
+    )
+    expected_result['setup']['generationConfig']['responseModalities'] = [
+        'AUDIO'
+    ]
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  # Config is a dict
+  config_dict = {
+      'speech_config': {
+          'voice_config': {
+              'prebuilt_voice_config': {'voice_name': 'en-default'}
+          },
+          'language_code': 'en-US',
+      },
+      'enable_affective_dialog': True,
+      'proactivity': {'proactive_audio': True},
+      'temperature': 0.7,
+      'top_p': 0.8,
+      'top_k': 9,
+      'max_output_tokens': 10,
+      'seed': 13,
+      'system_instruction': 'test instruction',
+      'media_resolution': 'MEDIA_RESOLUTION_MEDIUM',
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
   )
   assert result == expected_result
-
+  # Config is a LiveConnectConfig
   config = types.LiveConnectConfig(
       speech_config=types.SpeechConfig(
           voice_config=types.VoiceConfig(
               prebuilt_voice_config=types.PrebuiltVoiceConfig(
                   voice_name='en-default'
               )
-          )
-      )
-  )
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
-      model='test_model', config=config
-  )
-  assert result == expected_result
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
-      model='test_model', config=config
-  )
-  expected_result['setup']['generationConfig'].update(
-      {'responseModalities': ['AUDIO']}
-  )
-  assert result == expected_result
-
-
-def test_bidi_setup_to_api_with_config_tools_google_search_retrieval(
-    mock_api_client,
-):
-  config = types.LiveConnectConfig(
-      generation_config=types.GenerationConfig(temperature=0.7),
-      response_modalities=['TEXT'],
-      system_instruction=types.Content(
-          parts=[types.Part(text='test instruction')], role='user'
+          ),
+          language_code='en-US',
       ),
-      tools=[types.Tool(google_search_retrieval=types.GoogleSearchRetrieval())],
+      enable_affective_dialog=True,
+      proactivity=types.ProactivityConfig(proactive_audio=True),
+      temperature=0.7,
+      top_p=0.8,
+      top_k=9,
+      max_output_tokens=10,
+      media_resolution=types.MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+      seed=13,
+      system_instruction='test instruction',
   )
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_error_if_multispeaker_voice_config(vertexai):
+
+  # Config is a dict
+  config_dict = {
+      'speech_config': {
+          'multi_speaker_voice_config': {
+              'speaker_voice_configs': [
+                  {
+                      'speaker': 'Alice',
+                      'voice_config': {
+                          'prebuilt_voice_config': {'voice_name': 'leda'}
+                      },
+                  },
+                  {
+                      'speaker': 'Bob',
+                      'voice_config': {
+                          'prebuilt_voice_config': {'voice_name': 'kore'}
+                      },
+                  },
+              ],
+          },
+      },
+      'temperature': 0.7,
+      'top_p': 0.8,
+      'top_k': 9,
+      'max_output_tokens': 10,
+      'seed': 13,
+      'system_instruction': 'test instruction',
+      'media_resolution': 'MEDIA_RESOLUTION_MEDIUM',
+  }
+  with pytest.raises(ValueError, match='.*multi_speaker_voice_config.*'):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model',
+        config=config_dict,
+    )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_system_instruction_as_content_type(
+    vertexai,
+):
+  config_dict = {
+      'system_instruction': {
+          'parts': [{'text': 'test instruction'}],
+          'role': 'user',
+      },
+  }
+  config = types.LiveConnectConfig(**config_dict)
   expected_result = {
       'setup': {
           'model': 'test_model',
+          'systemInstruction': {
+              'parts': [{'text': 'test instruction'}],
+              'role': 'user',
+          },
+      }
+  }
+  if vertexai:
+    expected_result['setup'][
+        'model'
+    ] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+    expected_result['setup']['generationConfig'] = {}
+    expected_result['setup']['generationConfig']['responseModalities'] = [
+        'AUDIO'
+    ]
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_tools_google_search(vertexai):
+  config_dict = {
+      'response_modalities': ['TEXT'],
+      'system_instruction': 'test instruction',
+      'generation_config': {'temperature': 0.7},
+      'tools': [{'google_search': {}}],
+  }
+
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
           'generationConfig': {
               'temperature': 0.7,
               'responseModalities': ['TEXT'],
@@ -498,24 +805,120 @@ def test_bidi_setup_to_api_with_config_tools_google_search_retrieval(
               'parts': [{'text': 'test instruction'}],
               'role': 'user',
           },
-          'tools': [{'googleSearchRetrieval': {}}],
+          'tools': [{'googleSearch': {}}],
       }
   }
-  # Test for mldev, config is a LiveConnectConfig
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+  if vertexai:
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config_dict
+  )
+
+  assert result == expected_result
+
+  # Test config is a LiveConnectConfig
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+
+  assert result == expected_result
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_tools_with_no_mcp(vertexai):
+  config_dict = {
+      'response_modalities': ['TEXT'],
+      'system_instruction': 'test instruction',
+      'generation_config': {'temperature': 0.7},
+      'tools': [{'google_search': {}}],
+  }
+
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'generationConfig': {
+              'temperature': 0.7,
+              'responseModalities': ['TEXT'],
+          },
+          'systemInstruction': {
+              'parts': [{'text': 'test instruction'}],
+              'role': 'user',
+          },
+          'tools': [{'googleSearch': {}}],
+      }
+  }
+  if vertexai:
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  @patch.object(live, "McpClientSession", new=None)
+  @patch.object(live, "McpTool", new=None)
+  async def get_connect_message_no_mcp(config):
+    return await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model', config=config
+    )
+
+  result = await get_connect_message_no_mcp(config_dict)
+  assert result == expected_result
+
+  result = await get_connect_message_no_mcp(config_dict)
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_context_window_compression(
+     vertexai
+):
+  config = types.LiveConnectConfig(
+      generation_config=types.GenerationConfig(temperature=0.7),
+      response_modalities=['TEXT'],
+      system_instruction=types.Content(
+          parts=[types.Part(text='test instruction')], role='user'
+      ),
+      context_window_compression=types.ContextWindowCompressionConfig(
+          trigger_tokens=1000,
+          sliding_window=types.SlidingWindow(target_tokens=10),
+      ),
+  )
+  expected_result = {
+      'setup': {
+          'generationConfig': {
+              'temperature': 0.7,
+              'responseModalities': ['TEXT'],
+          },
+          'systemInstruction': {
+              'parts': [{'text': 'test instruction'}],
+              'role': 'user',
+          },
+           'contextWindowCompression': {
+              'triggerTokens': 1000,
+              'slidingWindow': {'targetTokens': 10},
+          }
+      }
+  }
+  if vertexai:
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
   assert result == expected_result
 
-  # Test for vertex, config is a LiveConnectConfig
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
-      model='test_model', config=config
-  )
-  assert result == expected_result
-
-
-def test_bidi_setup_to_api_with_config_tools_function_declaration(
-    mock_api_client,
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_tools_function_declaration(
+     vertexai
 ):
   config_dict = {
       'generation_config': {'temperature': 0.7},
@@ -545,7 +948,8 @@ def test_bidi_setup_to_api_with_config_tools_function_declaration(
           }],
       }
   }
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
 
@@ -557,9 +961,11 @@ def test_bidi_setup_to_api_with_config_tools_function_declaration(
       ]
   )
 
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
+
   assert result['setup']['tools'][0]['functionDeclarations'][0][
       'description'
   ] == (
@@ -569,8 +975,10 @@ def test_bidi_setup_to_api_with_config_tools_function_declaration(
   )
 
 
-def test_bidi_setup_to_api_with_config_tools_function_directly(
-    mock_api_client,
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_tools_function_directly(
+     vertexai
 ):
   config_dict = {
       'generation_config': {'temperature': 0.7},
@@ -600,7 +1008,8 @@ def test_bidi_setup_to_api_with_config_tools_function_directly(
           }],
       }
   }
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
 
@@ -612,9 +1021,11 @@ def test_bidi_setup_to_api_with_config_tools_function_directly(
       ]
   )
 
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
+
   assert result['setup']['tools'][0]['functionDeclarations'][0][
       'description'
   ] == (
@@ -624,8 +1035,203 @@ def test_bidi_setup_to_api_with_config_tools_function_directly(
   )
 
 
-def test_bidi_setup_to_api_with_config_tools_code_execution(
-    mock_api_client,
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_tools_function_behavior(vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+
+  declaration = types.FunctionDeclaration.from_callable(
+      client=api_client, callable=get_current_weather
+  )
+  declaration.behavior = types.Behavior.NON_BLOCKING
+  config_dict = {
+      'generation_config': {'temperature': 0.7},
+      'tools': [{'function_declarations': [declaration]}],
+  }
+  config = types.LiveConnectConfig(**config_dict)
+
+  with pytest_helper.exception_if_vertex(api_client, ValueError):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai), model='test_model', config=config
+    )
+  if vertexai:
+    return
+
+  assert (
+      result['setup']['tools'][0]['functionDeclarations'][0]['behavior']
+      == 'NON_BLOCKING'
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_mcp_tools(
+    vertexai,
+):
+  if mcp_types is None:
+    return
+
+  expected_result_googleai = {
+      'setup': {
+          'model': 'models/test_model',
+          'tools': [{
+              'functionDeclarations': [{
+                  'parameters': {
+                      'type': 'OBJECT',
+                      'properties': {
+                          'location': {
+                              'type': 'STRING',
+                          },
+                      },
+                  },
+                  'name': 'get_weather',
+                  'description': 'Get the weather in a city.',
+              }],
+          }],
+      }
+  }
+  expected_result_vertexai = {
+      'setup': {
+          'generationConfig': {
+              'responseModalities': [
+                  'AUDIO',
+              ],
+          },
+          'model': (
+              'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+          ),
+          'tools': [{
+              'functionDeclarations': [{
+                  'parameters': {
+                      'type': 'OBJECT',
+                      'properties': {
+                          'location': {
+                              'type': 'STRING',
+                          },
+                      },
+                  },
+                  'name': 'get_weather',
+                  'description': 'Get the weather in a city.',
+              }],
+          }],
+      }
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model',
+      config={
+          'tools': [
+              mcp_types.Tool(
+                  name='get_weather',
+                  description='Get the weather in a city.',
+                  inputSchema={
+                      'type': 'object',
+                      'properties': {'location': {'type': 'string'}},
+                  },
+              )
+          ],
+      },
+  )
+
+  assert (
+      result == expected_result_vertexai
+      if vertexai
+      else expected_result_googleai
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_mcp_session(
+    vertexai,
+):
+  if mcp_types is None:
+    return
+
+  class MockMcpClientSession(McpClientSession):
+
+    def __init__(self):
+      self._read_stream = None
+      self._write_stream = None
+
+    async def list_tools(self):
+      return mcp_types.ListToolsResult(
+          tools=[
+              mcp_types.Tool(
+                  name='get_weather',
+                  description='Get the weather in a city.',
+                  inputSchema={
+                      'type': 'object',
+                      'properties': {'location': {'type': 'string'}},
+                  },
+              ),
+          ]
+      )
+
+  expected_result_googleai = {
+      'setup': {
+          'model': 'models/test_model',
+          'tools': [{
+              'functionDeclarations': [{
+                  'parameters': {
+                      'type': 'OBJECT',
+                      'properties': {
+                          'location': {
+                              'type': 'STRING',
+                          },
+                      },
+                  },
+                  'name': 'get_weather',
+                  'description': 'Get the weather in a city.',
+              }],
+          }],
+      }
+  }
+  expected_result_vertexai = {
+      'setup': {
+          'generationConfig': {
+              'responseModalities': [
+                  'AUDIO',
+              ],
+          },
+          'model': (
+              'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+          ),
+          'tools': [{
+              'functionDeclarations': [{
+                  'parameters': {
+                      'type': 'OBJECT',
+                      'properties': {
+                          'location': {
+                              'type': 'STRING',
+                          },
+                      },
+                  },
+                  'name': 'get_weather',
+                  'description': 'Get the weather in a city.',
+              }],
+          }],
+      }
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model',
+      config={
+          'tools': [MockMcpClientSession()],
+      },
+  )
+
+  assert (
+      result == expected_result_vertexai
+      if vertexai
+      else expected_result_googleai
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_config_tools_code_execution(
+     vertexai
 ):
   config_dict = {
       'tools': [{'code_execution': {}}],
@@ -635,24 +1241,245 @@ def test_bidi_setup_to_api_with_config_tools_code_execution(
       'setup': {
           'model': 'test_model',
           'tools': [{
-              'codeExecution': types.ToolCodeExecution(),
+              'codeExecution': {},
           }],
       }
   }
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_mldev(
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
 
-  assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
-
-  result = live.AsyncLive(mock_api_client())._LiveSetup_to_vertex(
-      model='test_model', config=config
-  )
   assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
-def test_parse_client_message_str(mock_api_client, mock_websocket, vertexai):
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_realtime_input_config(vertexai):
+  config_dict = {
+      'realtime_input_config': {
+          'automatic_activity_detection': {
+              'disabled': True,
+              'start_of_speech_sensitivity': 'START_SENSITIVITY_HIGH',
+              'end_of_speech_sensitivity': 'END_SENSITIVITY_HIGH',
+              'prefix_padding_ms': 20,
+              'silence_duration_ms': 100,
+          },
+          'activity_handling': 'NO_INTERRUPTION',
+          'turn_coverage': 'TURN_INCLUDES_ALL_INPUT',
+      }
+  }
+
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'realtimeInputConfig': {
+              'automaticActivityDetection': {
+                  'disabled': True,
+                  'startOfSpeechSensitivity': 'START_SENSITIVITY_HIGH',
+                  'endOfSpeechSensitivity': 'END_SENSITIVITY_HIGH',
+                  'prefixPaddingMs': 20,
+                  'silenceDurationMs': 100,
+              },
+              'activityHandling': 'NO_INTERRUPTION',
+              'turnCoverage': 'TURN_INCLUDES_ALL_INPUT',
+          },
+      }
+  }
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+
+  assert (
+      result['setup']['realtimeInputConfig']
+      == expected_result['setup']['realtimeInputConfig']
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_input_transcription(vertexai):
+  config_dict = {
+      'input_audio_transcription': {},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'inputAudioTranscription': {},
+      }
+  }
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config
+  )
+
+  assert (
+      result['setup']['inputAudioTranscription']
+      == expected_result['setup']['inputAudioTranscription']
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_output_transcription(vertexai):
+  config_dict = {
+      'output_audio_transcription': {},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'outputAudioTranscription': {},
+      }
+  }
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+
+  assert (
+      result['setup']['outputAudioTranscription']
+      == expected_result['setup']['outputAudioTranscription']
+  )
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_media_resolution(vertexai):
+  config_dict = {
+      'media_resolution': 'MEDIA_RESOLUTION_LOW',
+  }
+  config = types.LiveConnectConfig(**config_dict)
+  expected_result = {
+      'setup': {
+          'model': 'test_model',
+          'generationConfig': {'mediaResolution':'MEDIA_RESOLUTION_LOW'},
+      }
+  }
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model', config=config
+  )
+
+  assert (
+      result['setup']['generationConfig']['mediaResolution']
+      == expected_result['setup']['generationConfig']['mediaResolution']
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True])
+@pytest.mark.asyncio
+async def test_bidi_setup_publishers(
+     vertexai
+):
+  expected_result = {
+      'setup': {
+         'generationConfig': {
+             'responseModalities': [
+                 'AUDIO',
+             ],
+         },
+         'model': 'projects/test_project/locations/us-central1/publishers/google/models/test_model',
+      }
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='publishers/google/models/test_model')
+
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_generation_config_warning(
+     vertexai
+):
+  with pytest.warns(
+      DeprecationWarning,
+      match='Setting `LiveConnectConfig.generation_config` is deprecated'
+  ):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='models/test_model',
+        config={'generation_config': {'temperature': 0.7}})
+
+  assert result['setup']['generationConfig']['temperature'] == 0.7
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_session_resumption(vertexai):
+  config_dict = {
+      'session_resumption': {'handle': 'test_handle'},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model',
+      config=config
+  )
+  expected_result = {
+      'setup': {
+          'sessionResumption': {
+              'handle': 'test_handle',
+          },
+      }
+  }
+  if vertexai:
+    expected_result['setup']['generationConfig'] = {
+        'responseModalities': [
+            'AUDIO',
+        ],
+    }
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+  assert result == expected_result
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+  config_dict = {
+      'session_resumption': {'handle': 'test_handle', 'transparent': True},
+  }
+  config = types.LiveConnectConfig(**config_dict)
+
+  with pytest_helper.exception_if_mldev(api_client, ValueError):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model',
+        config=config
+    )
+
+  expected_result = {
+      'setup': {
+          'sessionResumption': {
+              'handle': 'test_handle',
+              'transparent': True,
+          },
+      }
+  }
+  if vertexai:
+    expected_result['setup']['generationConfig'] = {
+        'responseModalities': [
+            'AUDIO',
+        ],
+    }
+    expected_result['setup']['model'] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    return
+
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+def test_parse_client_message_str( mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -664,10 +1491,13 @@ def test_parse_client_message_str(mock_api_client, mock_websocket, vertexai):
           'turns': [{'role': 'user', 'parts': [{'text': 'test'}]}],
       }
   }
+  # _parse_client_message returns a TypedDict, so we should be able to
+  # construct a LiveClientMessage from it
+  assert types.LiveClientMessage(**result)
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
-def test_parse_client_message_blob(mock_api_client, mock_websocket, vertexai):
+def test_parse_client_message_blob( mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -684,7 +1514,7 @@ def test_parse_client_message_blob(mock_api_client, mock_websocket, vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_blob_dict(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -703,7 +1533,7 @@ def test_parse_client_message_blob_dict(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_client_content(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -725,7 +1555,7 @@ def test_parse_client_message_client_content(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_client_content_blob(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -770,7 +1600,7 @@ def test_parse_client_message_client_content_blob(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_client_content_dict(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -817,7 +1647,7 @@ def test_parse_client_message_client_content_dict(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_realtime_input(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -836,7 +1666,7 @@ def test_parse_client_message_realtime_input(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_realtime_input_dict(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -857,7 +1687,7 @@ def test_parse_client_message_realtime_input_dict(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_tool_response(
-    mock_api_client, mock_websocket, vertexai
+     mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -889,8 +1719,68 @@ def test_parse_client_message_tool_response(
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
+def test_parse_client_message_function_response(
+     mock_websocket, vertexai
+):
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  input = types.FunctionResponse(
+    id='test_id',
+    name='test_name',
+    response={'result': 'test_response'},
+  )
+  result = session._parse_client_message(input)
+  assert 'tool_response' in result
+  assert result == {
+      'tool_response': {
+          'function_responses': [
+              {
+                  'id': 'test_id',
+                  'name': 'test_name',
+                  'response': {
+                      'result': 'test_response',
+                  },
+              },
+          ],
+      }
+  }
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+def test_parse_client_message_tool_response_dict_with_only_response(
+     mock_websocket, vertexai
+):
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  input = {
+    'id': 'test_id',
+    'name': 'test_name',
+    'response': {
+        'result': 'test_response',
+    }
+  }
+  result = session._parse_client_message(input)
+  assert 'tool_response' in result
+  assert result == {
+      'tool_response': {
+          'function_responses': [
+              {
+                  'id': 'test_id',
+                  'name': 'test_name',
+                  'response': {
+                      'result': 'test_response',
+                  },
+              },
+          ],
+      }
+  }
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_realtime_tool_response(
-    mock_api_client, mock_websocket, vertexai
+    mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -922,3 +1812,89 @@ def test_parse_client_message_realtime_tool_response(
           ],
       }
   }
+
+
+@pytest.mark.asyncio
+async def test_connect_with_provided_credentials(mock_websocket):
+    # custom oauth2 credentials
+    credentials = Credentials(token="provided_fake_token")
+    # mock api client
+    client = mock_api_client(vertexai=True, credentials=credentials)
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None):
+        yield mock_websocket
+
+    @patch.object(live, "ws_connect", new=mock_connect)
+    async def _test_connect():
+        live_module = live.AsyncLive(client)
+        async with live_module.connect(model="test-model"):
+            pass
+
+        assert "Authorization" in live_module._api_client._http_options.headers
+        assert (
+            live_module._api_client._http_options.headers["Authorization"]
+            == "Bearer provided_fake_token"
+        )
+
+    await _test_connect()
+
+
+@pytest.mark.asyncio
+async def test_connect_with_default_credentials(mock_websocket):
+    # mock api client
+    client = mock_api_client(vertexai=True, credentials=None)
+    # mock google auth cred
+    mock_google_auth_default = Mock(return_value=(None, None))
+    mock_creds = Mock(token="default_test_token")
+    mock_google_auth_default.return_value = (mock_creds, None)
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None):
+        yield mock_websocket
+
+    @patch("google.auth.default", new=mock_google_auth_default)
+    @patch.object(live, "ws_connect", new=mock_connect)
+    async def _test_connect():
+        live_module = live.AsyncLive(client)
+        async with live_module.connect(model="test-model"):
+            pass
+
+        assert "Authorization" in live_module._api_client._http_options.headers
+        assert (
+            live_module._api_client._http_options.headers["Authorization"]
+            == "Bearer default_test_token"
+        )
+
+    await _test_connect()
+
+
+@pytest.mark.parametrize('vertexai', [False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_auth_tokens(mock_websocket, vertexai):
+    api_client_mock = mock_api_client(vertexai=vertexai)
+    api_client_mock.api_key = 'auth_tokens/TEST_AUTH_TOKEN'
+    result = await get_connect_message(
+        api_client_mock,
+        model='test_model'
+    )
+
+    mock_ws = AsyncMock()
+    mock_ws.send = AsyncMock()
+    mock_ws.recv = AsyncMock(return_value=b'some response')
+    uri_capture = {}  # Capture the uri here
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None):
+        uri_capture['uri'] = uri # Capture the uri
+        yield mock_ws
+
+    with patch.object(live, 'ws_connect', new=mock_connect):
+      live_module = live.AsyncLive(api_client_mock)
+      async with live_module.connect(
+          model='test_model',
+      ):
+        pass
+
+    assert 'access_token=auth_tokens/TEST_AUTH_TOKEN' in uri_capture['uri']
+    assert 'BidiGenerateContentConstrained' in uri_capture['uri']
