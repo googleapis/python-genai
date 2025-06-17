@@ -414,6 +414,15 @@ pytestmark = pytest_helper.setup(
 pytest_plugins = ('pytest_asyncio',)
 
 
+def test_sync_with_headers(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is None
+
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.generate_content(
@@ -424,6 +433,16 @@ async def test_async(client):
       },
   )
   assert response.text
+
+
+@pytest.mark.asyncio
+async def test_async_with_headers(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is None
 
 
 def test_sync_stream(client):
@@ -442,6 +461,22 @@ def test_sync_stream(client):
   assert chunks > 2
 
 
+def test_sync_stream_with_should_return_http_headers(client):
+  response = client.models.generate_content_stream(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+      },
+  )
+  chunks = 0
+  for part in response:
+    chunks += 1
+    assert part.text is not None or part.candidates[0].finish_reason
+    assert part.sdk_http_response.headers is not None
+  assert chunks > 2
+
+
 @pytest.mark.asyncio
 async def test_async_stream(client):
   chunks = 0
@@ -453,6 +488,22 @@ async def test_async_stream(client):
   ):
     chunks += 1
     assert part.text is not None or part.candidates[0].finish_reason
+
+  assert chunks > 2
+
+
+@pytest.mark.asyncio
+async def test_async_stream_with_headers(client):
+  chunks = 0
+  async for part in await client.aio.models.generate_content_stream(
+      model='gemini-1.5-flash', contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+      },
+  ):
+    chunks += 1
+    assert part.text is not None or part.candidates[0].finish_reason
+    assert part.sdk_http_response.headers is not None
 
   assert chunks > 2
 
