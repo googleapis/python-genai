@@ -30,6 +30,8 @@ from pydantic import alias_generators
 from . import _api_client
 from . import errors
 
+_EXCLUDE_FROM_REMOVE_EXTRA_FIELDS = ['QueryReasoningEngineResponse']
+
 
 def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: Any) -> None:
   """Examples:
@@ -217,7 +219,11 @@ def _remove_extra_fields(
 
     # if dict, assume BaseModel but also check that field type is not dict
     # example: FunctionCall.args
-    if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
+    if (
+        isinstance(value, dict)
+        and typing.get_origin(annotation) is not dict
+        and annotation.__name__ not in _EXCLUDE_FROM_REMOVE_EXTRA_FIELDS
+    ):
       _remove_extra_fields(annotation, value)
     elif isinstance(value, list):
       if _is_struct_type(annotation):
