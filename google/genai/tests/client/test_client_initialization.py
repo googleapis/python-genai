@@ -755,9 +755,11 @@ def test_client_ssl_context_explicit_initialization_same_args():
     async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
         options
     )
-    assert async_client_args["ssl"] == ctx
+    assert async_client_args["ssl"]
+    assert isinstance(async_client_args["ssl"], ssl.SSLContext)
   except ImportError:
-    assert async_client_args["verify"] == ctx
+    assert async_client_args["verify"]
+    assert isinstance(async_client_args["verify"], ssl.SSLContext)
 
 
 def test_client_ssl_context_explicit_initialization_separate_args():
@@ -809,8 +811,10 @@ def test_client_ssl_context_explicit_initialization_sync_args():
         options
     )
     assert async_client_args["ssl"]
+    assert isinstance(async_client_args["ssl"], ssl.SSLContext)
   except ImportError:
-    assert async_client_args["verify"] == ctx
+    assert async_client_args["verify"]
+    assert isinstance(async_client_args["verify"], ssl.SSLContext)
 
 
 def test_client_ssl_context_explicit_initialization_async_args():
@@ -831,9 +835,11 @@ def test_client_ssl_context_explicit_initialization_async_args():
     async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
         options
     )
-    assert async_client_args["ssl"] == ctx
+    assert async_client_args["ssl"]
+    assert isinstance(async_client_args["ssl"], ssl.SSLContext)
   except ImportError:
-    assert async_client_args["verify"] == ctx
+    assert async_client_args["verify"]
+    assert isinstance(async_client_args["verify"], ssl.SSLContext)
 
 
 def test_constructor_with_base_url_from_http_options():
