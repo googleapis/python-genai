@@ -425,7 +425,7 @@ class ReplayApiClient(BaseApiClient):
     self._replay_index += 1
     self._sdk_response_index = 0
     errors.APIError.raise_for_response(interaction.response)
-    return HttpResponse(
+    http_response = HttpResponse(
         headers=interaction.response.headers,
         response_stream=[
             json.dumps(segment)
@@ -433,6 +433,9 @@ class ReplayApiClient(BaseApiClient):
         ],
         byte_stream=interaction.response.byte_segments,
     )
+    if http_response.response_stream == ['{}']:
+      http_response.response_stream = [""]
+    return http_response
 
   def _verify_response(self, response_model: BaseModel) -> None:
     if self._mode == 'api':
@@ -444,8 +447,11 @@ class ReplayApiClient(BaseApiClient):
     if self._should_update_replay():
       if isinstance(response_model, list):
         response_model = response_model[0]
-      if response_model and 'http_headers' in response_model.model_fields:
-        response_model.http_headers.pop('Date', None)  # type: ignore[attr-defined]
+      if (
+          response_model
+          and getattr(response_model, 'sdk_http_response', None) is not None
+      ):
+        response_model.sdk_http_response.headers.pop('Date', None)  # type: ignore[attr-defined]
       interaction.response.sdk_response_segments.append(
           response_model.model_dump(exclude_none=True)
       )

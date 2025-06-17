@@ -105,43 +105,85 @@ def test_base_response_with_empty_json_payload_and_http_headers(
   ) as patch_api_client:
     patch_api_client.return_value = mock_api_client
     mock_client = genai_client.Client()
-    base_response = _api_client.BaseResponse(
-        http_headers={'header_key': 'header_value'}
+    sdk_http_response = types.HttpResponse(
+        headers={'header_key': 'header_value'},
+        body='{}',
     )
     with mock.patch.object(
-        mock_api_client, 'request', return_value=base_response
-    ) as patch_request:
-      patch_request.return_value = {}
+        mock_api_client, 'request', return_value=sdk_http_response
+    ):
       pager = mock_client.models.list()
 
       assert len(pager) == 0
 
 
 def test_unknown_json_payload(mock_api_client, client):
-  with mock.patch.object(
+  with mock.patch.object( 
       genai_client.Client, '_get_api_client'
   ) as patch_api_client:
     patch_api_client.return_value = mock_api_client
     mock_client = genai_client.Client()
+    sdk_http_response = types.HttpResponse(
+        headers={'header_key': 'header_value'},
+        body='{"unknown_key": "unknown_value"}',
+    )
     with mock.patch.object(
-        mock_api_client, 'request', return_value={'unknown_key', 'unknown_value'}
-    ) as patch_request:
-      patch_request.return_value = {}
+        mock_api_client, 'request', return_value=sdk_http_response
+    ) :
       pager = mock_client.models.list()
 
       assert len(pager) == 0
 
 
-def test_empty_api_response(mock_api_client, client):
+def test_empty_json_payload(mock_api_client, client):
+  with mock.patch.object( 
+      genai_client.Client, '_get_api_client'
+  ) as patch_api_client:
+    patch_api_client.return_value = mock_api_client
+    mock_client = genai_client.Client()
+    sdk_http_response = types.HttpResponse(
+        headers={'header_key': 'header_value'},
+        body='',
+    )
+    with mock.patch.object(
+        mock_api_client, 'request', return_value=sdk_http_response
+    ) :
+      pager = mock_client.models.list()
+
+      assert len(pager) == 0
+
+
+def test_empty_api_response_none_headers(mock_api_client, client):
   with mock.patch.object(
       genai_client.Client, '_get_api_client'
   ) as patch_api_client:
     patch_api_client.return_value = mock_api_client
     mock_client = genai_client.Client()
+    sdk_http_response = types.HttpResponse(
+        headers=None,
+        body='{}',
+    )
     with mock.patch.object(
-        mock_api_client, 'request', return_value={}
-    ) as patch_request:
-      patch_request.return_value = {}
+        mock_api_client, 'request', return_value=sdk_http_response
+    ):
+      pager = mock_client.models.list()
+
+      assert len(pager) == 0
+
+
+def test_empty_api_response_empty_dict_headers(mock_api_client, client):
+  with mock.patch.object(
+      genai_client.Client, '_get_api_client'
+  ) as patch_api_client:
+    patch_api_client.return_value = mock_api_client
+    mock_client = genai_client.Client()
+    sdk_http_response = types.HttpResponse(
+        headers={},
+        body='{}',
+    )
+    with mock.patch.object(
+        mock_api_client, 'request', return_value=sdk_http_response
+    ):
       pager = mock_client.models.list()
 
       assert len(pager) == 0
