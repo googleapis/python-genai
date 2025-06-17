@@ -1147,6 +1147,10 @@ class HttpOptions(_common.BaseModel):
   async_client_args: Optional[dict[str, Any]] = Field(
       default=None, description="""Args passed to the async HTTP client."""
   )
+  extra_body: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Extra parameters to add to the request body.""",
+  )
 
 
 class HttpOptionsDict(TypedDict, total=False):
@@ -1169,6 +1173,9 @@ class HttpOptionsDict(TypedDict, total=False):
 
   async_client_args: Optional[dict[str, Any]]
   """Args passed to the async HTTP client."""
+
+  extra_body: Optional[dict[str, Any]]
+  """Extra parameters to add to the request body."""
 
 
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]

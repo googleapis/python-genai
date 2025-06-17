@@ -741,6 +741,14 @@ class BaseApiClient:
     else:
       base_url = patched_http_options.base_url
 
+    if (
+        hasattr(patched_http_options, 'extra_body')
+        and patched_http_options.extra_body
+    ):
+      _common.recursive_dict_update(
+          request_dict, patched_http_options.extra_body
+      )
+
     url = _join_url_path(
         base_url,
         versioned_path,

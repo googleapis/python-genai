@@ -19,6 +19,7 @@ import base64
 import datetime
 import enum
 import functools
+import logging
 import typing
 from typing import Any, Callable, Optional, Union, get_origin, get_args
 import uuid
@@ -30,6 +31,7 @@ from pydantic import alias_generators
 from . import _api_client
 from . import errors
 
+logger = logging.getLogger('google_genai._common')
 
 def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: Any) -> None:
   """Examples:
@@ -365,3 +367,74 @@ def experimental_warning(message: str) -> Callable[[Callable[..., Any]], Callabl
     return wrapper
   return decorator
 
+
+def _normalize_key_for_matching(key_str: str) -> str:
+  """Normalizes a key for case-insensitive and snake/camel matching."""
+  return key_str.replace("_", "").lower()
+
+
+def align_key_case(target_dict: dict[str, Any], update_dict: dict[str, Any]) -> dict[str, Any]:
+  """Aligns the keys of update_dict to the case of target_dict keys.
+
+  Args:
+      target_dict: The dictionary with the target key casing.
+      update_dict: The dictionary whose keys need to be aligned.
+
+  Returns:
+      A new dictionary with keys aligned to target_dict's key casing.
+  """
+  aligned_update_dict: dict[str, Any] = {}
+  target_keys_map = {_normalize_key_for_matching(key): key for key in target_dict.keys()}
+
+  for key, value in update_dict.items():
+    normalized_update_key = _normalize_key_for_matching(key)
+
+    if normalized_update_key in target_keys_map:
+      aligned_key = target_keys_map[normalized_update_key]
+    else:
+      aligned_key = key
+
+    if isinstance(value, dict) and isinstance(target_dict.get(aligned_key), dict):
+      aligned_update_dict[aligned_key] = align_key_case(target_dict[aligned_key], value)
+    elif isinstance(value, list) and isinstance(target_dict.get(aligned_key), list):
+      # Direct assign as we treat update_dict list values as golden source.
+      aligned_update_dict[aligned_key] = value
+    else:
+      aligned_update_dict[aligned_key] = value
+  return aligned_update_dict
+
+
+def recursive_dict_update(
+    target_dict: dict[str, Any], update_dict: dict[str, Any]
+) -> None:
+  """Recursively updates a target dictionary with values from an update dictionary.
+
+  We don't enforce the updated dict values to have the same type with the
+  target_dict values except log warnings.
+  Users providing the update_dict should be responsible for constructing correct
+  data.
+
+  Args:
+      target_dict (dict): The dictionary to be updated.
+      update_dict (dict): The dictionary containing updates.
+  """
+  # Python SDK http request may change in camel case or snake case:
+  # If the field is directly set via setv() function, then it is camel case;
+  # otherwise it is snake case.
+  # Align the update_dict key case to target_dict to ensure correct dict update.
+  aligned_update_dict = align_key_case(target_dict, update_dict)
+  for key, value in aligned_update_dict.items():
+    if (
+        key in target_dict
+        and isinstance(target_dict[key], dict)
+        and isinstance(value, dict)
+    ):
+      recursive_dict_update(target_dict[key], value)
+    elif key in target_dict and not isinstance(target_dict[key], type(value)):
+      logger.warning(
+          f"Type mismatch for key '{key}'. Existing type:"
+          f' {type(target_dict[key])}, new type: {type(value)}. Overwriting.'
+      )
+      target_dict[key] = value
+    else:
+      target_dict[key] = value

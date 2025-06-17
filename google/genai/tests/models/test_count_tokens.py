@@ -17,6 +17,7 @@
 import copy
 import pytest
 from ... import _transformers as t
+from ... import errors
 from ... import types
 from .. import pytest_helper
 from . import constants
@@ -129,3 +130,30 @@ def test_different_model_names(client):
         model='models/gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response2
+
+
+def test_extra_body(client):
+  config = {
+      'http_options': {
+          'extra_body': {
+              'systemInstruction': {
+                  'parts': [{'text': 'you are a chatbot.'}],
+                  'role': 'user',
+              }
+          }
+      }
+  }
+  if client._api_client.vertexai:
+    response = client.models.count_tokens(
+        model=_COUNT_TOKENS_PARAMS.model,
+        contents=_COUNT_TOKENS_PARAMS.contents,
+        config=config,
+    )
+    assert response.total_tokens
+  else:
+    with pytest.raises(errors.ClientError):
+      client.models.count_tokens(
+          model=_COUNT_TOKENS_PARAMS.model,
+          contents=_COUNT_TOKENS_PARAMS.contents,
+          config=config,
+      )
