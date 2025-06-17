@@ -35,7 +35,7 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, AsyncIterator, Optional, TYPE_CHECKING, Tuple, Union, AsyncGenerator
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
@@ -56,6 +56,7 @@ from . import version
 from .types import HttpOptions
 from .types import HttpOptionsDict
 from .types import HttpOptionsOrDict
+from .types import HttpResponse as SdkHttpResponse
 
 has_aiohttp = False
 try:
@@ -212,18 +213,6 @@ class HttpRequest:
   method: str
   data: Union[dict[str, object], bytes]
   timeout: Optional[float] = None
-
-
-# TODO(b/394358912): Update this class to use a SDKResponse class that can be
-# generated and used for all languages.
-class BaseResponse(_common.BaseModel):
-  http_headers: Optional[dict[str, str]] = Field(
-      default=None, description='The http headers of the response.'
-  )
-
-  json_payload: Optional[Any] = Field(
-      default=None, description='The json payload of the response.'
-  )
 
 
 class HttpResponse:
@@ -904,17 +893,16 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Union[BaseResponse, Any]:
+  ) -> SdkHttpResponse:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
     response = self._request(http_request, stream=False)
-    json_response = response.json
-    if not json_response:
-      return BaseResponse(http_headers=response.headers).model_dump(
-          by_alias=True
-      )
-    return json_response
+    response_body = response.response_stream[0] if response.response_stream else ''
+    return SdkHttpResponse(
+        headers=response.headers, body=response_body
+    )
+
 
   def request_streamed(
       self,
@@ -922,14 +910,14 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Generator[Any, None, None]:
+  ) -> Generator[SdkHttpResponse, None, None]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
 
     session_response = self._request(http_request, stream=True)
     for chunk in session_response.segments():
-      yield chunk
+      yield SdkHttpResponse(headers=session_response.headers, body=json.dumps(chunk))
 
   async def async_request(
       self,
@@ -937,16 +925,16 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Union[BaseResponse, Any]:
+  ) -> SdkHttpResponse:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
 
     result = await self._async_request(http_request=http_request, stream=False)
-    json_response = result.json
-    if not json_response:
-      return BaseResponse(http_headers=result.headers).model_dump(by_alias=True)
-    return json_response
+    response_body = result.response_stream[0] if result.response_stream else ''
+    return SdkHttpResponse(
+        headers=result.headers, body=response_body
+    )
 
   async def async_request_streamed(
       self,
@@ -954,18 +942,15 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Any:
+  ) -> AsyncGenerator[SdkHttpResponse, None]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
 
     response = await self._async_request(http_request=http_request, stream=True)
 
-    async def async_generator():  # type: ignore[no-untyped-def]
-      async for chunk in response:
-        yield chunk
-
-    return async_generator()  # type: ignore[no-untyped-call]
+    async for chunk in response:
+      yield SdkHttpResponse(headers=response.headers, body=json.dumps(chunk))
 
   def upload_file(
       self,
