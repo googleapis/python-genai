@@ -62,9 +62,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -88,9 +87,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -117,9 +115,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -146,9 +143,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -176,10 +172,9 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-1.5-flash',
             contents=[
                 t.t_content(
-                    None, 'Summarize the pdf in concise and professional tone.'
+                    'Summarize the pdf in concise and professional tone.'
                 ),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -207,14 +202,12 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-1.5-flash',
             contents=[
                 t.t_content(
-                    None,
                     """
                     summarize the video in concise and professional tone.
                     the summary should include all important information said in the video.
                     """,
                 ),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -242,7 +235,6 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-1.5-flash',
             contents=[
                 t.t_content(
-                    None,
                     """
                     Provide a summary for the audio in the beginning of the transcript.
                     Provide concise chapter titles with timestamps.
@@ -250,7 +242,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 """,
                 ),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -306,9 +297,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'what is the video about?'),
+                t.t_content('what is the video about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -337,9 +327,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-001',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -369,7 +358,6 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-001',
             contents=t.t_contents(
-                None,
                 types.ContentDict(
                     {'role': 'user', 'parts': [{'text': 'what is your name?'}]}
                 ),
@@ -398,7 +386,7 @@ def test_empty_part(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash-001',
-        contents=t.t_contents(None, ['']),
+        contents=t.t_contents(['']),
     )
 
 

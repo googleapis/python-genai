@@ -34,7 +34,6 @@ logger = logging.getLogger('google_genai.batches')
 
 
 def _BatchJobSource_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -56,7 +55,6 @@ def _BatchJobSource_to_vertex(
 
 
 def _BatchJobDestination_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -82,7 +80,6 @@ def _BatchJobDestination_to_vertex(
 
 
 def _CreateBatchJobConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -96,9 +93,7 @@ def _CreateBatchJobConfig_to_vertex(
         parent_object,
         ['outputConfig'],
         _BatchJobDestination_to_vertex(
-            api_client,
-            t.t_batch_job_destination(api_client, getv(from_object, ['dest'])),
-            to_object,
+            t.t_batch_job_destination(getv(from_object, ['dest'])), to_object
         ),
     )
 
@@ -123,9 +118,7 @@ def _CreateBatchJobParameters_to_vertex(
         to_object,
         ['inputConfig'],
         _BatchJobSource_to_vertex(
-            api_client,
-            t.t_batch_job_source(api_client, getv(from_object, ['src'])),
-            to_object,
+            t.t_batch_job_source(getv(from_object, ['src'])), to_object
         ),
     )
 
@@ -134,7 +127,7 @@ def _CreateBatchJobParameters_to_vertex(
         to_object,
         ['config'],
         _CreateBatchJobConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -180,7 +173,6 @@ def _CancelBatchJobParameters_to_vertex(
 
 
 def _ListBatchJobsConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -205,7 +197,6 @@ def _ListBatchJobsConfig_to_vertex(
 
 
 def _ListBatchJobsParameters_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -215,7 +206,7 @@ def _ListBatchJobsParameters_to_vertex(
         to_object,
         ['config'],
         _ListBatchJobsConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -242,7 +233,6 @@ def _DeleteBatchJobParameters_to_vertex(
 
 
 def _JobError_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -260,7 +250,6 @@ def _JobError_from_vertex(
 
 
 def _BatchJobSource_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -282,7 +271,6 @@ def _BatchJobSource_from_vertex(
 
 
 def _BatchJobDestination_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -308,7 +296,6 @@ def _BatchJobDestination_from_vertex(
 
 
 def _BatchJob_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -326,9 +313,7 @@ def _BatchJob_from_vertex(
     setv(
         to_object,
         ['error'],
-        _JobError_from_vertex(
-            api_client, getv(from_object, ['error']), to_object
-        ),
+        _JobError_from_vertex(getv(from_object, ['error']), to_object),
     )
 
   if getv(from_object, ['createTime']) is not None:
@@ -351,7 +336,7 @@ def _BatchJob_from_vertex(
         to_object,
         ['src'],
         _BatchJobSource_from_vertex(
-            api_client, getv(from_object, ['inputConfig']), to_object
+            getv(from_object, ['inputConfig']), to_object
         ),
     )
 
@@ -360,7 +345,7 @@ def _BatchJob_from_vertex(
         to_object,
         ['dest'],
         _BatchJobDestination_from_vertex(
-            api_client, getv(from_object, ['outputConfig']), to_object
+            getv(from_object, ['outputConfig']), to_object
         ),
     )
 
@@ -368,7 +353,6 @@ def _BatchJob_from_vertex(
 
 
 def _ListBatchJobsResponse_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -381,7 +365,7 @@ def _ListBatchJobsResponse_from_vertex(
         to_object,
         ['batch_jobs'],
         [
-            _BatchJob_from_vertex(api_client, item, to_object)
+            _BatchJob_from_vertex(item, to_object)
             for item in getv(from_object, ['batchPredictionJobs'])
         ],
     )
@@ -390,7 +374,6 @@ def _ListBatchJobsResponse_from_vertex(
 
 
 def _DeleteResourceJob_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -405,9 +388,7 @@ def _DeleteResourceJob_from_vertex(
     setv(
         to_object,
         ['error'],
-        _JobError_from_vertex(
-            api_client, getv(from_object, ['error']), to_object
-        ),
+        _JobError_from_vertex(getv(from_object, ['error']), to_object),
     )
 
   return to_object
@@ -464,7 +445,7 @@ class Batches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+      response_dict = _BatchJob_from_vertex(response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -532,7 +513,7 @@ class Batches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+      response_dict = _BatchJob_from_vertex(response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -611,9 +592,7 @@ class Batches(_api_module.BaseModule):
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _ListBatchJobsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListBatchJobsParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs'.format_map(request_url_dict)
@@ -641,9 +620,7 @@ class Batches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListBatchJobsResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _ListBatchJobsResponse_from_vertex(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -715,9 +692,7 @@ class Batches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _DeleteResourceJob_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteResourceJob_from_vertex(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -838,7 +813,7 @@ class AsyncBatches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+      response_dict = _BatchJob_from_vertex(response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -908,7 +883,7 @@ class AsyncBatches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _BatchJob_from_vertex(self._api_client, response_dict)
+      response_dict = _BatchJob_from_vertex(response_dict)
 
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -987,9 +962,7 @@ class AsyncBatches(_api_module.BaseModule):
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _ListBatchJobsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListBatchJobsParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'batchPredictionJobs'.format_map(request_url_dict)
@@ -1019,9 +992,7 @@ class AsyncBatches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListBatchJobsResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _ListBatchJobsResponse_from_vertex(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1093,9 +1064,7 @@ class AsyncBatches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _DeleteResourceJob_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteResourceJob_from_vertex(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()

@@ -24,7 +24,6 @@ from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import types
-from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
@@ -32,7 +31,6 @@ logger = logging.getLogger('google_genai.operations')
 
 
 def _GetOperationParameters_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -51,7 +49,6 @@ def _GetOperationParameters_to_mldev(
 
 
 def _GetOperationParameters_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -70,7 +67,6 @@ def _GetOperationParameters_to_vertex(
 
 
 def _FetchPredictOperationParameters_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -92,7 +88,6 @@ def _FetchPredictOperationParameters_to_vertex(
 
 
 def _Video_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -104,7 +99,7 @@ def _Video_from_mldev(
     setv(
         to_object,
         ['video_bytes'],
-        t.t_bytes(api_client, getv(from_object, ['video', 'encodedVideo'])),
+        t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
     )
 
   if getv(from_object, ['encoding']) is not None:
@@ -114,7 +109,6 @@ def _Video_from_mldev(
 
 
 def _GeneratedVideo_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -123,14 +117,13 @@ def _GeneratedVideo_from_mldev(
     setv(
         to_object,
         ['video'],
-        _Video_from_mldev(api_client, getv(from_object, ['_self']), to_object),
+        _Video_from_mldev(getv(from_object, ['_self']), to_object),
     )
 
   return to_object
 
 
 def _GenerateVideosResponse_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -140,7 +133,7 @@ def _GenerateVideosResponse_from_mldev(
         to_object,
         ['generated_videos'],
         [
-            _GeneratedVideo_from_mldev(api_client, item, to_object)
+            _GeneratedVideo_from_mldev(item, to_object)
             for item in getv(from_object, ['generatedSamples'])
         ],
     )
@@ -163,7 +156,6 @@ def _GenerateVideosResponse_from_mldev(
 
 
 def _GenerateVideosOperation_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -185,9 +177,7 @@ def _GenerateVideosOperation_from_mldev(
         to_object,
         ['response'],
         _GenerateVideosResponse_from_mldev(
-            api_client,
-            getv(from_object, ['response', 'generateVideoResponse']),
-            to_object,
+            getv(from_object, ['response', 'generateVideoResponse']), to_object
         ),
     )
 
@@ -196,9 +186,7 @@ def _GenerateVideosOperation_from_mldev(
         to_object,
         ['result'],
         _GenerateVideosResponse_from_mldev(
-            api_client,
-            getv(from_object, ['response', 'generateVideoResponse']),
-            to_object,
+            getv(from_object, ['response', 'generateVideoResponse']), to_object
         ),
     )
 
@@ -206,7 +194,6 @@ def _GenerateVideosOperation_from_mldev(
 
 
 def _Video_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -218,7 +205,7 @@ def _Video_from_vertex(
     setv(
         to_object,
         ['video_bytes'],
-        t.t_bytes(api_client, getv(from_object, ['bytesBase64Encoded'])),
+        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
     )
 
   if getv(from_object, ['mimeType']) is not None:
@@ -228,7 +215,6 @@ def _Video_from_vertex(
 
 
 def _GeneratedVideo_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -237,14 +223,13 @@ def _GeneratedVideo_from_vertex(
     setv(
         to_object,
         ['video'],
-        _Video_from_vertex(api_client, getv(from_object, ['_self']), to_object),
+        _Video_from_vertex(getv(from_object, ['_self']), to_object),
     )
 
   return to_object
 
 
 def _GenerateVideosResponse_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -254,7 +239,7 @@ def _GenerateVideosResponse_from_vertex(
         to_object,
         ['generated_videos'],
         [
-            _GeneratedVideo_from_vertex(api_client, item, to_object)
+            _GeneratedVideo_from_vertex(item, to_object)
             for item in getv(from_object, ['videos'])
         ],
     )
@@ -277,7 +262,6 @@ def _GenerateVideosResponse_from_vertex(
 
 
 def _GenerateVideosOperation_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -299,7 +283,7 @@ def _GenerateVideosOperation_from_vertex(
         to_object,
         ['response'],
         _GenerateVideosResponse_from_vertex(
-            api_client, getv(from_object, ['response']), to_object
+            getv(from_object, ['response']), to_object
         ),
     )
 
@@ -308,7 +292,7 @@ def _GenerateVideosOperation_from_vertex(
         to_object,
         ['result'],
         _GenerateVideosResponse_from_vertex(
-            api_client, getv(from_object, ['response']), to_object
+            getv(from_object, ['response']), to_object
         ),
     )
 
@@ -331,18 +315,14 @@ class Operations(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _GetOperationParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetOperationParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
       else:
         path = '{operationName}'
     else:
-      request_dict = _GetOperationParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetOperationParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
@@ -369,14 +349,10 @@ class Operations(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
 
     else:
-      response_dict = _GenerateVideosOperation_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _GenerateVideosOperation_from_mldev(response_dict)
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -401,9 +377,7 @@ class Operations(_api_module.BaseModule):
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _FetchPredictOperationParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _FetchPredictOperationParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{resourceName}:fetchPredictOperation'.format_map(
@@ -435,9 +409,7 @@ class Operations(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -503,18 +475,14 @@ class AsyncOperations(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _GetOperationParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetOperationParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
       else:
         path = '{operationName}'
     else:
-      request_dict = _GetOperationParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetOperationParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
@@ -543,14 +511,10 @@ class AsyncOperations(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
 
     else:
-      response_dict = _GenerateVideosOperation_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _GenerateVideosOperation_from_mldev(response_dict)
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -575,9 +539,7 @@ class AsyncOperations(_api_module.BaseModule):
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _FetchPredictOperationParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _FetchPredictOperationParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{resourceName}:fetchPredictOperation'.format_map(
@@ -609,9 +571,7 @@ class AsyncOperations(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()

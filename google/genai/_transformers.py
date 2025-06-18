@@ -195,7 +195,6 @@ def t_models_url(
 
 
 def t_extract_models(
-    api_client: _api_client.BaseApiClient,
     response: dict[str, Any],
 ) -> list[dict[str, Any]]:
   if not response:
@@ -299,18 +298,15 @@ def t_function_responses(
 
 
 def t_blobs(
-    api_client: _api_client.BaseApiClient,
     blobs: Union[types.BlobImageUnionDict, list[types.BlobImageUnionDict]],
 ) -> list[types.Blob]:
   if isinstance(blobs, list):
-    return [t_blob(api_client, blob) for blob in blobs]
+    return [t_blob(blob) for blob in blobs]
   else:
-    return [t_blob(api_client, blobs)]
+    return [t_blob(blobs)]
 
 
-def t_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
-) -> types.Blob:
+def t_blob(blob: types.BlobImageUnionDict) -> types.Blob:
   try:
     import PIL.Image
 
@@ -335,19 +331,15 @@ def t_blob(
   )
 
 
-def t_image_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
-) -> types.Blob:
-  blob = t_blob(api_client, blob)
+def t_image_blob(blob: types.BlobImageUnionDict) -> types.Blob:
+  blob = t_blob(blob)
   if blob.mime_type and blob.mime_type.startswith('image/'):
     return blob
   raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
 
 
-def t_audio_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobOrDict
-) -> types.Blob:
-  blob = t_blob(api_client, blob)
+def t_audio_blob(blob: types.BlobOrDict) -> types.Blob:
+  blob = t_blob(blob)
   if blob.mime_type and blob.mime_type.startswith('audio/'):
     return blob
   raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
@@ -393,7 +385,6 @@ def t_parts(
 
 
 def t_image_predictions(
-    client: _api_client.BaseApiClient,
     predictions: Optional[Iterable[Mapping[str, Any]]],
 ) -> Optional[list[types.GeneratedImage]]:
   if not predictions:
@@ -416,7 +407,6 @@ ContentType = Union[types.Content, types.ContentDict, types.PartUnionDict]
 
 
 def t_content(
-    client: _api_client.BaseApiClient,
     content: Optional[ContentType],
 ) -> types.Content:
   if content is None:
@@ -447,9 +437,9 @@ def t_contents_for_embed(
     contents: Union[list[types.Content], list[types.ContentDict], ContentType],
 ) -> Union[list[str], list[types.Content]]:
   if isinstance(contents, list):
-    transformed_contents = [t_content(client, content) for content in contents]
+    transformed_contents = [t_content(content) for content in contents]
   else:
-    transformed_contents = [t_content(client, contents)]
+    transformed_contents = [t_content(contents)]
 
   if client.vertexai:
     text_parts = []
@@ -469,7 +459,6 @@ def t_contents_for_embed(
 
 
 def t_contents(
-    client: _api_client.BaseApiClient,
     contents: Optional[
         Union[types.ContentListUnion, types.ContentListUnionDict, types.Content]
     ],
@@ -477,7 +466,7 @@ def t_contents(
   if contents is None or (isinstance(contents, list) and not contents):
     raise ValueError('contents are required.')
   if not isinstance(contents, list):
-    return [t_content(client, contents)]
+    return [t_content(contents)]
 
   try:
     import PIL.Image
@@ -635,14 +624,13 @@ def _raise_for_unsupported_schema_type(origin: Any) -> None:
   raise ValueError(f'Unsupported schema type: {origin}')
 
 
-def _raise_for_unsupported_mldev_properties(schema: Any, client: _api_client.BaseApiClient) -> None:
+def _raise_for_unsupported_mldev_properties(
+    schema: Any, client: _api_client.BaseApiClient
+) -> None:
   if not client.vertexai and (
-      schema.get('additionalProperties')
-      or schema.get('additional_properties')
+      schema.get('additionalProperties') or schema.get('additional_properties')
   ):
-    raise ValueError(
-        'additionalProperties is not supported in the Gemini API.'
-    )
+    raise ValueError('additionalProperties is not supported in the Gemini API.')
 
 
 def process_schema(
@@ -872,7 +860,6 @@ def t_schema(
 
 
 def t_speech_config(
-    _: _api_client.BaseApiClient,
     origin: Union[types.SpeechConfigUnionDict, Any],
 ) -> Optional[types.SpeechConfig]:
   if not origin:
@@ -892,7 +879,6 @@ def t_speech_config(
 
 
 def t_live_speech_config(
-    client: _api_client.BaseApiClient,
     origin: types.SpeechConfigOrDict,
 ) -> Optional[types.SpeechConfig]:
   if isinstance(origin, types.SpeechConfig):
@@ -958,9 +944,7 @@ def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(
-    client: _api_client.BaseApiClient, src: str
-) -> types.BatchJobSource:
+def t_batch_job_source(src: str) -> types.BatchJobSource:
   if src.startswith('gs://'):
     return types.BatchJobSource(
         format='jsonl',
@@ -975,9 +959,7 @@ def t_batch_job_source(
     raise ValueError(f'Unsupported source: {src}')
 
 
-def t_batch_job_destination(
-    client: _api_client.BaseApiClient, dest: str
-) -> types.BatchJobDestination:
+def t_batch_job_destination(dest: str) -> types.BatchJobDestination:
   if dest.startswith('gs://'):
     return types.BatchJobDestination(
         format='jsonl',
@@ -1042,7 +1024,6 @@ def t_resolve_operation(
 
 
 def t_file_name(
-    api_client: _api_client.BaseApiClient,
     name: Optional[Union[str, types.File, types.Video, types.GeneratedVideo]],
 ) -> str:
   # Remove the files/ prefix since it's added to the url path.
@@ -1076,9 +1057,7 @@ def t_file_name(
   return name
 
 
-def t_tuning_job_status(
-    api_client: _api_client.BaseApiClient, status: str
-) -> Union[types.JobState, str]:
+def t_tuning_job_status(status: str) -> Union[types.JobState, str]:
   if status == 'STATE_UNSPECIFIED':
     return types.JobState.JOB_STATE_UNSPECIFIED
   elif status == 'CREATING':
@@ -1098,7 +1077,7 @@ def t_tuning_job_status(
 # We shouldn't use this transformer if the backend adhere to Cloud Type
 # format https://cloud.google.com/docs/discovery/type-format.
 # TODO(b/389133914,b/390320301): Remove the hack after backend fix the issue.
-def t_bytes(api_client: _api_client.BaseApiClient, data: bytes) -> str:
+def t_bytes(data: bytes) -> str:
   if not isinstance(data, bytes):
     return data
   return base64.b64encode(data).decode('ascii')

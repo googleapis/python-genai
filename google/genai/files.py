@@ -27,7 +27,6 @@ from . import _api_module
 from . import _common
 from . import _transformers as t
 from . import types
-from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
@@ -36,7 +35,6 @@ logger = logging.getLogger('google_genai.files')
 
 
 def _ListFilesConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -58,7 +56,6 @@ def _ListFilesConfig_to_mldev(
 
 
 def _ListFilesParameters_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -67,16 +64,13 @@ def _ListFilesParameters_to_mldev(
     setv(
         to_object,
         ['config'],
-        _ListFilesConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
+        _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object),
     )
 
   return to_object
 
 
 def _FileStatus_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -94,7 +88,6 @@ def _FileStatus_to_mldev(
 
 
 def _File_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -142,16 +135,13 @@ def _File_to_mldev(
     setv(
         to_object,
         ['error'],
-        _FileStatus_to_mldev(
-            api_client, getv(from_object, ['error']), to_object
-        ),
+        _FileStatus_to_mldev(getv(from_object, ['error']), to_object),
     )
 
   return to_object
 
 
 def _CreateFileParameters_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -160,7 +150,7 @@ def _CreateFileParameters_to_mldev(
     setv(
         to_object,
         ['file'],
-        _File_to_mldev(api_client, getv(from_object, ['file']), to_object),
+        _File_to_mldev(getv(from_object, ['file']), to_object),
     )
 
   if getv(from_object, ['config']) is not None:
@@ -170,16 +160,13 @@ def _CreateFileParameters_to_mldev(
 
 
 def _GetFileParameters_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
-        to_object,
-        ['_url', 'file'],
-        t.t_file_name(api_client, getv(from_object, ['name'])),
+        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
     )
 
   if getv(from_object, ['config']) is not None:
@@ -189,16 +176,13 @@ def _GetFileParameters_to_mldev(
 
 
 def _DeleteFileParameters_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
-        to_object,
-        ['_url', 'file'],
-        t.t_file_name(api_client, getv(from_object, ['name'])),
+        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
     )
 
   if getv(from_object, ['config']) is not None:
@@ -208,7 +192,6 @@ def _DeleteFileParameters_to_mldev(
 
 
 def _FileStatus_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -226,7 +209,6 @@ def _FileStatus_from_mldev(
 
 
 def _File_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -274,16 +256,13 @@ def _File_from_mldev(
     setv(
         to_object,
         ['error'],
-        _FileStatus_from_mldev(
-            api_client, getv(from_object, ['error']), to_object
-        ),
+        _FileStatus_from_mldev(getv(from_object, ['error']), to_object),
     )
 
   return to_object
 
 
 def _ListFilesResponse_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -296,7 +275,7 @@ def _ListFilesResponse_from_mldev(
         to_object,
         ['files'],
         [
-            _File_from_mldev(api_client, item, to_object)
+            _File_from_mldev(item, to_object)
             for item in getv(from_object, ['files'])
         ],
     )
@@ -305,7 +284,6 @@ def _ListFilesResponse_from_mldev(
 
 
 def _CreateFileResponse_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -315,7 +293,6 @@ def _CreateFileResponse_from_mldev(
 
 
 def _DeleteFileResponse_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -356,9 +333,7 @@ class Files(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _ListFilesParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListFilesParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files'.format_map(request_url_dict)
@@ -386,9 +361,7 @@ class Files(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListFilesResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListFilesResponse_from_mldev(response_dict)
 
     return_value = types.ListFilesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -413,9 +386,7 @@ class Files(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'upload/v1beta/files'.format_map(request_url_dict)
@@ -451,9 +422,7 @@ class Files(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _CreateFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _CreateFileResponse_from_mldev(response_dict)
 
     return_value = types.CreateFileResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -492,9 +461,7 @@ class Files(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _GetFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -522,7 +489,7 @@ class Files(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _File_from_mldev(self._api_client, response_dict)
+      response_dict = _File_from_mldev(response_dict)
 
     return_value = types.File._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -560,9 +527,7 @@ class Files(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _DeleteFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -592,9 +557,7 @@ class Files(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _DeleteFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteFileResponse_from_mldev(response_dict)
 
     return_value = types.DeleteFileResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -714,7 +677,7 @@ class Files(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(self._api_client, return_file.json['file']),
+        response=_File_from_mldev(return_file.json['file']),
         kwargs=config_model.model_dump() if config else {},
     )
 
@@ -787,7 +750,7 @@ class Files(_api_module.BaseModule):
           'downloaded. You can tell which files are downloadable by checking '
           'the `source` or `download_uri` property.'
       )
-    name = t.t_file_name(self._api_client, file)
+    name = t.t_file_name(file)
 
     path = f'files/{name}:download'
 
@@ -842,9 +805,7 @@ class AsyncFiles(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _ListFilesParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListFilesParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files'.format_map(request_url_dict)
@@ -874,9 +835,7 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListFilesResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListFilesResponse_from_mldev(response_dict)
 
     return_value = types.ListFilesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -901,9 +860,7 @@ class AsyncFiles(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _CreateFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'upload/v1beta/files'.format_map(request_url_dict)
@@ -939,9 +896,7 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _CreateFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _CreateFileResponse_from_mldev(response_dict)
 
     return_value = types.CreateFileResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -980,9 +935,7 @@ class AsyncFiles(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _GetFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _GetFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -1012,7 +965,7 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _File_from_mldev(self._api_client, response_dict)
+      response_dict = _File_from_mldev(response_dict)
 
     return_value = types.File._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1050,9 +1003,7 @@ class AsyncFiles(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _DeleteFileParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _DeleteFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -1082,9 +1033,7 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _DeleteFileResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteFileResponse_from_mldev(response_dict)
 
     return_value = types.DeleteFileResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1209,7 +1158,7 @@ class AsyncFiles(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(self._api_client, return_file.json['file']),
+        response=_File_from_mldev(return_file.json['file']),
         kwargs=config_model.model_dump() if config else {},
     )
 
@@ -1270,7 +1219,7 @@ class AsyncFiles(_api_module.BaseModule):
       else:
         config_model = config
 
-    name = t.t_file_name(self._api_client, file)
+    name = t.t_file_name(file)
 
     path = f'files/{name}:download'
 

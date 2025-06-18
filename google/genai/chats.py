@@ -250,7 +250,7 @@ class Chat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
     response = self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
@@ -303,7 +303,7 @@ class Chat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
     output_contents = []
     finish_reason = None
     is_valid = True
@@ -412,7 +412,7 @@ class AsyncChat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
     response = await self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
@@ -464,7 +464,7 @@ class AsyncChat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
 
     async def async_generator():  # type: ignore[no-untyped-def]
       output_contents = []

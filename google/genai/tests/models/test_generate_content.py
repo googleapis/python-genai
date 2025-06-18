@@ -68,7 +68,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_http_options_in_method',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'http_options': test_http_options,
             },
@@ -130,7 +130,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_llama',
         parameters=types._GenerateContentParameters(
             model='meta/llama-3.2-90b-vision-instruct-maas',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
         ),
         exception_if_mldev='404',
         skip_in_api_mode='it will encounter 403 for api mode',
@@ -139,10 +139,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_system_instructions',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'high'),
+            contents=t.t_contents('high'),
             config={
                 'system_instruction': t.t_content(
-                    None, 'I say high, you say low'
+                    'I say high, you say low'
                 )
             },
         ),
@@ -152,7 +152,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='not supported',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'labels': {'label1': 'value1', 'label2': 'value2'},
             },
@@ -162,7 +162,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_simple_shared_generation_config',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'max_output_tokens': 100,
                 'top_k': 2,
@@ -179,7 +179,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_2_candidates_gemini_1_5_flash',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 30 words.'),
+            contents=t.t_contents('Tell me a story in 30 words.'),
             config={
                 'candidate_count': 2,
             },
@@ -189,7 +189,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_safety_settings_on_difference',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'safety_settings': safety_settings_with_method,
             },
@@ -200,7 +200,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_penalty',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'Tell me a story in 30 words.'),
+            contents=t.t_contents('Tell me a story in 30 words.'),
             config={
                 'presence_penalty': 0.5,
                 'frequency_penalty': 0.5,
@@ -211,7 +211,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_penalty_gemini_1_5_flash',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 30 words.'),
+            contents=t.t_contents('Tell me a story in 30 words.'),
             config={
                 'presence_penalty': 0.5,
                 'frequency_penalty': 0.5,
@@ -222,7 +222,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_google_search_tool',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
-            contents=t.t_contents(None, 'Why is the sky blue?'),
+            contents=t.t_contents('Why is the sky blue?'),
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())]
             ),
@@ -232,7 +232,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_google_search_tool_with_time_range_filter',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
-            contents=t.t_contents(None, 'What is the QQQ stock price?'),
+            contents=t.t_contents('What is the QQQ stock price?'),
             config=types.GenerateContentConfig(
                 tools=[
                     types.Tool(
@@ -256,7 +256,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
             contents=t.t_contents(
-                None, 'Produce a speech response saying "Cheese"'
+                'Produce a speech response saying "Cheese"'
             ),
             config=types.GenerateContentConfig(
                 response_modalities=['audio'],
@@ -276,7 +276,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
             contents=t.t_contents(
-                None, 'Alice says "Hi", Bob replies with "what\'s up"?'
+                'Alice says "Hi", Bob replies with "what\'s up"?'
             ),
             config=types.GenerateContentConfig(
                 response_modalities=['audio'],
@@ -312,7 +312,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
             contents=t.t_contents(
-                None, 'Alice says "Hi", Bob replies with "what\'s up"?'
+                'Alice says "Hi", Bob replies with "what\'s up"?'
             ),
             config=types.GenerateContentConfig(
                 response_modalities=['audio'],
@@ -387,7 +387,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_response_schema_with_default',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'response_mime_type': 'application/json',
                 'response_schema': {

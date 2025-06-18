@@ -24,14 +24,14 @@ from . import constants
 
 _COUNT_TOKENS_PARAMS = types._CountTokensParameters(
     model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    contents=[t.t_content('Tell me a story in 300 words.')],
 )
 
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION = copy.deepcopy(
     _COUNT_TOKENS_PARAMS
 )
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION.config = {
-    'system_instruction': t.t_content(None, 'you are a chatbot.')
+    'system_instruction': t.t_content('you are a chatbot.')
 }
 
 _COUNT_TOKENS_PARAMS_WITH_TOOLS = copy.deepcopy(_COUNT_TOKENS_PARAMS)

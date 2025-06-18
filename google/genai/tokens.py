@@ -222,7 +222,8 @@ class Tokens(_api_module.BaseModule):
       )
     else:
       request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client,
+          parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -260,7 +261,7 @@ class Tokens(_api_module.BaseModule):
 
     if not self._api_client.vertexai:
       response_dict = tokens_converters._AuthToken_from_mldev(
-          self._api_client, response_dict
+          response_dict
       )
 
     return_value = types.AuthToken._from_response(
@@ -316,7 +317,8 @@ class AsyncTokens(_api_module.BaseModule):
       )
     else:
       request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client,
+          parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -355,7 +357,7 @@ class AsyncTokens(_api_module.BaseModule):
 
     if not self._api_client.vertexai:
       response_dict = tokens_converters._AuthToken_from_mldev(
-          self._api_client, response_dict
+          response_dict
       )
 
     return_value = types.AuthToken._from_response(

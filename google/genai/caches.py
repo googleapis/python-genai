@@ -33,7 +33,6 @@ logger = logging.getLogger('google_genai.caches')
 
 
 def _VideoMetadata_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -51,7 +50,6 @@ def _VideoMetadata_to_mldev(
 
 
 def _Blob_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -69,7 +67,6 @@ def _Blob_to_mldev(
 
 
 def _FileData_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -87,7 +84,6 @@ def _FileData_to_mldev(
 
 
 def _Part_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -97,7 +93,7 @@ def _Part_to_mldev(
         to_object,
         ['videoMetadata'],
         _VideoMetadata_to_mldev(
-            api_client, getv(from_object, ['video_metadata']), to_object
+            getv(from_object, ['video_metadata']), to_object
         ),
     )
 
@@ -108,18 +104,14 @@ def _Part_to_mldev(
     setv(
         to_object,
         ['inlineData'],
-        _Blob_to_mldev(
-            api_client, getv(from_object, ['inline_data']), to_object
-        ),
+        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
     )
 
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
         ['fileData'],
-        _FileData_to_mldev(
-            api_client, getv(from_object, ['file_data']), to_object
-        ),
+        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
     )
 
   if getv(from_object, ['thought_signature']) is not None:
@@ -156,7 +148,6 @@ def _Part_to_mldev(
 
 
 def _Content_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -166,7 +157,7 @@ def _Content_to_mldev(
         to_object,
         ['parts'],
         [
-            _Part_to_mldev(api_client, item, to_object)
+            _Part_to_mldev(item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -178,7 +169,6 @@ def _Content_to_mldev(
 
 
 def _FunctionDeclaration_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -216,7 +206,6 @@ def _FunctionDeclaration_to_mldev(
 
 
 def _Interval_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -231,7 +220,6 @@ def _Interval_to_mldev(
 
 
 def _GoogleSearch_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -240,16 +228,13 @@ def _GoogleSearch_to_mldev(
     setv(
         to_object,
         ['timeRangeFilter'],
-        _Interval_to_mldev(
-            api_client, getv(from_object, ['time_range_filter']), to_object
-        ),
+        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
     )
 
   return to_object
 
 
 def _DynamicRetrievalConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -268,7 +253,6 @@ def _DynamicRetrievalConfig_to_mldev(
 
 
 def _GoogleSearchRetrieval_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -278,9 +262,7 @@ def _GoogleSearchRetrieval_to_mldev(
         to_object,
         ['dynamicRetrievalConfig'],
         _DynamicRetrievalConfig_to_mldev(
-            api_client,
-            getv(from_object, ['dynamic_retrieval_config']),
-            to_object,
+            getv(from_object, ['dynamic_retrieval_config']), to_object
         ),
     )
 
@@ -288,7 +270,6 @@ def _GoogleSearchRetrieval_to_mldev(
 
 
 def _EnterpriseWebSearch_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -298,7 +279,6 @@ def _EnterpriseWebSearch_to_mldev(
 
 
 def _ApiKeyConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -310,7 +290,6 @@ def _ApiKeyConfig_to_mldev(
 
 
 def _AuthConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -345,7 +324,6 @@ def _AuthConfig_to_mldev(
 
 
 def _GoogleMaps_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -357,7 +335,6 @@ def _GoogleMaps_to_mldev(
 
 
 def _UrlContext_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -367,7 +344,6 @@ def _UrlContext_to_mldev(
 
 
 def _Tool_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -377,7 +353,7 @@ def _Tool_to_mldev(
         to_object,
         ['functionDeclarations'],
         [
-            _FunctionDeclaration_to_mldev(api_client, item, to_object)
+            _FunctionDeclaration_to_mldev(item, to_object)
             for item in getv(from_object, ['function_declarations'])
         ],
     )
@@ -389,9 +365,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['googleSearch'],
-        _GoogleSearch_to_mldev(
-            api_client, getv(from_object, ['google_search']), to_object
-        ),
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_search_retrieval']) is not None:
@@ -399,9 +373,7 @@ def _Tool_to_mldev(
         to_object,
         ['googleSearchRetrieval'],
         _GoogleSearchRetrieval_to_mldev(
-            api_client,
-            getv(from_object, ['google_search_retrieval']),
-            to_object,
+            getv(from_object, ['google_search_retrieval']), to_object
         ),
     )
 
@@ -417,9 +389,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['urlContext'],
-        _UrlContext_to_mldev(
-            api_client, getv(from_object, ['url_context']), to_object
-        ),
+        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
     )
 
   if getv(from_object, ['code_execution']) is not None:
@@ -429,7 +399,6 @@ def _Tool_to_mldev(
 
 
 def _FunctionCallingConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -448,7 +417,6 @@ def _FunctionCallingConfig_to_mldev(
 
 
 def _LatLng_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -463,7 +431,6 @@ def _LatLng_to_mldev(
 
 
 def _RetrievalConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -472,7 +439,7 @@ def _RetrievalConfig_to_mldev(
     setv(
         to_object,
         ['latLng'],
-        _LatLng_to_mldev(api_client, getv(from_object, ['lat_lng']), to_object),
+        _LatLng_to_mldev(getv(from_object, ['lat_lng']), to_object),
     )
 
   if getv(from_object, ['language_code']) is not None:
@@ -482,7 +449,6 @@ def _RetrievalConfig_to_mldev(
 
 
 def _ToolConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -492,9 +458,7 @@ def _ToolConfig_to_mldev(
         to_object,
         ['functionCallingConfig'],
         _FunctionCallingConfig_to_mldev(
-            api_client,
-            getv(from_object, ['function_calling_config']),
-            to_object,
+            getv(from_object, ['function_calling_config']), to_object
         ),
     )
 
@@ -503,7 +467,7 @@ def _ToolConfig_to_mldev(
         to_object,
         ['retrievalConfig'],
         _RetrievalConfig_to_mldev(
-            api_client, getv(from_object, ['retrieval_config']), to_object
+            getv(from_object, ['retrieval_config']), to_object
         ),
     )
 
@@ -511,7 +475,6 @@ def _ToolConfig_to_mldev(
 
 
 def _CreateCachedContentConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -531,10 +494,8 @@ def _CreateCachedContentConfig_to_mldev(
         parent_object,
         ['contents'],
         [
-            _Content_to_mldev(api_client, item, to_object)
-            for item in t.t_contents(
-                api_client, getv(from_object, ['contents'])
-            )
+            _Content_to_mldev(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
         ],
     )
 
@@ -543,9 +504,7 @@ def _CreateCachedContentConfig_to_mldev(
         parent_object,
         ['systemInstruction'],
         _Content_to_mldev(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
         ),
     )
 
@@ -554,7 +513,7 @@ def _CreateCachedContentConfig_to_mldev(
         parent_object,
         ['tools'],
         [
-            _Tool_to_mldev(api_client, item, to_object)
+            _Tool_to_mldev(item, to_object)
             for item in getv(from_object, ['tools'])
         ],
     )
@@ -563,9 +522,7 @@ def _CreateCachedContentConfig_to_mldev(
     setv(
         parent_object,
         ['toolConfig'],
-        _ToolConfig_to_mldev(
-            api_client, getv(from_object, ['tool_config']), to_object
-        ),
+        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
     )
 
   if getv(from_object, ['kms_key_name']) is not None:
@@ -592,7 +549,7 @@ def _CreateCachedContentParameters_to_mldev(
         to_object,
         ['config'],
         _CreateCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -638,7 +595,6 @@ def _DeleteCachedContentParameters_to_mldev(
 
 
 def _UpdateCachedContentConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -671,7 +627,7 @@ def _UpdateCachedContentParameters_to_mldev(
         to_object,
         ['config'],
         _UpdateCachedContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -679,7 +635,6 @@ def _UpdateCachedContentParameters_to_mldev(
 
 
 def _ListCachedContentsConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -701,7 +656,6 @@ def _ListCachedContentsConfig_to_mldev(
 
 
 def _ListCachedContentsParameters_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -711,7 +665,7 @@ def _ListCachedContentsParameters_to_mldev(
         to_object,
         ['config'],
         _ListCachedContentsConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -719,7 +673,6 @@ def _ListCachedContentsParameters_to_mldev(
 
 
 def _VideoMetadata_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -737,7 +690,6 @@ def _VideoMetadata_to_vertex(
 
 
 def _Blob_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -755,7 +707,6 @@ def _Blob_to_vertex(
 
 
 def _FileData_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -773,7 +724,6 @@ def _FileData_to_vertex(
 
 
 def _Part_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -783,7 +733,7 @@ def _Part_to_vertex(
         to_object,
         ['videoMetadata'],
         _VideoMetadata_to_vertex(
-            api_client, getv(from_object, ['video_metadata']), to_object
+            getv(from_object, ['video_metadata']), to_object
         ),
     )
 
@@ -794,18 +744,14 @@ def _Part_to_vertex(
     setv(
         to_object,
         ['inlineData'],
-        _Blob_to_vertex(
-            api_client, getv(from_object, ['inline_data']), to_object
-        ),
+        _Blob_to_vertex(getv(from_object, ['inline_data']), to_object),
     )
 
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
         ['fileData'],
-        _FileData_to_vertex(
-            api_client, getv(from_object, ['file_data']), to_object
-        ),
+        _FileData_to_vertex(getv(from_object, ['file_data']), to_object),
     )
 
   if getv(from_object, ['thought_signature']) is not None:
@@ -842,7 +788,6 @@ def _Part_to_vertex(
 
 
 def _Content_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -852,7 +797,7 @@ def _Content_to_vertex(
         to_object,
         ['parts'],
         [
-            _Part_to_vertex(api_client, item, to_object)
+            _Part_to_vertex(item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -864,7 +809,6 @@ def _Content_to_vertex(
 
 
 def _FunctionDeclaration_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -902,7 +846,6 @@ def _FunctionDeclaration_to_vertex(
 
 
 def _Interval_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -917,7 +860,6 @@ def _Interval_to_vertex(
 
 
 def _GoogleSearch_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -927,7 +869,7 @@ def _GoogleSearch_to_vertex(
         to_object,
         ['timeRangeFilter'],
         _Interval_to_vertex(
-            api_client, getv(from_object, ['time_range_filter']), to_object
+            getv(from_object, ['time_range_filter']), to_object
         ),
     )
 
@@ -935,7 +877,6 @@ def _GoogleSearch_to_vertex(
 
 
 def _DynamicRetrievalConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -954,7 +895,6 @@ def _DynamicRetrievalConfig_to_vertex(
 
 
 def _GoogleSearchRetrieval_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -964,9 +904,7 @@ def _GoogleSearchRetrieval_to_vertex(
         to_object,
         ['dynamicRetrievalConfig'],
         _DynamicRetrievalConfig_to_vertex(
-            api_client,
-            getv(from_object, ['dynamic_retrieval_config']),
-            to_object,
+            getv(from_object, ['dynamic_retrieval_config']), to_object
         ),
     )
 
@@ -974,7 +912,6 @@ def _GoogleSearchRetrieval_to_vertex(
 
 
 def _EnterpriseWebSearch_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -984,7 +921,6 @@ def _EnterpriseWebSearch_to_vertex(
 
 
 def _ApiKeyConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -996,7 +932,6 @@ def _ApiKeyConfig_to_vertex(
 
 
 def _AuthConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1006,7 +941,7 @@ def _AuthConfig_to_vertex(
         to_object,
         ['apiKeyConfig'],
         _ApiKeyConfig_to_vertex(
-            api_client, getv(from_object, ['api_key_config']), to_object
+            getv(from_object, ['api_key_config']), to_object
         ),
     )
 
@@ -1037,7 +972,6 @@ def _AuthConfig_to_vertex(
 
 
 def _GoogleMaps_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1046,16 +980,13 @@ def _GoogleMaps_to_vertex(
     setv(
         to_object,
         ['authConfig'],
-        _AuthConfig_to_vertex(
-            api_client, getv(from_object, ['auth_config']), to_object
-        ),
+        _AuthConfig_to_vertex(getv(from_object, ['auth_config']), to_object),
     )
 
   return to_object
 
 
 def _UrlContext_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1065,7 +996,6 @@ def _UrlContext_to_vertex(
 
 
 def _Tool_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1075,7 +1005,7 @@ def _Tool_to_vertex(
         to_object,
         ['functionDeclarations'],
         [
-            _FunctionDeclaration_to_vertex(api_client, item, to_object)
+            _FunctionDeclaration_to_vertex(item, to_object)
             for item in getv(from_object, ['function_declarations'])
         ],
     )
@@ -1088,7 +1018,7 @@ def _Tool_to_vertex(
         to_object,
         ['googleSearch'],
         _GoogleSearch_to_vertex(
-            api_client, getv(from_object, ['google_search']), to_object
+            getv(from_object, ['google_search']), to_object
         ),
     )
 
@@ -1097,9 +1027,7 @@ def _Tool_to_vertex(
         to_object,
         ['googleSearchRetrieval'],
         _GoogleSearchRetrieval_to_vertex(
-            api_client,
-            getv(from_object, ['google_search_retrieval']),
-            to_object,
+            getv(from_object, ['google_search_retrieval']), to_object
         ),
     )
 
@@ -1108,7 +1036,7 @@ def _Tool_to_vertex(
         to_object,
         ['enterpriseWebSearch'],
         _EnterpriseWebSearch_to_vertex(
-            api_client, getv(from_object, ['enterprise_web_search']), to_object
+            getv(from_object, ['enterprise_web_search']), to_object
         ),
     )
 
@@ -1116,18 +1044,14 @@ def _Tool_to_vertex(
     setv(
         to_object,
         ['googleMaps'],
-        _GoogleMaps_to_vertex(
-            api_client, getv(from_object, ['google_maps']), to_object
-        ),
+        _GoogleMaps_to_vertex(getv(from_object, ['google_maps']), to_object),
     )
 
   if getv(from_object, ['url_context']) is not None:
     setv(
         to_object,
         ['urlContext'],
-        _UrlContext_to_vertex(
-            api_client, getv(from_object, ['url_context']), to_object
-        ),
+        _UrlContext_to_vertex(getv(from_object, ['url_context']), to_object),
     )
 
   if getv(from_object, ['code_execution']) is not None:
@@ -1137,7 +1061,6 @@ def _Tool_to_vertex(
 
 
 def _FunctionCallingConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1156,7 +1079,6 @@ def _FunctionCallingConfig_to_vertex(
 
 
 def _LatLng_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1171,7 +1093,6 @@ def _LatLng_to_vertex(
 
 
 def _RetrievalConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1180,9 +1101,7 @@ def _RetrievalConfig_to_vertex(
     setv(
         to_object,
         ['latLng'],
-        _LatLng_to_vertex(
-            api_client, getv(from_object, ['lat_lng']), to_object
-        ),
+        _LatLng_to_vertex(getv(from_object, ['lat_lng']), to_object),
     )
 
   if getv(from_object, ['language_code']) is not None:
@@ -1192,7 +1111,6 @@ def _RetrievalConfig_to_vertex(
 
 
 def _ToolConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1202,9 +1120,7 @@ def _ToolConfig_to_vertex(
         to_object,
         ['functionCallingConfig'],
         _FunctionCallingConfig_to_vertex(
-            api_client,
-            getv(from_object, ['function_calling_config']),
-            to_object,
+            getv(from_object, ['function_calling_config']), to_object
         ),
     )
 
@@ -1213,7 +1129,7 @@ def _ToolConfig_to_vertex(
         to_object,
         ['retrievalConfig'],
         _RetrievalConfig_to_vertex(
-            api_client, getv(from_object, ['retrieval_config']), to_object
+            getv(from_object, ['retrieval_config']), to_object
         ),
     )
 
@@ -1221,7 +1137,6 @@ def _ToolConfig_to_vertex(
 
 
 def _CreateCachedContentConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1241,10 +1156,8 @@ def _CreateCachedContentConfig_to_vertex(
         parent_object,
         ['contents'],
         [
-            _Content_to_vertex(api_client, item, to_object)
-            for item in t.t_contents(
-                api_client, getv(from_object, ['contents'])
-            )
+            _Content_to_vertex(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
         ],
     )
 
@@ -1253,9 +1166,7 @@ def _CreateCachedContentConfig_to_vertex(
         parent_object,
         ['systemInstruction'],
         _Content_to_vertex(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
         ),
     )
 
@@ -1264,7 +1175,7 @@ def _CreateCachedContentConfig_to_vertex(
         parent_object,
         ['tools'],
         [
-            _Tool_to_vertex(api_client, item, to_object)
+            _Tool_to_vertex(item, to_object)
             for item in getv(from_object, ['tools'])
         ],
     )
@@ -1273,9 +1184,7 @@ def _CreateCachedContentConfig_to_vertex(
     setv(
         parent_object,
         ['toolConfig'],
-        _ToolConfig_to_vertex(
-            api_client, getv(from_object, ['tool_config']), to_object
-        ),
+        _ToolConfig_to_vertex(getv(from_object, ['tool_config']), to_object),
     )
 
   if getv(from_object, ['kms_key_name']) is not None:
@@ -1306,7 +1215,7 @@ def _CreateCachedContentParameters_to_vertex(
         to_object,
         ['config'],
         _CreateCachedContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -1352,7 +1261,6 @@ def _DeleteCachedContentParameters_to_vertex(
 
 
 def _UpdateCachedContentConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1385,7 +1293,7 @@ def _UpdateCachedContentParameters_to_vertex(
         to_object,
         ['config'],
         _UpdateCachedContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -1393,7 +1301,6 @@ def _UpdateCachedContentParameters_to_vertex(
 
 
 def _ListCachedContentsConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1415,7 +1322,6 @@ def _ListCachedContentsConfig_to_vertex(
 
 
 def _ListCachedContentsParameters_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1425,7 +1331,7 @@ def _ListCachedContentsParameters_to_vertex(
         to_object,
         ['config'],
         _ListCachedContentsConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
+            getv(from_object, ['config']), to_object
         ),
     )
 
@@ -1438,7 +1344,6 @@ def _Behavior_to_vertex_enum_validate(enum_value: Any) -> None:
 
 
 def _CachedContent_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1468,7 +1373,6 @@ def _CachedContent_from_mldev(
 
 
 def _DeleteCachedContentResponse_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1478,7 +1382,6 @@ def _DeleteCachedContentResponse_from_mldev(
 
 
 def _ListCachedContentsResponse_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1491,7 +1394,7 @@ def _ListCachedContentsResponse_from_mldev(
         to_object,
         ['cached_contents'],
         [
-            _CachedContent_from_mldev(api_client, item, to_object)
+            _CachedContent_from_mldev(item, to_object)
             for item in getv(from_object, ['cachedContents'])
         ],
     )
@@ -1500,7 +1403,6 @@ def _ListCachedContentsResponse_from_mldev(
 
 
 def _CachedContent_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1530,7 +1432,6 @@ def _CachedContent_from_vertex(
 
 
 def _DeleteCachedContentResponse_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1540,7 +1441,6 @@ def _DeleteCachedContentResponse_from_vertex(
 
 
 def _ListCachedContentsResponse_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1553,7 +1453,7 @@ def _ListCachedContentsResponse_from_vertex(
         to_object,
         ['cached_contents'],
         [
-            _CachedContent_from_vertex(api_client, item, to_object)
+            _CachedContent_from_vertex(item, to_object)
             for item in getv(from_object, ['cachedContents'])
         ],
     )
@@ -1635,12 +1535,10 @@ class Caches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _CachedContent_from_vertex(response_dict)
 
     else:
-      response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+      response_dict = _CachedContent_from_mldev(response_dict)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1707,12 +1605,10 @@ class Caches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _CachedContent_from_vertex(response_dict)
 
     else:
-      response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+      response_dict = _CachedContent_from_mldev(response_dict)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1783,14 +1679,10 @@ class Caches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _DeleteCachedContentResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteCachedContentResponse_from_vertex(response_dict)
 
     else:
-      response_dict = _DeleteCachedContentResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteCachedContentResponse_from_mldev(response_dict)
 
     return_value = types.DeleteCachedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1864,12 +1756,10 @@ class Caches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _CachedContent_from_vertex(response_dict)
 
     else:
-      response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+      response_dict = _CachedContent_from_mldev(response_dict)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1896,18 +1786,14 @@ class Caches(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _ListCachedContentsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
       else:
         path = 'cachedContents'
     else:
-      request_dict = _ListCachedContentsParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
@@ -1934,14 +1820,10 @@ class Caches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListCachedContentsResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _ListCachedContentsResponse_from_vertex(response_dict)
 
     else:
-      response_dict = _ListCachedContentsResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListCachedContentsResponse_from_mldev(response_dict)
 
     return_value = types.ListCachedContentsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2034,12 +1916,10 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _CachedContent_from_vertex(response_dict)
 
     else:
-      response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+      response_dict = _CachedContent_from_mldev(response_dict)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2109,12 +1989,10 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _CachedContent_from_vertex(response_dict)
 
     else:
-      response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+      response_dict = _CachedContent_from_mldev(response_dict)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2186,14 +2064,10 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _DeleteCachedContentResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteCachedContentResponse_from_vertex(response_dict)
 
     else:
-      response_dict = _DeleteCachedContentResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _DeleteCachedContentResponse_from_mldev(response_dict)
 
     return_value = types.DeleteCachedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2267,12 +2141,10 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _CachedContent_from_vertex(response_dict)
 
     else:
-      response_dict = _CachedContent_from_mldev(self._api_client, response_dict)
+      response_dict = _CachedContent_from_mldev(response_dict)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2299,18 +2171,14 @@ class AsyncCaches(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _ListCachedContentsParameters_to_vertex(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
       else:
         path = 'cachedContents'
     else:
-      request_dict = _ListCachedContentsParameters_to_mldev(
-          self._api_client, parameter_model
-      )
+      request_dict = _ListCachedContentsParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'cachedContents'.format_map(request_url_dict)
@@ -2339,14 +2207,10 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListCachedContentsResponse_from_vertex(
-          self._api_client, response_dict
-      )
+      response_dict = _ListCachedContentsResponse_from_vertex(response_dict)
 
     else:
-      response_dict = _ListCachedContentsResponse_from_mldev(
-          self._api_client, response_dict
-      )
+      response_dict = _ListCachedContentsResponse_from_mldev(response_dict)
 
     return_value = types.ListCachedContentsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
