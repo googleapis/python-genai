@@ -1624,24 +1624,20 @@ class Schema(_common.BaseModel):
           continue
         if field_name not in google_schema_field_names:
           raise ValueError(
-              (
-                  f'JSONSchema field "{field_name}" is not supported by the '
-                  'Schema object. And the "raise_error_on_unsupported_field" '
-                  'argument is set to True. If you still want to convert '
-                  'it into the Schema object, please either remove the field '
-                  f'"{field_name}" from the JSONSchema object, or leave the '
-                  '"raise_error_on_unsupported_field" unset.'
-              )
+              f'JSONSchema field "{field_name}" is not supported by the '
+              'Schema object. And the "raise_error_on_unsupported_field" '
+              'argument is set to True. If you still want to convert '
+              'it into the Schema object, please either remove the field '
+              f'"{field_name}" from the JSONSchema object, or leave the '
+              '"raise_error_on_unsupported_field" unset.'
           )
         if (
             field_name in gemini_api_unsupported_field_names
             and api_option == 'GEMINI_API'
         ):
           raise ValueError(
-              (
-                  f'The "{field_name}" field is not supported by the Schema '
-                  'object for GEMINI_API.'
-              )
+              f'The "{field_name}" field is not supported by the Schema '
+              'object for GEMINI_API.'
           )
 
     def copy_schema_fields(
