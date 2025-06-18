@@ -1124,6 +1124,63 @@ class ContentDict(TypedDict, total=False):
 ContentOrDict = Union[Content, ContentDict]
 
 
+class HttpRetryOptions(_common.BaseModel):
+  """HTTP retry options to be used in each of the requests."""
+
+  attempts: Optional[int] = Field(
+      default=None,
+      description="""Maximum number of attempts, including the original request.
+      If 0 or 1, it means no retries.""",
+  )
+  initial_delay: Optional[float] = Field(
+      default=None,
+      description="""Initial delay before the first retry, in fractions of a second.""",
+  )
+  max_delay: Optional[float] = Field(
+      default=None,
+      description="""Maximum delay between retries, in fractions of a second.""",
+  )
+  exp_base: Optional[float] = Field(
+      default=None,
+      description="""Multiplier by which the delay increases after each attempt.""",
+  )
+  jitter: Optional[float] = Field(
+      default=None, description="""Randomness factor for the delay."""
+  )
+  http_status_codes: Optional[list[int]] = Field(
+      default=None,
+      description="""List of HTTP status codes that should trigger a retry.
+      If not specified, a default set of retryable codes may be used.""",
+  )
+
+
+class HttpRetryOptionsDict(TypedDict, total=False):
+  """HTTP retry options to be used in each of the requests."""
+
+  attempts: Optional[int]
+  """Maximum number of attempts, including the original request.
+      If 0 or 1, it means no retries."""
+
+  initial_delay: Optional[float]
+  """Initial delay before the first retry, in fractions of a second."""
+
+  max_delay: Optional[float]
+  """Maximum delay between retries, in fractions of a second."""
+
+  exp_base: Optional[float]
+  """Multiplier by which the delay increases after each attempt."""
+
+  jitter: Optional[float]
+  """Randomness factor for the delay."""
+
+  http_status_codes: Optional[list[int]]
+  """List of HTTP status codes that should trigger a retry.
+      If not specified, a default set of retryable codes may be used."""
+
+
+HttpRetryOptionsOrDict = Union[HttpRetryOptions, HttpRetryOptionsDict]
+
+
 class HttpOptions(_common.BaseModel):
   """HTTP options to be used in each of the requests."""
 
@@ -1151,6 +1208,9 @@ class HttpOptions(_common.BaseModel):
       default=None,
       description="""Extra parameters to add to the request body.""",
   )
+  retry_options: Optional[HttpRetryOptions] = Field(
+      default=None, description="""HTTP retry options for the request."""
+  )
 
 
 class HttpOptionsDict(TypedDict, total=False):
@@ -1176,6 +1236,9 @@ class HttpOptionsDict(TypedDict, total=False):
 
   extra_body: Optional[dict[str, Any]]
   """Extra parameters to add to the request body."""
+
+  retry_options: Optional[HttpRetryOptionsDict]
+  """HTTP retry options for the request."""
 
 
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]

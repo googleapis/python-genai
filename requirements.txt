@@ -21,6 +21,7 @@ pytest-asyncio==0.25.0
 pytest-cov==6.0.0
 requests==2.32.3
 rsa==4.9
+tenacity==8.2.3
 typing_extensions==4.12.2
 urllib3==2.2.3
 websockets==15.0.0

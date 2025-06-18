@@ -49,6 +49,7 @@ import httpx
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import ValidationError
+import tenacity
 
 from . import _common
 from . import errors
@@ -57,10 +58,13 @@ from .types import HttpOptions
 from .types import HttpOptionsDict
 from .types import HttpOptionsOrDict
 from .types import HttpResponse as SdkHttpResponse
+from .types import HttpRetryOptions
+
 
 has_aiohttp = False
 try:
   import aiohttp
+
   has_aiohttp = True
 except ImportError:
   pass
@@ -96,8 +100,7 @@ def _get_env_api_key() -> Optional[str]:
   env_gemini_api_key = os.environ.get('GEMINI_API_KEY', None)
   if env_google_api_key and env_gemini_api_key:
     logger.warning(
-        'Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using'
-        ' GOOGLE_API_KEY.'
+        'Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.'
     )
 
   return env_google_api_key or env_gemini_api_key or None
@@ -119,7 +122,9 @@ def _append_library_version_headers(headers: dict[str, str]) -> None:
       'x-goog-api-client' in headers
       and version_header_value not in headers['x-goog-api-client']
   ):
-    headers['x-goog-api-client'] = f'{version_header_value} ' + headers['x-goog-api-client']
+    headers['x-goog-api-client'] = (
+        f'{version_header_value} ' + headers['x-goog-api-client']
+    )
   elif 'x-goog-api-client' not in headers:
     headers['x-goog-api-client'] = version_header_value
 
@@ -317,6 +322,56 @@ class HttpResponse:
       response_payload[attribute] = copy.deepcopy(getattr(self, attribute))
 
 
+# Default retry options.
+# The config is based on https://cloud.google.com/storage/docs/retry-strategy.
+_RETRY_ATTEMPTS = 3
+_RETRY_INITIAL_DELAY = 1.0  # seconds
+_RETRY_MAX_DELAY = 120.0  # seconds
+_RETRY_EXP_BASE = 2
+_RETRY_JITTER = 1
+_RETRY_HTTP_STATUS_CODES = (
+    408,  # Request timeout.
+    429,  # Too many requests.
+    500,  # Internal server error.
+    502,  # Bad gateway.
+    503,  # Service unavailable.
+    504,  # Gateway timeout
+)
+
+
+def _retry_args(options: Optional[HttpRetryOptions]) -> dict[str, Any]:
+  """Returns the retry args for the given http retry options.
+
+  Args:
+    options: The http retry options to use for the retry configuration. If None,
+      the 'never retry' stop strategy will be used.
+
+  Returns:
+    The arguments passed to the tenacity.(Async)Retrying constructor.
+  """
+  if options is None:
+    return {'stop': tenacity.stop_after_attempt(1)}
+
+  stop = tenacity.stop_after_attempt(options.attempts or _RETRY_ATTEMPTS)
+  retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
+  retry = tenacity.retry_if_result(
+      lambda response: response.status_code in retriable_codes,
+  )
+  retry_error_callback = lambda retry_state: retry_state.outcome.result()
+  wait = tenacity.wait_exponential_jitter(
+      initial=options.initial_delay or _RETRY_INITIAL_DELAY,
+      max=options.max_delay or _RETRY_MAX_DELAY,
+      exp_base=options.exp_base or _RETRY_EXP_BASE,
+      jitter=options.jitter or _RETRY_JITTER,
+  )
+  return {
+      'stop': stop,
+      'retry': retry,
+      'retry_error_callback': retry_error_callback,
+      'wait': wait,
+  }
+
+
 class SyncHttpxClient(httpx.Client):
   """Sync httpx client."""
 
@@ -398,7 +453,7 @@ class BaseApiClient:
       try:
         validated_http_options = HttpOptions.model_validate(http_options)
       except ValidationError as e:
-        raise ValueError(f'Invalid http_options: {e}')
+        raise ValueError('Invalid http_options') from e
     elif isinstance(http_options, HttpOptions):
       validated_http_options = http_options
 
@@ -505,6 +560,10 @@ class BaseApiClient:
           self._http_options
       )
 
+    retry_kwargs = _retry_args(self._http_options.retry_options)
+    self._retry = tenacity.Retrying(**retry_kwargs)
+    self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
+
   @staticmethod
   def _ensure_httpx_ssl_ctx(
       options: HttpOptions,
@@ -524,8 +583,11 @@ class BaseApiClient:
     args = options.client_args
     async_args = options.async_client_args
     ctx = (
-        args.get(verify) if args else None
-        or async_args.get(verify) if async_args else None
+        args.get(verify)
+        if args
+        else None or async_args.get(verify)
+        if async_args
+        else None
     )
 
     if not ctx:
@@ -763,7 +825,7 @@ class BaseApiClient:
         timeout=timeout_in_seconds,
     )
 
-  def _request(
+  def _request_once(
       self,
       http_request: HttpRequest,
       stream: bool = False,
@@ -809,7 +871,14 @@ class BaseApiClient:
           response.headers, response if stream else [response.text]
       )
 
-  async def _async_request(
+  def _request(
+      self,
+      http_request: HttpRequest,
+      stream: bool = False,
+  ) -> HttpResponse:
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+
+  async def _async_request_once(
       self, http_request: HttpRequest, stream: bool = False
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
@@ -887,6 +956,15 @@ class BaseApiClient:
         )
         await errors.APIError.raise_for_async_response(client_response)
         return HttpResponse(client_response.headers, [client_response.text])
+
+  async def _async_request(
+      self,
+      http_request: HttpRequest,
+      stream: bool = False,
+  ) -> HttpResponse:
+    return await self._async_retry(  # type: ignore[no-any-return]
+        self._async_request_once, http_request, stream
+    )
 
   def get_read_only_http_options(self) -> dict[str, Any]:
     if isinstance(self._http_options, BaseModel):
@@ -1072,9 +1150,7 @@ class BaseApiClient:
         )
 
     if response.headers.get('x-goog-upload-status') != 'final':
-      raise ValueError(
-          'Failed to upload file: Upload status is not finalized.'
-      )
+      raise ValueError('Failed to upload file: Upload status is not finalized.')
     return HttpResponse(response.headers, response_stream=[response.text])
 
   def download_file(
@@ -1082,7 +1158,7 @@ class BaseApiClient:
       path: str,
       *,
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Union[Any,bytes]:
+  ) -> Union[Any, bytes]:
     """Downloads the file data.
 
     Args:
@@ -1295,7 +1371,11 @@ class BaseApiClient:
               headers=upload_headers,
               timeout=timeout_in_seconds,
           )
-          if client_response is not None and client_response.headers and client_response.headers.get('x-goog-upload-status'):
+          if (
+              client_response is not None
+              and client_response.headers
+              and client_response.headers.get('x-goog-upload-status')
+          ):
             break
           delay_seconds = INITIAL_RETRY_DELAY * (DELAY_MULTIPLIER**retry_count)
           retry_count += 1
@@ -1320,7 +1400,9 @@ class BaseApiClient:
         raise ValueError(
             'Failed to upload file: Upload status is not finalized.'
         )
-      return HttpResponse(client_response.headers, response_stream=[client_response.text])
+      return HttpResponse(
+          client_response.headers, response_stream=[client_response.text]
+      )
 
   async def async_download_file(
       self,

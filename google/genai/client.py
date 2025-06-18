@@ -31,7 +31,7 @@ from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
 from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
-from .types import HttpOptions, HttpOptionsDict
+from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
 
 
 class AsyncClient:
