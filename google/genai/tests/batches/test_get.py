@@ -22,11 +22,14 @@ from ... import types
 from .. import pytest_helper
 
 
+# Vertex AI batch job name.
 _BATCH_JOB_NAME = '5798522612028014592'
 _BATCH_JOB_FULL_RESOURCE_NAME = (
     'projects/964831358985/locations/us-central1/'
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
+# MLDev batch operation name.
+_MLDEV_BATCH_OPERATION_NAME = 'batches/ttjm3r9caif7dixgmee5me9ewph57qn3j54j'
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
 
 
@@ -37,22 +40,21 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GetBatchJobParameters(
             name=_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
     ),
     pytest_helper.TestTableItem(
-        name='test_get_batch_job_with_full_resource_name',
+        name='test_get_batch_operation',
         parameters=types._GetBatchJobParameters(
-            name=_BATCH_JOB_FULL_RESOURCE_NAME,
+            name=_MLDEV_BATCH_OPERATION_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
-        override_replay_id='test_get_batch_job',
+        exception_if_vertex='Invalid batch job name',
     ),
     pytest_helper.TestTableItem(
         name='test_get_batch_job_with_invalid_name',
         parameters=types._GetBatchJobParameters(
             name=_INVALID_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
         exception_if_vertex='Invalid batch job name',
     ),
 ]
@@ -67,7 +69,10 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_get(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    batch_job = await client.aio.batches.get(name=_BATCH_JOB_NAME)
+  if client.vertexai:
+    name = _BATCH_JOB_NAME
+  else:
+    name = _MLDEV_BATCH_OPERATION_NAME
+  batch_job = await client.aio.batches.get(name=name)
 
-    assert batch_job
+  assert batch_job

@@ -9646,6 +9646,45 @@ class DeleteFileResponseDict(TypedDict, total=False):
 DeleteFileResponseOrDict = Union[DeleteFileResponse, DeleteFileResponseDict]
 
 
+class InlinedRequest(_common.BaseModel):
+  """Config for inlined request."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+      <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""Content of the request.
+      """,
+  )
+  config: Optional[GenerateContentConfig] = Field(
+      default=None,
+      description="""Configuration that contains optional model parameters.
+      """,
+  )
+
+
+class InlinedRequestDict(TypedDict, total=False):
+  """Config for inlined request."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+      <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  contents: Optional[ContentListUnionDict]
+  """Content of the request.
+      """
+
+  config: Optional[GenerateContentConfigDict]
+  """Configuration that contains optional model parameters.
+      """
+
+
+InlinedRequestOrDict = Union[InlinedRequest, InlinedRequestDict]
+
+
 class BatchJobSource(_common.BaseModel):
   """Config for `src` parameter."""
 
@@ -9663,6 +9702,17 @@ class BatchJobSource(_common.BaseModel):
   bigquery_uri: Optional[str] = Field(
       default=None,
       description="""The BigQuery URI to input table.
+      """,
+  )
+  file_name: Optional[str] = Field(
+      default=None,
+      description="""The Gemini Developer API's file resource name of the input data
+      (e.g. "files/12345").
+      """,
+  )
+  inlined_requests: Optional[list[InlinedRequest]] = Field(
+      default=None,
+      description="""The Gemini Developer API's inlined input data to run batch job.
       """,
   )
 
@@ -9683,8 +9733,77 @@ class BatchJobSourceDict(TypedDict, total=False):
   """The BigQuery URI to input table.
       """
 
+  file_name: Optional[str]
+  """The Gemini Developer API's file resource name of the input data
+      (e.g. "files/12345").
+      """
+
+  inlined_requests: Optional[list[InlinedRequestDict]]
+  """The Gemini Developer API's inlined input data to run batch job.
+      """
+
 
 BatchJobSourceOrDict = Union[BatchJobSource, BatchJobSourceDict]
+
+
+class JobError(_common.BaseModel):
+  """Job error."""
+
+  details: Optional[list[str]] = Field(
+      default=None,
+      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
+  )
+  code: Optional[int] = Field(default=None, description="""The status code.""")
+  message: Optional[str] = Field(
+      default=None,
+      description="""A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field.""",
+  )
+
+
+class JobErrorDict(TypedDict, total=False):
+  """Job error."""
+
+  details: Optional[list[str]]
+  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
+
+  code: Optional[int]
+  """The status code."""
+
+  message: Optional[str]
+  """A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field."""
+
+
+JobErrorOrDict = Union[JobError, JobErrorDict]
+
+
+class InlinedResponse(_common.BaseModel):
+  """Config for `inlined_responses` parameter."""
+
+  response: Optional[GenerateContentResponse] = Field(
+      default=None,
+      description="""The response to the request.
+      """,
+  )
+  error: Optional[JobError] = Field(
+      default=None,
+      description="""The error encountered while processing the request.
+      """,
+  )
+
+
+class InlinedResponseDict(TypedDict, total=False):
+  """Config for `inlined_responses` parameter."""
+
+  response: Optional[GenerateContentResponseDict]
+  """The response to the request.
+      """
+
+  error: Optional[JobErrorDict]
+  """The error encountered while processing the request.
+      """
+
+
+InlinedResponseOrDict = Union[InlinedResponse, InlinedResponseDict]
 
 
 class BatchJobDestination(_common.BaseModel):
@@ -9706,6 +9825,22 @@ class BatchJobDestination(_common.BaseModel):
       description="""The BigQuery URI to the output table.
       """,
   )
+  file_name: Optional[str] = Field(
+      default=None,
+      description="""The Gemini Developer API's file resource name of the output data
+      (e.g. "files/12345"). The file will be a JSONL file with a single response
+      per line. The responses will be GenerateContentResponse messages formatted
+      as JSON. The responses will be written in the same order as the input
+      requests.
+      """,
+  )
+  inlined_responses: Optional[list[InlinedResponse]] = Field(
+      default=None,
+      description="""The responses to the requests in the batch. Returned when the batch was
+      built using inlined requests. The responses will be in the same order as
+      the input requests.
+      """,
+  )
 
 
 class BatchJobDestinationDict(TypedDict, total=False):
@@ -9722,6 +9857,20 @@ class BatchJobDestinationDict(TypedDict, total=False):
 
   bigquery_uri: Optional[str]
   """The BigQuery URI to the output table.
+      """
+
+  file_name: Optional[str]
+  """The Gemini Developer API's file resource name of the output data
+      (e.g. "files/12345"). The file will be a JSONL file with a single response
+      per line. The responses will be GenerateContentResponse messages formatted
+      as JSON. The responses will be written in the same order as the input
+      requests.
+      """
+
+  inlined_responses: Optional[list[InlinedResponseDict]]
+  """The responses to the requests in the batch. Returned when the batch was
+      built using inlined requests. The responses will be in the same order as
+      the input requests.
       """
 
 
@@ -9768,6 +9917,14 @@ CreateBatchJobConfigOrDict = Union[
 ]
 
 
+BatchJobSourceUnion = Union[BatchJobSource, list[InlinedRequest], str]
+
+
+BatchJobSourceUnionDict = Union[
+    BatchJobSourceUnion, BatchJobSourceDict, list[InlinedRequestDict]
+]
+
+
 class _CreateBatchJobParameters(_common.BaseModel):
   """Config for batches.create parameters."""
 
@@ -9776,7 +9933,7 @@ class _CreateBatchJobParameters(_common.BaseModel):
       description="""The name of the model to produces the predictions via the BatchJob.
       """,
   )
-  src: Optional[str] = Field(
+  src: Optional[BatchJobSourceUnion] = Field(
       default=None,
       description="""GCS URI(-s) or BigQuery URI to your input data to run batch job.
       Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
@@ -9796,7 +9953,7 @@ class _CreateBatchJobParametersDict(TypedDict, total=False):
   """The name of the model to produces the predictions via the BatchJob.
       """
 
-  src: Optional[str]
+  src: Optional[BatchJobSourceUnionDict]
   """GCS URI(-s) or BigQuery URI to your input data to run batch job.
       Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
       """
@@ -9811,48 +9968,23 @@ _CreateBatchJobParametersOrDict = Union[
 ]
 
 
-class JobError(_common.BaseModel):
-  """Job error."""
-
-  details: Optional[list[str]] = Field(
-      default=None,
-      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
-  )
-  code: Optional[int] = Field(default=None, description="""The status code.""")
-  message: Optional[str] = Field(
-      default=None,
-      description="""A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field.""",
-  )
-
-
-class JobErrorDict(TypedDict, total=False):
-  """Job error."""
-
-  details: Optional[list[str]]
-  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
-
-  code: Optional[int]
-  """The status code."""
-
-  message: Optional[str]
-  """A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field."""
-
-
-JobErrorOrDict = Union[JobError, JobErrorDict]
-
-
 class BatchJob(_common.BaseModel):
   """Config for batches.create return value."""
 
   name: Optional[str] = Field(
-      default=None, description="""Output only. Resource name of the Job."""
+      default=None,
+      description="""The resource name of the BatchJob. Output only.".
+      """,
   )
   display_name: Optional[str] = Field(
-      default=None, description="""The user-defined name of this Job."""
+      default=None,
+      description="""The display name of the BatchJob.
+      """,
   )
   state: Optional[JobState] = Field(
       default=None,
-      description="""Output only. The detailed state of the job.""",
+      description="""The state of the BatchJob.
+      """,
   )
   error: Optional[JobError] = Field(
       default=None,
@@ -9860,7 +9992,8 @@ class BatchJob(_common.BaseModel):
   )
   create_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""Output only. Time when the Job was created.""",
+      description="""The time when the BatchJob was created.
+      """,
   )
   start_time: Optional[datetime.datetime] = Field(
       default=None,
@@ -9868,11 +10001,13 @@ class BatchJob(_common.BaseModel):
   )
   end_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""Output only. Time when the Job entered any of the following states: `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED`, `JOB_STATE_CANCELLED`.""",
+      description="""The time when the BatchJob was completed.
+      """,
   )
   update_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""Output only. Time when the Job was most recently updated.""",
+      description="""The time when the BatchJob was last updated.
+      """,
   )
   model: Optional[str] = Field(
       default=None,
@@ -9895,28 +10030,34 @@ class BatchJobDict(TypedDict, total=False):
   """Config for batches.create return value."""
 
   name: Optional[str]
-  """Output only. Resource name of the Job."""
+  """The resource name of the BatchJob. Output only.".
+      """
 
   display_name: Optional[str]
-  """The user-defined name of this Job."""
+  """The display name of the BatchJob.
+      """
 
   state: Optional[JobState]
-  """Output only. The detailed state of the job."""
+  """The state of the BatchJob.
+      """
 
   error: Optional[JobErrorDict]
   """Output only. Only populated when the job's state is JOB_STATE_FAILED or JOB_STATE_CANCELLED."""
 
   create_time: Optional[datetime.datetime]
-  """Output only. Time when the Job was created."""
+  """The time when the BatchJob was created.
+      """
 
   start_time: Optional[datetime.datetime]
   """Output only. Time when the Job for the first time entered the `JOB_STATE_RUNNING` state."""
 
   end_time: Optional[datetime.datetime]
-  """Output only. Time when the Job entered any of the following states: `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED`, `JOB_STATE_CANCELLED`."""
+  """The time when the BatchJob was completed.
+      """
 
   update_time: Optional[datetime.datetime]
-  """Output only. Time when the Job was most recently updated."""
+  """The time when the BatchJob was last updated.
+      """
 
   model: Optional[str]
   """The name of the model that produces the predictions via the BatchJob.
