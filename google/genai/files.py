@@ -20,7 +20,6 @@ import json
 import logging
 import mimetypes
 import os
-import pathlib
 from typing import Any, Optional, Union
 from urllib.parse import urlencode
 
@@ -606,7 +605,7 @@ class Files(_api_module.BaseModule):
   def upload(
       self,
       *,
-      file: Union[str, pathlib.Path, os.PathLike[str], io.IOBase],
+      file: Union[str, os.PathLike[str], io.IOBase],
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file using a supported file service.
@@ -1096,7 +1095,7 @@ class AsyncFiles(_api_module.BaseModule):
   async def upload(
       self,
       *,
-      file: Union[str, pathlib.Path, os.PathLike[str], io.IOBase],
+      file: Union[str, os.PathLike[str], io.IOBase],
       config: Optional[types.UploadFileConfigOrDict] = None,
   ) -> types.File:
     """Calls the API to upload a file asynchronously using a supported file service.
