@@ -3451,12 +3451,14 @@ def _GenerateVideosParameters_to_vertex(
 
 
 def _FeatureSelectionPreference_to_mldev_enum_validate(enum_value: Any) -> None:
-  if enum_value in set([
-      'FEATURE_SELECTION_PREFERENCE_UNSPECIFIED',
-      'PRIORITIZE_QUALITY',
-      'BALANCED',
-      'PRIORITIZE_COST',
-  ]):
+  if enum_value in set(
+      [
+          'FEATURE_SELECTION_PREFERENCE_UNSPECIFIED',
+          'PRIORITIZE_QUALITY',
+          'BALANCED',
+          'PRIORITIZE_COST',
+      ]
+  ):
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
 
