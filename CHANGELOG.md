@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.21.1](https://github.com/googleapis/python-genai/compare/v1.21.0...v1.21.1) (2025-06-19)
+
+
+### Bug Fixes
+
+* Re-raise exception during retries ([d6a223c](https://github.com/googleapis/python-genai/commit/d6a223cbb1d85c339bd907e0770665c6c2d0e42f))
+
+
+### Documentation
+
+* Regenerate docs for 1.21.0 ([feaf5fe](https://github.com/googleapis/python-genai/commit/feaf5fe900d9bcf371bf935db346edfd61143b44))
+
 ## [1.21.0](https://github.com/googleapis/python-genai/compare/v1.20.0...v1.21.0) (2025-06-18)
 
 
