@@ -561,8 +561,8 @@ class BaseApiClient:
       )
 
     retry_kwargs = _retry_args(self._http_options.retry_options)
-    self._retry = tenacity.Retrying(**retry_kwargs)
-    self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
+    self._retry = tenacity.Retrying(**retry_kwargs, reraise=True)
+    self._async_retry = tenacity.AsyncRetrying(**retry_kwargs, reraise=True)
 
   @staticmethod
   def _ensure_httpx_ssl_ctx(
