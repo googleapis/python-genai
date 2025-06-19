@@ -369,6 +369,7 @@ def _retry_args(options: Optional[HttpRetryOptions]) -> dict[str, Any]:
       'retry': retry,
       'retry_error_callback': retry_error_callback,
       'wait': wait,
+      'reraise': True,
   }
 
 
