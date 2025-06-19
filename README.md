@@ -146,7 +146,7 @@ Then, you can pass it through the following way:
 
 http_options = types.HttpOptions(
     client_args={'proxy': 'socks5://user:pass@host:port'},
-    async_client_args={'proxy': 'socks5://user:pass@host:port'},,
+    async_client_args={'proxy': 'socks5://user:pass@host:port'},
 )
 
 client=Client(..., http_options=http_options)
@@ -178,7 +178,7 @@ print(response.text)
 download the file in console.
 
 ```sh
-!wget -q https://storage.googleapis.com/generativeai-downloads/data/a11.txt
+wget -q https://storage.googleapis.com/generativeai-downloads/data/a11.txt
 ```
 
 python code.
@@ -340,8 +340,8 @@ Where a `types.ModelContent` is a subclass of `types.Content`, the
 from google.genai import types
 
 contents = types.Part.from_uri(
-  file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-  mime_type: 'image/jpeg',
+  file_uri='gs://generativeai-downloads/images/scones.jpg',
+  mime_type='image/jpeg',
 )
 ```
 
@@ -351,8 +351,8 @@ The SDK converts all non function call parts into a content with a `user` role.
 [
   types.UserContent(parts=[
     types.Part.from_uri(
-     file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-      mime_type: 'image/jpeg',
+      file_uri='gs://generativeai-downloads/images/scones.jpg',
+      mime_type='image/jpeg',
     )
   ])
 ]
@@ -364,10 +364,10 @@ The SDK converts all non function call parts into a content with a `user` role.
 from google.genai import types
 
 contents = [
-  types.Part.from_text('What is this image about?'),
+  types.Part.from_text(text='What is this image about?'),
   types.Part.from_uri(
-    file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-    mime_type: 'image/jpeg',
+    file_uri='gs://generativeai-downloads/images/scones.jpg',
+    mime_type='image/jpeg',
   )
 ]
 ```
@@ -378,10 +378,10 @@ The SDK will convert the list of parts into a content with a `user` role
 [
   types.UserContent(
     parts=[
-      types.Part.from_text('What is this image about?'),
+      types.Part.from_text(text='What is this image about?'),
       types.Part.from_uri(
-        file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-        mime_type: 'image/jpeg',
+        file_uri='gs://generativeai-downloads/images/scones.jpg',
+        mime_type='image/jpeg',
       )
     ]
   )
@@ -787,6 +787,8 @@ You can set response_mime_type to 'text/x.enum' to return one of those enum
 values as the response.
 
 ```python
+from enum import Enum
+
 class InstrumentEnum(Enum):
   PERCUSSION = 'Percussion'
   STRING = 'String'
