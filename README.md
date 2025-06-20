@@ -1226,7 +1226,7 @@ client.
 
 ### Tune
 
--   Vertex AI supports tuning from GCS source
+-   Vertex AI supports tuning from GCS source or from a Vertex Multimodal Dataset
 -   Gemini Developer API supports tuning from inline examples
 
 ```python
@@ -1235,10 +1235,12 @@ from google.genai import types
 if client.vertexai:
     model = 'gemini-2.0-flash-001'
     training_dataset = types.TuningDataset(
+      # or gcs_uri=my_vertex_multimodal_dataset
         gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
     )
 else:
     model = 'models/gemini-2.0-flash-001'
+    # or gcs_uri=my_vertex_multimodal_dataset.resource_name
     training_dataset = types.TuningDataset(
         examples=[
             types.TuningExample(
