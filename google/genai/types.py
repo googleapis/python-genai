@@ -4939,9 +4939,12 @@ class GenerateContentResponse(_common.BaseModel):
           result.parsed = response_schema.model_validate_json(result_text)
       # may not be a valid json per stream response
       except pydantic.ValidationError:
-        pass
+        raise ValueError(
+                  f'Unsupported input content'
+                  f' "{result_text}"'
+              )
       except json.decoder.JSONDecodeError:
-        pass
+        raise ValueError(f'Failed to parse response: {result_text!r}')
     elif (
         isinstance(response_schema, EnumMeta)
         and result._get_text(warn_property='parsed') is not None
