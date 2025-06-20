@@ -16,12 +16,13 @@
 """Common utilities for the SDK."""
 
 import base64
+import collections.abc
 import datetime
 import enum
 import functools
 import logging
 import typing
-from typing import Any, Callable, Optional, Union, get_origin, get_args
+from typing import Any, Callable, Optional, FrozenSet, Union, get_args, get_origin
 import uuid
 import warnings
 
@@ -233,6 +234,179 @@ def _remove_extra_fields(
 T = typing.TypeVar('T', bound='BaseModel')
 
 
+def _pretty_repr(
+    obj: Any,
+    *,
+    indent_level: int = 0,
+    indent_delta: int = 2,
+    max_len: int = 100,
+    max_items: int = 5,
+    depth: int = 6,
+    visited: Optional[FrozenSet[int]] = None,
+) -> str:
+  """Returns a representation of the given object."""
+  if visited is None:
+    visited = frozenset()
+
+  obj_id = id(obj)
+  if obj_id in visited:
+    return '<... Circular reference ...>'
+
+  if depth < 0:
+    return '<... Max depth ...>'
+
+  visited = frozenset(list(visited) + [obj_id])
+
+  indent = ' ' * indent_level
+  next_indent_str = ' ' * (indent_level + indent_delta)
+
+  if isinstance(obj, pydantic.BaseModel):
+    cls_name = obj.__class__.__name__
+    items = []
+    # Sort fields for consistent output
+    fields = sorted(type(obj).model_fields)
+
+    for field_name in fields:
+      field_info = type(obj).model_fields[field_name]
+      if not field_info.repr:  # Respect Field(repr=False)
+        continue
+
+      try:
+        value = getattr(obj, field_name)
+      except AttributeError:
+        continue
+
+      if value is None:
+        continue
+
+      value_repr = _pretty_repr(
+          value,
+          indent_level=indent_level + indent_delta,
+          indent_delta=indent_delta,
+          max_len=max_len,
+          max_items=max_items,
+          depth=depth - 1,
+          visited=visited,
+      )
+      items.append(f'{next_indent_str}{field_name}={value_repr}')
+
+    if not items:
+      return f'{cls_name}()'
+    return f'{cls_name}(\n' + ',\n'.join(items) + f'\n{indent})'
+  elif isinstance(obj, str):
+    if '\n' in obj:
+      escaped = obj.replace('"""', '\\"\\"\\"')
+      # Indent the multi-line string block contents
+      return f'"""{escaped}"""'
+    return repr(obj)
+  elif isinstance(obj, bytes):
+    if len(obj) > max_len:
+      return f"{repr(obj[:max_len-3])[:-1]}...'"
+    return repr(obj)
+  elif isinstance(obj, collections.abc.Mapping):
+    if not obj:
+      return '{}'
+    if len(obj) > max_items:
+      return f'<dict len={len(obj)}>'
+    items = []
+    try:
+      sorted_keys = sorted(obj.keys(), key=str)
+    except TypeError:
+      sorted_keys = list(obj.keys())
+
+    for k in sorted_keys:
+      v = obj[k]
+      k_repr = _pretty_repr(
+          k,
+          indent_level=indent_level + indent_delta,
+          indent_delta=indent_delta,
+          max_len=max_len,
+          max_items=max_items,
+          depth=depth - 1,
+          visited=visited,
+      )
+      v_repr = _pretty_repr(
+          v,
+          indent_level=indent_level + indent_delta,
+          indent_delta=indent_delta,
+          max_len=max_len,
+          max_items=max_items,
+          depth=depth - 1,
+          visited=visited,
+      )
+      items.append(f'{next_indent_str}{k_repr}: {v_repr}')
+    return f'{{\n' + ',\n'.join(items) + f'\n{indent}}}'
+  elif isinstance(obj, (list, tuple, set)):
+    return _format_collection(
+        obj,
+        indent_level=indent_level,
+        indent_delta=indent_delta,
+        max_len=max_len,
+        max_items=max_items,
+        depth=depth,
+        visited=visited,
+    )
+  else:
+    # Fallback to standard repr, indenting subsequent lines only
+    raw_repr = repr(obj)
+    # Replace newlines with newline + indent
+    return raw_repr.replace('\n', f'\n{next_indent_str}')
+
+
+
+def _format_collection(
+    obj: Any,
+    *,
+    indent_level: int,
+    indent_delta: int,
+    max_len: int,
+    max_items: int,
+    depth: int,
+    visited: FrozenSet[int],
+) -> str:
+    """Formats a collection (list, tuple, set)."""
+    if isinstance(obj, list):
+        brackets = ('[', ']')
+    elif isinstance(obj, tuple):
+        brackets = ('(', ')')
+    elif isinstance(obj, set):
+        obj = list(obj)
+        if obj:
+          brackets = ('{', '}')
+        else:
+          brackets = ('set(', ')')
+    else:
+        raise ValueError(f"Unsupported collection type: {type(obj)}")
+
+    if not obj:
+        return brackets[0] + brackets[1]
+
+    indent = ' ' * indent_level
+    next_indent_str = ' ' * (indent_level + indent_delta)
+    elements = []
+    for i, elem in enumerate(obj):
+        if i >= max_items:
+            elements.append(
+                f'{next_indent_str}<... {len(obj) - max_items} more items ...>'
+            )
+            break
+        # Each element starts on a new line, fully indented
+        elements.append(
+            next_indent_str
+            + _pretty_repr(
+                elem,
+                indent_level=indent_level + indent_delta,
+                indent_delta=indent_delta,
+                max_len=max_len,
+                max_items=max_items,
+                depth=depth - 1,
+                visited=visited,
+            )
+        )
+
+    return f'{brackets[0]}\n' + ',\n'.join(elements) + "," + f'\n{indent}{brackets[1]}'
+
+
 class BaseModel(pydantic.BaseModel):
 
   model_config = pydantic.ConfigDict(
@@ -247,6 +421,12 @@ class BaseModel(pydantic.BaseModel):
       val_json_bytes='base64',
       ignored_types=(typing.TypeVar,)
   )
+
+  def __repr__(self) -> str:
+    try:
+      return _pretty_repr(self)
+    except Exception:
+      return super().__repr__()
 
   @classmethod
   def _from_response(
