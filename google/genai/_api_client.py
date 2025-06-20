@@ -996,14 +996,14 @@ class BaseApiClient:
       path: str,
       request_dict: dict[str, object],
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Generator[Any, None, None]:
+  ) -> Generator[SdkHttpResponse, None, None]:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
 
     session_response = self._request(http_request, stream=True)
     for chunk in session_response.segments():
-      yield chunk
+      yield SdkHttpResponse(headers=session_response.headers, body=json.dumps(chunk))
 
   async def async_request(
       self,
@@ -1038,7 +1038,7 @@ class BaseApiClient:
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
-        yield chunk
+        yield SdkHttpResponse(headers=response.headers, body=json.dumps(chunk))
 
     return async_generator()  # type: ignore[no-untyped-call]
 

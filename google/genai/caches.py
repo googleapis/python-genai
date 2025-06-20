@@ -1544,6 +1544,7 @@ class Caches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def get(
@@ -1614,6 +1615,7 @@ class Caches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def delete(
@@ -1688,6 +1690,7 @@ class Caches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def update(
@@ -1765,6 +1768,7 @@ class Caches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def _list(
@@ -1829,6 +1833,7 @@ class Caches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def list(
@@ -1925,6 +1930,7 @@ class AsyncCaches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def get(
@@ -1998,6 +2004,7 @@ class AsyncCaches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def delete(
@@ -2073,6 +2080,7 @@ class AsyncCaches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def update(
@@ -2150,6 +2158,7 @@ class AsyncCaches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def _list(
@@ -2216,6 +2225,7 @@ class AsyncCaches(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def list(

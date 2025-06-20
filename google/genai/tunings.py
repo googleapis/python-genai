@@ -778,6 +778,7 @@ class Tunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def _list(
@@ -842,6 +843,7 @@ class Tunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def _tune(
@@ -908,6 +910,7 @@ class Tunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def _tune_mldev(
@@ -976,6 +979,7 @@ class Tunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def list(
@@ -1116,6 +1120,7 @@ class AsyncTunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def _list(
@@ -1182,6 +1187,7 @@ class AsyncTunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def _tune(
@@ -1248,6 +1254,7 @@ class AsyncTunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def _tune_mldev(
@@ -1316,6 +1323,7 @@ class AsyncTunings(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def list(

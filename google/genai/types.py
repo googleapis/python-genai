@@ -3908,6 +3908,32 @@ _GenerateContentParametersOrDict = Union[
 ]
 
 
+class HttpResponse(_common.BaseModel):
+  """A wrapper class for the http response."""
+
+  headers: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Used to retain the processed HTTP headers in the response.""",
+  )
+  body: Optional[str] = Field(
+      default=None,
+      description="""The raw HTTP response body, in JSON format.""",
+  )
+
+
+class HttpResponseDict(TypedDict, total=False):
+  """A wrapper class for the http response."""
+
+  headers: Optional[dict[str, str]]
+  """Used to retain the processed HTTP headers in the response."""
+
+  body: Optional[str]
+  """The raw HTTP response body, in JSON format."""
+
+
+HttpResponseOrDict = Union[HttpResponse, HttpResponseDict]
+
+
 class GoogleTypeDate(_common.BaseModel):
   """Represents a whole or partial calendar date, such as a birthday.
 
@@ -4773,6 +4799,9 @@ GenerateContentResponseUsageMetadataOrDict = Union[
 class GenerateContentResponse(_common.BaseModel):
   """Response message for PredictionService.GenerateContent."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   candidates: Optional[list[Candidate]] = Field(
       default=None,
       description="""Response variations returned by the model.
@@ -5046,6 +5075,9 @@ class GenerateContentResponse(_common.BaseModel):
 
 class GenerateContentResponseDict(TypedDict, total=False):
   """Response message for PredictionService.GenerateContent."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   candidates: Optional[list[CandidateDict]]
   """Response variations returned by the model.
@@ -9427,32 +9459,6 @@ class _CreateFileParametersDict(TypedDict, total=False):
 _CreateFileParametersOrDict = Union[
     _CreateFileParameters, _CreateFileParametersDict
 ]
-
-
-class HttpResponse(_common.BaseModel):
-  """A wrapper class for the http response."""
-
-  headers: Optional[dict[str, str]] = Field(
-      default=None,
-      description="""Used to retain the processed HTTP headers in the response.""",
-  )
-  body: Optional[str] = Field(
-      default=None,
-      description="""The raw HTTP response body, in JSON format.""",
-  )
-
-
-class HttpResponseDict(TypedDict, total=False):
-  """A wrapper class for the http response."""
-
-  headers: Optional[dict[str, str]]
-  """Used to retain the processed HTTP headers in the response."""
-
-  body: Optional[str]
-  """The raw HTTP response body, in JSON format."""
-
-
-HttpResponseOrDict = Union[HttpResponse, HttpResponseDict]
 
 
 class CreateFileResponse(_common.BaseModel):

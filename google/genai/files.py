@@ -367,6 +367,7 @@ class Files(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def _create(
@@ -428,6 +429,7 @@ class Files(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def get(
@@ -495,6 +497,7 @@ class Files(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def delete(
@@ -563,6 +566,7 @@ class Files(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   def upload(
@@ -841,6 +845,7 @@ class AsyncFiles(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def _create(
@@ -902,6 +907,7 @@ class AsyncFiles(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def get(
@@ -971,6 +977,7 @@ class AsyncFiles(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def delete(
@@ -1039,6 +1046,7 @@ class AsyncFiles(_api_module.BaseModule):
         response=response_dict, kwargs=parameter_model.model_dump()
     )
     self._api_client._verify_response(return_value)
+
     return return_value
 
   async def upload(

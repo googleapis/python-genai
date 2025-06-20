@@ -464,9 +464,19 @@ class ReplayApiClient(BaseApiClient):
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
-    assert (
-        actual == expected
-    ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    if 'sdk_http_response' in expected:
+      actual_headers = actual['sdk_http_response']['headers']
+      expected_headers_dict = expected['sdk_http_response']
+      assert isinstance(expected_headers_dict, dict)
+      expected_headers = expected_headers_dict['headers']
+      assert actual_headers == expected_headers, (
+          'SDK sdk_http_response headers mismatch:\nActual:'
+          f' {actual_headers}\nExpected: {expected_headers}'
+      )
+    else:
+      assert (
+          actual == expected
+      ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
     self._sdk_response_index += 1
 
   def _request(
