@@ -3257,7 +3257,7 @@ class ThinkingConfig(_common.BaseModel):
   )
   thinking_budget: Optional[int] = Field(
       default=None,
-      description="""Indicates the thinking budget in tokens.
+      description="""Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """,
   )
 
@@ -3270,7 +3270,7 @@ class ThinkingConfigDict(TypedDict, total=False):
       """
 
   thinking_budget: Optional[int]
-  """Indicates the thinking budget in tokens.
+  """Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """
 
 
