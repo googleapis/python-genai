@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.22.0](https://github.com/googleapis/python-genai/compare/v1.21.1...v1.22.0) (2025-06-20)
+
+
+### Features
+
+* Allow users to access headers for generateContent method and generateContentStream ([80c8964](https://github.com/googleapis/python-genai/commit/80c8964f29fe64e44fc2b09ec135914d5ef0f0d6))
+* Improve __repr__ for pydantic objects. ([80ab054](https://github.com/googleapis/python-genai/commit/80ab054f2a2ea6e6475ae4ff971861fd86f8dbb1))
+
+
+### Documentation
+
+* Update description of thinking_budget. ([7c2ae32](https://github.com/googleapis/python-genai/commit/7c2ae3256faffda752ff3e0d16aac5c1bb97e45a))
+
 ## [1.21.1](https://github.com/googleapis/python-genai/compare/v1.21.0...v1.21.1) (2025-06-19)
 
 
