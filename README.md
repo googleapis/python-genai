@@ -109,6 +109,49 @@ client = genai.Client(
 )
 ```
 
+### Faster async client option: Aiohttp
+
+By default we use httpx for both sync and async client implementations. In order
+to have faster performance, you may install `google-genai[aiohttp]`. In Gen AI
+SDK we configure `trust_env=True` to match with the default behavior of httpx.
+Additional args of `aiohttp.ClientSession.request()` ([see _RequestOptions args](https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170)) can be passed
+through the following way:
+
+```python
+
+http_options = types.HttpOptions(
+    async_client_args={'cookies': ..., 'ssl': ...},
+)
+
+client=Client(..., http_options=http_options)
+```
+
+### Proxy
+
+Both httpx and aiohttp libraries use `urllib.request.getproxies` from
+environment variables. Before client initialization, you may set proxy (and
+optional SSL_CERT_FILE) by setting the environment variables:
+
+
+```bash
+export HTTPS_PROXY='http://username:password@proxy_uri:port'
+export SSL_CERT_FILE='client.pem'
+```
+
+If you need `socks5` proxy, httpx [supports](https://www.python-httpx.org/advanced/proxies/#socks) `socks5` proxy if you pass it via
+args to `httpx.Client()`. You may install `httpx[socks]` to use it.
+Then, you can pass it through the following way:
+
+```python
+
+http_options = types.HttpOptions(
+    client_args={'proxy': 'socks5://user:pass@host:port'},
+    async_client_args={'proxy': 'socks5://user:pass@host:port'},,
+)
+
+client=Client(..., http_options=http_options)
+```
+
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or

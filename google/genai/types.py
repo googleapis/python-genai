@@ -1124,6 +1124,63 @@ class ContentDict(TypedDict, total=False):
 ContentOrDict = Union[Content, ContentDict]
 
 
+class HttpRetryOptions(_common.BaseModel):
+  """HTTP retry options to be used in each of the requests."""
+
+  attempts: Optional[int] = Field(
+      default=None,
+      description="""Maximum number of attempts, including the original request.
+      If 0 or 1, it means no retries.""",
+  )
+  initial_delay: Optional[float] = Field(
+      default=None,
+      description="""Initial delay before the first retry, in fractions of a second.""",
+  )
+  max_delay: Optional[float] = Field(
+      default=None,
+      description="""Maximum delay between retries, in fractions of a second.""",
+  )
+  exp_base: Optional[float] = Field(
+      default=None,
+      description="""Multiplier by which the delay increases after each attempt.""",
+  )
+  jitter: Optional[float] = Field(
+      default=None, description="""Randomness factor for the delay."""
+  )
+  http_status_codes: Optional[list[int]] = Field(
+      default=None,
+      description="""List of HTTP status codes that should trigger a retry.
+      If not specified, a default set of retryable codes may be used.""",
+  )
+
+
+class HttpRetryOptionsDict(TypedDict, total=False):
+  """HTTP retry options to be used in each of the requests."""
+
+  attempts: Optional[int]
+  """Maximum number of attempts, including the original request.
+      If 0 or 1, it means no retries."""
+
+  initial_delay: Optional[float]
+  """Initial delay before the first retry, in fractions of a second."""
+
+  max_delay: Optional[float]
+  """Maximum delay between retries, in fractions of a second."""
+
+  exp_base: Optional[float]
+  """Multiplier by which the delay increases after each attempt."""
+
+  jitter: Optional[float]
+  """Randomness factor for the delay."""
+
+  http_status_codes: Optional[list[int]]
+  """List of HTTP status codes that should trigger a retry.
+      If not specified, a default set of retryable codes may be used."""
+
+
+HttpRetryOptionsOrDict = Union[HttpRetryOptions, HttpRetryOptionsDict]
+
+
 class HttpOptions(_common.BaseModel):
   """HTTP options to be used in each of the requests."""
 
@@ -1147,6 +1204,13 @@ class HttpOptions(_common.BaseModel):
   async_client_args: Optional[dict[str, Any]] = Field(
       default=None, description="""Args passed to the async HTTP client."""
   )
+  extra_body: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Extra parameters to add to the request body.""",
+  )
+  retry_options: Optional[HttpRetryOptions] = Field(
+      default=None, description="""HTTP retry options for the request."""
+  )
 
 
 class HttpOptionsDict(TypedDict, total=False):
@@ -1169,6 +1233,12 @@ class HttpOptionsDict(TypedDict, total=False):
 
   async_client_args: Optional[dict[str, Any]]
   """Args passed to the async HTTP client."""
+
+  extra_body: Optional[dict[str, Any]]
+  """Extra parameters to add to the request body."""
+
+  retry_options: Optional[HttpRetryOptionsDict]
+  """HTTP retry options for the request."""
 
 
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
@@ -1616,22 +1686,22 @@ class Schema(_common.BaseModel):
         if field_value is None:
           continue
         if field_name not in google_schema_field_names:
-          raise ValueError((
+          raise ValueError(
               f'JSONSchema field "{field_name}" is not supported by the '
               'Schema object. And the "raise_error_on_unsupported_field" '
               'argument is set to True. If you still want to convert '
               'it into the Schema object, please either remove the field '
               f'"{field_name}" from the JSONSchema object, or leave the '
               '"raise_error_on_unsupported_field" unset.'
-          ))
+          )
         if (
             field_name in gemini_api_unsupported_field_names
             and api_option == 'GEMINI_API'
         ):
-          raise ValueError((
+          raise ValueError(
               f'The "{field_name}" field is not supported by the Schema '
               'object for GEMINI_API.'
-          ))
+          )
 
     def copy_schema_fields(
         json_schema_dict: dict[str, Any],
@@ -1916,9 +1986,17 @@ class FunctionDeclaration(_common.BaseModel):
       default=None,
       description="""Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1""",
   )
+  parameters_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example: ``` { "type": "object", "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }, "additionalProperties": false, "required": ["name", "age"], "propertyOrdering": ["name", "age"] } ``` This field is mutually exclusive with `parameters`.""",
+  )
   response: Optional[Schema] = Field(
       default=None,
       description="""Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function.""",
+  )
+  response_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`.""",
   )
 
   @classmethod
@@ -2041,8 +2119,14 @@ class FunctionDeclarationDict(TypedDict, total=False):
   parameters: Optional[SchemaDict]
   """Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1"""
 
+  parameters_json_schema: Optional[Any]
+  """Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example: ``` { "type": "object", "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }, "additionalProperties": false, "required": ["name", "age"], "propertyOrdering": ["name", "age"] } ``` This field is mutually exclusive with `parameters`."""
+
   response: Optional[SchemaDict]
   """Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function."""
+
+  response_json_schema: Optional[Any]
+  """Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`."""
 
 
 FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
@@ -3173,7 +3257,7 @@ class ThinkingConfig(_common.BaseModel):
   )
   thinking_budget: Optional[int] = Field(
       default=None,
-      description="""Indicates the thinking budget in tokens.
+      description="""Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """,
   )
 
@@ -3186,7 +3270,7 @@ class ThinkingConfigDict(TypedDict, total=False):
       """
 
   thinking_budget: Optional[int]
-  """Indicates the thinking budget in tokens.
+  """Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """
 
 
@@ -3822,6 +3906,32 @@ class _GenerateContentParametersDict(TypedDict, total=False):
 _GenerateContentParametersOrDict = Union[
     _GenerateContentParameters, _GenerateContentParametersDict
 ]
+
+
+class HttpResponse(_common.BaseModel):
+  """A wrapper class for the http response."""
+
+  headers: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Used to retain the processed HTTP headers in the response.""",
+  )
+  body: Optional[str] = Field(
+      default=None,
+      description="""The raw HTTP response body, in JSON format.""",
+  )
+
+
+class HttpResponseDict(TypedDict, total=False):
+  """A wrapper class for the http response."""
+
+  headers: Optional[dict[str, str]]
+  """Used to retain the processed HTTP headers in the response."""
+
+  body: Optional[str]
+  """The raw HTTP response body, in JSON format."""
+
+
+HttpResponseOrDict = Union[HttpResponse, HttpResponseDict]
 
 
 class GoogleTypeDate(_common.BaseModel):
@@ -4689,6 +4799,9 @@ GenerateContentResponseUsageMetadataOrDict = Union[
 class GenerateContentResponse(_common.BaseModel):
   """Response message for PredictionService.GenerateContent."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   candidates: Optional[list[Candidate]] = Field(
       default=None,
       description="""Response variations returned by the model.
@@ -4940,6 +5053,9 @@ class GenerateContentResponse(_common.BaseModel):
 
 class GenerateContentResponseDict(TypedDict, total=False):
   """Response message for PredictionService.GenerateContent."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   candidates: Optional[list[CandidateDict]]
   """Response variations returned by the model.
@@ -6705,6 +6821,10 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
   )
+  response_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set.""",
+  )
   routing_config: Optional[GenerationConfigRoutingConfig] = Field(
       default=None, description="""Optional. Routing configuration."""
   )
@@ -6771,6 +6891,9 @@ class GenerationConfigDict(TypedDict, total=False):
 
   response_schema: Optional[SchemaDict]
   """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
+
+  response_json_schema: Optional[Any]
+  """Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set."""
 
   routing_config: Optional[GenerationConfigRoutingConfigDict]
   """Optional. Routing configuration."""
@@ -9259,6 +9382,10 @@ class CreateFileConfig(_common.BaseModel):
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
+  should_return_http_response: Optional[bool] = Field(
+      default=None,
+      description=""" If true, the raw HTTP response will be returned in the 'sdk_http_response' field.""",
+  )
 
 
 class CreateFileConfigDict(TypedDict, total=False):
@@ -9266,6 +9393,9 @@ class CreateFileConfigDict(TypedDict, total=False):
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
+
+  should_return_http_response: Optional[bool]
+  """ If true, the raw HTTP response will be returned in the 'sdk_http_response' field."""
 
 
 CreateFileConfigOrDict = Union[CreateFileConfig, CreateFileConfigDict]
@@ -9312,17 +9442,16 @@ _CreateFileParametersOrDict = Union[
 class CreateFileResponse(_common.BaseModel):
   """Response for the create file method."""
 
-  http_headers: Optional[dict[str, str]] = Field(
-      default=None,
-      description="""Used to retain the HTTP headers in the request""",
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
   )
 
 
 class CreateFileResponseDict(TypedDict, total=False):
   """Response for the create file method."""
 
-  http_headers: Optional[dict[str, str]]
-  """Used to retain the HTTP headers in the request"""
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
 
 CreateFileResponseOrDict = Union[CreateFileResponse, CreateFileResponseDict]

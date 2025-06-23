@@ -32,7 +32,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_tuned_model_with_model_name',
         parameters=types._GenerateContentParameters(
             model=tuned_model_with_model_name,
-            contents=t.t_contents(None, 'how are you doing?'),
+            contents=t.t_contents('how are you doing?'),
         ),
         exception_if_vertex='404',
         skip_in_api_mode='It requires a specific ML Dev account.',
@@ -41,7 +41,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_tuned_model',
         parameters=types._GenerateContentParameters(
             model=tuned_model_endpoint,
-            contents=t.t_contents(None, 'Tell me a story in 300 words.'),
+            contents=t.t_contents('Tell me a story in 300 words.'),
         ),
         exception_if_mldev='404',
     ),
@@ -49,7 +49,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_start_with_publishers',
         parameters=types._GenerateContentParameters(
             model='publishers/google/models/gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_mldev='404',
     ),
@@ -57,7 +57,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_start_with_models',
         parameters=types._GenerateContentParameters(
             model='models/gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_vertex='404',
     ),
@@ -65,7 +65,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_publisher_model',
         parameters=types._GenerateContentParameters(
             model='google/gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_mldev='404',
     ),
@@ -73,7 +73,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_empty_model',
         parameters=types._GenerateContentParameters(
             model='',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_mldev='model',
         exception_if_vertex='model',

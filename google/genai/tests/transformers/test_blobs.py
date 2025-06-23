@@ -31,21 +31,21 @@ image = PIL.Image.open(IMAGE_FILE_PATH)
 
 
 def test_blob_dict():
-  blob = t.t_blob(None, {'data': bytes([0, 0, 0, 0, 0, 0]), 'mime_type': 'audio/pcm'}
+  blob = t.t_blob({'data': bytes([0, 0, 0, 0, 0, 0]), 'mime_type': 'audio/pcm'}
   )
   assert blob.data == bytes([0, 0, 0, 0, 0, 0])
   assert blob.mime_type == 'audio/pcm'
 
 
 def test_blob():
-  blob = t.t_blob(None, types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='audio/pcm')
+  blob = t.t_blob(types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='audio/pcm')
   )
   assert blob.data == bytes([0, 0, 0, 0, 0, 0])
   assert blob.mime_type == 'audio/pcm'
 
 
 def test_image():
-  blob = t.t_blob(None, image)
+  blob = t.t_blob(image)
   assert blob.data[6:10] == b'JFIF'
   assert blob.mime_type == 'image/jpeg'
 

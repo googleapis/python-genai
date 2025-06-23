@@ -2,9 +2,6 @@
 
 import base64
 
-import pytest
-
-from ... import client as google_genai_client_module
 from ... import _transformers as t
 
 _RAW_BYTES = (
@@ -13,24 +10,6 @@ _RAW_BYTES = (
 )
 
 
-@pytest.fixture
-def client(use_vertex):
-  if use_vertex:
-    yield google_genai_client_module.Client(
-        vertexai=use_vertex, project='test-project', location='test-location'
-    )
-  else:
-    yield google_genai_client_module.Client(
-        vertexai=use_vertex, api_key='test-api-key'
-    )
-
-pytestmark = [pytest.mark.parametrize('use_vertex', [True, False])]
-
-
-@pytest.mark.usefixtures('client')
-def test_t_bytes(client):
-  assert t.t_bytes(client._api_client, _RAW_BYTES) == base64.b64encode(
-      _RAW_BYTES
-  ).decode('ascii')
-  assert t.t_bytes(client._api_client, 'string') == 'string'
-
+def test_t_bytes():
+  assert t.t_bytes(_RAW_BYTES) == base64.b64encode(_RAW_BYTES).decode('ascii')
+  assert t.t_bytes('string') == 'string'

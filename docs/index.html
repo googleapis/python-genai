@@ -353,6 +353,43 @@ and <cite>GOOGLE_CLOUD_LOCATION</cite>, as shown below:</p>
 </pre></div>
 </div>
 </section>
+<section id="faster-async-client-option-aiohttp">
+<h3>Faster async client option: Aiohttp<a class="headerlink" href="#faster-async-client-option-aiohttp" title="Link to this heading">¶</a></h3>
+<p>By default we use httpx for both sync and async client implementations. In order
+to have faster performance, you may install <cite>google-genai[aiohttp]</cite>. In Gen AI
+SDK we configure <cite>trust_env=True</cite> to match with the default behavior of httpx.
+Additional args of <cite>aiohttp.ClientSession.request()</cite>
+(<a class="reference external" href="https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170">see _RequestOptions args</a>)
+can be passed through the following way:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">http_options</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">HttpOptions</span><span class="p">(</span>
+    <span class="n">async_client_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cookies&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="s1">&#39;ssl&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">client</span><span class="o">=</span><span class="n">Client</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">http_options</span><span class="o">=</span><span class="n">http_options</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="proxy">
+<h3>Proxy<a class="headerlink" href="#proxy" title="Link to this heading">¶</a></h3>
+<p>Both httpx and aiohttp libraries use <cite>urllib.request.getproxies</cite> from
+environment variables. Before client initialization, you may set proxy (and
+optional SSL_CERT_FILE) by setting the environment variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">HTTPS_PROXY</span><span class="o">=</span><span class="s1">&#39;http://username:password@proxy_uri:port&#39;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SSL_CERT_FILE</span><span class="o">=</span><span class="s1">&#39;client.pem&#39;</span>
+</pre></div>
+</div>
+<p>If you need <cite>socks5</cite> proxy, httpx <a class="reference external" href="https://www.python-httpx.org/advanced/proxies/#socks">supports</a>
+<cite>socks5</cite> proxy if you pass it via args to httpx.Client(). You may install
+<cite>httpx[socks]</cite> to use it. Then you can pass it through the following way:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">http_options</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">HttpOptions</span><span class="p">(</span>
+    <span class="n">client_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;proxy&#39;</span><span class="p">:</span> <span class="s1">&#39;socks5://user:pass@host:port&#39;</span><span class="p">},</span>
+    <span class="n">async_client_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;proxy&#39;</span><span class="p">:</span> <span class="s1">&#39;socks5://user:pass@host:port&#39;</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">client</span><span class="o">=</span><span class="n">Client</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">http_options</span><span class="o">=</span><span class="n">http_options</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="types">
 <h2>Types<a class="headerlink" href="#types" title="Link to this heading">¶</a></h2>
@@ -587,8 +624,8 @@ available in generate_content’s config parameter. For example, increasing
 deterministic, lowering the <cite>temperature</cite> parameter reduces randomness, with
 values near 0 minimizing variability. Capabilities and parameter defaults for
 each model is shown in the
-[Vertex AI docs](<a class="reference external" href="https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash">https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash</a>)
-and [Gemini API docs](<a class="reference external" href="https://ai.google.dev/gemini-api/docs/models">https://ai.google.dev/gemini-api/docs/models</a>) respectively.</p>
+<a class="reference external" href="https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash">Vertex AI docs</a>
+and <a class="reference external" href="https://ai.google.dev/gemini-api/docs/models">Gemini API docs</a> respectively.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
@@ -1629,7 +1666,7 @@ initialize a client.</p>
 </section>
 <section id="error-handling">
 <h1>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading">¶</a></h1>
-<p>To handle errors raised by the model, the SDK provides this [APIError](<a class="reference external" href="https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py">https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py</a>) class.</p>
+<p>To handle errors raised by the model, the SDK provides this <a class="reference external" href="https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py">APIError</a> class.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="s2">&quot;invalid-model-name&quot;</span><span class="p">,</span>
@@ -2360,18 +2397,20 @@ initialize a client.</p>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateFileConfig"><code class="docutils literal notranslate"><span class="pre">CreateFileConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileConfig.http_options"><code class="docutils literal notranslate"><span class="pre">CreateFileConfig.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileConfig.should_return_http_response"><code class="docutils literal notranslate"><span class="pre">CreateFileConfig.should_return_http_response</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateFileConfigDict"><code class="docutils literal notranslate"><span class="pre">CreateFileConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">CreateFileConfigDict.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileConfigDict.should_return_http_response"><code class="docutils literal notranslate"><span class="pre">CreateFileConfigDict.should_return_http_response</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateFileResponse"><code class="docutils literal notranslate"><span class="pre">CreateFileResponse</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileResponse.http_headers"><code class="docutils literal notranslate"><span class="pre">CreateFileResponse.http_headers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileResponse.sdk_http_response"><code class="docutils literal notranslate"><span class="pre">CreateFileResponse.sdk_http_response</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateFileResponseDict"><code class="docutils literal notranslate"><span class="pre">CreateFileResponseDict</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileResponseDict.http_headers"><code class="docutils literal notranslate"><span class="pre">CreateFileResponseDict.http_headers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileResponseDict.sdk_http_response"><code class="docutils literal notranslate"><span class="pre">CreateFileResponseDict.sdk_http_response</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig</span></code></a><ul>
@@ -2834,7 +2873,9 @@ initialize a client.</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.description"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.name"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.parameters"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.parameters_json_schema"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.parameters_json_schema</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.response"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.response</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.response_json_schema"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.response_json_schema</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.from_callable"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.from_callable()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclaration.from_callable_with_api_option"><code class="docutils literal notranslate"><span class="pre">FunctionDeclaration.from_callable_with_api_option()</span></code></a></li>
 </ul>
@@ -2844,7 +2885,9 @@ initialize a client.</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.description"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.name"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.parameters"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.parameters_json_schema"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.parameters_json_schema</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.response"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.response</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FunctionDeclarationDict.response_json_schema"><code class="docutils literal notranslate"><span class="pre">FunctionDeclarationDict.response_json_schema</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.FunctionResponse"><code class="docutils literal notranslate"><span class="pre">FunctionResponse</span></code></a><ul>
@@ -3140,6 +3183,7 @@ initialize a client.</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.media_resolution"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.media_resolution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.model_selection_config"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.model_selection_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.presence_penalty"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.presence_penalty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.response_json_schema"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.response_json_schema</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.response_logprobs"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.response_logprobs</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.response_mime_type"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.response_mime_type</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.response_modalities"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.response_modalities</span></code></a></li>
@@ -3163,6 +3207,7 @@ initialize a client.</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.media_resolution"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.media_resolution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.model_selection_config"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.model_selection_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.presence_penalty"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.presence_penalty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.response_json_schema"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.response_json_schema</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.response_logprobs"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.response_logprobs</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.response_mime_type"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.response_mime_type</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.response_modalities"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.response_modalities</span></code></a></li>
@@ -3420,7 +3465,9 @@ initialize a client.</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.async_client_args"><code class="docutils literal notranslate"><span class="pre">HttpOptions.async_client_args</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.base_url"><code class="docutils literal notranslate"><span class="pre">HttpOptions.base_url</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.client_args"><code class="docutils literal notranslate"><span class="pre">HttpOptions.client_args</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.extra_body"><code class="docutils literal notranslate"><span class="pre">HttpOptions.extra_body</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.headers"><code class="docutils literal notranslate"><span class="pre">HttpOptions.headers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.retry_options"><code class="docutils literal notranslate"><span class="pre">HttpOptions.retry_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.timeout"><code class="docutils literal notranslate"><span class="pre">HttpOptions.timeout</span></code></a></li>
 </ul>
 </li>
@@ -3429,8 +3476,38 @@ initialize a client.</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptionsDict.async_client_args"><code class="docutils literal notranslate"><span class="pre">HttpOptionsDict.async_client_args</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptionsDict.base_url"><code class="docutils literal notranslate"><span class="pre">HttpOptionsDict.base_url</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptionsDict.client_args"><code class="docutils literal notranslate"><span class="pre">HttpOptionsDict.client_args</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptionsDict.extra_body"><code class="docutils literal notranslate"><span class="pre">HttpOptionsDict.extra_body</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptionsDict.headers"><code class="docutils literal notranslate"><span class="pre">HttpOptionsDict.headers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptionsDict.retry_options"><code class="docutils literal notranslate"><span class="pre">HttpOptionsDict.retry_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptionsDict.timeout"><code class="docutils literal notranslate"><span class="pre">HttpOptionsDict.timeout</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.HttpResponse"><code class="docutils literal notranslate"><span class="pre">HttpResponse</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpResponse.body"><code class="docutils literal notranslate"><span class="pre">HttpResponse.body</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpResponse.headers"><code class="docutils literal notranslate"><span class="pre">HttpResponse.headers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.HttpResponseDict"><code class="docutils literal notranslate"><span class="pre">HttpResponseDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpResponseDict.body"><code class="docutils literal notranslate"><span class="pre">HttpResponseDict.body</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpResponseDict.headers"><code class="docutils literal notranslate"><span class="pre">HttpResponseDict.headers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptions"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptions</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptions.attempts"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptions.attempts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptions.exp_base"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptions.exp_base</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptions.http_status_codes"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptions.http_status_codes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptions.initial_delay"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptions.initial_delay</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptions.jitter"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptions.jitter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptions.max_delay"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptions.max_delay</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptionsDict"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptionsDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptionsDict.attempts"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptionsDict.attempts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptionsDict.exp_base"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptionsDict.exp_base</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptionsDict.http_status_codes"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptionsDict.http_status_codes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptionsDict.initial_delay"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptionsDict.initial_delay</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptionsDict.jitter"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptionsDict.jitter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpRetryOptionsDict.max_delay"><code class="docutils literal notranslate"><span class="pre">HttpRetryOptionsDict.max_delay</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Image"><code class="docutils literal notranslate"><span class="pre">Image</span></code></a><ul>
@@ -5335,6 +5412,8 @@ initialize a client.</p>
 <li><a class="reference internal" href="#imports">Imports</a></li>
 <li><a class="reference internal" href="#create-a-client">Create a client</a><ul>
 <li><a class="reference internal" href="#api-selection">API Selection</a></li>
+<li><a class="reference internal" href="#faster-async-client-option-aiohttp">Faster async client option: Aiohttp</a></li>
+<li><a class="reference internal" href="#proxy">Proxy</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#types">Types</a></li>

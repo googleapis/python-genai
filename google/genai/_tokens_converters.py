@@ -23,7 +23,6 @@ from ._common import set_value_by_path as setv
 
 
 def _PrebuiltVoiceConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -35,7 +34,6 @@ def _PrebuiltVoiceConfig_to_mldev(
 
 
 def _PrebuiltVoiceConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -47,7 +45,6 @@ def _PrebuiltVoiceConfig_to_vertex(
 
 
 def _VoiceConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -57,7 +54,7 @@ def _VoiceConfig_to_mldev(
         to_object,
         ['prebuiltVoiceConfig'],
         _PrebuiltVoiceConfig_to_mldev(
-            api_client, getv(from_object, ['prebuilt_voice_config']), to_object
+            getv(from_object, ['prebuilt_voice_config']), to_object
         ),
     )
 
@@ -65,7 +62,6 @@ def _VoiceConfig_to_mldev(
 
 
 def _VoiceConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -75,7 +71,7 @@ def _VoiceConfig_to_vertex(
         to_object,
         ['prebuiltVoiceConfig'],
         _PrebuiltVoiceConfig_to_vertex(
-            api_client, getv(from_object, ['prebuilt_voice_config']), to_object
+            getv(from_object, ['prebuilt_voice_config']), to_object
         ),
     )
 
@@ -83,7 +79,6 @@ def _VoiceConfig_to_vertex(
 
 
 def _SpeakerVoiceConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -95,16 +90,13 @@ def _SpeakerVoiceConfig_to_mldev(
     setv(
         to_object,
         ['voiceConfig'],
-        _VoiceConfig_to_mldev(
-            api_client, getv(from_object, ['voice_config']), to_object
-        ),
+        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
     )
 
   return to_object
 
 
 def _SpeakerVoiceConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -119,7 +111,6 @@ def _SpeakerVoiceConfig_to_vertex(
 
 
 def _MultiSpeakerVoiceConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -129,7 +120,7 @@ def _MultiSpeakerVoiceConfig_to_mldev(
         to_object,
         ['speakerVoiceConfigs'],
         [
-            _SpeakerVoiceConfig_to_mldev(api_client, item, to_object)
+            _SpeakerVoiceConfig_to_mldev(item, to_object)
             for item in getv(from_object, ['speaker_voice_configs'])
         ],
     )
@@ -138,7 +129,6 @@ def _MultiSpeakerVoiceConfig_to_mldev(
 
 
 def _MultiSpeakerVoiceConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -152,7 +142,6 @@ def _MultiSpeakerVoiceConfig_to_vertex(
 
 
 def _SpeechConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -161,9 +150,7 @@ def _SpeechConfig_to_mldev(
     setv(
         to_object,
         ['voiceConfig'],
-        _VoiceConfig_to_mldev(
-            api_client, getv(from_object, ['voice_config']), to_object
-        ),
+        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
     )
 
   if getv(from_object, ['multi_speaker_voice_config']) is not None:
@@ -171,9 +158,7 @@ def _SpeechConfig_to_mldev(
         to_object,
         ['multiSpeakerVoiceConfig'],
         _MultiSpeakerVoiceConfig_to_mldev(
-            api_client,
-            getv(from_object, ['multi_speaker_voice_config']),
-            to_object,
+            getv(from_object, ['multi_speaker_voice_config']), to_object
         ),
     )
 
@@ -184,7 +169,6 @@ def _SpeechConfig_to_mldev(
 
 
 def _SpeechConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -193,9 +177,7 @@ def _SpeechConfig_to_vertex(
     setv(
         to_object,
         ['voiceConfig'],
-        _VoiceConfig_to_vertex(
-            api_client, getv(from_object, ['voice_config']), to_object
-        ),
+        _VoiceConfig_to_vertex(getv(from_object, ['voice_config']), to_object),
     )
 
   if getv(from_object, ['multi_speaker_voice_config']) is not None:
@@ -210,7 +192,6 @@ def _SpeechConfig_to_vertex(
 
 
 def _VideoMetadata_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -228,7 +209,6 @@ def _VideoMetadata_to_mldev(
 
 
 def _VideoMetadata_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -246,7 +226,6 @@ def _VideoMetadata_to_vertex(
 
 
 def _Blob_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -264,7 +243,6 @@ def _Blob_to_mldev(
 
 
 def _Blob_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -282,7 +260,6 @@ def _Blob_to_vertex(
 
 
 def _FileData_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -300,7 +277,6 @@ def _FileData_to_mldev(
 
 
 def _FileData_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -318,7 +294,6 @@ def _FileData_to_vertex(
 
 
 def _Part_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -328,7 +303,7 @@ def _Part_to_mldev(
         to_object,
         ['videoMetadata'],
         _VideoMetadata_to_mldev(
-            api_client, getv(from_object, ['video_metadata']), to_object
+            getv(from_object, ['video_metadata']), to_object
         ),
     )
 
@@ -339,18 +314,14 @@ def _Part_to_mldev(
     setv(
         to_object,
         ['inlineData'],
-        _Blob_to_mldev(
-            api_client, getv(from_object, ['inline_data']), to_object
-        ),
+        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
     )
 
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
         ['fileData'],
-        _FileData_to_mldev(
-            api_client, getv(from_object, ['file_data']), to_object
-        ),
+        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
     )
 
   if getv(from_object, ['thought_signature']) is not None:
@@ -387,7 +358,6 @@ def _Part_to_mldev(
 
 
 def _Part_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -397,7 +367,7 @@ def _Part_to_vertex(
         to_object,
         ['videoMetadata'],
         _VideoMetadata_to_vertex(
-            api_client, getv(from_object, ['video_metadata']), to_object
+            getv(from_object, ['video_metadata']), to_object
         ),
     )
 
@@ -408,18 +378,14 @@ def _Part_to_vertex(
     setv(
         to_object,
         ['inlineData'],
-        _Blob_to_vertex(
-            api_client, getv(from_object, ['inline_data']), to_object
-        ),
+        _Blob_to_vertex(getv(from_object, ['inline_data']), to_object),
     )
 
   if getv(from_object, ['file_data']) is not None:
     setv(
         to_object,
         ['fileData'],
-        _FileData_to_vertex(
-            api_client, getv(from_object, ['file_data']), to_object
-        ),
+        _FileData_to_vertex(getv(from_object, ['file_data']), to_object),
     )
 
   if getv(from_object, ['thought_signature']) is not None:
@@ -456,7 +422,6 @@ def _Part_to_vertex(
 
 
 def _Content_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -466,7 +431,7 @@ def _Content_to_mldev(
         to_object,
         ['parts'],
         [
-            _Part_to_mldev(api_client, item, to_object)
+            _Part_to_mldev(item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -478,7 +443,6 @@ def _Content_to_mldev(
 
 
 def _Content_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -488,7 +452,7 @@ def _Content_to_vertex(
         to_object,
         ['parts'],
         [
-            _Part_to_vertex(api_client, item, to_object)
+            _Part_to_vertex(item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -500,7 +464,6 @@ def _Content_to_vertex(
 
 
 def _FunctionDeclaration_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -517,14 +480,27 @@ def _FunctionDeclaration_to_mldev(
   if getv(from_object, ['parameters']) is not None:
     setv(to_object, ['parameters'], getv(from_object, ['parameters']))
 
+  if getv(from_object, ['parameters_json_schema']) is not None:
+    setv(
+        to_object,
+        ['parametersJsonSchema'],
+        getv(from_object, ['parameters_json_schema']),
+    )
+
   if getv(from_object, ['response']) is not None:
     setv(to_object, ['response'], getv(from_object, ['response']))
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
 
   return to_object
 
 
 def _FunctionDeclaration_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -541,14 +517,27 @@ def _FunctionDeclaration_to_vertex(
   if getv(from_object, ['parameters']) is not None:
     setv(to_object, ['parameters'], getv(from_object, ['parameters']))
 
+  if getv(from_object, ['parameters_json_schema']) is not None:
+    setv(
+        to_object,
+        ['parametersJsonSchema'],
+        getv(from_object, ['parameters_json_schema']),
+    )
+
   if getv(from_object, ['response']) is not None:
     setv(to_object, ['response'], getv(from_object, ['response']))
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
 
   return to_object
 
 
 def _Interval_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -563,7 +552,6 @@ def _Interval_to_mldev(
 
 
 def _Interval_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -578,7 +566,6 @@ def _Interval_to_vertex(
 
 
 def _GoogleSearch_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -587,16 +574,13 @@ def _GoogleSearch_to_mldev(
     setv(
         to_object,
         ['timeRangeFilter'],
-        _Interval_to_mldev(
-            api_client, getv(from_object, ['time_range_filter']), to_object
-        ),
+        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
     )
 
   return to_object
 
 
 def _GoogleSearch_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -606,7 +590,7 @@ def _GoogleSearch_to_vertex(
         to_object,
         ['timeRangeFilter'],
         _Interval_to_vertex(
-            api_client, getv(from_object, ['time_range_filter']), to_object
+            getv(from_object, ['time_range_filter']), to_object
         ),
     )
 
@@ -614,7 +598,6 @@ def _GoogleSearch_to_vertex(
 
 
 def _DynamicRetrievalConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -633,7 +616,6 @@ def _DynamicRetrievalConfig_to_mldev(
 
 
 def _DynamicRetrievalConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -652,7 +634,6 @@ def _DynamicRetrievalConfig_to_vertex(
 
 
 def _GoogleSearchRetrieval_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -662,9 +643,7 @@ def _GoogleSearchRetrieval_to_mldev(
         to_object,
         ['dynamicRetrievalConfig'],
         _DynamicRetrievalConfig_to_mldev(
-            api_client,
-            getv(from_object, ['dynamic_retrieval_config']),
-            to_object,
+            getv(from_object, ['dynamic_retrieval_config']), to_object
         ),
     )
 
@@ -672,7 +651,6 @@ def _GoogleSearchRetrieval_to_mldev(
 
 
 def _GoogleSearchRetrieval_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -682,9 +660,7 @@ def _GoogleSearchRetrieval_to_vertex(
         to_object,
         ['dynamicRetrievalConfig'],
         _DynamicRetrievalConfig_to_vertex(
-            api_client,
-            getv(from_object, ['dynamic_retrieval_config']),
-            to_object,
+            getv(from_object, ['dynamic_retrieval_config']), to_object
         ),
     )
 
@@ -692,7 +668,6 @@ def _GoogleSearchRetrieval_to_vertex(
 
 
 def _EnterpriseWebSearch_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -702,7 +677,6 @@ def _EnterpriseWebSearch_to_mldev(
 
 
 def _EnterpriseWebSearch_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -712,7 +686,6 @@ def _EnterpriseWebSearch_to_vertex(
 
 
 def _ApiKeyConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -724,7 +697,6 @@ def _ApiKeyConfig_to_mldev(
 
 
 def _ApiKeyConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -736,7 +708,6 @@ def _ApiKeyConfig_to_vertex(
 
 
 def _AuthConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -771,7 +742,6 @@ def _AuthConfig_to_mldev(
 
 
 def _AuthConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -781,7 +751,7 @@ def _AuthConfig_to_vertex(
         to_object,
         ['apiKeyConfig'],
         _ApiKeyConfig_to_vertex(
-            api_client, getv(from_object, ['api_key_config']), to_object
+            getv(from_object, ['api_key_config']), to_object
         ),
     )
 
@@ -812,7 +782,6 @@ def _AuthConfig_to_vertex(
 
 
 def _GoogleMaps_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -824,7 +793,6 @@ def _GoogleMaps_to_mldev(
 
 
 def _GoogleMaps_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -833,16 +801,13 @@ def _GoogleMaps_to_vertex(
     setv(
         to_object,
         ['authConfig'],
-        _AuthConfig_to_vertex(
-            api_client, getv(from_object, ['auth_config']), to_object
-        ),
+        _AuthConfig_to_vertex(getv(from_object, ['auth_config']), to_object),
     )
 
   return to_object
 
 
 def _UrlContext_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -852,7 +817,6 @@ def _UrlContext_to_mldev(
 
 
 def _UrlContext_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -862,7 +826,6 @@ def _UrlContext_to_vertex(
 
 
 def _Tool_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -872,7 +835,7 @@ def _Tool_to_mldev(
         to_object,
         ['functionDeclarations'],
         [
-            _FunctionDeclaration_to_mldev(api_client, item, to_object)
+            _FunctionDeclaration_to_mldev(item, to_object)
             for item in getv(from_object, ['function_declarations'])
         ],
     )
@@ -884,9 +847,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['googleSearch'],
-        _GoogleSearch_to_mldev(
-            api_client, getv(from_object, ['google_search']), to_object
-        ),
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_search_retrieval']) is not None:
@@ -894,9 +855,7 @@ def _Tool_to_mldev(
         to_object,
         ['googleSearchRetrieval'],
         _GoogleSearchRetrieval_to_mldev(
-            api_client,
-            getv(from_object, ['google_search_retrieval']),
-            to_object,
+            getv(from_object, ['google_search_retrieval']), to_object
         ),
     )
 
@@ -912,9 +871,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['urlContext'],
-        _UrlContext_to_mldev(
-            api_client, getv(from_object, ['url_context']), to_object
-        ),
+        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
     )
 
   if getv(from_object, ['code_execution']) is not None:
@@ -924,7 +881,6 @@ def _Tool_to_mldev(
 
 
 def _Tool_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -934,7 +890,7 @@ def _Tool_to_vertex(
         to_object,
         ['functionDeclarations'],
         [
-            _FunctionDeclaration_to_vertex(api_client, item, to_object)
+            _FunctionDeclaration_to_vertex(item, to_object)
             for item in getv(from_object, ['function_declarations'])
         ],
     )
@@ -947,7 +903,7 @@ def _Tool_to_vertex(
         to_object,
         ['googleSearch'],
         _GoogleSearch_to_vertex(
-            api_client, getv(from_object, ['google_search']), to_object
+            getv(from_object, ['google_search']), to_object
         ),
     )
 
@@ -956,9 +912,7 @@ def _Tool_to_vertex(
         to_object,
         ['googleSearchRetrieval'],
         _GoogleSearchRetrieval_to_vertex(
-            api_client,
-            getv(from_object, ['google_search_retrieval']),
-            to_object,
+            getv(from_object, ['google_search_retrieval']), to_object
         ),
     )
 
@@ -967,7 +921,7 @@ def _Tool_to_vertex(
         to_object,
         ['enterpriseWebSearch'],
         _EnterpriseWebSearch_to_vertex(
-            api_client, getv(from_object, ['enterprise_web_search']), to_object
+            getv(from_object, ['enterprise_web_search']), to_object
         ),
     )
 
@@ -975,18 +929,14 @@ def _Tool_to_vertex(
     setv(
         to_object,
         ['googleMaps'],
-        _GoogleMaps_to_vertex(
-            api_client, getv(from_object, ['google_maps']), to_object
-        ),
+        _GoogleMaps_to_vertex(getv(from_object, ['google_maps']), to_object),
     )
 
   if getv(from_object, ['url_context']) is not None:
     setv(
         to_object,
         ['urlContext'],
-        _UrlContext_to_vertex(
-            api_client, getv(from_object, ['url_context']), to_object
-        ),
+        _UrlContext_to_vertex(getv(from_object, ['url_context']), to_object),
     )
 
   if getv(from_object, ['code_execution']) is not None:
@@ -996,7 +946,6 @@ def _Tool_to_vertex(
 
 
 def _SessionResumptionConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1011,7 +960,6 @@ def _SessionResumptionConfig_to_mldev(
 
 
 def _SessionResumptionConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1026,7 +974,6 @@ def _SessionResumptionConfig_to_vertex(
 
 
 def _AudioTranscriptionConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1036,7 +983,6 @@ def _AudioTranscriptionConfig_to_mldev(
 
 
 def _AudioTranscriptionConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1046,7 +992,6 @@ def _AudioTranscriptionConfig_to_vertex(
 
 
 def _AutomaticActivityDetection_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1084,7 +1029,6 @@ def _AutomaticActivityDetection_to_mldev(
 
 
 def _AutomaticActivityDetection_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1122,7 +1066,6 @@ def _AutomaticActivityDetection_to_vertex(
 
 
 def _RealtimeInputConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1132,9 +1075,7 @@ def _RealtimeInputConfig_to_mldev(
         to_object,
         ['automaticActivityDetection'],
         _AutomaticActivityDetection_to_mldev(
-            api_client,
-            getv(from_object, ['automatic_activity_detection']),
-            to_object,
+            getv(from_object, ['automatic_activity_detection']), to_object
         ),
     )
 
@@ -1152,7 +1093,6 @@ def _RealtimeInputConfig_to_mldev(
 
 
 def _RealtimeInputConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1162,9 +1102,7 @@ def _RealtimeInputConfig_to_vertex(
         to_object,
         ['automaticActivityDetection'],
         _AutomaticActivityDetection_to_vertex(
-            api_client,
-            getv(from_object, ['automatic_activity_detection']),
-            to_object,
+            getv(from_object, ['automatic_activity_detection']), to_object
         ),
     )
 
@@ -1182,7 +1120,6 @@ def _RealtimeInputConfig_to_vertex(
 
 
 def _SlidingWindow_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1194,7 +1131,6 @@ def _SlidingWindow_to_mldev(
 
 
 def _SlidingWindow_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1206,7 +1142,6 @@ def _SlidingWindow_to_vertex(
 
 
 def _ContextWindowCompressionConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1219,7 +1154,7 @@ def _ContextWindowCompressionConfig_to_mldev(
         to_object,
         ['slidingWindow'],
         _SlidingWindow_to_mldev(
-            api_client, getv(from_object, ['sliding_window']), to_object
+            getv(from_object, ['sliding_window']), to_object
         ),
     )
 
@@ -1227,7 +1162,6 @@ def _ContextWindowCompressionConfig_to_mldev(
 
 
 def _ContextWindowCompressionConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1240,7 +1174,7 @@ def _ContextWindowCompressionConfig_to_vertex(
         to_object,
         ['slidingWindow'],
         _SlidingWindow_to_vertex(
-            api_client, getv(from_object, ['sliding_window']), to_object
+            getv(from_object, ['sliding_window']), to_object
         ),
     )
 
@@ -1248,7 +1182,6 @@ def _ContextWindowCompressionConfig_to_vertex(
 
 
 def _ProactivityConfig_to_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1260,7 +1193,6 @@ def _ProactivityConfig_to_mldev(
 
 
 def _ProactivityConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1339,10 +1271,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'generationConfig', 'speechConfig'],
         _SpeechConfig_to_mldev(
-            api_client,
-            t.t_live_speech_config(
-                api_client, getv(from_object, ['speech_config'])
-            ),
+            t.t_live_speech_config(getv(from_object, ['speech_config'])),
             to_object,
         ),
     )
@@ -1359,9 +1288,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'systemInstruction'],
         _Content_to_mldev(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
         ),
     )
 
@@ -1370,7 +1297,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'tools'],
         [
-            _Tool_to_mldev(api_client, t.t_tool(api_client, item), to_object)
+            _Tool_to_mldev(t.t_tool(api_client, item), to_object)
             for item in t.t_tools(api_client, getv(from_object, ['tools']))
         ],
     )
@@ -1380,7 +1307,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'sessionResumption'],
         _SessionResumptionConfig_to_mldev(
-            api_client, getv(from_object, ['session_resumption']), to_object
+            getv(from_object, ['session_resumption']), to_object
         ),
     )
 
@@ -1389,9 +1316,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'inputAudioTranscription'],
         _AudioTranscriptionConfig_to_mldev(
-            api_client,
-            getv(from_object, ['input_audio_transcription']),
-            to_object,
+            getv(from_object, ['input_audio_transcription']), to_object
         ),
     )
 
@@ -1400,9 +1325,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'outputAudioTranscription'],
         _AudioTranscriptionConfig_to_mldev(
-            api_client,
-            getv(from_object, ['output_audio_transcription']),
-            to_object,
+            getv(from_object, ['output_audio_transcription']), to_object
         ),
     )
 
@@ -1411,7 +1334,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'realtimeInputConfig'],
         _RealtimeInputConfig_to_mldev(
-            api_client, getv(from_object, ['realtime_input_config']), to_object
+            getv(from_object, ['realtime_input_config']), to_object
         ),
     )
 
@@ -1420,9 +1343,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'contextWindowCompression'],
         _ContextWindowCompressionConfig_to_mldev(
-            api_client,
-            getv(from_object, ['context_window_compression']),
-            to_object,
+            getv(from_object, ['context_window_compression']), to_object
         ),
     )
 
@@ -1431,7 +1352,7 @@ def _LiveConnectConfig_to_mldev(
         parent_object,
         ['setup', 'proactivity'],
         _ProactivityConfig_to_mldev(
-            api_client, getv(from_object, ['proactivity']), to_object
+            getv(from_object, ['proactivity']), to_object
         ),
     )
 
@@ -1506,10 +1427,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'generationConfig', 'speechConfig'],
         _SpeechConfig_to_vertex(
-            api_client,
-            t.t_live_speech_config(
-                api_client, getv(from_object, ['speech_config'])
-            ),
+            t.t_live_speech_config(getv(from_object, ['speech_config'])),
             to_object,
         ),
     )
@@ -1526,9 +1444,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'systemInstruction'],
         _Content_to_vertex(
-            api_client,
-            t.t_content(api_client, getv(from_object, ['system_instruction'])),
-            to_object,
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
         ),
     )
 
@@ -1537,7 +1453,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'tools'],
         [
-            _Tool_to_vertex(api_client, t.t_tool(api_client, item), to_object)
+            _Tool_to_vertex(t.t_tool(api_client, item), to_object)
             for item in t.t_tools(api_client, getv(from_object, ['tools']))
         ],
     )
@@ -1547,7 +1463,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'sessionResumption'],
         _SessionResumptionConfig_to_vertex(
-            api_client, getv(from_object, ['session_resumption']), to_object
+            getv(from_object, ['session_resumption']), to_object
         ),
     )
 
@@ -1556,9 +1472,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'inputAudioTranscription'],
         _AudioTranscriptionConfig_to_vertex(
-            api_client,
-            getv(from_object, ['input_audio_transcription']),
-            to_object,
+            getv(from_object, ['input_audio_transcription']), to_object
         ),
     )
 
@@ -1567,9 +1481,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'outputAudioTranscription'],
         _AudioTranscriptionConfig_to_vertex(
-            api_client,
-            getv(from_object, ['output_audio_transcription']),
-            to_object,
+            getv(from_object, ['output_audio_transcription']), to_object
         ),
     )
 
@@ -1578,7 +1490,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'realtimeInputConfig'],
         _RealtimeInputConfig_to_vertex(
-            api_client, getv(from_object, ['realtime_input_config']), to_object
+            getv(from_object, ['realtime_input_config']), to_object
         ),
     )
 
@@ -1587,9 +1499,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'contextWindowCompression'],
         _ContextWindowCompressionConfig_to_vertex(
-            api_client,
-            getv(from_object, ['context_window_compression']),
-            to_object,
+            getv(from_object, ['context_window_compression']), to_object
         ),
     )
 
@@ -1598,7 +1508,7 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'proactivity'],
         _ProactivityConfig_to_vertex(
-            api_client, getv(from_object, ['proactivity']), to_object
+            getv(from_object, ['proactivity']), to_object
         ),
     )
 
@@ -1631,7 +1541,6 @@ def _LiveConnectConstraints_to_mldev(
 
 
 def _LiveConnectConstraints_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1687,7 +1596,6 @@ def _CreateAuthTokenConfig_to_mldev(
 
 
 def _CreateAuthTokenConfig_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1736,7 +1644,6 @@ def _CreateAuthTokenParameters_to_mldev(
 
 
 def _CreateAuthTokenParameters_to_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1748,7 +1655,6 @@ def _CreateAuthTokenParameters_to_vertex(
 
 
 def _AuthToken_from_mldev(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -1760,7 +1666,6 @@ def _AuthToken_from_mldev(
 
 
 def _AuthToken_from_vertex(
-    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:

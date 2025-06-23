@@ -15,6 +15,7 @@
 
 """[Experimental] Auth Tokens API client."""
 
+import json
 import logging
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
@@ -221,7 +222,8 @@ class Tokens(_api_module.BaseModule):
       )
     else:
       request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client,
+          parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -252,13 +254,14 @@ class Tokens(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response = self._api_client.request(
         'post', path, request_dict, http_options
     )
+    response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = tokens_converters._AuthToken_from_mldev(
-          self._api_client, response_dict
+          response_dict
       )
 
     return_value = types.AuthToken._from_response(
@@ -314,7 +317,8 @@ class AsyncTokens(_api_module.BaseModule):
       )
     else:
       request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client,
+          parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -343,16 +347,17 @@ class AsyncTokens(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response = await self._api_client.async_request(
         'post',
         path,
         request_dict,
         http_options=http_options,
     )
+    response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = tokens_converters._AuthToken_from_mldev(
-          self._api_client, response_dict
+          response_dict
       )
 
     return_value = types.AuthToken._from_response(
