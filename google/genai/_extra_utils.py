@@ -25,6 +25,7 @@ import pydantic
 
 from . import _common
 from . import _mcp_utils
+from . import _transformers as t
 from . import errors
 from . import types
 from ._adapters import McpToGenAiToolAdapter
@@ -506,3 +507,15 @@ async def parse_config_for_mcp_sessions(
         parsed_config_copy.tools.append(tool)
 
   return parsed_config_copy, mcp_to_genai_tool_adapters
+
+
+def append_chunk_contents(
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+    chunk: types.GenerateContentResponse,
+) -> None:
+  """Appends the contents of the chunk to the contents list."""
+  if chunk is not None and chunk.candidates is not None:
+    chunk_content = chunk.candidates[0].content
+    contents = t.t_contents(contents)  # type: ignore[assignment]
+    if isinstance(contents, list) and chunk_content is not None:
+      contents.append(chunk_content)  # type: ignore[arg-type]
