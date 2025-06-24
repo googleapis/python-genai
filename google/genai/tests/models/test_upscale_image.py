@@ -50,6 +50,8 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'include_rai_reason': True,
                 'output_mime_type': 'image/jpeg',
                 'output_compression_quality': 80,
+                'enhance_input_image': True,
+                'image_preservation_factor': 0.6,
             },
         ),
     ),
@@ -94,6 +96,8 @@ async def test_upscale_async(client):
             'include_rai_reason': True,
             'output_mime_type': 'image/jpeg',
             'output_compression_quality': 80,
+            'enhance_input_image': True,
+            'image_preservation_factor': 0.6,
         },
     )
     assert response.generated_images[0].image.image_bytes

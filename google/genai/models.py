@@ -2862,6 +2862,20 @@ def _UpscaleImageAPIConfig_to_vertex(
         getv(from_object, ['output_compression_quality']),
     )
 
+  if getv(from_object, ['enhance_input_image']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'upscaleConfig', 'enhanceInputImage'],
+        getv(from_object, ['enhance_input_image']),
+    )
+
+  if getv(from_object, ['image_preservation_factor']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'upscaleConfig', 'imagePreservationFactor'],
+        getv(from_object, ['image_preservation_factor']),
+    )
+
   if getv(from_object, ['number_of_images']) is not None:
     setv(
         parent_object,
@@ -6240,6 +6254,10 @@ class Models(_api_module.BaseModule):
         output_compression_quality=config_dct.get(
             'output_compression_quality', None
         ),
+        enhance_input_image=config_dct.get('enhance_input_image', None),
+        image_preservation_factor=config_dct.get(
+            'image_preservation_factor', None
+        ),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
@@ -7831,6 +7849,10 @@ class AsyncModels(_api_module.BaseModule):
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
             'output_compression_quality', None
+        ),
+        enhance_input_image=config_dct.get('enhance_input_image', None),
+        image_preservation_factor=config_dct.get(
+            'image_preservation_factor', None
         ),
     )  # pylint: disable=protected-access
 
