@@ -435,8 +435,11 @@ class PersonGeneration(_common.CaseInSensitiveEnum):
   """Enum that controls the generation of people."""
 
   DONT_ALLOW = 'DONT_ALLOW'
+  """Block generation of images of people."""
   ALLOW_ADULT = 'ALLOW_ADULT'
+  """Generate images of adults, but not children."""
   ALLOW_ALL = 'ALLOW_ALL'
+  """Generate images that include adults and children."""
 
 
 class ImagePromptLanguage(_common.CaseInSensitiveEnum):
@@ -5405,7 +5408,8 @@ class GenerateImagesConfig(_common.BaseModel):
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
-      description="""Aspect ratio of the generated images.
+      description="""Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """,
   )
   guidance_scale: Optional[float] = Field(
@@ -5490,7 +5494,8 @@ class GenerateImagesConfigDict(TypedDict, total=False):
       """
 
   aspect_ratio: Optional[str]
-  """Aspect ratio of the generated images.
+  """Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """
 
   guidance_scale: Optional[float]
@@ -6076,7 +6081,8 @@ class EditImageConfig(_common.BaseModel):
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
-      description="""Aspect ratio of the generated images.
+      description="""Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """,
   )
   guidance_scale: Optional[float] = Field(
@@ -6160,7 +6166,8 @@ class EditImageConfigDict(TypedDict, total=False):
       """
 
   aspect_ratio: Optional[str]
-  """Aspect ratio of the generated images.
+  """Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """
 
   guidance_scale: Optional[float]
