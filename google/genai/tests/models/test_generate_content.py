@@ -1508,17 +1508,18 @@ def test_non_string_enum_schema_with_enum_mime_type(client):
     BRASS = 4
     KEYBOARD = 5
 
-  with pytest.raises(TypeError) as e:
-    client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='What instrument plays multiple notes at once?',
-        config={
-            'response_mime_type': 'text/x.enum',
-            'response_schema': IntegerEnum,
-        },
-    )
+  response =client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='What instrument plays multiple notes at once?',
+      config={
+          'response_mime_type': 'text/x.enum',
+          'response_schema': IntegerEnum,
+      },
+  )
 
-    assert 'value must be a string' in str(e)
+  instrument_values = {str(member.value) for member in IntegerEnum}
+
+  assert response.text in instrument_values
 
 
 def test_json_schema(client):

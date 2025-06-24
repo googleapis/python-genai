@@ -787,15 +787,25 @@ def process_schema(
 def _process_enum(
     enum: EnumMeta, client: _api_client.BaseApiClient
 ) -> types.Schema:
+  is_integer_enum = False
+
   for member in enum:  # type: ignore
-    if not isinstance(member.value, str):
+    if isinstance(member.value, int):
+      is_integer_enum = True
+    elif not isinstance(member.value, str):
       raise TypeError(
-          f'Enum member {member.name} value must be a string, got'
+          f'Enum member {member.name} value must be a string or integer, got'
           f' {type(member.value)}'
       )
 
+  enum_to_process = enum
+  if is_integer_enum:
+    str_members = [str(member.value) for member in enum]  # type: ignore
+    str_enum = Enum(enum.__name__, str_members, type=str)  # type: ignore
+    enum_to_process = str_enum
+
   class Placeholder(pydantic.BaseModel):
-    placeholder: enum  # type: ignore[valid-type]
+    placeholder: enum_to_process  # type: ignore[valid-type]
 
   enum_schema = Placeholder.model_json_schema()
   process_schema(enum_schema, client)
