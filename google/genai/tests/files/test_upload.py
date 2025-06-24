@@ -32,6 +32,10 @@ pytestmark = pytest_helper.setup(
     test_table=test_table,
 )
 
+def test_text_upload(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = client.files.upload(file='tests/files/test_upload.py')
+    assert file.name.startswith('files/')
 
 def test_image_png_upload(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
@@ -234,3 +238,4 @@ async def test_unknown_path_upload_async(client):
       await client.aio.files.upload(file='unknown_path')
     except FileNotFoundError as e:
       assert 'is not a valid file path' in str(e)
+
