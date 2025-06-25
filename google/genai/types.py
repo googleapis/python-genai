@@ -435,8 +435,11 @@ class PersonGeneration(_common.CaseInSensitiveEnum):
   """Enum that controls the generation of people."""
 
   DONT_ALLOW = 'DONT_ALLOW'
+  """Block generation of images of people."""
   ALLOW_ADULT = 'ALLOW_ADULT'
+  """Generate images of adults, but not children."""
   ALLOW_ALL = 'ALLOW_ALL'
+  """Generate images that include adults and children."""
 
 
 class ImagePromptLanguage(_common.CaseInSensitiveEnum):
@@ -5383,7 +5386,8 @@ class GenerateImagesConfig(_common.BaseModel):
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
-      description="""Aspect ratio of the generated images.
+      description="""Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """,
   )
   guidance_scale: Optional[float] = Field(
@@ -5468,7 +5472,8 @@ class GenerateImagesConfigDict(TypedDict, total=False):
       """
 
   aspect_ratio: Optional[str]
-  """Aspect ratio of the generated images.
+  """Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """
 
   guidance_scale: Optional[float]
@@ -6054,7 +6059,8 @@ class EditImageConfig(_common.BaseModel):
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
-      description="""Aspect ratio of the generated images.
+      description="""Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """,
   )
   guidance_scale: Optional[float] = Field(
@@ -6138,7 +6144,8 @@ class EditImageConfigDict(TypedDict, total=False):
       """
 
   aspect_ratio: Optional[str]
-  """Aspect ratio of the generated images.
+  """Aspect ratio of the generated images. Supported values are
+      "1:1", "3:4", "4:3", "9:16", and "16:9".
       """
 
   guidance_scale: Optional[float]
@@ -6275,6 +6282,19 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
       description="""The level of compression if the ``output_mime_type`` is
       ``image/jpeg``.""",
   )
+  enhance_input_image: Optional[bool] = Field(
+      default=None,
+      description="""Whether to add an image enhancing step before upscaling.
+      It is expected to suppress the noise and JPEG compression artifacts
+      from the input image.""",
+  )
+  image_preservation_factor: Optional[float] = Field(
+      default=None,
+      description="""With a higher image preservation factor, the original image
+      pixels are more respected. With a lower image preservation factor, the
+      output image will have be more different from the input image, but
+      with finer details and less noise.""",
+  )
   number_of_images: Optional[int] = Field(default=None, description="""""")
   mode: Optional[str] = Field(default=None, description="""""")
 
@@ -6299,6 +6319,17 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
   output_compression_quality: Optional[int]
   """The level of compression if the ``output_mime_type`` is
       ``image/jpeg``."""
+
+  enhance_input_image: Optional[bool]
+  """Whether to add an image enhancing step before upscaling.
+      It is expected to suppress the noise and JPEG compression artifacts
+      from the input image."""
+
+  image_preservation_factor: Optional[float]
+  """With a higher image preservation factor, the original image
+      pixels are more respected. With a lower image preservation factor, the
+      output image will have be more different from the input image, but
+      with finer details and less noise."""
 
   number_of_images: Optional[int]
   """"""
@@ -10511,6 +10542,19 @@ class UpscaleImageConfig(_common.BaseModel):
       description="""The level of compression if the ``output_mime_type`` is
       ``image/jpeg``.""",
   )
+  enhance_input_image: Optional[bool] = Field(
+      default=None,
+      description="""Whether to add an image enhancing step before upscaling.
+      It is expected to suppress the noise and JPEG compression artifacts
+      from the input image.""",
+  )
+  image_preservation_factor: Optional[float] = Field(
+      default=None,
+      description="""With a higher image preservation factor, the original image
+      pixels are more respected. With a lower image preservation factor, the
+      output image will have be more different from the input image, but
+      with finer details and less noise.""",
+  )
 
 
 class UpscaleImageConfigDict(TypedDict, total=False):
@@ -10534,6 +10578,17 @@ class UpscaleImageConfigDict(TypedDict, total=False):
   output_compression_quality: Optional[int]
   """The level of compression if the ``output_mime_type`` is
       ``image/jpeg``."""
+
+  enhance_input_image: Optional[bool]
+  """Whether to add an image enhancing step before upscaling.
+      It is expected to suppress the noise and JPEG compression artifacts
+      from the input image."""
+
+  image_preservation_factor: Optional[float]
+  """With a higher image preservation factor, the original image
+      pixels are more respected. With a lower image preservation factor, the
+      output image will have be more different from the input image, but
+      with finer details and less noise."""
 
 
 UpscaleImageConfigOrDict = Union[UpscaleImageConfig, UpscaleImageConfigDict]
