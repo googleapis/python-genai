@@ -493,6 +493,17 @@ class EditMode(_common.CaseInSensitiveEnum):
   EDIT_MODE_PRODUCT_IMAGE = 'EDIT_MODE_PRODUCT_IMAGE'
 
 
+class VideoCompressionQuality(_common.CaseInSensitiveEnum):
+  """Enum that controls the compression quality of the generated videos."""
+
+  OPTIMIZED = 'OPTIMIZED'
+  """Optimized video compression quality. This will produce videos
+      with a compressed, smaller file size."""
+  LOSSLESS = 'LOSSLESS'
+  """Lossless video compression quality. This will produce videos
+      with a larger file size."""
+
+
 class FileState(_common.CaseInSensitiveEnum):
   """State for the lifecycle of a File."""
 
@@ -7386,6 +7397,10 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""Image to use as the last frame of generated videos. Only supported for image to video use cases.""",
   )
+  compression_quality: Optional[VideoCompressionQuality] = Field(
+      default=None,
+      description="""Compression quality of the generated videos.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -7432,6 +7447,9 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   last_frame: Optional[ImageDict]
   """Image to use as the last frame of generated videos. Only supported for image to video use cases."""
+
+  compression_quality: Optional[VideoCompressionQuality]
+  """Compression quality of the generated videos."""
 
 
 GenerateVideosConfigOrDict = Union[

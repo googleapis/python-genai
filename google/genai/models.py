@@ -1404,6 +1404,11 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['last_frame']) is not None:
     raise ValueError('last_frame parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['compression_quality']) is not None:
+    raise ValueError(
+        'compression_quality parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -3266,6 +3271,13 @@ def _GenerateVideosConfig_to_vertex(
         parent_object,
         ['instances[0]', 'lastFrame'],
         _Image_to_vertex(getv(from_object, ['last_frame']), to_object),
+    )
+
+  if getv(from_object, ['compression_quality']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'compressionQuality'],
+        getv(from_object, ['compression_quality']),
     )
 
   return to_object
