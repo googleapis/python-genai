@@ -22,7 +22,7 @@ from ... import types
 from .. import pytest_helper
 
 
-_MODEL = 'models/gemini-2.0-flash-live-001'
+_MODEL = 'models/gemini-live-2.5-flash-preview'
 
 
 # All tests will be run for both Vertex and MLDev.
