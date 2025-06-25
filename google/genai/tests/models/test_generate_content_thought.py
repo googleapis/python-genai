@@ -32,7 +32,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                     'thinking_budget': 10000},
             },
         ),
-        exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
         name='test_generate_content_thought_v1alpha',
