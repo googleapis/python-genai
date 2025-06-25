@@ -29,7 +29,7 @@ _BATCH_JOB_FULL_RESOURCE_NAME = (
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
 # MLDev batch operation name.
-_MLDEV_BATCH_OPERATION_NAME = 'batches/z4ft52j91h7m2y8qzqrdlv84cqoybdjoey5y'
+_MLDEV_BATCH_OPERATION_NAME = 'batches/coqrz7leaeit8g83thvdrkzdulz1bxgi8s74'
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
 
 
@@ -41,6 +41,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             name=_BATCH_JOB_NAME,
         ),
         exception_if_mldev='Invalid batch job name',
+        skip_in_api_mode=('Cannot cancel a batch job multiple times in Vertex'),
     ),
     pytest_helper.TestTableItem(
         name='test_cancel_batch_operation',

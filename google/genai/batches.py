@@ -4936,7 +4936,8 @@ class Batches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the client.
+          when project and location are initialized in the Vertex AI client. Or
+          "files/abc" using the Gemini Developer AI client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -5019,8 +5020,9 @@ class Batches(_api_module.BaseModule):
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/123456789" or
-          "123456789" when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
+          when project and location are initialized in the Vertex AI client. Or
+          "files/abc" using the Gemini Developer AI client.
 
     Usage:
 
@@ -5351,7 +5353,8 @@ class AsyncBatches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the client.
+          when project and location are initialized in the Vertex AI client. Or
+          "files/abc" using the Gemini Developer AI client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -5436,8 +5439,9 @@ class AsyncBatches(_api_module.BaseModule):
 
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
-        Example: "projects/.../locations/.../batchPredictionJobs/123456789" or
-          "123456789" when project and location are initialized in the client.
+        Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
+          when project and location are initialized in the Vertex AI client. Or
+          "files/abc" using the Gemini Developer AI client.
 
     Usage:
 
