@@ -404,7 +404,7 @@ class Operations(_api_module.BaseModule):
     request_dict = _common.encode_unserializable_types(request_dict)
 
     response = self._api_client.request(
-        'post', path, request_dict, http_options
+        'POST', path, request_dict, http_options
     )
 
     response_dict = '' if not response.body else json.loads(response.body)
@@ -568,7 +568,7 @@ class AsyncOperations(_api_module.BaseModule):
     request_dict = _common.encode_unserializable_types(request_dict)
 
     response = await self._api_client.async_request(
-        'post', path, request_dict, http_options
+        'POST', path, request_dict, http_options
     )
 
     response_dict = '' if not response.body else json.loads(response.body)
