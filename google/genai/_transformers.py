@@ -26,7 +26,7 @@ import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, Optional, Sequence, Union  # type: ignore[attr-defined]
+from typing import Any, GenericAlias, List, Optional, Sequence, Union  # type: ignore[attr-defined]
 from ._mcp_utils import mcp_to_gemini_tool
 
 if typing.TYPE_CHECKING:
@@ -954,19 +954,54 @@ def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(src: str) -> types.BatchJobSource:
-  if src.startswith('gs://'):
-    return types.BatchJobSource(
-        format='jsonl',
-        gcs_uri=[src],
-    )
-  elif src.startswith('bq://'):
-    return types.BatchJobSource(
-        format='bigquery',
-        bigquery_uri=src,
-    )
-  else:
-    raise ValueError(f'Unsupported source: {src}')
+def t_batch_job_source(
+    client: _api_client.BaseApiClient,
+    src: Union[
+        str, List[types.InlinedRequestOrDict], types.BatchJobSourceOrDict
+    ],
+) -> types.BatchJobSource:
+  if isinstance(src, dict):
+    src = types.BatchJobSource(**src)
+  if isinstance(src, types.BatchJobSource):
+    if client.vertexai:
+      if src.gcs_uri and src.bigquery_uri:
+        raise ValueError(
+            'Only one of `gcs_uri` or `bigquery_uri` can be set.'
+        )
+      elif not src.gcs_uri and not src.bigquery_uri:
+        raise ValueError(
+            'One of `gcs_uri` or `bigquery_uri` must be set.'
+        )
+    else:
+      if src.inlined_requests and src.file_name:
+        raise ValueError(
+            'Only one of `inlined_requests` or `file_name` can be set.'
+        )
+      elif not src.inlined_requests and not src.file_name:
+        raise ValueError(
+            'One of `inlined_requests` or `file_name` must be set.'
+        )
+    return src
+
+  elif isinstance(src, list):
+    return types.BatchJobSource(inlined_requests=src)
+  elif isinstance(src, str):
+    if src.startswith('gs://'):
+      return types.BatchJobSource(
+          format='jsonl',
+          gcs_uri=[src],
+      )
+    elif src.startswith('bq://'):
+      return types.BatchJobSource(
+          format='bigquery',
+          bigquery_uri=src,
+      )
+    elif src.startswith('files/'):
+      return types.BatchJobSource(
+          file_name=src,
+      )
+
+  raise ValueError(f'Unsupported source: {src}')
 
 
 def t_batch_job_destination(dest: str) -> types.BatchJobDestination:
@@ -986,15 +1021,35 @@ def t_batch_job_destination(dest: str) -> types.BatchJobDestination:
 
 def t_batch_job_name(client: _api_client.BaseApiClient, name: str) -> str:
   if not client.vertexai:
-    return name
+    mldev_pattern = r'batches/[^/]+$'
+    if re.match(mldev_pattern, name):
+      return name.split('/')[-1]
+    else:
+      raise ValueError(f'Invalid batch job name: {name}.')
 
-  pattern = r'^projects/[^/]+/locations/[^/]+/batchPredictionJobs/[^/]+$'
-  if re.match(pattern, name):
+  vertex_pattern = r'^projects/[^/]+/locations/[^/]+/batchPredictionJobs/[^/]+$'
+
+  if re.match(vertex_pattern, name):
     return name.split('/')[-1]
   elif name.isdigit():
     return name
   else:
     raise ValueError(f'Invalid batch job name: {name}.')
+
+
+def t_job_state(state: str) -> str:
+  if state == 'BATCH_STATE_UNSPECIFIED':
+    return 'JOB_STATE_UNSPECIFIED'
+  elif state == 'BATCH_STATE_PENDING':
+    return 'JOB_STATE_PENDING'
+  elif state == 'BATCH_STATE_SUCCEEDED':
+    return 'JOB_STATE_SUCCEEDED'
+  elif state == 'BATCH_STATE_FAILED':
+    return 'JOB_STATE_FAILED'
+  elif state == 'BATCH_STATE_CANCELLED':
+    return 'JOB_STATE_CANCELLED'
+  else:
+    return state
 
 
 LRO_POLLING_INITIAL_DELAY_SECONDS = 1.0

@@ -22,11 +22,14 @@ from ... import types
 from .. import pytest_helper
 
 
+# Vertex AI batch job name.
 _BATCH_JOB_NAME = '2803006536245313536'
 _BATCH_JOB_FULL_RESOURCE_NAME = (
     'projects/964831358985/locations/us-central1/'
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
+# MLDev batch operation name.
+_MLDEV_BATCH_OPERATION_NAME = 'batches/z4ft52j91h7m2y8qzqrdlv84cqoybdjoey5y'
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
 
 
@@ -37,22 +40,21 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._CancelBatchJobParameters(
             name=_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
     ),
     pytest_helper.TestTableItem(
-        name='test_cancel_batch_job_full_resource_name',
-        override_replay_id='test_cancel_batch_job',
+        name='test_cancel_batch_operation',
         parameters=types._CancelBatchJobParameters(
-            name=_BATCH_JOB_FULL_RESOURCE_NAME,
+            name=_MLDEV_BATCH_OPERATION_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_vertex='Invalid batch job name',
     ),
     pytest_helper.TestTableItem(
         name='test_cancel_batch_job_with_invalid_name',
         parameters=types._CancelBatchJobParameters(
             name=_INVALID_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
         exception_if_vertex='Invalid batch job name',
     ),
 ]
@@ -67,5 +69,8 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_cancel(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    await client.aio.batches.cancel(name=_BATCH_JOB_NAME)
+  if client.vertexai:
+    name = _BATCH_JOB_NAME
+  else:
+    name = _MLDEV_BATCH_OPERATION_NAME
+  await client.aio.batches.cancel(name=name)
