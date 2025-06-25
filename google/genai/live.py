@@ -212,7 +212,9 @@ class AsyncSession:
           print(msg.text)
     ```
     """
-    client_content = t.t_client_content(turns, turn_complete)
+    client_content = t.t_client_content(turns, turn_complete).model_dump(
+        mode='json', exclude_none=True
+    )
 
     if self._api_client.vertexai:
       client_content_dict = live_converters._LiveClientContent_to_vertex(
@@ -1035,19 +1037,15 @@ class AsyncLive(_api_module.BaseModule):
       if headers is None:
         headers = {}
       _mcp_utils.set_mcp_usage_header(headers)
-    try:
-      async with ws_connect(uri, additional_headers=headers) as ws:
-        await ws.send(request)
+    async with ws_connect(uri, additional_headers=headers) as ws:
+      await ws.send(request)
+      try:
+        # websockets 14.0+
         logger.info(await ws.recv(decode=False))
-
-        yield AsyncSession(api_client=self._api_client, websocket=ws)
-    except TypeError:
-      # Try with the older websockets API
-      async with ws_connect(uri, extra_headers=headers) as ws:
-        await ws.send(request)
+      except TypeError:
         logger.info(await ws.recv())
 
-        yield AsyncSession(api_client=self._api_client, websocket=ws)
+      yield AsyncSession(api_client=self._api_client, websocket=ws)
 
 
 async def _t_live_connect_config(
