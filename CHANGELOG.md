@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.22.0](https://github.com/googleapis/python-genai/compare/v1.21.1...v1.22.0) (2025-06-25)
+
+
+### Features
+
+* Add compressionQuality enum for generate_videos ([b132387](https://github.com/googleapis/python-genai/commit/b132387be80c74b003acfa362be34c8477728ce5))
+* Add enhance_input_image and image_preservation_factor fields for upscale_image ([cdcd4f5](https://github.com/googleapis/python-genai/commit/cdcd4f5282fdc7d526dd93c929786f110afe6f28))
+* Allow users to access headers for generateContent method and generateContentStream ([80c8964](https://github.com/googleapis/python-genai/commit/80c8964f29fe64e44fc2b09ec135914d5ef0f0d6))
+* Expose the responseJsonSchema in GenerateContentConfig ([714452f](https://github.com/googleapis/python-genai/commit/714452fb6d8167e55a3d72c20bcf9f6d54a5def4))
+* Improve __repr__ for pydantic objects. ([80ab054](https://github.com/googleapis/python-genai/commit/80ab054f2a2ea6e6475ae4ff971861fd86f8dbb1))
+* Support Batches create/get/list/cancel in Gemini Developer API ([5ab8a56](https://github.com/googleapis/python-genai/commit/5ab8a5641a18f68ae52bf7c9bf6694842348cef3))
+* Support IntEnums when processing JSON schemas ([6cc2bdb](https://github.com/googleapis/python-genai/commit/6cc2bdb9e36005fe91e873b09861cc3ca9b81bda))
+
+
+### Bug Fixes
+
+* Keep chunk content history when thought summaries are enabled in the stream response ([91e7246](https://github.com/googleapis/python-genai/commit/91e7246dd1894d2dd75dadb05385f6e994914c66))
+* The send_client_content function with Blob input. ([8491e4c](https://github.com/googleapis/python-genai/commit/8491e4cd5176912b262b69cb43b38fecf8ffb9e5))
+
+
+### Documentation
+
+* Improve generate images documentation ([15b2144](https://github.com/googleapis/python-genai/commit/15b21443d060819f4b87297ed3a76766ea5d630f))
+* Update description of thinking_budget. ([7c2ae32](https://github.com/googleapis/python-genai/commit/7c2ae3256faffda752ff3e0d16aac5c1bb97e45a))
+
 ## [1.21.1](https://github.com/googleapis/python-genai/compare/v1.21.0...v1.21.1) (2025-06-19)
 
 
