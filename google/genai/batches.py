@@ -5077,7 +5077,7 @@ class Batches(_api_module.BaseModule):
     )
 
   def _list(
-      self, *, config: types.ListBatchJobsConfigOrDict
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
   ) -> types.ListBatchJobsResponse:
     parameter_model = types._ListBatchJobsParameters(
         config=config,
@@ -5496,7 +5496,7 @@ class AsyncBatches(_api_module.BaseModule):
     )
 
   async def _list(
-      self, *, config: types.ListBatchJobsConfigOrDict
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
   ) -> types.ListBatchJobsResponse:
     parameter_model = types._ListBatchJobsParameters(
         config=config,
