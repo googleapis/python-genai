@@ -354,10 +354,9 @@ def _retry_args(options: Optional[HttpRetryOptions]) -> dict[str, Any]:
 
   stop = tenacity.stop_after_attempt(options.attempts or _RETRY_ATTEMPTS)
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
-  retry = tenacity.retry_if_result(
-      lambda response: response.status_code in retriable_codes,
+  retry = tenacity.retry_if_exception(
+      lambda e: isinstance(e, errors.APIError) and e.code in retriable_codes,
   )
-  retry_error_callback = lambda retry_state: retry_state.outcome.result()
   wait = tenacity.wait_exponential_jitter(
       initial=options.initial_delay or _RETRY_INITIAL_DELAY,
       max=options.max_delay or _RETRY_MAX_DELAY,
@@ -367,7 +366,6 @@ def _retry_args(options: Optional[HttpRetryOptions]) -> dict[str, Any]:
   return {
       'stop': stop,
       'retry': retry,
-      'retry_error_callback': retry_error_callback,
       'wait': wait,
   }
 
