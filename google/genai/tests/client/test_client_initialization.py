@@ -85,6 +85,16 @@ def test_ml_dev_both_env_key_set(monkeypatch, caplog):
   )
 
 
+def test_api_key_with_new_line(monkeypatch, caplog):
+  caplog.set_level(logging.DEBUG, logger="google_genai._api_client")
+  api_key = "gemini_api_key\r\n"
+  monkeypatch.setenv("GOOGLE_API_KEY", api_key)
+
+  client = Client()
+
+  assert client.models._api_client.api_key == 'gemini_api_key'
+
+
 def test_ml_dev_from_constructor():
   api_key = "google_api_key"
 

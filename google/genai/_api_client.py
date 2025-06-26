@@ -538,6 +538,7 @@ class BaseApiClient:
     # Default options for both clients.
     self._http_options.headers = {'Content-Type': 'application/json'}
     if self.api_key:
+      self.api_key = self.api_key.strip()
       if self._http_options.headers is not None:
         self._http_options.headers['x-goog-api-key'] = self.api_key
     # Update the http options with the user provided http options.
