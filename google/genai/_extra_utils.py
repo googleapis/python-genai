@@ -63,11 +63,37 @@ def _create_generate_content_config_model(
     return config
 
 
+def _get_gcs_uri(
+    src: Union[str, types.BatchJobSourceOrDict]
+) -> Optional[str]:
+  """Extracts the first GCS URI from the source, if available."""
+  if isinstance(src, str) and src.startswith('gs://'):
+    return src
+  elif isinstance(src, dict) and src.get('gcs_uri'):
+    return src['gcs_uri'][0] if src['gcs_uri'] else None
+  elif isinstance(src, types.BatchJobSource) and src.gcs_uri:
+    return src.gcs_uri[0] if src.gcs_uri else None
+  return None
+
+
+def _get_bigquery_uri(
+    src: Union[str, types.BatchJobSourceOrDict]
+) -> Optional[str]:
+  """Extracts the BigQuery URI from the source, if available."""
+  if isinstance(src, str) and src.startswith('bq://'):
+    return src
+  elif isinstance(src, dict) and src.get('bigquery_uri'):
+    return src['bigquery_uri']
+  elif isinstance(src, types.BatchJobSource) and src.bigquery_uri:
+    return src.bigquery_uri
+  return None
+
+
 def format_destination(
-    src: str,
+    src: Union[str, types.BatchJobSourceOrDict],
     config: Optional[types.CreateBatchJobConfigOrDict] = None,
 ) -> types.CreateBatchJobConfig:
-  """Formats the destination uri based on the source uri."""
+  """Formats the destination uri based on the source uri for Vertex AI."""
   config = (
       types._CreateBatchJobParameters(config=config).config
       or types.CreateBatchJobConfig()
@@ -79,15 +105,14 @@ def format_destination(
     config.display_name = f'genai_batch_job_{unique_name}'
 
   if not config.dest:
-    if src.startswith('gs://') and src.endswith('.jsonl'):
-      # If source uri is "gs://bucket/path/to/src.jsonl", then the destination
-      # uri prefix will be "gs://bucket/path/to/src/dest".
-      config.dest = f'{src[:-6]}/dest'
-    elif src.startswith('bq://'):
-      # If source uri is "bq://project.dataset.src", then the destination
-      # uri will be "bq://project.dataset.src_dest_TIMESTAMP_UUID".
+    gcs_source_uri = _get_gcs_uri(src)
+    bigquery_source_uri = _get_bigquery_uri(src)
+
+    if gcs_source_uri and gcs_source_uri.endswith('.jsonl'):
+      config.dest = f'{gcs_source_uri[:-6]}/dest'
+    elif bigquery_source_uri:
       unique_name = unique_name or _common.timestamped_unique_name()
-      config.dest = f'{src}_dest_{unique_name}'
+      config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
     else:
       raise ValueError(f'Unsupported source: {src}')
   return config

@@ -1404,6 +1404,11 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['last_frame']) is not None:
     raise ValueError('last_frame parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['compression_quality']) is not None:
+    raise ValueError(
+        'compression_quality parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -3268,6 +3273,13 @@ def _GenerateVideosConfig_to_vertex(
         _Image_to_vertex(getv(from_object, ['last_frame']), to_object),
     )
 
+  if getv(from_object, ['compression_quality']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'compressionQuality'],
+        getv(from_object, ['compression_quality']),
+    )
+
   return to_object
 
 
@@ -4832,10 +4844,10 @@ class Models(_api_module.BaseModule):
     return_value = types.GenerateContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
     )
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _generate_content_stream(
@@ -4914,10 +4926,10 @@ class Models(_api_module.BaseModule):
       return_value = types.GenerateContentResponse._from_response(
           response=response_dict, kwargs=parameter_model.model_dump()
       )
-      self._api_client._verify_response(return_value)
       return_value.sdk_http_response = types.HttpResponse(
           headers=response.headers
       )
+      self._api_client._verify_response(return_value)
       yield return_value
 
   def embed_content(
@@ -5007,8 +5019,8 @@ class Models(_api_module.BaseModule):
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _generate_images(
@@ -5083,8 +5095,8 @@ class Models(_api_module.BaseModule):
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _edit_image(
@@ -5185,8 +5197,8 @@ class Models(_api_module.BaseModule):
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _upscale_image(
@@ -5254,8 +5266,8 @@ class Models(_api_module.BaseModule):
     return_value = types.UpscaleImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def get(
@@ -5315,8 +5327,8 @@ class Models(_api_module.BaseModule):
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _list(
@@ -5375,8 +5387,8 @@ class Models(_api_module.BaseModule):
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def update(
@@ -5441,8 +5453,8 @@ class Models(_api_module.BaseModule):
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def delete(
@@ -5507,8 +5519,8 @@ class Models(_api_module.BaseModule):
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def count_tokens(
@@ -5596,8 +5608,8 @@ class Models(_api_module.BaseModule):
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def compute_tokens(
@@ -5677,8 +5689,8 @@ class Models(_api_module.BaseModule):
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def generate_videos(
@@ -5783,8 +5795,8 @@ class Models(_api_module.BaseModule):
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def generate_content(
@@ -6388,10 +6400,10 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.GenerateContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
     )
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _generate_content_stream(
@@ -6473,10 +6485,10 @@ class AsyncModels(_api_module.BaseModule):
         return_value = types.GenerateContentResponse._from_response(
             response=response_dict, kwargs=parameter_model.model_dump()
         )
-        self._api_client._verify_response(return_value)
         return_value.sdk_http_response = types.HttpResponse(
             headers=response.headers
         )
+        self._api_client._verify_response(return_value)
         yield return_value
 
     return async_generator()  # type: ignore[no-untyped-call, no-any-return]
@@ -6568,8 +6580,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _generate_images(
@@ -6644,8 +6656,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _edit_image(
@@ -6746,8 +6758,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _upscale_image(
@@ -6815,8 +6827,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.UpscaleImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def get(
@@ -6878,8 +6890,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _list(
@@ -6940,8 +6952,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def update(
@@ -7006,8 +7018,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def delete(
@@ -7072,8 +7084,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def count_tokens(
@@ -7161,8 +7173,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def compute_tokens(
@@ -7241,8 +7253,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def generate_videos(
@@ -7347,8 +7359,8 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def generate_content(

@@ -71,6 +71,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 # pubsub_topic="projects/<my-project>/topics/video-generation-test",
                 negative_prompt="ugly, low quality",
                 enhance_prompt=True,
+                compression_quality=types.VideoCompressionQuality.LOSSLESS,
             ),
         ),
         exception_if_mldev=(

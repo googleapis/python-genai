@@ -18,6 +18,7 @@
 
 import pytest
 
+from ... import errors
 from ... import types
 from .. import pytest_helper
 
@@ -26,8 +27,11 @@ from .. import pytest_helper
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_list_batch_jobs',
-        parameters=types._ListBatchJobsParameters(),
-        exception_if_mldev='only supported in the Vertex AI client',
+        parameters=types._ListBatchJobsParameters(
+            config=types.ListBatchJobsConfig(
+                page_size=5,
+            ),
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_list_batch_jobs_with_config',
@@ -37,7 +41,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 page_size=5,
             ),
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='filter parameter is not supported in Gemini API',
     ),
 ]
 
@@ -50,31 +54,24 @@ pytestmark = pytest_helper.setup(
 
 
 def test_pager(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    batch_jobs = client.batches.list(config={'page_size': 10})
+  batch_jobs = client.batches.list(config={'page_size': 10})
+  assert batch_jobs.name == 'batch_jobs'
+  assert batch_jobs.page_size == 10
+  assert len(batch_jobs) <= 10
 
-    assert batch_jobs.name == 'batch_jobs'
-    assert batch_jobs.page_size == 10
-    assert len(batch_jobs) <= 10
-
-    # Iterate through all the pages. Then next_page() should raise an exception.
-    for _ in batch_jobs:
-      pass
-    with pytest.raises(IndexError, match='No more pages to fetch.'):
-      batch_jobs.next_page()
+  # Iterate through the first page. Otherwise, too many batches are returned.
+  for _ in batch_jobs.page:
+    pass
 
 
 @pytest.mark.asyncio
 async def test_async_pager(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    batch_jobs = await client.aio.batches.list(config={'page_size': 10})
+  batch_jobs = await client.aio.batches.list(config={'page_size': 10})
 
-    assert batch_jobs.name == 'batch_jobs'
-    assert batch_jobs.page_size == 10
-    assert len(batch_jobs) <= 10
+  assert batch_jobs.name == 'batch_jobs'
+  assert batch_jobs.page_size == 10
+  assert len(batch_jobs) <= 10
 
-    # Iterate through all the pages. Then next_page() should raise an exception.
-    async for _ in batch_jobs:
-      pass
-    with pytest.raises(IndexError, match='No more pages to fetch.'):
-      await batch_jobs.next_page()
+  # Iterate through the first page. Otherwise, too many batches are returned.
+  for _ in batch_jobs.page:
+    pass

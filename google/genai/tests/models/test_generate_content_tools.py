@@ -444,7 +444,7 @@ def test_automatic_function_calling_with_customized_math_rule(client):
     return numerator // denominator + 1
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-04-17',
       contents='what is the result of 1000/2?',
       config={
           'tools': [customized_divide_integers],
@@ -959,7 +959,7 @@ async def test_automatic_function_calling_with_coroutine_function_async(
     return a // b
 
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -976,7 +976,7 @@ async def test_automatic_function_calling_async(client):
     return a // b
 
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1008,7 +1008,7 @@ async def test_automatic_function_calling_async_with_exception(client):
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_float_without_decimal(client):
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the result of 1000.0/2.0?',
       config={
           'tools': [divide_floats, divide_integers],
@@ -1054,7 +1054,7 @@ async def test_automatic_function_calling_async_with_async_function(client):
     return 'windy'
 
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the weather in San Francisco?',
       config={
           'tools': [get_current_weather_async],
@@ -1076,7 +1076,7 @@ async def test_automatic_function_calling_async_with_async_function_stream(
     return 'windy'
 
   response = await client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the weather in San Francisco?',
       config={
           'tools': [get_current_weather_async],

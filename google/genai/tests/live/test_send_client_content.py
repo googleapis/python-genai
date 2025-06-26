@@ -15,6 +15,7 @@
 
 
 """Tests for live.py."""
+import base64
 import json
 import os
 from unittest import mock
@@ -98,6 +99,27 @@ async def test_send_content_content(mock_websocket, vertexai):
   assert 'client_content' in sent_data
 
   assert sent_data['client_content']['turns'][0]['parts'][0]['text'] == 'test'
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_send_content_with_blob(mock_websocket, vertexai):
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  content = types.Content.model_validate(
+      {'parts': [{'inline_data': {'data': b'test'}}]}
+  )
+
+  await session.send_client_content(turns=content)
+  mock_websocket.send.assert_called_once()
+  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  assert 'client_content' in sent_data
+
+  assert (
+      sent_data['client_content']['turns'][0]['parts'][0]['inlineData']['data']
+      == base64.b64encode(b'test').decode()
+  )
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
