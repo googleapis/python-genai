@@ -12823,7 +12823,7 @@ class AudioChunk(_common.BaseModel):
   """Representation of an audio chunk."""
 
   data: Optional[bytes] = Field(
-      default=None, description="""Raw byets of audio data."""
+      default=None, description="""Raw bytes of audio data."""
   )
   mime_type: Optional[str] = Field(
       default=None, description="""MIME type of the audio chunk."""
@@ -12838,7 +12838,7 @@ class AudioChunkDict(TypedDict, total=False):
   """Representation of an audio chunk."""
 
   data: Optional[bytes]
-  """Raw byets of audio data."""
+  """Raw bytes of audio data."""
 
   mime_type: Optional[str]
   """MIME type of the audio chunk."""
