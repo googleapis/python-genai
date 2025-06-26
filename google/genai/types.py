@@ -8721,6 +8721,10 @@ class TuningDataset(_common.BaseModel):
       default=None,
       description="""GCS URI of the file containing training dataset in JSONL format.""",
   )
+  vertex_dataset_resource: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+  )
   examples: Optional[list[TuningExample]] = Field(
       default=None,
       description="""Inline examples with simple input/output text.""",
@@ -8732,6 +8736,9 @@ class TuningDatasetDict(TypedDict, total=False):
 
   gcs_uri: Optional[str]
   """GCS URI of the file containing training dataset in JSONL format."""
+
+  vertex_dataset_resource: Optional[str]
+  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
   examples: Optional[list[TuningExampleDict]]
   """Inline examples with simple input/output text."""
@@ -8746,12 +8753,19 @@ class TuningValidationDataset(_common.BaseModel):
       default=None,
       description="""GCS URI of the file containing validation dataset in JSONL format.""",
   )
+  vertex_dataset_resource: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+  )
 
 
 class TuningValidationDatasetDict(TypedDict, total=False):
 
   gcs_uri: Optional[str]
   """GCS URI of the file containing validation dataset in JSONL format."""
+
+  vertex_dataset_resource: Optional[str]
+  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
 
 TuningValidationDatasetOrDict = Union[
