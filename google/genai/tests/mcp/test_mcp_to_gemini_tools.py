@@ -163,6 +163,7 @@ def test_properties_conversion():
               'properties': {
                   'key1': {
                       'type': 'string',
+                      'format': 'uuid'
                   },
                   'key2': {
                       'type': 'number',
