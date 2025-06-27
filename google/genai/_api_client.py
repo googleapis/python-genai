@@ -232,11 +232,13 @@ class HttpResponse:
       headers: Union[dict[str, str], httpx.Headers, 'CIMultiDictProxy[str]'],
       response_stream: Union[Any, str] = None,
       byte_stream: Union[Any, bytes] = None,
+      session: Optional['aiohttp.ClientSession'] = None,
   ):
     self.status_code: int = 200
     self.headers = headers
     self.response_stream = response_stream
     self.byte_stream = byte_stream
+    self._session = session
 
   # Async iterator for async streaming.
   def __aiter__(self) -> 'HttpResponse':
@@ -296,16 +298,23 @@ class HttpResponse:
               chunk = chunk[len('data: ') :]
             yield json.loads(chunk)
       elif hasattr(self.response_stream, 'content'):
-        async for chunk in self.response_stream.content.iter_any():
-          # This is aiohttp.ClientResponse.
-          if chunk:
+        # This is aiohttp.ClientResponse.
+        try:
+          while True:
+            chunk = await self.response_stream.content.readline()
+            if not chunk:
+              break
             # In async streaming mode, the chunk of JSON is prefixed with
             # "data:" which we must strip before parsing.
-            if not isinstance(chunk, str):
-              chunk = chunk.decode('utf-8')
+            chunk = chunk.decode('utf-8')
             if chunk.startswith('data: '):
               chunk = chunk[len('data: ') :]
-            yield json.loads(chunk)
+            chunk = chunk.strip()
+            if chunk:
+              yield json.loads(chunk)
+        finally:
+          if hasattr(self, '_session') and self._session:
+            await self._session.close()
       else:
         raise ValueError('Error parsing streaming response.')
 
@@ -948,6 +957,7 @@ class BaseApiClient:
       self, http_request: HttpRequest, stream: bool = False
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
+
     if self.vertexai and not self.api_key:
       http_request.headers['Authorization'] = (
           f'Bearer {await self._async_access_token()}'
@@ -978,8 +988,9 @@ class BaseApiClient:
             timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
             **self._async_client_session_request_args,
         )
+
         await errors.APIError.raise_for_async_response(response)
-        return HttpResponse(response.headers, response)
+        return HttpResponse(response.headers, response, session=session)
       else:
         # aiohttp is not available. Fall back to httpx.
         httpx_request = self._async_httpx_client.build_request(
