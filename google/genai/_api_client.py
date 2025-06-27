@@ -60,6 +60,11 @@ from .types import HttpOptionsOrDict
 from .types import HttpResponse as SdkHttpResponse
 from .types import HttpRetryOptions
 
+try:
+  from websockets.asyncio.client import connect as ws_connect
+except ModuleNotFoundError:
+  # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
+  from websockets.client import connect as ws_connect  # type: ignore
 
 has_aiohttp = False
 try:
@@ -559,7 +564,10 @@ class BaseApiClient:
       # Do it once at the genai.Client level. Share among all requests.
       self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
           self._http_options
-      )
+      ) 
+    self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(
+        self._http_options
+    )
 
     retry_kwargs = _retry_args(self._http_options.retry_options)
     self._retry = tenacity.Retrying(**retry_kwargs, reraise=True)
@@ -688,6 +696,63 @@ class BaseApiClient:
       return copied_args
 
     return _maybe_set(async_args, ctx)
+
+
+  @staticmethod
+  def _ensure_websocket_ssl_ctx(options: HttpOptions) -> dict[str, Any]:
+    """Ensures the SSL context is present in the async client args.
+
+    Creates a default SSL context if one is not provided.
+
+    Args:
+      options: The http options to check for SSL context.
+
+    Returns:
+      An async aiohttp ClientSession._request args.
+    """
+
+    verify = 'ssl'  # keep it consistent with httpx.
+    async_args = options.async_client_args
+    ctx = async_args.get(verify) if async_args else None
+
+    if not ctx:
+      # Initialize the SSL context for the httpx client.
+      # Unlike requests, the aiohttp package does not automatically pull in the
+      # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
+      # enabled explicitly. Instead of 'verify' at client level in httpx,
+      # aiohttp uses 'ssl' at request level.
+      ctx = ssl.create_default_context(
+          cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+          capath=os.environ.get('SSL_CERT_DIR'),
+      )
+
+    def _maybe_set(
+        args: Optional[dict[str, Any]],
+        ctx: ssl.SSLContext,
+    ) -> dict[str, Any]:
+      """Sets the SSL context in the client args if not set.
+
+      Does not override the SSL context if it is already set.
+
+      Args:
+        args: The client args to to check for SSL context.
+        ctx: The SSL context to set.
+
+      Returns:
+        The client args with the SSL context included.
+      """
+      if not args or not args.get(verify):
+        args = (args or {}).copy()
+        args[verify] = ctx
+      # Drop the args that isn't in the aiohttp RequestOptions.
+      copied_args = args.copy()
+      for key in copied_args.copy():
+        if key not in inspect.signature(ws_connect).parameters and key != 'ssl':
+          del copied_args[key]
+      return copied_args
+
+    return _maybe_set(async_args, ctx)
+
 
   def _websocket_base_url(self) -> str:
     url_parts = urlparse(self._http_options.base_url)

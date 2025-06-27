@@ -1037,7 +1037,10 @@ class AsyncLive(_api_module.BaseModule):
       if headers is None:
         headers = {}
       _mcp_utils.set_mcp_usage_header(headers)
-    async with ws_connect(uri, additional_headers=headers) as ws:
+
+    async with ws_connect(
+        uri, additional_headers=headers, **self._api_client._websocket_ssl_ctx
+    ) as ws:
       await ws.send(request)
       try:
         # websockets 14.0+
