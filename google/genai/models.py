@@ -5855,9 +5855,11 @@ class Models(_api_module.BaseModule):
       response = client.models.generate_content(
         model='gemini-2.0-flash',
         contents=[
-          types.Part.from_text('What is shown in this image?'),
-          types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
-          'image/jpeg')
+          types.Part.from_text(text='What is shown in this image?'),
+          types.Part.from_uri(
+            file_uri='gs://generativeai-downloads/images/scones.jpg',
+            mime_type='image/jpeg',
+          ),
         ]
       )
       print(response.text)
@@ -5991,9 +5993,11 @@ class Models(_api_module.BaseModule):
       for chunk in client.models.generate_content_stream(
         model='gemini-2.0-flash',
         contents=[
-          types.Part.from_text('What is shown in this image?'),
-          types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
-          'image/jpeg')
+          types.Part.from_text(text='What is shown in this image?'),
+          types.Part.from_uri(
+            file_uri='gs://generativeai-downloads/images/scones.jpg',
+            mime_type='image/jpeg',
+          ),
         ]
       ):
         print(chunk.text)
@@ -7524,9 +7528,11 @@ class AsyncModels(_api_module.BaseModule):
       async for chunk in awiat client.aio.models.generate_content_stream(
         model='gemini-2.0-flash',
         contents=[
-          types.Part.from_text('What is shown in this image?'),
-          types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
-          'image/jpeg')
+          types.Part.from_text(text='What is shown in this image?'),
+          types.Part.from_uri(
+            file_uri='gs://generativeai-downloads/images/scones.jpg',
+            mime_type='image/jpeg',
+          ),
         ]
       ):
         print(chunk.text)
