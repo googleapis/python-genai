@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.1](https://github.com/googleapis/python-genai/compare/v1.23.0...v1.23.1) (2025-06-28)
+
+
+### Documentation
+
+* Regenerate docs for 1.23.0 ([4273da2](https://github.com/googleapis/python-genai/commit/4273da23ffcc6ef16b1f979735cf0dd7b7c9c691))
+
 ## [1.23.0](https://github.com/googleapis/python-genai/compare/v1.22.0...v1.23.0) (2025-06-27)
 
 
