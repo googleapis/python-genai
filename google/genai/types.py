@@ -1414,7 +1414,6 @@ class JSONSchema(pydantic.BaseModel):
       ),
   )
 
-
 class Schema(_common.BaseModel):
   """Schema is used to define the format of input/output data.
 
@@ -1704,7 +1703,7 @@ class Schema(_common.BaseModel):
               f'JSONSchema field "{field_name}" is not supported by the '
               'Schema object. And the "raise_error_on_unsupported_field" '
               'argument is set to True. If you still want to convert '
-              'it into the Schema object, please either remove the field '
+              f'"{field_name}" from the JSONSchema object, please either remove the field '
               f'"{field_name}" from the JSONSchema object, or leave the '
               '"raise_error_on_unsupported_field" unset.'
           )
@@ -4878,7 +4877,7 @@ class GenerateContentResponse(_common.BaseModel):
       default=None, description="""Usage metadata about the response(s)."""
   )
   automatic_function_calling_history: Optional[list[Content]] = None
-  parsed: Optional[Union[pydantic.BaseModel, dict[Any, Any], Enum]] = Field(
+  parsed: Optional[Union[pydantic.BaseModel, list[pydantic.BaseModel], dict[Any, Any], Enum]] = Field(
       default=None,
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
@@ -11220,13 +11219,13 @@ class LiveServerContent(_common.BaseModel):
   input_transcription: Optional[Transcription] = Field(
       default=None,
       description="""Input transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn.""",
   )
   output_transcription: Optional[Transcription] = Field(
       default=None,
       description="""Output transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn.
       """,
   )
@@ -11267,12 +11266,12 @@ class LiveServerContentDict(TypedDict, total=False):
 
   input_transcription: Optional[TranscriptionDict]
   """Input transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn."""
 
   output_transcription: Optional[TranscriptionDict]
   """Output transcription. The transcription is independent to the model
-      turn which means it doesn’t imply any ordering between transcription and
+      turn which means it doesn't imply any ordering between transcription and
       model turn.
       """
 
