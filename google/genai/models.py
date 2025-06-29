@@ -5112,7 +5112,7 @@ class Models(_api_module.BaseModule):
     Args:
       model (str): The model to use.
       prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
+      reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
         ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
         reference images for editing.
       config (EditImageConfig): Configuration for editing.
@@ -6170,7 +6170,7 @@ class Models(_api_module.BaseModule):
     Args:
       model (str): The model to use.
       prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
+      reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
         ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
         reference images for editing.
       config (EditImageConfig): Configuration for editing.
@@ -6673,7 +6673,7 @@ class AsyncModels(_api_module.BaseModule):
     Args:
       model (str): The model to use.
       prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
+      reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
         ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
         reference images for editing.
       config (EditImageConfig): Configuration for editing.
@@ -7659,7 +7659,7 @@ class AsyncModels(_api_module.BaseModule):
     Args:
       model (str): The model to use.
       prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
+      reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
         ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
         reference images for editing.
       config (EditImageConfig): Configuration for editing.
