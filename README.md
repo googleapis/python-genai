@@ -1098,9 +1098,9 @@ response3.generated_images[0].image.show()
 
 ### Veo
 
-#### Generate Videos
+Support for generating videos is considered public preview
 
-Support for generate videos in Vertex and Gemini Developer API is behind an allowlist
+#### Generate Videos (Text to Video)
 
 ```python
 from google.genai import types
@@ -1111,7 +1111,6 @@ operation = client.models.generate_videos(
     prompt='A neon hologram of a cat driving at top speed',
     config=types.GenerateVideosConfig(
         number_of_videos=1,
-        fps=24,
         duration_seconds=5,
         enhance_prompt=True,
     ),
@@ -1122,7 +1121,73 @@ while not operation.done:
     time.sleep(20)
     operation = client.operations.get(operation)
 
-video = operation.result.generated_videos[0].video
+video = operation.response.generated_videos[0].video
+video.show()
+```
+
+#### Generate Videos (Image to Video)
+
+```python
+from google.genai import types
+
+# Read local image (uses mimetypes.guess_type to infer mime type)
+image = types.Image.from_file("local/path/file.png")
+
+# Create operation
+operation = client.models.generate_videos(
+    model='veo-2.0-generate-001',
+    # Prompt is optional if image is provided
+    prompt='Night sky',
+    image=image,
+    config=types.GenerateVideosConfig(
+        number_of_videos=1,
+        duration_seconds=5,
+        enhance_prompt=True,
+        # Can also pass an Image into last_frame for frame interpolation
+    ),
+)
+
+# Poll operation
+while not operation.done:
+    time.sleep(20)
+    operation = client.operations.get(operation)
+
+video = operation.response.generated_videos[0].video
+video.show()
+```
+
+#### Generate Videos (Video to Video)
+
+Currently, only Vertex supports Video to Video generation (Video extension).
+
+```python
+from google.genai import types
+
+# Read local video (uses mimetypes.guess_type to infer mime type)
+video = types.Video.from_file("local/path/video.mp4")
+
+# Create operation
+operation = client.models.generate_videos(
+    model='veo-2.0-generate-001',
+    # Prompt is optional if Video is provided
+    prompt='Night sky',
+    # Input video must be in GCS
+    video=types.Video(
+        uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
+    ),
+    config=types.GenerateVideosConfig(
+        number_of_videos=1,
+        duration_seconds=5,
+        enhance_prompt=True,
+    ),
+)
+
+# Poll operation
+while not operation.done:
+    time.sleep(20)
+    operation = client.operations.get(operation)
+
+video = operation.response.generated_videos[0].video
 video.show()
 ```
 
