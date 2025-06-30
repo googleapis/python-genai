@@ -336,9 +336,11 @@ class HttpResponse:
 
 # Default retry options.
 # The config is based on https://cloud.google.com/storage/docs/retry-strategy.
-_RETRY_ATTEMPTS = 3
+# By default, the client will retry 4 times with approximately 1.0, 2.0, 4.0,
+# 8.0 seconds between each attempt.
+_RETRY_ATTEMPTS = 5  # including the initial call.
 _RETRY_INITIAL_DELAY = 1.0  # seconds
-_RETRY_MAX_DELAY = 120.0  # seconds
+_RETRY_MAX_DELAY = 60.0  # seconds
 _RETRY_EXP_BASE = 2
 _RETRY_JITTER = 1
 _RETRY_HTTP_STATUS_CODES = (
@@ -362,14 +364,13 @@ def _retry_args(options: Optional[HttpRetryOptions]) -> dict[str, Any]:
     The arguments passed to the tenacity.(Async)Retrying constructor.
   """
   if options is None:
-    return {'stop': tenacity.stop_after_attempt(1)}
+    return {'stop': tenacity.stop_after_attempt(1), 'reraise': True}
 
   stop = tenacity.stop_after_attempt(options.attempts or _RETRY_ATTEMPTS)
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
-  retry = tenacity.retry_if_result(
-      lambda response: response.status_code in retriable_codes,
+  retry = tenacity.retry_if_exception(
+      lambda e: isinstance(e, errors.APIError) and e.code in retriable_codes,
   )
-  retry_error_callback = lambda retry_state: retry_state.outcome.result()
   wait = tenacity.wait_exponential_jitter(
       initial=options.initial_delay or _RETRY_INITIAL_DELAY,
       max=options.max_delay or _RETRY_MAX_DELAY,
@@ -379,7 +380,7 @@ def _retry_args(options: Optional[HttpRetryOptions]) -> dict[str, Any]:
   return {
       'stop': stop,
       'retry': retry,
-      'retry_error_callback': retry_error_callback,
+      'reraise': True,
       'wait': wait,
   }
 
@@ -577,8 +578,8 @@ class BaseApiClient:
     )
 
     retry_kwargs = _retry_args(self._http_options.retry_options)
-    self._retry = tenacity.Retrying(**retry_kwargs, reraise=True)
-    self._async_retry = tenacity.AsyncRetrying(**retry_kwargs, reraise=True)
+    self._retry = tenacity.Retrying(**retry_kwargs)
+    self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
 
   @staticmethod
   def _ensure_httpx_ssl_ctx(
