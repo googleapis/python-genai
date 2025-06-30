@@ -521,6 +521,12 @@ def _TuningJob_from_mldev(
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
 
+  if getv(from_object, ['satisfiesPzi']) is not None:
+    setv(to_object, ['satisfies_pzi'], getv(from_object, ['satisfiesPzi']))
+
+  if getv(from_object, ['satisfiesPzs']) is not None:
+    setv(to_object, ['satisfies_pzs'], getv(from_object, ['satisfiesPzs']))
+
   if getv(from_object, ['serviceAccount']) is not None:
     setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
 
@@ -699,6 +705,12 @@ def _TuningJob_from_vertex(
 
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
+
+  if getv(from_object, ['satisfiesPzi']) is not None:
+    setv(to_object, ['satisfies_pzi'], getv(from_object, ['satisfiesPzi']))
+
+  if getv(from_object, ['satisfiesPzs']) is not None:
+    setv(to_object, ['satisfies_pzs'], getv(from_object, ['satisfiesPzs']))
 
   if getv(from_object, ['serviceAccount']) is not None:
     setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))

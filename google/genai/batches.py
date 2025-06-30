@@ -515,6 +515,9 @@ def _Tool_to_mldev(
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
   return to_object
 
 
@@ -1796,6 +1799,9 @@ def _Tool_to_vertex(
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
   return to_object
 
 
@@ -3036,6 +3042,9 @@ def _Tool_from_mldev(
   if getv(from_object, ['codeExecution']) is not None:
     setv(to_object, ['code_execution'], getv(from_object, ['codeExecution']))
 
+  if getv(from_object, ['computerUse']) is not None:
+    setv(to_object, ['computer_use'], getv(from_object, ['computerUse']))
+
   return to_object
 
 
@@ -4219,6 +4228,9 @@ def _Tool_from_vertex(
 
   if getv(from_object, ['codeExecution']) is not None:
     setv(to_object, ['code_execution'], getv(from_object, ['codeExecution']))
+
+  if getv(from_object, ['computerUse']) is not None:
+    setv(to_object, ['computer_use'], getv(from_object, ['computerUse']))
 
   return to_object
 
