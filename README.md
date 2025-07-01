@@ -1599,3 +1599,24 @@ except errors.APIError as e:
   print(e.code) # 404
   print(e.message)
 ```
+
+## Extra Request Body
+
+The `extra_body` field in `HttpOptions` accepts a dictionary of additional JSON
+properties to include in the request body. This can be used to access new or
+experimental backend features that are not yet formally supported in the SDK.
+The structure of the dictionary must match the backend API's request structure.
+
+- VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+- GeminiAPI backend API docs: https://ai.google.dev/api/rest
+
+```python
+response = client.models.generate_content(
+    model="gemini-2.5-pro",
+    contents="What is the weather in Boston? and how about Sunnyvale?",
+    config=types.GenerateContentConfig(
+        tools=[get_current_weather],
+        http_options=types.HttpOptions(extra_body={'tool_config': {'function_calling_config': {'mode': 'COMPOSITIONAL'}}}),
+    ),
+)
+```
