@@ -16,6 +16,7 @@
 
 """Tests for client initialization."""
 
+import httpx
 import logging
 import os
 import ssl
@@ -1054,3 +1055,50 @@ def test_constructor_with_base_url_from_environment_variables(monkeypatch):
       ]
       == "https://vertex-base-url.com/"
   )
+
+
+def test_async_transport_absence_allows_aiohttp_to_be_used():
+  client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+  )
+
+  api_client.has_aiohttp = False
+  assert not client._api_client._use_aiohttp()
+
+  api_client.has_aiohttp = True
+  assert client._api_client._use_aiohttp()
+
+
+def test_async_async_client_args_without_transport_allows_aiohttp_to_be_used():
+  client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+      http_options=api_client.HttpOptions(async_client_args={}),
+  )
+
+  api_client.has_aiohttp = False
+  assert not client._api_client._use_aiohttp()
+
+  api_client.has_aiohttp = True
+  assert client._api_client._use_aiohttp()
+
+
+def test_async_transport_forces_httpx_regardless_of_aiohttp_availability():
+
+  client = Client(
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+      http_options=api_client.HttpOptions(
+          async_client_args={"transport": httpx.AsyncBaseTransport()}
+      ),
+  )
+
+  api_client.has_aiohttp = False
+  assert not client._api_client._use_aiohttp()
+
+  api_client.has_aiohttp = True
+  assert not client._api_client._use_aiohttp()

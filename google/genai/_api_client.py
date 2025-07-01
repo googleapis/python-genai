@@ -568,14 +568,12 @@ class BaseApiClient:
     )
     self._httpx_client = SyncHttpxClient(**client_args)
     self._async_httpx_client = AsyncHttpxClient(**async_client_args)
-    if has_aiohttp:
+    if self._use_aiohttp():
       # Do it once at the genai.Client level. Share among all requests.
       self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
           self._http_options
-      ) 
-    self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(
-        self._http_options
-    )
+      )
+    self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
 
     retry_kwargs = _retry_args(self._http_options.retry_options)
     self._retry = tenacity.Retrying(**retry_kwargs)
@@ -705,7 +703,6 @@ class BaseApiClient:
 
     return _maybe_set(async_args, ctx)
 
-
   @staticmethod
   def _ensure_websocket_ssl_ctx(options: HttpOptions) -> dict[str, Any]:
     """Ensures the SSL context is present in the async client args.
@@ -761,6 +758,14 @@ class BaseApiClient:
 
     return _maybe_set(async_args, ctx)
 
+  def _use_aiohttp(self) -> bool:
+    # If the instantiator has passed a custom transport, they want httpx not
+    # aiohttp.
+    return (
+        has_aiohttp
+        and (self._http_options.async_client_args or {}).get('transport')
+        is None
+    )
 
   def _websocket_base_url(self) -> str:
     url_parts = urlparse(self._http_options.base_url)
@@ -974,7 +979,7 @@ class BaseApiClient:
           data = http_request.data
 
     if stream:
-      if has_aiohttp:
+      if self._use_aiohttp():
         session = aiohttp.ClientSession(
             headers=http_request.headers,
             trust_env=True,
@@ -1006,7 +1011,7 @@ class BaseApiClient:
         await errors.APIError.raise_for_async_response(client_response)
         return HttpResponse(client_response.headers, client_response)
     else:
-      if has_aiohttp:
+      if self._use_aiohttp():
         async with aiohttp.ClientSession(
             headers=http_request.headers,
             trust_env=True,
@@ -1060,11 +1065,10 @@ class BaseApiClient:
         http_method, path, request_dict, http_options
     )
     response = self._request(http_request, stream=False)
-    response_body = response.response_stream[0] if response.response_stream else ''
-    return SdkHttpResponse(
-        headers=response.headers, body=response_body
+    response_body = (
+        response.response_stream[0] if response.response_stream else ''
     )
-
+    return SdkHttpResponse(headers=response.headers, body=response_body)
 
   def request_streamed(
       self,
@@ -1079,7 +1083,9 @@ class BaseApiClient:
 
     session_response = self._request(http_request, stream=True)
     for chunk in session_response.segments():
-      yield SdkHttpResponse(headers=session_response.headers, body=json.dumps(chunk))
+      yield SdkHttpResponse(
+          headers=session_response.headers, body=json.dumps(chunk)
+      )
 
   async def async_request(
       self,
@@ -1094,10 +1100,7 @@ class BaseApiClient:
 
     result = await self._async_request(http_request=http_request, stream=False)
     response_body = result.response_stream[0] if result.response_stream else ''
-    return SdkHttpResponse(
-        headers=result.headers, body=response_body
-    )
-
+    return SdkHttpResponse(headers=result.headers, body=response_body)
 
   async def async_request_streamed(
       self,
@@ -1323,7 +1326,7 @@ class BaseApiClient:
     """
     offset = 0
     # Upload the file in chunks
-    if has_aiohttp:  # pylint: disable=g-import-not-at-top
+    if self._use_aiohttp():  # pylint: disable=g-import-not-at-top
       async with aiohttp.ClientSession(
           headers=self._http_options.headers,
           trust_env=True,
@@ -1506,7 +1509,7 @@ class BaseApiClient:
       else:
         data = http_request.data
 
-    if has_aiohttp:
+    if self._use_aiohttp():
       async with aiohttp.ClientSession(
           headers=http_request.headers,
           trust_env=True,
