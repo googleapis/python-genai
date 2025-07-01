@@ -940,7 +940,16 @@ class AsyncLive(_api_module.BaseModule):
         )
         method = 'BidiGenerateContentConstrained'
         key_name = 'access_token'
-
+        if version != 'v1alpha':
+          warnings.warn(
+              message=(
+                  "The SDK's ephemeral token support is in v1alpha only."
+                  'Please use client = genai.Client(api_key=token.name, '
+                  'http_options=types.HttpOptions(api_version="v1alpha"))'
+                  ' before session connection.'
+              ),
+              category=errors.ExperimentalWarning,
+          )
       uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}?{key_name}={api_key}'
       headers = self._api_client._http_options.headers
 

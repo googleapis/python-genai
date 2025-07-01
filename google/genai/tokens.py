@@ -284,7 +284,7 @@ class AsyncTokens(_api_module.BaseModule):
   async def create(
       self, *, config: Optional[types.CreateAuthTokenConfigOrDict] = None
   ) -> types.AuthToken:
-    """Creates an auth token asynchronously.
+    """Creates an auth token asynchronously. Support in v1alpha only.
 
     Args:
       config (CreateAuthTokenConfig): Optional configuration for the request.
@@ -292,6 +292,10 @@ class AsyncTokens(_api_module.BaseModule):
     Usage:
 
     .. code-block:: python
+      client = genai.Client(
+          api_key=API_KEY,
+          http_options=types.HttpOptions(api_version='v1alpha'),
+      )
 
       auth_token = await client.aio.tokens.create(
           config=types.CreateAuthTokenConfig(
