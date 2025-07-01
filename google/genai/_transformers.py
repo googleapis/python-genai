@@ -635,7 +635,7 @@ def _raise_for_unsupported_mldev_properties(
 
 def process_schema(
     schema: dict[str, Any],
-    client: _api_client.BaseApiClient,
+    client: Optional[_api_client.BaseApiClient],
     defs: Optional[dict[str, Any]] = None,
     *,
     order_properties: bool = True,
@@ -703,7 +703,8 @@ def process_schema(
   if schema.get('title') == 'PlaceholderLiteralEnum':
     del schema['title']
 
-  _raise_for_unsupported_mldev_properties(schema, client)
+  if client:
+    _raise_for_unsupported_mldev_properties(schema, client)
 
   # Standardize spelling for relevant schema fields.  For example, if a dict is
   # provided directly to response_schema, it may use `any_of` instead of `anyOf.
@@ -785,7 +786,7 @@ def process_schema(
 
 
 def _process_enum(
-    enum: EnumMeta, client: _api_client.BaseApiClient
+    enum: EnumMeta, client: Optional[_api_client.BaseApiClient]
 ) -> types.Schema:
   is_integer_enum = False
 
@@ -823,7 +824,8 @@ def _is_type_dict_str_any(
 
 
 def t_schema(
-    client: _api_client.BaseApiClient, origin: Union[types.SchemaUnionDict, Any]
+    client: Optional[_api_client.BaseApiClient],
+    origin: Union[types.SchemaUnionDict, Any],
 ) -> Optional[types.Schema]:
   if not origin:
     return None
@@ -833,7 +835,7 @@ def t_schema(
   if isinstance(origin, EnumMeta):
     return _process_enum(origin, client)
   if isinstance(origin, types.Schema):
-    if dict(origin) == dict(types.Schema()):
+    if dict(origin) == dict(types.Schema()) and client is not None:
       # response_schema value was coerced to an empty Schema instance because
       # it did not adhere to the Schema field annotation
       _raise_for_unsupported_schema_type(origin)
