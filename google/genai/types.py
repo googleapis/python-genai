@@ -11419,13 +11419,16 @@ SubjectReferenceImageOrDict = Union[
 class LiveServerSetupComplete(_common.BaseModel):
   """Sent in response to a `LiveGenerateContentSetup` message from the client."""
 
-  pass
+  session_id: Optional[str] = Field(
+      default=None, description="""The session id of the live session."""
+  )
 
 
 class LiveServerSetupCompleteDict(TypedDict, total=False):
   """Sent in response to a `LiveGenerateContentSetup` message from the client."""
 
-  pass
+  session_id: Optional[str]
+  """The session id of the live session."""
 
 
 LiveServerSetupCompleteOrDict = Union[

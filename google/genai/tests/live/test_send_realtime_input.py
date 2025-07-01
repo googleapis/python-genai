@@ -123,10 +123,7 @@ async def test_send_audio(mock_websocket, vertexai, content):
   api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    await session.send_realtime_input(audio=content)
-  if vertexai:
-    return
+  await session.send_realtime_input(audio=content)
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
@@ -142,12 +139,8 @@ async def test_send_bad_audio_blob(mock_websocket, vertexai):
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
   content = types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='image/png')
 
-  if vertexai:
-    with pytest.raises(ValueError, match='.*audio.*'):
-      await session.send_realtime_input(audio=content)
-  else:
-    with pytest.raises(ValueError, match='.*Unsupported mime type.*'):
-      await session.send_realtime_input(audio=content)
+  with pytest.raises(ValueError, match='.*Unsupported mime type.*'):
+    await session.send_realtime_input(audio=content)
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -157,12 +150,8 @@ async def test_send_bad_video_blob(mock_websocket, vertexai):
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
   content = types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='audio/pcm')
 
-  if vertexai:
-    with pytest.raises(ValueError, match='.*video.*'):
-      await session.send_realtime_input(video=content)
-  else:
-    with pytest.raises(ValueError, match='.*Unsupported mime type.*'):
-      await session.send_realtime_input(video=content)
+  with pytest.raises(ValueError, match='.*Unsupported mime type.*'):
+    await session.send_realtime_input(video=content)
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -193,10 +182,7 @@ async def test_send_video(mock_websocket, vertexai, content):
   api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    await session.send_realtime_input(video=content)
-  if vertexai:
-    return
+  await session.send_realtime_input(video=content)
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
@@ -211,10 +197,7 @@ async def test_send_video_image(mock_websocket, vertexai):
   api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    await session.send_realtime_input(video=image)
-  if vertexai:
-    return
+  await session.send_realtime_input(video=image)
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
@@ -228,10 +211,7 @@ async def test_send_text(mock_websocket, vertexai):
   api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    await session.send_realtime_input(text='Hello?')
-  if vertexai:
-    return
+  await session.send_realtime_input(text='Hello?')
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
