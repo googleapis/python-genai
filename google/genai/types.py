@@ -5599,6 +5599,9 @@ EmbedContentMetadataOrDict = Union[
 class EmbedContentResponse(_common.BaseModel):
   """Response for the embed_content method."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   embeddings: Optional[list[ContentEmbedding]] = Field(
       default=None,
       description="""The embeddings for each request, in the same order as provided in
@@ -5614,6 +5617,9 @@ class EmbedContentResponse(_common.BaseModel):
 
 class EmbedContentResponseDict(TypedDict, total=False):
   """Response for the embed_content method."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   embeddings: Optional[list[ContentEmbeddingDict]]
   """The embeddings for each request, in the same order as provided in
@@ -6093,6 +6099,9 @@ GeneratedImageOrDict = Union[GeneratedImage, GeneratedImageDict]
 class GenerateImagesResponse(_common.BaseModel):
   """The output images response."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   generated_images: Optional[list[GeneratedImage]] = Field(
       default=None,
       description="""List of generated images.
@@ -6108,6 +6117,9 @@ class GenerateImagesResponse(_common.BaseModel):
 
 class GenerateImagesResponseDict(TypedDict, total=False):
   """The output images response."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   generated_images: Optional[list[GeneratedImageDict]]
   """List of generated images.
@@ -6510,6 +6522,9 @@ _EditImageParametersOrDict = Union[
 class EditImageResponse(_common.BaseModel):
   """Response for the request to edit an image."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   generated_images: Optional[list[GeneratedImage]] = Field(
       default=None, description="""Generated images."""
   )
@@ -6517,6 +6532,9 @@ class EditImageResponse(_common.BaseModel):
 
 class EditImageResponseDict(TypedDict, total=False):
   """Response for the request to edit an image."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   generated_images: Optional[list[GeneratedImageDict]]
   """Generated images."""
@@ -6651,12 +6669,18 @@ _UpscaleImageAPIParametersOrDict = Union[
 
 class UpscaleImageResponse(_common.BaseModel):
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   generated_images: Optional[list[GeneratedImage]] = Field(
       default=None, description="""Generated images."""
   )
 
 
 class UpscaleImageResponseDict(TypedDict, total=False):
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   generated_images: Optional[list[GeneratedImageDict]]
   """Generated images."""
@@ -6805,6 +6829,9 @@ CheckpointOrDict = Union[Checkpoint, CheckpointDict]
 class Model(_common.BaseModel):
   """A trained machine learning model."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   name: Optional[str] = Field(
       default=None, description="""Resource name of the model."""
   )
@@ -6858,6 +6885,9 @@ class Model(_common.BaseModel):
 
 class ModelDict(TypedDict, total=False):
   """A trained machine learning model."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   name: Optional[str]
   """Resource name of the model."""
@@ -6957,11 +6987,17 @@ _ListModelsParametersOrDict = Union[
 
 class ListModelsResponse(_common.BaseModel):
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(default=None, description="""""")
   models: Optional[list[Model]] = Field(default=None, description="""""")
 
 
 class ListModelsResponseDict(TypedDict, total=False):
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """"""
@@ -7350,6 +7386,9 @@ _CountTokensParametersOrDict = Union[
 class CountTokensResponse(_common.BaseModel):
   """Response for counting tokens."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   total_tokens: Optional[int] = Field(
       default=None, description="""Total number of tokens."""
   )
@@ -7361,6 +7400,9 @@ class CountTokensResponse(_common.BaseModel):
 
 class CountTokensResponseDict(TypedDict, total=False):
   """Response for counting tokens."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   total_tokens: Optional[int]
   """Total number of tokens."""
@@ -7462,6 +7504,9 @@ TokensInfoOrDict = Union[TokensInfo, TokensInfoDict]
 class ComputeTokensResponse(_common.BaseModel):
   """Response for computing tokens."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   tokens_info: Optional[list[TokensInfo]] = Field(
       default=None,
       description="""Lists of tokens info from the input. A ComputeTokensRequest could have multiple instances with a prompt in each instance. We also need to return lists of tokens info for the request with multiple instances.""",
@@ -7470,6 +7515,9 @@ class ComputeTokensResponse(_common.BaseModel):
 
 class ComputeTokensResponseDict(TypedDict, total=False):
   """Response for computing tokens."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   tokens_info: Optional[list[TokensInfoDict]]
   """Lists of tokens info from the input. A ComputeTokensRequest could have multiple instances with a prompt in each instance. We also need to return lists of tokens info for the request with multiple instances."""
@@ -7806,6 +7854,9 @@ GenerateVideosResponseOrDict = Union[
 class GenerateVideosOperation(_common.BaseModel):
   """A video generation operation."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   name: Optional[str] = Field(
       default=None,
       description="""The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.""",
@@ -7832,6 +7883,9 @@ class GenerateVideosOperation(_common.BaseModel):
 
 class GenerateVideosOperationDict(TypedDict, total=False):
   """A video generation operation."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   name: Optional[str]
   """The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`."""
@@ -8921,6 +8975,9 @@ _ListTuningJobsParametersOrDict = Union[
 class ListTuningJobsResponse(_common.BaseModel):
   """Response for the list tuning jobs method."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(
       default=None,
       description="""A token to retrieve the next page of results. Pass to ListTuningJobsRequest.page_token to obtain that page.""",
@@ -8932,6 +8989,9 @@ class ListTuningJobsResponse(_common.BaseModel):
 
 class ListTuningJobsResponseDict(TypedDict, total=False):
   """Response for the list tuning jobs method."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """A token to retrieve the next page of results. Pass to ListTuningJobsRequest.page_token to obtain that page."""
@@ -9655,6 +9715,9 @@ _ListCachedContentsParametersOrDict = Union[
 
 class ListCachedContentsResponse(_common.BaseModel):
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(default=None, description="""""")
   cached_contents: Optional[list[CachedContent]] = Field(
       default=None,
@@ -9664,6 +9727,9 @@ class ListCachedContentsResponse(_common.BaseModel):
 
 
 class ListCachedContentsResponseDict(TypedDict, total=False):
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """"""
@@ -9728,6 +9794,9 @@ _ListFilesParametersOrDict = Union[
 class ListFilesResponse(_common.BaseModel):
   """Response for the list files method."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(
       default=None, description="""A token to retrieve next page of results."""
   )
@@ -9738,6 +9807,9 @@ class ListFilesResponse(_common.BaseModel):
 
 class ListFilesResponseDict(TypedDict, total=False):
   """Response for the list files method."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """A token to retrieve next page of results."""
@@ -10521,12 +10593,18 @@ _ListBatchJobsParametersOrDict = Union[
 class ListBatchJobsResponse(_common.BaseModel):
   """Config for batches.list return value."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(default=None, description="""""")
   batch_jobs: Optional[list[BatchJob]] = Field(default=None, description="""""")
 
 
 class ListBatchJobsResponseDict(TypedDict, total=False):
   """Config for batches.list return value."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """"""
