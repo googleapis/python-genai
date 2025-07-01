@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.24.0](https://github.com/googleapis/python-genai/compare/v1.23.0...v1.24.0) (2025-07-01)
+
+
+### Features
+
+* Support Batches delete ([5d0a4e6](https://github.com/googleapis/python-genai/commit/5d0a4e6887c396c3b464a33943b8421ad47d11c5))
+* Support different media input in Vertex Live API ([8b0a703](https://github.com/googleapis/python-genai/commit/8b0a7032c8ebed662fd2096d7ff2dc0cde4db75a))
+
+
+### Bug Fixes
+
+* Force httpx if the client was instantiated with an httpx.AsyncBaseTransport ([4851590](https://github.com/googleapis/python-genai/commit/48515900b9550e5e68a820385af004da9e93c72e))
+* Retry on exception instead of a status code ([fc78107](https://github.com/googleapis/python-genai/commit/fc781074d76fcdbeb1351344210775d5a1e9de17))
+
+
+### Documentation
+
+* Add I2V and V2V generate_videos examples in Python README file ([858f738](https://github.com/googleapis/python-genai/commit/858f73893599f647254886637fdb5315d9c9f081))
+* Regenerate docs for 1.23.0 ([4273da2](https://github.com/googleapis/python-genai/commit/4273da23ffcc6ef16b1f979735cf0dd7b7c9c691))
+
 ## [1.23.0](https://github.com/googleapis/python-genai/compare/v1.22.0...v1.23.0) (2025-06-27)
 
 
