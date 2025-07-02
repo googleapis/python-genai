@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.24.1](https://github.com/googleapis/python-genai/compare/v1.24.0...v1.24.1) (2025-07-02)
+
+
+### Bug Fixes
+
+* Improve code dependency to make `types` more self-contained ([7d0a7d8](https://github.com/googleapis/python-genai/commit/7d0a7d8de13caee8e80f7136bb841c9e97d7e1e0))
+
+
+### Documentation
+
+* Add extra_body example to README.md ([0b077bf](https://github.com/googleapis/python-genai/commit/0b077bfc0d7a0bafc97402fe8b58efe255aabe1d))
+* Regenerate docs for 1.24.0 ([fe7ed6d](https://github.com/googleapis/python-genai/commit/fe7ed6d07f13dd42bf1908d0e308143d58541129))
+
 ## [1.24.0](https://github.com/googleapis/python-genai/compare/v1.23.0...v1.24.0) (2025-07-01)
 
 
