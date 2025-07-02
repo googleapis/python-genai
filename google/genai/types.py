@@ -3664,13 +3664,15 @@ else:
   PartUnion = Union[File, Part, str]  # type: ignore[misc]
 
 
-PartUnionDict = Union[PartUnion, PartDict]
+PartUnionDict = Union[Part, PartDict, File, FileDict, PIL.Image.Image, str]
 
 
-ContentUnion = Union[Content, list[PartUnion], PartUnion]
+ContentUnion = Union[Content, PartUnion, list[PartUnion]]
 
 
-ContentUnionDict = Union[ContentUnion, ContentDict]
+ContentUnionDict = Union[
+    Content, ContentDict, PartUnionDict, list[PartUnionDict]
+]
 
 
 class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
@@ -3749,7 +3751,7 @@ GenerationConfigRoutingConfigOrDict = Union[
 SpeechConfigUnion = Union[SpeechConfig, str]
 
 
-SpeechConfigUnionDict = Union[SpeechConfigUnion, SpeechConfigDict]
+SpeechConfigUnionDict = Union[SpeechConfig, SpeechConfigDict, str]
 
 
 class GenerateContentConfig(_common.BaseModel):
@@ -4142,10 +4144,10 @@ GenerateContentConfigOrDict = Union[
 ]
 
 
-ContentListUnion = Union[list[ContentUnion], ContentUnion]
+ContentListUnion = Union[ContentUnion, list[ContentUnion]]
 
 
-ContentListUnionDict = Union[list[ContentUnionDict], ContentUnionDict]
+ContentListUnionDict = Union[ContentUnionDict, list[ContentUnionDict]]
 
 
 class _GenerateContentParameters(_common.BaseModel):
