@@ -3642,15 +3642,6 @@ def _GenerateImagesResponse_from_mldev(
   return to_object
 
 
-def _Endpoint_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
 def _TunedModelInfo_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3664,15 +3655,6 @@ def _TunedModelInfo_from_mldev(
 
   if getv(from_object, ['updateTime']) is not None:
     setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  return to_object
-
-
-def _Checkpoint_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
 
   return to_object
 

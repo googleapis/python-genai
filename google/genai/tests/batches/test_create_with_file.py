@@ -14,7 +14,7 @@
 #
 
 
-"""Tests for batches.create() with invalid source and destinations."""
+"""Tests for batches.create() with file source."""
 
 import pytest
 
@@ -23,47 +23,35 @@ from .. import pytest_helper
 
 
 _GEMINI_MODEL = 'gemini-1.5-flash-002'
-_EMBEDDING_MODEL = 'text-embedding-004'
 _DISPLAY_NAME = 'test_batch'
 
-_GENERATE_CONTENT_BQ_OUTPUT_PREFIX = (
-    'bq://vertex-sdk-dev.unified_genai_tests_batches.generate_content_output'
-)
-
-_EMBEDDING_BQ_INPUT_FILE = (
-    'bq://vertex-sdk-dev.unified_genai_tests_batches.embedding_requests'
-)
-
+_MLDEV_GEMINI_MODEL = 'gemini-2.0-flash'
+_FILE_NAME = 'files/76eifkmq7uxd'
 
 # All tests will be run for both Vertex and MLDev.
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name='test_union_with_invalid_src',
+        name='test_union_generate_content_with_file',
         parameters=types._CreateBatchJobParameters(
-            model=_GEMINI_MODEL,
-            src='invalid_src',
+            model=_MLDEV_GEMINI_MODEL,
+            src='files/jjnehuuz8ie3',
             config={
                 'display_name': _DISPLAY_NAME,
-                'dest': _GENERATE_CONTENT_BQ_OUTPUT_PREFIX,
             },
         ),
-        exception_if_mldev='Unsupported source',
-        exception_if_vertex='Unsupported source',
+        exception_if_vertex='not supported',
         has_union=True,
     ),
     pytest_helper.TestTableItem(
-        name='test_union_with_invalid_dest',
+        name='test_generate_content_with_file',
         parameters=types._CreateBatchJobParameters(
-            model=_EMBEDDING_MODEL,
-            src=_EMBEDDING_BQ_INPUT_FILE,
+            model=_MLDEV_GEMINI_MODEL,
+            src={'file_name': _FILE_NAME},
             config={
                 'display_name': _DISPLAY_NAME,
-                'dest': 'invalid_dest',
             },
         ),
-        exception_if_mldev='not supported in Gemini API',
-        exception_if_vertex='Unsupported destination',
-        has_union=True,
+        exception_if_vertex='not supported',
     ),
 ]
 
@@ -76,3 +64,19 @@ pytestmark = [
         test_table=test_table,
     ),
 ]
+
+
+@pytest.mark.asyncio
+async def test_async_create(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    batch_job = await client.aio.batches.create(
+        model=_MLDEV_GEMINI_MODEL,
+        src={'file_name': _FILE_NAME},
+        config={
+            'display_name': _DISPLAY_NAME,
+        },
+    )
+    assert batch_job.name.startswith('batches/')
+    assert (
+        batch_job.model == 'models/' + _MLDEV_GEMINI_MODEL
+    )  # Converted to Gemini full name.
