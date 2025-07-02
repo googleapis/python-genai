@@ -29,10 +29,12 @@ import warnings
 import pydantic
 from pydantic import alias_generators
 
-from . import _api_client
-from . import errors
-
 logger = logging.getLogger('google_genai._common')
+
+
+class ExperimentalWarning(Warning):
+  """Warning for experimental features."""
+
 
 def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: Any) -> None:
   """Examples:
@@ -540,7 +542,7 @@ def experimental_warning(message: str) -> Callable[[Callable[..., Any]], Callabl
         warning_done = True
         warnings.warn(
             message=message,
-            category=errors.ExperimentalWarning,
+            category=ExperimentalWarning,
             stacklevel=2,
         )
       return func(*args, **kwargs)
