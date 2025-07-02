@@ -9124,46 +9124,6 @@ _CreateTuningJobParametersOrDict = Union[
 ]
 
 
-class Operation(_common.BaseModel):
-  """A long-running operation."""
-
-  name: Optional[str] = Field(
-      default=None,
-      description="""The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.""",
-  )
-  metadata: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any.""",
-  )
-  done: Optional[bool] = Field(
-      default=None,
-      description="""If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.""",
-  )
-  error: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""The error result of the operation in case of failure or cancellation.""",
-  )
-
-
-class OperationDict(TypedDict, total=False):
-  """A long-running operation."""
-
-  name: Optional[str]
-  """The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`."""
-
-  metadata: Optional[dict[str, Any]]
-  """Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any."""
-
-  done: Optional[bool]
-  """If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available."""
-
-  error: Optional[dict[str, Any]]
-  """The error result of the operation in case of failure or cancellation."""
-
-
-OperationOrDict = Union[Operation, OperationDict]
-
-
 class CreateCachedContentConfig(_common.BaseModel):
   """Optional configuration for cached content creation."""
 

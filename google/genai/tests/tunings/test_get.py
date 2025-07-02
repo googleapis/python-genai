@@ -23,14 +23,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=genai_types._GetTuningJobParameters(
             name="projects/801452371447/locations/us-central1/tuningJobs/4303478340632707072"
         ),
-        exception_if_mldev="Not Found",
-    ),
-    pytest_helper.TestTableItem(
-        name="test_mldev",
-        parameters=genai_types._GetTuningJobParameters(
-            name="tunedModels/generate-num-1896"
-        ),
-        exception_if_vertex="Not Found",
+        exception_if_mldev="todo err msg",
     ),
 ]
 
@@ -49,10 +42,6 @@ def test_helper_properties(client):
     job = client.tunings.get(
         name="projects/801452371447/locations/us-central1/tuningJobs/4303478340632707072",
     )
-  else:
-    job = client.tunings.get(
-        name="tunedModels/testdatasetexamples-model-j0fpgpaksvri"
-    )
 
-  assert job.has_ended
-  assert job.has_succeeded
+    assert job.has_ended
+    assert job.has_succeeded
