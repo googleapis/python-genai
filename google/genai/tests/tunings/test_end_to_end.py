@@ -27,30 +27,30 @@ def test_tune_until_success(client):
             gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl",
         ),
     )
-  else:
-    job = client.tunings.tune(
-        base_model="models/gemini-1.0-pro-001",
-        training_dataset=genai_types.TuningDataset(
-            examples=[
-                genai_types.TuningExample(
-                    text_input=f"Input text {i}",
-                    output=f"Output text {i}",
-                )
-                for i in range(5)
-            ],
-        ),
-        # Required for MLDev:
-        # "Either tuned_model_id or display_name must be set."
-        config=genai_types.CreateTuningJobConfig(
-            tuned_model_display_name="test_dataset_examples model",
-        ),
-    )
+  # else:
+  #   job = client.tunings.tune(
+  #       base_model="models/gemini-1.0-pro-001",
+  #       training_dataset=genai_types.TuningDataset(
+  #           examples=[
+  #               genai_types.TuningExample(
+  #                   text_input=f"Input text {i}",
+  #                   output=f"Output text {i}",
+  #               )
+  #               for i in range(5)
+  #           ],
+  #       ),
+  #       # Required for MLDev:
+  #       # "Either tuned_model_id or display_name must be set."
+  #       config=genai_types.CreateTuningJobConfig(
+  #           tuned_model_display_name="test_dataset_examples model",
+  #       ),
+  #   )
 
-  while not job.has_ended:
-    # Skipping the sleep for when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(60)
-    job = client.tunings.get(name=job.name)
+    while not job.has_ended:
+      # Skipping the sleep for when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(60)
+      job = client.tunings.get(name=job.name)
 
-  assert job.has_ended
-  assert job.has_succeeded
+    assert job.has_ended
+    assert job.has_succeeded
