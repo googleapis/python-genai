@@ -166,7 +166,7 @@ class Tokens(_api_module.BaseModule):
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -202,7 +202,7 @@ class Tokens(_api_module.BaseModule):
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -297,7 +297,7 @@ class AsyncTokens(_api_module.BaseModule):
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),

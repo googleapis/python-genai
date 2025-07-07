@@ -196,7 +196,7 @@ class AsyncSession:
     if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
       MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
     else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
     client = genai.Client()
     async with client.aio.live.connect(
@@ -267,7 +267,7 @@ class AsyncSession:
     if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
       MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
     else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
 
     client = genai.Client()
@@ -361,7 +361,7 @@ class AsyncSession:
     if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
       MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
     else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
     client = genai.Client()
 
@@ -372,7 +372,7 @@ class AsyncSession:
     }
 
     async with client.aio.live.connect(
-        model='models/gemini-2.0-flash-live-001',
+        model='models/gemini-live-2.5-flash-preview',
         config=config
     ) as session:
       prompt = "Turn on the lights please"
