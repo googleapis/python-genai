@@ -480,10 +480,21 @@ class ImagePromptLanguage(_common.CaseInSensitiveEnum):
   """Enum that specifies the language of the text in the prompt."""
 
   auto = 'auto'
+  """Auto-detect the language."""
   en = 'en'
+  """English"""
   ja = 'ja'
+  """Japanese"""
   ko = 'ko'
+  """Korean"""
   hi = 'hi'
+  """Hindi"""
+  zh = 'zh'
+  """Chinese"""
+  pt = 'pt'
+  """Portuguese"""
+  es = 'es'
+  """Spanish"""
 
 
 class MaskReferenceMode(_common.CaseInSensitiveEnum):
