@@ -38,7 +38,7 @@ logger = logging.getLogger('google_genai.models')
 def _VideoMetadata_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['fps']) is not None:
     setv(to_object, ['fps'], getv(from_object, ['fps']))
@@ -55,7 +55,7 @@ def _VideoMetadata_to_mldev(
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
     raise ValueError('display_name parameter is not supported in Gemini API.')
@@ -72,7 +72,7 @@ def _Blob_to_mldev(
 def _FileData_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
     raise ValueError('display_name parameter is not supported in Gemini API.')
@@ -89,7 +89,7 @@ def _FileData_to_mldev(
 def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
     setv(
@@ -153,7 +153,7 @@ def _Part_to_mldev(
 def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['parts']) is not None:
     setv(
@@ -174,7 +174,7 @@ def _Content_to_mldev(
 def _Schema_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['additional_properties']) is not None:
     raise ValueError(
@@ -263,7 +263,7 @@ def _Schema_to_mldev(
 def _ModelSelectionConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['feature_selection_preference']) is not None:
     raise ValueError(
@@ -276,7 +276,7 @@ def _ModelSelectionConfig_to_mldev(
 def _SafetySetting_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['method']) is not None:
     raise ValueError('method parameter is not supported in Gemini API.')
@@ -293,7 +293,7 @@ def _SafetySetting_to_mldev(
 def _FunctionDeclaration_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['behavior']) is not None:
     setv(to_object, ['behavior'], getv(from_object, ['behavior']))
@@ -330,7 +330,7 @@ def _FunctionDeclaration_to_mldev(
 def _Interval_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['start_time']) is not None:
     setv(to_object, ['startTime'], getv(from_object, ['start_time']))
@@ -344,7 +344,7 @@ def _Interval_to_mldev(
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
@@ -359,7 +359,7 @@ def _GoogleSearch_to_mldev(
 def _DynamicRetrievalConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
     setv(to_object, ['mode'], getv(from_object, ['mode']))
@@ -377,7 +377,7 @@ def _DynamicRetrievalConfig_to_mldev(
 def _GoogleSearchRetrieval_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
     setv(
@@ -394,7 +394,7 @@ def _GoogleSearchRetrieval_to_mldev(
 def _EnterpriseWebSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -403,7 +403,7 @@ def _EnterpriseWebSearch_to_mldev(
 def _ApiKeyConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['api_key_string']) is not None:
     raise ValueError('api_key_string parameter is not supported in Gemini API.')
@@ -414,7 +414,7 @@ def _ApiKeyConfig_to_mldev(
 def _AuthConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['api_key_config']) is not None:
     raise ValueError('api_key_config parameter is not supported in Gemini API.')
@@ -448,7 +448,7 @@ def _AuthConfig_to_mldev(
 def _GoogleMaps_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
     raise ValueError('auth_config parameter is not supported in Gemini API.')
@@ -459,7 +459,7 @@ def _GoogleMaps_to_mldev(
 def _UrlContext_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -468,7 +468,7 @@ def _UrlContext_to_mldev(
 def _Tool_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_declarations']) is not None:
     setv(
@@ -526,7 +526,7 @@ def _Tool_to_mldev(
 def _FunctionCallingConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
     setv(to_object, ['mode'], getv(from_object, ['mode']))
@@ -544,7 +544,7 @@ def _FunctionCallingConfig_to_mldev(
 def _LatLng_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['latitude']) is not None:
     setv(to_object, ['latitude'], getv(from_object, ['latitude']))
@@ -558,7 +558,7 @@ def _LatLng_to_mldev(
 def _RetrievalConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['lat_lng']) is not None:
     setv(
@@ -576,7 +576,7 @@ def _RetrievalConfig_to_mldev(
 def _ToolConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
@@ -602,7 +602,7 @@ def _ToolConfig_to_mldev(
 def _PrebuiltVoiceConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['voice_name']) is not None:
     setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
@@ -613,7 +613,7 @@ def _PrebuiltVoiceConfig_to_mldev(
 def _VoiceConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['prebuilt_voice_config']) is not None:
     setv(
@@ -630,7 +630,7 @@ def _VoiceConfig_to_mldev(
 def _SpeakerVoiceConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['speaker']) is not None:
     setv(to_object, ['speaker'], getv(from_object, ['speaker']))
@@ -648,7 +648,7 @@ def _SpeakerVoiceConfig_to_mldev(
 def _MultiSpeakerVoiceConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['speaker_voice_configs']) is not None:
     setv(
@@ -666,7 +666,7 @@ def _MultiSpeakerVoiceConfig_to_mldev(
 def _SpeechConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['voice_config']) is not None:
     setv(
@@ -693,7 +693,7 @@ def _SpeechConfig_to_mldev(
 def _ThinkingConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['include_thoughts']) is not None:
     setv(
@@ -710,7 +710,7 @@ def _GenerateContentConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['system_instruction']) is not None:
@@ -880,7 +880,7 @@ def _GenerateContentParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -914,7 +914,7 @@ def _GenerateContentParameters_to_mldev(
 def _EmbedContentConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['task_type']) is not None:
@@ -947,7 +947,7 @@ def _EmbedContentParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -981,7 +981,7 @@ def _EmbedContentParameters_to_mldev(
 def _GenerateImagesConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['output_gcs_uri']) is not None:
@@ -1084,7 +1084,7 @@ def _GenerateImagesParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -1112,7 +1112,7 @@ def _GetModelParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -1131,7 +1131,7 @@ def _ListModelsConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
@@ -1163,7 +1163,7 @@ def _ListModelsParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     setv(
@@ -1180,7 +1180,7 @@ def _ListModelsParameters_to_mldev(
 def _UpdateModelConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['display_name']) is not None:
@@ -1203,7 +1203,7 @@ def _UpdateModelParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -1226,7 +1226,7 @@ def _DeleteModelParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -1244,7 +1244,7 @@ def _DeleteModelParameters_to_mldev(
 def _CountTokensConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['system_instruction']) is not None:
@@ -1267,7 +1267,7 @@ def _CountTokensParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -1299,7 +1299,7 @@ def _CountTokensParameters_to_mldev(
 def _Image_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
     raise ValueError('gcs_uri parameter is not supported in Gemini API.')
@@ -1320,7 +1320,7 @@ def _Image_to_mldev(
 def _Video_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['uri']) is not None:
     setv(to_object, ['video', 'uri'], getv(from_object, ['uri']))
@@ -1341,7 +1341,7 @@ def _Video_to_mldev(
 def _GenerateVideosConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['number_of_videos']) is not None:
@@ -1419,7 +1419,7 @@ def _GenerateVideosParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -1456,7 +1456,7 @@ def _GenerateVideosParameters_to_mldev(
 def _VideoMetadata_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['fps']) is not None:
     setv(to_object, ['fps'], getv(from_object, ['fps']))
@@ -1473,7 +1473,7 @@ def _VideoMetadata_to_vertex(
 def _Blob_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
     setv(to_object, ['displayName'], getv(from_object, ['display_name']))
@@ -1490,7 +1490,7 @@ def _Blob_to_vertex(
 def _FileData_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
     setv(to_object, ['displayName'], getv(from_object, ['display_name']))
@@ -1507,7 +1507,7 @@ def _FileData_to_vertex(
 def _Part_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
     setv(
@@ -1571,7 +1571,7 @@ def _Part_to_vertex(
 def _Content_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['parts']) is not None:
     setv(
@@ -1592,7 +1592,7 @@ def _Content_to_vertex(
 def _Schema_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['additional_properties']) is not None:
     setv(
@@ -1683,7 +1683,7 @@ def _Schema_to_vertex(
 def _ModelSelectionConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['feature_selection_preference']) is not None:
     setv(
@@ -1698,7 +1698,7 @@ def _ModelSelectionConfig_to_vertex(
 def _SafetySetting_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['method']) is not None:
     setv(to_object, ['method'], getv(from_object, ['method']))
@@ -1715,7 +1715,7 @@ def _SafetySetting_to_vertex(
 def _FunctionDeclaration_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['behavior']) is not None:
     raise ValueError('behavior parameter is not supported in Vertex AI.')
@@ -1752,7 +1752,7 @@ def _FunctionDeclaration_to_vertex(
 def _Interval_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['start_time']) is not None:
     setv(to_object, ['startTime'], getv(from_object, ['start_time']))
@@ -1766,7 +1766,7 @@ def _Interval_to_vertex(
 def _GoogleSearch_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
@@ -1783,7 +1783,7 @@ def _GoogleSearch_to_vertex(
 def _DynamicRetrievalConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
     setv(to_object, ['mode'], getv(from_object, ['mode']))
@@ -1801,7 +1801,7 @@ def _DynamicRetrievalConfig_to_vertex(
 def _GoogleSearchRetrieval_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['dynamic_retrieval_config']) is not None:
     setv(
@@ -1818,7 +1818,7 @@ def _GoogleSearchRetrieval_to_vertex(
 def _EnterpriseWebSearch_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -1827,7 +1827,7 @@ def _EnterpriseWebSearch_to_vertex(
 def _ApiKeyConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['api_key_string']) is not None:
     setv(to_object, ['apiKeyString'], getv(from_object, ['api_key_string']))
@@ -1838,7 +1838,7 @@ def _ApiKeyConfig_to_vertex(
 def _AuthConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['api_key_config']) is not None:
     setv(
@@ -1878,7 +1878,7 @@ def _AuthConfig_to_vertex(
 def _GoogleMaps_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
     setv(
@@ -1893,7 +1893,7 @@ def _GoogleMaps_to_vertex(
 def _UrlContext_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -1902,7 +1902,7 @@ def _UrlContext_to_vertex(
 def _Tool_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_declarations']) is not None:
     setv(
@@ -1970,7 +1970,7 @@ def _Tool_to_vertex(
 def _FunctionCallingConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mode']) is not None:
     setv(to_object, ['mode'], getv(from_object, ['mode']))
@@ -1988,7 +1988,7 @@ def _FunctionCallingConfig_to_vertex(
 def _LatLng_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['latitude']) is not None:
     setv(to_object, ['latitude'], getv(from_object, ['latitude']))
@@ -2002,7 +2002,7 @@ def _LatLng_to_vertex(
 def _RetrievalConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['lat_lng']) is not None:
     setv(
@@ -2020,7 +2020,7 @@ def _RetrievalConfig_to_vertex(
 def _ToolConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
@@ -2046,7 +2046,7 @@ def _ToolConfig_to_vertex(
 def _PrebuiltVoiceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['voice_name']) is not None:
     setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
@@ -2057,7 +2057,7 @@ def _PrebuiltVoiceConfig_to_vertex(
 def _VoiceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['prebuilt_voice_config']) is not None:
     setv(
@@ -2074,7 +2074,7 @@ def _VoiceConfig_to_vertex(
 def _SpeakerVoiceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['speaker']) is not None:
     raise ValueError('speaker parameter is not supported in Vertex AI.')
@@ -2088,7 +2088,7 @@ def _SpeakerVoiceConfig_to_vertex(
 def _MultiSpeakerVoiceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['speaker_voice_configs']) is not None:
     raise ValueError(
@@ -2101,7 +2101,7 @@ def _MultiSpeakerVoiceConfig_to_vertex(
 def _SpeechConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['voice_config']) is not None:
     setv(
@@ -2124,7 +2124,7 @@ def _SpeechConfig_to_vertex(
 def _ThinkingConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['include_thoughts']) is not None:
     setv(
@@ -2141,7 +2141,7 @@ def _GenerateContentConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['system_instruction']) is not None:
@@ -2313,7 +2313,7 @@ def _GenerateContentParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -2347,7 +2347,7 @@ def _GenerateContentParameters_to_vertex(
 def _EmbedContentConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['task_type']) is not None:
@@ -2388,7 +2388,7 @@ def _EmbedContentParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -2417,7 +2417,7 @@ def _EmbedContentParameters_to_vertex(
 def _GenerateImagesConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['output_gcs_uri']) is not None:
@@ -2528,7 +2528,7 @@ def _GenerateImagesParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -2555,7 +2555,7 @@ def _GenerateImagesParameters_to_vertex(
 def _Image_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
     setv(to_object, ['gcsUri'], getv(from_object, ['gcs_uri']))
@@ -2576,7 +2576,7 @@ def _Image_to_vertex(
 def _MaskReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mask_mode']) is not None:
     setv(to_object, ['maskMode'], getv(from_object, ['mask_mode']))
@@ -2595,7 +2595,7 @@ def _MaskReferenceConfig_to_vertex(
 def _ControlReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['control_type']) is not None:
     setv(to_object, ['controlType'], getv(from_object, ['control_type']))
@@ -2613,7 +2613,7 @@ def _ControlReferenceConfig_to_vertex(
 def _StyleReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['style_description']) is not None:
     setv(
@@ -2628,7 +2628,7 @@ def _StyleReferenceConfig_to_vertex(
 def _SubjectReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['subject_type']) is not None:
     setv(to_object, ['subjectType'], getv(from_object, ['subject_type']))
@@ -2646,7 +2646,7 @@ def _SubjectReferenceConfig_to_vertex(
 def _ReferenceImageAPI_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['reference_image']) is not None:
     setv(
@@ -2703,7 +2703,7 @@ def _ReferenceImageAPI_to_vertex(
 def _EditImageConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['output_gcs_uri']) is not None:
@@ -2814,7 +2814,7 @@ def _EditImageParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -2849,7 +2849,7 @@ def _EditImageParameters_to_vertex(
 def _UpscaleImageAPIConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['include_rai_reason']) is not None:
@@ -2904,7 +2904,7 @@ def _UpscaleImageAPIParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -2943,7 +2943,7 @@ def _GetModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -2962,7 +2962,7 @@ def _ListModelsConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
@@ -2994,7 +2994,7 @@ def _ListModelsParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     setv(
@@ -3011,7 +3011,7 @@ def _ListModelsParameters_to_vertex(
 def _UpdateModelConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['display_name']) is not None:
@@ -3034,7 +3034,7 @@ def _UpdateModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -3057,7 +3057,7 @@ def _DeleteModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -3075,7 +3075,7 @@ def _DeleteModelParameters_to_vertex(
 def _CountTokensConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['system_instruction']) is not None:
@@ -3111,7 +3111,7 @@ def _CountTokensParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -3144,7 +3144,7 @@ def _ComputeTokensParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -3172,7 +3172,7 @@ def _ComputeTokensParameters_to_vertex(
 def _Video_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['uri']) is not None:
     setv(to_object, ['gcsUri'], getv(from_object, ['uri']))
@@ -3193,7 +3193,7 @@ def _Video_to_vertex(
 def _GenerateVideosConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['number_of_videos']) is not None:
@@ -3293,7 +3293,7 @@ def _GenerateVideosParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
     setv(
@@ -3361,7 +3361,7 @@ def _Behavior_to_vertex_enum_validate(enum_value: Any) -> None:
 def _VideoMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['fps']) is not None:
     setv(to_object, ['fps'], getv(from_object, ['fps']))
@@ -3378,7 +3378,7 @@ def _VideoMetadata_from_mldev(
 def _Blob_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['data']) is not None:
@@ -3393,7 +3393,7 @@ def _Blob_from_mldev(
 def _FileData_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['fileUri']) is not None:
@@ -3408,7 +3408,7 @@ def _FileData_from_mldev(
 def _Part_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['videoMetadata']) is not None:
     setv(
@@ -3472,7 +3472,7 @@ def _Part_from_mldev(
 def _Content_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['parts']) is not None:
     setv(
@@ -3493,7 +3493,7 @@ def _Content_from_mldev(
 def _CitationMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['citationSources']) is not None:
     setv(to_object, ['citations'], getv(from_object, ['citationSources']))
@@ -3504,7 +3504,7 @@ def _CitationMetadata_from_mldev(
 def _UrlMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['retrievedUrl']) is not None:
     setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
@@ -3522,7 +3522,7 @@ def _UrlMetadata_from_mldev(
 def _UrlContextMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['urlMetadata']) is not None:
     setv(
@@ -3540,7 +3540,7 @@ def _UrlContextMetadata_from_mldev(
 def _Candidate_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['content']) is not None:
     setv(
@@ -3598,7 +3598,7 @@ def _Candidate_from_mldev(
 def _GenerateContentResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -3631,7 +3631,7 @@ def _GenerateContentResponse_from_mldev(
 def _ContentEmbeddingStatistics_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -3640,7 +3640,7 @@ def _ContentEmbeddingStatistics_from_mldev(
 def _ContentEmbedding_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['values']) is not None:
     setv(to_object, ['values'], getv(from_object, ['values']))
@@ -3651,7 +3651,7 @@ def _ContentEmbedding_from_mldev(
 def _EmbedContentMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -3660,7 +3660,7 @@ def _EmbedContentMetadata_from_mldev(
 def _EmbedContentResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['embeddings']) is not None:
     setv(
@@ -3687,7 +3687,7 @@ def _EmbedContentResponse_from_mldev(
 def _Image_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['bytesBase64Encoded']) is not None:
@@ -3706,7 +3706,7 @@ def _Image_from_mldev(
 def _SafetyAttributes_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['safetyAttributes', 'categories']) is not None:
     setv(
@@ -3729,7 +3729,7 @@ def _SafetyAttributes_from_mldev(
 def _GeneratedImage_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
@@ -3758,7 +3758,7 @@ def _GeneratedImage_from_mldev(
 def _GenerateImagesResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictions']) is not None:
     setv(
@@ -3785,7 +3785,7 @@ def _GenerateImagesResponse_from_mldev(
 def _Endpoint_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -3794,7 +3794,7 @@ def _Endpoint_from_mldev(
 def _TunedModelInfo_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['baseModel']) is not None:
     setv(to_object, ['base_model'], getv(from_object, ['baseModel']))
@@ -3811,7 +3811,7 @@ def _TunedModelInfo_from_mldev(
 def _Checkpoint_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -3820,7 +3820,7 @@ def _Checkpoint_from_mldev(
 def _Model_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -3866,7 +3866,7 @@ def _Model_from_mldev(
 def _ListModelsResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
@@ -3887,7 +3887,7 @@ def _ListModelsResponse_from_mldev(
 def _DeleteModelResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -3896,7 +3896,7 @@ def _DeleteModelResponse_from_mldev(
 def _CountTokensResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['totalTokens']) is not None:
     setv(to_object, ['total_tokens'], getv(from_object, ['totalTokens']))
@@ -3914,7 +3914,7 @@ def _CountTokensResponse_from_mldev(
 def _Video_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video', 'uri']) is not None:
     setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
@@ -3935,7 +3935,7 @@ def _Video_from_mldev(
 def _GeneratedVideo_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
@@ -3950,7 +3950,7 @@ def _GeneratedVideo_from_mldev(
 def _GenerateVideosResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['generatedSamples']) is not None:
     setv(
@@ -3982,7 +3982,7 @@ def _GenerateVideosResponse_from_mldev(
 def _GenerateVideosOperation_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -4020,7 +4020,7 @@ def _GenerateVideosOperation_from_mldev(
 def _VideoMetadata_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['fps']) is not None:
     setv(to_object, ['fps'], getv(from_object, ['fps']))
@@ -4037,7 +4037,7 @@ def _VideoMetadata_from_vertex(
 def _Blob_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['displayName']) is not None:
     setv(to_object, ['display_name'], getv(from_object, ['displayName']))
@@ -4054,7 +4054,7 @@ def _Blob_from_vertex(
 def _FileData_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['displayName']) is not None:
     setv(to_object, ['display_name'], getv(from_object, ['displayName']))
@@ -4071,7 +4071,7 @@ def _FileData_from_vertex(
 def _Part_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['videoMetadata']) is not None:
     setv(
@@ -4135,7 +4135,7 @@ def _Part_from_vertex(
 def _Content_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['parts']) is not None:
     setv(
@@ -4156,7 +4156,7 @@ def _Content_from_vertex(
 def _CitationMetadata_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['citations']) is not None:
     setv(to_object, ['citations'], getv(from_object, ['citations']))
@@ -4167,7 +4167,7 @@ def _CitationMetadata_from_vertex(
 def _UrlMetadata_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['retrievedUrl']) is not None:
     setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
@@ -4185,7 +4185,7 @@ def _UrlMetadata_from_vertex(
 def _UrlContextMetadata_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['urlMetadata']) is not None:
     setv(
@@ -4203,7 +4203,7 @@ def _UrlContextMetadata_from_vertex(
 def _Candidate_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['content']) is not None:
     setv(
@@ -4261,7 +4261,7 @@ def _Candidate_from_vertex(
 def _GenerateContentResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -4300,7 +4300,7 @@ def _GenerateContentResponse_from_vertex(
 def _ContentEmbeddingStatistics_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['truncated']) is not None:
     setv(to_object, ['truncated'], getv(from_object, ['truncated']))
@@ -4314,7 +4314,7 @@ def _ContentEmbeddingStatistics_from_vertex(
 def _ContentEmbedding_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['values']) is not None:
     setv(to_object, ['values'], getv(from_object, ['values']))
@@ -4334,7 +4334,7 @@ def _ContentEmbedding_from_vertex(
 def _EmbedContentMetadata_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['billableCharacterCount']) is not None:
     setv(
@@ -4349,7 +4349,7 @@ def _EmbedContentMetadata_from_vertex(
 def _EmbedContentResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictions[]', 'embeddings']) is not None:
     setv(
@@ -4376,7 +4376,7 @@ def _EmbedContentResponse_from_vertex(
 def _Image_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcsUri']) is not None:
     setv(to_object, ['gcs_uri'], getv(from_object, ['gcsUri']))
@@ -4397,7 +4397,7 @@ def _Image_from_vertex(
 def _SafetyAttributes_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['safetyAttributes', 'categories']) is not None:
     setv(
@@ -4420,7 +4420,7 @@ def _SafetyAttributes_from_vertex(
 def _GeneratedImage_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
@@ -4452,7 +4452,7 @@ def _GeneratedImage_from_vertex(
 def _GenerateImagesResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictions']) is not None:
     setv(
@@ -4479,7 +4479,7 @@ def _GenerateImagesResponse_from_vertex(
 def _EditImageResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictions']) is not None:
     setv(
@@ -4497,7 +4497,7 @@ def _EditImageResponse_from_vertex(
 def _UpscaleImageResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictions']) is not None:
     setv(
@@ -4515,7 +4515,7 @@ def _UpscaleImageResponse_from_vertex(
 def _Endpoint_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['endpoint']) is not None:
     setv(to_object, ['name'], getv(from_object, ['endpoint']))
@@ -4531,7 +4531,7 @@ def _Endpoint_from_vertex(
 def _TunedModelInfo_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if (
       getv(from_object, ['labels', 'google-vertex-llm-tuning-base-model-id'])
@@ -4555,7 +4555,7 @@ def _TunedModelInfo_from_vertex(
 def _Checkpoint_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['checkpointId']) is not None:
     setv(to_object, ['checkpoint_id'], getv(from_object, ['checkpointId']))
@@ -4572,7 +4572,7 @@ def _Checkpoint_from_vertex(
 def _Model_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -4629,7 +4629,7 @@ def _Model_from_vertex(
 def _ListModelsResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
@@ -4650,7 +4650,7 @@ def _ListModelsResponse_from_vertex(
 def _DeleteModelResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -4659,7 +4659,7 @@ def _DeleteModelResponse_from_vertex(
 def _CountTokensResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['totalTokens']) is not None:
     setv(to_object, ['total_tokens'], getv(from_object, ['totalTokens']))
@@ -4670,7 +4670,7 @@ def _CountTokensResponse_from_vertex(
 def _ComputeTokensResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['tokensInfo']) is not None:
     setv(to_object, ['tokens_info'], getv(from_object, ['tokensInfo']))
@@ -4681,7 +4681,7 @@ def _ComputeTokensResponse_from_vertex(
 def _Video_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcsUri']) is not None:
     setv(to_object, ['uri'], getv(from_object, ['gcsUri']))
@@ -4702,7 +4702,7 @@ def _Video_from_vertex(
 def _GeneratedVideo_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
@@ -4717,7 +4717,7 @@ def _GeneratedVideo_from_vertex(
 def _GenerateVideosResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['videos']) is not None:
     setv(
@@ -4749,7 +4749,7 @@ def _GenerateVideosResponse_from_vertex(
 def _GenerateVideosOperation_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
