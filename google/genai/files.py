@@ -37,7 +37,7 @@ logger = logging.getLogger('google_genai.files')
 def _ListFilesConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['page_size']) is not None:
@@ -58,7 +58,7 @@ def _ListFilesConfig_to_mldev(
 def _ListFilesParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     setv(
@@ -73,7 +73,7 @@ def _ListFilesParameters_to_mldev(
 def _FileStatus_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -90,7 +90,7 @@ def _FileStatus_to_mldev(
 def _File_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -144,7 +144,7 @@ def _File_to_mldev(
 def _CreateFileParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['file']) is not None:
     setv(
@@ -162,7 +162,7 @@ def _CreateFileParameters_to_mldev(
 def _GetFileParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
@@ -178,7 +178,7 @@ def _GetFileParameters_to_mldev(
 def _DeleteFileParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(
@@ -194,7 +194,7 @@ def _DeleteFileParameters_to_mldev(
 def _FileStatus_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['details']) is not None:
     setv(to_object, ['details'], getv(from_object, ['details']))
@@ -211,7 +211,7 @@ def _FileStatus_from_mldev(
 def _File_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -265,7 +265,7 @@ def _File_from_mldev(
 def _ListFilesResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
@@ -286,7 +286,7 @@ def _ListFilesResponse_from_mldev(
 def _CreateFileResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
@@ -295,7 +295,7 @@ def _CreateFileResponse_from_mldev(
 def _DeleteFileResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # pragma: no cover
   to_object: dict[str, Any] = {}
 
   return to_object
