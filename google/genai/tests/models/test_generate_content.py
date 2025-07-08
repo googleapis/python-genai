@@ -18,8 +18,8 @@ import enum
 import os
 
 import PIL.Image
-from pydantic import BaseModel, ValidationError, Field
-from typing import Literal, List, Optional, Union
+from pydantic import BaseModel, ValidationError, Field, ConfigDict
+from typing import Literal, List, Optional, Union, Set
 from datetime import datetime
 import pytest
 import json
@@ -763,6 +763,34 @@ def test_pydantic_schema(client):
       },
   )
   assert isinstance(response.parsed, CountryInfo)
+
+def test_json_schema_fields(client):
+  class UserRole(str, Enum):
+    ADMIN = "admin"
+    VIEWER = "viewer"
+  class Address(BaseModel):
+    street: str
+    city: str
+  class UserProfile(BaseModel):
+    username: str = Field(description="User's unique name")
+    age: Optional[int] = Field(ge=0, le=20)
+    roles: Set[UserRole] = Field(min_items=1)
+    contact: Union[Address, str]
+
+    model_config = ConfigDict(
+        title="User Schema", description="A user profile"
+    )  # This is the title of the schema
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Give me information of the United States.',
+      config={
+          'response_mime_type': 'application/json',
+          'response_json_schema': UserProfile.model_json_schema(),
+      },
+  )
+  print(response.parsed)
+  assert response.parsed != None
 
 
 def test_pydantic_schema_orders_properties(client):

@@ -5275,6 +5275,12 @@ class GenerateContentResponse(_common.BaseModel):
     response_schema = _common.get_value_by_path(
         kwargs, ['config', 'response_schema']
     )
+    # Handles response_json_schema. Backend will throw error if both
+    # response_schema and response_json_schema are set.
+    if response_schema is None:
+      response_schema = _common.get_value_by_path(
+          kwargs, ['config', 'response_json_schema']
+      )
     if (
         inspect.isclass(response_schema)
         and not (
