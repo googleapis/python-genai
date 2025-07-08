@@ -200,6 +200,12 @@ def _debug_print(message: str) -> None:
   )
 
 
+def pop_undeterministic_headers(headers: dict[str, str]) -> None:
+  """Remove headers that are not deterministic."""
+  headers.pop('Date', None)  # pytype: disable=attribute-error
+  headers.pop('Server-Timing', None)  # pytype: disable=attribute-error
+
+
 class ReplayRequest(BaseModel):
   """Represents a single request in a replay."""
 
@@ -219,10 +225,7 @@ class ReplayResponse(BaseModel):
   sdk_response_segments: list[dict[str, object]]
 
   def model_post_init(self, __context: Any) -> None:
-    # Remove headers that are not deterministic so the replay files don't change
-    # every time they are recorded.
-    self.headers.pop('Date', None)
-    self.headers.pop('Server-Timing', None)
+    pop_undeterministic_headers(self.headers)
 
 
 class ReplayInteraction(BaseModel):
@@ -447,11 +450,15 @@ class ReplayApiClient(BaseApiClient):
     if self._should_update_replay():
       if isinstance(response_model, list):
         response_model = response_model[0]
-      if (
-          response_model
-          and getattr(response_model, 'sdk_http_response', None) is not None
+      sdk_response_response = getattr(response_model, 'sdk_http_response', None)
+      if response_model and (
+          sdk_response_response is not None
       ):
-        response_model.sdk_http_response.headers.pop('Date', None)  # type: ignore[attr-defined]
+        headers = getattr(
+            sdk_response_response, 'headers', None
+        )
+        if headers:
+          pop_undeterministic_headers(headers)
       interaction.response.sdk_response_segments.append(
           response_model.model_dump(exclude_none=True)
       )

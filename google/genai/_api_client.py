@@ -232,8 +232,18 @@ class HttpResponse:
       byte_stream: Union[Any, bytes] = None,
       session: Optional['aiohttp.ClientSession'] = None,
   ):
+    if isinstance(headers, dict):
+      self.headers = headers
+    elif isinstance(headers, httpx.Headers):
+      self.headers = {
+        key: ', '.join(headers.get_list(key))
+        for key in headers.keys()}
+    elif type(headers).__name__ == 'CIMultiDictProxy':
+      self.headers = {
+          key: ', '.join(headers.getall(key))
+        for key in headers.keys()}
+
     self.status_code: int = 200
-    self.headers = headers
     self.response_stream = response_stream
     self.byte_stream = byte_stream
     self._session = session
