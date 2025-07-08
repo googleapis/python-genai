@@ -625,17 +625,22 @@ def _raise_for_unsupported_schema_type(origin: Any) -> None:
 
 
 def _raise_for_unsupported_mldev_properties(
-    schema: Any, client: _api_client.BaseApiClient
+    schema: Any, client: Optional[_api_client.BaseApiClient]
 ) -> None:
-  if not client.vertexai and (
-      schema.get('additionalProperties') or schema.get('additional_properties')
+  if (
+      client
+      and not client.vertexai
+      and (
+          schema.get('additionalProperties')
+          or schema.get('additional_properties')
+      )
   ):
     raise ValueError('additionalProperties is not supported in the Gemini API.')
 
 
 def process_schema(
     schema: dict[str, Any],
-    client: _api_client.BaseApiClient,
+    client: Optional[_api_client.BaseApiClient],
     defs: Optional[dict[str, Any]] = None,
     *,
     order_properties: bool = True,
@@ -785,7 +790,7 @@ def process_schema(
 
 
 def _process_enum(
-    enum: EnumMeta, client: _api_client.BaseApiClient
+    enum: EnumMeta, client: Optional[_api_client.BaseApiClient]
 ) -> types.Schema:
   is_integer_enum = False
 
@@ -823,7 +828,8 @@ def _is_type_dict_str_any(
 
 
 def t_schema(
-    client: _api_client.BaseApiClient, origin: Union[types.SchemaUnionDict, Any]
+    client: Optional[_api_client.BaseApiClient],
+    origin: Union[types.SchemaUnionDict, Any],
 ) -> Optional[types.Schema]:
   if not origin:
     return None
