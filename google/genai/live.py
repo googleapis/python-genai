@@ -83,9 +83,10 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 class AsyncSession:
   """[Preview] AsyncSession."""
 
-  def __init__(self, api_client: BaseApiClient, websocket: ClientConnection):
+  def __init__(self, api_client: BaseApiClient, websocket: ClientConnection, session_id: Optional[str] = None):
     self._api_client = api_client
     self._ws = websocket
+    self._session_id = session_id
 
   async def send(
       self,
@@ -1053,11 +1054,19 @@ class AsyncLive(_api_module.BaseModule):
       await ws.send(request)
       try:
         # websockets 14.0+
-        logger.info(await ws.recv(decode=False))
+        response = await ws.recv(decode=False)
       except TypeError:
-        logger.info(await ws.recv())
+        response = await ws.recv()
 
-      yield AsyncSession(api_client=self._api_client, websocket=ws)
+      logger.info(response)
+
+      try:
+        session_id = json.loads(response.decode()).get('setupComplete', {}).get('sessionId')
+      except Exception as e:
+        logger.warning(f"Error handling session setup event: {e}")
+        session_id = None
+
+      yield AsyncSession(api_client=self._api_client, websocket=ws, session_id=session_id)
 
 
 async def _t_live_connect_config(
