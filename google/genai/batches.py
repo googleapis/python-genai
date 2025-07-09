@@ -1054,7 +1054,6 @@ def _GenerateContentResponse_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
   if getv(from_object, ['sdk_http_response']) is not None:
     setv(
         to_object, ['sdkHttpResponse'], getv(from_object, ['sdk_http_response'])
@@ -2326,7 +2325,6 @@ def _GenerateContentResponse_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
   if getv(from_object, ['sdk_http_response']) is not None:
     setv(
         to_object, ['sdkHttpResponse'], getv(from_object, ['sdk_http_response'])
@@ -3574,7 +3572,6 @@ def _GenerateContentResponse_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
   if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
         to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
@@ -3655,6 +3652,11 @@ def _BatchJob_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
 
@@ -3704,11 +3706,29 @@ def _BatchJob_from_mldev(
   return to_object
 
 
+def _CancelBatchJobResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
 def _ListBatchJobsResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
@@ -3730,6 +3750,11 @@ def _DeleteResourceJob_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
 
@@ -4743,7 +4768,6 @@ def _GenerateContentResponse_from_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
   if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
         to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
@@ -4816,6 +4840,11 @@ def _BatchJob_from_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
 
@@ -4868,11 +4897,29 @@ def _BatchJob_from_vertex(
   return to_object
 
 
+def _CancelBatchJobResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
 def _ListBatchJobsResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
@@ -4894,6 +4941,11 @@ def _DeleteResourceJob_from_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
 
@@ -4976,7 +5028,9 @@ class Batches(_api_module.BaseModule):
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5056,7 +5110,9 @@ class Batches(_api_module.BaseModule):
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5065,7 +5121,7 @@ class Batches(_api_module.BaseModule):
       *,
       name: str,
       config: Optional[types.CancelBatchJobConfigOrDict] = None,
-  ) -> None:
+  ) -> types.CancelBatchJobResponse:
     """Cancels a batch job.
 
     Only available for batch jobs that are running or pending.
@@ -5128,6 +5184,23 @@ class Batches(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _CancelBatchJobResponse_from_vertex(response_dict)
+
+    else:
+      response_dict = _CancelBatchJobResponse_from_mldev(response_dict)
+
+    return_value = types.CancelBatchJobResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
+
   def _list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
   ) -> types.ListBatchJobsResponse:
@@ -5180,7 +5253,9 @@ class Batches(_api_module.BaseModule):
     return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5263,7 +5338,9 @@ class Batches(_api_module.BaseModule):
     return_value = types.DeleteResourceJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5403,7 +5480,9 @@ class AsyncBatches(_api_module.BaseModule):
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5485,7 +5564,9 @@ class AsyncBatches(_api_module.BaseModule):
     return_value = types.BatchJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5494,7 +5575,7 @@ class AsyncBatches(_api_module.BaseModule):
       *,
       name: str,
       config: Optional[types.CancelBatchJobConfigOrDict] = None,
-  ) -> None:
+  ) -> types.CancelBatchJobResponse:
     """Cancels a batch job.
 
     Only available for batch jobs that are running or pending.
@@ -5557,6 +5638,23 @@ class AsyncBatches(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _CancelBatchJobResponse_from_vertex(response_dict)
+
+    else:
+      response_dict = _CancelBatchJobResponse_from_mldev(response_dict)
+
+    return_value = types.CancelBatchJobResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
+
   async def _list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
   ) -> types.ListBatchJobsResponse:
@@ -5611,7 +5709,9 @@ class AsyncBatches(_api_module.BaseModule):
     return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5694,7 +5794,9 @@ class AsyncBatches(_api_module.BaseModule):
     return_value = types.DeleteResourceJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
