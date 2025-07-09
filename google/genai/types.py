@@ -6973,11 +6973,17 @@ _ListModelsParametersOrDict = Union[
 
 class ListModelsResponse(_common.BaseModel):
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(default=None, description="""""")
   models: Optional[list[Model]] = Field(default=None, description="""""")
 
 
 class ListModelsResponseDict(TypedDict, total=False):
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """"""
@@ -8982,6 +8988,9 @@ _ListTuningJobsParametersOrDict = Union[
 class ListTuningJobsResponse(_common.BaseModel):
   """Response for the list tuning jobs method."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(
       default=None,
       description="""A token to retrieve the next page of results. Pass to ListTuningJobsRequest.page_token to obtain that page.""",
@@ -8993,6 +9002,9 @@ class ListTuningJobsResponse(_common.BaseModel):
 
 class ListTuningJobsResponseDict(TypedDict, total=False):
   """Response for the list tuning jobs method."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """A token to retrieve the next page of results. Pass to ListTuningJobsRequest.page_token to obtain that page."""
@@ -9716,6 +9728,9 @@ _ListCachedContentsParametersOrDict = Union[
 
 class ListCachedContentsResponse(_common.BaseModel):
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(default=None, description="""""")
   cached_contents: Optional[list[CachedContent]] = Field(
       default=None,
@@ -9725,6 +9740,9 @@ class ListCachedContentsResponse(_common.BaseModel):
 
 
 class ListCachedContentsResponseDict(TypedDict, total=False):
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """"""
@@ -9789,6 +9807,9 @@ _ListFilesParametersOrDict = Union[
 class ListFilesResponse(_common.BaseModel):
   """Response for the list files method."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(
       default=None, description="""A token to retrieve next page of results."""
   )
@@ -9799,6 +9820,9 @@ class ListFilesResponse(_common.BaseModel):
 
 class ListFilesResponseDict(TypedDict, total=False):
   """Response for the list files method."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """A token to retrieve next page of results."""
@@ -10590,12 +10614,18 @@ _ListBatchJobsParametersOrDict = Union[
 class ListBatchJobsResponse(_common.BaseModel):
   """Config for batches.list return value."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   next_page_token: Optional[str] = Field(default=None, description="""""")
   batch_jobs: Optional[list[BatchJob]] = Field(default=None, description="""""")
 
 
 class ListBatchJobsResponseDict(TypedDict, total=False):
   """Config for batches.list return value."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
   """"""
@@ -10665,6 +10695,9 @@ _DeleteBatchJobParametersOrDict = Union[
 class DeleteResourceJob(_common.BaseModel):
   """The return value of delete operation."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   name: Optional[str] = Field(default=None, description="""""")
   done: Optional[bool] = Field(default=None, description="""""")
   error: Optional[JobError] = Field(default=None, description="""""")
@@ -10672,6 +10705,9 @@ class DeleteResourceJob(_common.BaseModel):
 
 class DeleteResourceJobDict(TypedDict, total=False):
   """The return value of delete operation."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   name: Optional[str]
   """"""
