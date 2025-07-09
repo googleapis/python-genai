@@ -138,6 +138,18 @@ class HarmCategory(_common.CaseInSensitiveEnum):
   """The harm category is sexually explicit content."""
   HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
   """Deprecated: Election filter is not longer supported. The harm category is civic integrity."""
+  HARM_CATEGORY_IMAGE_HATE = 'HARM_CATEGORY_IMAGE_HATE'
+  """The harm category is image hate."""
+  HARM_CATEGORY_IMAGE_DANGEROUS_CONTENT = (
+      'HARM_CATEGORY_IMAGE_DANGEROUS_CONTENT'
+  )
+  """The harm category is image dangerous content."""
+  HARM_CATEGORY_IMAGE_HARASSMENT = 'HARM_CATEGORY_IMAGE_HARASSMENT'
+  """The harm category is image harassment."""
+  HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT = (
+      'HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT'
+  )
+  """The harm category is image sexually explicit content."""
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
@@ -197,6 +209,37 @@ class AuthType(_common.CaseInSensitiveEnum):
   """OAuth auth."""
   OIDC_AUTH = 'OIDC_AUTH'
   """OpenID Connect (OIDC) Auth."""
+
+
+class ApiSpec(_common.CaseInSensitiveEnum):
+  """The API spec that the external API implements."""
+
+  API_SPEC_UNSPECIFIED = 'API_SPEC_UNSPECIFIED'
+  """Unspecified API spec. This value should not be used."""
+  SIMPLE_SEARCH = 'SIMPLE_SEARCH'
+  """Simple search API spec."""
+  ELASTIC_SEARCH = 'ELASTIC_SEARCH'
+  """Elastic search API spec."""
+
+
+class Environment(_common.CaseInSensitiveEnum):
+  """Required. The environment being operated."""
+
+  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
+  """Defaults to browser."""
+  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
+  """Operates in a web browser."""
+
+
+class UrlRetrievalStatus(_common.CaseInSensitiveEnum):
+  """Status of the url retrieval."""
+
+  URL_RETRIEVAL_STATUS_UNSPECIFIED = 'URL_RETRIEVAL_STATUS_UNSPECIFIED'
+  """Default value. This value is unused"""
+  URL_RETRIEVAL_STATUS_SUCCESS = 'URL_RETRIEVAL_STATUS_SUCCESS'
+  """Url retrieval is successful."""
+  URL_RETRIEVAL_STATUS_ERROR = 'URL_RETRIEVAL_STATUS_ERROR'
+  """Url retrieval is failed due to error."""
 
 
 class FinishReason(_common.CaseInSensitiveEnum):
@@ -276,6 +319,8 @@ class BlockedReason(_common.CaseInSensitiveEnum):
   """Candidates blocked due to the terms which are included from the terminology blocklist."""
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
   """Candidates blocked due to prohibited content."""
+  IMAGE_SAFETY = 'IMAGE_SAFETY'
+  """Candidates blocked due to unsafe image generation content."""
 
 
 class TrafficType(_common.CaseInSensitiveEnum):
@@ -411,17 +456,6 @@ class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
   """Model will not predict any function calls. Model behavior is same as when not passing any function declarations."""
 
 
-class UrlRetrievalStatus(_common.CaseInSensitiveEnum):
-  """Status of the url retrieval."""
-
-  URL_RETRIEVAL_STATUS_UNSPECIFIED = 'URL_RETRIEVAL_STATUS_UNSPECIFIED'
-  """Default value. This value is unused"""
-  URL_RETRIEVAL_STATUS_SUCCESS = 'URL_RETRIEVAL_STATUS_SUCCESS'
-  """Url retrieval is successful."""
-  URL_RETRIEVAL_STATUS_ERROR = 'URL_RETRIEVAL_STATUS_ERROR'
-  """Url retrieval is failed due to error."""
-
-
 class SafetyFilterLevel(_common.CaseInSensitiveEnum):
   """Enum that controls the safety filter level for objectionable content."""
 
@@ -446,10 +480,21 @@ class ImagePromptLanguage(_common.CaseInSensitiveEnum):
   """Enum that specifies the language of the text in the prompt."""
 
   auto = 'auto'
+  """Auto-detect the language."""
   en = 'en'
+  """English"""
   ja = 'ja'
+  """Japanese"""
   ko = 'ko'
+  """Korean"""
   hi = 'hi'
+  """Hindi"""
+  zh = 'zh'
+  """Chinese"""
+  pt = 'pt'
+  """Portuguese"""
+  es = 'es'
+  """Spanish"""
 
 
 class MaskReferenceMode(_common.CaseInSensitiveEnum):
@@ -491,6 +536,17 @@ class EditMode(_common.CaseInSensitiveEnum):
   EDIT_MODE_STYLE = 'EDIT_MODE_STYLE'
   EDIT_MODE_BGSWAP = 'EDIT_MODE_BGSWAP'
   EDIT_MODE_PRODUCT_IMAGE = 'EDIT_MODE_PRODUCT_IMAGE'
+
+
+class VideoCompressionQuality(_common.CaseInSensitiveEnum):
+  """Enum that controls the compression quality of the generated videos."""
+
+  OPTIMIZED = 'OPTIMIZED'
+  """Optimized video compression quality. This will produce videos
+      with a compressed, smaller file size."""
+  LOSSLESS = 'LOSSLESS'
+  """Lossless video compression quality. This will produce videos
+      with a larger file size."""
 
 
 class FileState(_common.CaseInSensitiveEnum):
@@ -732,7 +788,8 @@ FileDataOrDict = Union[FileData, FileDataDict]
 class CodeExecutionResult(_common.BaseModel):
   """Result of executing the [ExecutableCode].
 
-  Always follows a `part` containing the [ExecutableCode].
+  Only generated when using the [CodeExecution] tool, and always follows a
+  `part` containing the [ExecutableCode].
   """
 
   outcome: Optional[Outcome] = Field(
@@ -747,7 +804,8 @@ class CodeExecutionResult(_common.BaseModel):
 class CodeExecutionResultDict(TypedDict, total=False):
   """Result of executing the [ExecutableCode].
 
-  Always follows a `part` containing the [ExecutableCode].
+  Only generated when using the [CodeExecution] tool, and always follows a
+  `part` containing the [ExecutableCode].
   """
 
   outcome: Optional[Outcome]
@@ -763,8 +821,9 @@ CodeExecutionResultOrDict = Union[CodeExecutionResult, CodeExecutionResultDict]
 class ExecutableCode(_common.BaseModel):
   """Code generated by the model that is meant to be executed, and the result returned to the model.
 
-  Generated when using the [FunctionDeclaration] tool and
-  [FunctionCallingConfig] mode is set to [Mode.CODE].
+  Generated when using the [CodeExecution] tool, in which the code will be
+  automatically executed, and a corresponding [CodeExecutionResult] will also be
+  generated.
   """
 
   code: Optional[str] = Field(
@@ -779,8 +838,9 @@ class ExecutableCode(_common.BaseModel):
 class ExecutableCodeDict(TypedDict, total=False):
   """Code generated by the model that is meant to be executed, and the result returned to the model.
 
-  Generated when using the [FunctionDeclaration] tool and
-  [FunctionCallingConfig] mode is set to [Mode.CODE].
+  Generated when using the [CodeExecution] tool, in which the code will be
+  automatically executed, and a corresponding [CodeExecutionResult] will also be
+  generated.
   """
 
   code: Optional[str]
@@ -2462,6 +2522,168 @@ class UrlContextDict(TypedDict, total=False):
 UrlContextOrDict = Union[UrlContext, UrlContextDict]
 
 
+class ApiAuthApiKeyConfig(_common.BaseModel):
+  """The API secret."""
+
+  api_key_secret_version: Optional[str] = Field(
+      default=None,
+      description="""Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}""",
+  )
+  api_key_string: Optional[str] = Field(
+      default=None,
+      description="""The API key string. Either this or `api_key_secret_version` must be set.""",
+  )
+
+
+class ApiAuthApiKeyConfigDict(TypedDict, total=False):
+  """The API secret."""
+
+  api_key_secret_version: Optional[str]
+  """Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}"""
+
+  api_key_string: Optional[str]
+  """The API key string. Either this or `api_key_secret_version` must be set."""
+
+
+ApiAuthApiKeyConfigOrDict = Union[ApiAuthApiKeyConfig, ApiAuthApiKeyConfigDict]
+
+
+class ApiAuth(_common.BaseModel):
+  """The generic reusable api auth config.
+
+  Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
+  instead.
+  """
+
+  api_key_config: Optional[ApiAuthApiKeyConfig] = Field(
+      default=None, description="""The API secret."""
+  )
+
+
+class ApiAuthDict(TypedDict, total=False):
+  """The generic reusable api auth config.
+
+  Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
+  instead.
+  """
+
+  api_key_config: Optional[ApiAuthApiKeyConfigDict]
+  """The API secret."""
+
+
+ApiAuthOrDict = Union[ApiAuth, ApiAuthDict]
+
+
+class ExternalApiElasticSearchParams(_common.BaseModel):
+  """The search parameters to use for the ELASTIC_SEARCH spec."""
+
+  index: Optional[str] = Field(
+      default=None, description="""The ElasticSearch index to use."""
+  )
+  num_hits: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of hits (chunks) to request. When specified, it is passed to Elasticsearch as the `num_hits` param.""",
+  )
+  search_template: Optional[str] = Field(
+      default=None, description="""The ElasticSearch search template to use."""
+  )
+
+
+class ExternalApiElasticSearchParamsDict(TypedDict, total=False):
+  """The search parameters to use for the ELASTIC_SEARCH spec."""
+
+  index: Optional[str]
+  """The ElasticSearch index to use."""
+
+  num_hits: Optional[int]
+  """Optional. Number of hits (chunks) to request. When specified, it is passed to Elasticsearch as the `num_hits` param."""
+
+  search_template: Optional[str]
+  """The ElasticSearch search template to use."""
+
+
+ExternalApiElasticSearchParamsOrDict = Union[
+    ExternalApiElasticSearchParams, ExternalApiElasticSearchParamsDict
+]
+
+
+class ExternalApiSimpleSearchParams(_common.BaseModel):
+  """The search parameters to use for SIMPLE_SEARCH spec."""
+
+  pass
+
+
+class ExternalApiSimpleSearchParamsDict(TypedDict, total=False):
+  """The search parameters to use for SIMPLE_SEARCH spec."""
+
+  pass
+
+
+ExternalApiSimpleSearchParamsOrDict = Union[
+    ExternalApiSimpleSearchParams, ExternalApiSimpleSearchParamsDict
+]
+
+
+class ExternalApi(_common.BaseModel):
+  """Retrieve from data source powered by external API for grounding.
+
+  The external API is not owned by Google, but need to follow the pre-defined
+  API spec.
+  """
+
+  api_auth: Optional[ApiAuth] = Field(
+      default=None,
+      description="""The authentication config to access the API. Deprecated. Please use auth_config instead.""",
+  )
+  api_spec: Optional[ApiSpec] = Field(
+      default=None,
+      description="""The API spec that the external API implements.""",
+  )
+  auth_config: Optional[AuthConfig] = Field(
+      default=None,
+      description="""The authentication config to access the API.""",
+  )
+  elastic_search_params: Optional[ExternalApiElasticSearchParams] = Field(
+      default=None, description="""Parameters for the elastic search API."""
+  )
+  endpoint: Optional[str] = Field(
+      default=None,
+      description="""The endpoint of the external API. The system will call the API at this endpoint to retrieve the data for grounding. Example: https://acme.com:443/search""",
+  )
+  simple_search_params: Optional[ExternalApiSimpleSearchParams] = Field(
+      default=None, description="""Parameters for the simple search API."""
+  )
+
+
+class ExternalApiDict(TypedDict, total=False):
+  """Retrieve from data source powered by external API for grounding.
+
+  The external API is not owned by Google, but need to follow the pre-defined
+  API spec.
+  """
+
+  api_auth: Optional[ApiAuthDict]
+  """The authentication config to access the API. Deprecated. Please use auth_config instead."""
+
+  api_spec: Optional[ApiSpec]
+  """The API spec that the external API implements."""
+
+  auth_config: Optional[AuthConfigDict]
+  """The authentication config to access the API."""
+
+  elastic_search_params: Optional[ExternalApiElasticSearchParamsDict]
+  """Parameters for the elastic search API."""
+
+  endpoint: Optional[str]
+  """The endpoint of the external API. The system will call the API at this endpoint to retrieve the data for grounding. Example: https://acme.com:443/search"""
+
+  simple_search_params: Optional[ExternalApiSimpleSearchParamsDict]
+  """Parameters for the simple search API."""
+
+
+ExternalApiOrDict = Union[ExternalApi, ExternalApiDict]
+
+
 class VertexAISearchDataStoreSpec(_common.BaseModel):
   """Define data stores within engine to filter on in a search call and configurations for those data stores.
 
@@ -2804,6 +3026,10 @@ class Retrieval(_common.BaseModel):
       default=None,
       description="""Optional. Deprecated. This option is no longer supported.""",
   )
+  external_api: Optional[ExternalApi] = Field(
+      default=None,
+      description="""Use data source powered by external API for grounding.""",
+  )
   vertex_ai_search: Optional[VertexAISearch] = Field(
       default=None,
       description="""Set to use data source powered by Vertex AI Search.""",
@@ -2819,6 +3045,9 @@ class RetrievalDict(TypedDict, total=False):
 
   disable_attribution: Optional[bool]
   """Optional. Deprecated. This option is no longer supported."""
+
+  external_api: Optional[ExternalApiDict]
+  """Use data source powered by external API for grounding."""
 
   vertex_ai_search: Optional[VertexAISearchDict]
   """Set to use data source powered by Vertex AI Search."""
@@ -2851,6 +3080,24 @@ class ToolCodeExecutionDict(TypedDict, total=False):
 
 
 ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
+
+
+class ToolComputerUse(_common.BaseModel):
+  """Tool to support computer use."""
+
+  environment: Optional[Environment] = Field(
+      default=None, description="""Required. The environment being operated."""
+  )
+
+
+class ToolComputerUseDict(TypedDict, total=False):
+  """Tool to support computer use."""
+
+  environment: Optional[Environment]
+  """Required. The environment being operated."""
+
+
+ToolComputerUseOrDict = Union[ToolComputerUse, ToolComputerUseDict]
 
 
 class Tool(_common.BaseModel):
@@ -2891,6 +3138,10 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation.""",
   )
+  computer_use: Optional[ToolComputerUse] = Field(
+      default=None,
+      description="""Optional. Tool to support the model interacting directly with the computer. If enabled, it automatically populates computer-use specific Function Declarations.""",
+  )
 
 
 class ToolDict(TypedDict, total=False):
@@ -2922,6 +3173,9 @@ class ToolDict(TypedDict, total=False):
 
   code_execution: Optional[ToolCodeExecutionDict]
   """Optional. CodeExecution tool type. Enables the model to execute code as part of generation."""
+
+  computer_use: Optional[ToolComputerUseDict]
+  """Optional. Tool to support the model interacting directly with the computer. If enabled, it automatically populates computer-use specific Function Declarations."""
 
 
 ToolOrDict = Union[Tool, ToolDict]
@@ -4330,7 +4584,7 @@ class GroundingSupport(_common.BaseModel):
 
   confidence_scores: Optional[list[float]] = Field(
       default=None,
-      description="""Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. This list must have the same size as the grounding_chunk_indices.""",
+      description="""Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. For Gemini 2.0 and before, this list must have the same size as the grounding_chunk_indices. For Gemini 2.5 and after, this list will be empty and should be ignored.""",
   )
   grounding_chunk_indices: Optional[list[int]] = Field(
       default=None,
@@ -4346,7 +4600,7 @@ class GroundingSupportDict(TypedDict, total=False):
   """Grounding support."""
 
   confidence_scores: Optional[list[float]]
-  """Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. This list must have the same size as the grounding_chunk_indices."""
+  """Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. For Gemini 2.0 and before, this list must have the same size as the grounding_chunk_indices. For Gemini 2.5 and after, this list will be empty and should be ignored."""
 
   grounding_chunk_indices: Optional[list[int]]
   """A list of indices (into 'grounding_chunk') specifying the citations associated with the claim. For instance [1,3,4] means that grounding_chunk[1], grounding_chunk[3], grounding_chunk[4] are the retrieved content attributed to the claim."""
@@ -4543,6 +4797,10 @@ class SafetyRating(_common.BaseModel):
   category: Optional[HarmCategory] = Field(
       default=None, description="""Output only. Harm category."""
   )
+  overwritten_threshold: Optional[HarmBlockThreshold] = Field(
+      default=None,
+      description="""Output only. The overwritten threshold for the safety category of Gemini 2.0 image out. If minors are detected in the output image, the threshold of each safety category will be overwritten if user sets a lower threshold.""",
+  )
   probability: Optional[HarmProbability] = Field(
       default=None,
       description="""Output only. Harm probability levels in the content.""",
@@ -4567,6 +4825,9 @@ class SafetyRatingDict(TypedDict, total=False):
 
   category: Optional[HarmCategory]
   """Output only. Harm category."""
+
+  overwritten_threshold: Optional[HarmBlockThreshold]
+  """Output only. The overwritten threshold for the safety category of Gemini 2.0 image out. If minors are detected in the output image, the threshold of each safety category will be overwritten if user sets a lower threshold."""
 
   probability: Optional[HarmProbability]
   """Output only. Harm probability levels in the content."""
@@ -4992,6 +5253,12 @@ class GenerateContentResponse(_common.BaseModel):
     response_schema = _common.get_value_by_path(
         kwargs, ['config', 'response_schema']
     )
+    # Handles response_json_schema. Backend will throw error if both
+    # response_schema and response_json_schema are set.
+    if response_schema is None:
+      response_schema = _common.get_value_by_path(
+          kwargs, ['config', 'response_json_schema']
+      )
     if (
         inspect.isclass(response_schema)
         and not (
@@ -6855,6 +7122,10 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. Number of candidates to generate.""",
   )
+  enable_affective_dialog: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly.""",
+  )
   frequency_penalty: Optional[float] = Field(
       default=None, description="""Optional. Frequency penalties."""
   )
@@ -6872,6 +7143,10 @@ class GenerationConfig(_common.BaseModel):
   presence_penalty: Optional[float] = Field(
       default=None, description="""Optional. Positive penalties."""
   )
+  response_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set.""",
+  )
   response_logprobs: Optional[bool] = Field(
       default=None,
       description="""Optional. If true, export the logprobs results in response.""",
@@ -6886,10 +7161,6 @@ class GenerationConfig(_common.BaseModel):
   response_schema: Optional[Schema] = Field(
       default=None,
       description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
-  )
-  response_json_schema: Optional[Any] = Field(
-      default=None,
-      description="""Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set.""",
   )
   routing_config: Optional[GenerationConfigRoutingConfig] = Field(
       default=None, description="""Optional. Routing configuration."""
@@ -6931,6 +7202,9 @@ class GenerationConfigDict(TypedDict, total=False):
   candidate_count: Optional[int]
   """Optional. Number of candidates to generate."""
 
+  enable_affective_dialog: Optional[bool]
+  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly."""
+
   frequency_penalty: Optional[float]
   """Optional. Frequency penalties."""
 
@@ -6946,6 +7220,9 @@ class GenerationConfigDict(TypedDict, total=False):
   presence_penalty: Optional[float]
   """Optional. Positive penalties."""
 
+  response_json_schema: Optional[Any]
+  """Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set."""
+
   response_logprobs: Optional[bool]
   """Optional. If true, export the logprobs results in response."""
 
@@ -6957,9 +7234,6 @@ class GenerationConfigDict(TypedDict, total=False):
 
   response_schema: Optional[SchemaDict]
   """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
-
-  response_json_schema: Optional[Any]
-  """Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set."""
 
   routing_config: Optional[GenerationConfigRoutingConfigDict]
   """Optional. Routing configuration."""
@@ -7364,6 +7638,10 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""Image to use as the last frame of generated videos. Only supported for image to video use cases.""",
   )
+  compression_quality: Optional[VideoCompressionQuality] = Field(
+      default=None,
+      description="""Compression quality of the generated videos.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -7410,6 +7688,9 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   last_frame: Optional[ImageDict]
   """Image to use as the last frame of generated videos. Only supported for image to video use cases."""
+
+  compression_quality: Optional[VideoCompressionQuality]
+  """Compression quality of the generated videos."""
 
 
 GenerateVideosConfigOrDict = Union[
@@ -7762,7 +8043,7 @@ class SupervisedHyperParameters(_common.BaseModel):
   )
   learning_rate_multiplier: Optional[float] = Field(
       default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
+      description="""Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`.""",
   )
 
 
@@ -7776,7 +8057,7 @@ class SupervisedHyperParametersDict(TypedDict, total=False):
   """Optional. Number of complete passes the model makes over the entire training dataset during training."""
 
   learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
+  """Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`."""
 
 
 SupervisedHyperParametersOrDict = Union[
@@ -7796,11 +8077,11 @@ class SupervisedTuningSpec(_common.BaseModel):
   )
   training_dataset_uri: Optional[str] = Field(
       default=None,
-      description="""Required. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
   )
   validation_dataset_uri: Optional[str] = Field(
       default=None,
-      description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
+      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
   )
 
 
@@ -7814,10 +8095,10 @@ class SupervisedTuningSpecDict(TypedDict, total=False):
   """Optional. Hyperparameters for SFT."""
 
   training_dataset_uri: Optional[str]
-  """Required. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
 
   validation_dataset_uri: Optional[str]
-  """Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""
+  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
 
 
 SupervisedTuningSpecOrDict = Union[
@@ -8486,6 +8767,12 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.""",
   )
+  satisfies_pzi: Optional[bool] = Field(
+      default=None, description="""Output only. Reserved for future use."""
+  )
+  satisfies_pzs: Optional[bool] = Field(
+      default=None, description="""Output only. Reserved for future use."""
+  )
   service_account: Optional[str] = Field(
       default=None,
       description="""The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account.""",
@@ -8562,6 +8849,12 @@ class TuningJobDict(TypedDict, total=False):
 
   pipeline_job: Optional[str]
   """Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`."""
+
+  satisfies_pzi: Optional[bool]
+  """Output only. Reserved for future use."""
+
+  satisfies_pzs: Optional[bool]
+  """Output only. Reserved for future use."""
 
   service_account: Optional[str]
   """The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account."""
@@ -8681,6 +8974,10 @@ class TuningDataset(_common.BaseModel):
       default=None,
       description="""GCS URI of the file containing training dataset in JSONL format.""",
   )
+  vertex_dataset_resource: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+  )
   examples: Optional[list[TuningExample]] = Field(
       default=None,
       description="""Inline examples with simple input/output text.""",
@@ -8692,6 +8989,9 @@ class TuningDatasetDict(TypedDict, total=False):
 
   gcs_uri: Optional[str]
   """GCS URI of the file containing training dataset in JSONL format."""
+
+  vertex_dataset_resource: Optional[str]
+  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
   examples: Optional[list[TuningExampleDict]]
   """Inline examples with simple input/output text."""
@@ -8706,12 +9006,19 @@ class TuningValidationDataset(_common.BaseModel):
       default=None,
       description="""GCS URI of the file containing validation dataset in JSONL format.""",
   )
+  vertex_dataset_resource: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+  )
 
 
 class TuningValidationDatasetDict(TypedDict, total=False):
 
   gcs_uri: Optional[str]
   """GCS URI of the file containing validation dataset in JSONL format."""
+
+  vertex_dataset_resource: Optional[str]
+  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
 
 TuningValidationDatasetOrDict = Union[
@@ -9628,6 +9935,45 @@ class DeleteFileResponseDict(TypedDict, total=False):
 DeleteFileResponseOrDict = Union[DeleteFileResponse, DeleteFileResponseDict]
 
 
+class InlinedRequest(_common.BaseModel):
+  """Config for inlined request."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+      <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""Content of the request.
+      """,
+  )
+  config: Optional[GenerateContentConfig] = Field(
+      default=None,
+      description="""Configuration that contains optional model parameters.
+      """,
+  )
+
+
+class InlinedRequestDict(TypedDict, total=False):
+  """Config for inlined request."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+      <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  contents: Optional[ContentListUnionDict]
+  """Content of the request.
+      """
+
+  config: Optional[GenerateContentConfigDict]
+  """Configuration that contains optional model parameters.
+      """
+
+
+InlinedRequestOrDict = Union[InlinedRequest, InlinedRequestDict]
+
+
 class BatchJobSource(_common.BaseModel):
   """Config for `src` parameter."""
 
@@ -9645,6 +9991,17 @@ class BatchJobSource(_common.BaseModel):
   bigquery_uri: Optional[str] = Field(
       default=None,
       description="""The BigQuery URI to input table.
+      """,
+  )
+  file_name: Optional[str] = Field(
+      default=None,
+      description="""The Gemini Developer API's file resource name of the input data
+      (e.g. "files/12345").
+      """,
+  )
+  inlined_requests: Optional[list[InlinedRequest]] = Field(
+      default=None,
+      description="""The Gemini Developer API's inlined input data to run batch job.
       """,
   )
 
@@ -9665,8 +10022,77 @@ class BatchJobSourceDict(TypedDict, total=False):
   """The BigQuery URI to input table.
       """
 
+  file_name: Optional[str]
+  """The Gemini Developer API's file resource name of the input data
+      (e.g. "files/12345").
+      """
+
+  inlined_requests: Optional[list[InlinedRequestDict]]
+  """The Gemini Developer API's inlined input data to run batch job.
+      """
+
 
 BatchJobSourceOrDict = Union[BatchJobSource, BatchJobSourceDict]
+
+
+class JobError(_common.BaseModel):
+  """Job error."""
+
+  details: Optional[list[str]] = Field(
+      default=None,
+      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
+  )
+  code: Optional[int] = Field(default=None, description="""The status code.""")
+  message: Optional[str] = Field(
+      default=None,
+      description="""A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field.""",
+  )
+
+
+class JobErrorDict(TypedDict, total=False):
+  """Job error."""
+
+  details: Optional[list[str]]
+  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
+
+  code: Optional[int]
+  """The status code."""
+
+  message: Optional[str]
+  """A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field."""
+
+
+JobErrorOrDict = Union[JobError, JobErrorDict]
+
+
+class InlinedResponse(_common.BaseModel):
+  """Config for `inlined_responses` parameter."""
+
+  response: Optional[GenerateContentResponse] = Field(
+      default=None,
+      description="""The response to the request.
+      """,
+  )
+  error: Optional[JobError] = Field(
+      default=None,
+      description="""The error encountered while processing the request.
+      """,
+  )
+
+
+class InlinedResponseDict(TypedDict, total=False):
+  """Config for `inlined_responses` parameter."""
+
+  response: Optional[GenerateContentResponseDict]
+  """The response to the request.
+      """
+
+  error: Optional[JobErrorDict]
+  """The error encountered while processing the request.
+      """
+
+
+InlinedResponseOrDict = Union[InlinedResponse, InlinedResponseDict]
 
 
 class BatchJobDestination(_common.BaseModel):
@@ -9688,6 +10114,22 @@ class BatchJobDestination(_common.BaseModel):
       description="""The BigQuery URI to the output table.
       """,
   )
+  file_name: Optional[str] = Field(
+      default=None,
+      description="""The Gemini Developer API's file resource name of the output data
+      (e.g. "files/12345"). The file will be a JSONL file with a single response
+      per line. The responses will be GenerateContentResponse messages formatted
+      as JSON. The responses will be written in the same order as the input
+      requests.
+      """,
+  )
+  inlined_responses: Optional[list[InlinedResponse]] = Field(
+      default=None,
+      description="""The responses to the requests in the batch. Returned when the batch was
+      built using inlined requests. The responses will be in the same order as
+      the input requests.
+      """,
+  )
 
 
 class BatchJobDestinationDict(TypedDict, total=False):
@@ -9704,6 +10146,20 @@ class BatchJobDestinationDict(TypedDict, total=False):
 
   bigquery_uri: Optional[str]
   """The BigQuery URI to the output table.
+      """
+
+  file_name: Optional[str]
+  """The Gemini Developer API's file resource name of the output data
+      (e.g. "files/12345"). The file will be a JSONL file with a single response
+      per line. The responses will be GenerateContentResponse messages formatted
+      as JSON. The responses will be written in the same order as the input
+      requests.
+      """
+
+  inlined_responses: Optional[list[InlinedResponseDict]]
+  """The responses to the requests in the batch. Returned when the batch was
+      built using inlined requests. The responses will be in the same order as
+      the input requests.
       """
 
 
@@ -9750,6 +10206,14 @@ CreateBatchJobConfigOrDict = Union[
 ]
 
 
+BatchJobSourceUnion = Union[BatchJobSource, list[InlinedRequest], str]
+
+
+BatchJobSourceUnionDict = Union[
+    BatchJobSourceUnion, BatchJobSourceDict, list[InlinedRequestDict]
+]
+
+
 class _CreateBatchJobParameters(_common.BaseModel):
   """Config for batches.create parameters."""
 
@@ -9758,7 +10222,7 @@ class _CreateBatchJobParameters(_common.BaseModel):
       description="""The name of the model to produces the predictions via the BatchJob.
       """,
   )
-  src: Optional[str] = Field(
+  src: Optional[BatchJobSourceUnion] = Field(
       default=None,
       description="""GCS URI(-s) or BigQuery URI to your input data to run batch job.
       Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
@@ -9778,7 +10242,7 @@ class _CreateBatchJobParametersDict(TypedDict, total=False):
   """The name of the model to produces the predictions via the BatchJob.
       """
 
-  src: Optional[str]
+  src: Optional[BatchJobSourceUnionDict]
   """GCS URI(-s) or BigQuery URI to your input data to run batch job.
       Example: "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
       """
@@ -9793,48 +10257,23 @@ _CreateBatchJobParametersOrDict = Union[
 ]
 
 
-class JobError(_common.BaseModel):
-  """Job error."""
-
-  details: Optional[list[str]] = Field(
-      default=None,
-      description="""A list of messages that carry the error details. There is a common set of message types for APIs to use.""",
-  )
-  code: Optional[int] = Field(default=None, description="""The status code.""")
-  message: Optional[str] = Field(
-      default=None,
-      description="""A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field.""",
-  )
-
-
-class JobErrorDict(TypedDict, total=False):
-  """Job error."""
-
-  details: Optional[list[str]]
-  """A list of messages that carry the error details. There is a common set of message types for APIs to use."""
-
-  code: Optional[int]
-  """The status code."""
-
-  message: Optional[str]
-  """A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the `details` field."""
-
-
-JobErrorOrDict = Union[JobError, JobErrorDict]
-
-
 class BatchJob(_common.BaseModel):
   """Config for batches.create return value."""
 
   name: Optional[str] = Field(
-      default=None, description="""Output only. Resource name of the Job."""
+      default=None,
+      description="""The resource name of the BatchJob. Output only.".
+      """,
   )
   display_name: Optional[str] = Field(
-      default=None, description="""The user-defined name of this Job."""
+      default=None,
+      description="""The display name of the BatchJob.
+      """,
   )
   state: Optional[JobState] = Field(
       default=None,
-      description="""Output only. The detailed state of the job.""",
+      description="""The state of the BatchJob.
+      """,
   )
   error: Optional[JobError] = Field(
       default=None,
@@ -9842,7 +10281,8 @@ class BatchJob(_common.BaseModel):
   )
   create_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""Output only. Time when the Job was created.""",
+      description="""The time when the BatchJob was created.
+      """,
   )
   start_time: Optional[datetime.datetime] = Field(
       default=None,
@@ -9850,11 +10290,13 @@ class BatchJob(_common.BaseModel):
   )
   end_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""Output only. Time when the Job entered any of the following states: `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED`, `JOB_STATE_CANCELLED`.""",
+      description="""The time when the BatchJob was completed.
+      """,
   )
   update_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""Output only. Time when the Job was most recently updated.""",
+      description="""The time when the BatchJob was last updated.
+      """,
   )
   model: Optional[str] = Field(
       default=None,
@@ -9877,28 +10319,34 @@ class BatchJobDict(TypedDict, total=False):
   """Config for batches.create return value."""
 
   name: Optional[str]
-  """Output only. Resource name of the Job."""
+  """The resource name of the BatchJob. Output only.".
+      """
 
   display_name: Optional[str]
-  """The user-defined name of this Job."""
+  """The display name of the BatchJob.
+      """
 
   state: Optional[JobState]
-  """Output only. The detailed state of the job."""
+  """The state of the BatchJob.
+      """
 
   error: Optional[JobErrorDict]
   """Output only. Only populated when the job's state is JOB_STATE_FAILED or JOB_STATE_CANCELLED."""
 
   create_time: Optional[datetime.datetime]
-  """Output only. Time when the Job was created."""
+  """The time when the BatchJob was created.
+      """
 
   start_time: Optional[datetime.datetime]
   """Output only. Time when the Job for the first time entered the `JOB_STATE_RUNNING` state."""
 
   end_time: Optional[datetime.datetime]
-  """Output only. Time when the Job entered any of the following states: `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED`, `JOB_STATE_CANCELLED`."""
+  """The time when the BatchJob was completed.
+      """
 
   update_time: Optional[datetime.datetime]
-  """Output only. Time when the Job was most recently updated."""
+  """The time when the BatchJob was last updated.
+      """
 
   model: Optional[str]
   """The name of the model that produces the predictions via the BatchJob.
@@ -10966,13 +11414,16 @@ SubjectReferenceImageOrDict = Union[
 class LiveServerSetupComplete(_common.BaseModel):
   """Sent in response to a `LiveGenerateContentSetup` message from the client."""
 
-  pass
+  session_id: Optional[str] = Field(
+      default=None, description="""The session id of the live session."""
+  )
 
 
 class LiveServerSetupCompleteDict(TypedDict, total=False):
   """Sent in response to a `LiveGenerateContentSetup` message from the client."""
 
-  pass
+  session_id: Optional[str]
+  """The session id of the live session."""
 
 
 LiveServerSetupCompleteOrDict = Union[
@@ -12642,7 +13093,7 @@ class AudioChunk(_common.BaseModel):
   """Representation of an audio chunk."""
 
   data: Optional[bytes] = Field(
-      default=None, description="""Raw byets of audio data."""
+      default=None, description="""Raw bytes of audio data."""
   )
   mime_type: Optional[str] = Field(
       default=None, description="""MIME type of the audio chunk."""
@@ -12657,7 +13108,7 @@ class AudioChunkDict(TypedDict, total=False):
   """Representation of an audio chunk."""
 
   data: Optional[bytes]
-  """Raw byets of audio data."""
+  """Raw bytes of audio data."""
 
   mime_type: Optional[str]
   """MIME type of the audio chunk."""

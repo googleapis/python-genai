@@ -123,7 +123,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/q08l9on9u7d'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/dez0g1rajz7a'
                                     ),
                                     'mime_type': 'image/png',
                                 }
@@ -151,7 +151,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/tqbern1jkicb'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/f1rtzshxniw4'
                                     ),
                                     'mime_type': 'image/jpeg',
                                 }
@@ -181,7 +181,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/yiskd41szkfm'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/8c7hpi2zez57'
                                     ),
                                     'mime_type': 'application/pdf',
                                 }
@@ -214,7 +214,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/yu45gkirc8go'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/siotqjy5g6mw'
                                     ),
                                     'mime_type': 'video/mp4',
                                 }
@@ -248,7 +248,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/wqnax2ohl9bp'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/j2mpcv8edrqu'
                                     ),
                                     'mime_type': 'audio/mp4',
                                 }
@@ -274,7 +274,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                         types.Part(text='summarize this video'),
                         types.Part(
                             file_data=types.FileData(
-                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/ansa0kyotrsw',
+                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/tyvaih24jwje',
                                 mime_type= 'video/mp4',
                             ),
                             video_metadata=types.VideoMetadata(
@@ -325,7 +325,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_image_base64',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=[
                 t.t_content('What is this image about?'),
                 t.t_content(
@@ -346,7 +346,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_none_part',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=[],
         ),
         exception_if_mldev='contents',
@@ -356,7 +356,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_dict_content',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=t.t_contents(
                 types.ContentDict(
                     {'role': 'user', 'parts': [{'text': 'what is your name?'}]}
@@ -367,7 +367,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_part_list',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=['What is your name?'],
         ),
         has_union=True,
@@ -385,7 +385,7 @@ pytest_plugins = ('pytest_asyncio',)
 def test_empty_part(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-1.5-flash',
         contents=t.t_contents(['']),
     )
 
@@ -394,7 +394,7 @@ def test_none_list_part(client):
   # pydantic will raise ValidationError
   with pytest.raises(ValidationError):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-1.5-flash',
         contents=[None],
     )
 
@@ -743,7 +743,7 @@ def test_from_function_call_response(client):
 @pytest.mark.asyncio
 async def test_image_base64_stream_async(client):
   async for part in await client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash-001',
+      model='gemini-1.5-flash',
       contents=[
           'What is this image about?',
           {'inline_data': {'data': image_string, 'mimeType': 'image/png'}},

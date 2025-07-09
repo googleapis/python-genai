@@ -877,6 +877,9 @@ def _Tool_to_mldev(
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
   return to_object
 
 
@@ -941,6 +944,9 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   return to_object
 
@@ -1649,16 +1655,16 @@ def _LiveSendRealtimeInputParameters_to_vertex(
     setv(to_object, ['mediaChunks'], t.t_blobs(getv(from_object, ['media'])))
 
   if getv(from_object, ['audio']) is not None:
-    raise ValueError('audio parameter is not supported in Vertex AI.')
+    setv(to_object, ['audio'], t.t_audio_blob(getv(from_object, ['audio'])))
 
   if getv(from_object, ['audio_stream_end']) is not None:
     setv(to_object, ['audioStreamEnd'], getv(from_object, ['audio_stream_end']))
 
   if getv(from_object, ['video']) is not None:
-    raise ValueError('video parameter is not supported in Vertex AI.')
+    setv(to_object, ['video'], t.t_image_blob(getv(from_object, ['video'])))
 
   if getv(from_object, ['text']) is not None:
-    raise ValueError('text parameter is not supported in Vertex AI.')
+    setv(to_object, ['text'], getv(from_object, ['text']))
 
   if getv(from_object, ['activity_start']) is not None:
     setv(
@@ -1935,7 +1941,7 @@ def _LiveClientRealtimeInput_to_vertex(
     setv(to_object, ['mediaChunks'], getv(from_object, ['media_chunks']))
 
   if getv(from_object, ['audio']) is not None:
-    raise ValueError('audio parameter is not supported in Vertex AI.')
+    setv(to_object, ['audio'], getv(from_object, ['audio']))
 
   if getv(from_object, ['audio_stream_end']) is not None:
     raise ValueError(
@@ -1943,10 +1949,10 @@ def _LiveClientRealtimeInput_to_vertex(
     )
 
   if getv(from_object, ['video']) is not None:
-    raise ValueError('video parameter is not supported in Vertex AI.')
+    setv(to_object, ['video'], getv(from_object, ['video']))
 
   if getv(from_object, ['text']) is not None:
-    raise ValueError('text parameter is not supported in Vertex AI.')
+    setv(to_object, ['text'], getv(from_object, ['text']))
 
   if getv(from_object, ['activity_start']) is not None:
     setv(
@@ -2467,6 +2473,8 @@ def _LiveServerSetupComplete_from_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sessionId']) is not None:
+    setv(to_object, ['session_id'], getv(from_object, ['sessionId']))
 
   return to_object
 

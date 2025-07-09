@@ -49,28 +49,38 @@ _EMBEDDING_BQ_INPUT_FILE = (
 _EMBEDDING_BQ_OUTPUT_PREFIX = (
     'bq://vertex-sdk-dev.unified_genai_tests_batches.embedding_output'
 )
-
+_MLDEV_GEMINI_MODEL = 'gemini-2.0-flash'
+_INLINED_REQUEST = {
+    'contents': [{
+        'parts': [{
+            'text': 'Hello!',
+        }],
+        'role': 'user',
+    }],
+}
 
 # All tests will be run for both Vertex and MLDev.
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name='test_generate_content_with_gcs',
+        name='test_union_generate_content_with_gcs',
         parameters=types._CreateBatchJobParameters(
             model=_GEMINI_MODEL,
             src=_GENERATE_CONTENT_GCS_INPUT_FILE,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='not supported in Gemini API',
+        has_union=True,
     ),
     pytest_helper.TestTableItem(
-        name='test_generate_content_with_bigquery',
+        name='test_union_generate_content_with_bigquery',
         parameters=types._CreateBatchJobParameters(
             model=_GEMINI_MODEL_FULL_NAME,
             src=_GENERATE_CONTENT_BQ_INPUT_FILE,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='not supported in Gemini API',
+        has_union=True,
     ),
     pytest_helper.TestTableItem(
-        name='test_embedding_with_gcs',
+        name='test_union_embedding_with_gcs',
         parameters=types._CreateBatchJobParameters(
             model=_EMBEDDING_MODEL,
             src=_EMBEDDING_GCS_INPUT_FILE,
@@ -79,10 +89,11 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'dest': _EMBEDDING_GCS_OUTPUT_PREFIX,
             },
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='not supported in Gemini API',
+        has_union=True,
     ),
     pytest_helper.TestTableItem(
-        name='test_embedding_with_bigquery',
+        name='test_union_embedding_with_bigquery',
         parameters=types._CreateBatchJobParameters(
             model=_EMBEDDING_MODEL_FULL_NAME,
             src=_EMBEDDING_BQ_INPUT_FILE,
@@ -91,10 +102,11 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'dest': _EMBEDDING_BQ_OUTPUT_PREFIX,
             },
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='not supported in Gemini API',
+        has_union=True,
     ),
     pytest_helper.TestTableItem(
-        name='test_generate_content_with_invalid_src',
+        name='test_union_with_invalid_src',
         parameters=types._CreateBatchJobParameters(
             model=_GEMINI_MODEL,
             src='invalid_src',
@@ -103,11 +115,12 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'dest': _GENERATE_CONTENT_BQ_OUTPUT_PREFIX,
             },
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Unsupported source',
         exception_if_vertex='Unsupported source',
+        has_union=True,
     ),
     pytest_helper.TestTableItem(
-        name='test_embedding_with_invalid_dest',
+        name='test_union_with_invalid_dest',
         parameters=types._CreateBatchJobParameters(
             model=_EMBEDDING_MODEL,
             src=_EMBEDDING_BQ_INPUT_FILE,
@@ -116,11 +129,12 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'dest': 'invalid_dest',
             },
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='not supported in Gemini API',
         exception_if_vertex='Unsupported destination',
+        has_union=True,
     ),
     pytest_helper.TestTableItem(
-        name='test_generate_content_with_http_options',
+        name='test_union_with_http_options',
         parameters=types._CreateBatchJobParameters(
             model=_GEMINI_MODEL,
             src=_GENERATE_CONTENT_GCS_INPUT_FILE,
@@ -131,7 +145,32 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='not supported in Gemini API',
+        has_union=True,
+    ),
+    pytest_helper.TestTableItem(
+        name='test_union_with_inlined_request',
+        parameters=types._CreateBatchJobParameters(
+            model=_MLDEV_GEMINI_MODEL,
+            src=[_INLINED_REQUEST],
+            config={
+                'display_name': _DISPLAY_NAME,
+            },
+        ),
+        exception_if_vertex='not supported in Vertex',
+        has_union=True,
+    ),
+    pytest_helper.TestTableItem(
+        name='test_union_generate_content_with_file',
+        parameters=types._CreateBatchJobParameters(
+            model=_MLDEV_GEMINI_MODEL,
+            src='files/jjnehuuz8ie3',
+            config={
+                'display_name': _DISPLAY_NAME,
+            },
+        ),
+        exception_if_vertex='Unsupported source',
+        has_union=True,
     ),
 ]
 
@@ -154,4 +193,11 @@ async def test_async_create(client):
         src=_GENERATE_CONTENT_GCS_INPUT_FILE,
     )
 
+    assert batch_job
+
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    batch_job = await client.aio.batches.create(
+        model=_GEMINI_MODEL,
+        src=[_INLINED_REQUEST],
+    )
     assert batch_job

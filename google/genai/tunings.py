@@ -108,6 +108,11 @@ def _TuningDataset_to_mldev(
   if getv(from_object, ['gcs_uri']) is not None:
     raise ValueError('gcs_uri parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['vertex_dataset_resource']) is not None:
+    raise ValueError(
+        'vertex_dataset_resource parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['examples']) is not None:
     setv(
         to_object,
@@ -128,6 +133,11 @@ def _TuningValidationDataset_to_mldev(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
     raise ValueError('gcs_uri parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['vertex_dataset_resource']) is not None:
+    raise ValueError(
+        'vertex_dataset_resource parameter is not supported in Gemini API.'
+    )
 
   return to_object
 
@@ -302,6 +312,13 @@ def _TuningDataset_to_vertex(
         getv(from_object, ['gcs_uri']),
     )
 
+  if getv(from_object, ['vertex_dataset_resource']) is not None:
+    setv(
+        parent_object,
+        ['supervisedTuningSpec', 'trainingDatasetUri'],
+        getv(from_object, ['vertex_dataset_resource']),
+    )
+
   if getv(from_object, ['examples']) is not None:
     raise ValueError('examples parameter is not supported in Vertex AI.')
 
@@ -315,6 +332,13 @@ def _TuningValidationDataset_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
     setv(to_object, ['validationDatasetUri'], getv(from_object, ['gcs_uri']))
+
+  if getv(from_object, ['vertex_dataset_resource']) is not None:
+    setv(
+        parent_object,
+        ['supervisedTuningSpec', 'trainingDatasetUri'],
+        getv(from_object, ['vertex_dataset_resource']),
+    )
 
   return to_object
 
@@ -497,6 +521,12 @@ def _TuningJob_from_mldev(
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
 
+  if getv(from_object, ['satisfiesPzi']) is not None:
+    setv(to_object, ['satisfies_pzi'], getv(from_object, ['satisfiesPzi']))
+
+  if getv(from_object, ['satisfiesPzs']) is not None:
+    setv(to_object, ['satisfies_pzs'], getv(from_object, ['satisfiesPzs']))
+
   if getv(from_object, ['serviceAccount']) is not None:
     setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
 
@@ -676,6 +706,12 @@ def _TuningJob_from_vertex(
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
 
+  if getv(from_object, ['satisfiesPzi']) is not None:
+    setv(to_object, ['satisfies_pzi'], getv(from_object, ['satisfiesPzi']))
+
+  if getv(from_object, ['satisfiesPzs']) is not None:
+    setv(to_object, ['satisfies_pzs'], getv(from_object, ['satisfiesPzs']))
+
   if getv(from_object, ['serviceAccount']) is not None:
     setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
 
@@ -777,8 +813,8 @@ class Tunings(_api_module.BaseModule):
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _list(
@@ -842,8 +878,8 @@ class Tunings(_api_module.BaseModule):
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _tune(
@@ -909,8 +945,8 @@ class Tunings(_api_module.BaseModule):
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def _tune_mldev(
@@ -978,8 +1014,8 @@ class Tunings(_api_module.BaseModule):
     return_value = types.Operation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   def list(
@@ -1119,8 +1155,8 @@ class AsyncTunings(_api_module.BaseModule):
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _list(
@@ -1186,8 +1222,8 @@ class AsyncTunings(_api_module.BaseModule):
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _tune(
@@ -1253,8 +1289,8 @@ class AsyncTunings(_api_module.BaseModule):
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def _tune_mldev(
@@ -1322,8 +1358,8 @@ class AsyncTunings(_api_module.BaseModule):
     return_value = types.Operation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    self._api_client._verify_response(return_value)
 
+    self._api_client._verify_response(return_value)
     return return_value
 
   async def list(

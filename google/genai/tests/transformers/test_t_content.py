@@ -127,3 +127,23 @@ def test_int():
     t.t_content(1)
   except ValueError as e:
     assert 'Unsupported content part type: <class \'int\'>' in str(e)
+
+
+@pytest.mark.parametrize(
+    'contents',
+    [
+        types.Content(parts=[types.Part(inline_data=types.Blob(data=b'test'))]),
+        {'parts': [{'inline_data': {'data': b'test'}}]},
+        [
+            types.Content(
+                parts=[types.Part(inline_data=types.Blob(data=b'test'))]
+            )
+        ],
+        [{'parts': [{'inline_data': {'data': b'test'}}]}],
+    ],
+)
+def test_t_contents_strict_content(contents):
+  result = t.t_contents_strict(contents)
+  assert result == [
+      types.Content(parts=[types.Part(inline_data=types.Blob(data=b'test'))])
+  ]

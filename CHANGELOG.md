@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.24.0](https://github.com/googleapis/python-genai/compare/v1.23.0...v1.24.0) (2025-07-01)
+
+
+### Features
+
+* Support Batches delete ([5d0a4e6](https://github.com/googleapis/python-genai/commit/5d0a4e6887c396c3b464a33943b8421ad47d11c5))
+* Support different media input in Vertex Live API ([8b0a703](https://github.com/googleapis/python-genai/commit/8b0a7032c8ebed662fd2096d7ff2dc0cde4db75a))
+
+
+### Bug Fixes
+
+* Force httpx if the client was instantiated with an httpx.AsyncBaseTransport ([4851590](https://github.com/googleapis/python-genai/commit/48515900b9550e5e68a820385af004da9e93c72e))
+* Retry on exception instead of a status code ([fc78107](https://github.com/googleapis/python-genai/commit/fc781074d76fcdbeb1351344210775d5a1e9de17))
+
+
+### Documentation
+
+* Add I2V and V2V generate_videos examples in Python README file ([858f738](https://github.com/googleapis/python-genai/commit/858f73893599f647254886637fdb5315d9c9f081))
+* Regenerate docs for 1.23.0 ([4273da2](https://github.com/googleapis/python-genai/commit/4273da23ffcc6ef16b1f979735cf0dd7b7c9c691))
+
+## [1.23.0](https://github.com/googleapis/python-genai/compare/v1.22.0...v1.23.0) (2025-06-27)
+
+
+### Features
+
+* Enable Vertex Multimodal Dataset as input to supervised fine-tuning. ([15cf810](https://github.com/googleapis/python-genai/commit/15cf810ccf7249d44896024a5a29be49d31396fd))
+
+
+### Bug Fixes
+
+* Broken async stream when using aiohttp ([231b4c1](https://github.com/googleapis/python-genai/commit/231b4c10772dd04097d6afc8fc4a4ef18a13a91e))
+
+
+### Documentation
+
+* Add hint for base64 string ([70eb9c1](https://github.com/googleapis/python-genai/commit/70eb9c1172f48f6c052f5f18758c53957e34d494))
+* Add mcp example in README ([81d3831](https://github.com/googleapis/python-genai/commit/81d38319c04c31905d0c2684e7c23f4db68ba307))
+* Regenerate docs for 1.22.0 ([6f7f223](https://github.com/googleapis/python-genai/commit/6f7f2236f0f6f3e64556683eae7c1c336a70214c))
+
+## [1.22.0](https://github.com/googleapis/python-genai/compare/v1.21.1...v1.22.0) (2025-06-25)
+
+
+### Features
+
+* Add compressionQuality enum for generate_videos ([b132387](https://github.com/googleapis/python-genai/commit/b132387be80c74b003acfa362be34c8477728ce5))
+* Add enhance_input_image and image_preservation_factor fields for upscale_image ([cdcd4f5](https://github.com/googleapis/python-genai/commit/cdcd4f5282fdc7d526dd93c929786f110afe6f28))
+* Allow users to access headers for generateContent method and generateContentStream ([80c8964](https://github.com/googleapis/python-genai/commit/80c8964f29fe64e44fc2b09ec135914d5ef0f0d6))
+* Expose the responseJsonSchema in GenerateContentConfig ([714452f](https://github.com/googleapis/python-genai/commit/714452fb6d8167e55a3d72c20bcf9f6d54a5def4))
+* Improve __repr__ for pydantic objects. ([80ab054](https://github.com/googleapis/python-genai/commit/80ab054f2a2ea6e6475ae4ff971861fd86f8dbb1))
+* Support Batches create/get/list/cancel in Gemini Developer API ([5ab8a56](https://github.com/googleapis/python-genai/commit/5ab8a5641a18f68ae52bf7c9bf6694842348cef3))
+* Support IntEnums when processing JSON schemas ([6cc2bdb](https://github.com/googleapis/python-genai/commit/6cc2bdb9e36005fe91e873b09861cc3ca9b81bda))
+
+
+### Bug Fixes
+
+* Keep chunk content history when thought summaries are enabled in the stream response ([91e7246](https://github.com/googleapis/python-genai/commit/91e7246dd1894d2dd75dadb05385f6e994914c66))
+* The send_client_content function with Blob input. ([8491e4c](https://github.com/googleapis/python-genai/commit/8491e4cd5176912b262b69cb43b38fecf8ffb9e5))
+
+
+### Documentation
+
+* Improve generate images documentation ([15b2144](https://github.com/googleapis/python-genai/commit/15b21443d060819f4b87297ed3a76766ea5d630f))
+* Update description of thinking_budget. ([7c2ae32](https://github.com/googleapis/python-genai/commit/7c2ae3256faffda752ff3e0d16aac5c1bb97e45a))
+
 ## [1.21.1](https://github.com/googleapis/python-genai/compare/v1.21.0...v1.21.1) (2025-06-19)
 
 

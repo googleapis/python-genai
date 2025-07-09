@@ -200,6 +200,12 @@ def _debug_print(message: str) -> None:
   )
 
 
+def pop_undeterministic_headers(headers: dict[str, str]) -> None:
+  """Remove headers that are not deterministic."""
+  headers.pop('Date', None)  # pytype: disable=attribute-error
+  headers.pop('Server-Timing', None)  # pytype: disable=attribute-error
+
+
 class ReplayRequest(BaseModel):
   """Represents a single request in a replay."""
 
@@ -219,10 +225,7 @@ class ReplayResponse(BaseModel):
   sdk_response_segments: list[dict[str, object]]
 
   def model_post_init(self, __context: Any) -> None:
-    # Remove headers that are not deterministic so the replay files don't change
-    # every time they are recorded.
-    self.headers.pop('Date', None)
-    self.headers.pop('Server-Timing', None)
+    pop_undeterministic_headers(self.headers)
 
 
 class ReplayInteraction(BaseModel):
@@ -447,11 +450,15 @@ class ReplayApiClient(BaseApiClient):
     if self._should_update_replay():
       if isinstance(response_model, list):
         response_model = response_model[0]
-      if (
-          response_model
-          and getattr(response_model, 'sdk_http_response', None) is not None
+      sdk_response_response = getattr(response_model, 'sdk_http_response', None)
+      if response_model and (
+          sdk_response_response is not None
       ):
-        response_model.sdk_http_response.headers.pop('Date', None)  # type: ignore[attr-defined]
+        headers = getattr(
+            sdk_response_response, 'headers', None
+        )
+        if headers:
+          pop_undeterministic_headers(headers)
       interaction.response.sdk_response_segments.append(
           response_model.model_dump(exclude_none=True)
       )
@@ -464,19 +471,9 @@ class ReplayApiClient(BaseApiClient):
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
-    if 'sdk_http_response' in expected:
-      actual_headers = actual['sdk_http_response']['headers']
-      expected_headers_dict = expected['sdk_http_response']
-      assert isinstance(expected_headers_dict, dict)
-      expected_headers = expected_headers_dict['headers']
-      assert actual_headers == expected_headers, (
-          'SDK sdk_http_response headers mismatch:\nActual:'
-          f' {actual_headers}\nExpected: {expected_headers}'
-      )
-    else:
-      assert (
-          actual == expected
-      ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    assert (
+        actual == expected
+    ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
     self._sdk_response_index += 1
 
   def _request(

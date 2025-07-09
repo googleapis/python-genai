@@ -196,7 +196,7 @@ class AsyncSession:
     if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
       MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
     else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
     client = genai.Client()
     async with client.aio.live.connect(
@@ -212,7 +212,9 @@ class AsyncSession:
           print(msg.text)
     ```
     """
-    client_content = t.t_client_content(turns, turn_complete)
+    client_content = t.t_client_content(turns, turn_complete).model_dump(
+        mode='json', exclude_none=True
+    )
 
     if self._api_client.vertexai:
       client_content_dict = live_converters._LiveClientContent_to_vertex(
@@ -265,7 +267,7 @@ class AsyncSession:
     if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
       MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
     else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
 
     client = genai.Client()
@@ -359,7 +361,7 @@ class AsyncSession:
     if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
       MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
     else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
     client = genai.Client()
 
@@ -370,7 +372,7 @@ class AsyncSession:
     }
 
     async with client.aio.live.connect(
-        model='models/gemini-2.0-flash-live-001',
+        model='models/gemini-live-2.5-flash-preview',
         config=config
     ) as session:
       prompt = "Turn on the lights please"
@@ -1035,19 +1037,18 @@ class AsyncLive(_api_module.BaseModule):
       if headers is None:
         headers = {}
       _mcp_utils.set_mcp_usage_header(headers)
-    try:
-      async with ws_connect(uri, additional_headers=headers) as ws:
-        await ws.send(request)
-        logger.info(await ws.recv(decode=False))
 
-        yield AsyncSession(api_client=self._api_client, websocket=ws)
-    except TypeError:
-      # Try with the older websockets API
-      async with ws_connect(uri, extra_headers=headers) as ws:
-        await ws.send(request)
+    async with ws_connect(
+        uri, additional_headers=headers, **self._api_client._websocket_ssl_ctx
+    ) as ws:
+      await ws.send(request)
+      try:
+        # websockets 14.0+
+        logger.info(await ws.recv(decode=False))
+      except TypeError:
         logger.info(await ws.recv())
 
-        yield AsyncSession(api_client=self._api_client, websocket=ws)
+      yield AsyncSession(api_client=self._api_client, websocket=ws)
 
 
 async def _t_live_connect_config(

@@ -18,6 +18,7 @@
 from typing import Any, Optional, TYPE_CHECKING, Union
 import httpx
 import json
+from . import _common
 
 
 if TYPE_CHECKING:
@@ -185,5 +186,4 @@ class FunctionInvocationError(ValueError):
   pass
 
 
-class ExperimentalWarning(Warning):
-  """Warning for experimental features."""
+ExperimentalWarning = _common.ExperimentalWarning

@@ -55,10 +55,13 @@ You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you're using the Gemini
 Developer API or the Gemini API in Vertex AI.
 
-**Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
+**Gemini Developer API:** Set the `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
+It will automatically be picked up by the client. It's recommended that you
+set only one of those variables, but if both are set, `GOOGLE_API_KEY` takes
+precedence.
 
 ```bash
-export GOOGLE_API_KEY='your-api-key'
+export GEMINI_API_KEY='your-api-key'
 ```
 
 **Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
@@ -709,6 +712,53 @@ response = client.models.generate_content(
     ),
 )
 ```
+
+#### Model Context Protocol (MCP) support (experimental)
+
+Built-in [MCP](https://modelcontextprotocol.io/introduction) support is an
+experimental feature. You can pass a local MCP server as a tool directly.
+
+```python
+import os
+import asyncio
+from datetime import datetime
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from google import genai
+
+client = genai.Client()
+
+# Create server parameters for stdio connection
+server_params = StdioServerParameters(
+    command="npx",  # Executable
+    args=["-y", "@philschmid/weather-mcp"],  # MCP Server
+    env=None,  # Optional environment variables
+)
+
+async def run():
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            # Prompt to get the weather for the current day in London.
+            prompt = f"What is the weather in London in {datetime.now().strftime('%Y-%m-%d')}?"
+
+            # Initialize the connection between client and server
+            await session.initialize()
+
+            # Send request to the model with MCP function declarations
+            response = await client.aio.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    temperature=0,
+                    tools=[session],  # uses the session, will automatically call the tool using automatic function calling
+                ),
+            )
+            print(response.text)
+
+# Start the asyncio event loop and run the main function
+asyncio.run(run())
+```
+
 ### JSON Response Schema
 
 However you define your schema, don't duplicate it in your input prompt,
@@ -1051,9 +1101,9 @@ response3.generated_images[0].image.show()
 
 ### Veo
 
-#### Generate Videos
+Support for generating videos is considered public preview
 
-Support for generate videos in Vertex and Gemini Developer API is behind an allowlist
+#### Generate Videos (Text to Video)
 
 ```python
 from google.genai import types
@@ -1064,7 +1114,6 @@ operation = client.models.generate_videos(
     prompt='A neon hologram of a cat driving at top speed',
     config=types.GenerateVideosConfig(
         number_of_videos=1,
-        fps=24,
         duration_seconds=5,
         enhance_prompt=True,
     ),
@@ -1075,7 +1124,73 @@ while not operation.done:
     time.sleep(20)
     operation = client.operations.get(operation)
 
-video = operation.result.generated_videos[0].video
+video = operation.response.generated_videos[0].video
+video.show()
+```
+
+#### Generate Videos (Image to Video)
+
+```python
+from google.genai import types
+
+# Read local image (uses mimetypes.guess_type to infer mime type)
+image = types.Image.from_file("local/path/file.png")
+
+# Create operation
+operation = client.models.generate_videos(
+    model='veo-2.0-generate-001',
+    # Prompt is optional if image is provided
+    prompt='Night sky',
+    image=image,
+    config=types.GenerateVideosConfig(
+        number_of_videos=1,
+        duration_seconds=5,
+        enhance_prompt=True,
+        # Can also pass an Image into last_frame for frame interpolation
+    ),
+)
+
+# Poll operation
+while not operation.done:
+    time.sleep(20)
+    operation = client.operations.get(operation)
+
+video = operation.response.generated_videos[0].video
+video.show()
+```
+
+#### Generate Videos (Video to Video)
+
+Currently, only Vertex supports Video to Video generation (Video extension).
+
+```python
+from google.genai import types
+
+# Read local video (uses mimetypes.guess_type to infer mime type)
+video = types.Video.from_file("local/path/video.mp4")
+
+# Create operation
+operation = client.models.generate_videos(
+    model='veo-2.0-generate-001',
+    # Prompt is optional if Video is provided
+    prompt='Night sky',
+    # Input video must be in GCS
+    video=types.Video(
+        uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
+    ),
+    config=types.GenerateVideosConfig(
+        number_of_videos=1,
+        duration_seconds=5,
+        enhance_prompt=True,
+    ),
+)
+
+# Poll operation
+while not operation.done:
+    time.sleep(20)
+    operation = client.operations.get(operation)
+
+video = operation.response.generated_videos[0].video
 video.show()
 ```
 
@@ -1226,7 +1341,7 @@ client.
 
 ### Tune
 
--   Vertex AI supports tuning from GCS source
+-   Vertex AI supports tuning from GCS source or from a Vertex Multimodal Dataset
 -   Gemini Developer API supports tuning from inline examples
 
 ```python
@@ -1235,10 +1350,12 @@ from google.genai import types
 if client.vertexai:
     model = 'gemini-2.0-flash-001'
     training_dataset = types.TuningDataset(
+      # or gcs_uri=my_vertex_multimodal_dataset
         gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
     )
 else:
     model = 'models/gemini-2.0-flash-001'
+    # or gcs_uri=my_vertex_multimodal_dataset.resource_name
     training_dataset = types.TuningDataset(
         examples=[
             types.TuningExample(
@@ -1484,4 +1601,25 @@ try:
 except errors.APIError as e:
   print(e.code) # 404
   print(e.message)
+```
+
+## Extra Request Body
+
+The `extra_body` field in `HttpOptions` accepts a dictionary of additional JSON
+properties to include in the request body. This can be used to access new or
+experimental backend features that are not yet formally supported in the SDK.
+The structure of the dictionary must match the backend API's request structure.
+
+- VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+- GeminiAPI backend API docs: https://ai.google.dev/api/rest
+
+```python
+response = client.models.generate_content(
+    model="gemini-2.5-pro",
+    contents="What is the weather in Boston? and how about Sunnyvale?",
+    config=types.GenerateContentConfig(
+        tools=[get_current_weather],
+        http_options=types.HttpOptions(extra_body={'tool_config': {'function_calling_config': {'mode': 'COMPOSITIONAL'}}}),
+    ),
+)
 ```

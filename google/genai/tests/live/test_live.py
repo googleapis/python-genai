@@ -15,8 +15,11 @@
 
 
 """Tests for live.py."""
+
 import contextlib
 import json
+import os
+import ssl
 import typing
 from typing import Any, AsyncIterator
 from unittest import mock
@@ -25,17 +28,19 @@ from unittest.mock import Mock
 from unittest.mock import patch
 import warnings
 
+import certifi
 from google.oauth2.credentials import Credentials
 import pytest
 from websockets import client
 
+from .. import pytest_helper
 from ... import _api_client as api_client
 from ... import _common
 from ... import Client
 from ... import client as gl_client
 from ... import live
 from ... import types
-from .. import pytest_helper
+
 
 if typing.TYPE_CHECKING:
   from mcp import types as mcp_types
@@ -93,6 +98,11 @@ def mock_api_client(vertexai=False, credentials=None):
   )  # Ensure headers exist
   api_client.vertexai = vertexai
   api_client._api_client = api_client
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+      capath=os.environ.get("SSL_CERT_DIR"),
+  )
+  api_client._websocket_ssl_ctx = {'ssl': ctx}
   return api_client
 
 
@@ -119,7 +129,7 @@ async def get_connect_message(api_client, model, config=None):
   mock_google_auth_default.return_value = (mock_creds, None)
 
   @contextlib.asynccontextmanager
-  async def mock_connect(uri, additional_headers=None):
+  async def mock_connect(uri, additional_headers=None, **kwargs):
     yield mock_ws
 
   @patch('google.auth.default', new=mock_google_auth_default)
@@ -1822,7 +1832,7 @@ async def test_connect_with_provided_credentials(mock_websocket):
     client = mock_api_client(vertexai=True, credentials=credentials)
 
     @contextlib.asynccontextmanager
-    async def mock_connect(uri, additional_headers=None):
+    async def mock_connect(uri, additional_headers=None, **kwargs):
         yield mock_websocket
 
     @patch.object(live, "ws_connect", new=mock_connect)
@@ -1850,7 +1860,7 @@ async def test_connect_with_default_credentials(mock_websocket):
     mock_google_auth_default.return_value = (mock_creds, None)
 
     @contextlib.asynccontextmanager
-    async def mock_connect(uri, additional_headers=None):
+    async def mock_connect(uri, additional_headers=None, **kwargs):
         yield mock_websocket
 
     @patch("google.auth.default", new=mock_google_auth_default)
@@ -1885,7 +1895,7 @@ async def test_bidi_setup_to_api_with_auth_tokens(mock_websocket, vertexai):
     uri_capture = {}  # Capture the uri here
 
     @contextlib.asynccontextmanager
-    async def mock_connect(uri, additional_headers=None):
+    async def mock_connect(uri, additional_headers=None, **kwargs):
         uri_capture['uri'] = uri # Capture the uri
         yield mock_ws
 
