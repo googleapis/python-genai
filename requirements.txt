@@ -23,6 +23,6 @@ requests==2.32.4
 rsa==4.9
 tenacity==8.2.3
 typing_extensions==4.12.2
-urllib3==2.2.3
+urllib3==2.5.0
 websockets==15.0.0
 mcp==1.8.1; python_version > '3.9'
