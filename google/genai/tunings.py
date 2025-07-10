@@ -545,7 +545,7 @@ def _ListTuningJobsResponse_from_mldev(
   return to_object
 
 
-def _Operation_from_mldev(
+def _TuningOperation_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -939,7 +939,7 @@ class Tunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
-  ) -> types.Operation:
+  ) -> types.TuningOperation:
     """Creates a supervised fine-tuning job and returns the TuningJob object.
 
     Args:
@@ -993,9 +993,9 @@ class Tunings(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _Operation_from_mldev(response_dict)
+      response_dict = _TuningOperation_from_mldev(response_dict)
 
-    return_value = types.Operation._from_response(
+    return_value = types.TuningOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
 
@@ -1283,7 +1283,7 @@ class AsyncTunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
-  ) -> types.Operation:
+  ) -> types.TuningOperation:
     """Creates a supervised fine-tuning job and returns the TuningJob object.
 
     Args:
@@ -1337,9 +1337,9 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _Operation_from_mldev(response_dict)
+      response_dict = _TuningOperation_from_mldev(response_dict)
 
-    return_value = types.Operation._from_response(
+    return_value = types.TuningOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
 
