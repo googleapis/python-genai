@@ -708,7 +708,8 @@ def process_schema(
   if schema.get('title') == 'PlaceholderLiteralEnum':
     del schema['title']
 
-  _raise_for_unsupported_mldev_properties(schema, client)
+  if client:
+    _raise_for_unsupported_mldev_properties(schema, client)
 
   # Standardize spelling for relevant schema fields.  For example, if a dict is
   # provided directly to response_schema, it may use `any_of` instead of `anyOf.
@@ -839,7 +840,7 @@ def t_schema(
   if isinstance(origin, EnumMeta):
     return _process_enum(origin, client)
   if isinstance(origin, types.Schema):
-    if dict(origin) == dict(types.Schema()):
+    if dict(origin) == dict(types.Schema()) and client is not None:
       # response_schema value was coerced to an empty Schema instance because
       # it did not adhere to the Schema field annotation
       _raise_for_unsupported_schema_type(origin)
