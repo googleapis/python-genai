@@ -31,206 +31,6 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.tunings')
 
 
-def _GetTuningJobParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _ListTuningJobsConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  if getv(from_object, ['filter']) is not None:
-    setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
-
-  return to_object
-
-
-def _ListTuningJobsParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListTuningJobsConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _TuningExample_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['text_input']) is not None:
-    setv(to_object, ['textInput'], getv(from_object, ['text_input']))
-
-  if getv(from_object, ['output']) is not None:
-    setv(to_object, ['output'], getv(from_object, ['output']))
-
-  return to_object
-
-
-def _TuningDataset_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['vertex_dataset_resource']) is not None:
-    raise ValueError(
-        'vertex_dataset_resource parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['examples']) is not None:
-    setv(
-        to_object,
-        ['examples', 'examples'],
-        [
-            _TuningExample_to_mldev(item, to_object)
-            for item in getv(from_object, ['examples'])
-        ],
-    )
-
-  return to_object
-
-
-def _TuningValidationDataset_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['vertex_dataset_resource']) is not None:
-    raise ValueError(
-        'vertex_dataset_resource parameter is not supported in Gemini API.'
-    )
-
-  return to_object
-
-
-def _CreateTuningJobConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['validation_dataset']) is not None:
-    raise ValueError(
-        'validation_dataset parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['tuned_model_display_name']) is not None:
-    setv(
-        parent_object,
-        ['displayName'],
-        getv(from_object, ['tuned_model_display_name']),
-    )
-
-  if getv(from_object, ['description']) is not None:
-    raise ValueError('description parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['epoch_count']) is not None:
-    setv(
-        parent_object,
-        ['tuningTask', 'hyperparameters', 'epochCount'],
-        getv(from_object, ['epoch_count']),
-    )
-
-  if getv(from_object, ['learning_rate_multiplier']) is not None:
-    setv(
-        to_object,
-        ['tuningTask', 'hyperparameters', 'learningRateMultiplier'],
-        getv(from_object, ['learning_rate_multiplier']),
-    )
-
-  if getv(from_object, ['export_last_checkpoint_only']) is not None:
-    raise ValueError(
-        'export_last_checkpoint_only parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['adapter_size']) is not None:
-    raise ValueError('adapter_size parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['batch_size']) is not None:
-    setv(
-        parent_object,
-        ['tuningTask', 'hyperparameters', 'batchSize'],
-        getv(from_object, ['batch_size']),
-    )
-
-  if getv(from_object, ['learning_rate']) is not None:
-    setv(
-        parent_object,
-        ['tuningTask', 'hyperparameters', 'learningRate'],
-        getv(from_object, ['learning_rate']),
-    )
-
-  return to_object
-
-
-def _CreateTuningJobParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['base_model']) is not None:
-    setv(to_object, ['baseModel'], getv(from_object, ['base_model']))
-
-  if getv(from_object, ['training_dataset']) is not None:
-    setv(
-        to_object,
-        ['tuningTask', 'trainingData'],
-        _TuningDataset_to_mldev(
-            getv(from_object, ['training_dataset']), to_object
-        ),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateTuningJobConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _GetTuningJobParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -434,153 +234,6 @@ def _CreateTuningJobParameters_to_vertex(
   return to_object
 
 
-def _TunedModelCheckpoint_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _TunedModel_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['model'], getv(from_object, ['name']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['endpoint'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _TuningJob_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['state']) is not None:
-    setv(
-        to_object,
-        ['state'],
-        t.t_tuning_job_status(getv(from_object, ['state'])),
-    )
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['tuningTask', 'startTime']) is not None:
-    setv(
-        to_object,
-        ['start_time'],
-        getv(from_object, ['tuningTask', 'startTime']),
-    )
-
-  if getv(from_object, ['tuningTask', 'completeTime']) is not None:
-    setv(
-        to_object,
-        ['end_time'],
-        getv(from_object, ['tuningTask', 'completeTime']),
-    )
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['baseModel']) is not None:
-    setv(to_object, ['base_model'], getv(from_object, ['baseModel']))
-
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['tuned_model'],
-        _TunedModel_from_mldev(getv(from_object, ['_self']), to_object),
-    )
-
-  if getv(from_object, ['distillationSpec']) is not None:
-    setv(
-        to_object,
-        ['distillation_spec'],
-        getv(from_object, ['distillationSpec']),
-    )
-
-  if getv(from_object, ['experiment']) is not None:
-    setv(to_object, ['experiment'], getv(from_object, ['experiment']))
-
-  if getv(from_object, ['labels']) is not None:
-    setv(to_object, ['labels'], getv(from_object, ['labels']))
-
-  if getv(from_object, ['pipelineJob']) is not None:
-    setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
-
-  if getv(from_object, ['satisfiesPzi']) is not None:
-    setv(to_object, ['satisfies_pzi'], getv(from_object, ['satisfiesPzi']))
-
-  if getv(from_object, ['satisfiesPzs']) is not None:
-    setv(to_object, ['satisfies_pzs'], getv(from_object, ['satisfiesPzs']))
-
-  if getv(from_object, ['serviceAccount']) is not None:
-    setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
-
-  if getv(from_object, ['tunedModelDisplayName']) is not None:
-    setv(
-        to_object,
-        ['tuned_model_display_name'],
-        getv(from_object, ['tunedModelDisplayName']),
-    )
-
-  return to_object
-
-
-def _ListTuningJobsResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['tunedModels']) is not None:
-    setv(
-        to_object,
-        ['tuning_jobs'],
-        [
-            _TuningJob_from_mldev(item, to_object)
-            for item in getv(from_object, ['tunedModels'])
-        ],
-    )
-
-  return to_object
-
-
-def _Operation_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  return to_object
-
-
 def _TunedModelCheckpoint_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -769,21 +422,16 @@ class Tunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
       request_dict = _GetTuningJobParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
-    else:
-      request_dict = _GetTuningJobParameters_to_mldev(parameter_model)
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = '{name}'.format_map(request_url_dict)
-      else:
-        path = '{name}'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -806,9 +454,6 @@ class Tunings(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _TuningJob_from_vertex(response_dict)
-
-    else:
-      response_dict = _TuningJob_from_mldev(response_dict)
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -834,21 +479,16 @@ class Tunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
       request_dict = _ListTuningJobsParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
-    else:
-      request_dict = _ListTuningJobsParameters_to_mldev(parameter_model)
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -871,9 +511,6 @@ class Tunings(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _ListTuningJobsResponse_from_vertex(response_dict)
-
-    else:
-      response_dict = _ListTuningJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -949,84 +586,18 @@ class Tunings(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  def _tune_mldev(
-      self,
-      *,
-      base_model: str,
-      training_dataset: types.TuningDatasetOrDict,
-      config: Optional[types.CreateTuningJobConfigOrDict] = None,
-  ) -> types.Operation:
-    """Creates a supervised fine-tuning job and returns the TuningJob object.
-
-    Args:
-      base_model: The name of the model to tune.
-      training_dataset: The training dataset to use.
-      config: The configuration to use for the tuning job.
-
-    Returns:
-      A TuningJob operation.
-    """
-
-    parameter_model = types._CreateTuningJobParameters(
-        base_model=base_model,
-        training_dataset=training_dataset,
-        config=config,
-    )
-
-    request_url_dict: Optional[dict[str, str]]
-    if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
-    else:
-      request_dict = _CreateTuningJobParameters_to_mldev(parameter_model)
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
-
-    query_params = request_dict.get('_query')
-    if query_params:
-      path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    request_dict.pop('config', None)
-
-    http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
-      http_options = parameter_model.config.http_options
-
-    request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.encode_unserializable_types(request_dict)
-
-    response = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
-
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = _Operation_from_mldev(response_dict)
-
-    return_value = types.Operation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
-
   def list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> Pager[types.TuningJob]:
-    return Pager(
-        'tuning_jobs',
-        self._list,
-        self._list(config=config),
-        config,
-    )
+    if self._api_client.vertexai:
+      return Pager(
+          'tuning_jobs',
+          self._list,
+          self._list(config=config),
+          config,
+      )
+    else:
+      raise ValueError('todo err msg')
 
   def get(
       self,
@@ -1034,12 +605,10 @@ class Tunings(_api_module.BaseModule):
       name: str,
       config: Optional[types.GetTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
+    if not self._api_client.vertexai:
+      raise ValueError('todo err msg')
     job = self._get(name=name, config=config)
-    if (
-        job.experiment
-        and self._api_client.vertexai
-        and self._api_client.project is not None
-    ):
+    if job.experiment and self._api_client.project is not None:
       _IpythonUtils.display_experiment_button(
           experiment=job.experiment,
           project=self._api_client.project,
@@ -1064,22 +633,8 @@ class Tunings(_api_module.BaseModule):
           config=config,
       )
     else:
-      operation = self._tune_mldev(
-          base_model=base_model,
-          training_dataset=training_dataset,
-          config=config,
-      )
-      if operation.metadata is not None and 'tunedModel' in operation.metadata:
-        tuned_model_name = operation.metadata['tunedModel']
-      else:
-        if operation.name is None:
-          raise ValueError('Operation name is required.')
-        tuned_model_name = operation.name.partition('/operations/')[0]
-      tuning_job = types.TuningJob(
-          name=tuned_model_name,
-          state=types.JobState.JOB_STATE_QUEUED,
-      )
-    if tuning_job.name and self._api_client.vertexai:
+      raise ValueError('todo err msg')
+    if tuning_job.name:
       _IpythonUtils.display_model_tuning_button(
           tuning_job_resource=tuning_job.name
       )
@@ -1109,21 +664,16 @@ class AsyncTunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
       request_dict = _GetTuningJobParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
-    else:
-      request_dict = _GetTuningJobParameters_to_mldev(parameter_model)
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = '{name}'.format_map(request_url_dict)
-      else:
-        path = '{name}'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -1149,9 +699,6 @@ class AsyncTunings(_api_module.BaseModule):
     if self._api_client.vertexai:
       response_dict = _TuningJob_from_vertex(response_dict)
 
-    else:
-      response_dict = _TuningJob_from_mldev(response_dict)
-
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
@@ -1176,21 +723,16 @@ class AsyncTunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
       request_dict = _ListTuningJobsParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
-    else:
-      request_dict = _ListTuningJobsParameters_to_mldev(parameter_model)
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -1215,9 +757,6 @@ class AsyncTunings(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _ListTuningJobsResponse_from_vertex(response_dict)
-
-    else:
-      response_dict = _ListTuningJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1293,84 +832,18 @@ class AsyncTunings(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def _tune_mldev(
-      self,
-      *,
-      base_model: str,
-      training_dataset: types.TuningDatasetOrDict,
-      config: Optional[types.CreateTuningJobConfigOrDict] = None,
-  ) -> types.Operation:
-    """Creates a supervised fine-tuning job and returns the TuningJob object.
-
-    Args:
-      base_model: The name of the model to tune.
-      training_dataset: The training dataset to use.
-      config: The configuration to use for the tuning job.
-
-    Returns:
-      A TuningJob operation.
-    """
-
-    parameter_model = types._CreateTuningJobParameters(
-        base_model=base_model,
-        training_dataset=training_dataset,
-        config=config,
-    )
-
-    request_url_dict: Optional[dict[str, str]]
-    if self._api_client.vertexai:
-      raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
-      )
-    else:
-      request_dict = _CreateTuningJobParameters_to_mldev(parameter_model)
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
-
-    query_params = request_dict.get('_query')
-    if query_params:
-      path = f'{path}?{urlencode(query_params)}'
-    # TODO: remove the hack that pops config.
-    request_dict.pop('config', None)
-
-    http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
-      http_options = parameter_model.config.http_options
-
-    request_dict = _common.convert_to_dict(request_dict)
-    request_dict = _common.encode_unserializable_types(request_dict)
-
-    response = await self._api_client.async_request(
-        'post', path, request_dict, http_options
-    )
-
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = _Operation_from_mldev(response_dict)
-
-    return_value = types.Operation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
-
   async def list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> AsyncPager[types.TuningJob]:
-    return AsyncPager(
-        'tuning_jobs',
-        self._list,
-        await self._list(config=config),
-        config,
-    )
+    if self._api_client.vertexai:
+      return AsyncPager(
+          'tuning_jobs',
+          self._list,
+          await self._list(config=config),
+          config,
+      )
+    else:
+      raise ValueError('todo err msg')
 
   async def get(
       self,
@@ -1378,12 +851,10 @@ class AsyncTunings(_api_module.BaseModule):
       name: str,
       config: Optional[types.GetTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
+    if not self._api_client.vertexai:
+      raise ValueError('todo err msg')
     job = await self._get(name=name, config=config)
-    if (
-        job.experiment
-        and self._api_client.vertexai
-        and self._api_client.project is not None
-    ):
+    if job.experiment and self._api_client.project is not None:
       _IpythonUtils.display_experiment_button(
           experiment=job.experiment,
           project=self._api_client.project,
@@ -1408,22 +879,8 @@ class AsyncTunings(_api_module.BaseModule):
           config=config,
       )
     else:
-      operation = await self._tune_mldev(
-          base_model=base_model,
-          training_dataset=training_dataset,
-          config=config,
-      )
-      if operation.metadata is not None and 'tunedModel' in operation.metadata:
-        tuned_model_name = operation.metadata['tunedModel']
-      else:
-        if operation.name is None:
-          raise ValueError('Operation name is required.')
-        tuned_model_name = operation.name.partition('/operations/')[0]
-      tuning_job = types.TuningJob(
-          name=tuned_model_name,
-          state=types.JobState.JOB_STATE_QUEUED,
-      )
-    if tuning_job.name and self._api_client.vertexai:
+      raise ValueError('todo err msg')
+    if tuning_job.name:
       _IpythonUtils.display_model_tuning_button(
           tuning_job_resource=tuning_job.name
       )
