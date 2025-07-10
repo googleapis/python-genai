@@ -57,7 +57,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'http_options': test_http_options,
             },
         ),
-        exception_if_vertex='404',
     ),
     pytest_helper.TestTableItem(
         name='test_get_base_model',
