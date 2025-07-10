@@ -126,22 +126,6 @@ def _TuningDataset_to_mldev(
   return to_object
 
 
-def _TuningValidationDataset_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['vertex_dataset_resource']) is not None:
-    raise ValueError(
-        'vertex_dataset_resource parameter is not supported in Gemini API.'
-    )
-
-  return to_object
-
-
 def _CreateTuningJobConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,

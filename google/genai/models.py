@@ -260,19 +260,6 @@ def _Schema_to_mldev(
   return to_object
 
 
-def _ModelSelectionConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['feature_selection_preference']) is not None:
-    raise ValueError(
-        'feature_selection_preference parameter is not supported in Gemini API.'
-    )
-
-  return to_object
-
-
 def _SafetySetting_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -387,71 +374,6 @@ def _GoogleSearchRetrieval_to_mldev(
             getv(from_object, ['dynamic_retrieval_config']), to_object
         ),
     )
-
-  return to_object
-
-
-def _EnterpriseWebSearch_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _ApiKeyConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['api_key_string']) is not None:
-    raise ValueError('api_key_string parameter is not supported in Gemini API.')
-
-  return to_object
-
-
-def _AuthConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['api_key_config']) is not None:
-    raise ValueError('api_key_config parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['auth_type']) is not None:
-    setv(to_object, ['authType'], getv(from_object, ['auth_type']))
-
-  if getv(from_object, ['google_service_account_config']) is not None:
-    setv(
-        to_object,
-        ['googleServiceAccountConfig'],
-        getv(from_object, ['google_service_account_config']),
-    )
-
-  if getv(from_object, ['http_basic_auth_config']) is not None:
-    setv(
-        to_object,
-        ['httpBasicAuthConfig'],
-        getv(from_object, ['http_basic_auth_config']),
-    )
-
-  if getv(from_object, ['oauth_config']) is not None:
-    setv(to_object, ['oauthConfig'], getv(from_object, ['oauth_config']))
-
-  if getv(from_object, ['oidc_config']) is not None:
-    setv(to_object, ['oidcConfig'], getv(from_object, ['oidc_config']))
-
-  return to_object
-
-
-def _GoogleMaps_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
 
   return to_object
 
@@ -1317,27 +1239,6 @@ def _Image_to_mldev(
   return to_object
 
 
-def _Video_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['video', 'uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['video_bytes']) is not None:
-    setv(
-        to_object,
-        ['video', 'encodedVideo'],
-        t.t_bytes(getv(from_object, ['video_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['encoding'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
 def _GenerateVideosConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2066,33 +1967,6 @@ def _VoiceConfig_to_vertex(
         _PrebuiltVoiceConfig_to_vertex(
             getv(from_object, ['prebuilt_voice_config']), to_object
         ),
-    )
-
-  return to_object
-
-
-def _SpeakerVoiceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker']) is not None:
-    raise ValueError('speaker parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['voice_config']) is not None:
-    raise ValueError('voice_config parameter is not supported in Vertex AI.')
-
-  return to_object
-
-
-def _MultiSpeakerVoiceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker_voice_configs']) is not None:
-    raise ValueError(
-        'speaker_voice_configs parameter is not supported in Vertex AI.'
     )
 
   return to_object
@@ -3331,18 +3205,6 @@ def _GenerateVideosParameters_to_vertex(
   return to_object
 
 
-def _FeatureSelectionPreference_to_mldev_enum_validate(enum_value: Any) -> None:
-  if enum_value in set(
-      [
-          'FEATURE_SELECTION_PREFERENCE_UNSPECIFIED',
-          'PRIORITIZE_QUALITY',
-          'BALANCED',
-          'PRIORITIZE_COST',
-      ]
-  ):
-    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
-
-
 def _SafetyFilterLevel_to_mldev_enum_validate(enum_value: Any) -> None:
   if enum_value in set(['BLOCK_NONE']):
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
@@ -3624,15 +3486,6 @@ def _GenerateContentResponse_from_mldev(
 
   if getv(from_object, ['usageMetadata']) is not None:
     setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
-
-  return to_object
-
-
-def _ContentEmbeddingStatistics_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
 
   return to_object
 
