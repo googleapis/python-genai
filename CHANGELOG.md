@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.25.0](https://github.com/googleapis/python-genai/compare/v1.24.0...v1.25.0) (2025-07-09)
+
+
+### Features
+
+* Add new languages for Imagen 4 prompt language ([cbd643e](https://github.com/googleapis/python-genai/commit/cbd643ebc64a64dd51f3d96844107010d88083c5))
+* Make t_schema in Gemini API reusable from Genai Procesors. ([922eaf5](https://github.com/googleapis/python-genai/commit/922eaf5020737bd1a3cf66df5ddd29f156311228))
+
+
+### Bug Fixes
+
+* Improve code dependency to make `types` more self-contained ([7d0a7d8](https://github.com/googleapis/python-genai/commit/7d0a7d8de13caee8e80f7136bb841c9e97d7e1e0))
+* **python:** Fix response.parse when response_json_schema is provided. ([babb01f](https://github.com/googleapis/python-genai/commit/babb01fc4e4e60c0442f35ad1c6bd9e55a9646da))
+
+
+### Documentation
+
+* Add extra_body example to README.md ([0b077bf](https://github.com/googleapis/python-genai/commit/0b077bfc0d7a0bafc97402fe8b58efe255aabe1d))
+* Mention both API-key environment variables. ([50fff0c](https://github.com/googleapis/python-genai/commit/50fff0c54844e8fa70d7d4a60f5c9f5ec6e69ea3))
+* Regenerate docs for 1.24.0 ([fe7ed6d](https://github.com/googleapis/python-genai/commit/fe7ed6d07f13dd42bf1908d0e308143d58541129))
+
 ## [1.24.0](https://github.com/googleapis/python-genai/compare/v1.23.0...v1.24.0) (2025-07-01)
 
 
