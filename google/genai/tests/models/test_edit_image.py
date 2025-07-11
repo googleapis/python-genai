@@ -109,10 +109,11 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'output_mime_type': 'image/jpeg',
                 'output_compression_quality': 80,
                 'base_steps': 32,
+                'add_watermark': False,
             },
         ),
     ),
-        pytest_helper.TestTableItem(
+    pytest_helper.TestTableItem(
         name='test_edit_mask_inpaint_insert_user_provided',
         exception_if_mldev='only supported in the Vertex AI client',
         parameters=types._EditImageParameters(
@@ -146,7 +147,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='only supported in the Vertex AI client',
         parameters=types._EditImageParameters(
             model=MODEL_NAME,
-            prompt='Generate an image in glowing style [1] based on the following caption: A church in the mountain.',
+            prompt=(
+                'Generate an image in glowing style [1] based on the following'
+                ' caption: A church in the mountain.'
+            ),
             reference_images=[style_ref_image_customization],
             config={
                 'number_of_images': 1,
@@ -160,7 +164,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='only supported in the Vertex AI client',
         parameters=types._EditImageParameters(
             model=MODEL_NAME,
-            prompt='Generate an image containing a mug with the product logo [1] visible on the side of the mug.',
+            prompt=(
+                'Generate an image containing a mug with the product logo [1]'
+                ' visible on the side of the mug.'
+            ),
             reference_images=[subject_ref_image_customization],
             config={
                 'number_of_images': 1,
@@ -187,7 +194,9 @@ def test_setting_reference_type_raises(client):
         reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
         config=types.SubjectReferenceConfig(
             subject_type='SUBJECT_TYPE_PRODUCT',
-            subject_description='A product logo that is a multi-colored letter G',
+            subject_description=(
+                'A product logo that is a multi-colored letter G'
+            ),
         ),
     )
 
@@ -211,6 +220,7 @@ async def test_edit_mask_inpaint_insert_async(client):
             'include_rai_reason': True,
             'output_mime_type': 'image/jpeg',
             'output_compression_quality': 80,
+            'add_watermark': False,
         },
     )
     assert response.generated_images[0].image.image_bytes
