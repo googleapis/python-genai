@@ -7644,7 +7644,7 @@ class GenerateVideosConfig(_common.BaseModel):
   )
   resolution: Optional[str] = Field(
       default=None,
-      description="""The resolution for the generated video. 1280x720, 1920x1080 are supported.""",
+      description="""The resolution for the generated video. 720p and 1080p are supported.""",
   )
   person_generation: Optional[str] = Field(
       default=None,
@@ -7700,7 +7700,7 @@ class GenerateVideosConfigDict(TypedDict, total=False):
   """The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported."""
 
   resolution: Optional[str]
-  """The resolution for the generated video. 1280x720, 1920x1080 are supported."""
+  """The resolution for the generated video. 720p and 1080p are supported."""
 
   person_generation: Optional[str]
   """Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult."""
