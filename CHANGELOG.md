@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.26.0](https://github.com/googleapis/python-genai/compare/v1.25.0...v1.26.0) (2025-07-11)
+
+
+### Features
+
+* Add `addWatermark` parameter to the edit image configuration. ([a5b1545](https://github.com/googleapis/python-genai/commit/a5b1545ece2df77c4a99449e2066ac98bc5201b5))
+
+
+### Documentation
+
+* Regenerate docs for 1.25.0 ([5f47e57](https://github.com/googleapis/python-genai/commit/5f47e57ef02001d810f71c9a52fe62f89ae6b87f))
+* Update generated video resolution config docstring ([d06254c](https://github.com/googleapis/python-genai/commit/d06254ccd94d6d90a20769bb003f8eb5dfb62553))
+
 ## [1.25.0](https://github.com/googleapis/python-genai/compare/v1.24.0...v1.25.0) (2025-07-09)
 
 
