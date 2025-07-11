@@ -1063,7 +1063,7 @@ class AsyncLive(_api_module.BaseModule):
       try:
         session_id = json.loads(response.decode()).get('setupComplete', {}).get('sessionId')
       except Exception as e:
-        logger.warning(f"Error handling session setup event: {e}")
+        logger.warning(f'Error handling session setup event: {e}')
         session_id = None
 
       yield AsyncSession(api_client=self._api_client, websocket=ws, session_id=session_id)
