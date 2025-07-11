@@ -583,6 +583,30 @@ class BaseApiClient:
       self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
           self._http_options
       )
+      conn = aiohttp.TCPConnector()
+
+      class AiohttpClientSession(aiohttp.ClientSession):
+        """Aiohttp ClientSession."""
+
+        def __init__(self, **kwargs: Any) -> None:
+          """Initializes the aiohttp ClientSession."""
+          super().__init__(**kwargs)
+
+        def __del__(self) -> None:
+          try:
+            if self.is_closed:
+              return
+          except Exception:
+            pass
+          try:
+            asyncio.get_running_loop().create_task(self.aclose())
+          except Exception:
+            pass
+
+      self._aiohttp_session = AiohttpClientSession(
+          connector=conn,
+          trust_env=True,
+      )
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
 
     retry_kwargs = _retry_args(self._http_options.retry_options)
@@ -990,11 +1014,7 @@ class BaseApiClient:
 
     if stream:
       if self._use_aiohttp():
-        session = aiohttp.ClientSession(
-            headers=http_request.headers,
-            trust_env=True,
-        )
-        response = await session.request(
+        response = await self._aiohttp_session.request(
             method=http_request.method,
             url=http_request.url,
             headers=http_request.headers,
@@ -1004,7 +1024,7 @@ class BaseApiClient:
         )
 
         await errors.APIError.raise_for_async_response(response)
-        return HttpResponse(response.headers, response, session=session)
+        return HttpResponse(response.headers, response, session=self._aiohttp_session)
       else:
         # aiohttp is not available. Fall back to httpx.
         httpx_request = self._async_httpx_client.build_request(
@@ -1022,18 +1042,14 @@ class BaseApiClient:
         return HttpResponse(client_response.headers, client_response)
     else:
       if self._use_aiohttp():
-        async with aiohttp.ClientSession(
-            headers=http_request.headers,
-            trust_env=True,
-        ) as session:
-          response = await session.request(
+        async with await self._aiohttp_session.request(
               method=http_request.method,
               url=http_request.url,
               headers=http_request.headers,
               data=data,
               timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
               **self._async_client_session_request_args,
-          )
+        ) as response:
           await errors.APIError.raise_for_async_response(response)
           return HttpResponse(response.headers, [await response.text()])
       else:
