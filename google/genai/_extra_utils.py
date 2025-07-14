@@ -114,7 +114,7 @@ def format_destination(
       unique_name = unique_name or _common.timestamped_unique_name()
       config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
     else:
-      raise ValueError(f'Unsupported source: {src}')
+      raise ValueError(f'The source {src} is not supported.')
   return config
 
 

@@ -2236,20 +2236,6 @@ def _LiveMusicConnectParameters_to_vertex(
   return to_object
 
 
-def _WeightedPrompt_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['text']) is not None:
-    raise ValueError('text parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['weight']) is not None:
-    raise ValueError('weight parameter is not supported in Vertex AI.')
-
-  return to_object
-
-
 def _LiveMusicSetWeightedPromptsParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,

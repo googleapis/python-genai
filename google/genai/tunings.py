@@ -270,20 +270,6 @@ def _ListTuningJobsParameters_to_vertex(
   return to_object
 
 
-def _TuningExample_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['text_input']) is not None:
-    raise ValueError('text_input parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['output']) is not None:
-    raise ValueError('output parameter is not supported in Vertex AI.')
-
-  return to_object
-
-
 def _TuningDataset_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -414,15 +400,6 @@ def _CreateTuningJobParameters_to_vertex(
             getv(from_object, ['config']), to_object
         ),
     )
-
-  return to_object
-
-
-def _TunedModelCheckpoint_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
 
   return to_object
 
