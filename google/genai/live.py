@@ -929,7 +929,8 @@ class AsyncLive(_api_module.BaseModule):
       version = self._api_client._http_options.api_version
       api_key = self._api_client.api_key
       method = 'BidiGenerateContent'
-      key_name = 'key'
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
       if api_key.startswith('auth_tokens/'):
         warnings.warn(
             message=(
@@ -939,7 +940,7 @@ class AsyncLive(_api_module.BaseModule):
             category=errors.ExperimentalWarning,
         )
         method = 'BidiGenerateContentConstrained'
-        key_name = 'access_token'
+        headers['Authorization'] = f'Token {api_key}'
         if version != 'v1alpha':
           warnings.warn(
               message=(
@@ -950,8 +951,7 @@ class AsyncLive(_api_module.BaseModule):
               ),
               category=errors.ExperimentalWarning,
           )
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}?{key_name}={api_key}'
-      headers = self._api_client._http_options.headers
+      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_mldev(
@@ -972,7 +972,7 @@ class AsyncLive(_api_module.BaseModule):
       api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      headers = self._api_client._http_options.headers
+      headers = self._api_client._http_options.headers or {}
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_vertex(
@@ -1002,11 +1002,9 @@ class AsyncLive(_api_module.BaseModule):
         auth_req = google.auth.transport.requests.Request()  # type: ignore
         creds.refresh(auth_req)
       bearer_token = creds.token
-      headers = self._api_client._http_options.headers
-      if headers is not None:
-        headers.update({
-            'Authorization': 'Bearer {}'.format(bearer_token),
-        })
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
+      headers['Authorization'] = f'Bearer {bearer_token}'
       version = self._api_client._http_options.api_version
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
       location = self._api_client.location
