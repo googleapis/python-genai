@@ -575,16 +575,16 @@ from google.genai import types
 function = types.FunctionDeclaration(
     name='get_current_weather',
     description='Get the current weather in a given location',
-    parameters=types.Schema(
-        type='OBJECT',
-        properties={
-            'location': types.Schema(
-                type='STRING',
-                description='The city and state, e.g. San Francisco, CA',
-            ),
+    parameters_json_schema={
+        'type': 'object',
+        'properties': {
+            'location': {
+                'type': 'string',
+                'description': 'The city and state, e.g. San Francisco, CA',
+            }
         },
-        required=['location'],
-    ),
+        'required': ['location'],
+    },
 )
 
 tool = types.Tool(function_declarations=[function])
@@ -764,6 +764,40 @@ asyncio.run(run())
 However you define your schema, don't duplicate it in your input prompt,
 including by giving examples of expected JSON output. If you do, the generated
 output might be lower in quality.
+
+#### JSON Schema support
+Schemas can be provided as standard JSON schema.
+```python
+user_profile = {
+    'properties': {
+        'age': {
+            'anyOf': [
+                {'maximum': 20, 'minimum': 0, 'type': 'integer'},
+                {'type': 'null'},
+            ],
+            'title': 'Age',
+        },
+        'username': {
+            'description': "User's unique name",
+            'title': 'Username',
+            'type': 'string',
+        },
+    },
+    'required': ['username', 'age'],
+    'title': 'User Schema',
+    'type': 'object',
+}
+
+response = client.models.generate_content(
+    model='gemini-2.0-flash',
+    contents='Give me information of the United States.',
+    config={
+        'response_mime_type': 'application/json',
+        'response_json_schema': userProfile
+    },
+)
+print(response.parsed)
+```
 
 #### Pydantic Model Schema support
 
