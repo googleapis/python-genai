@@ -9172,7 +9172,7 @@ _CreateTuningJobParametersOrDict = Union[
 ]
 
 
-class Operation(_common.BaseModel):
+class TuningOperation(_common.BaseModel):
   """A long-running operation."""
 
   name: Optional[str] = Field(
@@ -9193,7 +9193,7 @@ class Operation(_common.BaseModel):
   )
 
 
-class OperationDict(TypedDict, total=False):
+class TuningOperationDict(TypedDict, total=False):
   """A long-running operation."""
 
   name: Optional[str]
@@ -9209,7 +9209,7 @@ class OperationDict(TypedDict, total=False):
   """The error result of the operation in case of failure or cancellation."""
 
 
-OperationOrDict = Union[Operation, OperationDict]
+TuningOperationOrDict = Union[TuningOperation, TuningOperationDict]
 
 
 class CreateCachedContentConfig(_common.BaseModel):
