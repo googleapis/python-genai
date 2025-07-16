@@ -1,23 +1,5 @@
 # Changelog
 
-## [1.26.0](https://github.com/googleapis/python-genai/compare/v1.25.0...v1.26.0) (2025-07-16)
-
-
-### Features
-
-* Add `addWatermark` parameter to the edit image configuration. ([a5b1545](https://github.com/googleapis/python-genai/commit/a5b1545ece2df77c4a99449e2066ac98bc5201b5))
-* Adding codegen instructions to guide LLMs to generate code with the Google GenAI SDK ([d82634b](https://github.com/googleapis/python-genai/commit/d82634bdc0aa053bdad0da158ee06845ec890d6d))
-
-
-### Bug Fixes
-
-* **live:** Enhance security by moving api key from query parameters to header ([d78add3](https://github.com/googleapis/python-genai/commit/d78add3d1429b9d9aad0e0e3ea09b06d2293616a))
-
-
-### Documentation
-
-* Update generated video resolution config docstring ([d06254c](https://github.com/googleapis/python-genai/commit/d06254ccd94d6d90a20769bb003f8eb5dfb62553))
-
 ## [1.25.0](https://github.com/googleapis/python-genai/compare/v1.24.0...v1.25.0) (2025-07-09)
 
 

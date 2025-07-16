@@ -1270,7 +1270,10 @@ class HttpOptions(_common.BaseModel):
   )
   extra_body: Optional[dict[str, Any]] = Field(
       default=None,
-      description="""Extra parameters to add to the request body.""",
+      description="""Extra parameters to add to the request body.
+      The structure must match the backend API's request structure.
+      - VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+      - GeminiAPI backend API docs: https://ai.google.dev/api/rest""",
   )
   retry_options: Optional[HttpRetryOptions] = Field(
       default=None, description="""HTTP retry options for the request."""
@@ -1299,7 +1302,10 @@ class HttpOptionsDict(TypedDict, total=False):
   """Args passed to the async HTTP client."""
 
   extra_body: Optional[dict[str, Any]]
-  """Extra parameters to add to the request body."""
+  """Extra parameters to add to the request body.
+      The structure must match the backend API's request structure.
+      - VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+      - GeminiAPI backend API docs: https://ai.google.dev/api/rest"""
 
   retry_options: Optional[HttpRetryOptionsDict]
   """HTTP retry options for the request."""
