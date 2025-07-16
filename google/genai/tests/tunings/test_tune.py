@@ -166,7 +166,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev="vertex_dataset_resource parameter is not supported in Gemini API.",
     ),
-pytest_helper.TestTableItem(
+    pytest_helper.TestTableItem(
         name="test_dataset_dataset_resource_all_parameters",
         parameters=genai_types._CreateTuningJobParameters(
             base_model="gemini-1.5-pro-002",
@@ -188,43 +188,6 @@ pytest_helper.TestTableItem(
         ),
         exception_if_mldev="vertex_dataset_resource parameter is not supported in Gemini API.",
     ),
-    # # Only supported in Gemini API v1alpha
-    # TestTableItem(
-    #     name="test_dataset_multiturn_examples",
-    #     parameters=genai_types.CreateSftTuningJobRequest(
-    #         base_model="gemini-1.5-pro-002",
-    #         training_dataset=genai_types.TuningTrainingDataset(
-    #             multiturn_examples=[
-    #                 genai_types.TuningMultiturnExample(
-    #                     system_instruction=genai_types.Content(
-    #                         parts=[
-    #                             genai_types.Part(
-    #                                 text="System instruction",
-    #                             )
-    #                         ]
-    #                     ),
-    #                     contents=[
-    #                         genai_types.Content(
-    #                             role="role",
-    #                             parts=[
-    #                                 genai_types.Part(
-    #                                     text="Text 1",
-    #                                 )
-    #                             ],
-    #                         )
-    #                     ],
-    #                 )
-    #             ],
-    #         ),
-    #         # Required for MLDev:
-    #         # "Either tuned_model_id or display_name must be set."
-    #         config=genai_types.CreateTuningJobConfig(
-    #             tuned_model_display_name="test_dataset_examples model",
-    #         ),
-    #     ),
-    #     # exception_if_mldev="Bad Request",  # v1alpha only
-    #     exception_if_vertex="multiturn_examples parameter is not supported.",
-    # ),
 ]
 
 pytestmark = pytest_helper.setup(
