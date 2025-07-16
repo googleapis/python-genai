@@ -6,9 +6,7 @@
 ### Features
 
 * Add `addWatermark` parameter to the edit image configuration. ([a5b1545](https://github.com/googleapis/python-genai/commit/a5b1545ece2df77c4a99449e2066ac98bc5201b5))
-* Add Tuning support for Java ([4208481](https://github.com/googleapis/python-genai/commit/42084819993f8a45d30693446505f960240dacda))
 * Adding codegen instructions to guide LLMs to generate code with the Google GenAI SDK ([d82634b](https://github.com/googleapis/python-genai/commit/d82634bdc0aa053bdad0da158ee06845ec890d6d))
-* Migrate Go file.create method to use the sdk_http_response field and remove http_headers ([4ed8681](https://github.com/googleapis/python-genai/commit/4ed868182d535e5946fca0f9a2013cd3d4e5e60f))
 
 
 ### Bug Fixes
@@ -18,7 +16,6 @@
 
 ### Documentation
 
-* Regenerate docs for 1.25.0 ([5f47e57](https://github.com/googleapis/python-genai/commit/5f47e57ef02001d810f71c9a52fe62f89ae6b87f))
 * Update generated video resolution config docstring ([d06254c](https://github.com/googleapis/python-genai/commit/d06254ccd94d6d90a20769bb003f8eb5dfb62553))
 
 ## [1.25.0](https://github.com/googleapis/python-genai/compare/v1.24.0...v1.25.0) (2025-07-09)
