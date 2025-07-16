@@ -2642,6 +2642,7 @@ initialize a client.</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EditImageConfig"><code class="docutils literal notranslate"><span class="pre">EditImageConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.add_watermark"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.add_watermark</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.aspect_ratio"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.aspect_ratio</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.base_steps"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.base_steps</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfig.edit_mode"><code class="docutils literal notranslate"><span class="pre">EditImageConfig.edit_mode</span></code></a></li>
@@ -2661,6 +2662,7 @@ initialize a client.</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.add_watermark"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.add_watermark</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.aspect_ratio"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.aspect_ratio</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.base_steps"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.base_steps</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EditImageConfigDict.edit_mode"><code class="docutils literal notranslate"><span class="pre">EditImageConfigDict.edit_mode</span></code></a></li>
@@ -3199,21 +3201,9 @@ initialize a client.</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation.done"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation.done</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation.error"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation.error</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation.metadata"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation.metadata</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation.name"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation.response"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation.response</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation.result"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation.result</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperationDict"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperationDict</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperationDict.done"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperationDict.done</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperationDict.error"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperationDict.error</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperationDict.metadata"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperationDict.metadata</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperationDict.name"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperationDict.name</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperationDict.response"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperationDict.response</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperationDict.result"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperationDict.result</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation.from_api_response"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation.from_api_response()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerateVideosResponse"><code class="docutils literal notranslate"><span class="pre">GenerateVideosResponse</span></code></a><ul>
@@ -4380,15 +4370,9 @@ initialize a client.</p>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Operation"><code class="docutils literal notranslate"><span class="pre">Operation</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Operation.done"><code class="docutils literal notranslate"><span class="pre">Operation.done</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Operation.error"><code class="docutils literal notranslate"><span class="pre">Operation.error</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Operation.from_api_response"><code class="docutils literal notranslate"><span class="pre">Operation.from_api_response()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Operation.metadata"><code class="docutils literal notranslate"><span class="pre">Operation.metadata</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Operation.name"><code class="docutils literal notranslate"><span class="pre">Operation.name</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.OperationDict"><code class="docutils literal notranslate"><span class="pre">OperationDict</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.OperationDict.done"><code class="docutils literal notranslate"><span class="pre">OperationDict.done</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.OperationDict.error"><code class="docutils literal notranslate"><span class="pre">OperationDict.error</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.OperationDict.metadata"><code class="docutils literal notranslate"><span class="pre">OperationDict.metadata</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.OperationDict.name"><code class="docutils literal notranslate"><span class="pre">OperationDict.name</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Outcome"><code class="docutils literal notranslate"><span class="pre">Outcome</span></code></a><ul>
@@ -5228,6 +5212,20 @@ initialize a client.</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.tuned_model_display_name"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.tuned_model_display_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.tuning_data_stats"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.tuning_data_stats</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.update_time"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.update_time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TuningOperation"><code class="docutils literal notranslate"><span class="pre">TuningOperation</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperation.done"><code class="docutils literal notranslate"><span class="pre">TuningOperation.done</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperation.error"><code class="docutils literal notranslate"><span class="pre">TuningOperation.error</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperation.metadata"><code class="docutils literal notranslate"><span class="pre">TuningOperation.metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperation.name"><code class="docutils literal notranslate"><span class="pre">TuningOperation.name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TuningOperationDict"><code class="docutils literal notranslate"><span class="pre">TuningOperationDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperationDict.done"><code class="docutils literal notranslate"><span class="pre">TuningOperationDict.done</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperationDict.error"><code class="docutils literal notranslate"><span class="pre">TuningOperationDict.error</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperationDict.metadata"><code class="docutils literal notranslate"><span class="pre">TuningOperationDict.metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningOperationDict.name"><code class="docutils literal notranslate"><span class="pre">TuningOperationDict.name</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TuningValidationDataset"><code class="docutils literal notranslate"><span class="pre">TuningValidationDataset</span></code></a><ul>
