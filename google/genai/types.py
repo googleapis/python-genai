@@ -5182,11 +5182,6 @@ class GenerateContentResponse(_common.BaseModel):
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
 
-  @property
-  def text(self) -> Optional[str]:
-    """Returns the concatenation of all text parts in the response."""
-    return self._get_text(warn_property='text')
-
   def _get_thoughts(self, warn_property: str = 'text') -> Optional[str]:
     """Returns the concatenation of all thoughts parts in the response.
 
@@ -5213,15 +5208,17 @@ class GenerateContentResponse(_common.BaseModel):
           any_text_part_text = True
           text += part.text
 
-    # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
+
+  @property
+  def text(self) -> Optional[str]:
+    """Returns the concatenation of all text parts in the response."""
+    return self._get_text(warn_property='text')
 
   @property
   def thoughts(self) -> Optional[str]:
     """Returns the concatenation of all thoughts parts in the response."""
     return self._get_thoughts(warn_property='text')
-
-
 
   @property
   def function_calls(self) -> Optional[list[FunctionCall]]:
