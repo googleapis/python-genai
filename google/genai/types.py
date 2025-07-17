@@ -5187,6 +5187,42 @@ class GenerateContentResponse(_common.BaseModel):
     """Returns the concatenation of all text parts in the response."""
     return self._get_text(warn_property='text')
 
+  def _get_thoughts(self, warn_property: str = 'text') -> Optional[str]:
+    """Returns the concatenation of all thoughts parts in the response.
+
+    This is an internal method that allows customizing the warning message.
+    """
+    if (
+        not self.candidates
+        or not self.candidates[0].content
+        or not self.candidates[0].content.parts
+    ):
+      return None
+    if len(self.candidates) > 1:
+      logger.warning(
+          f'there are {len(self.candidates)} candidates, returning'
+          f' {warn_property} result from the first candidate. Access'
+          ' response.candidates directly to get the result from other'
+          ' candidates.'
+      )
+    text = ''
+    any_text_part_text = False
+    for part in self.candidates[0].content.parts:
+      if isinstance(part.text, str):
+        if isinstance(part.thought, bool) and part.thought:
+          any_text_part_text = True
+          text += part.text
+
+    # part.text == '' is different from part.text is None
+    return text if any_text_part_text else None
+
+  @property
+  def thoughts(self) -> Optional[str]:
+    """Returns the concatenation of all thoughts parts in the response."""
+    return self._get_thoughts(warn_property='text')
+
+
+
   @property
   def function_calls(self) -> Optional[list[FunctionCall]]:
     """Returns the list of function calls in the response."""
