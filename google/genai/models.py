@@ -5649,7 +5649,7 @@ class Models(_api_module.BaseModule):
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: types.ContentListUnionDict,
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> types.GenerateContentResponse:
     """Makes an API request to generate content using a model.
@@ -5785,7 +5785,7 @@ class Models(_api_module.BaseModule):
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: types.ContentListUnionDict,
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Iterator[types.GenerateContentResponse]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
