@@ -212,6 +212,11 @@ def _CreateTuningJobParameters_to_mldev(
         ),
     )
 
+  if getv(from_object, ['evaluation_config']) is not None:
+    raise ValueError(
+        'evaluation_config parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -375,6 +380,82 @@ def _CreateTuningJobConfig_to_vertex(
   return to_object
 
 
+def _GcsDestination_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['output_uri_prefix']) is not None:
+    setv(
+        to_object, ['outputUriPrefix'], getv(from_object, ['output_uri_prefix'])
+    )
+
+  return to_object
+
+
+def _OutputConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['gcs_destination']) is not None:
+    setv(
+        to_object,
+        ['gcsDestination'],
+        _GcsDestination_to_vertex(
+            getv(from_object, ['gcs_destination']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _AutoraterConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sampling_count']) is not None:
+    setv(to_object, ['samplingCount'], getv(from_object, ['sampling_count']))
+
+  if getv(from_object, ['flip_enabled']) is not None:
+    setv(to_object, ['flipEnabled'], getv(from_object, ['flip_enabled']))
+
+  if getv(from_object, ['autorater_model']) is not None:
+    setv(to_object, ['autoraterModel'], getv(from_object, ['autorater_model']))
+
+  return to_object
+
+
+def _EvaluationConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['metrics']) is not None:
+    setv(to_object, ['metrics'], t.t_metrics(getv(from_object, ['metrics'])))
+
+  if getv(from_object, ['output_config']) is not None:
+    setv(
+        to_object,
+        ['outputConfig'],
+        _OutputConfig_to_vertex(
+            getv(from_object, ['output_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['autorater_config']) is not None:
+    setv(
+        to_object,
+        ['autoraterConfig'],
+        _AutoraterConfig_to_vertex(
+            getv(from_object, ['autorater_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _CreateTuningJobParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -398,6 +479,15 @@ def _CreateTuningJobParameters_to_vertex(
         ['config'],
         _CreateTuningJobConfig_to_vertex(
             getv(from_object, ['config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['evaluation_config']) is not None:
+    setv(
+        to_object,
+        ['supervisedTuningSpec', 'evaluationConfig'],
+        _EvaluationConfig_to_vertex(
+            getv(from_object, ['evaluation_config']), to_object
         ),
     )
 
@@ -601,6 +691,82 @@ def _TunedModel_from_vertex(
   return to_object
 
 
+def _GcsDestination_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['outputUriPrefix']) is not None:
+    setv(
+        to_object, ['output_uri_prefix'], getv(from_object, ['outputUriPrefix'])
+    )
+
+  return to_object
+
+
+def _OutputConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['gcsDestination']) is not None:
+    setv(
+        to_object,
+        ['gcs_destination'],
+        _GcsDestination_from_vertex(
+            getv(from_object, ['gcsDestination']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _AutoraterConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['samplingCount']) is not None:
+    setv(to_object, ['sampling_count'], getv(from_object, ['samplingCount']))
+
+  if getv(from_object, ['flipEnabled']) is not None:
+    setv(to_object, ['flip_enabled'], getv(from_object, ['flipEnabled']))
+
+  if getv(from_object, ['autoraterModel']) is not None:
+    setv(to_object, ['autorater_model'], getv(from_object, ['autoraterModel']))
+
+  return to_object
+
+
+def _EvaluationConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['metrics']) is not None:
+    setv(to_object, ['metrics'], t.t_metrics(getv(from_object, ['metrics'])))
+
+  if getv(from_object, ['outputConfig']) is not None:
+    setv(
+        to_object,
+        ['output_config'],
+        _OutputConfig_from_vertex(
+            getv(from_object, ['outputConfig']), to_object
+        ),
+    )
+
+  if getv(from_object, ['autoraterConfig']) is not None:
+    setv(
+        to_object,
+        ['autorater_config'],
+        _AutoraterConfig_from_vertex(
+            getv(from_object, ['autoraterConfig']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _TuningJob_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -669,6 +835,15 @@ def _TuningJob_from_vertex(
         to_object,
         ['partner_model_tuning_spec'],
         getv(from_object, ['partnerModelTuningSpec']),
+    )
+
+  if getv(from_object, ['evaluationConfig']) is not None:
+    setv(
+        to_object,
+        ['evaluation_config'],
+        _EvaluationConfig_from_vertex(
+            getv(from_object, ['evaluationConfig']), to_object
+        ),
     )
 
   if getv(from_object, ['distillationSpec']) is not None:
@@ -878,6 +1053,7 @@ class Tunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
+      evaluation_config: Optional[types.EvaluationConfigOrDict] = None,
   ) -> types.TuningJob:
     """Creates a supervised fine-tuning job and returns the TuningJob object.
 
@@ -894,6 +1070,7 @@ class Tunings(_api_module.BaseModule):
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
+        evaluation_config=evaluation_config,
     )
 
     request_url_dict: Optional[dict[str, str]]
@@ -947,6 +1124,7 @@ class Tunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
+      evaluation_config: Optional[types.EvaluationConfigOrDict] = None,
   ) -> types.TuningOperation:
     """Creates a supervised fine-tuning job and returns the TuningJob object.
 
@@ -963,6 +1141,7 @@ class Tunings(_api_module.BaseModule):
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
+        evaluation_config=evaluation_config,
     )
 
     request_url_dict: Optional[dict[str, str]]
@@ -1050,13 +1229,29 @@ class Tunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
+      evaluation_config: Optional[types.EvaluationConfigOrDict] = None,
   ) -> types.TuningJob:
     if self._api_client.vertexai:
+      if evaluation_config is not None:
+        if isinstance(evaluation_config, dict):
+          evaluation_config = types.EvaluationConfig(**evaluation_config)
+        if not evaluation_config.metrics or not evaluation_config.output_config:
+          raise ValueError(
+              'Evaluation config must have at least one metric and an output'
+              ' config.'
+          )
+        for i in range(len(evaluation_config.metrics)):
+          if isinstance(evaluation_config.metrics[i], dict):
+            evaluation_config.metrics[i] = types.Metric.model_validate(
+                evaluation_config.metrics[i]
+            )
       tuning_job = self._tune(
           base_model=base_model,
           training_dataset=training_dataset,
           config=config,
+          evaluation_config=evaluation_config,
       )
+      tuning_job.evaluation_config = evaluation_config
     else:
       operation = self._tune_mldev(
           base_model=base_model,
@@ -1230,6 +1425,7 @@ class AsyncTunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
+      evaluation_config: Optional[types.EvaluationConfigOrDict] = None,
   ) -> types.TuningJob:
     """Creates a supervised fine-tuning job and returns the TuningJob object.
 
@@ -1246,6 +1442,7 @@ class AsyncTunings(_api_module.BaseModule):
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
+        evaluation_config=evaluation_config,
     )
 
     request_url_dict: Optional[dict[str, str]]
@@ -1299,6 +1496,7 @@ class AsyncTunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
+      evaluation_config: Optional[types.EvaluationConfigOrDict] = None,
   ) -> types.TuningOperation:
     """Creates a supervised fine-tuning job and returns the TuningJob object.
 
@@ -1315,6 +1513,7 @@ class AsyncTunings(_api_module.BaseModule):
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
+        evaluation_config=evaluation_config,
     )
 
     request_url_dict: Optional[dict[str, str]]
@@ -1402,13 +1601,29 @@ class AsyncTunings(_api_module.BaseModule):
       base_model: str,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
+      evaluation_config: Optional[types.EvaluationConfigOrDict] = None,
   ) -> types.TuningJob:
     if self._api_client.vertexai:
+      if evaluation_config is not None:
+        if isinstance(evaluation_config, dict):
+          evaluation_config = types.EvaluationConfig(**evaluation_config)
+        if not evaluation_config.metrics or not evaluation_config.output_config:
+          raise ValueError(
+              'Evaluation config must have at least one metric and an output'
+              ' config.'
+          )
+        for i in range(len(evaluation_config.metrics)):
+          if isinstance(evaluation_config.metrics[i], dict):
+            evaluation_config.metrics[i] = types.Metric.model_validate(
+                evaluation_config.metrics[i]
+            )
       tuning_job = await self._tune(
           base_model=base_model,
           training_dataset=training_dataset,
           config=config,
+          evaluation_config=evaluation_config,
       )
+      tuning_job.evaluation_config = evaluation_config
     else:
       operation = await self._tune_mldev(
           base_model=base_model,

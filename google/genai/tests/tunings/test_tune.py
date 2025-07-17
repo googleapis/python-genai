@@ -19,7 +19,18 @@
 
 from ... import types as genai_types
 from .. import pytest_helper
+import pytest
 
+evaluation_config=genai_types.EvaluationConfig(
+    metrics=[
+        genai_types.Metric(name="bleu", prompt_template="test prompt template")
+    ],
+    output_config=genai_types.OutputConfig(
+        gcs_destination=genai_types.GcsDestination(
+            output_uri_prefix="gs://sararob_test/"
+        )
+    ),
+)
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
@@ -143,3 +154,57 @@ pytestmark = pytest_helper.setup(
 )
 
 pytest_plugins = ("pytest_asyncio",)
+
+
+def test_eval_config(client):
+  """Tests tuning with eval config."""
+
+  if client._api_client.vertexai:
+    tuning_job = client.tunings.tune(
+      base_model="gemini-1.5-pro-002",
+      training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
+      config=genai_types.CreateTuningJobConfig(
+          tuned_model_display_name="tuning job with eval config",
+          epoch_count=1,
+          learning_rate_multiplier=1.0,
+          adapter_size="ADAPTER_SIZE_ONE",
+          validation_dataset=genai_types.TuningDataset(
+              gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_validation_data.jsonl"
+          ),
+          http_options=genai_types.HttpOptions(
+              base_url="https://us-central1-staging-aiplatform.sandbox.googleapis.com/",
+              api_version="ui",
+          )
+      ),
+      evaluation_config=evaluation_config,
+    )
+
+    assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
+    assert tuning_job.evaluation_config == evaluation_config
+
+
+@pytest.mark.asyncio
+async def test_eval_config_async(client):
+  """Tests tuning with eval config."""
+  if client._api_client.vertexai:
+    tuning_job = await client.aio.tunings.tune(
+      base_model="gemini-1.5-pro-002",
+      training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
+      config=genai_types.CreateTuningJobConfig(
+          tuned_model_display_name="tuning job with eval config",
+          epoch_count=1,
+          learning_rate_multiplier=1.0,
+          adapter_size="ADAPTER_SIZE_ONE",
+          validation_dataset=genai_types.TuningDataset(
+              gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_validation_data.jsonl"
+          ),
+          http_options=genai_types.HttpOptions(
+              base_url="https://us-central1-staging-aiplatform.sandbox.googleapis.com/",
+              api_version="ui",
+          )
+      ),
+      evaluation_config=evaluation_config,
+    )
+
+    assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
+    assert tuning_job.evaluation_config is not None
