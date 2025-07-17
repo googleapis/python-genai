@@ -33,12 +33,27 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
-        name='test_simple_prompt_001',
+        name='test_simple_prompt_imagen3-001',
+        exception_if_mldev='not found',
         parameters=types._GenerateImagesParameters(
             model='imagen-3.0-generate-001',
             prompt='Red skateboard',
             # 001 model does not support prompt enhancement.
             config={'number_of_images': 1, 'output_mime_type': 'image/jpeg'},
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_generate_size_2k_imagen4-001',
+        exception_if_mldev='not supported in Gemini API',
+        parameters=types._GenerateImagesParameters(
+            model='imagen-4.0-generate-001',
+            prompt='Red skateboard',
+            config={
+                'number_of_images': 1,
+                'output_mime_type': 'image/jpeg',
+                # Replay file has a smaller image saved for smaller file size.
+                'image_size': '2K',
+            },
         ),
     ),
     pytest_helper.TestTableItem(
@@ -182,6 +197,5 @@ async def test_simple_prompt_async(client):
   )
 
   assert response.generated_images[0].image.image_bytes
-  # TODO(tangmatthew): Re-enable this check once the bug is fixed.
   assert len(response.generated_images) == 1
   assert response.positive_prompt_safety_attributes.content_type == 'Positive Prompt'

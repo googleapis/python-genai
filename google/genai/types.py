@@ -5742,6 +5742,12 @@ class GenerateImagesConfig(_common.BaseModel):
       description="""Whether to add a watermark to the generated images.
       """,
   )
+  image_size: Optional[str] = Field(
+      default=None,
+      description="""The size of the largest dimension of the generated image.
+      Supported sizes are 1K and 2K (not supported for Imagen 3 models).
+      """,
+  )
   enhance_prompt: Optional[bool] = Field(
       default=None,
       description="""Whether to use the prompt rewriting logic.
@@ -5816,6 +5822,11 @@ class GenerateImagesConfigDict(TypedDict, total=False):
 
   add_watermark: Optional[bool]
   """Whether to add a watermark to the generated images.
+      """
+
+  image_size: Optional[str]
+  """The size of the largest dimension of the generated image.
+      Supported sizes are 1K and 2K (not supported for Imagen 3 models).
       """
 
   enhance_prompt: Optional[bool]

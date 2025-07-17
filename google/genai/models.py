@@ -996,6 +996,9 @@ def _GenerateImagesConfig_to_mldev(
   if getv(from_object, ['add_watermark']) is not None:
     raise ValueError('add_watermark parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['image_size']) is not None:
+    raise ValueError('image_size parameter is not supported in Gemini API.')
+
   if getv(from_object, ['enhance_prompt']) is not None:
     raise ValueError('enhance_prompt parameter is not supported in Gemini API.')
 
@@ -2395,6 +2398,13 @@ def _GenerateImagesConfig_to_vertex(
         parent_object,
         ['parameters', 'addWatermark'],
         getv(from_object, ['add_watermark']),
+    )
+
+  if getv(from_object, ['image_size']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'sampleImageSize'],
+        getv(from_object, ['image_size']),
     )
 
   if getv(from_object, ['enhance_prompt']) is not None:
