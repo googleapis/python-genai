@@ -1370,35 +1370,21 @@ print(response.text)
 ## Tunings
 
 `client.tunings` contains tuning job APIs and supports supervised fine
-tuning through `tune`. See the 'Create a client' section above to initialize a
-client.
+tuning through `tune`. Only supported in Vertex AI. See the 'Create a client'
+section above to initialize a client.
 
 ### Tune
 
 -   Vertex AI supports tuning from GCS source or from a Vertex Multimodal Dataset
--   Gemini Developer API supports tuning from inline examples
 
 ```python
 from google.genai import types
 
-if client.vertexai:
-    model = 'gemini-2.0-flash-001'
-    training_dataset = types.TuningDataset(
-      # or gcs_uri=my_vertex_multimodal_dataset
-        gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
-    )
-else:
-    model = 'models/gemini-2.0-flash-001'
-    # or gcs_uri=my_vertex_multimodal_dataset.resource_name
-    training_dataset = types.TuningDataset(
-        examples=[
-            types.TuningExample(
-                text_input=f'Input text {i}',
-                output=f'Output text {i}',
-            )
-            for i in range(5)
-        ],
-    )
+model = 'gemini-2.0-flash-001'
+training_dataset = types.TuningDataset(
+  # or gcs_uri=my_vertex_multimodal_dataset
+    gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
+)
 ```
 
 ```python
@@ -1424,14 +1410,15 @@ print(tuning_job)
 ```python
 import time
 
-running_states = set(
+completed_states = set(
     [
-        'JOB_STATE_PENDING',
-        'JOB_STATE_RUNNING',
+        'JOB_STATE_SUCCEEDED',
+        'JOB_STATE_FAILED',
+        'JOB_STATE_CANCELLED',
     ]
 )
 
-while tuning_job.state in running_states:
+while tuning_job.state not in completed_states:
     print(tuning_job.state)
     tuning_job = client.tunings.get(name=tuning_job.name)
     time.sleep(10)
@@ -1542,15 +1529,62 @@ initialize a client.
 
 ### Create
 
+Vertex AI:
+
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
     model='gemini-2.0-flash-001',
-    src='bq://my-project.my-dataset.my-table',
+    src='bq://my-project.my-dataset.my-table',  # or "gs://path/to/input/data"
 )
 
 job
 ```
+
+Gemini Developer API:
+
+```python
+# Create a batch job with inlined requests
+batch_job = client.batches.create(
+    model="gemini-2.0-flash",
+    src=[{
+      "contents": [{
+        "parts": [{
+          "text": "Hello!",
+        }],
+       "role": "user",
+     }],
+     "config:": {"response_modalities": ["text"]},
+    }],
+)
+
+job
+```
+
+In order to create a batch job with file name. Need to upload a jsonl file.
+For example myrequests.json:
+
+```
+{"key":"request_1", "request": {"contents": [{"parts": [{"text":
+ "Explain how AI works in a few words"}]}], "generation_config": {"response_modalities": ["TEXT"]}}}
+{"key":"request_2", "request": {"contents": [{"parts": [{"text": "Explain how Crypto works in a few words"}]}]}}
+```
+Then upload the file.
+
+```python
+# Upload the file
+file = client.files.upload(
+    file='myrequest.json',
+    config=types.UploadFileConfig(display_name='test_json')
+)
+
+# Create a batch job with file name
+batch_job = client.batches.create(
+    model="gemini-2.0-flash",
+    src="files/file_name",
+)
+```
+
 
 ```python
 # Get a job by name

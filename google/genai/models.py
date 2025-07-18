@@ -996,6 +996,9 @@ def _GenerateImagesConfig_to_mldev(
   if getv(from_object, ['add_watermark']) is not None:
     raise ValueError('add_watermark parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['image_size']) is not None:
+    raise ValueError('image_size parameter is not supported in Gemini API.')
+
   if getv(from_object, ['enhance_prompt']) is not None:
     raise ValueError('enhance_prompt parameter is not supported in Gemini API.')
 
@@ -1235,6 +1238,15 @@ def _Image_to_mldev(
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _GenerateVideosSource_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
 
   return to_object
 
@@ -2388,6 +2400,13 @@ def _GenerateImagesConfig_to_vertex(
         getv(from_object, ['add_watermark']),
     )
 
+  if getv(from_object, ['image_size']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'sampleImageSize'],
+        getv(from_object, ['image_size']),
+    )
+
   if getv(from_object, ['enhance_prompt']) is not None:
     setv(
         parent_object,
@@ -3067,6 +3086,15 @@ def _Video_to_vertex(
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _GenerateVideosSource_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
 
   return to_object
 
@@ -5539,7 +5567,7 @@ class Models(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  def generate_videos(
+  def _generate_videos(
       self,
       *,
       model: str,
@@ -5560,7 +5588,7 @@ class Models(_api_module.BaseModule):
     Args:
       model: The model to use.
       prompt: The text prompt for generating the videos. Optional for image to
-        video use cases.
+        video and video extension use cases.
       image: The input image for generating the videos. Optional if prompt is
         provided.
       video: The input video for video extension use cases. Optional if prompt
@@ -6127,6 +6155,56 @@ class Models(_api_module.BaseModule):
         image=image,
         upscale_factor=upscale_factor,
         config=api_config,
+    )
+
+  def generate_videos(
+      self,
+      *,
+      model: str,
+      prompt: Optional[str] = None,
+      image: Optional[types.ImageOrDict] = None,
+      video: Optional[types.VideoOrDict] = None,
+      config: Optional[types.GenerateVideosConfigOrDict] = None,
+  ) -> types.GenerateVideosOperation:
+    """Generates videos based on an input (text, image, or video) and configuration.
+
+    The following use cases are supported:
+    1. Text to video generation.
+    2a. Image to video generation (additional text prompt is optional).
+    2b. Image to video generation with frame interpolation (specify last_frame
+    in config).
+    3. Video extension (additional text prompt is optional)
+
+    Args:
+      model: The model to use.
+      prompt: The text prompt for generating the videos. Optional for image to
+        video and video extension use cases.
+      image: The input image for generating the videos. Optional if prompt is
+        provided.
+      video: The input video for video extension use cases. Optional if prompt
+        or image is provided.
+      config: Configuration for generation.
+
+    Usage:
+
+      ```
+      operation = client.models.generate_videos(
+          model="veo-2.0-generate-001",
+          prompt="A neon hologram of a cat driving at top speed",
+      )
+      while not operation.done:
+          time.sleep(10)
+          operation = client.operations.get(operation)
+
+      operation.result.generated_videos[0].video.uri
+      ```
+    """
+    return self._generate_videos(
+        model=model,
+        prompt=prompt,
+        image=image,
+        video=video,
+        config=config,
     )
 
   def list(
@@ -7103,7 +7181,7 @@ class AsyncModels(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def generate_videos(
+  async def _generate_videos(
       self,
       *,
       model: str,
@@ -7124,7 +7202,7 @@ class AsyncModels(_api_module.BaseModule):
     Args:
       model: The model to use.
       prompt: The text prompt for generating the videos. Optional for image to
-        video use cases.
+        video and video extension use cases.
       image: The input image for generating the videos. Optional if prompt is
         provided.
       video: The input video for video extension use cases. Optional if prompt
@@ -7723,4 +7801,54 @@ class AsyncModels(_api_module.BaseModule):
         image=image,
         upscale_factor=upscale_factor,
         config=api_config,
+    )
+
+  async def generate_videos(
+      self,
+      *,
+      model: str,
+      prompt: Optional[str] = None,
+      image: Optional[types.ImageOrDict] = None,
+      video: Optional[types.VideoOrDict] = None,
+      config: Optional[types.GenerateVideosConfigOrDict] = None,
+  ) -> types.GenerateVideosOperation:
+    """Generates videos based on an input (text, image, or video) and configuration.
+
+    The following use cases are supported:
+    1. Text to video generation.
+    2a. Image to video generation (additional text prompt is optional).
+    2b. Image to video generation with frame interpolation (specify last_frame
+    in config).
+    3. Video extension (additional text prompt is optional)
+
+    Args:
+      model: The model to use.
+      prompt: The text prompt for generating the videos. Optional for image to
+        video and video extension use cases.
+      image: The input image for generating the videos. Optional if prompt is
+        provided.
+      video: The input video for video extension use cases. Optional if prompt
+        or image is provided.
+      config: Configuration for generation.
+
+    Usage:
+
+      ```
+      operation = client.models.generate_videos(
+          model="veo-2.0-generate-001",
+          prompt="A neon hologram of a cat driving at top speed",
+      )
+      while not operation.done:
+          time.sleep(10)
+          operation = client.operations.get(operation)
+
+      operation.result.generated_videos[0].video.uri
+      ```
+    """
+    return await self._generate_videos(
+        model=model,
+        prompt=prompt,
+        image=image,
+        video=video,
+        config=config,
     )

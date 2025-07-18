@@ -1403,32 +1403,19 @@ section above to initialize a client.</p>
 <section id="tunings">
 <h1>Tunings<a class="headerlink" href="#tunings" title="Link to this heading">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">client.tunings</span></code> contains tuning job APIs and supports supervised fine
-tuning through <code class="docutils literal notranslate"><span class="pre">tune</span></code>. See the ‘Create a client’ section above to initialize a
-client.</p>
+tuning through <code class="docutils literal notranslate"><span class="pre">tune</span></code>. Only supported in Vertex AI. See the ‘Create a client’
+section above to initialize a client.</p>
 <section id="tune">
 <h2>Tune<a class="headerlink" href="#tune" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Vertex AI supports tuning from GCS source</p></li>
-<li><p>Gemini Developer API supports tuning from inline examples</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
-<span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">vertexai</span><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;gemini-2.0-flash-001&#39;</span>
-    <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">TuningDataset</span><span class="p">(</span>
-        <span class="n">gcs_uri</span><span class="o">=</span><span class="s1">&#39;gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl&#39;</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;models/gemini-2.0-flash-001&#39;</span>
-    <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">TuningDataset</span><span class="p">(</span>
-        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
-            <span class="n">types</span><span class="o">.</span><span class="n">TuningExample</span><span class="p">(</span>
-                <span class="n">text_input</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Input text </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-                <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Output text </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-        <span class="p">],</span>
-    <span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;gemini-2.0-flash-001&#39;</span>
+<span class="n">training_dataset</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">TuningDataset</span><span class="p">(</span>
+    <span class="n">gcs_uri</span><span class="o">=</span><span class="s1">&#39;gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl&#39;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
@@ -1452,14 +1439,15 @@ client.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="n">running_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+<span class="n">completed_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
     <span class="p">[</span>
-        <span class="s1">&#39;JOB_STATE_PENDING&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;JOB_STATE_RUNNING&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;JOB_STATE_SUCCEEDED&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;JOB_STATE_FAILED&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;JOB_STATE_CANCELLED&#39;</span><span class="p">,</span>
     <span class="p">]</span>
 <span class="p">)</span>
 
-<span class="k">while</span> <span class="n">tuning_job</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="n">running_states</span><span class="p">:</span>
+<span class="k">while</span> <span class="n">tuning_job</span><span class="o">.</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">completed_states</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">tuning_job</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
     <span class="n">tuning_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">tunings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">tuning_job</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -1571,19 +1559,35 @@ client.</p>
 </section>
 <section id="batch-prediction">
 <h1>Batch Prediction<a class="headerlink" href="#batch-prediction" title="Link to this heading">¶</a></h1>
-<p>Only supported in Vertex AI. See the ‘Create a client’ section above to
-initialize a client.</p>
+<p>Create a batch job. See the ‘Create a client’ section above to initialize a client.</p>
 <section id="id5">
 <h2>Create<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<p>Vertex AI client support using a BigQuery table or a GCS file as the source.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify model and source file only, destination and job display name will be auto-populated</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.0-flash-001&#39;</span><span class="p">,</span>
-    <span class="n">src</span><span class="o">=</span><span class="s1">&#39;bq://my-project.my-dataset.my-table&#39;</span><span class="p">,</span>
+    <span class="n">src</span><span class="o">=</span><span class="s1">&#39;bq://my-project.my-dataset.my-table&#39;</span><span class="p">,</span>  <span class="c1"># or gcs://my-bucket/my-file.jsonl</span>
 <span class="p">)</span>
-
-<span class="n">job</span>
 </pre></div>
 </div>
+<p>Gemini Developer API client:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a batch job with inlined requests</span>
+<span class="n">batch_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemini-2.0-flash&quot;</span><span class="p">,</span>
+    <span class="n">src</span><span class="o">=</span><span class="p">[{</span>
+      <span class="s2">&quot;contents&quot;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="s2">&quot;parts&quot;</span><span class="p">:</span> <span class="p">[{</span>
+          <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">,</span>
+        <span class="p">}],</span>
+       <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+     <span class="p">}],</span>
+     <span class="s2">&quot;config:&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;response_modalities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]},</span>
+    <span class="p">}],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In order to create a batch job with a file. Need to upload a jsonl file.
+For example myrequests.json:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a job by name</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
