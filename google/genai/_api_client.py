@@ -583,6 +583,15 @@ class BaseApiClient:
       self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
           self._http_options
       )
+      self._async_aiohttp_client = aiohttp.ClientSession(
+        trust_env=True,
+        connector=aiohttp.TCPConnector(
+          use_dns_cache=True,
+          ttl_dns_cache=60,
+          enable_cleanup_closed=True,
+        )
+      )
+
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
 
     retry_kwargs = _retry_args(self._http_options.retry_options)
@@ -990,10 +999,7 @@ class BaseApiClient:
 
     if stream:
       if self._use_aiohttp():
-        session = aiohttp.ClientSession(
-            headers=http_request.headers,
-            trust_env=True,
-        )
+        session = self._async_aiohttp_client
         response = await session.request(
             method=http_request.method,
             url=http_request.url,
@@ -1022,20 +1028,17 @@ class BaseApiClient:
         return HttpResponse(client_response.headers, client_response)
     else:
       if self._use_aiohttp():
-        async with aiohttp.ClientSession(
-            headers=http_request.headers,
-            trust_env=True,
-        ) as session:
-          response = await session.request(
+        session = self._async_aiohttp_client
+        response = await session.request(
               method=http_request.method,
               url=http_request.url,
               headers=http_request.headers,
               data=data,
               timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
               **self._async_client_session_request_args,
-          )
-          await errors.APIError.raise_for_async_response(response)
-          return HttpResponse(response.headers, [await response.text()])
+        )
+        await errors.APIError.raise_for_async_response(response)
+        return HttpResponse(response.headers, [await response.text()])
       else:
         # aiohttp is not available. Fall back to httpx.
         client_response = await self._async_httpx_client.request(
