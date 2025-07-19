@@ -92,6 +92,8 @@ def test_base_models_pager(client):
 
   # Iterate through all the pages. Then next_page() should raise an exception.
   for _ in pager:
+    assert 'content-type' in pager.sdk_http_response.headers
+    assert 'content-encoding' in pager.sdk_http_response.headers
     pass
   with pytest.raises(IndexError, match='No more pages to fetch.'):
     pager.next_page()
@@ -193,6 +195,8 @@ def test_empty_api_response_empty_dict_headers(mock_api_client, client):
 async def test_tuned_models_async_pager(client):
   pager = await client.aio.models.list(config={'page_size': 10, 'query_base': False})
 
+  assert 'Content-Type' in pager.sdk_http_response.headers
+  assert 'Content-Encoding' in pager.sdk_http_response.headers
   assert pager.name == 'models'
   assert pager.page_size == 10
   assert len(pager) <= 10
