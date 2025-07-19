@@ -537,9 +537,11 @@ class BaseApiClient:
         credentials, self.project = _load_auth(project=None)
         if not self._credentials:
           self._credentials = credentials
-      if not ((self.project and self.location) or self.api_key):
+      if self.project and not self.location:
+        self.location = 'us-central1'
+      if not (self.project or self.api_key):
         raise ValueError(
-            'Project and location or API key must be set when using the Vertex '
+            'Project or API key must be set when using the Vertex '
             'AI API.'
         )
       if self.api_key or self.location == 'global':
