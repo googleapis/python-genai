@@ -267,12 +267,18 @@ def _parse_schema_from_parameter(
       )
     schema.required = _get_required_fields(schema)
     return schema
-  raise ValueError(
-      f'Failed to parse the parameter {param} of function {func_name} for'
-      ' automatic function calling.Automatic function calling works best with'
-      ' simpler function signature schema, consider manually parsing your'
-      f' function declaration for function {func_name}.'
-  )
+  try:
+    adapter = pydantic.TypeAdapter(param.annotation)
+    json_schema_dict = adapter.json_schema()
+    json_schema_obj = types.JSONSchema(**json_schema_dict)
+    return types.Schema.from_json_schema(json_schema=json_schema_obj)
+  except Exception:
+    raise ValueError(
+        f'Failed to parse the parameter {param} of function {func_name} for'
+        ' automatic function calling.Automatic function calling works best with'
+        ' simpler function signature schema, consider manually parsing your'
+        f' function declaration for function {func_name}.'
+    )
 
 
 def _get_required_fields(schema: types.Schema) -> Optional[list[str]]:

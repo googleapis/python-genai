@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import collections
 import logging
 import sys
 import typing
@@ -824,6 +825,75 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
     )
     assert 'Sundae' in response.text
     assert 'cat' in response.text
+
+
+def test_automatic_function_calling_with_union_operator(client):
+  class AnimalObject(pydantic.BaseModel):
+    name: str
+    age: int
+    species: str
+
+  def get_information(
+      object_of_interest: str | AnimalObject,
+  ) -> str:
+    if isinstance(object_of_interest, AnimalObject):
+      return (
+          f'The animal is of {object_of_interest.species} species and is named'
+          f' {object_of_interest.name} is {object_of_interest.age} years old'
+      )
+    else:
+      return f'The object of interest is {object_of_interest}'
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'I have a one year old cat named Sundae, can you get the'
+          ' information of the cat for me?'
+      ),
+      config={
+          'tools': [get_information],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
+
+
+def test_automatic_function_calling_with_union_operator_as_return_type(client):
+  def get_random_value(request: str) -> int | str:
+    if 'number' in request:
+      return 42
+    else:
+      return 'hello'
+
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+    response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=(
+            'Can you give me a number?'
+        ),
+        config={
+            'tools': [get_random_value],
+            'automatic_function_calling': {'ignore_call_history': True},
+        },
+    )
+    assert response.text
+
+
+def test_automatic_function_calling_with_counter_return_type(client):
+  def count_word_frequency(sentence: str) -> collections.Counter[str]:
+    return collections.Counter(sentence.lower().split())
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'Can you count the word frequency in this sentence: "I love cheese, and I especially love sharp cheese."'
+      ),
+      config={
+          'tools': [count_word_frequency],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
 
 
 def test_automatic_function_calling_with_parameterized_generic_union_type(
