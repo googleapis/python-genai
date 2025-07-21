@@ -88,7 +88,7 @@ def _FetchPredictOperationParameters_to_vertex(
 
 class Operations(_api_module.BaseModule):
 
-  def _get_videos_operation(
+  def _get_operation(
       self,
       *,
       operation_name: str,
@@ -230,7 +230,7 @@ class Operations(_api_module.BaseModule):
       )
       return response_operation  # type: ignore[no-any-return]
     else:
-      response_dict = self._get_videos_operation(
+      response_dict = self._get_operation(
           operation_name=operation_name,
           config=config,
       )
@@ -242,7 +242,7 @@ class Operations(_api_module.BaseModule):
 
 class AsyncOperations(_api_module.BaseModule):
 
-  async def _get_videos_operation(
+  async def _get_operation(
       self,
       *,
       operation_name: str,
@@ -383,7 +383,7 @@ class AsyncOperations(_api_module.BaseModule):
       )
       return response_operation  # type: ignore[no-any-return]
     else:
-      response_dict = await self._get_videos_operation(
+      response_dict = await self._get_operation(
           operation_name=operation_name,
           config=config,
       )
