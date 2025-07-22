@@ -18,7 +18,8 @@
 # pylint: disable=protected-access
 
 import copy
-from typing import Any, AsyncIterator,Awaitable, Callable, Generic, Iterator, Literal, TypeVar
+from typing import Any, AsyncIterator,Awaitable, Callable, Generic, Iterator, Literal, TypeVar, Union
+from . import types
 
 T = TypeVar('T')
 
@@ -42,6 +43,8 @@ class _BasePager(Generic[T]):
 
     self._page = getattr(response, self._name) or []
     self._idx = 0
+
+    self._sdk_http_response = getattr(response, 'sdk_http_response', None)
 
     if not config:
       request_config = {}
@@ -109,6 +112,13 @@ class _BasePager(Generic[T]):
     """
 
     return self._page_size
+
+  @property
+  def sdk_http_response(self) -> Union[types.HttpResponse, None]:
+    """Returns the http response of the API response.
+    """
+
+    return self._sdk_http_response
 
   @property
   def config(self) -> dict[str, Any]:
