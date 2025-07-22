@@ -8,7 +8,7 @@ outdated or legacy code. You can copy and paste the instructions from this file
 into your development environment to provide the model with the necessary
 context.
 
-> **Note: This is an Alpha (v0.1) Release** This is an early and experimental
+> **Note: This is an Alpha (v0.2) Release** This is an early and experimental
 > collection of prompts. It's intended for testing and to gather feedback from
 > the community. Results are not guaranteed, and we expect frequent updates.
 
@@ -28,13 +28,7 @@ If you'd like to reduce context window consumption, you can experiment with
 removing sections on this file. You can let us know how it works at our
 [community forums](https://discuss.ai.google.dev/c/gemini-api).
 
-Note that the guide also does not cover Vertex AI. Vertex AI developers should
-refer to [Vertex AI official
-documentation](https://cloud.google.com/vertex-ai/docs) for building with Vertex
-AI.
-
-If you find the prompts in this file too comprehensive, you can experiment with
-removing sections to reduce the context window consumption.
+Note: These instructions are for the [Gemini API](https://ai.google.dev/gemini-api/docs). Vertex AI developers should note that while the APIs are similar, there may be minor differences, and the [official Vertex AI documentation](https://cloud.google.com/vertex-ai/docs) should be used for definitive guidance
 
 ## Contributions
 
