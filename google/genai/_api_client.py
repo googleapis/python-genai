@@ -32,6 +32,7 @@ import logging
 import math
 import os
 import ssl
+import random
 import sys
 import threading
 import time
@@ -994,14 +995,40 @@ class BaseApiClient:
             headers=http_request.headers,
             trust_env=True,
         )
-        response = await session.request(
-            method=http_request.method,
-            url=http_request.url,
-            headers=http_request.headers,
-            data=data,
-            timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
-            **self._async_client_session_request_args,
-        )
+        try:
+          response = await session.request(
+              method=http_request.method,
+              url=http_request.url,
+              headers=http_request.headers,
+              data=data,
+              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              **self._async_client_session_request_args,
+          )
+        except (
+            aiohttp.ClientConnectorError,
+            aiohttp.ClientConnectorDNSError,
+            aiohttp.ClientOSError,
+            aiohttp.ServerDisconnectedError,
+        ) as e:
+          await asyncio.sleep(1 + random.randint(0, 9))
+          logger.info('Retrying due to aiohttp error: %s' % e)
+          # Retrieve the SSL context from the session.
+          self._async_client_session_request_args = (
+              self._ensure_aiohttp_ssl_ctx(self._http_options)
+          )
+          # Instantiate a new session with the updated SSL context.
+          session = aiohttp.ClientSession(
+              headers=http_request.headers,
+              trust_env=True,
+          )
+          response = await session.request(
+              method=http_request.method,
+              url=http_request.url,
+              headers=http_request.headers,
+              data=data,
+              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              **self._async_client_session_request_args,
+          )
 
         await errors.APIError.raise_for_async_response(response)
         return HttpResponse(response.headers, response, session=session)
@@ -1022,20 +1049,48 @@ class BaseApiClient:
         return HttpResponse(client_response.headers, client_response)
     else:
       if self._use_aiohttp():
-        async with aiohttp.ClientSession(
-            headers=http_request.headers,
-            trust_env=True,
-        ) as session:
-          response = await session.request(
-              method=http_request.method,
-              url=http_request.url,
+        try:
+          async with aiohttp.ClientSession(
               headers=http_request.headers,
-              data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
-              **self._async_client_session_request_args,
+              trust_env=True,
+          ) as session:
+            response = await session.request(
+                method=http_request.method,
+                url=http_request.url,
+                headers=http_request.headers,
+                data=data,
+                timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+                **self._async_client_session_request_args,
+            )
+            await errors.APIError.raise_for_async_response(response)
+            return HttpResponse(response.headers, [await response.text()])
+        except (
+            aiohttp.ClientConnectorError,
+            aiohttp.ClientConnectorDNSError,
+            aiohttp.ClientOSError,
+            aiohttp.ServerDisconnectedError,
+        ) as e:
+          await asyncio.sleep(1 + random.randint(0, 9))
+          logger.info('Retrying due to aiohttp error: %s' % e)
+          # Retrieve the SSL context from the session.
+          self._async_client_session_request_args = (
+              self._ensure_aiohttp_ssl_ctx(self._http_options)
           )
-          await errors.APIError.raise_for_async_response(response)
-          return HttpResponse(response.headers, [await response.text()])
+          # Instantiate a new session with the updated SSL context.
+          async with aiohttp.ClientSession(
+              headers=http_request.headers,
+              trust_env=True,
+          ) as session:
+            response = await session.request(
+                method=http_request.method,
+                url=http_request.url,
+                headers=http_request.headers,
+                data=data,
+                timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+                **self._async_client_session_request_args,
+            )
+            await errors.APIError.raise_for_async_response(response)
+            return HttpResponse(response.headers, [await response.text()])
       else:
         # aiohttp is not available. Fall back to httpx.
         client_response = await self._async_httpx_client.request(
