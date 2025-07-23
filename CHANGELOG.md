@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.27.0](https://github.com/googleapis/python-genai/compare/v1.26.0...v1.27.0) (2025-07-22)
+
+
+### Features
+
+* Add image_size field for Vertex Imagen 4 generation ([df52660](https://github.com/googleapis/python-genai/commit/df526605bbca6befb645418f4b3f267aeb83e99a))
+* Return headers for list method in all modules. ([dd3df9b](https://github.com/googleapis/python-genai/commit/dd3df9b19e7cce249773794139f86d0c87ca64f7))
+
+
+### Documentation
+
+* Copy improvements and minor changes to instructions. ([235ee99](https://github.com/googleapis/python-genai/commit/235ee9935e589144dbd42aea2e0721142b33db1b))
+* Update batches and tunings doc ([97a3494](https://github.com/googleapis/python-genai/commit/97a34945bad64cd2b3c88e2b14142397551a0947))
+* Update extra_body docstring ([633eca3](https://github.com/googleapis/python-genai/commit/633eca3c96739d2bb8a32ceb22654ca7cab7a829))
+
 ## [1.26.0](https://github.com/googleapis/python-genai/compare/v1.25.0...v1.26.0) (2025-07-16)
 
 
