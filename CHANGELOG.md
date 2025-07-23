@@ -5,7 +5,6 @@
 
 ### Features
 
-* Add generateVideosFromSource in Go, refactor private generateVideos ([1d07064](https://github.com/googleapis/python-genai/commit/1d07064b1ea8d95aaa9d100fe44357214821009a))
 * Add image_size field for Vertex Imagen 4 generation ([df52660](https://github.com/googleapis/python-genai/commit/df526605bbca6befb645418f4b3f267aeb83e99a))
 * Return headers for list method in all modules. ([dd3df9b](https://github.com/googleapis/python-genai/commit/dd3df9b19e7cce249773794139f86d0c87ca64f7))
 
