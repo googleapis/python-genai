@@ -35,6 +35,7 @@ if typing.TYPE_CHECKING:
 import pydantic
 
 from . import _api_client
+from . import _common
 from . import types
 
 logger = logging.getLogger('google_genai._transformers')
@@ -195,20 +196,20 @@ def t_models_url(
 
 
 def t_extract_models(
-    response: dict[str, Any],
-) -> list[dict[str, Any]]:
+    response: _common.StringDict,
+) -> list[_common.StringDict]:
   if not response:
     return []
 
-  models: Optional[list[dict[str, Any]]] = response.get('models')
+  models: Optional[list[_common.StringDict]] = response.get('models')
   if models is not None:
     return models
 
-  tuned_models: Optional[list[dict[str, Any]]] = response.get('tunedModels')
+  tuned_models: Optional[list[_common.StringDict]] = response.get('tunedModels')
   if tuned_models is not None:
     return tuned_models
 
-  publisher_models: Optional[list[dict[str, Any]]] = response.get(
+  publisher_models: Optional[list[_common.StringDict]] = response.get(
       'publisherModels'
   )
   if publisher_models is not None:
@@ -560,7 +561,7 @@ def t_contents(
   return result
 
 
-def handle_null_fields(schema: dict[str, Any]) -> None:
+def handle_null_fields(schema: _common.StringDict) -> None:
   """Process null fields in the schema so it is compatible with OpenAPI.
 
   The OpenAPI spec does not support 'type: 'null' in the schema. This function
@@ -639,9 +640,9 @@ def _raise_for_unsupported_mldev_properties(
 
 
 def process_schema(
-    schema: dict[str, Any],
+    schema: _common.StringDict,
     client: Optional[_api_client.BaseApiClient],
-    defs: Optional[dict[str, Any]] = None,
+    defs: Optional[_common.StringDict] = None,
     *,
     order_properties: bool = True,
 ) -> None:
@@ -740,7 +741,7 @@ def process_schema(
   if (ref := schema.pop('$ref', None)) is not None:
     schema.update(defs[ref.split('defs/')[-1]])
 
-  def _recurse(sub_schema: dict[str, Any]) -> dict[str, Any]:
+  def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
       sub_schema = defs[ref.split('defs/')[-1]]
@@ -820,7 +821,7 @@ def _process_enum(
 
 def _is_type_dict_str_any(
     origin: Union[types.SchemaUnionDict, Any],
-) -> TypeGuard[dict[str, Any]]:
+) -> TypeGuard[_common.StringDict]:
   """Verifies the schema is of type dict[str, Any] for mypy type checking."""
   return isinstance(origin, dict) and all(
       isinstance(key, str) for key in origin
@@ -1075,10 +1076,10 @@ LRO_POLLING_MULTIPLIER = 1.5
 
 
 def t_resolve_operation(
-    api_client: _api_client.BaseApiClient, struct: dict[str, Any]
+    api_client: _api_client.BaseApiClient, struct: _common.StringDict
 ) -> Any:
   if (name := struct.get('name')) and '/operations/' in name:
-    operation: dict[str, Any] = struct
+    operation: _common.StringDict = struct
     total_seconds = 0.0
     delay_seconds = LRO_POLLING_INITIAL_DELAY_SECONDS
     while operation.get('done') != True:

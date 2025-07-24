@@ -18,7 +18,8 @@
 # pylint: disable=protected-access
 
 import copy
-from typing import Any, AsyncIterator,Awaitable, Callable, Generic, Iterator, Literal, TypeVar, Union
+from typing import Any, AsyncIterator, Awaitable, Callable, Generic, Iterator, Literal, TypeVar, Union
+from . import _common
 from . import types
 
 T = TypeVar('T')
@@ -68,7 +69,7 @@ class _BasePager(Generic[T]):
 
   @property
   def page(self) -> list[T]:
-    """Returns a subset of the entire list of items. 
+    """Returns a subset of the entire list of items.
 
     For the number of items returned, see `pageSize()`.
 
@@ -115,13 +116,12 @@ class _BasePager(Generic[T]):
 
   @property
   def sdk_http_response(self) -> Union[types.HttpResponse, None]:
-    """Returns the http response of the API response.
-    """
+    """Returns the http response of the API response."""
 
     return self._sdk_http_response
 
   @property
-  def config(self) -> dict[str, Any]:
+  def config(self) -> _common.StringDict:
     """Returns the configuration when making the API request for the next page.
 
     A configuration is a set of optional parameters and arguments that can be

@@ -364,7 +364,7 @@ _RETRY_HTTP_STATUS_CODES = (
 )
 
 
-def _retry_args(options: Optional[HttpRetryOptions]) -> dict[str, Any]:
+def _retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   """Returns the retry args for the given http retry options.
 
   Args:
@@ -593,7 +593,7 @@ class BaseApiClient:
   @staticmethod
   def _ensure_httpx_ssl_ctx(
       options: HttpOptions,
-  ) -> Tuple[dict[str, Any], dict[str, Any]]:
+  ) -> Tuple[_common.StringDict, _common.StringDict]:
     """Ensures the SSL context is present in the HTTPX client args.
 
     Creates a default SSL context if one is not provided.
@@ -627,9 +627,9 @@ class BaseApiClient:
       )
 
     def _maybe_set(
-        args: Optional[dict[str, Any]],
+        args: Optional[_common.StringDict],
         ctx: ssl.SSLContext,
-    ) -> dict[str, Any]:
+    ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
       Does not override the SSL context if it is already set.
@@ -657,7 +657,7 @@ class BaseApiClient:
     )
 
   @staticmethod
-  def _ensure_aiohttp_ssl_ctx(options: HttpOptions) -> dict[str, Any]:
+  def _ensure_aiohttp_ssl_ctx(options: HttpOptions) -> _common.StringDict:
     """Ensures the SSL context is present in the async client args.
 
     Creates a default SSL context if one is not provided.
@@ -685,9 +685,9 @@ class BaseApiClient:
       )
 
     def _maybe_set(
-        args: Optional[dict[str, Any]],
+        args: Optional[_common.StringDict],
         ctx: ssl.SSLContext,
-    ) -> dict[str, Any]:
+    ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
       Does not override the SSL context if it is already set.
@@ -715,7 +715,7 @@ class BaseApiClient:
     return _maybe_set(async_args, ctx)
 
   @staticmethod
-  def _ensure_websocket_ssl_ctx(options: HttpOptions) -> dict[str, Any]:
+  def _ensure_websocket_ssl_ctx(options: HttpOptions) -> _common.StringDict:
     """Ensures the SSL context is present in the async client args.
 
     Creates a default SSL context if one is not provided.
@@ -743,9 +743,9 @@ class BaseApiClient:
       )
 
     def _maybe_set(
-        args: Optional[dict[str, Any]],
+        args: Optional[_common.StringDict],
         ctx: ssl.SSLContext,
-    ) -> dict[str, Any]:
+    ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
       Does not override the SSL context if it is already set.
@@ -1112,7 +1112,7 @@ class BaseApiClient:
         self._async_request_once, http_request, stream
     )
 
-  def get_read_only_http_options(self) -> dict[str, Any]:
+  def get_read_only_http_options(self) -> _common.StringDict:
     if isinstance(self._http_options, BaseModel):
       copied = self._http_options.model_dump()
     else:

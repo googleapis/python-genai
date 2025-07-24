@@ -65,7 +65,7 @@ class APIError(Exception):
         'code', response_json.get('error', {}).get('code', None)
     )
 
-  def _to_replay_record(self) -> dict[str, Any]:
+  def _to_replay_record(self) -> _common.StringDict:
     """Returns a dictionary representation of the error for replay recording.
 
     details is not included since it may expose internal information in the

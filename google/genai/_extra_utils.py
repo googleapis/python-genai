@@ -155,8 +155,8 @@ def get_function_map(
 
 
 def convert_number_values_for_dict_function_call_args(
-    args: dict[str, Any],
-) -> dict[str, Any]:
+    args: _common.StringDict,
+) -> _common.StringDict:
   """Converts float values in dict with no decimal to integers."""
   return {
       key: convert_number_values_for_function_call_args(value)
@@ -257,8 +257,8 @@ def convert_if_exist_pydantic_model(
 
 
 def convert_argument_from_function(
-    args: dict[str, Any], function: Callable[..., Any]
-) -> dict[str, Any]:
+    args: _common.StringDict, function: Callable[..., Any]
+) -> _common.StringDict:
   signature = inspect.signature(function)
   func_name = function.__name__
   converted_args = {}
@@ -274,7 +274,7 @@ def convert_argument_from_function(
 
 
 def invoke_function_from_dict_args(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -288,7 +288,7 @@ def invoke_function_from_dict_args(
 
 
 async def invoke_function_from_dict_args_async(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -321,7 +321,7 @@ def get_function_response_parts(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
           if not isinstance(func, McpToGenAiToolAdapter):
             func_response = {
@@ -356,7 +356,7 @@ async def get_function_response_parts_async(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
           if isinstance(func, McpToGenAiToolAdapter):
             mcp_tool_response = await func.call_tool(

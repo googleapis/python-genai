@@ -33,7 +33,6 @@ from . import _common
 from . import _live_converters as live_converters
 from . import _mcp_utils
 from . import _transformers as t
-from . import client
 from . import errors
 from . import types
 from ._api_client import BaseApiClient
@@ -288,7 +287,7 @@ class AsyncSession:
           print(f'{msg.text}')
     ```
     """
-    kwargs: dict[str, Any] = {}
+    kwargs: _common.StringDict = {}
     if media is not None:
       kwargs['media'] = media
     if audio is not None:
@@ -639,7 +638,7 @@ class AsyncSession:
     elif isinstance(formatted_input, Sequence) and any(
         isinstance(c, str) for c in formatted_input
     ):
-      to_object: dict[str, Any] = {}
+      to_object: _common.StringDict = {}
       content_input_parts: list[types.PartUnion] = []
       for item in formatted_input:
         if isinstance(item, get_args(types.PartUnion)):

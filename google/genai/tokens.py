@@ -27,7 +27,7 @@ from . import types
 logger = logging.getLogger('google_genai.tokens')
 
 
-def _get_field_masks(setup: Dict[str, Any]) -> str:
+def _get_field_masks(setup: _common.StringDict) -> str:
   """Return field_masks"""
   fields = []
   for k, v in setup.items():
@@ -42,9 +42,9 @@ def _get_field_masks(setup: Dict[str, Any]) -> str:
 
 
 def _convert_bidi_setup_to_token_setup(
-    request_dict: dict[str, Any],
+    request_dict: _common.StringDict,
     config: Optional[types.CreateAuthTokenConfigOrDict] = None,
-) -> Dict[str, Any]:
+) -> _common.StringDict:
   """Converts bidiGenerateContentSetup."""
   bidi_setup = request_dict.get('bidiGenerateContentSetup')
   if bidi_setup and bidi_setup.get('setup'):

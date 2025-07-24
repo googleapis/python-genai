@@ -22,14 +22,16 @@ import enum
 import functools
 import logging
 import typing
-from typing import Any, Callable, Optional, FrozenSet, Union, get_args, get_origin
+from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
 import warnings
-
 import pydantic
 from pydantic import alias_generators
+from typing_extensions import TypeAlias
 
 logger = logging.getLogger('google_genai._common')
+
+StringDict: TypeAlias = dict[str, Any]
 
 
 class ExperimentalWarning(Warning):
@@ -355,7 +357,6 @@ def _pretty_repr(
     return raw_repr.replace('\n', f'\n{next_indent_str}')
 
 
-
 def _format_collection(
     obj: Any,
     *,
@@ -555,7 +556,9 @@ def _normalize_key_for_matching(key_str: str) -> str:
   return key_str.replace("_", "").lower()
 
 
-def align_key_case(target_dict: dict[str, Any], update_dict: dict[str, Any]) -> dict[str, Any]:
+def align_key_case(
+    target_dict: StringDict, update_dict: StringDict
+) -> StringDict:
   """Aligns the keys of update_dict to the case of target_dict keys.
 
   Args:
@@ -565,7 +568,7 @@ def align_key_case(target_dict: dict[str, Any], update_dict: dict[str, Any]) -> 
   Returns:
       A new dictionary with keys aligned to target_dict's key casing.
   """
-  aligned_update_dict: dict[str, Any] = {}
+  aligned_update_dict: StringDict = {}
   target_keys_map = {_normalize_key_for_matching(key): key for key in target_dict.keys()}
 
   for key, value in update_dict.items():
@@ -587,7 +590,7 @@ def align_key_case(target_dict: dict[str, Any], update_dict: dict[str, Any]) -> 
 
 
 def recursive_dict_update(
-    target_dict: dict[str, Any], update_dict: dict[str, Any]
+    target_dict: StringDict, update_dict: StringDict
 ) -> None:
   """Recursively updates a target dictionary with values from an update dictionary.
 
