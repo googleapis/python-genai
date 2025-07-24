@@ -10706,6 +10706,9 @@ _DeleteBatchJobParametersOrDict = Union[
 class DeleteResourceJob(_common.BaseModel):
   """The return value of delete operation."""
 
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
   name: Optional[str] = Field(default=None, description="""""")
   done: Optional[bool] = Field(default=None, description="""""")
   error: Optional[JobError] = Field(default=None, description="""""")
@@ -10713,6 +10716,9 @@ class DeleteResourceJob(_common.BaseModel):
 
 class DeleteResourceJobDict(TypedDict, total=False):
   """The return value of delete operation."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
   name: Optional[str]
   """"""
