@@ -28,23 +28,9 @@ def test_tune_until_success(client):
         ),
     )
   else:
-    job = client.tunings.tune(
-        base_model="models/gemini-1.0-pro-001",
-        training_dataset=genai_types.TuningDataset(
-            examples=[
-                genai_types.TuningExample(
-                    text_input=f"Input text {i}",
-                    output=f"Output text {i}",
-                )
-                for i in range(5)
-            ],
-        ),
-        # Required for MLDev:
-        # "Either tuned_model_id or display_name must be set."
-        config=genai_types.CreateTuningJobConfig(
-            tuned_model_display_name="test_dataset_examples model",
-        ),
-    )
+    # Remove GenAI SDK test since it is deprecated:
+    # https://ai.google.dev/gemini-api/docs/model-tuning
+    return
 
   while not job.has_ended:
     # Skipping the sleep for when in replay mode.
