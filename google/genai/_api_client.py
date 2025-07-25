@@ -82,6 +82,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger('google_genai._api_client')
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB chunk size
+READ_BUFFER_SIZE = 2**20
 MAX_RETRY_COUNT = 3
 INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
@@ -994,6 +995,7 @@ class BaseApiClient:
         session = aiohttp.ClientSession(
             headers=http_request.headers,
             trust_env=True,
+            read_bufsize=READ_BUFFER_SIZE,
         )
         try:
           response = await session.request(
@@ -1020,6 +1022,7 @@ class BaseApiClient:
           session = aiohttp.ClientSession(
               headers=http_request.headers,
               trust_env=True,
+              read_bufsize=READ_BUFFER_SIZE,
           )
           response = await session.request(
               method=http_request.method,
@@ -1053,6 +1056,7 @@ class BaseApiClient:
           async with aiohttp.ClientSession(
               headers=http_request.headers,
               trust_env=True,
+              read_bufsize=READ_BUFFER_SIZE,
           ) as session:
             response = await session.request(
                 method=http_request.method,
@@ -1080,6 +1084,7 @@ class BaseApiClient:
           async with aiohttp.ClientSession(
               headers=http_request.headers,
               trust_env=True,
+              read_bufsize=READ_BUFFER_SIZE,
           ) as session:
             response = await session.request(
                 method=http_request.method,
@@ -1395,6 +1400,7 @@ class BaseApiClient:
       async with aiohttp.ClientSession(
           headers=self._http_options.headers,
           trust_env=True,
+          read_bufsize=READ_BUFFER_SIZE,
       ) as session:
         while True:
           if isinstance(file, io.IOBase):
@@ -1578,6 +1584,7 @@ class BaseApiClient:
       async with aiohttp.ClientSession(
           headers=http_request.headers,
           trust_env=True,
+          read_bufsize=READ_BUFFER_SIZE,
       ) as session:
         response = await session.request(
             method=http_request.method,

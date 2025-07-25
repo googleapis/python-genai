@@ -476,6 +476,28 @@ def test_sync_stream_with_should_return_http_headers(client):
   assert chunks > 2
 
 
+def test_sync_stream_with_non_text_modality(client):
+  response = client.models.generate_content_stream(
+      model='gemini-2.0-flash-preview-image-generation',
+      contents=(
+          'Generate an image of the Eiffel tower with fireworks in the'
+          ' background.'
+      ),
+      config={
+          'response_modalities': ['IMAGE', 'TEXT'],
+      },
+  )
+  chunks = 0
+  for chunk in response:
+    chunks += 1
+    if chunk.candidates[0].finish_reason is not None:
+      continue
+    for part in chunk.candidates[0].content.parts:
+      assert part.text is not None or part.inline_data is not None
+
+  assert chunks > 2
+
+
 @pytest.mark.asyncio
 async def test_async_stream(client):
   chunks = 0
@@ -503,6 +525,28 @@ async def test_async_stream_with_headers(client):
     chunks += 1
     assert part.text is not None or part.candidates[0].finish_reason
     assert part.sdk_http_response.headers is not None
+
+  assert chunks > 2
+
+
+@pytest.mark.asyncio
+async def test_async_stream_with_non_text_modality(client):
+  chunks = 0
+  async for chunk in await client.aio.models.generate_content_stream(
+      model='gemini-2.0-flash-preview-image-generation',
+      contents=(
+          'Generate an image of the Eiffel tower with fireworks in the'
+          ' background.'
+      ),
+      config={
+          'response_modalities': ['IMAGE', 'TEXT'],
+      },
+  ):
+    chunks += 1
+    if chunk.candidates[0].finish_reason is not None:
+      continue
+    for part in chunk.candidates[0].content.parts:
+      assert part.text is not None or part.inline_data is not None
 
   assert chunks > 2
 
