@@ -479,13 +479,14 @@ class ReplayApiClient(BaseApiClient):
   def _request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
       try:
-        result = super()._request(http_request, stream)
+        result = super()._request(http_request, http_options, stream)
       except errors.APIError as e:
         self._record_interaction(http_request, e)
         raise e
@@ -507,13 +508,16 @@ class ReplayApiClient(BaseApiClient):
   async def _async_request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
       try:
-        result = await super()._async_request(http_request, stream)
+        result = await super()._async_request(
+            http_request, http_options, stream
+        )
       except errors.APIError as e:
         self._record_interaction(http_request, e)
         raise e

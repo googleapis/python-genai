@@ -965,8 +965,21 @@ class BaseApiClient:
   def _request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
+    if http_options:
+      parameter_model = (
+          HttpOptions(**http_options)
+          if isinstance(http_options, dict)
+          else http_options
+      )
+      # Support per request retry options.
+      if parameter_model.retry_options:
+        retry_kwargs = _retry_args(parameter_model.retry_options)
+        retry = tenacity.Retrying(**retry_kwargs)
+        return retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+
     return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
 
   async def _async_request_once(
@@ -1111,8 +1124,20 @@ class BaseApiClient:
   async def _async_request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
+    if http_options:
+      parameter_model = (
+          HttpOptions(**http_options)
+          if isinstance(http_options, dict)
+          else http_options
+      )
+      # Support per request retry options.
+      if parameter_model.retry_options:
+        retry_kwargs = _retry_args(parameter_model.retry_options)
+        retry = tenacity.AsyncRetrying(**retry_kwargs)
+        return await retry(self._async_request_once, http_request, stream)  # type: ignore[no-any-return]
     return await self._async_retry(  # type: ignore[no-any-return]
         self._async_request_once, http_request, stream
     )
@@ -1134,7 +1159,7 @@ class BaseApiClient:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
-    response = self._request(http_request, stream=False)
+    response = self._request(http_request, http_options, stream=False)
     response_body = (
         response.response_stream[0] if response.response_stream else ''
     )
@@ -1151,7 +1176,7 @@ class BaseApiClient:
         http_method, path, request_dict, http_options
     )
 
-    session_response = self._request(http_request, stream=True)
+    session_response = self._request(http_request, http_options, stream=True)
     for chunk in session_response.segments():
       yield SdkHttpResponse(
           headers=session_response.headers, body=json.dumps(chunk)
@@ -1168,7 +1193,9 @@ class BaseApiClient:
         http_method, path, request_dict, http_options
     )
 
-    result = await self._async_request(http_request=http_request, stream=False)
+    result = await self._async_request(
+        http_request=http_request, http_options=http_options, stream=False
+    )
     response_body = result.response_stream[0] if result.response_stream else ''
     return SdkHttpResponse(headers=result.headers, body=response_body)
 
