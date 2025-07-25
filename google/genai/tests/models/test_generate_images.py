@@ -197,5 +197,13 @@ async def test_simple_prompt_async(client):
   )
 
   assert response.generated_images[0].image.image_bytes
+  # Verify the images accessor works correctly.
+  assert (
+      response.generated_images[0].image.image_bytes
+      == response.images[0].image_bytes
+  )
   assert len(response.generated_images) == 1
-  assert response.positive_prompt_safety_attributes.content_type == 'Positive Prompt'
+  assert (
+      response.positive_prompt_safety_attributes.content_type
+      == 'Positive Prompt'
+  )
