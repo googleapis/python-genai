@@ -339,6 +339,21 @@ def test_invalid_vertexai_constructor_empty(monkeypatch):
     Client(vertexai=True)
 
 
+def test_vertexai_constructor_empty_base_url_override(monkeypatch):
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
+  monkeypatch.setenv("GEMINI_API_KEY", "")
+
+  def mock_auth_default(scopes=None):
+    return None, None
+
+  monkeypatch.setattr(google.auth, "default", mock_auth_default)
+  # Including a base_url override skips the check for having proj/location or
+  # api_key set.
+  Client(vertexai=True, http_options={"base_url": "https://override.com/"})
+
+
 def test_invalid_mldev_constructor_empty(monkeypatch):
   with pytest.raises(ValueError):
     monkeypatch.setenv("GOOGLE_API_KEY", "")

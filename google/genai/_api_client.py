@@ -482,6 +482,11 @@ class BaseApiClient:
     elif isinstance(http_options, HttpOptions):
       validated_http_options = http_options
 
+    if validated_http_options.base_url:
+      self._has_base_url_override = True
+    else:
+      self._has_base_url_override = False
+
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
@@ -535,17 +540,29 @@ class BaseApiClient:
             + ' precedence over the API key from the environment variables.'
         )
         self.api_key = None
-      if not self.project and not self.api_key:
+      if (
+          not self.project
+          and not self.api_key
+          and not self._has_base_url_override
+      ):
+        # Skip fetching ADC if base url is provided in http options.
         credentials, self.project = _load_auth(project=None)
         if not self._credentials:
           self._credentials = credentials
-      if not ((self.project and self.location) or self.api_key):
+
+      has_sufficient_auth = (self.project and self.location) or self.api_key
+
+      if (not has_sufficient_auth and not self._has_base_url_override):
+        # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
             'Project and location or API key must be set when using the Vertex '
             'AI API.'
         )
       if self.api_key or self.location == 'global':
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
+      elif validated_http_options.base_url and not has_sufficient_auth:
+        # Avoid setting default base url and api version if base_url provided.
+        self._http_options.base_url = validated_http_options.base_url
       else:
         self._http_options.base_url = (
             f'https://{self.location}-aiplatform.googleapis.com/'
@@ -866,7 +883,7 @@ class BaseApiClient:
         self.vertexai
         and not path.startswith('projects/')
         and not query_vertex_base_models
-        and not self.api_key
+        and (self.project or self.location)
     ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
 
@@ -922,7 +939,7 @@ class BaseApiClient:
       stream: bool = False,
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
-    if self.vertexai and not self.api_key:
+    if self.vertexai and not self.api_key and not self._has_base_url_override:
       http_request.headers['Authorization'] = f'Bearer {self._access_token()}'
       if self._credentials and self._credentials.quota_project_id:
         http_request.headers['x-goog-user-project'] = (
@@ -974,7 +991,7 @@ class BaseApiClient:
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
 
-    if self.vertexai and not self.api_key:
+    if self.vertexai and not self.api_key and not self._has_base_url_override:
       http_request.headers['Authorization'] = (
           f'Bearer {await self._async_access_token()}'
       )
