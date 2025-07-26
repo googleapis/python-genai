@@ -463,7 +463,8 @@ for n, generated_video in enumerate(operation.response.generated_videos):
 Google Search can be used as a tool for grounding queries that with up to date
 information from the web.
 
-**Correct** ```python
+**Correct** 
+```python
 from google import genai
 
 client = genai.Client()
@@ -480,7 +481,6 @@ print(f"Response:\n {response.text}")
 print(f"Search Query: {response.candidates[0].grounding_metadata.web_search_queries}")
 # Urls used for grounding
 print(f"Search Pages: {', '.join([site.web.title for site in response.candidates[0].grounding_metadata.grounding_chunks])}")
-
 ```
 
 The output `response.text` will likely not be in JSON format, do not attempt to
