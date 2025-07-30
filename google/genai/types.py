@@ -9082,28 +9082,6 @@ ListTuningJobsResponseOrDict = Union[
 ]
 
 
-class TuningExample(_common.BaseModel):
-
-  text_input: Optional[str] = Field(
-      default=None, description="""Text model input."""
-  )
-  output: Optional[str] = Field(
-      default=None, description="""The expected model output."""
-  )
-
-
-class TuningExampleDict(TypedDict, total=False):
-
-  text_input: Optional[str]
-  """Text model input."""
-
-  output: Optional[str]
-  """The expected model output."""
-
-
-TuningExampleOrDict = Union[TuningExample, TuningExampleDict]
-
-
 class TuningDataset(_common.BaseModel):
   """Supervised fine-tuning training dataset."""
 
@@ -9115,10 +9093,6 @@ class TuningDataset(_common.BaseModel):
       default=None,
       description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
-  examples: Optional[list[TuningExample]] = Field(
-      default=None,
-      description="""Inline examples with simple input/output text.""",
-  )
 
 
 class TuningDatasetDict(TypedDict, total=False):
@@ -9129,9 +9103,6 @@ class TuningDatasetDict(TypedDict, total=False):
 
   vertex_dataset_resource: Optional[str]
   """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
-
-  examples: Optional[list[TuningExampleDict]]
-  """Inline examples with simple input/output text."""
 
 
 TuningDatasetOrDict = Union[TuningDataset, TuningDatasetDict]
@@ -9195,14 +9166,6 @@ class CreateTuningJobConfig(_common.BaseModel):
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Adapter size for tuning."""
   )
-  batch_size: Optional[int] = Field(
-      default=None,
-      description="""The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples.""",
-  )
-  learning_rate: Optional[float] = Field(
-      default=None,
-      description="""The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples.""",
-  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -9231,12 +9194,6 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   adapter_size: Optional[AdapterSize]
   """Adapter size for tuning."""
-
-  batch_size: Optional[int]
-  """The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples."""
-
-  learning_rate: Optional[float]
-  """The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples."""
 
 
 CreateTuningJobConfigOrDict = Union[

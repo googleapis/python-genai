@@ -86,20 +86,6 @@ def _ListTuningJobsParameters_to_mldev(
   return to_object
 
 
-def _TuningExample_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['text_input']) is not None:
-    setv(to_object, ['textInput'], getv(from_object, ['text_input']))
-
-  if getv(from_object, ['output']) is not None:
-    setv(to_object, ['output'], getv(from_object, ['output']))
-
-  return to_object
-
-
 def _TuningDataset_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -111,16 +97,6 @@ def _TuningDataset_to_mldev(
   if getv(from_object, ['vertex_dataset_resource']) is not None:
     raise ValueError(
         'vertex_dataset_resource parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['examples']) is not None:
-    setv(
-        to_object,
-        ['examples', 'examples'],
-        [
-            _TuningExample_to_mldev(item, to_object)
-            for item in getv(from_object, ['examples'])
-        ],
     )
 
   return to_object
@@ -168,20 +144,6 @@ def _CreateTuningJobConfig_to_mldev(
 
   if getv(from_object, ['adapter_size']) is not None:
     raise ValueError('adapter_size parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['batch_size']) is not None:
-    setv(
-        parent_object,
-        ['tuningTask', 'hyperparameters', 'batchSize'],
-        getv(from_object, ['batch_size']),
-    )
-
-  if getv(from_object, ['learning_rate']) is not None:
-    setv(
-        parent_object,
-        ['tuningTask', 'hyperparameters', 'learningRate'],
-        getv(from_object, ['learning_rate']),
-    )
 
   return to_object
 
@@ -289,9 +251,6 @@ def _TuningDataset_to_vertex(
         getv(from_object, ['vertex_dataset_resource']),
     )
 
-  if getv(from_object, ['examples']) is not None:
-    raise ValueError('examples parameter is not supported in Vertex AI.')
-
   return to_object
 
 
@@ -365,12 +324,6 @@ def _CreateTuningJobConfig_to_vertex(
         ['supervisedTuningSpec', 'hyperParameters', 'adapterSize'],
         getv(from_object, ['adapter_size']),
     )
-
-  if getv(from_object, ['batch_size']) is not None:
-    raise ValueError('batch_size parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['learning_rate']) is not None:
-    raise ValueError('learning_rate parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -1038,6 +991,10 @@ class Tunings(_api_module.BaseModule):
           experiment=job.experiment,
           project=self._api_client.project,
       )
+    elif job.experiment and self._api_client.vertexai and name is None:
+      _IpythonUtils.display_model_tuning_button(tuning_job_resource=job.name)
+    elif job.experiment and self._api_client.vertexai and job is None:
+      _IpythonUtils.display_model_tuning_button(tuning_job_resource=name)
     return job
 
   @_common.experimental_warning(
