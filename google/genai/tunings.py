@@ -1038,6 +1038,10 @@ class Tunings(_api_module.BaseModule):
           experiment=job.experiment,
           project=self._api_client.project,
       )
+    elif job.experiment and self._api_client.vertexai and name is None:
+      _IpythonUtils.display_model_tuning_button(tuning_job_resource=job.name)
+    elif job.experiment and self._api_client.vertexai and job is None:
+      _IpythonUtils.display_model_tuning_button(tuning_job_resource=name)
     return job
 
   @_common.experimental_warning(
