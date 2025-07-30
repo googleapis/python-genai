@@ -6154,6 +6154,17 @@ class GenerateImagesResponse(_common.BaseModel):
       """,
   )
 
+  @property
+  def images(self) -> list[Optional[Image]]:
+    """Returns the list of all generated images.
+
+    A convenience method for accessing the images. Some attributes of the
+    generated image are only available through the ``GeneratedImage`` object.
+    """
+    if not self.generated_images:
+      return []
+    return [generated_image.image for generated_image in self.generated_images]
+
 
 class GenerateImagesResponseDict(TypedDict, total=False):
   """The output images response."""
