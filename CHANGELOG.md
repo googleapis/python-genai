@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.28.0](https://github.com/googleapis/python-genai/compare/v1.27.0...v1.28.0) (2025-07-30)
+
+
+### Features
+
+* Add images quick accessor to GenerateImagesResponse ([2e43d91](https://github.com/googleapis/python-genai/commit/2e43d91e3c8b33df1c621a09fdc782f53824fb51))
+* Allow methods in models to return headers in sdk_http_response by default. ([fa6675a](https://github.com/googleapis/python-genai/commit/fa6675a9ca4d2042d61ad7f47c65add65e7b4987))
+* Allow methods in tuning to return headers in sdk_http_response by default ([dd19971](https://github.com/googleapis/python-genai/commit/dd199715304dcad188e4711d1c8997c812ef3227))
+* Define StringDict type alias for better readability ([0f4613f](https://github.com/googleapis/python-genai/commit/0f4613f35fb0b0be8cf31b6dfdf08b4c65903df3))
+* Increase buffer size to read response body from HTTP client ([ae2d790](https://github.com/googleapis/python-genai/commit/ae2d79051995f753fa997a9c636cd2dd8fd04a59))
+* Support retry configuration at request level ([417e655](https://github.com/googleapis/python-genai/commit/417e655d1fb00633b2a700942fe7f0b895bc25aa))
+
+
+### Bug Fixes
+
+* Allow empty proj/location and api key when overriding base_url ([79f7bfc](https://github.com/googleapis/python-genai/commit/79f7bfcd1cada39a2fe4902d55a7b0ffaa499cbe))
+* Retry async when seeing aiohttp ClientConnectorError, ClientOSError, ServerDisconnectedError ([b0d18de](https://github.com/googleapis/python-genai/commit/b0d18decb49d17840f9e5d27bc6603a6827e400b))
+
 ## [1.27.0](https://github.com/googleapis/python-genai/compare/v1.26.0...v1.27.0) (2025-07-22)
 
 
