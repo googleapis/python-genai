@@ -6757,6 +6757,204 @@ UpscaleImageResponseOrDict = Union[
 ]
 
 
+class ProductImage(_common.BaseModel):
+  """An image of the product."""
+
+  product_image: Optional[Image] = Field(
+      default=None,
+      description="""An image of the product to be recontextualized.""",
+  )
+
+
+class ProductImageDict(TypedDict, total=False):
+  """An image of the product."""
+
+  product_image: Optional[ImageDict]
+  """An image of the product to be recontextualized."""
+
+
+ProductImageOrDict = Union[ProductImage, ProductImageDict]
+
+
+class RecontextImageSource(_common.BaseModel):
+  """A set of source input(s) for image recontextualization."""
+
+  prompt: Optional[str] = Field(
+      default=None,
+      description="""A text prompt for guiding the model during image
+      recontextualization. Not supported for Virtual Try-On.""",
+  )
+  person_image: Optional[Image] = Field(
+      default=None,
+      description="""Image of the person or subject who will be wearing the
+      product(s).""",
+  )
+  product_images: Optional[list[ProductImage]] = Field(
+      default=None, description="""A list of product images."""
+  )
+
+
+class RecontextImageSourceDict(TypedDict, total=False):
+  """A set of source input(s) for image recontextualization."""
+
+  prompt: Optional[str]
+  """A text prompt for guiding the model during image
+      recontextualization. Not supported for Virtual Try-On."""
+
+  person_image: Optional[ImageDict]
+  """Image of the person or subject who will be wearing the
+      product(s)."""
+
+  product_images: Optional[list[ProductImageDict]]
+  """A list of product images."""
+
+
+RecontextImageSourceOrDict = Union[
+    RecontextImageSource, RecontextImageSourceDict
+]
+
+
+class RecontextImageConfig(_common.BaseModel):
+  """Configuration for recontextualizing an image."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  number_of_images: Optional[int] = Field(
+      default=None, description="""Number of images to generate."""
+  )
+  base_steps: Optional[int] = Field(
+      default=None,
+      description="""The number of sampling steps. A higher value has better image
+      quality, while a lower value has better latency.""",
+  )
+  output_gcs_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage URI used to store the generated images.""",
+  )
+  seed: Optional[int] = Field(
+      default=None, description="""Random seed for image generation."""
+  )
+  safety_filter_level: Optional[SafetyFilterLevel] = Field(
+      default=None, description="""Filter level for safety filtering."""
+  )
+  person_generation: Optional[PersonGeneration] = Field(
+      default=None,
+      description="""Whether allow to generate person images, and restrict to specific
+      ages.""",
+  )
+  output_mime_type: Optional[str] = Field(
+      default=None, description="""MIME type of the generated image."""
+  )
+  output_compression_quality: Optional[int] = Field(
+      default=None,
+      description="""Compression quality of the generated image (for ``image/jpeg``
+      only).""",
+  )
+  enhance_prompt: Optional[bool] = Field(
+      default=None, description="""Whether to use the prompt rewriting logic."""
+  )
+
+
+class RecontextImageConfigDict(TypedDict, total=False):
+  """Configuration for recontextualizing an image."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  number_of_images: Optional[int]
+  """Number of images to generate."""
+
+  base_steps: Optional[int]
+  """The number of sampling steps. A higher value has better image
+      quality, while a lower value has better latency."""
+
+  output_gcs_uri: Optional[str]
+  """Cloud Storage URI used to store the generated images."""
+
+  seed: Optional[int]
+  """Random seed for image generation."""
+
+  safety_filter_level: Optional[SafetyFilterLevel]
+  """Filter level for safety filtering."""
+
+  person_generation: Optional[PersonGeneration]
+  """Whether allow to generate person images, and restrict to specific
+      ages."""
+
+  output_mime_type: Optional[str]
+  """MIME type of the generated image."""
+
+  output_compression_quality: Optional[int]
+  """Compression quality of the generated image (for ``image/jpeg``
+      only)."""
+
+  enhance_prompt: Optional[bool]
+  """Whether to use the prompt rewriting logic."""
+
+
+RecontextImageConfigOrDict = Union[
+    RecontextImageConfig, RecontextImageConfigDict
+]
+
+
+class _RecontextImageParameters(_common.BaseModel):
+  """The parameters for recontextualizing an image."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  source: Optional[RecontextImageSource] = Field(
+      default=None,
+      description="""A set of source input(s) for image recontextualization.""",
+  )
+  config: Optional[RecontextImageConfig] = Field(
+      default=None,
+      description="""Configuration for image recontextualization.""",
+  )
+
+
+class _RecontextImageParametersDict(TypedDict, total=False):
+  """The parameters for recontextualizing an image."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  source: Optional[RecontextImageSourceDict]
+  """A set of source input(s) for image recontextualization."""
+
+  config: Optional[RecontextImageConfigDict]
+  """Configuration for image recontextualization."""
+
+
+_RecontextImageParametersOrDict = Union[
+    _RecontextImageParameters, _RecontextImageParametersDict
+]
+
+
+class RecontextImageResponse(_common.BaseModel):
+  """The output images response."""
+
+  generated_images: Optional[list[GeneratedImage]] = Field(
+      default=None, description="""List of generated images."""
+  )
+
+
+class RecontextImageResponseDict(TypedDict, total=False):
+  """The output images response."""
+
+  generated_images: Optional[list[GeneratedImageDict]]
+  """List of generated images."""
+
+
+RecontextImageResponseOrDict = Union[
+    RecontextImageResponse, RecontextImageResponseDict
+]
+
+
 class GetModelConfig(_common.BaseModel):
   """Optional parameters for models.get method."""
 

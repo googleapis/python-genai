@@ -2839,6 +2839,153 @@ def _UpscaleImageAPIParameters_to_vertex(
   return to_object
 
 
+def _ProductImage_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['product_image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_vertex(getv(from_object, ['product_image']), to_object),
+    )
+
+  return to_object
+
+
+def _RecontextImageSource_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['person_image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'personImage', 'image'],
+        _Image_to_vertex(getv(from_object, ['person_image']), to_object),
+    )
+
+  if getv(from_object, ['product_images']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'productImages'],
+        [
+            _ProductImage_to_vertex(item, to_object)
+            for item in getv(from_object, ['product_images'])
+        ],
+    )
+
+  return to_object
+
+
+def _RecontextImageConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['number_of_images']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'sampleCount'],
+        getv(from_object, ['number_of_images']),
+    )
+
+  if getv(from_object, ['base_steps']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'editConfig', 'baseSteps'],
+        getv(from_object, ['base_steps']),
+    )
+
+  if getv(from_object, ['output_gcs_uri']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'storageUri'],
+        getv(from_object, ['output_gcs_uri']),
+    )
+
+  if getv(from_object, ['seed']) is not None:
+    setv(parent_object, ['parameters', 'seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['safety_filter_level']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'safetySetting'],
+        getv(from_object, ['safety_filter_level']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'mimeType'],
+        getv(from_object, ['output_mime_type']),
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'compressionQuality'],
+        getv(from_object, ['output_compression_quality']),
+    )
+
+  if getv(from_object, ['enhance_prompt']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'enhancePrompt'],
+        getv(from_object, ['enhance_prompt']),
+    )
+
+  return to_object
+
+
+def _RecontextImageParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['source']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _RecontextImageSource_to_vertex(
+            getv(from_object, ['source']), to_object
+        ),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _RecontextImageConfig_to_vertex(
+            getv(from_object, ['config']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _GetModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -4420,6 +4567,24 @@ def _UpscaleImageResponse_from_vertex(
   return to_object
 
 
+def _RecontextImageResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['predictions']) is not None:
+    setv(
+        to_object,
+        ['generated_images'],
+        [
+            _GeneratedImage_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions'])
+        ],
+    )
+
+  return to_object
+
+
 def _Endpoint_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -5204,6 +5369,112 @@ class Models(_api_module.BaseModule):
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
     )
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  def recontext_image(
+      self,
+      *,
+      model: str,
+      source: types.RecontextImageSourceOrDict,
+      config: Optional[types.RecontextImageConfigOrDict] = None,
+  ) -> types.RecontextImageResponse:
+    """Recontextualizes an image.
+
+    There are two types of recontextualization currently supported:
+    1) Imagen Product Recontext - Generate images of products in new scenes
+       and contexts.
+    2) Virtual Try-On: Generate images of persons modeling fashion products.
+
+    Args:
+      model (str): The model to use.
+      source (RecontextImageSource): An object containing the source inputs
+        (prompt, person_image, product_images) for image recontext. prompt is
+        optional for product recontext and disallowed for virtual try-on.
+        person_image is required for virtual try-on, disallowed for product
+        recontext. product_images is required for both product recontext and
+        virtual try-on. Only one product image is supported for virtual try-on,
+        and up to 3 product images (different angles of the same product) are
+        supported for product recontext.
+      config (RecontextImageConfig): Configuration for recontextualization.
+
+    Usage:
+
+      ```
+      product_recontext_response = client.models.recontext_image(
+          model="imagen-product-recontext-preview-06-30",
+          source=types.RecontextImageSource(
+              prompt="In a modern kitchen setting.",
+              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = product_recontext_response.generated_images[0].image
+
+      virtual_try_on_response = client.models.recontext_image(
+          model="virtual-try-on-preview-08-04",
+          source=types.RecontextImageSource(
+              person_image=types.Image.from_file(IMAGE1_FILE_PATH),
+              product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = virtual_try_on_response.generated_images[0].image
+      ```
+    """
+
+    parameter_model = types._RecontextImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _RecontextImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _RecontextImageResponse_from_vertex(response_dict)
+
+    return_value = types.RecontextImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -6827,6 +7098,112 @@ class AsyncModels(_api_module.BaseModule):
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
     )
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  async def recontext_image(
+      self,
+      *,
+      model: str,
+      source: types.RecontextImageSourceOrDict,
+      config: Optional[types.RecontextImageConfigOrDict] = None,
+  ) -> types.RecontextImageResponse:
+    """Recontextualizes an image.
+
+    There are two types of recontextualization currently supported:
+    1) Imagen Product Recontext - Generate images of products in new scenes
+       and contexts.
+    2) Virtual Try-On: Generate images of persons modeling fashion products.
+
+    Args:
+      model (str): The model to use.
+      source (RecontextImageSource): An object containing the source inputs
+        (prompt, person_image, product_images) for image recontext. prompt is
+        optional for product recontext and disallowed for virtual try-on.
+        person_image is required for virtual try-on, disallowed for product
+        recontext. product_images is required for both product recontext and
+        virtual try-on. Only one product image is supported for virtual try-on,
+        and up to 3 product images (different angles of the same product) are
+        supported for product recontext.
+      config (RecontextImageConfig): Configuration for recontextualization.
+
+    Usage:
+
+      ```
+      product_recontext_response = client.models.recontext_image(
+          model="imagen-product-recontext-preview-06-30",
+          source=types.RecontextImageSource(
+              prompt="In a modern kitchen setting.",
+              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = product_recontext_response.generated_images[0].image
+
+      virtual_try_on_response = client.models.recontext_image(
+          model="virtual-try-on-preview-08-04",
+          source=types.RecontextImageSource(
+              person_image=types.Image.from_file(IMAGE1_FILE_PATH),
+              product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = virtual_try_on_response.generated_images[0].image
+      ```
+    """
+
+    parameter_model = types._RecontextImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _RecontextImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _RecontextImageResponse_from_vertex(response_dict)
+
+    return_value = types.RecontextImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
     self._api_client._verify_response(return_value)
     return return_value
 
