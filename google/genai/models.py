@@ -5757,9 +5757,8 @@ class Models(_api_module.BaseModule):
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
     - The partial resource name with 'publishers/', for example:
       'publishers/google/models/gemini-2.0-flash' or
-      'publishers/meta/models/llama-3.1-405b-instruct-maas'
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash' or 'meta/llama-3.1-405b-instruct-maas'
+      'google/gemini-2.0-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
@@ -5893,9 +5892,8 @@ class Models(_api_module.BaseModule):
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
     - The partial resource name with 'publishers/', for example:
       'publishers/google/models/gemini-2.0-flash' or
-      'publishers/meta/models/llama-3.1-405b-instruct-maas'
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash' or 'meta/llama-3.1-405b-instruct-maas'
+      'google/gemini-2.0-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
@@ -7490,9 +7488,8 @@ class AsyncModels(_api_module.BaseModule):
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
     - The partial resource name with 'publishers/', for example:
       'publishers/google/models/gemini-2.0-flash' or
-      'publishers/meta/models/llama-3.1-405b-instruct-maas'
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash' or 'meta/llama-3.1-405b-instruct-maas'
+      'google/gemini-2.0-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
