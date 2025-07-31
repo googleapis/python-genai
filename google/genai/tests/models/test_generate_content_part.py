@@ -486,17 +486,65 @@ def test_model_content_text(client):
     assert response.text
 
 
-def test_from_uploaded_file_uri(client):
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+def test_from_file_input(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = client.files.upload(file='tests/data/story.txt')
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
+        contents=file,
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
         contents=[
             'Summarize this file',
-            types.Part.from_uri(
-                file_uri='https://generativelanguage.googleapis.com/v1beta/files/w1l20sq33nwn',
-                mime_type='text/plain',
-            ),
+            file,
         ],
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[['Summarize this file', file]],
+    )
+
+
+def test_from_file_dict_input(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = client.files.upload(file='tests/data/story.txt')
+    file_dict = file.model_dump()
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=file_dict,
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            'Summarize this file',
+            file_dict,
+        ],
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[['Summarize this file', file_dict]],
+    )
+
+
+def test_from_uploaded_file_uri(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = client.files.upload(file='tests/data/story.txt')
+    file_part = types.Part.from_uri(file_uri=file.uri, mime_type='text/plain')
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=file_part,
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            'Summarize this file',
+            file_part,
+        ],
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[['Summarize this file', file_part]],
     )
 
 

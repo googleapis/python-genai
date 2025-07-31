@@ -3676,19 +3676,25 @@ class FileDict(TypedDict, total=False):
 
 FileOrDict = Union[File, FileDict]
 
+
 if _is_pillow_image_imported:
-  PartUnion = Union[File, Part, PIL_Image, str]
+  PartUnion = Union[str, PIL_Image, File, Part]
 else:
-  PartUnion = Union[File, Part, str]  # type: ignore[misc]
+  PartUnion = Union[str, File, Part]  # type: ignore[misc]
 
 
-PartUnionDict = Union[PartUnion, PartDict]
+if _is_pillow_image_imported:
+  PartUnionDict = Union[str, PIL_Image, File, FileDict, Part, PartDict]
+else:
+  PartUnionDict = Union[str, File, FileDict, Part, PartDict]  # type: ignore[misc]
 
 
-ContentUnion = Union[Content, list[PartUnion], PartUnion]
+ContentUnion = Union[Content, PartUnion, list[PartUnion]]
 
 
-ContentUnionDict = Union[ContentUnion, ContentDict]
+ContentUnionDict = Union[
+    Content, ContentDict, PartUnionDict, list[PartUnionDict]
+]
 
 
 class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
@@ -3764,10 +3770,10 @@ GenerationConfigRoutingConfigOrDict = Union[
 ]
 
 
-SpeechConfigUnion = Union[SpeechConfig, str]
+SpeechConfigUnion = Union[str, SpeechConfig]
 
 
-SpeechConfigUnionDict = Union[SpeechConfigUnion, SpeechConfigDict]
+SpeechConfigUnionDict = Union[str, SpeechConfig, SpeechConfigDict]
 
 
 class GenerateContentConfig(_common.BaseModel):
@@ -4160,10 +4166,10 @@ GenerateContentConfigOrDict = Union[
 ]
 
 
-ContentListUnion = Union[list[ContentUnion], ContentUnion]
+ContentListUnion = Union[ContentUnion, list[ContentUnion]]
 
 
-ContentListUnionDict = Union[list[ContentUnionDict], ContentUnionDict]
+ContentListUnionDict = Union[ContentUnionDict, list[ContentUnionDict]]
 
 
 class _GenerateContentParameters(_common.BaseModel):
@@ -12616,13 +12622,17 @@ LiveClientRealtimeInputOrDict = Union[
     LiveClientRealtimeInput, LiveClientRealtimeInputDict
 ]
 
+
 if _is_pillow_image_imported:
-  BlobImageUnion = Union[Blob, PIL_Image]
+  BlobImageUnion = Union[PIL_Image, Blob]
 else:
   BlobImageUnion = Blob  # type: ignore[misc]
 
 
-BlobImageUnionDict = Union[BlobImageUnion, BlobDict]
+if _is_pillow_image_imported:
+  BlobImageUnionDict = Union[PIL_Image, Blob, BlobDict]
+else:
+  BlobImageUnionDict = Union[Blob, BlobDict]  # type: ignore[misc]
 
 
 class LiveSendRealtimeInputParameters(_common.BaseModel):
