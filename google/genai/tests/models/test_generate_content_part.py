@@ -123,7 +123,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/dez0g1rajz7a'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/az606f58k7zj'
                                     ),
                                     'mime_type': 'image/png',
                                 }
@@ -151,7 +151,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/f1rtzshxniw4'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/wma71fsppgfp'
                                     ),
                                     'mime_type': 'image/jpeg',
                                 }
@@ -181,7 +181,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/8c7hpi2zez57'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/r6ksskgddyxb'
                                     ),
                                     'mime_type': 'application/pdf',
                                 }
@@ -214,7 +214,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/siotqjy5g6mw'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/57w3vpfomj71'
                                     ),
                                     'mime_type': 'video/mp4',
                                 }
@@ -248,9 +248,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/j2mpcv8edrqu'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/wkvof7yeqitl'
                                     ),
-                                    'mime_type': 'audio/mp4',
+                                    'mime_type': 'audio/mpeg',
                                 }
                             })
                         ],
@@ -274,7 +274,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                         types.Part(text='summarize this video'),
                         types.Part(
                             file_data=types.FileData(
-                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/tyvaih24jwje',
+                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/57w3vpfomj71',
                                 mime_type= 'video/mp4',
                             ),
                             video_metadata=types.VideoMetadata(
@@ -672,7 +672,7 @@ def test_video_audio_uri(client):
 def test_file(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     file = types.File(
-        uri='https://generativelanguage.googleapis.com/v1beta/files/cmpqbqoptyaa',
+        uri='https://generativelanguage.googleapis.com/v1beta/files/ly6p67c47xgq',
         mime_type='text/plain',
     )
     client.models.generate_content(

@@ -286,7 +286,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_url_context',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash-preview-04-17',
+            model='gemini-2.5-flash',
             contents=t.t_contents(
                 'what are the top headlines on https://news.google.com'
             ),
@@ -444,7 +444,7 @@ def test_automatic_function_calling_with_customized_math_rule(client):
     return numerator // denominator + 1
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash-preview-04-17',
+      model='gemini-2.5-flash',
       contents='what is the result of 1000/2?',
       config={
           'tools': [customized_divide_integers],
@@ -843,7 +843,7 @@ def test_automatic_function_calling_with_parameterized_generic_union_type(
 
   response = client.models.generate_content(
       model='gemini-1.5-flash',
-      contents='Can you describe the city of San Francisco?',
+      contents='Can you describe the city of San Francisco, USA?',
       config={
           'tools': [describe_cities],
           'automatic_function_calling': {'ignore_call_history': True},

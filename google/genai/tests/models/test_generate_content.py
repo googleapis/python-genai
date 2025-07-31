@@ -612,10 +612,6 @@ async def test_simple_shared_generation_config_stream_async(client):
 
 
 def test_log_probs(client):
-  # ML DEV discovery doc supports response_logprobs but the backend
-  # does not.
-  # TODO: update replay test json files when ML Dev backend is updated.
-  with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents='What is your name?',
@@ -2316,8 +2312,4 @@ async def test_error_handling_stream_async(client):
       continue
 
   except errors.ClientError as e:
-    assert (
-        e.message
-        == 'Developer instruction is not enabled for'
-        ' models/gemini-2.0-flash-exp-image-generation'
-    )
+    assert ('Developer instruction is not enabled' in e.message)

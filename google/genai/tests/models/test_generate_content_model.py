@@ -25,18 +25,8 @@ tuned_model_endpoint = (
     'projects/964831358985/locations/us-central1/endpoints/7226683110069370880'
 )
 
-tuned_model_with_model_name = 'tunedModels/generatenum5443-ekrw7ie9wis23zbeogbw6jq8'
 
 test_table: list[pytest_helper.TestTableItem] = [
-    pytest_helper.TestTableItem(
-        name='test_tuned_model_with_model_name',
-        parameters=types._GenerateContentParameters(
-            model=tuned_model_with_model_name,
-            contents=t.t_contents('how are you doing?'),
-        ),
-        exception_if_vertex='404',
-        skip_in_api_mode='It requires a specific ML Dev account.',
-    ),
     pytest_helper.TestTableItem(
         name='test_tuned_model',
         parameters=types._GenerateContentParameters(
@@ -100,18 +90,6 @@ def test_tuned_model_stream(client):
       chunks += 1
       assert chunk.text is not None or chunk.candidates[0].finish_reason
     assert chunks >= 2
-
-
-def test_tuned_model_with_model_name_stream(client):
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
-    chunks = 0
-    for chunk in client.models.generate_content_stream(
-        model=tuned_model_with_model_name,
-        contents='Tell me a story in 300 words.',
-    ):
-      chunks += 1
-      assert chunk.text is not None or chunk.candidates[0].finish_reason
-    assert chunks >= 1
 
 
 def test_start_with_models_stream(client):

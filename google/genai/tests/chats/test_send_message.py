@@ -147,7 +147,7 @@ def test_uploaded_file_uri(client):
         [
             'what is the image about?',
             types.Part.from_uri(
-                file_uri='https://generativelanguage.googleapis.com/v1beta/files/9w04rxmcgsp8',
+                file_uri='https://generativelanguage.googleapis.com/v1beta/files/az606f58k7zj',
                 mime_type='image/png',
             ),
         ],

@@ -5124,11 +5124,6 @@ class GenerateContentResponse(_common.BaseModel):
       description="""Timestamp when the request is made to the server.
       """,
   )
-  response_id: Optional[str] = Field(
-      default=None,
-      description="""Identifier for each response.
-      """,
-  )
   model_version: Optional[str] = Field(
       default=None,
       description="""Output only. The model version used to generate the response.""",
@@ -5136,6 +5131,10 @@ class GenerateContentResponse(_common.BaseModel):
   prompt_feedback: Optional[GenerateContentResponsePromptFeedback] = Field(
       default=None,
       description="""Output only. Content filter results for a prompt sent in the request. Note: Sent only in the first stream chunk. Only happens when no candidates were generated due to content violations.""",
+  )
+  response_id: Optional[str] = Field(
+      default=None,
+      description="""Output only. response_id is used to identify each response. It is the encoding of the event_id.""",
   )
   usage_metadata: Optional[GenerateContentResponseUsageMetadata] = Field(
       default=None, description="""Usage metadata about the response(s)."""
@@ -5405,15 +5404,14 @@ class GenerateContentResponseDict(TypedDict, total=False):
   """Timestamp when the request is made to the server.
       """
 
-  response_id: Optional[str]
-  """Identifier for each response.
-      """
-
   model_version: Optional[str]
   """Output only. The model version used to generate the response."""
 
   prompt_feedback: Optional[GenerateContentResponsePromptFeedbackDict]
   """Output only. Content filter results for a prompt sent in the request. Note: Sent only in the first stream chunk. Only happens when no candidates were generated due to content violations."""
+
+  response_id: Optional[str]
+  """Output only. response_id is used to identify each response. It is the encoding of the event_id."""
 
   usage_metadata: Optional[GenerateContentResponseUsageMetadataDict]
   """Usage metadata about the response(s)."""

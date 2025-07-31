@@ -1492,6 +1492,9 @@ def _GenerateContentResponse_from_mldev(
   if getv(from_object, ['promptFeedback']) is not None:
     setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
 
+  if getv(from_object, ['responseId']) is not None:
+    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
+
   if getv(from_object, ['usageMetadata']) is not None:
     setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
 

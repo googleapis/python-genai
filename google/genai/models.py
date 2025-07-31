@@ -3665,6 +3665,9 @@ def _GenerateContentResponse_from_mldev(
   if getv(from_object, ['promptFeedback']) is not None:
     setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
 
+  if getv(from_object, ['responseId']) is not None:
+    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
+
   if getv(from_object, ['usageMetadata']) is not None:
     setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
 
@@ -4317,14 +4320,14 @@ def _GenerateContentResponse_from_vertex(
   if getv(from_object, ['createTime']) is not None:
     setv(to_object, ['create_time'], getv(from_object, ['createTime']))
 
-  if getv(from_object, ['responseId']) is not None:
-    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
-
   if getv(from_object, ['modelVersion']) is not None:
     setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
 
   if getv(from_object, ['promptFeedback']) is not None:
     setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
+
+  if getv(from_object, ['responseId']) is not None:
+    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
 
   if getv(from_object, ['usageMetadata']) is not None:
     setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
