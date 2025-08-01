@@ -44,7 +44,6 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_generate_size_2k_imagen4-001',
-        exception_if_mldev='not supported in Gemini API',
         parameters=types._GenerateImagesParameters(
             model='imagen-4.0-generate-001',
             prompt='Red skateboard',
