@@ -1098,6 +1098,13 @@ def _LiveMusicGenerationConfig_to_mldev(
         getv(from_object, ['only_bass_and_drums']),
     )
 
+  if getv(from_object, ['music_generation_mode']) is not None:
+    setv(
+        to_object,
+        ['musicGenerationMode'],
+        getv(from_object, ['music_generation_mode']),
+    )
+
   return to_object
 
 
@@ -2869,6 +2876,13 @@ def _LiveMusicGenerationConfig_from_mldev(
         to_object,
         ['only_bass_and_drums'],
         getv(from_object, ['onlyBassAndDrums']),
+    )
+
+  if getv(from_object, ['musicGenerationMode']) is not None:
+    setv(
+        to_object,
+        ['music_generation_mode'],
+        getv(from_object, ['musicGenerationMode']),
     )
 
   return to_object

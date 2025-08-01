@@ -672,6 +672,22 @@ class Scale(_common.CaseInSensitiveEnum):
   """B major or Ab minor."""
 
 
+class MusicGenerationMode(_common.CaseInSensitiveEnum):
+  """The mode of music generation."""
+
+  MUSIC_GENERATION_MODE_UNSPECIFIED = 'MUSIC_GENERATION_MODE_UNSPECIFIED'
+  """Rely on the server default generation mode."""
+  QUALITY = 'QUALITY'
+  """Steer text prompts to regions of latent space with higher quality
+      music."""
+  DIVERSITY = 'DIVERSITY'
+  """Steer text prompts to regions of latent space with a larger
+      diversity of music."""
+  VOCALIZATION = 'VOCALIZATION'
+  """Steer text prompts to regions of latent space more likely to
+      generate music with vocals."""
+
+
 class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
   """The playback control signal to apply to the music generation."""
 
@@ -13354,6 +13370,10 @@ class LiveMusicGenerationConfig(_common.BaseModel):
       default=None,
       description="""Whether the audio output should contain only bass and drums.""",
   )
+  music_generation_mode: Optional[MusicGenerationMode] = Field(
+      default=None,
+      description="""The mode of music generation. Default mode is QUALITY.""",
+  )
 
 
 class LiveMusicGenerationConfigDict(TypedDict, total=False):
@@ -13396,6 +13416,9 @@ class LiveMusicGenerationConfigDict(TypedDict, total=False):
 
   only_bass_and_drums: Optional[bool]
   """Whether the audio output should contain only bass and drums."""
+
+  music_generation_mode: Optional[MusicGenerationMode]
+  """The mode of music generation. Default mode is QUALITY."""
 
 
 LiveMusicGenerationConfigOrDict = Union[
