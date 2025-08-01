@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.29.0](https://github.com/googleapis/python-genai/compare/v1.28.0...v1.29.0) (2025-08-01)
+
+
+### Features
+
+* Add image_size field for Gemini Developer API Imagen 4 generation ([f1852e6](https://github.com/googleapis/python-genai/commit/f1852e62e027efea52db4c5c372c80e52224b7f3))
+* Add Lyria enum for music generation mode for vocalization ([30c0676](https://github.com/googleapis/python-genai/commit/30c0676367896b02751ea4ee26edf3f0401fe901))
+* Allow methods in batch to return headers in sdk_http_response by default ([80fb4e3](https://github.com/googleapis/python-genai/commit/80fb4e3a401af27ceb3e7920d149ea7294d7742d))
+* Enable responseId for Gemini Developer API ([a57f7d9](https://github.com/googleapis/python-genai/commit/a57f7d90396efb2554bd3d6d940baf8ade21304d))
+* Support image recontext on Vertex ([8a45746](https://github.com/googleapis/python-genai/commit/8a45746334ecaaa6caf5ba894655fbb96ed3f3f8))
+
+
+### Documentation
+
+* Fix code block formatting in codegen_instructions.md ([f62fdac](https://github.com/googleapis/python-genai/commit/f62fdacf7cf150d9c7a23c997f9c329e07b4a3b0))
+* Regenerate docs for 1.28.0 ([bcef0a6](https://github.com/googleapis/python-genai/commit/bcef0a6b09983e873999013a4824ee04e5d724c0))
+
 ## [1.28.0](https://github.com/googleapis/python-genai/compare/v1.27.0...v1.28.0) (2025-07-30)
 
 
