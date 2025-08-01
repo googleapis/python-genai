@@ -284,7 +284,12 @@ class HttpResponse:
             chunk = chunk.decode('utf-8')
           if chunk.startswith('data: '):
             chunk = chunk[len('data: ') :]
-          yield json.loads(chunk)
+          try:
+            yield json.loads(chunk)
+          except json.JSONDecodeError as e:
+            raise errors.APIError(
+                200, {'message': chunk, 'status': 'Invalid JSON chunk'}
+            )
 
   async def async_segments(self) -> AsyncIterator[Any]:
     if isinstance(self.response_stream, list):
@@ -321,7 +326,12 @@ class HttpResponse:
               chunk = chunk[len('data: ') :]
             chunk = chunk.strip()
             if chunk:
-              yield json.loads(chunk)
+              try:
+                yield json.loads(chunk)
+              except json.JSONDecodeError as e:
+                raise errors.APIError(
+                    200, {'message': chunk, 'status': 'Invalid JSON chunk'}
+                )
         finally:
           if hasattr(self, '_session') and self._session:
             await self._session.close()
