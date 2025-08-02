@@ -1287,10 +1287,6 @@ class AsyncTunings(_api_module.BaseModule):
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-    return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
-    )
-    self._api_client._verify_response(return_value)
     return return_value
 
   async def _tune_mldev(
