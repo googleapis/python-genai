@@ -1,0 +1,7 @@
+let solicitudAprobada = true;
+
+if (solicitudAprobada) {
+    console.log("La solicitud fue aprobada. Se enviará la notificación.");
+} else {
+    console.log("La solicitud fue rechazada. Notificar al usuario.");
+}ser parte de esto es facinante 
