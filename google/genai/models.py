@@ -17,7 +17,7 @@
 
 import json
 import logging
-from typing import Any, AsyncIterator, Awaitable, Iterator, Optional, Union
+from typing import Any, AsyncIterator, Iterator, Optional, Union
 from urllib.parse import urlencode
 
 from . import _api_module
@@ -6681,7 +6681,7 @@ class AsyncModels(_api_module.BaseModule):
       model: str,
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
-  ) -> Awaitable[AsyncIterator[types.GenerateContentResponse]]:
+  ) -> AsyncIterator[types.GenerateContentResponse]:
     parameter_model = types._GenerateContentParameters(
         model=model,
         contents=contents,
