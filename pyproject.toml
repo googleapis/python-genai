@@ -1,53 +1,158 @@
-[build-system]
-requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=1.12.0"]
+import requests
+import json
+import os
 
-[project]
-name = "google-genai"
-version = "1.28.0"
-description = "GenAI Python SDK"
-readme = "README.md"
-license = {text = "Apache-2.0"}
-requires-python = ">=3.9"
-authors = [
-    { name = "Google LLC", email = "googleapis-packages@google.com" },
-]
-classifiers = [
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Topic :: Internet",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-]
-dependencies = [
-    "anyio>=4.8.0, <5.0.0",
-    "google-auth>=2.14.1, <3.0.0",
-    "httpx>=0.28.1, <1.0.0",
-    "pydantic>=2.0.0, <3.0.0",
-    "requests>=2.28.1, <3.0.0",
-    "tenacity>=8.2.3, <9.0.0",
-    "websockets>=13.0.0, <15.1.0",
-    "typing-extensions>=4.11.0, <5.0.0",
-]
+url = "https://openrouter.ai/api/v1/chat/completions"
+headers = {
+  "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
+  "Content-Type": "application/json"
+}
+payload = {
+  "models": [
+    "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+    "google/gemma-3n-e4b-it",
+    "shisa-ai/shisa-v2-llama3.3-70b"
+  ],
+  "messages": [
+    {
+      "role": "system",
+      "content": "Olá tudo bem?"
+    },
+    {
+      "role": "user",
+      "content": ""
+    }
+  ],
+  "temperature": 1.2,
+  "stream": True,
+  "provider": {
+    "allow_fallbacks": True,
+    "data_collection": "allow",
+    "order": [
+      "AI21",
+      "AionLabs",
+      "Avian",
+      "Atoma",
+      "Anthropic",
+      "Amazon Bedrock",
+      "Alibaba",
+      "AtlasCloud",
+      "CrofAI",
+      "Cohere",
+      "Chutes",
+      "Cerebras",
+      "Azure",
+      "BaseTen",
+      "Cloudflare",
+      "GMICloud",
+      "Friendli",
+      "Featherless",
+      "Enfer",
+      "DeepSeek",
+      "DeepInfra",
+      "Crusoe",
+      "Fireworks",
+      "Kluster",
+      "Inflection",
+      "Inception",
+      "Hyperbolic",
+      "Google AI Studio",
+      "Groq",
+      "InferenceNet",
+      "Infermatic",
+      "Minimax",
+      "Mancer 2",
+      "Liquid",
+      "Lambda",
+      "Meta",
+      "Z.AI",
+      "Venice",
+      "Together",
+      "Targon",
+      "Ubicloud",
+      "WandB",
+      "xAI",
+      "Switchpoint",
+      "Stealth",
+      "Phala",
+      "Perplexity",
+      "Parasail",
+      "SambaNova",
+      "OpenInference",
+      "Novita",
+      "Nineteen",
+      "NextBit",
+      "OpenAI",
+      "Nebius",
+      "NCompass",
+      "Morph",
+      "Moonshot AI",
+      "Mistral"
+    ],
+    "only": [
+      "AI21",
+      "AionLabs",
+      "Alibaba",
+      "Amazon Bedrock",
+      "Anthropic",
+      "AtlasCloud",
+      "Atoma",
+      "Avian",
+      "Azure",
+      "BaseTen",
+      "Cerebras",
+      "Chutes",
+      "Cloudflare",
+      "Cohere",
+      "CrofAI",
+      "Crusoe",
+      "DeepInfra",
+      "DeepSeek",
+      "Enfer",
+      "Featherless",
+      "Fireworks",
+      "Friendli",
+      "GMICloud",
+      "Google",
+      "Google AI Studio",
+      "Groq",
+      "Hyperbolic",
+      "Inception",
+      "InferenceNet",
+      "Infermatic",
+      "Inflection",
+      "Kluster",
+      "Lambda",
+      "Liquid",
+      "Mancer 2",
+      "Meta",
+      "Minimax",
+      "Mistral",
+      "Moonshot AI",
+      "Morph",
+      "NCompass",
+      "Nebius",
+      "NextBit",
+      "Nineteen",
+      "Novita",
+      "OpenAI",
+      "OpenInference",
+      "Parasail",
+      "Perplexity",
+      "Phala",
+      "SambaNova",
+      "Stealth",
+      "Switchpoint",
+      "Targon",
+      "Together",
+      "Ubicloud",
+      "Venice",
+      "WandB",
+      "xAI",
+      "Z.AI"
+    ]
+  }
+}
 
-[project.optional-dependencies]
-aiohttp = ["aiohttp<4.0.0"]
-
-[project.urls]
-Homepage = "https://github.com/googleapis/python-genai"
-
-[tool.setuptools]
-packages = [
-    "google",
-    "google.genai",
-]
-include-package-data = true
-
-[tools.setuptools.package_data]
-"google.genai" = ["py.typed"]
+response = requests.post(url, headers=headers, json=payload)
+print(response.json())
