@@ -778,3 +778,38 @@ def test_aiohttp_retries_failed_request_retries_unsuccessfully_at_request_level(
       mock_request.assert_called()
 
   asyncio.run(run())
+
+
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_client_connector_error_retries_successfully(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        aiohttp.ClientConnectorError(
+            connection_key=aiohttp.client_reqrep.ConnectionKey(
+                'localhost', 80, False, True, None, None, None
+            ),
+            os_error=OSError,
+        ),
+        _aiohttp_async_response(200),
+    )
+    # The request will be automatically retried once, if catching the
+    # ClientConnectorError.
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with _patch_auth_default():
+      response = await client.async_request(
+          http_method='GET', path='path', request_dict={}
+      )
+      mock_request.assert_called()
+      assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
