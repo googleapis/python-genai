@@ -241,6 +241,10 @@ class UrlRetrievalStatus(_common.CaseInSensitiveEnum):
   """Url retrieval is successful."""
   URL_RETRIEVAL_STATUS_ERROR = 'URL_RETRIEVAL_STATUS_ERROR'
   """Url retrieval is failed due to error."""
+  URL_RETRIEVAL_STATUS_PAYWALL = 'URL_RETRIEVAL_STATUS_PAYWALL'
+  """Url retrieval is failed because the content is behind paywall."""
+  URL_RETRIEVAL_STATUS_UNSAFE = 'URL_RETRIEVAL_STATUS_UNSAFE'
+  """Url retrieval is failed because the content is unsafe."""
 
 
 class FinishReason(_common.CaseInSensitiveEnum):

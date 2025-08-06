@@ -294,7 +294,28 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={'tools': [{'url_context': {}}]},
         ),
     ),
-    pytest_helper.TestTableItem( 
+    pytest_helper.TestTableItem(
+        name='test_url_context_paywall_status',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'Read the content of this URL:'
+                ' https://unsplash.com/photos/portrait-of-an-adorable-golden-retriever-puppy-studio-shot-isolated-on-black-yRYCnnQASnc'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_url_context_unsafe_status',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'Fetch the content of http://0k9.me/test.html'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+    ),
+    pytest_helper.TestTableItem(
         # https://github.com/googleapis/python-genai/issues/830
         # - models started returning empty thought in response to queries
         #   containing tools.
@@ -304,11 +325,13 @@ test_table: list[pytest_helper.TestTableItem] = [
         #   them?
         # - This is also important to configm forward compatibility.
         #   when the models start returning thought_signature, those will get
-        #   dropped by the SDK leaving a `{'thought: True}` part. 
+        #   dropped by the SDK leaving a `{'thought: True}` part.
         name='test_chat_tools_empty_thoughts',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-05-20',
-            contents=[types.Content.model_validate(item) for item in [
+            contents=[
+                types.Content.model_validate(item)
+                for item in [
                     {
                         'parts': [{'text': 'Who won the 1955 world cup?'}],
                         'role': 'user',
@@ -333,7 +356,8 @@ test_table: list[pytest_helper.TestTableItem] = [
                         }],
                         'role': 'user',
                     },
-                ]],
+                ]
+            ],
             config={
                 'tools': [{'function_declarations': function_declarations}],
             },
@@ -1417,7 +1441,7 @@ def test_tools_chat_curation(client, caplog):
   sdk_logger = logging.getLogger('google_genai.models')
   sdk_logger.setLevel(logging.ERROR)
 
-  config={
+  config = {
       'tools': [{'function_declarations': function_declarations}],
   }
 
@@ -1427,11 +1451,11 @@ def test_tools_chat_curation(client, caplog):
   )
 
   response = chat.send_message(
-    message='Who won the 1955 world cup?',
+      message='Who won the 1955 world cup?',
   )
 
   response = chat.send_message(
-    message='What was the population of canada in 1955?',
+      message='What was the population of canada in 1955?',
   )
 
   history = chat.get_history(curated=True)
