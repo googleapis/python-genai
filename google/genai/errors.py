@@ -186,4 +186,45 @@ class FunctionInvocationError(ValueError):
   pass
 
 
+class InvalidTuningJobError(ValueError):
+  """Raised when the tuning job is invalid."""
+
+  pass
+
+
+class InvalidTuningJobNameError(ValueError):
+  """Raised when the tuning job name is invalid."""
+
+  pass
+
+
+class InvalidTuningJobStateError(ValueError):
+  """Raised when the tuning job is in an invalid state."""
+
+  pass
+
+
+class InvalidTuningJobExperimentError(ValueError):
+  """Raised when the tuning job is not associated with an experiment."""
+
+  pass
+
+
+class InvalidTuningJobExperimentNameError(ValueError):
+  """Raised when the tuning job experiment name is invalid."""
+
+  pass
+
+
+class InvalidTuningJobExperimentProjectError(ValueError):
+  """Raised when the tuning job experiment project is invalid."""
+
+  pass
+
+
+class InvalidTuningJobExperimentLocationError(ValueError):
+  """Raised when the tuning job experiment location is invalid."""
+
+  pass
+
 ExperimentalWarning = _common.ExperimentalWarning
