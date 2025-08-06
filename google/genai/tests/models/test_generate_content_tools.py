@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import collections
 import logging
 import sys
 import typing
@@ -824,6 +825,89 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
     )
     assert 'Sundae' in response.text
     assert 'cat' in response.text
+
+
+def test_automatic_function_calling_with_union_operator(client):
+  class AnimalObject(pydantic.BaseModel):
+    name: str
+    age: int
+    species: str
+
+  def get_information(
+      object_of_interest: str | AnimalObject,
+  ) -> str:
+    if isinstance(object_of_interest, AnimalObject):
+      return (
+          f'The animal is of {object_of_interest.species} species and is named'
+          f' {object_of_interest.name} is {object_of_interest.age} years old'
+      )
+    else:
+      return f'The object of interest is {object_of_interest}'
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'I have a one year old cat named Sundae, can you get the'
+          ' information of the cat for me?'
+      ),
+      config={
+          'tools': [get_information],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
+
+
+def test_automatic_function_calling_with_tuple_param(client):
+  def output_latlng(
+      latlng: tuple[float, float],
+  ) -> str:
+    return f'The latitude is {latlng[0]} and the longitude is {latlng[1]}'
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'The coordinates are (51.509, -0.118). What is the latitude and longitude?'
+      ),
+      config={
+          'tools': [output_latlng],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason='| is only supported in Python 3.10 and above.',
+)
+def test_automatic_function_calling_with_union_operator_return_type(client):
+  def get_cheese_age(cheese: int) -> int | float:
+    """
+    Retrieves data about the age of the cheese given its ID.
+
+    Args:
+        cheese_id: The ID of the cheese.
+
+    Returns:
+        An int or float of the age of the cheese.
+    """
+    if cheese == 1:
+      return 2.5
+    elif cheese == 2:
+      return 3
+    else:
+      return 0.0
+
+  response = client.models.generate_content(
+      model='gemini-2.5-flash',
+      contents='How old is the cheese with id 2?',
+      config={
+          'tools': [get_cheese_age],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert '3' in response.text
 
 
 def test_automatic_function_calling_with_parameterized_generic_union_type(

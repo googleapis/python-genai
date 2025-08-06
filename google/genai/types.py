@@ -2108,20 +2108,50 @@ class FunctionDeclaration(_common.BaseModel):
     from . import _automatic_function_calling_util
 
     parameters_properties = {}
+    parameters_json_schema = {}
     annotation_under_future = typing.get_type_hints(callable)
-    for name, param in inspect.signature(callable).parameters.items():
-      if param.kind in (
-          inspect.Parameter.POSITIONAL_OR_KEYWORD,
-          inspect.Parameter.KEYWORD_ONLY,
-          inspect.Parameter.POSITIONAL_ONLY,
-      ):
-        # This snippet catches the case when type hints are stored as strings
-        if isinstance(param.annotation, str):
-          param = param.replace(annotation=annotation_under_future[name])
-        schema = _automatic_function_calling_util._parse_schema_from_parameter(
-            api_option, param, callable.__name__
-        )
-        parameters_properties[name] = schema
+    try:
+      for name, param in inspect.signature(callable).parameters.items():
+        if param.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+            inspect.Parameter.POSITIONAL_ONLY,
+        ):
+          param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
+              param, annotation_under_future, name
+          )
+          schema = (
+              _automatic_function_calling_util._parse_schema_from_parameter(
+                  api_option, param, callable.__name__
+              )
+          )
+          parameters_properties[name] = schema
+    except ValueError:
+      parameters_properties = {}
+      for name, param in inspect.signature(callable).parameters.items():
+        if param.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+            inspect.Parameter.POSITIONAL_ONLY,
+        ):
+          try:
+            param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
+                param, annotation_under_future, name
+            )
+            param_schema_adapter = pydantic.TypeAdapter(
+                param.annotation,
+                config=pydantic.ConfigDict(arbitrary_types_allowed=True),
+            )
+            json_schema_dict = param_schema_adapter.json_schema()
+            json_schema_dict = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
+                json_schema_dict
+            )
+            parameters_json_schema[name] = json_schema_dict
+          except Exception as e:
+            _automatic_function_calling_util._raise_for_unsupported_param(
+                param, callable.__name__, e
+            )
+
     declaration = FunctionDeclaration(
         name=callable.__name__,
         description=inspect.cleandoc(callable.__doc__)
@@ -2139,6 +2169,8 @@ class FunctionDeclaration(_common.BaseModel):
               declaration.parameters
           )
       )
+    elif parameters_json_schema:
+      declaration.parameters_json_schema = parameters_json_schema
     # TODO: b/421991354 - Remove this check once the bug is fixed.
     if api_option == 'GEMINI_API':
       return declaration
@@ -2158,13 +2190,39 @@ class FunctionDeclaration(_common.BaseModel):
       return_value = return_value.replace(
           annotation=annotation_under_future['return']
       )
-    declaration.response = (
-        _automatic_function_calling_util._parse_schema_from_parameter(
-            api_option,
-            return_value,
-            callable.__name__,
+    response_schema: Optional[Schema] = None
+    response_json_schema: Optional[Union[dict[str, Any], Schema]] = {}
+    try:
+      response_schema = (
+          _automatic_function_calling_util._parse_schema_from_parameter(
+              api_option,
+              return_value,
+              callable.__name__,
+          )
+      )
+      if response_schema.any_of is not None:
+        # To handle any_of, we need to use responseJsonSchema
+        response_json_schema = response_schema
+        response_schema = None
+    except ValueError:
+      try:
+        return_value_schema_adapter = pydantic.TypeAdapter(
+            return_value.annotation,
+            config=pydantic.ConfigDict(arbitrary_types_allowed=True),
         )
-    )
+        response_json_schema = return_value_schema_adapter.json_schema()
+        response_json_schema = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
+            response_json_schema
+        )
+      except Exception as e:
+        _automatic_function_calling_util._raise_for_unsupported_param(
+            return_value, callable.__name__, e
+        )
+
+    if response_schema:
+      declaration.response = response_schema
+    elif response_json_schema:
+      declaration.response_json_schema = response_json_schema
     return declaration
 
   @classmethod
