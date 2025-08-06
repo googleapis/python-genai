@@ -172,18 +172,21 @@ class ServerError(APIError):
 
 class UnknownFunctionCallArgumentError(ValueError):
   """Raised when the function call argument cannot be converted to the parameter annotation."""
-
   pass
 
 
 class UnsupportedFunctionError(ValueError):
   """Raised when the function is not supported."""
+  pass
 
 
 class FunctionInvocationError(ValueError):
   """Raised when the function cannot be invoked with the given arguments."""
-
   pass
 
+
+class UnknownApiResponseError(ValueError):
+  """Raised when the response from the API cannot be parsed as JSON."""
+  pass
 
 ExperimentalWarning = _common.ExperimentalWarning

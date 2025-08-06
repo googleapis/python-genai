@@ -20,23 +20,21 @@ The BaseApiClient is intended to be a private module and is subject to change.
 """
 
 import asyncio
-from collections.abc import Awaitable, Generator
+from collections.abc import Generator
 import copy
 from dataclasses import dataclass
-import datetime
-import http
 import inspect
 import io
 import json
 import logging
 import math
 import os
-import ssl
 import random
+import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
@@ -48,7 +46,6 @@ from google.auth.credentials import Credentials
 from google.auth.transport.requests import Request
 import httpx
 from pydantic import BaseModel
-from pydantic import Field
 from pydantic import ValidationError
 import tenacity
 
@@ -56,10 +53,10 @@ from . import _common
 from . import errors
 from . import version
 from .types import HttpOptions
-from .types import HttpOptionsDict
 from .types import HttpOptionsOrDict
 from .types import HttpResponse as SdkHttpResponse
 from .types import HttpRetryOptions
+
 
 try:
   from websockets.asyncio.client import connect as ws_connect
@@ -238,12 +235,12 @@ class HttpResponse:
       self.headers = headers
     elif isinstance(headers, httpx.Headers):
       self.headers = {
-        key: ', '.join(headers.get_list(key))
-        for key in headers.keys()}
+          key: ', '.join(headers.get_list(key)) for key in headers.keys()
+      }
     elif type(headers).__name__ == 'CIMultiDictProxy':
       self.headers = {
-          key: ', '.join(headers.getall(key))
-        for key in headers.keys()}
+          key: ', '.join(headers.getall(key)) for key in headers.keys()
+      }
 
     self.status_code: int = 200
     self.response_stream = response_stream
@@ -265,68 +262,32 @@ class HttpResponse:
   def json(self) -> Any:
     if not self.response_stream[0]:  # Empty response
       return ''
-    return json.loads(self.response_stream[0])
+    return self._load_json_from_response(self.response_stream[0])
 
   def segments(self) -> Generator[Any, None, None]:
     if isinstance(self.response_stream, list):
       # list of objects retrieved from replay or from non-streaming API.
       for chunk in self.response_stream:
-        yield json.loads(chunk) if chunk else {}
+        yield self._load_json_from_response(chunk) if chunk else {}
     elif self.response_stream is None:
       yield from []
     else:
       # Iterator of objects retrieved from the API.
-      for chunk in self.response_stream.iter_lines():  # type: ignore[union-attr]
-        if chunk:
-          # In streaming mode, the chunk of JSON is prefixed with "data:" which
-          # we must strip before parsing.
-          if not isinstance(chunk, str):
-            chunk = chunk.decode('utf-8')
-          if chunk.startswith('data: '):
-            chunk = chunk[len('data: ') :]
-          yield json.loads(chunk)
+      for chunk in self._iter_response_stream():
+        yield self._load_json_from_response(chunk)
 
   async def async_segments(self) -> AsyncIterator[Any]:
     if isinstance(self.response_stream, list):
       # list of objects retrieved from replay or from non-streaming API.
       for chunk in self.response_stream:
-        yield json.loads(chunk) if chunk else {}
+        yield self._load_json_from_response(chunk) if chunk else {}
     elif self.response_stream is None:
       async for c in []:  # type: ignore[attr-defined]
         yield c
     else:
       # Iterator of objects retrieved from the API.
-      if hasattr(self.response_stream, 'aiter_lines'):
-        async for chunk in self.response_stream.aiter_lines():
-          # This is httpx.Response.
-          if chunk:
-            # In async streaming mode, the chunk of JSON is prefixed with
-            # "data:" which we must strip before parsing.
-            if not isinstance(chunk, str):
-              chunk = chunk.decode('utf-8')
-            if chunk.startswith('data: '):
-              chunk = chunk[len('data: ') :]
-            yield json.loads(chunk)
-      elif hasattr(self.response_stream, 'content'):
-        # This is aiohttp.ClientResponse.
-        try:
-          while True:
-            chunk = await self.response_stream.content.readline()
-            if not chunk:
-              break
-            # In async streaming mode, the chunk of JSON is prefixed with
-            # "data:" which we must strip before parsing.
-            chunk = chunk.decode('utf-8')
-            if chunk.startswith('data: '):
-              chunk = chunk[len('data: ') :]
-            chunk = chunk.strip()
-            if chunk:
-              yield json.loads(chunk)
-        finally:
-          if hasattr(self, '_session') and self._session:
-            await self._session.close()
-      else:
-        raise ValueError('Error parsing streaming response.')
+      async for chunk in self._aiter_response_stream():
+        yield self._load_json_from_response(chunk)
 
   def byte_segments(self) -> Generator[Union[bytes, Any], None, None]:
     if isinstance(self.byte_stream, list):
@@ -345,6 +306,130 @@ class HttpResponse:
     for attribute in dir(self):
       response_payload[attribute] = copy.deepcopy(getattr(self, attribute))
 
+  def _iter_response_stream(self) -> Iterator[str]:
+    """Iterates over chunks retrieved from the API."""
+    if not isinstance(self.response_stream, httpx.Response):
+      raise TypeError(
+          'Expected self.response_stream to be an httpx.Response object, '
+          f'but got {type(self.response_stream).__name__}.'
+      )
+
+    chunk = ''
+    balance = 0
+    for line in self.response_stream.iter_lines():
+      if not line:
+        continue
+
+      # In streaming mode, the response of JSON is prefixed with "data: " which
+      # we must strip before parsing.
+      if line.startswith('data: '):
+        yield line[len('data: '):]
+        continue
+
+      # When API returns an error message, it comes line by line. So we buffer
+      # the lines until a complete JSON string is read. A complete JSON string
+      # is found when the balance is 0.
+      for c in line:
+        if c == '{':
+          balance += 1
+        elif c == '}':
+          balance -= 1
+
+      chunk += line
+      if balance == 0:
+        yield chunk
+        chunk = ''
+
+    # If there is any remaining chunk, yield it.
+    if chunk:
+      yield chunk
+
+  async def _aiter_response_stream(self) -> AsyncIterator[str]:
+    """Asynchronously iterates over chunks retrieved from the API."""
+    if not isinstance(
+        self.response_stream, (httpx.Response, aiohttp.ClientResponse)
+    ):
+      raise TypeError(
+          'Expected self.response_stream to be an httpx.Response or'
+          ' aiohttp.ClientResponse object, but got'
+          f' {type(self.response_stream).__name__}.'
+      )
+
+    chunk = ''
+    balance = 0
+    # httpx.Response has a dedicated async line iterator.
+    if isinstance(self.response_stream, httpx.Response):
+      async for line in self.response_stream.aiter_lines():
+        if not line:
+          continue
+        # In streaming mode, the response of JSON is prefixed with "data: "
+        # which we must strip before parsing.
+        if line.startswith('data: '):
+          yield line[len('data: '):]
+          continue
+
+        # When API returns an error message, it comes line by line. So we buffer
+        # the lines until a complete JSON string is read. A complete JSON string
+        # is found when the balance is 0.
+        for c in line:
+          if c == '{':
+            balance += 1
+          elif c == '}':
+            balance -= 1
+
+        chunk += line
+        if balance == 0:
+          yield chunk
+          chunk = ''
+
+    # aiohttp.ClientResponse uses a content stream that we read line by line.
+    elif isinstance(self.response_stream, aiohttp.ClientResponse):
+      while True:
+        # Read a line from the stream. This returns bytes.
+        line_bytes = await self.response_stream.content.readline()
+        if not line_bytes:
+          break
+        # Decode the bytes and remove trailing whitespace and newlines.
+        line = line_bytes.decode('utf-8').rstrip()
+        if not line:
+          continue
+
+        # In streaming mode, the response of JSON is prefixed with "data: "
+        # which we must strip before parsing.
+        if line.startswith('data: '):
+          yield line[len('data: '):]
+          continue
+
+        # When API returns an error message, it comes line by line. So we buffer
+        # the lines until a complete JSON string is read. A complete JSON string
+        # is found when the balance is 0.
+        for c in line:
+          if c == '{':
+            balance += 1
+          elif c == '}':
+            balance -= 1
+
+        chunk += line
+        if balance == 0:
+          yield chunk
+          chunk = ''
+
+    # If there is any remaining chunk, yield it.
+    if chunk:
+      yield chunk
+
+    if hasattr(self, '_session') and self._session:
+      await self._session.close()
+
+  @classmethod
+  def _load_json_from_response(cls, response: Any) -> Any:
+    """Loads JSON from the response, or raises an error if the parsing fails."""
+    try:
+      return json.loads(response)
+    except json.JSONDecodeError as e:
+      raise errors.UnknownApiResponseError(
+          f'Failed to parse response as JSON. Raw response: {response}'
+      ) from e
 
 # Default retry options.
 # The config is based on https://cloud.google.com/storage/docs/retry-strategy.
