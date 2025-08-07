@@ -187,29 +187,29 @@ class AsyncSession:
         and will not return until you send `turn_complete=True`.
 
     Example:
-    ```
-    import google.genai
-    from google.genai import types
-    import os
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-live-2.5-flash-preview';
+    .. code-block:: python
+      import google.genai
+      from google.genai import types
+      import os
 
-    client = genai.Client()
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]}
-    ) as session:
-      await session.send_client_content(
-          turns=types.Content(
-              role='user',
-              parts=[types.Part(text="Hello world!")]))
-      async for msg in session.receive():
-        if msg.text:
-          print(msg.text)
-    ```
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
+
+      client = genai.Client()
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]}
+      ) as session:
+        await session.send_client_content(
+            turns=types.Content(
+                role='user',
+                parts=[types.Part(text="Hello world!")]))
+        async for msg in session.receive():
+          if msg.text:
+            print(msg.text)
     """
     client_content = t.t_client_content(turns, turn_complete).model_dump(
         mode='json', exclude_none=True
@@ -253,39 +253,39 @@ class AsyncSession:
       media: A `Blob`-like object, the realtime media to send.
 
     Example:
-    ```
-    from pathlib import Path
 
-    from google import genai
-    from google.genai import types
+    .. code-block:: python
+      from pathlib import Path
 
-    import PIL.Image
+      from google import genai
+      from google.genai import types
 
-    import os
+      import PIL.Image
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-live-2.5-flash-preview';
+      import os
+
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
 
-    client = genai.Client()
+      client = genai.Client()
 
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]},
-    ) as session:
-      await session.send_realtime_input(
-          media=PIL.Image.open('image.jpg'))
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]},
+      ) as session:
+        await session.send_realtime_input(
+            media=PIL.Image.open('image.jpg'))
 
-      audio_bytes = Path('audio.pcm').read_bytes()
-      await session.send_realtime_input(
-          media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
+        audio_bytes = Path('audio.pcm').read_bytes()
+        await session.send_realtime_input(
+            media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
 
-      async for msg in session.receive():
-        if msg.text is not None:
-          print(f'{msg.text}')
-    ```
+        async for msg in session.receive():
+          if msg.text is not None:
+            print(f'{msg.text}')
     """
     kwargs: _common.StringDict = {}
     if media is not None:
@@ -351,52 +351,53 @@ class AsyncSession:
         `FunctionResponse`-like objects.
 
     Example:
-    ```
-    from google import genai
-    from google.genai import types
 
-    import os
+    .. code-block:: python
+      from google import genai
+      from google.genai import types
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-live-2.5-flash-preview';
+      import os
 
-    client = genai.Client()
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
-    tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
-    config = {
-        "tools": tools,
-        "response_modalities": ['TEXT']
-    }
+      client = genai.Client()
 
-    async with client.aio.live.connect(
-        model='models/gemini-live-2.5-flash-preview',
-        config=config
-    ) as session:
-      prompt = "Turn on the lights please"
-      await session.send_client_content(
-          turns={"parts": [{'text': prompt}]}
-      )
+      tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
+      config = {
+          "tools": tools,
+          "response_modalities": ['TEXT']
+      }
 
-      async for chunk in session.receive():
-          if chunk.server_content:
-            if chunk.text is not None:
-              print(chunk.text)
-          elif chunk.tool_call:
-            print(chunk.tool_call)
-            print('_'*80)
-            function_response=types.FunctionResponse(
-                    name='turn_on_the_lights',
-                    response={'result': 'ok'},
-                    id=chunk.tool_call.function_calls[0].id,
-                )
-            print(function_response)
-            await session.send_tool_response(
-                function_responses=function_response
-            )
+      async with client.aio.live.connect(
+          model='models/gemini-live-2.5-flash-preview',
+          config=config
+      ) as session:
+        prompt = "Turn on the lights please"
+        await session.send_client_content(
+            turns={"parts": [{'text': prompt}]}
+        )
 
-            print('_'*80)
+        async for chunk in session.receive():
+            if chunk.server_content:
+              if chunk.text is not None:
+                print(chunk.text)
+            elif chunk.tool_call:
+              print(chunk.tool_call)
+              print('_'*80)
+              function_response=types.FunctionResponse(
+                      name='turn_on_the_lights',
+                      response={'result': 'ok'},
+                      id=chunk.tool_call.function_calls[0].id,
+                  )
+              print(function_response)
+              await session.send_tool_response(
+                  function_responses=function_response
+              )
+
+              print('_'*80)
     """
     tool_response = t.t_tool_response(function_responses)
     if self._api_client.vertexai:
