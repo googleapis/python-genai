@@ -223,15 +223,6 @@ class ApiSpec(_common.CaseInSensitiveEnum):
   """Elastic search API spec."""
 
 
-class Environment(_common.CaseInSensitiveEnum):
-  """Required. The environment being operated."""
-
-  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
-  """Defaults to browser."""
-  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
-  """Operates in a web browser."""
-
-
 class UrlRetrievalStatus(_common.CaseInSensitiveEnum):
   """Status of the url retrieval."""
 
@@ -398,6 +389,17 @@ class JobState(_common.CaseInSensitiveEnum):
   """The job is partially succeeded, some results may be missing due to errors."""
 
 
+class TuningMode(_common.CaseInSensitiveEnum):
+  """Tuning mode."""
+
+  TUNING_MODE_UNSPECIFIED = 'TUNING_MODE_UNSPECIFIED'
+  """Tuning mode is unspecified."""
+  TUNING_MODE_FULL = 'TUNING_MODE_FULL'
+  """Full fine-tuning mode."""
+  TUNING_MODE_PEFT_ADAPTER = 'TUNING_MODE_PEFT_ADAPTER'
+  """PEFT adapter tuning mode."""
+
+
 class AdapterSize(_common.CaseInSensitiveEnum):
   """Optional. Adapter size for tuning."""
 
@@ -415,6 +417,17 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 16."""
   ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
   """Adapter size 32."""
+
+
+class TuningTask(_common.CaseInSensitiveEnum):
+  """Optional. The tuning task. Either I2V or T2V."""
+
+  TUNING_TASK_UNSPECIFIED = 'TUNING_TASK_UNSPECIFIED'
+  """Default value. This value is unused."""
+  TUNING_TASK_I2V = 'TUNING_TASK_I2V'
+  """Tuning task for image to video."""
+  TUNING_TASK_T2V = 'TUNING_TASK_T2V'
+  """Tuning task for text to video."""
 
 
 class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
@@ -3167,24 +3180,6 @@ class ToolCodeExecutionDict(TypedDict, total=False):
 ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
 
 
-class ToolComputerUse(_common.BaseModel):
-  """Tool to support computer use."""
-
-  environment: Optional[Environment] = Field(
-      default=None, description="""Required. The environment being operated."""
-  )
-
-
-class ToolComputerUseDict(TypedDict, total=False):
-  """Tool to support computer use."""
-
-  environment: Optional[Environment]
-  """Required. The environment being operated."""
-
-
-ToolComputerUseOrDict = Union[ToolComputerUse, ToolComputerUseDict]
-
-
 class Tool(_common.BaseModel):
   """Tool details of a tool that the model may use to generate a response."""
 
@@ -3223,10 +3218,6 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation.""",
   )
-  computer_use: Optional[ToolComputerUse] = Field(
-      default=None,
-      description="""Optional. Tool to support the model interacting directly with the computer. If enabled, it automatically populates computer-use specific Function Declarations.""",
-  )
 
 
 class ToolDict(TypedDict, total=False):
@@ -3258,9 +3249,6 @@ class ToolDict(TypedDict, total=False):
 
   code_execution: Optional[ToolCodeExecutionDict]
   """Optional. CodeExecution tool type. Enables the model to execute code as part of generation."""
-
-  computer_use: Optional[ToolComputerUseDict]
-  """Optional. Tool to support the model interacting directly with the computer. If enabled, it automatically populates computer-use specific Function Declarations."""
 
 
 ToolOrDict = Union[Tool, ToolDict]
@@ -4485,6 +4473,171 @@ class UrlContextMetadataDict(TypedDict, total=False):
 UrlContextMetadataOrDict = Union[UrlContextMetadata, UrlContextMetadataDict]
 
 
+class GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution(_common.BaseModel):
+  """Author attribution for a photo or review."""
+
+  display_name: Optional[str] = Field(
+      default=None, description="""Name of the author of the Photo or Review."""
+  )
+  photo_uri: Optional[str] = Field(
+      default=None,
+      description="""Profile photo URI of the author of the Photo or Review.""",
+  )
+  uri: Optional[str] = Field(
+      default=None, description="""URI of the author of the Photo or Review."""
+  )
+
+
+class GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionDict(
+    TypedDict, total=False
+):
+  """Author attribution for a photo or review."""
+
+  display_name: Optional[str]
+  """Name of the author of the Photo or Review."""
+
+  photo_uri: Optional[str]
+  """Profile photo URI of the author of the Photo or Review."""
+
+  uri: Optional[str]
+  """URI of the author of the Photo or Review."""
+
+
+GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionOrDict = Union[
+    GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution,
+    GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionDict,
+]
+
+
+class GroundingChunkMapsPlaceAnswerSourcesReviewSnippet(_common.BaseModel):
+  """Encapsulates a review snippet."""
+
+  author_attribution: Optional[
+      GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution
+  ] = Field(default=None, description="""This review's author.""")
+  flag_content_uri: Optional[str] = Field(
+      default=None,
+      description="""A link where users can flag a problem with the review.""",
+  )
+  google_maps_uri: Optional[str] = Field(
+      default=None, description="""A link to show the review on Google Maps."""
+  )
+  relative_publish_time_description: Optional[str] = Field(
+      default=None,
+      description="""A string of formatted recent time, expressing the review time relative to the current time in a form appropriate for the language and country.""",
+  )
+  review: Optional[str] = Field(
+      default=None,
+      description="""A reference representing this place review which may be used to look up this place review again.""",
+  )
+
+
+class GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict(
+    TypedDict, total=False
+):
+  """Encapsulates a review snippet."""
+
+  author_attribution: Optional[
+      GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionDict
+  ]
+  """This review's author."""
+
+  flag_content_uri: Optional[str]
+  """A link where users can flag a problem with the review."""
+
+  google_maps_uri: Optional[str]
+  """A link to show the review on Google Maps."""
+
+  relative_publish_time_description: Optional[str]
+  """A string of formatted recent time, expressing the review time relative to the current time in a form appropriate for the language and country."""
+
+  review: Optional[str]
+  """A reference representing this place review which may be used to look up this place review again."""
+
+
+GroundingChunkMapsPlaceAnswerSourcesReviewSnippetOrDict = Union[
+    GroundingChunkMapsPlaceAnswerSourcesReviewSnippet,
+    GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict,
+]
+
+
+class GroundingChunkMapsPlaceAnswerSources(_common.BaseModel):
+  """Sources used to generate the place answer."""
+
+  flag_content_uri: Optional[str] = Field(
+      default=None,
+      description="""A link where users can flag a problem with the generated answer.""",
+  )
+  review_snippets: Optional[
+      list[GroundingChunkMapsPlaceAnswerSourcesReviewSnippet]
+  ] = Field(
+      default=None,
+      description="""Snippets of reviews that are used to generate the answer.""",
+  )
+
+
+class GroundingChunkMapsPlaceAnswerSourcesDict(TypedDict, total=False):
+  """Sources used to generate the place answer."""
+
+  flag_content_uri: Optional[str]
+  """A link where users can flag a problem with the generated answer."""
+
+  review_snippets: Optional[
+      list[GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict]
+  ]
+  """Snippets of reviews that are used to generate the answer."""
+
+
+GroundingChunkMapsPlaceAnswerSourcesOrDict = Union[
+    GroundingChunkMapsPlaceAnswerSources,
+    GroundingChunkMapsPlaceAnswerSourcesDict,
+]
+
+
+class GroundingChunkMaps(_common.BaseModel):
+  """Chunk from Google Maps."""
+
+  place_answer_sources: Optional[GroundingChunkMapsPlaceAnswerSources] = Field(
+      default=None,
+      description="""Sources used to generate the place answer. This includes review snippets and photos that were used to generate the answer, as well as uris to flag content.""",
+  )
+  place_id: Optional[str] = Field(
+      default=None,
+      description="""This Place's resource name, in `places/{place_id}` format. Can be used to look up the Place.""",
+  )
+  text: Optional[str] = Field(
+      default=None, description="""Text of the chunk."""
+  )
+  title: Optional[str] = Field(
+      default=None, description="""Title of the chunk."""
+  )
+  uri: Optional[str] = Field(
+      default=None, description="""URI reference of the chunk."""
+  )
+
+
+class GroundingChunkMapsDict(TypedDict, total=False):
+  """Chunk from Google Maps."""
+
+  place_answer_sources: Optional[GroundingChunkMapsPlaceAnswerSourcesDict]
+  """Sources used to generate the place answer. This includes review snippets and photos that were used to generate the answer, as well as uris to flag content."""
+
+  place_id: Optional[str]
+  """This Place's resource name, in `places/{place_id}` format. Can be used to look up the Place."""
+
+  text: Optional[str]
+  """Text of the chunk."""
+
+  title: Optional[str]
+  """Title of the chunk."""
+
+  uri: Optional[str]
+  """URI reference of the chunk."""
+
+
+GroundingChunkMapsOrDict = Union[GroundingChunkMaps, GroundingChunkMapsDict]
+
+
 class RagChunkPageSpan(_common.BaseModel):
   """Represents where the chunk starts and ends in the document."""
 
@@ -4608,6 +4761,9 @@ GroundingChunkWebOrDict = Union[GroundingChunkWeb, GroundingChunkWebDict]
 class GroundingChunk(_common.BaseModel):
   """Grounding chunk."""
 
+  maps: Optional[GroundingChunkMaps] = Field(
+      default=None, description="""Grounding chunk from Google Maps."""
+  )
   retrieved_context: Optional[GroundingChunkRetrievedContext] = Field(
       default=None,
       description="""Grounding chunk from context retrieved by the retrieval tools.""",
@@ -4619,6 +4775,9 @@ class GroundingChunk(_common.BaseModel):
 
 class GroundingChunkDict(TypedDict, total=False):
   """Grounding chunk."""
+
+  maps: Optional[GroundingChunkMapsDict]
+  """Grounding chunk from Google Maps."""
 
   retrieved_context: Optional[GroundingChunkRetrievedContextDict]
   """Grounding chunk from context retrieved by the retrieval tools."""
@@ -4751,6 +4910,10 @@ SearchEntryPointOrDict = Union[SearchEntryPoint, SearchEntryPointDict]
 class GroundingMetadata(_common.BaseModel):
   """Metadata returned to client when grounding is enabled."""
 
+  google_maps_widget_context_token: Optional[str] = Field(
+      default=None,
+      description="""Optional. Output only. Resource name of the Google Maps widget context token to be used with the PlacesContextElement widget to render contextual data. This is populated only for Google Maps grounding.""",
+  )
   grounding_chunks: Optional[list[GroundingChunk]] = Field(
       default=None,
       description="""List of supporting references retrieved from specified grounding source.""",
@@ -4777,6 +4940,9 @@ class GroundingMetadata(_common.BaseModel):
 
 class GroundingMetadataDict(TypedDict, total=False):
   """Metadata returned to client when grounding is enabled."""
+
+  google_maps_widget_context_token: Optional[str]
+  """Optional. Output only. Resource name of the Google Maps widget context token to be used with the PlacesContextElement widget to render contextual data. This is populated only for Google Maps grounding."""
 
   grounding_chunks: Optional[list[GroundingChunkDict]]
   """List of supporting references retrieved from specified grounding source."""
@@ -7459,7 +7625,7 @@ class GenerationConfigThinkingConfig(_common.BaseModel):
   )
   thinking_budget: Optional[int] = Field(
       default=None,
-      description="""Optional. Indicates the thinking budget in tokens. This is only applied when enable_thinking is true.""",
+      description="""Optional. Indicates the thinking budget in tokens.""",
   )
 
 
@@ -7470,7 +7636,7 @@ class GenerationConfigThinkingConfigDict(TypedDict, total=False):
   """Optional. Indicates whether to include thoughts in the response. If true, thoughts are returned only when available."""
 
   thinking_budget: Optional[int]
-  """Optional. Indicates the thinking budget in tokens. This is only applied when enable_thinking is true."""
+  """Optional. Indicates the thinking budget in tokens."""
 
 
 GenerationConfigThinkingConfigOrDict = Union[
@@ -8382,7 +8548,7 @@ class TunedModel(_common.BaseModel):
 
   model: Optional[str] = Field(
       default=None,
-      description="""Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}`.""",
+      description="""Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}` When tuning from a base model, the version_id will be 1. For continuous tuning, the version id will be incremented by 1 from the last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`""",
   )
   endpoint: Optional[str] = Field(
       default=None,
@@ -8399,7 +8565,7 @@ class TunedModel(_common.BaseModel):
 class TunedModelDict(TypedDict, total=False):
 
   model: Optional[str]
-  """Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}`."""
+  """Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}` When tuning from a base model, the version_id will be 1. For continuous tuning, the version id will be incremented by 1 from the last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`"""
 
   endpoint: Optional[str]
   """Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`."""
@@ -8464,13 +8630,21 @@ class SupervisedHyperParameters(_common.BaseModel):
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Optional. Adapter size for tuning."""
   )
+  batch_size: Optional[int] = Field(
+      default=None,
+      description="""Optional. Batch size for tuning. This feature is only available for open source models.""",
+  )
   epoch_count: Optional[int] = Field(
       default=None,
       description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
   )
+  learning_rate: Optional[float] = Field(
+      default=None,
+      description="""Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models.""",
+  )
   learning_rate_multiplier: Optional[float] = Field(
       default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`.""",
+      description="""Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models.""",
   )
 
 
@@ -8480,11 +8654,17 @@ class SupervisedHyperParametersDict(TypedDict, total=False):
   adapter_size: Optional[AdapterSize]
   """Optional. Adapter size for tuning."""
 
+  batch_size: Optional[int]
+  """Optional. Batch size for tuning. This feature is only available for open source models."""
+
   epoch_count: Optional[int]
   """Optional. Number of complete passes the model makes over the entire training dataset during training."""
 
+  learning_rate: Optional[float]
+  """Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models."""
+
   learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`."""
+  """Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models."""
 
 
 SupervisedHyperParametersOrDict = Union[
@@ -8506,6 +8686,9 @@ class SupervisedTuningSpec(_common.BaseModel):
       default=None,
       description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
   )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode."""
+  )
   validation_dataset_uri: Optional[str] = Field(
       default=None,
       description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
@@ -8523,6 +8706,9 @@ class SupervisedTuningSpecDict(TypedDict, total=False):
 
   training_dataset_uri: Optional[str]
   """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode."""
 
   validation_dataset_uri: Optional[str]
   """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
@@ -8720,6 +8906,132 @@ class DistillationDataStatsDict(TypedDict, total=False):
 
 DistillationDataStatsOrDict = Union[
     DistillationDataStats, DistillationDataStatsDict
+]
+
+
+class GeminiPreferenceExampleCompletion(_common.BaseModel):
+  """Completion and its preference score."""
+
+  completion: Optional[Content] = Field(
+      default=None,
+      description="""Single turn completion for the given prompt.""",
+  )
+  score: Optional[float] = Field(
+      default=None, description="""The score for the given completion."""
+  )
+
+
+class GeminiPreferenceExampleCompletionDict(TypedDict, total=False):
+  """Completion and its preference score."""
+
+  completion: Optional[ContentDict]
+  """Single turn completion for the given prompt."""
+
+  score: Optional[float]
+  """The score for the given completion."""
+
+
+GeminiPreferenceExampleCompletionOrDict = Union[
+    GeminiPreferenceExampleCompletion, GeminiPreferenceExampleCompletionDict
+]
+
+
+class GeminiPreferenceExample(_common.BaseModel):
+  """Input example for preference optimization."""
+
+  completions: Optional[list[GeminiPreferenceExampleCompletion]] = Field(
+      default=None, description="""List of completions for a given prompt."""
+  )
+  contents: Optional[list[Content]] = Field(
+      default=None,
+      description="""Multi-turn contents that represents the Prompt.""",
+  )
+
+
+class GeminiPreferenceExampleDict(TypedDict, total=False):
+  """Input example for preference optimization."""
+
+  completions: Optional[list[GeminiPreferenceExampleCompletionDict]]
+  """List of completions for a given prompt."""
+
+  contents: Optional[list[ContentDict]]
+  """Multi-turn contents that represents the Prompt."""
+
+
+GeminiPreferenceExampleOrDict = Union[
+    GeminiPreferenceExample, GeminiPreferenceExampleDict
+]
+
+
+class PreferenceOptimizationDataStats(_common.BaseModel):
+  """Statistics computed for datasets used for preference optimization."""
+
+  score_variance_per_example_distribution: Optional[DatasetDistribution] = (
+      Field(
+          default=None,
+          description="""Output only. Dataset distributions for scores variance per example.""",
+      )
+  )
+  scores_distribution: Optional[DatasetDistribution] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for scores.""",
+  )
+  total_billable_token_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of billable tokens in the tuning dataset.""",
+  )
+  tuning_dataset_example_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of examples in the tuning dataset.""",
+  )
+  tuning_step_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. Number of tuning steps for this Tuning Job.""",
+  )
+  user_dataset_examples: Optional[list[GeminiPreferenceExample]] = Field(
+      default=None,
+      description="""Output only. Sample user examples in the training dataset.""",
+  )
+  user_input_token_distribution: Optional[DatasetDistribution] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the user input tokens.""",
+  )
+  user_output_token_distribution: Optional[DatasetDistribution] = Field(
+      default=None,
+      description="""Output only. Dataset distributions for the user output tokens.""",
+  )
+
+
+class PreferenceOptimizationDataStatsDict(TypedDict, total=False):
+  """Statistics computed for datasets used for preference optimization."""
+
+  score_variance_per_example_distribution: Optional[DatasetDistributionDict]
+  """Output only. Dataset distributions for scores variance per example."""
+
+  scores_distribution: Optional[DatasetDistributionDict]
+  """Output only. Dataset distributions for scores."""
+
+  total_billable_token_count: Optional[int]
+  """Output only. Number of billable tokens in the tuning dataset."""
+
+  tuning_dataset_example_count: Optional[int]
+  """Output only. Number of examples in the tuning dataset."""
+
+  tuning_step_count: Optional[int]
+  """Output only. Number of tuning steps for this Tuning Job."""
+
+  user_dataset_examples: Optional[list[GeminiPreferenceExampleDict]]
+  """Output only. Sample user examples in the training dataset."""
+
+  user_input_token_distribution: Optional[DatasetDistributionDict]
+  """Output only. Dataset distributions for the user input tokens."""
+
+  user_output_token_distribution: Optional[DatasetDistributionDict]
+  """Output only. Dataset distributions for the user output tokens."""
+
+
+PreferenceOptimizationDataStatsOrDict = Union[
+    PreferenceOptimizationDataStats, PreferenceOptimizationDataStatsDict
 ]
 
 
@@ -8954,6 +9266,12 @@ class TuningDataStats(_common.BaseModel):
   distillation_data_stats: Optional[DistillationDataStats] = Field(
       default=None, description="""Output only. Statistics for distillation."""
   )
+  preference_optimization_data_stats: Optional[
+      PreferenceOptimizationDataStats
+  ] = Field(
+      default=None,
+      description="""Output only. Statistics for preference optimization.""",
+  )
   supervised_tuning_data_stats: Optional[SupervisedTuningDataStats] = Field(
       default=None, description="""The SFT Tuning data stats."""
   )
@@ -8964,6 +9282,11 @@ class TuningDataStatsDict(TypedDict, total=False):
 
   distillation_data_stats: Optional[DistillationDataStatsDict]
   """Output only. Statistics for distillation."""
+
+  preference_optimization_data_stats: Optional[
+      PreferenceOptimizationDataStatsDict
+  ]
+  """Output only. Statistics for preference optimization."""
 
   supervised_tuning_data_stats: Optional[SupervisedTuningDataStatsDict]
   """The SFT Tuning data stats."""
@@ -9121,6 +9444,182 @@ class DistillationSpecDict(TypedDict, total=False):
 DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
 
 
+class PreTunedModel(_common.BaseModel):
+  """A pre-tuned model for continuous tuning."""
+
+  base_model: Optional[str] = Field(
+      default=None,
+      description="""Output only. The name of the base model this PreTunedModel was tuned from.""",
+  )
+  checkpoint_id: Optional[str] = Field(
+      default=None,
+      description="""Optional. The source checkpoint id. If not specified, the default checkpoint will be used.""",
+  )
+  tuned_model_name: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Model. E.g., a model resource name with a specified version id or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}` `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version id to use the default version: `projects/{project}/locations/{location}/models/{model}`""",
+  )
+
+
+class PreTunedModelDict(TypedDict, total=False):
+  """A pre-tuned model for continuous tuning."""
+
+  base_model: Optional[str]
+  """Output only. The name of the base model this PreTunedModel was tuned from."""
+
+  checkpoint_id: Optional[str]
+  """Optional. The source checkpoint id. If not specified, the default checkpoint will be used."""
+
+  tuned_model_name: Optional[str]
+  """The resource name of the Model. E.g., a model resource name with a specified version id or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}` `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version id to use the default version: `projects/{project}/locations/{location}/models/{model}`"""
+
+
+PreTunedModelOrDict = Union[PreTunedModel, PreTunedModelDict]
+
+
+class PreferenceOptimizationHyperParameters(_common.BaseModel):
+  """Hyperparameters for Preference Optimization."""
+
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None,
+      description="""Optional. Adapter size for preference optimization.""",
+  )
+  beta: Optional[float] = Field(
+      default=None,
+      description="""Optional. Weight for KL Divergence regularization.""",
+  )
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate.""",
+  )
+
+
+class PreferenceOptimizationHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Preference Optimization."""
+
+  adapter_size: Optional[AdapterSize]
+  """Optional. Adapter size for preference optimization."""
+
+  beta: Optional[float]
+  """Optional. Weight for KL Divergence regularization."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate."""
+
+
+PreferenceOptimizationHyperParametersOrDict = Union[
+    PreferenceOptimizationHyperParameters,
+    PreferenceOptimizationHyperParametersDict,
+]
+
+
+class PreferenceOptimizationSpec(_common.BaseModel):
+  """Tuning Spec for Preference Optimization."""
+
+  hyper_parameters: Optional[PreferenceOptimizationHyperParameters] = Field(
+      default=None,
+      description="""Optional. Hyperparameters for Preference Optimization.""",
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+class PreferenceOptimizationSpecDict(TypedDict, total=False):
+  """Tuning Spec for Preference Optimization."""
+
+  hyper_parameters: Optional[PreferenceOptimizationHyperParametersDict]
+  """Optional. Hyperparameters for Preference Optimization."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
+
+
+PreferenceOptimizationSpecOrDict = Union[
+    PreferenceOptimizationSpec, PreferenceOptimizationSpecDict
+]
+
+
+class VeoHyperParameters(_common.BaseModel):
+  """Hyperparameters for Veo."""
+
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate.""",
+  )
+  tuning_task: Optional[TuningTask] = Field(
+      default=None,
+      description="""Optional. The tuning task. Either I2V or T2V.""",
+  )
+
+
+class VeoHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Veo."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate."""
+
+  tuning_task: Optional[TuningTask]
+  """Optional. The tuning task. Either I2V or T2V."""
+
+
+VeoHyperParametersOrDict = Union[VeoHyperParameters, VeoHyperParametersDict]
+
+
+class VeoTuningSpec(_common.BaseModel):
+  """Tuning Spec for Veo Model Tuning."""
+
+  hyper_parameters: Optional[VeoHyperParameters] = Field(
+      default=None, description="""Optional. Hyperparameters for Veo."""
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+
+
+class VeoTuningSpecDict(TypedDict, total=False):
+  """Tuning Spec for Veo Model Tuning."""
+
+  hyper_parameters: Optional[VeoHyperParametersDict]
+  """Optional. Hyperparameters for Veo."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+
+VeoTuningSpecOrDict = Union[VeoTuningSpec, VeoTuningSpecDict]
+
+
 class TuningJob(_common.BaseModel):
   """A tuning job."""
 
@@ -9182,6 +9681,10 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Tuning Spec for open sourced and third party Partner models.""",
   )
+  custom_base_model: Optional[str] = Field(
+      default=None,
+      description="""Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models.""",
+  )
   distillation_spec: Optional[DistillationSpec] = Field(
       default=None, description="""Tuning Spec for Distillation."""
   )
@@ -9193,9 +9696,19 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Optional. The labels with user-defined metadata to organize TuningJob and generated resources such as Model and Endpoint. Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf for more information and examples of labels.""",
   )
+  output_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to the directory where tuning job outputs are written to. This field is only available and required for open source models.""",
+  )
   pipeline_job: Optional[str] = Field(
       default=None,
       description="""Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.""",
+  )
+  pre_tuned_model: Optional[PreTunedModel] = Field(
+      default=None, description="""The pre-tuned model for continuous tuning."""
+  )
+  preference_optimization_spec: Optional[PreferenceOptimizationSpec] = Field(
+      default=None, description="""Tuning Spec for Preference Optimization."""
   )
   satisfies_pzi: Optional[bool] = Field(
       default=None, description="""Output only. Reserved for future use."""
@@ -9210,6 +9723,9 @@ class TuningJob(_common.BaseModel):
   tuned_model_display_name: Optional[str] = Field(
       default=None,
       description="""Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters.""",
+  )
+  veo_tuning_spec: Optional[VeoTuningSpec] = Field(
+      default=None, description="""Tuning Spec for Veo Tuning."""
   )
 
   @property
@@ -9271,6 +9787,9 @@ class TuningJobDict(TypedDict, total=False):
   partner_model_tuning_spec: Optional[PartnerModelTuningSpecDict]
   """Tuning Spec for open sourced and third party Partner models."""
 
+  custom_base_model: Optional[str]
+  """Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models."""
+
   distillation_spec: Optional[DistillationSpecDict]
   """Tuning Spec for Distillation."""
 
@@ -9280,8 +9799,17 @@ class TuningJobDict(TypedDict, total=False):
   labels: Optional[dict[str, str]]
   """Optional. The labels with user-defined metadata to organize TuningJob and generated resources such as Model and Endpoint. Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf for more information and examples of labels."""
 
+  output_uri: Optional[str]
+  """Optional. Cloud Storage path to the directory where tuning job outputs are written to. This field is only available and required for open source models."""
+
   pipeline_job: Optional[str]
   """Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`."""
+
+  pre_tuned_model: Optional[PreTunedModelDict]
+  """The pre-tuned model for continuous tuning."""
+
+  preference_optimization_spec: Optional[PreferenceOptimizationSpecDict]
+  """Tuning Spec for Preference Optimization."""
 
   satisfies_pzi: Optional[bool]
   """Output only. Reserved for future use."""
@@ -9294,6 +9822,9 @@ class TuningJobDict(TypedDict, total=False):
 
   tuned_model_display_name: Optional[str]
   """Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
+
+  veo_tuning_spec: Optional[VeoTuningSpecDict]
+  """Tuning Spec for Veo Tuning."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]

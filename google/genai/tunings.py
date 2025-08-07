@@ -471,6 +471,11 @@ def _TuningJob_from_mldev(
         _TunedModel_from_mldev(getv(from_object, ['_self']), to_object),
     )
 
+  if getv(from_object, ['customBaseModel']) is not None:
+    setv(
+        to_object, ['custom_base_model'], getv(from_object, ['customBaseModel'])
+    )
+
   if getv(from_object, ['distillationSpec']) is not None:
     setv(
         to_object,
@@ -484,8 +489,21 @@ def _TuningJob_from_mldev(
   if getv(from_object, ['labels']) is not None:
     setv(to_object, ['labels'], getv(from_object, ['labels']))
 
+  if getv(from_object, ['outputUri']) is not None:
+    setv(to_object, ['output_uri'], getv(from_object, ['outputUri']))
+
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
+
+  if getv(from_object, ['preTunedModel']) is not None:
+    setv(to_object, ['pre_tuned_model'], getv(from_object, ['preTunedModel']))
+
+  if getv(from_object, ['preferenceOptimizationSpec']) is not None:
+    setv(
+        to_object,
+        ['preference_optimization_spec'],
+        getv(from_object, ['preferenceOptimizationSpec']),
+    )
 
   if getv(from_object, ['satisfiesPzi']) is not None:
     setv(to_object, ['satisfies_pzi'], getv(from_object, ['satisfiesPzi']))
@@ -502,6 +520,9 @@ def _TuningJob_from_mldev(
         ['tuned_model_display_name'],
         getv(from_object, ['tunedModelDisplayName']),
     )
+
+  if getv(from_object, ['veoTuningSpec']) is not None:
+    setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
   return to_object
 
@@ -671,6 +692,11 @@ def _TuningJob_from_vertex(
         getv(from_object, ['partnerModelTuningSpec']),
     )
 
+  if getv(from_object, ['customBaseModel']) is not None:
+    setv(
+        to_object, ['custom_base_model'], getv(from_object, ['customBaseModel'])
+    )
+
   if getv(from_object, ['distillationSpec']) is not None:
     setv(
         to_object,
@@ -684,8 +710,21 @@ def _TuningJob_from_vertex(
   if getv(from_object, ['labels']) is not None:
     setv(to_object, ['labels'], getv(from_object, ['labels']))
 
+  if getv(from_object, ['outputUri']) is not None:
+    setv(to_object, ['output_uri'], getv(from_object, ['outputUri']))
+
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
+
+  if getv(from_object, ['preTunedModel']) is not None:
+    setv(to_object, ['pre_tuned_model'], getv(from_object, ['preTunedModel']))
+
+  if getv(from_object, ['preferenceOptimizationSpec']) is not None:
+    setv(
+        to_object,
+        ['preference_optimization_spec'],
+        getv(from_object, ['preferenceOptimizationSpec']),
+    )
 
   if getv(from_object, ['satisfiesPzi']) is not None:
     setv(to_object, ['satisfies_pzi'], getv(from_object, ['satisfiesPzi']))
@@ -702,6 +741,9 @@ def _TuningJob_from_vertex(
         ['tuned_model_display_name'],
         getv(from_object, ['tunedModelDisplayName']),
     )
+
+  if getv(from_object, ['veoTuningSpec']) is not None:
+    setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
   return to_object
 
