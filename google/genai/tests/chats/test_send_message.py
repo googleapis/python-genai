@@ -17,7 +17,6 @@ import json
 import os
 import sys
 
-import PIL.Image
 from pydantic import BaseModel
 from pydantic import ValidationError
 import pytest
@@ -39,12 +38,6 @@ except ImportError as e:
     ) from e
   else:
     raise e
-
-
-IMAGE_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.jpg')
-)
-image = PIL.Image.open(IMAGE_FILE_PATH)
 
 
 pytestmark = pytest_helper.setup(
@@ -116,12 +109,12 @@ def test_parts(client):
   )
 
 
-def test_image(client):
+def test_image(client, image_jpeg):
   chat = client.chats.create(model='gemini-1.5-flash')
   chat.send_message(
       [
           'what is the image about?',
-          image,
+          image_jpeg,
       ],
   )
 

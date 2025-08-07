@@ -19,15 +19,10 @@
 import os
 
 import PIL.Image
+import pytest
 
 from ... import _transformers as t
 from ... import types
-
-IMAGE_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.jpg')
-)
-image = PIL.Image.open(IMAGE_FILE_PATH)
-
 
 
 def test_blob_dict():
@@ -44,8 +39,8 @@ def test_blob():
   assert blob.mime_type == 'audio/pcm'
 
 
-def test_image():
-  blob = t.t_blob(image)
+def test_image(image_jpeg):
+  blob = t.t_blob(image_jpeg)
   assert blob.data[6:10] == b'JFIF'
   assert blob.mime_type == 'image/jpeg'
 

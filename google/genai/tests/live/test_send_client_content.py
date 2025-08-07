@@ -20,19 +20,12 @@ import json
 import os
 from unittest import mock
 
-import PIL.Image
 import pytest
 from websockets import client
 
 from ... import client as gl_client
 from ... import live
 from ... import types
-
-
-IMAGE_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.jpg')
-)
-image = PIL.Image.open(IMAGE_FILE_PATH)
 
 
 def mock_api_client(vertexai=False):

@@ -19,7 +19,6 @@ import json
 import os
 from unittest import mock
 
-import PIL.Image
 import pytest
 from websockets import client
 
@@ -32,7 +31,6 @@ from .. import pytest_helper
 IMAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google.jpg')
 )
-image = PIL.Image.open(IMAGE_FILE_PATH)
 
 def mock_api_client(vertexai=False):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
@@ -92,15 +90,14 @@ async def test_send_media_blob(mock_websocket, vertexai):
       sent_data['realtime_input']['mediaChunks'][0]['mime_type'] == 'audio/pcm'
   )
 
-
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_media_image(mock_websocket, vertexai):
+async def test_send_media_image(mock_websocket, vertexai, image_jpeg):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
 
-  await session.send_realtime_input(media=image)
+  await session.send_realtime_input(media=image_jpeg)
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
@@ -190,14 +187,13 @@ async def test_send_video(mock_websocket, vertexai, content):
   assert sent_data['realtime_input']['video']['data'] == 'AAAAAAAA'
   assert sent_data['realtime_input']['video']['mime_type'] == 'image/png'
 
-
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_send_video_image(mock_websocket, vertexai):
+async def test_send_video_image(mock_websocket, vertexai, image_jpeg):
   api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
 
-  await session.send_realtime_input(video=image)
+  await session.send_realtime_input(video=image_jpeg)
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data

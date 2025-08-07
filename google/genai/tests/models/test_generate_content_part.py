@@ -19,7 +19,6 @@
 import base64
 import os
 
-import PIL.Image
 from pydantic import ValidationError
 import pytest
 
@@ -44,8 +43,6 @@ VIDEO_MP4_FILE_PATH = os.path.abspath(
 AUDIO_MP3_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/pixel.m4a')
 )
-image_png = PIL.Image.open(IMAGE_PNG_FILE_PATH)
-image_jpeg = PIL.Image.open(IMAGE_JPEG_FILE_PATH)
 with open(IMAGE_PNG_FILE_PATH, 'rb') as image_file:
   image_bytes = image_file.read()
   image_string = base64.b64encode(image_bytes).decode('utf-8')
@@ -409,7 +406,7 @@ def test_image_file(client):
   )
 
 
-def test_image_jpeg(client):
+def test_image_jpeg(client, image_jpeg):
   client.models.generate_content(
       model='gemini-1.5-flash',
       contents=['What is this image about?', image_jpeg],

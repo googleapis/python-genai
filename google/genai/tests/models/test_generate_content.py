@@ -17,7 +17,6 @@ import base64
 import enum
 import os
 
-import PIL.Image
 from pydantic import BaseModel, ValidationError, Field, ConfigDict
 from typing import Literal, List, Optional, Union, Set
 from datetime import datetime
@@ -34,7 +33,6 @@ from enum import Enum
 IMAGE_PNG_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google.png')
 )
-image_png = PIL.Image.open(IMAGE_PNG_FILE_PATH)
 
 with open(IMAGE_PNG_FILE_PATH, 'rb') as image_file:
   image_bytes = image_file.read()

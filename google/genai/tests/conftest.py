@@ -20,7 +20,6 @@ import datetime
 import os
 from unittest import mock
 import uuid
-
 import pytest
 
 from .. import _common
@@ -137,3 +136,19 @@ def mock_timestamped_unique_name():
       return_value='20240101000000_bd656',
   ) as unique_name_mock:
     yield unique_name_mock
+
+
+@pytest.fixture
+def image_jpeg():
+  import PIL.Image
+  image_path = os.path.join(os.path.dirname(__file__), 'data', 'google.jpg')
+  with PIL.Image.open(image_path) as img:
+    yield img
+
+
+@pytest.fixture
+def image_png():
+  import PIL.Image
+  image_path = os.path.join(os.path.dirname(__file__), 'data', 'google.png')
+  with PIL.Image.open(image_path) as img:
+    yield img
