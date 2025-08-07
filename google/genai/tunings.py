@@ -186,7 +186,7 @@ def _CreateTuningJobConfig_to_mldev(
   return to_object
 
 
-def _CreateTuningJobParameters_to_mldev(
+def _CreateTuningJobParametersPrivate_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -375,7 +375,7 @@ def _CreateTuningJobConfig_to_vertex(
   return to_object
 
 
-def _CreateTuningJobParameters_to_vertex(
+def _CreateTuningJobParametersPrivate_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -494,9 +494,6 @@ def _TuningJob_from_mldev(
 
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
-
-  if getv(from_object, ['preTunedModel']) is not None:
-    setv(to_object, ['pre_tuned_model'], getv(from_object, ['preTunedModel']))
 
   if getv(from_object, ['preferenceOptimizationSpec']) is not None:
     setv(
@@ -670,6 +667,9 @@ def _TuningJob_from_vertex(
         _TunedModel_from_vertex(getv(from_object, ['tunedModel']), to_object),
     )
 
+  if getv(from_object, ['preTunedModel']) is not None:
+    setv(to_object, ['pre_tuned_model'], getv(from_object, ['preTunedModel']))
+
   if getv(from_object, ['supervisedTuningSpec']) is not None:
     setv(
         to_object,
@@ -715,9 +715,6 @@ def _TuningJob_from_vertex(
 
   if getv(from_object, ['pipelineJob']) is not None:
     setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
-
-  if getv(from_object, ['preTunedModel']) is not None:
-    setv(to_object, ['pre_tuned_model'], getv(from_object, ['preTunedModel']))
 
   if getv(from_object, ['preferenceOptimizationSpec']) is not None:
     setv(
@@ -917,7 +914,7 @@ class Tunings(_api_module.BaseModule):
   def _tune(
       self,
       *,
-      base_model: str,
+      base_model: Optional[str] = None,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
@@ -932,7 +929,7 @@ class Tunings(_api_module.BaseModule):
       A TuningJob object.
     """
 
-    parameter_model = types._CreateTuningJobParameters(
+    parameter_model = types._CreateTuningJobParametersPrivate(
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
@@ -942,7 +939,9 @@ class Tunings(_api_module.BaseModule):
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _CreateTuningJobParameters_to_vertex(parameter_model)
+      request_dict = _CreateTuningJobParametersPrivate_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tuningJobs'.format_map(request_url_dict)
@@ -986,7 +985,7 @@ class Tunings(_api_module.BaseModule):
   def _tune_mldev(
       self,
       *,
-      base_model: str,
+      base_model: Optional[str] = None,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningOperation:
@@ -1001,7 +1000,7 @@ class Tunings(_api_module.BaseModule):
       A TuningJob operation.
     """
 
-    parameter_model = types._CreateTuningJobParameters(
+    parameter_model = types._CreateTuningJobParametersPrivate(
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
@@ -1013,7 +1012,7 @@ class Tunings(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateTuningJobParameters_to_mldev(parameter_model)
+      request_dict = _CreateTuningJobParametersPrivate_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tunedModels'.format_map(request_url_dict)
@@ -1269,7 +1268,7 @@ class AsyncTunings(_api_module.BaseModule):
   async def _tune(
       self,
       *,
-      base_model: str,
+      base_model: Optional[str] = None,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
@@ -1284,7 +1283,7 @@ class AsyncTunings(_api_module.BaseModule):
       A TuningJob object.
     """
 
-    parameter_model = types._CreateTuningJobParameters(
+    parameter_model = types._CreateTuningJobParametersPrivate(
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
@@ -1294,7 +1293,9 @@ class AsyncTunings(_api_module.BaseModule):
     if not self._api_client.vertexai:
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
-      request_dict = _CreateTuningJobParameters_to_vertex(parameter_model)
+      request_dict = _CreateTuningJobParametersPrivate_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tuningJobs'.format_map(request_url_dict)
@@ -1338,7 +1339,7 @@ class AsyncTunings(_api_module.BaseModule):
   async def _tune_mldev(
       self,
       *,
-      base_model: str,
+      base_model: Optional[str] = None,
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningOperation:
@@ -1353,7 +1354,7 @@ class AsyncTunings(_api_module.BaseModule):
       A TuningJob operation.
     """
 
-    parameter_model = types._CreateTuningJobParameters(
+    parameter_model = types._CreateTuningJobParametersPrivate(
         base_model=base_model,
         training_dataset=training_dataset,
         config=config,
@@ -1365,7 +1366,7 @@ class AsyncTunings(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateTuningJobParameters_to_mldev(parameter_model)
+      request_dict = _CreateTuningJobParametersPrivate_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tunedModels'.format_map(request_url_dict)

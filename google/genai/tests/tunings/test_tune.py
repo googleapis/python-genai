@@ -24,7 +24,7 @@ from .. import pytest_helper
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri",
-        parameters=genai_types._CreateTuningJobParameters(
+        parameters=genai_types.CreateTuningJobParameters(
             base_model="gemini-1.5-pro-002",
             training_dataset=genai_types.TuningDataset(
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
@@ -34,7 +34,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri_all_parameters",
-        parameters=genai_types._CreateTuningJobParameters(
+        parameters=genai_types.CreateTuningJobParameters(
             base_model="gemini-1.5-pro-002",
             training_dataset=genai_types.TuningDataset(
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
@@ -56,7 +56,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri_parameters_unsupported_by_vertex",
-        parameters=genai_types._CreateTuningJobParameters(
+        parameters=genai_types.CreateTuningJobParameters(
             base_model="gemini-1.5-pro-002",
             training_dataset=genai_types.TuningDataset(
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
@@ -72,7 +72,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_examples_parameters_unsupported_by_mldev",
-        parameters=genai_types._CreateTuningJobParameters(
+        parameters=genai_types.CreateTuningJobParameters(
             # Error: "models/gemini-1.5-pro-002 is not found for
             # CREATE TUNED MODEL at API version v1beta."
             # base_model="gemini-1.5-pro-002",
@@ -103,7 +103,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_vertex_dataset_resource",
-        parameters=genai_types._CreateTuningJobParameters(
+        parameters=genai_types.CreateTuningJobParameters(
             base_model="gemini-1.5-pro-002",
             training_dataset=genai_types.TuningDataset(
                 vertex_dataset_resource="projects/613165508263/locations/us-central1/datasets/8254568702121345024",
@@ -113,7 +113,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_dataset_resource_all_parameters",
-        parameters=genai_types._CreateTuningJobParameters(
+        parameters=genai_types.CreateTuningJobParameters(
             base_model="gemini-1.5-pro-002",
             training_dataset=genai_types.TuningDataset(
                 vertex_dataset_resource="projects/613165508263/locations/us-central1/datasets/8254568702121345024",

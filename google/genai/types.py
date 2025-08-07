@@ -8624,6 +8624,39 @@ class GoogleRpcStatusDict(TypedDict, total=False):
 GoogleRpcStatusOrDict = Union[GoogleRpcStatus, GoogleRpcStatusDict]
 
 
+class PreTunedModel(_common.BaseModel):
+  """A pre-tuned model for continuous tuning."""
+
+  base_model: Optional[str] = Field(
+      default=None,
+      description="""Output only. The name of the base model this PreTunedModel was tuned from.""",
+  )
+  checkpoint_id: Optional[str] = Field(
+      default=None,
+      description="""Optional. The source checkpoint id. If not specified, the default checkpoint will be used.""",
+  )
+  tuned_model_name: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Model. E.g., a model resource name with a specified version id or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}` `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version id to use the default version: `projects/{project}/locations/{location}/models/{model}`""",
+  )
+
+
+class PreTunedModelDict(TypedDict, total=False):
+  """A pre-tuned model for continuous tuning."""
+
+  base_model: Optional[str]
+  """Output only. The name of the base model this PreTunedModel was tuned from."""
+
+  checkpoint_id: Optional[str]
+  """Optional. The source checkpoint id. If not specified, the default checkpoint will be used."""
+
+  tuned_model_name: Optional[str]
+  """The resource name of the Model. E.g., a model resource name with a specified version id or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}` `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version id to use the default version: `projects/{project}/locations/{location}/models/{model}`"""
+
+
+PreTunedModelOrDict = Union[PreTunedModel, PreTunedModelDict]
+
+
 class SupervisedHyperParameters(_common.BaseModel):
   """Hyperparameters for SFT."""
 
@@ -9444,39 +9477,6 @@ class DistillationSpecDict(TypedDict, total=False):
 DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
 
 
-class PreTunedModel(_common.BaseModel):
-  """A pre-tuned model for continuous tuning."""
-
-  base_model: Optional[str] = Field(
-      default=None,
-      description="""Output only. The name of the base model this PreTunedModel was tuned from.""",
-  )
-  checkpoint_id: Optional[str] = Field(
-      default=None,
-      description="""Optional. The source checkpoint id. If not specified, the default checkpoint will be used.""",
-  )
-  tuned_model_name: Optional[str] = Field(
-      default=None,
-      description="""The resource name of the Model. E.g., a model resource name with a specified version id or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}` `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version id to use the default version: `projects/{project}/locations/{location}/models/{model}`""",
-  )
-
-
-class PreTunedModelDict(TypedDict, total=False):
-  """A pre-tuned model for continuous tuning."""
-
-  base_model: Optional[str]
-  """Output only. The name of the base model this PreTunedModel was tuned from."""
-
-  checkpoint_id: Optional[str]
-  """Optional. The source checkpoint id. If not specified, the default checkpoint will be used."""
-
-  tuned_model_name: Optional[str]
-  """The resource name of the Model. E.g., a model resource name with a specified version id or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}` `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version id to use the default version: `projects/{project}/locations/{location}/models/{model}`"""
-
-
-PreTunedModelOrDict = Union[PreTunedModel, PreTunedModelDict]
-
-
 class PreferenceOptimizationHyperParameters(_common.BaseModel):
   """Hyperparameters for Preference Optimization."""
 
@@ -9666,6 +9666,9 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Output only. The tuned model resources associated with this TuningJob.""",
   )
+  pre_tuned_model: Optional[PreTunedModel] = Field(
+      default=None, description="""The pre-tuned model for continuous tuning."""
+  )
   supervised_tuning_spec: Optional[SupervisedTuningSpec] = Field(
       default=None, description="""Tuning Spec for Supervised Fine Tuning."""
   )
@@ -9703,9 +9706,6 @@ class TuningJob(_common.BaseModel):
   pipeline_job: Optional[str] = Field(
       default=None,
       description="""Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.""",
-  )
-  pre_tuned_model: Optional[PreTunedModel] = Field(
-      default=None, description="""The pre-tuned model for continuous tuning."""
   )
   preference_optimization_spec: Optional[PreferenceOptimizationSpec] = Field(
       default=None, description="""Tuning Spec for Preference Optimization."""
@@ -9775,6 +9775,9 @@ class TuningJobDict(TypedDict, total=False):
   tuned_model: Optional[TunedModelDict]
   """Output only. The tuned model resources associated with this TuningJob."""
 
+  pre_tuned_model: Optional[PreTunedModelDict]
+  """The pre-tuned model for continuous tuning."""
+
   supervised_tuning_spec: Optional[SupervisedTuningSpecDict]
   """Tuning Spec for Supervised Fine Tuning."""
 
@@ -9804,9 +9807,6 @@ class TuningJobDict(TypedDict, total=False):
 
   pipeline_job: Optional[str]
   """Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`."""
-
-  pre_tuned_model: Optional[PreTunedModelDict]
-  """The pre-tuned model for continuous tuning."""
 
   preference_optimization_spec: Optional[PreferenceOptimizationSpecDict]
   """Tuning Spec for Preference Optimization."""
@@ -10077,12 +10077,12 @@ CreateTuningJobConfigOrDict = Union[
 ]
 
 
-class _CreateTuningJobParameters(_common.BaseModel):
+class _CreateTuningJobParametersPrivate(_common.BaseModel):
   """Supervised fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str] = Field(
       default=None,
-      description="""The base model that is being tuned, e.g., "gemini-1.0-pro-002".""",
+      description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
   )
   training_dataset: Optional[TuningDataset] = Field(
       default=None,
@@ -10093,11 +10093,11 @@ class _CreateTuningJobParameters(_common.BaseModel):
   )
 
 
-class _CreateTuningJobParametersDict(TypedDict, total=False):
+class _CreateTuningJobParametersPrivateDict(TypedDict, total=False):
   """Supervised fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
-  """The base model that is being tuned, e.g., "gemini-1.0-pro-002"."""
+  """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
 
   training_dataset: Optional[TuningDatasetDict]
   """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -10106,8 +10106,8 @@ class _CreateTuningJobParametersDict(TypedDict, total=False):
   """Configuration for the tuning job."""
 
 
-_CreateTuningJobParametersOrDict = Union[
-    _CreateTuningJobParameters, _CreateTuningJobParametersDict
+_CreateTuningJobParametersPrivateOrDict = Union[
+    _CreateTuningJobParametersPrivate, _CreateTuningJobParametersPrivateDict
 ]
 
 
@@ -13434,6 +13434,44 @@ LiveClientRealtimeInputOrDict = Union[
 ]
 
 
+class LiveClientToolResponse(_common.BaseModel):
+  """Client generated response to a `ToolCall` received from the server.
+
+  Individual `FunctionResponse` objects are matched to the respective
+  `FunctionCall` objects by the `id` field.
+
+  Note that in the unary and server-streaming GenerateContent APIs function
+  calling happens by exchanging the `Content` parts, while in the bidi
+  GenerateContent APIs function calling happens over this dedicated set of
+  messages.
+  """
+
+  function_responses: Optional[list[FunctionResponse]] = Field(
+      default=None, description="""The response to the function calls."""
+  )
+
+
+class LiveClientToolResponseDict(TypedDict, total=False):
+  """Client generated response to a `ToolCall` received from the server.
+
+  Individual `FunctionResponse` objects are matched to the respective
+  `FunctionCall` objects by the `id` field.
+
+  Note that in the unary and server-streaming GenerateContent APIs function
+  calling happens by exchanging the `Content` parts, while in the bidi
+  GenerateContent APIs function calling happens over this dedicated set of
+  messages.
+  """
+
+  function_responses: Optional[list[FunctionResponseDict]]
+  """The response to the function calls."""
+
+
+LiveClientToolResponseOrDict = Union[
+    LiveClientToolResponse, LiveClientToolResponseDict
+]
+
+
 if _is_pillow_image_imported:
   BlobImageUnion = Union[PIL_Image, Blob]
 else:
@@ -13516,44 +13554,6 @@ The client can reopen the stream by sending an audio message.
 
 LiveSendRealtimeInputParametersOrDict = Union[
     LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
-]
-
-
-class LiveClientToolResponse(_common.BaseModel):
-  """Client generated response to a `ToolCall` received from the server.
-
-  Individual `FunctionResponse` objects are matched to the respective
-  `FunctionCall` objects by the `id` field.
-
-  Note that in the unary and server-streaming GenerateContent APIs function
-  calling happens by exchanging the `Content` parts, while in the bidi
-  GenerateContent APIs function calling happens over this dedicated set of
-  messages.
-  """
-
-  function_responses: Optional[list[FunctionResponse]] = Field(
-      default=None, description="""The response to the function calls."""
-  )
-
-
-class LiveClientToolResponseDict(TypedDict, total=False):
-  """Client generated response to a `ToolCall` received from the server.
-
-  Individual `FunctionResponse` objects are matched to the respective
-  `FunctionCall` objects by the `id` field.
-
-  Note that in the unary and server-streaming GenerateContent APIs function
-  calling happens by exchanging the `Content` parts, while in the bidi
-  GenerateContent APIs function calling happens over this dedicated set of
-  messages.
-  """
-
-  function_responses: Optional[list[FunctionResponseDict]]
-  """The response to the function calls."""
-
-
-LiveClientToolResponseOrDict = Union[
-    LiveClientToolResponse, LiveClientToolResponseDict
 ]
 
 
@@ -14437,4 +14437,38 @@ class CreateAuthTokenParametersDict(TypedDict, total=False):
 
 CreateAuthTokenParametersOrDict = Union[
     CreateAuthTokenParameters, CreateAuthTokenParametersDict
+]
+
+
+class CreateTuningJobParameters(_common.BaseModel):
+  """Supervised fine-tuning job creation parameters - optional fields."""
+
+  base_model: Optional[str] = Field(
+      default=None,
+      description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
+  )
+  training_dataset: Optional[TuningDataset] = Field(
+      default=None,
+      description="""Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+  config: Optional[CreateTuningJobConfig] = Field(
+      default=None, description="""Configuration for the tuning job."""
+  )
+
+
+class CreateTuningJobParametersDict(TypedDict, total=False):
+  """Supervised fine-tuning job creation parameters - optional fields."""
+
+  base_model: Optional[str]
+  """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
+
+  training_dataset: Optional[TuningDatasetDict]
+  """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+  config: Optional[CreateTuningJobConfigDict]
+  """Configuration for the tuning job."""
+
+
+CreateTuningJobParametersOrDict = Union[
+    CreateTuningJobParameters, CreateTuningJobParametersDict
 ]
