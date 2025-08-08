@@ -292,6 +292,7 @@ class AsyncTokens(_api_module.BaseModule):
     Usage:
 
     .. code-block:: python
+
       client = genai.Client(
           api_key=API_KEY,
           http_options=types.HttpOptions(api_version='v1alpha'),

@@ -189,6 +189,7 @@ class AsyncSession:
     Example:
 
     .. code-block:: python
+
       import google.genai
       from google.genai import types
       import os
@@ -255,6 +256,7 @@ class AsyncSession:
     Example:
 
     .. code-block:: python
+
       from pathlib import Path
 
       from google import genai
@@ -353,6 +355,7 @@ class AsyncSession:
     Example:
 
     .. code-block:: python
+
       from google import genai
       from google.genai import types
 

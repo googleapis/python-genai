@@ -454,6 +454,7 @@ class AsyncChat(_BaseChat):
     Usage:
 
     .. code-block:: python
+
       chat = client.aio.chats.create(model='gemini-2.0-flash')
       async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)
