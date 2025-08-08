@@ -2259,7 +2259,16 @@ class FunctionDeclaration(_common.BaseModel):
       callable: Callable[..., Any],
       behavior: Optional[Behavior] = None,
   ) -> 'FunctionDeclaration':
-    """Converts a Callable to a FunctionDeclaration based on the client."""
+    """Converts a Callable to a FunctionDeclaration based on the client.
+
+    Note: For best results prefer
+    [Google-style
+    docstring](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods)
+    when describing arguments. This function does **not** parse argument
+    descriptions into the property description slots of the resulting structure.
+    Instead it sends the whole docstring in the top-level function description.
+    Google-style docstring are closest to what the model is trained on.
+    """
     if client.vertexai:
       return cls.from_callable_with_api_option(
           callable=callable, api_option='VERTEX_AI', behavior=behavior
