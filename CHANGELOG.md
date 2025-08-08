@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.29.1](https://github.com/googleapis/python-genai/compare/v1.29.0...v1.29.1) (2025-08-08)
+
+
+### Documentation
+
+* Docs for 1.29 ([3e39e63](https://github.com/googleapis/python-genai/commit/3e39e630d2e774e0d24a1226378a27009827e853))
+* Document that property descriptions are not automatically-handled. ([d7cb114](https://github.com/googleapis/python-genai/commit/d7cb114d9bac6ff156137b32fc59fcd2b0d79d33))
+* Fix example format. ([da225f3](https://github.com/googleapis/python-genai/commit/da225f32656a2f65ce80d9d1300d5147270c41df))
+
 ## [1.29.0](https://github.com/googleapis/python-genai/compare/v1.28.0...v1.29.0) (2025-08-06)
 
 
