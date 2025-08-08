@@ -461,6 +461,15 @@ class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
   """Run retrieval only when system decides it is necessary."""
 
 
+class Environment(_common.CaseInSensitiveEnum):
+  """The environment being operated."""
+
+  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
+  """Defaults to browser."""
+  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
+  """Operates in a web browser."""
+
+
 class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
   """Config for the function calling config mode."""
 
@@ -2620,6 +2629,24 @@ class UrlContextDict(TypedDict, total=False):
 UrlContextOrDict = Union[UrlContext, UrlContextDict]
 
 
+class ToolComputerUse(_common.BaseModel):
+  """Tool to support computer use."""
+
+  environment: Optional[Environment] = Field(
+      default=None, description="""Required. The environment being operated."""
+  )
+
+
+class ToolComputerUseDict(TypedDict, total=False):
+  """Tool to support computer use."""
+
+  environment: Optional[Environment]
+  """Required. The environment being operated."""
+
+
+ToolComputerUseOrDict = Union[ToolComputerUse, ToolComputerUseDict]
+
+
 class ApiAuthApiKeyConfig(_common.BaseModel):
   """The API secret."""
 
@@ -3214,6 +3241,12 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. Tool to support URL context retrieval.""",
   )
+  computer_use: Optional[ToolComputerUse] = Field(
+      default=None,
+      description="""Optional. Tool to support the model interacting directly with the
+      computer. If enabled, it automatically populates computer-use specific
+      Function Declarations.""",
+  )
   code_execution: Optional[ToolCodeExecution] = Field(
       default=None,
       description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation.""",
@@ -3246,6 +3279,11 @@ class ToolDict(TypedDict, total=False):
 
   url_context: Optional[UrlContextDict]
   """Optional. Tool to support URL context retrieval."""
+
+  computer_use: Optional[ToolComputerUseDict]
+  """Optional. Tool to support the model interacting directly with the
+      computer. If enabled, it automatically populates computer-use specific
+      Function Declarations."""
 
   code_execution: Optional[ToolCodeExecutionDict]
   """Optional. CodeExecution tool type. Enables the model to execute code as part of generation."""

@@ -278,6 +278,17 @@ def _UrlContext_to_mldev(
   return to_object
 
 
+def _ToolComputerUse_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  return to_object
+
+
 def _Tool_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -325,6 +336,15 @@ def _Tool_to_mldev(
         to_object,
         ['urlContext'],
         _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
+    )
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(
+        to_object,
+        ['computerUse'],
+        _ToolComputerUse_to_mldev(
+            getv(from_object, ['computer_use']), to_object
+        ),
     )
 
   if getv(from_object, ['code_execution']) is not None:
@@ -930,6 +950,17 @@ def _UrlContext_to_vertex(
   return to_object
 
 
+def _ToolComputerUse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  return to_object
+
+
 def _Tool_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -987,6 +1018,15 @@ def _Tool_to_vertex(
         to_object,
         ['urlContext'],
         _UrlContext_to_vertex(getv(from_object, ['url_context']), to_object),
+    )
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(
+        to_object,
+        ['computerUse'],
+        _ToolComputerUse_to_vertex(
+            getv(from_object, ['computer_use']), to_object
+        ),
     )
 
   if getv(from_object, ['code_execution']) is not None:
