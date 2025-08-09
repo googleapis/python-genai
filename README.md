@@ -158,7 +158,7 @@ client=Client(..., http_options=http_options)
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
-[Pydantic Models](https://pydantic.readthedocs.io/en/stable/model.html).
+[Pydantic Models](https://docs.pydantic.dev/latest/concepts/models/).
 Pydantic model types are available in the `types` module.
 
 ## Models
