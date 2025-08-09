@@ -34,7 +34,7 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
@@ -323,7 +323,7 @@ class HttpResponse:
       # In streaming mode, the response of JSON is prefixed with "data: " which
       # we must strip before parsing.
       if line.startswith('data: '):
-        yield line[len('data: '):]
+        yield line[len('data: ') :]
         continue
 
       # When API returns an error message, it comes line by line. So we buffer
@@ -346,9 +346,10 @@ class HttpResponse:
 
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
-    if not isinstance(
-        self.response_stream, (httpx.Response, aiohttp.ClientResponse)
-    ):
+    err_types = httpx.Response
+    if has_aiohttp:
+      err_types = (err_types, aiohttp.ClientResponse)
+    if not isinstance(self.response_stream, err_types):
       raise TypeError(
           'Expected self.response_stream to be an httpx.Response or'
           ' aiohttp.ClientResponse object, but got'
@@ -365,7 +366,7 @@ class HttpResponse:
         # In streaming mode, the response of JSON is prefixed with "data: "
         # which we must strip before parsing.
         if line.startswith('data: '):
-          yield line[len('data: '):]
+          yield line[len('data: ') :]
           continue
 
         # When API returns an error message, it comes line by line. So we buffer
@@ -397,7 +398,7 @@ class HttpResponse:
         # In streaming mode, the response of JSON is prefixed with "data: "
         # which we must strip before parsing.
         if line.startswith('data: '):
-          yield line[len('data: '):]
+          yield line[len('data: ') :]
           continue
 
         # When API returns an error message, it comes line by line. So we buffer
@@ -430,6 +431,7 @@ class HttpResponse:
       raise errors.UnknownApiResponseError(
           f'Failed to parse response as JSON. Raw response: {response}'
       ) from e
+
 
 # Default retry options.
 # The config is based on https://cloud.google.com/storage/docs/retry-strategy.
@@ -633,7 +635,7 @@ class BaseApiClient:
 
       has_sufficient_auth = (self.project and self.location) or self.api_key
 
-      if (not has_sufficient_auth and not validated_http_options.base_url):
+      if not has_sufficient_auth and not validated_http_options.base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
             'Project and location or API key must be set when using the Vertex '
