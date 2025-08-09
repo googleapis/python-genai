@@ -346,12 +346,16 @@ class HttpResponse:
 
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
-    if not isinstance(
-        self.response_stream, (httpx.Response, aiohttp.ClientResponse)
-    ):
+    valid_types = (httpx.Response,)
+    if has_aiohttp:
+      valid_types = (httpx.Response, aiohttp.ClientResponse)
+    
+    if not isinstance(self.response_stream, valid_types):
+      expected_types = 'an httpx.Response'
+      if has_aiohttp:
+        expected_types = 'an httpx.Response or aiohttp.ClientResponse'
       raise TypeError(
-          'Expected self.response_stream to be an httpx.Response or'
-          ' aiohttp.ClientResponse object, but got'
+          f'Expected self.response_stream to be {expected_types} object, but got'
           f' {type(self.response_stream).__name__}.'
       )
 
@@ -383,7 +387,7 @@ class HttpResponse:
           chunk = ''
 
     # aiohttp.ClientResponse uses a content stream that we read line by line.
-    elif isinstance(self.response_stream, aiohttp.ClientResponse):
+    elif has_aiohttp and isinstance(self.response_stream, aiohttp.ClientResponse):
       while True:
         # Read a line from the stream. This returns bytes.
         line_bytes = await self.response_stream.content.readline()
