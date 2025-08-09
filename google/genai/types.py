@@ -3406,7 +3406,7 @@ class RetrievalConfigDict(TypedDict, total=False):
 RetrievalConfigOrDict = Union[RetrievalConfig, RetrievalConfigDict]
 
 
-class ToolConfig(_common.BaseModel):
+claGenerateContentResponsess ToolConfig(_common.BaseModel):
   """Tool config.
 
   This config is shared for all tools provided in the request.
