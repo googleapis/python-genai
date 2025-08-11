@@ -47,14 +47,14 @@ if typing.TYPE_CHECKING:
   PIL_Image = PIL.Image.Image
   _is_pillow_image_imported = True
 else:
-  PIL_Image: typing.Type = Any
+  PIL_Image: typing.Type = Any  # type: ignore[valid-type]
   try:
     import PIL.Image
 
-    PIL_Image = PIL.Image.Image
+    PIL_Image = PIL.Image.Image  # type: ignore[misc]
     _is_pillow_image_imported = True
   except ImportError:
-    PIL_Image = None
+    PIL_Image = None  # type: ignore[misc]
 
 _is_mcp_imported = False
 if typing.TYPE_CHECKING:
@@ -3791,13 +3791,13 @@ FileOrDict = Union[File, FileDict]
 
 
 if _is_pillow_image_imported:
-  PartUnion = Union[str, PIL_Image, File, Part]
+  PartUnion = Union[str, PIL_Image, File, Part]  # type: ignore[valid-type]
 else:
   PartUnion = Union[str, File, Part]  # type: ignore[misc]
 
 
 if _is_pillow_image_imported:
-  PartUnionDict = Union[str, PIL_Image, File, FileDict, Part, PartDict]
+  PartUnionDict = Union[str, PIL_Image, File, FileDict, Part, PartDict]  # type: ignore[valid-type]
 else:
   PartUnionDict = Union[str, File, FileDict, Part, PartDict]  # type: ignore[misc]
 
@@ -6178,7 +6178,7 @@ class Image(_common.BaseModel):
       default=None, description="""The MIME type of the image."""
   )
 
-  _loaded_image: Optional['PIL_Image'] = None
+  _loaded_image: Optional['PIL_Image'] = None  # type: ignore[valid-type]
 
   """Image."""
 
@@ -6229,22 +6229,22 @@ class Image(_common.BaseModel):
 
     This method only works in a notebook environment.
     """
-    IPython_display: Any = None
+    IPython_display = None  # type: Any
     try:
-      from IPython import display as IPython_display  # type: ignore[import-untyped]
+      from IPython import display as IPython_display  # type: ignore[import-untyped,no-redef]
     except ImportError:
-      IPython_display = None
+      pass
 
     if IPython_display:
       IPython_display.display(self._pil_image)  # type: ignore[no-untyped-call]
 
   @property
-  def _pil_image(self) -> Optional['PIL_Image']:
-    PIL_Image: Optional[builtin_types.ModuleType]
+  def _pil_image(self) -> Optional['PIL_Image']:  # type: ignore[valid-type]
+    PIL_Image: Optional[builtin_types.ModuleType] = None
     try:
-      from PIL import Image as PIL_Image
+      from PIL import Image as PIL_Image  # type: ignore[no-redef]
     except ImportError:
-      PIL_Image = None
+      pass
     import io
 
     if self._loaded_image is None:
@@ -8121,11 +8121,11 @@ class Video(_common.BaseModel):
 
     mime_type = self.mime_type or 'video/mp4'
 
-    IPython_display: Any = None
+    IPython_display = None  # type: Any
     try:
-      from IPython import display as IPython_display  # type: ignore[import-untyped]
+      from IPython import display as IPython_display  # type: ignore[import-untyped,no-redef]
     except ImportError:
-      IPython_display = None
+      pass
 
     if IPython_display:
       IPython_display.display(  # type: ignore[no-untyped-call]
@@ -13500,13 +13500,13 @@ LiveClientToolResponseOrDict = Union[
 
 
 if _is_pillow_image_imported:
-  BlobImageUnion = Union[PIL_Image, Blob]
+  BlobImageUnion = Union[PIL_Image, Blob]  # type: ignore[valid-type]
 else:
   BlobImageUnion = Blob  # type: ignore[misc]
 
 
 if _is_pillow_image_imported:
-  BlobImageUnionDict = Union[PIL_Image, Blob, BlobDict]
+  BlobImageUnionDict = Union[PIL_Image, Blob, BlobDict]  # type: ignore[valid-type]
 else:
   BlobImageUnionDict = Union[Blob, BlobDict]  # type: ignore[misc]
 

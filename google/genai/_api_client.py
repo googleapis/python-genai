@@ -488,7 +488,7 @@ def _retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   }
 
 
-class SyncHttpxClient(httpx.Client):
+class SyncHttpxClient(httpx.Client):  # type: ignore[misc]
   """Sync httpx client."""
 
   def __init__(self, **kwargs: Any) -> None:
@@ -509,7 +509,7 @@ class SyncHttpxClient(httpx.Client):
       pass
 
 
-class AsyncHttpxClient(httpx.AsyncClient):
+class AsyncHttpxClient(httpx.AsyncClient):  # type: ignore[misc]
   """Async httpx client."""
 
   def __init__(self, **kwargs: Any) -> None:
