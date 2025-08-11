@@ -346,13 +346,10 @@ class HttpResponse:
 
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
-    valid_types: tuple[type, ...]
-    if has_aiohttp:
-      valid_types = (httpx.Response, aiohttp.ClientResponse)
-    else:
-      valid_types = (httpx.Response,)
-    
-    if not isinstance(self.response_stream, valid_types):
+    is_valid_response = isinstance(self.response_stream, httpx.Response) or (
+        has_aiohttp and isinstance(self.response_stream, aiohttp.ClientResponse)
+    )
+    if not is_valid_response:
       expected_types = 'an httpx.Response'
       if has_aiohttp:
         expected_types = 'an httpx.Response or aiohttp.ClientResponse'
@@ -436,6 +433,7 @@ class HttpResponse:
       raise errors.UnknownApiResponseError(
           f'Failed to parse response as JSON. Raw response: {response}'
       ) from e
+
 
 # Default retry options.
 # The config is based on https://cloud.google.com/storage/docs/retry-strategy.
@@ -639,7 +637,7 @@ class BaseApiClient:
 
       has_sufficient_auth = (self.project and self.location) or self.api_key
 
-      if (not has_sufficient_auth and not validated_http_options.base_url):
+      if not has_sufficient_auth and not validated_http_options.base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
             'Project and location or API key must be set when using the Vertex '
