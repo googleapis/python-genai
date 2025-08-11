@@ -4739,6 +4739,10 @@ RagChunkOrDict = Union[RagChunk, RagChunkDict]
 class GroundingChunkRetrievedContext(_common.BaseModel):
   """Chunk from context retrieved by the retrieval tools."""
 
+  document_name: Optional[str] = Field(
+      default=None,
+      description="""Output only. The full document name for the referenced Vertex AI Search document.""",
+  )
   rag_chunk: Optional[RagChunk] = Field(
       default=None,
       description="""Additional context for the RAG retrieval result. This is only populated when using the RAG retrieval tool.""",
@@ -4756,6 +4760,9 @@ class GroundingChunkRetrievedContext(_common.BaseModel):
 
 class GroundingChunkRetrievedContextDict(TypedDict, total=False):
   """Chunk from context retrieved by the retrieval tools."""
+
+  document_name: Optional[str]
+  """Output only. The full document name for the referenced Vertex AI Search document."""
 
   rag_chunk: Optional[RagChunkDict]
   """Additional context for the RAG retrieval result. This is only populated when using the RAG retrieval tool."""
