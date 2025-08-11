@@ -346,9 +346,11 @@ class HttpResponse:
 
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
-    valid_types = (httpx.Response,)
+    valid_types: tuple[type, ...]
     if has_aiohttp:
       valid_types = (httpx.Response, aiohttp.ClientResponse)
+    else:
+      valid_types = (httpx.Response,)
     
     if not isinstance(self.response_stream, valid_types):
       expected_types = 'an httpx.Response'
@@ -1123,7 +1125,7 @@ class BaseApiClient:
               timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
               **self._async_client_session_request_args,
           )
-        except (
+        except (  # type: ignore[misc]
             aiohttp.ClientConnectorError,
             aiohttp.ClientConnectorDNSError,
             aiohttp.ClientOSError,
@@ -1185,7 +1187,7 @@ class BaseApiClient:
             )
             await errors.APIError.raise_for_async_response(response)
             return HttpResponse(response.headers, [await response.text()])
-        except (
+        except (  # type: ignore[misc]
             aiohttp.ClientConnectorError,
             aiohttp.ClientConnectorDNSError,
             aiohttp.ClientOSError,

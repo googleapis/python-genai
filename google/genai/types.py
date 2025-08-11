@@ -6229,13 +6229,14 @@ class Image(_common.BaseModel):
 
     This method only works in a notebook environment.
     """
+    IPython_display: Any = None
     try:
-      from IPython import display as IPython_display
+      from IPython import display as IPython_display  # type: ignore[import-untyped]
     except ImportError:
       IPython_display = None
 
     if IPython_display:
-      IPython_display.display(self._pil_image)
+      IPython_display.display(self._pil_image)  # type: ignore[no-untyped-call]
 
   @property
   def _pil_image(self) -> Optional['PIL_Image']:
@@ -8120,14 +8121,15 @@ class Video(_common.BaseModel):
 
     mime_type = self.mime_type or 'video/mp4'
 
+    IPython_display: Any = None
     try:
-      from IPython import display as IPython_display
+      from IPython import display as IPython_display  # type: ignore[import-untyped]
     except ImportError:
       IPython_display = None
 
     if IPython_display:
-      IPython_display.display(
-          IPython_display.Video(
+      IPython_display.display(  # type: ignore[no-untyped-call]
+          IPython_display.Video(  # type: ignore[no-untyped-call]
               data=self.video_bytes, mimetype=mime_type, embed=True
           )
       )

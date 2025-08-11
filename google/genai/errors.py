@@ -148,9 +148,11 @@ class APIError(Exception):
             }
           status_code = response.status
         else:
-          response_json = response.body_segments[0].get('error', {})
+          # Handle ReplayResponse or other types with body_segments
+          response_json = getattr(response, 'body_segments', [{}])[0].get('error', {})
       except ImportError:
-        response_json = response.body_segments[0].get('error', {})
+        # Handle ReplayResponse or other types with body_segments
+        response_json = getattr(response, 'body_segments', [{}])[0].get('error', {})
 
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
