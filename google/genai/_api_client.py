@@ -1149,9 +1149,11 @@ class BaseApiClient:
               timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
               **self._async_client_session_request_args,
           )
+        finally:
+          await session.close()
 
         await errors.APIError.raise_for_async_response(response)
-        return HttpResponse(response.headers, response, session=session)
+        return HttpResponse(response.headers, response)
       else:
         # aiohttp is not available. Fall back to httpx.
         httpx_request = self._async_httpx_client.build_request(
