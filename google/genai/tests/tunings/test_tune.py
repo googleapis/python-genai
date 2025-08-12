@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# %%
 
 
-"""Tests for create_sft_job."""
+"""Tests for tunings.tune()."""
 
 from ... import types as genai_types
 from .. import pytest_helper
@@ -31,6 +30,42 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_pretuned_model",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="projects/801452371447/locations/us-central1/models/9030969596621881344",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl",
+            ),
+        ),
+        exception_if_mldev="is not supported in Gemini API",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_pretuned_model_with_checkpoint_id",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="projects/801452371447/locations/us-central1/models/9030969596621881344",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                pre_tuned_model_checkpoint_id="3",
+            ),
+        ),
+        exception_if_mldev="is not supported in Gemini API",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_non_pretuned_model_with_checkpoint_id",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="gemini-2.5-flash",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                pre_tuned_model_checkpoint_id="3",
+            ),
+        ),
+        exception_if_mldev="is not supported in Gemini API.",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri_all_parameters",

@@ -10079,6 +10079,10 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.""",
   )
+  pre_tuned_model_checkpoint_id: Optional[str] = Field(
+      default=None,
+      description="""The optional checkpoint id of the pre-tuned model to use for tuning, if applicable.""",
+  )
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Adapter size for tuning."""
   )
@@ -10116,6 +10120,9 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   export_last_checkpoint_only: Optional[bool]
   """If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT."""
 
+  pre_tuned_model_checkpoint_id: Optional[str]
+  """The optional checkpoint id of the pre-tuned model to use for tuning, if applicable."""
+
   adapter_size: Optional[AdapterSize]
   """Adapter size for tuning."""
 
@@ -10138,6 +10145,9 @@ class _CreateTuningJobParametersPrivate(_common.BaseModel):
       default=None,
       description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
   )
+  pre_tuned_model: Optional[PreTunedModel] = Field(
+      default=None, description="""The PreTunedModel that is being tuned."""
+  )
   training_dataset: Optional[TuningDataset] = Field(
       default=None,
       description="""Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
@@ -10152,6 +10162,9 @@ class _CreateTuningJobParametersPrivateDict(TypedDict, total=False):
 
   base_model: Optional[str]
   """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
+
+  pre_tuned_model: Optional[PreTunedModelDict]
+  """The PreTunedModel that is being tuned."""
 
   training_dataset: Optional[TuningDatasetDict]
   """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
