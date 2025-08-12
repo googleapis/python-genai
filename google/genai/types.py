@@ -429,6 +429,22 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 32."""
 
 
+class JSONSchemaType(Enum):
+  """The type of the data supported by JSON Schema.
+
+  The values of the enums are lower case strings, while the values of the enums
+  for the Type class are upper case strings.
+  """
+
+  NULL = 'null'
+  BOOLEAN = 'boolean'
+  OBJECT = 'object'
+  ARRAY = 'array'
+  NUMBER = 'number'
+  INTEGER = 'integer'
+  STRING = 'string'
+
+
 class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   """Options for feature selection preference."""
 
@@ -619,6 +635,19 @@ class MediaModality(_common.CaseInSensitiveEnum):
   """Document, e.g. PDF."""
 
 
+class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
+  """Specifies how the response should be scheduled in the conversation."""
+
+  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
+  """This value is unused."""
+  SILENT = 'SILENT'
+  """Only add the result to the conversation context, do not interrupt or trigger generation."""
+  WHEN_IDLE = 'WHEN_IDLE'
+  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
+  INTERRUPT = 'INTERRUPT'
+  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
+
+
 class StartSensitivity(_common.CaseInSensitiveEnum):
   """Start of speech sensitivity."""
 
@@ -661,19 +690,6 @@ class TurnCoverage(_common.CaseInSensitiveEnum):
   """The users turn only includes activity since the last turn, excluding inactivity (e.g. silence on the audio stream). This is the default behavior."""
   TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
   """The users turn includes all realtime input since the last turn, including inactivity (e.g. silence on the audio stream)."""
-
-
-class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
-  """Specifies how the response should be scheduled in the conversation."""
-
-  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
-  """This value is unused."""
-  SILENT = 'SILENT'
-  """Only add the result to the conversation context, do not interrupt or trigger generation."""
-  WHEN_IDLE = 'WHEN_IDLE'
-  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
-  INTERRUPT = 'INTERRUPT'
-  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
 
 
 class Scale(_common.CaseInSensitiveEnum):
@@ -1162,67 +1178,6 @@ class Content(_common.BaseModel):
   )
 
 
-class UserContent(Content):
-  """UserContent facilitates the creation of a Content object with a user role.
-
-  Example usages:
-
-
-  - Create a user Content object with a string:
-    user_content = UserContent("Why is the sky blue?")
-  - Create a user Content object with a file data Part object:
-    user_content = UserContent(Part.from_uri(file_uril="gs://bucket/file.txt",
-    mime_type="text/plain"))
-  - Create a user Content object with byte data Part object:
-    user_content = UserContent(Part.from_bytes(data=b"Hello, World!",
-    mime_type="text/plain"))
-
-    You can create a user Content object using other classmethods in the Part
-    class as well.
-    You can also create a user Content using a list of Part objects or strings.
-  """
-
-  role: Literal['user'] = Field(default='user', init=False, frozen=True)
-  parts: list[Part] = Field()
-
-  def __init__(
-      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
-  ):
-    from . import _transformers as t
-
-    super().__init__(parts=t.t_parts(parts=parts))
-
-
-class ModelContent(Content):
-  """ModelContent facilitates the creation of a Content object with a model role.
-
-  Example usages:
-
-  - Create a model Content object with a string:
-    model_content = ModelContent("Why is the sky blue?")
-  - Create a model Content object with a file data Part object:
-    model_content = ModelContent(Part.from_uri(file_uril="gs://bucket/file.txt",
-    mime_type="text/plain"))
-  - Create a model Content object with byte data Part object:
-    model_content = ModelContent(Part.from_bytes(data=b"Hello, World!",
-    mime_type="text/plain"))
-
-    You can create a model Content object using other classmethods in the Part
-    class as well.
-    You can also create a model Content using a list of Part objects or strings.
-  """
-
-  role: Literal['model'] = Field(default='model', init=False, frozen=True)
-  parts: list[Part] = Field()
-
-  def __init__(
-      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
-  ):
-    from . import _transformers as t
-
-    super().__init__(parts=t.t_parts(parts=parts))
-
-
 class ContentDict(TypedDict, total=False):
   """Contains the multi-part content of a message."""
 
@@ -1365,23 +1320,7 @@ class HttpOptionsDict(TypedDict, total=False):
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
 
 
-class JSONSchemaType(Enum):
-  """The type of the data supported by JSON Schema.
-
-  The values of the enums are lower case strings, while the values of the enums
-  for the Type class are upper case strings.
-  """
-
-  NULL = 'null'
-  BOOLEAN = 'boolean'
-  OBJECT = 'object'
-  ARRAY = 'array'
-  NUMBER = 'number'
-  INTEGER = 'integer'
-  STRING = 'string'
-
-
-class JSONSchema(pydantic.BaseModel):
+class JSONSchema(_common.BaseModel):
   """A subset of JSON Schema according to 2020-12 JSON Schema draft.
 
   Represents a subset of a JSON Schema object that is used by the Gemini model.
@@ -8617,6 +8556,24 @@ class GenerateVideosResponse(_common.BaseModel):
   )
 
 
+class GenerateVideosResponseDict(TypedDict, total=False):
+  """Response with generated videos."""
+
+  generated_videos: Optional[list[GeneratedVideoDict]]
+  """List of the generated videos"""
+
+  rai_media_filtered_count: Optional[int]
+  """Returns if any videos were filtered due to RAI policies."""
+
+  rai_media_filtered_reasons: Optional[list[str]]
+  """Returns rai failure reasons if any."""
+
+
+GenerateVideosResponseOrDict = Union[
+    GenerateVideosResponse, GenerateVideosResponseDict
+]
+
+
 class Operation(ABC):
   """A long-running operation."""
 
@@ -8652,7 +8609,6 @@ class GenerateVideosOperation(_common.BaseModel, Operation):
   response: Optional[GenerateVideosResponse] = Field(
       default=None, description="""The generated videos."""
   )
-
   result: Optional[GenerateVideosResponse] = Field(
       default=None, description="""The generated videos."""
   )
@@ -8714,24 +8670,6 @@ class GenerateVideosOperation(_common.BaseModel, Operation):
         )
     new_operation.result = new_operation.response
     return new_operation
-
-
-class GenerateVideosResponseDict(TypedDict, total=False):
-  """Response with generated videos."""
-
-  generated_videos: Optional[list[GeneratedVideoDict]]
-  """List of the generated videos"""
-
-  rai_media_filtered_count: Optional[int]
-  """Returns if any videos were filtered due to RAI policies."""
-
-  rai_media_filtered_reasons: Optional[list[str]]
-  """Returns rai failure reasons if any."""
-
-
-GenerateVideosResponseOrDict = Union[
-    GenerateVideosResponse, GenerateVideosResponseDict
-]
 
 
 class GetTuningJobConfig(_common.BaseModel):
@@ -13204,95 +13142,6 @@ class LiveServerMessageDict(TypedDict, total=False):
 LiveServerMessageOrDict = Union[LiveServerMessage, LiveServerMessageDict]
 
 
-class AutomaticActivityDetection(_common.BaseModel):
-  """Configures automatic detection of activity."""
-
-  disabled: Optional[bool] = Field(
-      default=None,
-      description="""If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
-  )
-  start_of_speech_sensitivity: Optional[StartSensitivity] = Field(
-      default=None,
-      description="""Determines how likely speech is to be detected.""",
-  )
-  end_of_speech_sensitivity: Optional[EndSensitivity] = Field(
-      default=None,
-      description="""Determines how likely detected speech is ended.""",
-  )
-  prefix_padding_ms: Optional[int] = Field(
-      default=None,
-      description="""The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives.""",
-  )
-  silence_duration_ms: Optional[int] = Field(
-      default=None,
-      description="""The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
-  )
-
-
-class AutomaticActivityDetectionDict(TypedDict, total=False):
-  """Configures automatic detection of activity."""
-
-  disabled: Optional[bool]
-  """If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
-
-  start_of_speech_sensitivity: Optional[StartSensitivity]
-  """Determines how likely speech is to be detected."""
-
-  end_of_speech_sensitivity: Optional[EndSensitivity]
-  """Determines how likely detected speech is ended."""
-
-  prefix_padding_ms: Optional[int]
-  """The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives."""
-
-  silence_duration_ms: Optional[int]
-  """The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
-
-
-AutomaticActivityDetectionOrDict = Union[
-    AutomaticActivityDetection, AutomaticActivityDetectionDict
-]
-
-
-class RealtimeInputConfig(_common.BaseModel):
-  """Marks the end of user activity.
-
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
-  """
-
-  automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
-      default=None,
-      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
-  )
-  activity_handling: Optional[ActivityHandling] = Field(
-      default=None, description="""Defines what effect activity has."""
-  )
-  turn_coverage: Optional[TurnCoverage] = Field(
-      default=None,
-      description="""Defines which input is included in the user's turn.""",
-  )
-
-
-class RealtimeInputConfigDict(TypedDict, total=False):
-  """Marks the end of user activity.
-
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
-  """
-
-  automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
-  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
-
-  activity_handling: Optional[ActivityHandling]
-  """Defines what effect activity has."""
-
-  turn_coverage: Optional[TurnCoverage]
-  """Defines which input is included in the user's turn."""
-
-
-RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
-
-
 class SessionResumptionConfig(_common.BaseModel):
   """Configuration of session resumption mechanism.
 
@@ -13429,6 +13278,95 @@ class ProactivityConfigDict(TypedDict, total=False):
 
 
 ProactivityConfigOrDict = Union[ProactivityConfig, ProactivityConfigDict]
+
+
+class AutomaticActivityDetection(_common.BaseModel):
+  """Configures automatic detection of activity."""
+
+  disabled: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
+  )
+  start_of_speech_sensitivity: Optional[StartSensitivity] = Field(
+      default=None,
+      description="""Determines how likely speech is to be detected.""",
+  )
+  end_of_speech_sensitivity: Optional[EndSensitivity] = Field(
+      default=None,
+      description="""Determines how likely detected speech is ended.""",
+  )
+  prefix_padding_ms: Optional[int] = Field(
+      default=None,
+      description="""The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives.""",
+  )
+  silence_duration_ms: Optional[int] = Field(
+      default=None,
+      description="""The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
+  )
+
+
+class AutomaticActivityDetectionDict(TypedDict, total=False):
+  """Configures automatic detection of activity."""
+
+  disabled: Optional[bool]
+  """If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
+
+  start_of_speech_sensitivity: Optional[StartSensitivity]
+  """Determines how likely speech is to be detected."""
+
+  end_of_speech_sensitivity: Optional[EndSensitivity]
+  """Determines how likely detected speech is ended."""
+
+  prefix_padding_ms: Optional[int]
+  """The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives."""
+
+  silence_duration_ms: Optional[int]
+  """The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
+
+
+AutomaticActivityDetectionOrDict = Union[
+    AutomaticActivityDetection, AutomaticActivityDetectionDict
+]
+
+
+class RealtimeInputConfig(_common.BaseModel):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
+      default=None,
+      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
+  )
+  activity_handling: Optional[ActivityHandling] = Field(
+      default=None, description="""Defines what effect activity has."""
+  )
+  turn_coverage: Optional[TurnCoverage] = Field(
+      default=None,
+      description="""Defines which input is included in the user's turn.""",
+  )
+
+
+class RealtimeInputConfigDict(TypedDict, total=False):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
+  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
+
+  activity_handling: Optional[ActivityHandling]
+  """Defines what effect activity has."""
+
+  turn_coverage: Optional[TurnCoverage]
+  """Defines which input is included in the user's turn."""
+
+
+RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
 
 
 class LiveClientSetup(_common.BaseModel):
@@ -14781,6 +14719,67 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
 CreateTuningJobParametersOrDict = Union[
     CreateTuningJobParameters, CreateTuningJobParametersDict
 ]
+
+
+class UserContent(Content):
+  """UserContent facilitates the creation of a Content object with a user role.
+
+  Example usages:
+
+
+  - Create a user Content object with a string:
+    user_content = UserContent("Why is the sky blue?")
+  - Create a user Content object with a file data Part object:
+    user_content = UserContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    mime_type="text/plain"))
+  - Create a user Content object with byte data Part object:
+    user_content = UserContent(Part.from_bytes(data=b"Hello, World!",
+    mime_type="text/plain"))
+
+    You can create a user Content object using other classmethods in the Part
+    class as well.
+    You can also create a user Content using a list of Part objects or strings.
+  """
+
+  role: Literal['user'] = Field(default='user', init=False, frozen=True)
+  parts: list[Part] = Field()
+
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
+    from . import _transformers as t
+
+    super().__init__(parts=t.t_parts(parts=parts))
+
+
+class ModelContent(Content):
+  """ModelContent facilitates the creation of a Content object with a model role.
+
+  Example usages:
+
+  - Create a model Content object with a string:
+    model_content = ModelContent("Why is the sky blue?")
+  - Create a model Content object with a file data Part object:
+    model_content = ModelContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    mime_type="text/plain"))
+  - Create a model Content object with byte data Part object:
+    model_content = ModelContent(Part.from_bytes(data=b"Hello, World!",
+    mime_type="text/plain"))
+
+    You can create a model Content object using other classmethods in the Part
+    class as well.
+    You can also create a model Content using a list of Part objects or strings.
+  """
+
+  role: Literal['model'] = Field(default='model', init=False, frozen=True)
+  parts: list[Part] = Field()
+
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
+    from . import _transformers as t
+
+    super().__init__(parts=t.t_parts(parts=parts))
 
 
 class CustomOutputFormatConfig(_common.BaseModel):
