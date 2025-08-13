@@ -429,17 +429,6 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 32."""
 
 
-class TuningTask(_common.CaseInSensitiveEnum):
-  """Optional. The tuning task. Either I2V or T2V."""
-
-  TUNING_TASK_UNSPECIFIED = 'TUNING_TASK_UNSPECIFIED'
-  """Default value. This value is unused."""
-  TUNING_TASK_I2V = 'TUNING_TASK_I2V'
-  """Tuning task for image to video."""
-  TUNING_TASK_T2V = 'TUNING_TASK_T2V'
-  """Tuning task for text to video."""
-
-
 class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   """Options for feature selection preference."""
 
@@ -9727,244 +9716,6 @@ PartnerModelTuningSpecOrDict = Union[
 ]
 
 
-class DistillationHyperParameters(_common.BaseModel):
-  """Hyperparameters for Distillation."""
-
-  adapter_size: Optional[AdapterSize] = Field(
-      default=None, description="""Optional. Adapter size for distillation."""
-  )
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
-  )
-
-
-class DistillationHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Distillation."""
-
-  adapter_size: Optional[AdapterSize]
-  """Optional. Adapter size for distillation."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
-
-
-DistillationHyperParametersOrDict = Union[
-    DistillationHyperParameters, DistillationHyperParametersDict
-]
-
-
-class DistillationSpec(_common.BaseModel):
-  """Tuning Spec for Distillation."""
-
-  base_teacher_model: Optional[str] = Field(
-      default=None,
-      description="""The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).""",
-  )
-  hyper_parameters: Optional[DistillationHyperParameters] = Field(
-      default=None,
-      description="""Optional. Hyperparameters for Distillation.""",
-  )
-  pipeline_root_directory: Optional[str] = Field(
-      default=None,
-      description="""Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts.""",
-  )
-  student_model: Optional[str] = Field(
-      default=None,
-      description="""The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead.""",
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
-  )
-  tuned_teacher_model_source: Optional[str] = Field(
-      default=None,
-      description="""The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.""",
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
-  )
-
-
-class DistillationSpecDict(TypedDict, total=False):
-  """Tuning Spec for Distillation."""
-
-  base_teacher_model: Optional[str]
-  """The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models)."""
-
-  hyper_parameters: Optional[DistillationHyperParametersDict]
-  """Optional. Hyperparameters for Distillation."""
-
-  pipeline_root_directory: Optional[str]
-  """Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts."""
-
-  student_model: Optional[str]
-  """The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead."""
-
-  training_dataset_uri: Optional[str]
-  """Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
-
-  tuned_teacher_model_source: Optional[str]
-  """The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""
-
-
-DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
-
-
-class PreferenceOptimizationHyperParameters(_common.BaseModel):
-  """Hyperparameters for Preference Optimization."""
-
-  adapter_size: Optional[AdapterSize] = Field(
-      default=None,
-      description="""Optional. Adapter size for preference optimization.""",
-  )
-  beta: Optional[float] = Field(
-      default=None,
-      description="""Optional. Weight for KL Divergence regularization.""",
-  )
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
-  )
-
-
-class PreferenceOptimizationHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Preference Optimization."""
-
-  adapter_size: Optional[AdapterSize]
-  """Optional. Adapter size for preference optimization."""
-
-  beta: Optional[float]
-  """Optional. Weight for KL Divergence regularization."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
-
-
-PreferenceOptimizationHyperParametersOrDict = Union[
-    PreferenceOptimizationHyperParameters,
-    PreferenceOptimizationHyperParametersDict,
-]
-
-
-class PreferenceOptimizationSpec(_common.BaseModel):
-  """Tuning Spec for Preference Optimization."""
-
-  hyper_parameters: Optional[PreferenceOptimizationHyperParameters] = Field(
-      default=None,
-      description="""Optional. Hyperparameters for Preference Optimization.""",
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
-  )
-
-
-class PreferenceOptimizationSpecDict(TypedDict, total=False):
-  """Tuning Spec for Preference Optimization."""
-
-  hyper_parameters: Optional[PreferenceOptimizationHyperParametersDict]
-  """Optional. Hyperparameters for Preference Optimization."""
-
-  training_dataset_uri: Optional[str]
-  """Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
-
-
-PreferenceOptimizationSpecOrDict = Union[
-    PreferenceOptimizationSpec, PreferenceOptimizationSpecDict
-]
-
-
-class VeoHyperParameters(_common.BaseModel):
-  """Hyperparameters for Veo."""
-
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
-  )
-  tuning_task: Optional[TuningTask] = Field(
-      default=None,
-      description="""Optional. The tuning task. Either I2V or T2V.""",
-  )
-
-
-class VeoHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Veo."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
-
-  tuning_task: Optional[TuningTask]
-  """Optional. The tuning task. Either I2V or T2V."""
-
-
-VeoHyperParametersOrDict = Union[VeoHyperParameters, VeoHyperParametersDict]
-
-
-class VeoTuningSpec(_common.BaseModel):
-  """Tuning Spec for Veo Model Tuning."""
-
-  hyper_parameters: Optional[VeoHyperParameters] = Field(
-      default=None, description="""Optional. Hyperparameters for Veo."""
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-
-
-class VeoTuningSpecDict(TypedDict, total=False):
-  """Tuning Spec for Veo Model Tuning."""
-
-  hyper_parameters: Optional[VeoHyperParametersDict]
-  """Optional. Hyperparameters for Veo."""
-
-  training_dataset_uri: Optional[str]
-  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-
-VeoTuningSpecOrDict = Union[VeoTuningSpec, VeoTuningSpecDict]
-
-
 class TuningJob(_common.BaseModel):
   """A tuning job."""
 
@@ -10036,9 +9787,6 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models.""",
   )
-  distillation_spec: Optional[DistillationSpec] = Field(
-      default=None, description="""Tuning Spec for Distillation."""
-  )
   experiment: Optional[str] = Field(
       default=None,
       description="""Output only. The Experiment associated with this TuningJob.""",
@@ -10055,15 +9803,6 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.""",
   )
-  preference_optimization_spec: Optional[PreferenceOptimizationSpec] = Field(
-      default=None, description="""Tuning Spec for Preference Optimization."""
-  )
-  satisfies_pzi: Optional[bool] = Field(
-      default=None, description="""Output only. Reserved for future use."""
-  )
-  satisfies_pzs: Optional[bool] = Field(
-      default=None, description="""Output only. Reserved for future use."""
-  )
   service_account: Optional[str] = Field(
       default=None,
       description="""The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account.""",
@@ -10071,9 +9810,6 @@ class TuningJob(_common.BaseModel):
   tuned_model_display_name: Optional[str] = Field(
       default=None,
       description="""Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters.""",
-  )
-  veo_tuning_spec: Optional[VeoTuningSpec] = Field(
-      default=None, description="""Tuning Spec for Veo Tuning."""
   )
 
   @property
@@ -10144,9 +9880,6 @@ class TuningJobDict(TypedDict, total=False):
   custom_base_model: Optional[str]
   """Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models."""
 
-  distillation_spec: Optional[DistillationSpecDict]
-  """Tuning Spec for Distillation."""
-
   experiment: Optional[str]
   """Output only. The Experiment associated with this TuningJob."""
 
@@ -10159,23 +9892,11 @@ class TuningJobDict(TypedDict, total=False):
   pipeline_job: Optional[str]
   """Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`."""
 
-  preference_optimization_spec: Optional[PreferenceOptimizationSpecDict]
-  """Tuning Spec for Preference Optimization."""
-
-  satisfies_pzi: Optional[bool]
-  """Output only. Reserved for future use."""
-
-  satisfies_pzs: Optional[bool]
-  """Output only. Reserved for future use."""
-
   service_account: Optional[str]
   """The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account."""
 
   tuned_model_display_name: Optional[str]
   """Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
-
-  veo_tuning_spec: Optional[VeoTuningSpecDict]
-  """Tuning Spec for Veo Tuning."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]
