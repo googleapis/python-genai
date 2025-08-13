@@ -8765,12 +8765,6 @@ class Metric(_common.BaseModel):
   prompt_template: Optional[str] = Field(
       default=None, description="""The prompt template for the metric."""
   )
-  judge_model: Optional[str] = Field(
-      default=None, description="""The judge model for the metric."""
-  )
-  judge_model_sampling_count: Optional[int] = Field(
-      default=None, description="""The sampling count for the judge model."""
-  )
   judge_model_system_instruction: Optional[str] = Field(
       default=None,
       description="""The system instruction for the judge model.""",
@@ -8870,12 +8864,6 @@ class MetricDict(TypedDict, total=False):
 
   prompt_template: Optional[str]
   """The prompt template for the metric."""
-
-  judge_model: Optional[str]
-  """The judge model for the metric."""
-
-  judge_model_sampling_count: Optional[int]
-  """The sampling count for the judge model."""
 
   judge_model_system_instruction: Optional[str]
   """The system instruction for the judge model."""
