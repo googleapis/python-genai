@@ -51,6 +51,12 @@ _RETRIED_CODES = (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_has_aiohttp():
+  yield
+  api_client.has_aiohttp = False
+
+
 def _final_codes(retried_codes: Sequence[int] = _RETRIED_CODES):
   return [code for code in range(100, 600) if code not in retried_codes]
 
