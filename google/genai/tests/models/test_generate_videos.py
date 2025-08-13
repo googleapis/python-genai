@@ -232,6 +232,34 @@ def test_image_to_video_frame_interpolation_poll(client):
   assert operation.result.generated_videos[0].video.uri
 
 
+def test_reference_images_to_video_poll(client):
+  # Reference images to Video is only supported in Vertex AI.
+  if not client.vertexai:
+    return
+  output_gcs_uri = "gs://genai-sdk-tests/temp/videos/"
+
+  operation = client.models.generate_videos(
+      model="veo-2.0-generate-exp",
+      prompt="Rain",
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=output_gcs_uri,
+          reference_images=[
+              types.VideoGenerationReferenceImage(
+                  image=GCS_IMAGE,
+                  reference_type="style",
+              )
+          ],
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
 def test_create_operation_to_poll(client):
   if client.vertexai:
     # Fill in project and location for record mode
