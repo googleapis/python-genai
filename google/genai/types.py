@@ -26,7 +26,7 @@ import types as builtin_types
 import typing
 from typing import Any, Callable, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
 import pydantic
-from pydantic import Field
+from pydantic import ConfigDict, Field, PrivateAttr, model_validator
 from typing_extensions import Self, TypedDict
 from . import _common
 
@@ -76,9 +76,19 @@ else:
     McpClientSession = None
     McpCallToolResult = None
 
+if typing.TYPE_CHECKING:
+  import yaml
+else:
+  try:
+    import yaml
+  except ImportError:
+    yaml = None
+
 logger = logging.getLogger('google_genai.types')
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
+
+MetricSubclass = typing.TypeVar('MetricSubclass', bound='Metric')
 
 
 class Outcome(_common.CaseInSensitiveEnum):
@@ -8633,6 +8643,286 @@ class TunedModelDict(TypedDict, total=False):
 TunedModelOrDict = Union[TunedModel, TunedModelDict]
 
 
+class GcsDestination(_common.BaseModel):
+  """The Google Cloud Storage location where the output is to be written to."""
+
+  output_uri_prefix: Optional[str] = Field(
+      default=None,
+      description="""Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist.""",
+  )
+
+  @pydantic.model_validator(mode='after')
+  def _validate_gcs_path(self) -> 'GcsDestination':
+    if self.output_uri_prefix and not self.output_uri_prefix.startswith(
+        'gs://'
+    ):
+      raise ValueError(
+          'output_uri_prefix must be a valid GCS path starting with "gs://".'
+      )
+    return self
+
+
+class GcsDestinationDict(TypedDict, total=False):
+  """The Google Cloud Storage location where the output is to be written to."""
+
+  output_uri_prefix: Optional[str]
+  """Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist."""
+
+
+GcsDestinationOrDict = Union[GcsDestination, GcsDestinationDict]
+
+
+class OutputConfig(_common.BaseModel):
+  """Config for evaluation output."""
+
+  gcs_destination: Optional[GcsDestination] = Field(
+      default=None,
+      description="""Cloud storage destination for evaluation output.""",
+  )
+
+
+class OutputConfigDict(TypedDict, total=False):
+  """Config for evaluation output."""
+
+  gcs_destination: Optional[GcsDestinationDict]
+  """Cloud storage destination for evaluation output."""
+
+
+OutputConfigOrDict = Union[OutputConfig, OutputConfigDict]
+
+
+class AutoraterConfig(_common.BaseModel):
+  """Autorater config used for evaluation."""
+
+  sampling_count: Optional[int] = Field(
+      default=None,
+      description="""Number of samples for each instance in the dataset.
+  If not specified, the default is 4. Minimum value is 1, maximum value
+  is 32.""",
+  )
+  flip_enabled: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Default is true. Whether to flip the candidate and baseline
+  responses. This is only applicable to the pairwise metric. If enabled, also
+  provide PairwiseMetricSpec.candidate_response_field_name and
+  PairwiseMetricSpec.baseline_response_field_name. When rendering
+  PairwiseMetricSpec.metric_prompt_template, the candidate and baseline
+  fields will be flipped for half of the samples to reduce bias.""",
+  )
+  autorater_model: Optional[str] = Field(
+      default=None,
+      description="""The fully qualified name of the publisher model or tuned autorater
+  endpoint to use.
+
+  Publisher model format:
+  `projects/{project}/locations/{location}/publishers/*/models/*`
+
+  Tuned model endpoint format:
+  `projects/{project}/locations/{location}/endpoints/{endpoint}`""",
+  )
+
+
+class AutoraterConfigDict(TypedDict, total=False):
+  """Autorater config used for evaluation."""
+
+  sampling_count: Optional[int]
+  """Number of samples for each instance in the dataset.
+  If not specified, the default is 4. Minimum value is 1, maximum value
+  is 32."""
+
+  flip_enabled: Optional[bool]
+  """Optional. Default is true. Whether to flip the candidate and baseline
+  responses. This is only applicable to the pairwise metric. If enabled, also
+  provide PairwiseMetricSpec.candidate_response_field_name and
+  PairwiseMetricSpec.baseline_response_field_name. When rendering
+  PairwiseMetricSpec.metric_prompt_template, the candidate and baseline
+  fields will be flipped for half of the samples to reduce bias."""
+
+  autorater_model: Optional[str]
+  """The fully qualified name of the publisher model or tuned autorater
+  endpoint to use.
+
+  Publisher model format:
+  `projects/{project}/locations/{location}/publishers/*/models/*`
+
+  Tuned model endpoint format:
+  `projects/{project}/locations/{location}/endpoints/{endpoint}`"""
+
+
+AutoraterConfigOrDict = Union[AutoraterConfig, AutoraterConfigDict]
+
+
+class Metric(_common.BaseModel):
+  """The metric used for evaluation."""
+
+  name: Optional[str] = Field(
+      default=None, description="""The name of the metric."""
+  )
+  custom_function: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The custom function that defines the end-to-end logic for metric computation.""",
+  )
+  prompt_template: Optional[str] = Field(
+      default=None, description="""The prompt template for the metric."""
+  )
+  judge_model: Optional[str] = Field(
+      default=None, description="""The judge model for the metric."""
+  )
+  judge_model_sampling_count: Optional[int] = Field(
+      default=None, description="""The sampling count for the judge model."""
+  )
+  judge_model_system_instruction: Optional[str] = Field(
+      default=None,
+      description="""The system instruction for the judge model.""",
+  )
+  return_raw_output: Optional[bool] = Field(
+      default=None,
+      description="""Whether to return the raw output from the judge model.""",
+  )
+  parse_and_reduce_fn: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The parse and reduce function for the judge model.""",
+  )
+  aggregate_summary_fn: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The aggregate summary function for the judge model.""",
+  )
+
+  # Allow extra fields to support metric-specific config fields.
+  model_config = ConfigDict(extra='allow')
+
+  _is_predefined: bool = PrivateAttr(default=False)
+  """A boolean indicating whether the metric is predefined."""
+
+  _config_source: Optional[str] = PrivateAttr(default=None)
+  """An optional string indicating the source of the metric configuration."""
+
+  _version: Optional[str] = PrivateAttr(default=None)
+  """An optional string indicating the version of the metric."""
+
+  @model_validator(mode='after')  # type: ignore[arg-type]
+  @classmethod
+  def validate_name(cls, model: 'Metric') -> 'Metric':
+    if not model.name:
+      raise ValueError('Metric name cannot be empty.')
+    model.name = model.name.lower()
+    return model
+
+  def to_yaml_file(self, file_path: str, version: Optional[str] = None) -> None:
+    """Dumps the metric object to a YAML file.
+
+    Args:
+        file_path: The path to the YAML file.
+        version: Optional version string to include in the YAML output.
+
+    Raises:
+        ImportError: If the pyyaml library is not installed.
+    """
+    if yaml is None:
+      raise ImportError(
+          'YAML serialization requires the pyyaml library. Please install'
+          " it using 'pip install google-cloud-aiplatform[evaluation]'."
+      )
+
+    fields_to_exclude_callables = set()
+    for field_name, field_info in self.model_fields.items():
+      annotation = field_info.annotation
+      origin = typing.get_origin(annotation)
+
+      is_field_callable_type = False
+      if annotation is Callable or origin is Callable:  # type: ignore[comparison-overlap]
+        is_field_callable_type = True
+      elif origin is Union:
+        args = typing.get_args(annotation)
+        if any(
+            arg is Callable or typing.get_origin(arg) is Callable
+            for arg in args
+        ):
+          is_field_callable_type = True
+
+      if is_field_callable_type:
+        fields_to_exclude_callables.add(field_name)
+
+    data_to_dump = self.model_dump(
+        exclude_unset=True,
+        exclude_none=True,
+        mode='json',
+        exclude=fields_to_exclude_callables
+        if fields_to_exclude_callables
+        else None,
+    )
+
+    if version:
+      data_to_dump['version'] = version
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+      yaml.dump(data_to_dump, f, sort_keys=False, allow_unicode=True)
+
+
+class MetricDict(TypedDict, total=False):
+  """The metric used for evaluation."""
+
+  name: Optional[str]
+  """The name of the metric."""
+
+  custom_function: Optional[Callable[..., Any]]
+  """The custom function that defines the end-to-end logic for metric computation."""
+
+  prompt_template: Optional[str]
+  """The prompt template for the metric."""
+
+  judge_model: Optional[str]
+  """The judge model for the metric."""
+
+  judge_model_sampling_count: Optional[int]
+  """The sampling count for the judge model."""
+
+  judge_model_system_instruction: Optional[str]
+  """The system instruction for the judge model."""
+
+  return_raw_output: Optional[bool]
+  """Whether to return the raw output from the judge model."""
+
+  parse_and_reduce_fn: Optional[Callable[..., Any]]
+  """The parse and reduce function for the judge model."""
+
+  aggregate_summary_fn: Optional[Callable[..., Any]]
+  """The aggregate summary function for the judge model."""
+
+
+MetricOrDict = Union[Metric, MetricDict]
+
+
+class EvaluationConfig(_common.BaseModel):
+  """Evaluation config for tuning."""
+
+  metrics: Optional[list[Metric]] = Field(
+      default=None, description="""The metrics used for evaluation."""
+  )
+  output_config: Optional[OutputConfig] = Field(
+      default=None, description="""Config for evaluation output."""
+  )
+  autorater_config: Optional[AutoraterConfig] = Field(
+      default=None, description="""Autorater config for evaluation."""
+  )
+
+
+class EvaluationConfigDict(TypedDict, total=False):
+  """Evaluation config for tuning."""
+
+  metrics: Optional[list[MetricDict]]
+  """The metrics used for evaluation."""
+
+  output_config: Optional[OutputConfigDict]
+  """Config for evaluation output."""
+
+  autorater_config: Optional[AutoraterConfigDict]
+  """Autorater config for evaluation."""
+
+
+EvaluationConfigOrDict = Union[EvaluationConfig, EvaluationConfigDict]
+
+
 class GoogleRpcStatus(_common.BaseModel):
   """The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs.
 
@@ -9738,6 +10028,9 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Tuning Spec for open sourced and third party Partner models.""",
   )
+  evaluation_config: Optional[EvaluationConfig] = Field(
+      default=None, description=""""""
+  )
   custom_base_model: Optional[str] = Field(
       default=None,
       description="""Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models.""",
@@ -9843,6 +10136,9 @@ class TuningJobDict(TypedDict, total=False):
 
   partner_model_tuning_spec: Optional[PartnerModelTuningSpecDict]
   """Tuning Spec for open sourced and third party Partner models."""
+
+  evaluation_config: Optional[EvaluationConfigDict]
+  """"""
 
   custom_base_model: Optional[str]
   """Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models."""
@@ -10094,6 +10390,9 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples.""",
   )
+  evaluation_config: Optional[EvaluationConfig] = Field(
+      default=None, description="""Evaluation config for the tuning job."""
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -10131,6 +10430,9 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   learning_rate: Optional[float]
   """The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples."""
+
+  evaluation_config: Optional[EvaluationConfigDict]
+  """Evaluation config for the tuning job."""
 
 
 CreateTuningJobConfigOrDict = Union[
@@ -14539,3 +14841,155 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
 CreateTuningJobParametersOrDict = Union[
     CreateTuningJobParameters, CreateTuningJobParametersDict
 ]
+
+
+class CustomOutputFormatConfig(_common.BaseModel):
+  """Config for custom output format."""
+
+  return_raw_output: Optional[bool] = Field(
+      default=None, description="""Optional. Whether to return raw output."""
+  )
+
+
+class CustomOutputFormatConfigDict(TypedDict, total=False):
+  """Config for custom output format."""
+
+  return_raw_output: Optional[bool]
+  """Optional. Whether to return raw output."""
+
+
+CustomOutputFormatConfigOrDict = Union[
+    CustomOutputFormatConfig, CustomOutputFormatConfigDict
+]
+
+
+class BleuSpec(_common.BaseModel):
+  """Spec for bleu metric."""
+
+  use_effective_order: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether to use_effective_order to compute bleu score.""",
+  )
+
+
+class BleuSpecDict(TypedDict, total=False):
+  """Spec for bleu metric."""
+
+  use_effective_order: Optional[bool]
+  """Optional. Whether to use_effective_order to compute bleu score."""
+
+
+BleuSpecOrDict = Union[BleuSpec, BleuSpecDict]
+
+
+class PairwiseMetricSpec(_common.BaseModel):
+  """Spec for pairwise metric."""
+
+  metric_prompt_template: Optional[str] = Field(
+      default=None,
+      description="""Required. Metric prompt template for pairwise metric.""",
+  )
+  baseline_response_field_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The field name of the baseline response.""",
+  )
+  candidate_response_field_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The field name of the candidate response.""",
+  )
+  custom_output_format_config: Optional[CustomOutputFormatConfig] = Field(
+      default=None,
+      description="""Optional. CustomOutputFormatConfig allows customization of metric output. When this config is set, the default output is replaced with the raw output string. If a custom format is chosen, the `pairwise_choice` and `explanation` fields in the corresponding metric result will be empty.""",
+  )
+  system_instruction: Optional[str] = Field(
+      default=None,
+      description="""Optional. System instructions for pairwise metric.""",
+  )
+
+
+class PairwiseMetricSpecDict(TypedDict, total=False):
+  """Spec for pairwise metric."""
+
+  metric_prompt_template: Optional[str]
+  """Required. Metric prompt template for pairwise metric."""
+
+  baseline_response_field_name: Optional[str]
+  """Optional. The field name of the baseline response."""
+
+  candidate_response_field_name: Optional[str]
+  """Optional. The field name of the candidate response."""
+
+  custom_output_format_config: Optional[CustomOutputFormatConfigDict]
+  """Optional. CustomOutputFormatConfig allows customization of metric output. When this config is set, the default output is replaced with the raw output string. If a custom format is chosen, the `pairwise_choice` and `explanation` fields in the corresponding metric result will be empty."""
+
+  system_instruction: Optional[str]
+  """Optional. System instructions for pairwise metric."""
+
+
+PairwiseMetricSpecOrDict = Union[PairwiseMetricSpec, PairwiseMetricSpecDict]
+
+
+class PointwiseMetricSpec(_common.BaseModel):
+  """Spec for pointwise metric."""
+
+  metric_prompt_template: Optional[str] = Field(
+      default=None,
+      description="""Required. Metric prompt template for pointwise metric.""",
+  )
+  custom_output_format_config: Optional[CustomOutputFormatConfig] = Field(
+      default=None,
+      description="""Optional. CustomOutputFormatConfig allows customization of metric output. By default, metrics return a score and explanation. When this config is set, the default output is replaced with either: - The raw output string. - A parsed output based on a user-defined schema. If a custom format is chosen, the `score` and `explanation` fields in the corresponding metric result will be empty.""",
+  )
+  system_instruction: Optional[str] = Field(
+      default=None,
+      description="""Optional. System instructions for pointwise metric.""",
+  )
+
+
+class PointwiseMetricSpecDict(TypedDict, total=False):
+  """Spec for pointwise metric."""
+
+  metric_prompt_template: Optional[str]
+  """Required. Metric prompt template for pointwise metric."""
+
+  custom_output_format_config: Optional[CustomOutputFormatConfigDict]
+  """Optional. CustomOutputFormatConfig allows customization of metric output. By default, metrics return a score and explanation. When this config is set, the default output is replaced with either: - The raw output string. - A parsed output based on a user-defined schema. If a custom format is chosen, the `score` and `explanation` fields in the corresponding metric result will be empty."""
+
+  system_instruction: Optional[str]
+  """Optional. System instructions for pointwise metric."""
+
+
+PointwiseMetricSpecOrDict = Union[PointwiseMetricSpec, PointwiseMetricSpecDict]
+
+
+class RougeSpec(_common.BaseModel):
+  """Spec for rouge metric."""
+
+  rouge_type: Optional[str] = Field(
+      default=None,
+      description="""Optional. Supported rouge types are rougen[1-9], rougeL, and rougeLsum.""",
+  )
+  split_summaries: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether to split summaries while using rougeLsum.""",
+  )
+  use_stemmer: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether to use stemmer to compute rouge score.""",
+  )
+
+
+class RougeSpecDict(TypedDict, total=False):
+  """Spec for rouge metric."""
+
+  rouge_type: Optional[str]
+  """Optional. Supported rouge types are rougen[1-9], rougeL, and rougeLsum."""
+
+  split_summaries: Optional[bool]
+  """Optional. Whether to split summaries while using rougeLsum."""
+
+  use_stemmer: Optional[bool]
+  """Optional. Whether to use stemmer to compute rouge score."""
+
+
+RougeSpecOrDict = Union[RougeSpec, RougeSpecDict]

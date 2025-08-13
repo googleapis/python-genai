@@ -28,6 +28,7 @@ import types as builtin_types
 import typing
 from typing import Any, GenericAlias, List, Optional, Sequence, Union  # type: ignore[attr-defined]
 from ._mcp_utils import mcp_to_gemini_tool
+from ._common import get_value_by_path as getv
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -1224,3 +1225,53 @@ def t_tool_response(
         f'Could not convert input (type "{type(input)}") to '
         '`types.LiveClientToolResponse`'
     ) from e
+
+
+def t_metrics(
+    metrics: list[types.MetricSubclass]
+) -> list[dict[str, Any]]:
+    """Prepares the metric payload for the evaluation request.
+
+    Args:
+        request_dict: The dictionary containing the request details.
+        resolved_metrics: A list of resolved metric objects.
+
+    Returns:
+        The updated request dictionary with the prepared metric payload.
+    """
+    metrics_payload = []
+
+    for metric in metrics:
+      metric_payload_item: dict[str, Any] = {}
+      metric_payload_item['aggregation_metrics'] = [
+          'AVERAGE',
+          'STANDARD_DEVIATION',
+      ]
+
+      metric_name = getv(metric, ['name']).lower()
+
+      if metric_name == 'exact_match':
+        metric_payload_item['exact_match_spec'] = {}
+      elif metric_name == 'bleu':
+        metric_payload_item['bleu_spec'] = {}
+      elif metric_name.startswith('rouge'):
+        rouge_type = metric_name.replace("_", "")
+        metric_payload_item['rouge_spec'] = {'rouge_type': rouge_type}
+
+      elif hasattr(metric, 'prompt_template') and metric.prompt_template:
+        pointwise_spec = {'metric_prompt_template': metric.prompt_template}
+        system_instruction = getv(metric, ['judge_model_system_instruction'])
+        if system_instruction:
+          pointwise_spec['system_instruction'] = system_instruction
+        return_raw_output = getv(metric, ['return_raw_output'])
+        if return_raw_output:
+          pointwise_spec['custom_output_format_config'] = {  # type: ignore[assignment]
+              'return_raw_output': return_raw_output
+          }
+        metric_payload_item['pointwise_metric_spec'] = pointwise_spec
+      else:
+        raise ValueError(
+            'Unsupported metric type or invalid metric name:' f' {metric_name}'
+        )
+      metrics_payload.append(metric_payload_item)
+    return metrics_payload
