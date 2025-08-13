@@ -21,6 +21,7 @@ from typing import Any, AsyncIterator, Awaitable, Iterator, Optional, Union
 from urllib.parse import urlencode
 
 from . import _api_module
+from . import _base_transformers as base_t
 from . import _common
 from . import _extra_utils
 from . import _mcp_utils
@@ -1259,7 +1260,7 @@ def _Image_to_mldev(
     setv(
         to_object,
         ['bytesBase64Encoded'],
-        t.t_bytes(getv(from_object, ['image_bytes'])),
+        base_t.t_bytes(getv(from_object, ['image_bytes'])),
     )
 
   if getv(from_object, ['mime_type']) is not None:
@@ -2496,7 +2497,7 @@ def _Image_to_vertex(
     setv(
         to_object,
         ['bytesBase64Encoded'],
-        t.t_bytes(getv(from_object, ['image_bytes'])),
+        base_t.t_bytes(getv(from_object, ['image_bytes'])),
     )
 
   if getv(from_object, ['mime_type']) is not None:
@@ -3381,7 +3382,7 @@ def _Video_to_vertex(
     setv(
         to_object,
         ['bytesBase64Encoded'],
-        t.t_bytes(getv(from_object, ['video_bytes'])),
+        base_t.t_bytes(getv(from_object, ['video_bytes'])),
     )
 
   if getv(from_object, ['mime_type']) is not None:
@@ -3880,7 +3881,7 @@ def _Image_from_mldev(
     setv(
         to_object,
         ['image_bytes'],
-        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
     )
 
   if getv(from_object, ['mimeType']) is not None:
@@ -4106,7 +4107,7 @@ def _Video_from_mldev(
     setv(
         to_object,
         ['video_bytes'],
-        t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
+        base_t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
     )
 
   if getv(from_object, ['encoding']) is not None:
@@ -4572,7 +4573,7 @@ def _Image_from_vertex(
     setv(
         to_object,
         ['image_bytes'],
-        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
     )
 
   if getv(from_object, ['mimeType']) is not None:
@@ -4982,7 +4983,7 @@ def _Video_from_vertex(
     setv(
         to_object,
         ['video_bytes'],
-        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
     )
 
   if getv(from_object, ['mimeType']) is not None:
