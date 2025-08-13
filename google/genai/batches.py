@@ -338,6 +338,11 @@ def _GoogleSearch_to_mldev(
         _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
     )
 
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 

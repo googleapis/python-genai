@@ -2366,6 +2366,11 @@ class GoogleSearch(_common.BaseModel):
       If customers set a start time, they must set an end time (and vice versa).
       """,
   )
+  exclude_domains: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. List of domains to be excluded from the search results.
+      The default limit is 2000 domains.""",
+  )
 
 
 class GoogleSearchDict(TypedDict, total=False):
@@ -2375,6 +2380,10 @@ class GoogleSearchDict(TypedDict, total=False):
   """Optional. Filter search results to a specific time range.
       If customers set a start time, they must set an end time (and vice versa).
       """
+
+  exclude_domains: Optional[list[str]]
+  """Optional. List of domains to be excluded from the search results.
+      The default limit is 2000 domains."""
 
 
 GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
@@ -2432,13 +2441,17 @@ GoogleSearchRetrievalOrDict = Union[
 class EnterpriseWebSearch(_common.BaseModel):
   """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
 
-  pass
+  exclude_domains: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains.""",
+  )
 
 
 class EnterpriseWebSearchDict(TypedDict, total=False):
   """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
 
-  pass
+  exclude_domains: Optional[list[str]]
+  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains."""
 
 
 EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]

@@ -340,6 +340,11 @@ def _GoogleSearch_to_mldev(
         _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
     )
 
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -1702,6 +1707,9 @@ def _GoogleSearch_to_vertex(
         ),
     )
 
+  if getv(from_object, ['exclude_domains']) is not None:
+    setv(to_object, ['excludeDomains'], getv(from_object, ['exclude_domains']))
+
   return to_object
 
 
@@ -1745,6 +1753,8 @@ def _EnterpriseWebSearch_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['exclude_domains']) is not None:
+    setv(to_object, ['excludeDomains'], getv(from_object, ['exclude_domains']))
 
   return to_object
 
