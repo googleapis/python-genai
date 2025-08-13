@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.30.0](https://github.com/googleapis/python-genai/compare/v1.29.0...v1.30.0) (2025-08-13)
+
+
+### Features
+
+* Add an _exclude_fields characteristic in the config for unused values to avoid unnecessary and unused code in converter and type generation. ([8e09d44](https://github.com/googleapis/python-genai/commit/8e09d441b85e4a6c2e5721c6640dab1272a4b7a8))
+* Add evaluation support to Vertex tuning ([95293eb](https://github.com/googleapis/python-genai/commit/95293eb0acf086ac14234b7e416c7ee1e445b5f1))
+* Enable continuous fine-tuning on a pre-tuned model in the SDK. ([72dc46b](https://github.com/googleapis/python-genai/commit/72dc46b86caa7ccb4c9d0fc83dae402e0ef5cba3))
+* Support document name in grounding metadata ([5f6746d](https://github.com/googleapis/python-genai/commit/5f6746db9f0230d164688f73a05bd67b334f4f88))
+* Support exclude_domains in Google Search and Enterprise Web Search ([7e4ec28](https://github.com/googleapis/python-genai/commit/7e4ec284dc6e521949626f3ed54028163ef9121d))
+
+
+### Bug Fixes
+
+* Prevent NameError from being thrown when has_aiohttp is False ([13a487d](https://github.com/googleapis/python-genai/commit/13a487dc6a61a82aacb626cb09503d362cb8a1cb))
+
+
+### Documentation
+
+* Docs for 1.29 ([3e39e63](https://github.com/googleapis/python-genai/commit/3e39e630d2e774e0d24a1226378a27009827e853))
+* Document that property descriptions are not automatically-handled. ([d7cb114](https://github.com/googleapis/python-genai/commit/d7cb114d9bac6ff156137b32fc59fcd2b0d79d33))
+* Fix example format. ([da225f3](https://github.com/googleapis/python-genai/commit/da225f32656a2f65ce80d9d1300d5147270c41df))
+
 ## [1.29.0](https://github.com/googleapis/python-genai/compare/v1.28.0...v1.29.0) (2025-08-06)
 
 
