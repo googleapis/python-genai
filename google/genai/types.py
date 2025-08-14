@@ -564,6 +564,16 @@ class EditMode(_common.CaseInSensitiveEnum):
   EDIT_MODE_PRODUCT_IMAGE = 'EDIT_MODE_PRODUCT_IMAGE'
 
 
+class SegmentMode(_common.CaseInSensitiveEnum):
+  """Enum that represents the segmentation mode."""
+
+  FOREGROUND = 'FOREGROUND'
+  BACKGROUND = 'BACKGROUND'
+  PROMPT = 'PROMPT'
+  SEMANTIC = 'SEMANTIC'
+  INTERACTIVE = 'INTERACTIVE'
+
+
 class VideoCompressionQuality(_common.CaseInSensitiveEnum):
   """Enum that controls the compression quality of the generated videos."""
 
@@ -7260,6 +7270,236 @@ class RecontextImageResponseDict(TypedDict, total=False):
 
 RecontextImageResponseOrDict = Union[
     RecontextImageResponse, RecontextImageResponseDict
+]
+
+
+class ScribbleImage(_common.BaseModel):
+  """An image mask representing a brush scribble."""
+
+  image: Optional[Image] = Field(
+      default=None,
+      description="""The brush scribble to guide segmentation. Valid for the interactive mode.""",
+  )
+
+
+class ScribbleImageDict(TypedDict, total=False):
+  """An image mask representing a brush scribble."""
+
+  image: Optional[ImageDict]
+  """The brush scribble to guide segmentation. Valid for the interactive mode."""
+
+
+ScribbleImageOrDict = Union[ScribbleImage, ScribbleImageDict]
+
+
+class SegmentImageSource(_common.BaseModel):
+  """A set of source input(s) for image segmentation."""
+
+  prompt: Optional[str] = Field(
+      default=None,
+      description="""A text prompt for guiding the model during image segmentation.
+      Required for prompt mode and semantic mode, disallowed for other modes.""",
+  )
+  image: Optional[Image] = Field(
+      default=None, description="""The image to be segmented."""
+  )
+  scribble_image: Optional[ScribbleImage] = Field(
+      default=None,
+      description="""The brush scribble to guide segmentation.
+      Required for the interactive mode, disallowed for other modes.""",
+  )
+
+
+class SegmentImageSourceDict(TypedDict, total=False):
+  """A set of source input(s) for image segmentation."""
+
+  prompt: Optional[str]
+  """A text prompt for guiding the model during image segmentation.
+      Required for prompt mode and semantic mode, disallowed for other modes."""
+
+  image: Optional[ImageDict]
+  """The image to be segmented."""
+
+  scribble_image: Optional[ScribbleImageDict]
+  """The brush scribble to guide segmentation.
+      Required for the interactive mode, disallowed for other modes."""
+
+
+SegmentImageSourceOrDict = Union[SegmentImageSource, SegmentImageSourceDict]
+
+
+class SegmentImageConfig(_common.BaseModel):
+  """Configuration for segmenting an image."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  mode: Optional[SegmentMode] = Field(
+      default=None, description="""The segmentation mode to use."""
+  )
+  max_predictions: Optional[int] = Field(
+      default=None,
+      description="""The maximum number of predictions to return up to, by top
+      confidence score.""",
+  )
+  confidence_threshold: Optional[float] = Field(
+      default=None,
+      description="""The confidence score threshold for the detections as a decimal
+      value. Only predictions with a confidence score higher than this
+      threshold will be returned.""",
+  )
+  mask_dilation: Optional[float] = Field(
+      default=None,
+      description="""A decimal value representing how much dilation to apply to the
+      masks. 0 for no dilation. 1.0 means the masked area covers the whole
+      image.""",
+  )
+  binary_color_threshold: Optional[float] = Field(
+      default=None,
+      description="""The binary color threshold to apply to the masks. The threshold
+      can be set to a decimal value between 0 and 255 non-inclusive.
+      Set to -1 for no binary color thresholding.""",
+  )
+
+
+class SegmentImageConfigDict(TypedDict, total=False):
+  """Configuration for segmenting an image."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  mode: Optional[SegmentMode]
+  """The segmentation mode to use."""
+
+  max_predictions: Optional[int]
+  """The maximum number of predictions to return up to, by top
+      confidence score."""
+
+  confidence_threshold: Optional[float]
+  """The confidence score threshold for the detections as a decimal
+      value. Only predictions with a confidence score higher than this
+      threshold will be returned."""
+
+  mask_dilation: Optional[float]
+  """A decimal value representing how much dilation to apply to the
+      masks. 0 for no dilation. 1.0 means the masked area covers the whole
+      image."""
+
+  binary_color_threshold: Optional[float]
+  """The binary color threshold to apply to the masks. The threshold
+      can be set to a decimal value between 0 and 255 non-inclusive.
+      Set to -1 for no binary color thresholding."""
+
+
+SegmentImageConfigOrDict = Union[SegmentImageConfig, SegmentImageConfigDict]
+
+
+class _SegmentImageParameters(_common.BaseModel):
+  """The parameters for segmenting an image."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  source: Optional[SegmentImageSource] = Field(
+      default=None,
+      description="""A set of source input(s) for image segmentation.""",
+  )
+  config: Optional[SegmentImageConfig] = Field(
+      default=None, description="""Configuration for image segmentation."""
+  )
+
+
+class _SegmentImageParametersDict(TypedDict, total=False):
+  """The parameters for segmenting an image."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  source: Optional[SegmentImageSourceDict]
+  """A set of source input(s) for image segmentation."""
+
+  config: Optional[SegmentImageConfigDict]
+  """Configuration for image segmentation."""
+
+
+_SegmentImageParametersOrDict = Union[
+    _SegmentImageParameters, _SegmentImageParametersDict
+]
+
+
+class EntityLabel(_common.BaseModel):
+  """An entity representing the segmented area."""
+
+  label: Optional[str] = Field(
+      default=None, description="""The label of the segmented entity."""
+  )
+  score: Optional[float] = Field(
+      default=None,
+      description="""The confidence score of the detected label.""",
+  )
+
+
+class EntityLabelDict(TypedDict, total=False):
+  """An entity representing the segmented area."""
+
+  label: Optional[str]
+  """The label of the segmented entity."""
+
+  score: Optional[float]
+  """The confidence score of the detected label."""
+
+
+EntityLabelOrDict = Union[EntityLabel, EntityLabelDict]
+
+
+class GeneratedImageMask(_common.BaseModel):
+  """A generated image mask."""
+
+  mask: Optional[Image] = Field(
+      default=None, description="""The generated image mask."""
+  )
+  labels: Optional[list[EntityLabel]] = Field(
+      default=None,
+      description="""The detected entities on the segmented area.""",
+  )
+
+
+class GeneratedImageMaskDict(TypedDict, total=False):
+  """A generated image mask."""
+
+  mask: Optional[ImageDict]
+  """The generated image mask."""
+
+  labels: Optional[list[EntityLabelDict]]
+  """The detected entities on the segmented area."""
+
+
+GeneratedImageMaskOrDict = Union[GeneratedImageMask, GeneratedImageMaskDict]
+
+
+class SegmentImageResponse(_common.BaseModel):
+  """The output images response."""
+
+  generated_masks: Optional[list[GeneratedImageMask]] = Field(
+      default=None,
+      description="""List of generated image masks.
+      """,
+  )
+
+
+class SegmentImageResponseDict(TypedDict, total=False):
+  """The output images response."""
+
+  generated_masks: Optional[list[GeneratedImageMaskDict]]
+  """List of generated image masks.
+      """
+
+
+SegmentImageResponseOrDict = Union[
+    SegmentImageResponse, SegmentImageResponseDict
 ]
 
 

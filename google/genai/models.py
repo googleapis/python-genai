@@ -3025,6 +3025,120 @@ def _RecontextImageParameters_to_vertex(
   return to_object
 
 
+def _ScribbleImage_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  return to_object
+
+
+def _SegmentImageSource_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['scribble_image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'scribble'],
+        _ScribbleImage_to_vertex(
+            getv(from_object, ['scribble_image']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _SegmentImageConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['mode']) is not None:
+    setv(parent_object, ['parameters', 'mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['max_predictions']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'maxPredictions'],
+        getv(from_object, ['max_predictions']),
+    )
+
+  if getv(from_object, ['confidence_threshold']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'confidenceThreshold'],
+        getv(from_object, ['confidence_threshold']),
+    )
+
+  if getv(from_object, ['mask_dilation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'maskDilation'],
+        getv(from_object, ['mask_dilation']),
+    )
+
+  if getv(from_object, ['binary_color_threshold']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'binaryColorThreshold'],
+        getv(from_object, ['binary_color_threshold']),
+    )
+
+  return to_object
+
+
+def _SegmentImageParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['source']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _SegmentImageSource_to_vertex(getv(from_object, ['source']), to_object),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _SegmentImageConfig_to_vertex(getv(from_object, ['config']), to_object),
+    )
+
+  return to_object
+
+
 def _GetModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -4618,6 +4732,63 @@ def _RecontextImageResponse_from_vertex(
   return to_object
 
 
+def _EntityLabel_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['label']) is not None:
+    setv(to_object, ['label'], getv(from_object, ['label']))
+
+  if getv(from_object, ['score']) is not None:
+    setv(to_object, ['score'], getv(from_object, ['score']))
+
+  return to_object
+
+
+def _GeneratedImageMask_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['_self']) is not None:
+    setv(
+        to_object,
+        ['mask'],
+        _Image_from_vertex(getv(from_object, ['_self']), to_object),
+    )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(
+        to_object,
+        ['labels'],
+        [
+            _EntityLabel_from_vertex(item, to_object)
+            for item in getv(from_object, ['labels'])
+        ],
+    )
+
+  return to_object
+
+
+def _SegmentImageResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['predictions']) is not None:
+    setv(
+        to_object,
+        ['generated_masks'],
+        [
+            _GeneratedImageMask_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions'])
+        ],
+    )
+
+  return to_object
+
+
 def _Endpoint_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -5505,6 +5676,89 @@ class Models(_api_module.BaseModule):
       response_dict = _RecontextImageResponse_from_vertex(response_dict)
 
     return_value = types.RecontextImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  def segment_image(
+      self,
+      *,
+      model: str,
+      source: types.SegmentImageSourceOrDict,
+      config: Optional[types.SegmentImageConfigOrDict] = None,
+  ) -> types.SegmentImageResponse:
+    """Segments an image, creating a mask of a specified area.
+
+    Args:
+      model (str): The model to use.
+      source (SegmentImageSource): An object containing the source inputs
+        (prompt, image, scribble_image) for image segmentation. The prompt is
+        required for prompt mode and semantic mode, disallowed for other modes.
+        scribble_image is required for the interactive mode, disallowed for
+        other modes.
+      config (SegmentImageConfig): Configuration for segmentation.
+
+    Usage:
+
+      ```
+      response = client.models.segment_image(
+          model="image-segmentation-001",
+          source=types.SegmentImageSource(
+              image=types.Image.from_file(IMAGE_FILE_PATH),
+          ),
+      )
+
+      mask_image = response.generated_masks[0].mask
+      ```
+    """
+
+    parameter_model = types._SegmentImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _SegmentImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _SegmentImageResponse_from_vertex(response_dict)
+
+    return_value = types.SegmentImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
 
@@ -7234,6 +7488,92 @@ class AsyncModels(_api_module.BaseModule):
       response_dict = _RecontextImageResponse_from_vertex(response_dict)
 
     return_value = types.RecontextImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  async def segment_image(
+      self,
+      *,
+      model: str,
+      source: types.SegmentImageSourceOrDict,
+      config: Optional[types.SegmentImageConfigOrDict] = None,
+  ) -> types.SegmentImageResponse:
+    """Segments an image, creating a mask of a specified area.
+
+    Args:
+      model (str): The model to use.
+      source (SegmentImageSource): An object containing the source inputs
+        (prompt, image, scribble_image) for image segmentation. The prompt is
+        required for prompt mode and semantic mode, disallowed for other modes.
+        scribble_image is required for the interactive mode, disallowed for
+        other modes.
+      config (SegmentImageConfig): Configuration for segmentation.
+
+    Usage:
+
+      ```
+      response = client.models.segment_image(
+          model="image-segmentation-001",
+          source=types.SegmentImageSource(
+              image=types.Image.from_file(IMAGE_FILE_PATH),
+          ),
+          config=types.SegmentImageConfig(
+              mode=types.SegmentMode.foreground,
+          ),
+      )
+
+      mask_image = response.generated_masks[0].mask
+      ```
+    """
+
+    parameter_model = types._SegmentImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _SegmentImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _SegmentImageResponse_from_vertex(response_dict)
+
+    return_value = types.SegmentImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
 
