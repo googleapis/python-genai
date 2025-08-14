@@ -1156,16 +1156,6 @@ def t_tuning_job_status(status: str) -> Union[types.JobState, str]:
     return status
 
 
-# Some fields don't accept url safe base64 encoding.
-# We shouldn't use this transformer if the backend adhere to Cloud Type
-# format https://cloud.google.com/docs/discovery/type-format.
-# TODO(b/389133914,b/390320301): Remove the hack after backend fix the issue.
-def t_bytes(data: bytes) -> str:
-  if not isinstance(data, bytes):
-    return data
-  return base64.b64encode(data).decode('ascii')
-
-
 def t_content_strict(content: types.ContentOrDict) -> types.Content:
   if isinstance(content, dict):
     return types.Content.model_validate(content)

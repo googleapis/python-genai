@@ -29,6 +29,11 @@ import pydantic
 from pydantic import ConfigDict, Field, PrivateAttr, model_validator
 from typing_extensions import Self, TypedDict
 from . import _common
+from ._operations_converters import (
+    _GenerateVideosOperation_from_mldev,
+    _GenerateVideosOperation_from_vertex,
+)
+
 
 if sys.version_info >= (3, 10):
   # Supports both Union[t1, t2] and t1 | t2
@@ -8674,58 +8679,12 @@ class GenerateVideosOperation(_common.BaseModel, Operation):
       cls, api_response: Any, is_vertex_ai: bool = False
   ) -> Self:
     """Instantiates a GenerateVideosOperation from an API response."""
-    new_operation = cls()
-    new_operation.name = api_response.get('name', None)
-    new_operation.metadata = api_response.get('metadata', None)
-    new_operation.done = api_response.get('done', None)
-    new_operation.error = api_response.get('error', None)
-
     if is_vertex_ai:
-      if api_response.get('response', None) is not None:
-        new_operation.response = GenerateVideosResponse(
-            generated_videos=[
-                GeneratedVideo(
-                    video=Video(
-                        uri=video.get('gcsUri', None),
-                        video_bytes=video.get('bytesBase64Encoded', None),
-                        mime_type=video.get('mimeType', None),
-                    )
-                )
-                for video in api_response.get('response', {}).get('videos', [])
-            ],
-            rai_media_filtered_count=api_response.get('response', {}).get(
-                'raiMediaFilteredCount', None
-            ),
-            rai_media_filtered_reasons=api_response.get('response', {}).get(
-                'raiMediaFilteredReasons', None
-            ),
-        )
+      response_dict = _GenerateVideosOperation_from_vertex(api_response)
     else:
-      if api_response.get('response', None) is not None:
-        new_operation.response = GenerateVideosResponse(
-            generated_videos=[
-                GeneratedVideo(
-                    video=Video(
-                        uri=video.get('video', {}).get('uri', None),
-                        video_bytes=video.get('video', {}).get(
-                            'encodedVideo', None
-                        ),
-                        mime_type=video.get('encoding', None),
-                    )
-                )
-                for video in api_response.get('response', {})
-                .get('generateVideoResponse', {})
-                .get('generatedSamples', [])
-            ],
-            rai_media_filtered_count=api_response.get('response', {})
-            .get('generateVideoResponse', {})
-            .get('raiMediaFilteredCount', None),
-            rai_media_filtered_reasons=api_response.get('response', {})
-            .get('generateVideoResponse', {})
-            .get('raiMediaFilteredReasons', None),
-        )
-    new_operation.result = new_operation.response
-    return new_operation
+      response_dict = _GenerateVideosOperation_from_mldev(api_response)
+
+    return cls._from_response(response=response_dict, kwargs={})
 
 
 class GetTuningJobConfig(_common.BaseModel):
