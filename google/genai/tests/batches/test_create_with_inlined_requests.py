@@ -39,12 +39,17 @@ _INLINED_REQUEST = {
 _INLINED_TEXT_REQUEST = {
     'contents': [{
         'parts': [{
-            'text': 'What is the QQQ stock price?',
+            'text': 'high',
         }],
         'role': 'user',
     }],
     'config': {
         'response_modalities': ['TEXT'],
+        'system_instruction': 'I say high, you say low',
+        'thinking_config': {
+            'include_thoughts': True,
+            'thinking_budget': 4000,
+        },
     },
 }
 _INLINED_IMAGE_REQUEST = {
@@ -130,6 +135,17 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_with_inlined_request',
+        parameters=types._CreateBatchJobParameters(
+            model=_MLDEV_GEMINI_MODEL,
+            src={'inlined_requests': [_INLINED_REQUEST]},
+            config={
+                'display_name': _DISPLAY_NAME,
+            },
+        ),
+        exception_if_vertex='not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_union_with_inlined_request_system_instruction',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
             src={'inlined_requests': [_INLINED_TEXT_REQUEST]},
