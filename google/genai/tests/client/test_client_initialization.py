@@ -32,6 +32,12 @@ from ... import _replay_api_client as replay_api_client
 from ... import Client
 
 
+@pytest.fixture(autouse=True)
+def reset_has_aiohttp():
+  yield
+  api_client.has_aiohttp = False
+
+
 def test_ml_dev_from_gemini_env_only(monkeypatch):
   api_key = "gemini_api_key"
   monkeypatch.setenv("GEMINI_API_KEY", api_key)

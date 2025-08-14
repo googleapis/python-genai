@@ -250,6 +250,55 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch()
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',

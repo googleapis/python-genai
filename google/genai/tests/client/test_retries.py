@@ -19,8 +19,14 @@ import asyncio
 from collections.abc import Sequence
 import datetime
 from unittest import mock
+import pytest
+try:
+    import aiohttp
+    AIOHTTP_NOT_INSTALLED = False
+except ImportError:
+    AIOHTTP_NOT_INSTALLED = True
+    aiohttp = mock.MagicMock()
 
-import aiohttp
 from google.oauth2 import credentials
 import httpx
 import tenacity
@@ -28,6 +34,11 @@ import tenacity
 from ... import _api_client as api_client
 from ... import errors
 from ... import types
+
+
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
 
 
 _RETRIED_CODES = (
@@ -38,6 +49,12 @@ _RETRIED_CODES = (
     503,  # Service unavailable.
     504,  # Gateway timeout.
 )
+
+
+@pytest.fixture(autouse=True)
+def reset_has_aiohttp():
+  yield
+  api_client.has_aiohttp = False
 
 
 def _final_codes(retried_codes: Sequence[int] = _RETRIED_CODES):
@@ -575,6 +592,7 @@ async def _aiohttp_async_response(status: int):
   return response
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_disabled_retries_successful_request_executes_once(
     mock_request,
@@ -600,6 +618,7 @@ def test_aiohttp_disabled_retries_successful_request_executes_once(
   asyncio.run(run())
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_disabled_retries_failed_request_executes_once(mock_request):
   api_client.has_aiohttp = True
@@ -626,6 +645,7 @@ def test_aiohttp_disabled_retries_failed_request_executes_once(mock_request):
   asyncio.run(run())
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_retries_successful_request_executes_once(mock_request):
   api_client.has_aiohttp = True
@@ -652,6 +672,7 @@ def test_aiohttp_retries_successful_request_executes_once(mock_request):
   asyncio.run(run())
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_retries_failed_request_retries_successfully(mock_request):
   api_client.has_aiohttp = True
@@ -681,6 +702,7 @@ def test_aiohttp_retries_failed_request_retries_successfully(mock_request):
   asyncio.run(run())
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_retries_failed_request_retries_successfully_at_request_level(
     mock_request,
@@ -714,6 +736,7 @@ def test_aiohttp_retries_failed_request_retries_successfully_at_request_level(
   asyncio.run(run())
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_retries_failed_request_retries_unsuccessfully(mock_request):
   api_client.has_aiohttp = True
@@ -746,6 +769,7 @@ def test_aiohttp_retries_failed_request_retries_unsuccessfully(mock_request):
   asyncio.run(run())
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_retries_failed_request_retries_unsuccessfully_at_request_level(
     mock_request,
@@ -780,6 +804,7 @@ def test_aiohttp_retries_failed_request_retries_unsuccessfully_at_request_level(
   asyncio.run(run())
 
 
+@requires_aiohttp
 @mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
 def test_aiohttp_retries_client_connector_error_retries_successfully(
     mock_request,

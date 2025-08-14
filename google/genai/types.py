@@ -26,7 +26,7 @@ import types as builtin_types
 import typing
 from typing import Any, Callable, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
 import pydantic
-from pydantic import Field
+from pydantic import ConfigDict, Field, PrivateAttr, model_validator
 from typing_extensions import Self, TypedDict
 from . import _common
 
@@ -76,9 +76,19 @@ else:
     McpClientSession = None
     McpCallToolResult = None
 
+if typing.TYPE_CHECKING:
+  import yaml
+else:
+  try:
+    import yaml
+  except ImportError:
+    yaml = None
+
 logger = logging.getLogger('google_genai.types')
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
+
+MetricSubclass = typing.TypeVar('MetricSubclass', bound='Metric')
 
 
 class Outcome(_common.CaseInSensitiveEnum):
@@ -417,17 +427,6 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 16."""
   ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
   """Adapter size 32."""
-
-
-class TuningTask(_common.CaseInSensitiveEnum):
-  """Optional. The tuning task. Either I2V or T2V."""
-
-  TUNING_TASK_UNSPECIFIED = 'TUNING_TASK_UNSPECIFIED'
-  """Default value. This value is unused."""
-  TUNING_TASK_I2V = 'TUNING_TASK_I2V'
-  """Tuning task for image to video."""
-  TUNING_TASK_T2V = 'TUNING_TASK_T2V'
-  """Tuning task for text to video."""
 
 
 class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
@@ -2356,6 +2355,11 @@ class GoogleSearch(_common.BaseModel):
       If customers set a start time, they must set an end time (and vice versa).
       """,
   )
+  exclude_domains: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. List of domains to be excluded from the search results.
+      The default limit is 2000 domains.""",
+  )
 
 
 class GoogleSearchDict(TypedDict, total=False):
@@ -2365,6 +2369,10 @@ class GoogleSearchDict(TypedDict, total=False):
   """Optional. Filter search results to a specific time range.
       If customers set a start time, they must set an end time (and vice versa).
       """
+
+  exclude_domains: Optional[list[str]]
+  """Optional. List of domains to be excluded from the search results.
+      The default limit is 2000 domains."""
 
 
 GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
@@ -2422,13 +2430,17 @@ GoogleSearchRetrievalOrDict = Union[
 class EnterpriseWebSearch(_common.BaseModel):
   """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
 
-  pass
+  exclude_domains: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains.""",
+  )
 
 
 class EnterpriseWebSearchDict(TypedDict, total=False):
   """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
 
-  pass
+  exclude_domains: Optional[list[str]]
+  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains."""
 
 
 EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
@@ -4739,6 +4751,10 @@ RagChunkOrDict = Union[RagChunk, RagChunkDict]
 class GroundingChunkRetrievedContext(_common.BaseModel):
   """Chunk from context retrieved by the retrieval tools."""
 
+  document_name: Optional[str] = Field(
+      default=None,
+      description="""Output only. The full document name for the referenced Vertex AI Search document.""",
+  )
   rag_chunk: Optional[RagChunk] = Field(
       default=None,
       description="""Additional context for the RAG retrieval result. This is only populated when using the RAG retrieval tool.""",
@@ -4756,6 +4772,9 @@ class GroundingChunkRetrievedContext(_common.BaseModel):
 
 class GroundingChunkRetrievedContextDict(TypedDict, total=False):
   """Chunk from context retrieved by the retrieval tools."""
+
+  document_name: Optional[str]
+  """Output only. The full document name for the referenced Vertex AI Search document."""
 
   rag_chunk: Optional[RagChunkDict]
   """Additional context for the RAG retrieval result. This is only populated when using the RAG retrieval tool."""
@@ -8606,6 +8625,274 @@ class TunedModelDict(TypedDict, total=False):
 TunedModelOrDict = Union[TunedModel, TunedModelDict]
 
 
+class GcsDestination(_common.BaseModel):
+  """The Google Cloud Storage location where the output is to be written to."""
+
+  output_uri_prefix: Optional[str] = Field(
+      default=None,
+      description="""Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist.""",
+  )
+
+  @pydantic.model_validator(mode='after')
+  def _validate_gcs_path(self) -> 'GcsDestination':
+    if self.output_uri_prefix and not self.output_uri_prefix.startswith(
+        'gs://'
+    ):
+      raise ValueError(
+          'output_uri_prefix must be a valid GCS path starting with "gs://".'
+      )
+    return self
+
+
+class GcsDestinationDict(TypedDict, total=False):
+  """The Google Cloud Storage location where the output is to be written to."""
+
+  output_uri_prefix: Optional[str]
+  """Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist."""
+
+
+GcsDestinationOrDict = Union[GcsDestination, GcsDestinationDict]
+
+
+class OutputConfig(_common.BaseModel):
+  """Config for evaluation output."""
+
+  gcs_destination: Optional[GcsDestination] = Field(
+      default=None,
+      description="""Cloud storage destination for evaluation output.""",
+  )
+
+
+class OutputConfigDict(TypedDict, total=False):
+  """Config for evaluation output."""
+
+  gcs_destination: Optional[GcsDestinationDict]
+  """Cloud storage destination for evaluation output."""
+
+
+OutputConfigOrDict = Union[OutputConfig, OutputConfigDict]
+
+
+class AutoraterConfig(_common.BaseModel):
+  """Autorater config used for evaluation."""
+
+  sampling_count: Optional[int] = Field(
+      default=None,
+      description="""Number of samples for each instance in the dataset.
+  If not specified, the default is 4. Minimum value is 1, maximum value
+  is 32.""",
+  )
+  flip_enabled: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Default is true. Whether to flip the candidate and baseline
+  responses. This is only applicable to the pairwise metric. If enabled, also
+  provide PairwiseMetricSpec.candidate_response_field_name and
+  PairwiseMetricSpec.baseline_response_field_name. When rendering
+  PairwiseMetricSpec.metric_prompt_template, the candidate and baseline
+  fields will be flipped for half of the samples to reduce bias.""",
+  )
+  autorater_model: Optional[str] = Field(
+      default=None,
+      description="""The fully qualified name of the publisher model or tuned autorater
+  endpoint to use.
+
+  Publisher model format:
+  `projects/{project}/locations/{location}/publishers/*/models/*`
+
+  Tuned model endpoint format:
+  `projects/{project}/locations/{location}/endpoints/{endpoint}`""",
+  )
+
+
+class AutoraterConfigDict(TypedDict, total=False):
+  """Autorater config used for evaluation."""
+
+  sampling_count: Optional[int]
+  """Number of samples for each instance in the dataset.
+  If not specified, the default is 4. Minimum value is 1, maximum value
+  is 32."""
+
+  flip_enabled: Optional[bool]
+  """Optional. Default is true. Whether to flip the candidate and baseline
+  responses. This is only applicable to the pairwise metric. If enabled, also
+  provide PairwiseMetricSpec.candidate_response_field_name and
+  PairwiseMetricSpec.baseline_response_field_name. When rendering
+  PairwiseMetricSpec.metric_prompt_template, the candidate and baseline
+  fields will be flipped for half of the samples to reduce bias."""
+
+  autorater_model: Optional[str]
+  """The fully qualified name of the publisher model or tuned autorater
+  endpoint to use.
+
+  Publisher model format:
+  `projects/{project}/locations/{location}/publishers/*/models/*`
+
+  Tuned model endpoint format:
+  `projects/{project}/locations/{location}/endpoints/{endpoint}`"""
+
+
+AutoraterConfigOrDict = Union[AutoraterConfig, AutoraterConfigDict]
+
+
+class Metric(_common.BaseModel):
+  """The metric used for evaluation."""
+
+  name: Optional[str] = Field(
+      default=None, description="""The name of the metric."""
+  )
+  custom_function: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The custom function that defines the end-to-end logic for metric computation.""",
+  )
+  prompt_template: Optional[str] = Field(
+      default=None, description="""The prompt template for the metric."""
+  )
+  judge_model_system_instruction: Optional[str] = Field(
+      default=None,
+      description="""The system instruction for the judge model.""",
+  )
+  return_raw_output: Optional[bool] = Field(
+      default=None,
+      description="""Whether to return the raw output from the judge model.""",
+  )
+  parse_and_reduce_fn: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The parse and reduce function for the judge model.""",
+  )
+  aggregate_summary_fn: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The aggregate summary function for the judge model.""",
+  )
+
+  # Allow extra fields to support metric-specific config fields.
+  model_config = ConfigDict(extra='allow')
+
+  _is_predefined: bool = PrivateAttr(default=False)
+  """A boolean indicating whether the metric is predefined."""
+
+  _config_source: Optional[str] = PrivateAttr(default=None)
+  """An optional string indicating the source of the metric configuration."""
+
+  _version: Optional[str] = PrivateAttr(default=None)
+  """An optional string indicating the version of the metric."""
+
+  @model_validator(mode='after')  # type: ignore[arg-type]
+  @classmethod
+  def validate_name(cls, model: 'Metric') -> 'Metric':
+    if not model.name:
+      raise ValueError('Metric name cannot be empty.')
+    model.name = model.name.lower()
+    return model
+
+  def to_yaml_file(self, file_path: str, version: Optional[str] = None) -> None:
+    """Dumps the metric object to a YAML file.
+
+    Args:
+        file_path: The path to the YAML file.
+        version: Optional version string to include in the YAML output.
+
+    Raises:
+        ImportError: If the pyyaml library is not installed.
+    """
+    if yaml is None:
+      raise ImportError(
+          'YAML serialization requires the pyyaml library. Please install'
+          " it using 'pip install google-cloud-aiplatform[evaluation]'."
+      )
+
+    fields_to_exclude_callables = set()
+    for field_name, field_info in self.model_fields.items():
+      annotation = field_info.annotation
+      origin = typing.get_origin(annotation)
+
+      is_field_callable_type = False
+      if annotation is Callable or origin is Callable:  # type: ignore[comparison-overlap]
+        is_field_callable_type = True
+      elif origin is Union:
+        args = typing.get_args(annotation)
+        if any(
+            arg is Callable or typing.get_origin(arg) is Callable
+            for arg in args
+        ):
+          is_field_callable_type = True
+
+      if is_field_callable_type:
+        fields_to_exclude_callables.add(field_name)
+
+    data_to_dump = self.model_dump(
+        exclude_unset=True,
+        exclude_none=True,
+        mode='json',
+        exclude=fields_to_exclude_callables
+        if fields_to_exclude_callables
+        else None,
+    )
+
+    if version:
+      data_to_dump['version'] = version
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+      yaml.dump(data_to_dump, f, sort_keys=False, allow_unicode=True)
+
+
+class MetricDict(TypedDict, total=False):
+  """The metric used for evaluation."""
+
+  name: Optional[str]
+  """The name of the metric."""
+
+  custom_function: Optional[Callable[..., Any]]
+  """The custom function that defines the end-to-end logic for metric computation."""
+
+  prompt_template: Optional[str]
+  """The prompt template for the metric."""
+
+  judge_model_system_instruction: Optional[str]
+  """The system instruction for the judge model."""
+
+  return_raw_output: Optional[bool]
+  """Whether to return the raw output from the judge model."""
+
+  parse_and_reduce_fn: Optional[Callable[..., Any]]
+  """The parse and reduce function for the judge model."""
+
+  aggregate_summary_fn: Optional[Callable[..., Any]]
+  """The aggregate summary function for the judge model."""
+
+
+MetricOrDict = Union[Metric, MetricDict]
+
+
+class EvaluationConfig(_common.BaseModel):
+  """Evaluation config for tuning."""
+
+  metrics: Optional[list[Metric]] = Field(
+      default=None, description="""The metrics used for evaluation."""
+  )
+  output_config: Optional[OutputConfig] = Field(
+      default=None, description="""Config for evaluation output."""
+  )
+  autorater_config: Optional[AutoraterConfig] = Field(
+      default=None, description="""Autorater config for evaluation."""
+  )
+
+
+class EvaluationConfigDict(TypedDict, total=False):
+  """Evaluation config for tuning."""
+
+  metrics: Optional[list[MetricDict]]
+  """The metrics used for evaluation."""
+
+  output_config: Optional[OutputConfigDict]
+  """Config for evaluation output."""
+
+  autorater_config: Optional[AutoraterConfigDict]
+  """Autorater config for evaluation."""
+
+
+EvaluationConfigOrDict = Union[EvaluationConfig, EvaluationConfigDict]
+
+
 class GoogleRpcStatus(_common.BaseModel):
   """The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs.
 
@@ -9409,244 +9696,6 @@ PartnerModelTuningSpecOrDict = Union[
 ]
 
 
-class DistillationHyperParameters(_common.BaseModel):
-  """Hyperparameters for Distillation."""
-
-  adapter_size: Optional[AdapterSize] = Field(
-      default=None, description="""Optional. Adapter size for distillation."""
-  )
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
-  )
-
-
-class DistillationHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Distillation."""
-
-  adapter_size: Optional[AdapterSize]
-  """Optional. Adapter size for distillation."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
-
-
-DistillationHyperParametersOrDict = Union[
-    DistillationHyperParameters, DistillationHyperParametersDict
-]
-
-
-class DistillationSpec(_common.BaseModel):
-  """Tuning Spec for Distillation."""
-
-  base_teacher_model: Optional[str] = Field(
-      default=None,
-      description="""The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).""",
-  )
-  hyper_parameters: Optional[DistillationHyperParameters] = Field(
-      default=None,
-      description="""Optional. Hyperparameters for Distillation.""",
-  )
-  pipeline_root_directory: Optional[str] = Field(
-      default=None,
-      description="""Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts.""",
-  )
-  student_model: Optional[str] = Field(
-      default=None,
-      description="""The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead.""",
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
-  )
-  tuned_teacher_model_source: Optional[str] = Field(
-      default=None,
-      description="""The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.""",
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
-  )
-
-
-class DistillationSpecDict(TypedDict, total=False):
-  """Tuning Spec for Distillation."""
-
-  base_teacher_model: Optional[str]
-  """The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models)."""
-
-  hyper_parameters: Optional[DistillationHyperParametersDict]
-  """Optional. Hyperparameters for Distillation."""
-
-  pipeline_root_directory: Optional[str]
-  """Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts."""
-
-  student_model: Optional[str]
-  """The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead."""
-
-  training_dataset_uri: Optional[str]
-  """Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
-
-  tuned_teacher_model_source: Optional[str]
-  """The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""
-
-
-DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
-
-
-class PreferenceOptimizationHyperParameters(_common.BaseModel):
-  """Hyperparameters for Preference Optimization."""
-
-  adapter_size: Optional[AdapterSize] = Field(
-      default=None,
-      description="""Optional. Adapter size for preference optimization.""",
-  )
-  beta: Optional[float] = Field(
-      default=None,
-      description="""Optional. Weight for KL Divergence regularization.""",
-  )
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
-  )
-
-
-class PreferenceOptimizationHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Preference Optimization."""
-
-  adapter_size: Optional[AdapterSize]
-  """Optional. Adapter size for preference optimization."""
-
-  beta: Optional[float]
-  """Optional. Weight for KL Divergence regularization."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
-
-
-PreferenceOptimizationHyperParametersOrDict = Union[
-    PreferenceOptimizationHyperParameters,
-    PreferenceOptimizationHyperParametersDict,
-]
-
-
-class PreferenceOptimizationSpec(_common.BaseModel):
-  """Tuning Spec for Preference Optimization."""
-
-  hyper_parameters: Optional[PreferenceOptimizationHyperParameters] = Field(
-      default=None,
-      description="""Optional. Hyperparameters for Preference Optimization.""",
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
-  )
-
-
-class PreferenceOptimizationSpecDict(TypedDict, total=False):
-  """Tuning Spec for Preference Optimization."""
-
-  hyper_parameters: Optional[PreferenceOptimizationHyperParametersDict]
-  """Optional. Hyperparameters for Preference Optimization."""
-
-  training_dataset_uri: Optional[str]
-  """Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
-
-
-PreferenceOptimizationSpecOrDict = Union[
-    PreferenceOptimizationSpec, PreferenceOptimizationSpecDict
-]
-
-
-class VeoHyperParameters(_common.BaseModel):
-  """Hyperparameters for Veo."""
-
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate.""",
-  )
-  tuning_task: Optional[TuningTask] = Field(
-      default=None,
-      description="""Optional. The tuning task. Either I2V or T2V.""",
-  )
-
-
-class VeoHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Veo."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate."""
-
-  tuning_task: Optional[TuningTask]
-  """Optional. The tuning task. Either I2V or T2V."""
-
-
-VeoHyperParametersOrDict = Union[VeoHyperParameters, VeoHyperParametersDict]
-
-
-class VeoTuningSpec(_common.BaseModel):
-  """Tuning Spec for Veo Model Tuning."""
-
-  hyper_parameters: Optional[VeoHyperParameters] = Field(
-      default=None, description="""Optional. Hyperparameters for Veo."""
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-
-
-class VeoTuningSpecDict(TypedDict, total=False):
-  """Tuning Spec for Veo Model Tuning."""
-
-  hyper_parameters: Optional[VeoHyperParametersDict]
-  """Optional. Hyperparameters for Veo."""
-
-  training_dataset_uri: Optional[str]
-  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-
-VeoTuningSpecOrDict = Union[VeoTuningSpec, VeoTuningSpecDict]
-
-
 class TuningJob(_common.BaseModel):
   """A tuning job."""
 
@@ -9711,12 +9760,12 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Tuning Spec for open sourced and third party Partner models.""",
   )
+  evaluation_config: Optional[EvaluationConfig] = Field(
+      default=None, description=""""""
+  )
   custom_base_model: Optional[str] = Field(
       default=None,
       description="""Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models.""",
-  )
-  distillation_spec: Optional[DistillationSpec] = Field(
-      default=None, description="""Tuning Spec for Distillation."""
   )
   experiment: Optional[str] = Field(
       default=None,
@@ -9734,15 +9783,6 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.""",
   )
-  preference_optimization_spec: Optional[PreferenceOptimizationSpec] = Field(
-      default=None, description="""Tuning Spec for Preference Optimization."""
-  )
-  satisfies_pzi: Optional[bool] = Field(
-      default=None, description="""Output only. Reserved for future use."""
-  )
-  satisfies_pzs: Optional[bool] = Field(
-      default=None, description="""Output only. Reserved for future use."""
-  )
   service_account: Optional[str] = Field(
       default=None,
       description="""The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account.""",
@@ -9750,9 +9790,6 @@ class TuningJob(_common.BaseModel):
   tuned_model_display_name: Optional[str] = Field(
       default=None,
       description="""Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters.""",
-  )
-  veo_tuning_spec: Optional[VeoTuningSpec] = Field(
-      default=None, description="""Tuning Spec for Veo Tuning."""
   )
 
   @property
@@ -9817,11 +9854,11 @@ class TuningJobDict(TypedDict, total=False):
   partner_model_tuning_spec: Optional[PartnerModelTuningSpecDict]
   """Tuning Spec for open sourced and third party Partner models."""
 
+  evaluation_config: Optional[EvaluationConfigDict]
+  """"""
+
   custom_base_model: Optional[str]
   """Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models."""
-
-  distillation_spec: Optional[DistillationSpecDict]
-  """Tuning Spec for Distillation."""
 
   experiment: Optional[str]
   """Output only. The Experiment associated with this TuningJob."""
@@ -9835,23 +9872,11 @@ class TuningJobDict(TypedDict, total=False):
   pipeline_job: Optional[str]
   """Output only. The resource name of the PipelineJob associated with the TuningJob. Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`."""
 
-  preference_optimization_spec: Optional[PreferenceOptimizationSpecDict]
-  """Tuning Spec for Preference Optimization."""
-
-  satisfies_pzi: Optional[bool]
-  """Output only. Reserved for future use."""
-
-  satisfies_pzs: Optional[bool]
-  """Output only. Reserved for future use."""
-
   service_account: Optional[str]
   """The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account."""
 
   tuned_model_display_name: Optional[str]
   """Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
-
-  veo_tuning_spec: Optional[VeoTuningSpecDict]
-  """Tuning Spec for Veo Tuning."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]
@@ -10052,6 +10077,10 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.""",
   )
+  pre_tuned_model_checkpoint_id: Optional[str] = Field(
+      default=None,
+      description="""The optional checkpoint id of the pre-tuned model to use for tuning, if applicable.""",
+  )
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Adapter size for tuning."""
   )
@@ -10062,6 +10091,9 @@ class CreateTuningJobConfig(_common.BaseModel):
   learning_rate: Optional[float] = Field(
       default=None,
       description="""The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples.""",
+  )
+  evaluation_config: Optional[EvaluationConfig] = Field(
+      default=None, description="""Evaluation config for the tuning job."""
   )
 
 
@@ -10089,6 +10121,9 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   export_last_checkpoint_only: Optional[bool]
   """If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT."""
 
+  pre_tuned_model_checkpoint_id: Optional[str]
+  """The optional checkpoint id of the pre-tuned model to use for tuning, if applicable."""
+
   adapter_size: Optional[AdapterSize]
   """Adapter size for tuning."""
 
@@ -10097,6 +10132,9 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   learning_rate: Optional[float]
   """The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples."""
+
+  evaluation_config: Optional[EvaluationConfigDict]
+  """Evaluation config for the tuning job."""
 
 
 CreateTuningJobConfigOrDict = Union[
@@ -10110,6 +10148,9 @@ class _CreateTuningJobParametersPrivate(_common.BaseModel):
   base_model: Optional[str] = Field(
       default=None,
       description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
+  )
+  pre_tuned_model: Optional[PreTunedModel] = Field(
+      default=None, description="""The PreTunedModel that is being tuned."""
   )
   training_dataset: Optional[TuningDataset] = Field(
       default=None,
@@ -10125,6 +10166,9 @@ class _CreateTuningJobParametersPrivateDict(TypedDict, total=False):
 
   base_model: Optional[str]
   """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
+
+  pre_tuned_model: Optional[PreTunedModelDict]
+  """The PreTunedModel that is being tuned."""
 
   training_dataset: Optional[TuningDatasetDict]
   """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -14499,3 +14543,155 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
 CreateTuningJobParametersOrDict = Union[
     CreateTuningJobParameters, CreateTuningJobParametersDict
 ]
+
+
+class CustomOutputFormatConfig(_common.BaseModel):
+  """Config for custom output format."""
+
+  return_raw_output: Optional[bool] = Field(
+      default=None, description="""Optional. Whether to return raw output."""
+  )
+
+
+class CustomOutputFormatConfigDict(TypedDict, total=False):
+  """Config for custom output format."""
+
+  return_raw_output: Optional[bool]
+  """Optional. Whether to return raw output."""
+
+
+CustomOutputFormatConfigOrDict = Union[
+    CustomOutputFormatConfig, CustomOutputFormatConfigDict
+]
+
+
+class BleuSpec(_common.BaseModel):
+  """Spec for bleu metric."""
+
+  use_effective_order: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether to use_effective_order to compute bleu score.""",
+  )
+
+
+class BleuSpecDict(TypedDict, total=False):
+  """Spec for bleu metric."""
+
+  use_effective_order: Optional[bool]
+  """Optional. Whether to use_effective_order to compute bleu score."""
+
+
+BleuSpecOrDict = Union[BleuSpec, BleuSpecDict]
+
+
+class PairwiseMetricSpec(_common.BaseModel):
+  """Spec for pairwise metric."""
+
+  metric_prompt_template: Optional[str] = Field(
+      default=None,
+      description="""Required. Metric prompt template for pairwise metric.""",
+  )
+  baseline_response_field_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The field name of the baseline response.""",
+  )
+  candidate_response_field_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The field name of the candidate response.""",
+  )
+  custom_output_format_config: Optional[CustomOutputFormatConfig] = Field(
+      default=None,
+      description="""Optional. CustomOutputFormatConfig allows customization of metric output. When this config is set, the default output is replaced with the raw output string. If a custom format is chosen, the `pairwise_choice` and `explanation` fields in the corresponding metric result will be empty.""",
+  )
+  system_instruction: Optional[str] = Field(
+      default=None,
+      description="""Optional. System instructions for pairwise metric.""",
+  )
+
+
+class PairwiseMetricSpecDict(TypedDict, total=False):
+  """Spec for pairwise metric."""
+
+  metric_prompt_template: Optional[str]
+  """Required. Metric prompt template for pairwise metric."""
+
+  baseline_response_field_name: Optional[str]
+  """Optional. The field name of the baseline response."""
+
+  candidate_response_field_name: Optional[str]
+  """Optional. The field name of the candidate response."""
+
+  custom_output_format_config: Optional[CustomOutputFormatConfigDict]
+  """Optional. CustomOutputFormatConfig allows customization of metric output. When this config is set, the default output is replaced with the raw output string. If a custom format is chosen, the `pairwise_choice` and `explanation` fields in the corresponding metric result will be empty."""
+
+  system_instruction: Optional[str]
+  """Optional. System instructions for pairwise metric."""
+
+
+PairwiseMetricSpecOrDict = Union[PairwiseMetricSpec, PairwiseMetricSpecDict]
+
+
+class PointwiseMetricSpec(_common.BaseModel):
+  """Spec for pointwise metric."""
+
+  metric_prompt_template: Optional[str] = Field(
+      default=None,
+      description="""Required. Metric prompt template for pointwise metric.""",
+  )
+  custom_output_format_config: Optional[CustomOutputFormatConfig] = Field(
+      default=None,
+      description="""Optional. CustomOutputFormatConfig allows customization of metric output. By default, metrics return a score and explanation. When this config is set, the default output is replaced with either: - The raw output string. - A parsed output based on a user-defined schema. If a custom format is chosen, the `score` and `explanation` fields in the corresponding metric result will be empty.""",
+  )
+  system_instruction: Optional[str] = Field(
+      default=None,
+      description="""Optional. System instructions for pointwise metric.""",
+  )
+
+
+class PointwiseMetricSpecDict(TypedDict, total=False):
+  """Spec for pointwise metric."""
+
+  metric_prompt_template: Optional[str]
+  """Required. Metric prompt template for pointwise metric."""
+
+  custom_output_format_config: Optional[CustomOutputFormatConfigDict]
+  """Optional. CustomOutputFormatConfig allows customization of metric output. By default, metrics return a score and explanation. When this config is set, the default output is replaced with either: - The raw output string. - A parsed output based on a user-defined schema. If a custom format is chosen, the `score` and `explanation` fields in the corresponding metric result will be empty."""
+
+  system_instruction: Optional[str]
+  """Optional. System instructions for pointwise metric."""
+
+
+PointwiseMetricSpecOrDict = Union[PointwiseMetricSpec, PointwiseMetricSpecDict]
+
+
+class RougeSpec(_common.BaseModel):
+  """Spec for rouge metric."""
+
+  rouge_type: Optional[str] = Field(
+      default=None,
+      description="""Optional. Supported rouge types are rougen[1-9], rougeL, and rougeLsum.""",
+  )
+  split_summaries: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether to split summaries while using rougeLsum.""",
+  )
+  use_stemmer: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether to use stemmer to compute rouge score.""",
+  )
+
+
+class RougeSpecDict(TypedDict, total=False):
+  """Spec for rouge metric."""
+
+  rouge_type: Optional[str]
+  """Optional. Supported rouge types are rougen[1-9], rougeL, and rougeLsum."""
+
+  split_summaries: Optional[bool]
+  """Optional. Whether to split summaries while using rougeLsum."""
+
+  use_stemmer: Optional[bool]
+  """Optional. Whether to use stemmer to compute rouge score."""
+
+
+RougeSpecOrDict = Union[RougeSpec, RougeSpecDict]
