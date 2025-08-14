@@ -5,7 +5,6 @@
 
 ### Features
 
-* Add an _exclude_fields characteristic in the config for unused values to avoid unnecessary and unused code in converter and type generation. ([8e09d44](https://github.com/googleapis/python-genai/commit/8e09d441b85e4a6c2e5721c6640dab1272a4b7a8))
 * Add evaluation support to Vertex tuning ([95293eb](https://github.com/googleapis/python-genai/commit/95293eb0acf086ac14234b7e416c7ee1e445b5f1))
 * Enable continuous fine-tuning on a pre-tuned model in the SDK. ([72dc46b](https://github.com/googleapis/python-genai/commit/72dc46b86caa7ccb4c9d0fc83dae402e0ef5cba3))
 * Support document name in grounding metadata ([5f6746d](https://github.com/googleapis/python-genai/commit/5f6746db9f0230d164688f73a05bd67b334f4f88))
