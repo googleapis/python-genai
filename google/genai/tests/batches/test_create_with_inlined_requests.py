@@ -153,6 +153,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
+        has_union=True,
         exception_if_vertex='not supported',
     ),
     pytest_helper.TestTableItem(
