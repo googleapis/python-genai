@@ -91,7 +91,7 @@ class EphemeralTokenAPIKeyError(ValueError):
 
 # This method checks for the API key in the environment variables. Google API
 # key is precedenced over Gemini API key.
-def _get_env_api_key() -> Optional[str]:
+def get_env_api_key() -> Optional[str]:
   """Gets the API key from environment variables, prioritizing GOOGLE_API_KEY.
 
   Returns:
@@ -108,7 +108,7 @@ def _get_env_api_key() -> Optional[str]:
   return env_google_api_key or env_gemini_api_key or None
 
 
-def _append_library_version_headers(headers: dict[str, str]) -> None:
+def append_library_version_headers(headers: dict[str, str]) -> None:
   """Appends the telemetry header to the headers dict."""
   library_label = f'google-genai-sdk/{version.__version__}'
   language_label = 'gl-python/' + sys.version.split()[0]
@@ -131,7 +131,7 @@ def _append_library_version_headers(headers: dict[str, str]) -> None:
     headers['x-goog-api-client'] = version_header_value
 
 
-def _patch_http_options(
+def patch_http_options(
     options: HttpOptions, patch_options: HttpOptions
 ) -> HttpOptions:
   copy_option = options.model_copy()
@@ -155,11 +155,11 @@ def _patch_http_options(
       setattr(copy_option, key, getattr(options, key))
 
   if copy_option.headers is not None:
-    _append_library_version_headers(copy_option.headers)
+    append_library_version_headers(copy_option.headers)
   return copy_option
 
 
-def _populate_server_timeout_header(
+def populate_server_timeout_header(
     headers: dict[str, str], timeout_in_seconds: Optional[Union[float, int]]
 ) -> None:
   """Populates the server timeout header in the headers dict."""
@@ -167,7 +167,7 @@ def _populate_server_timeout_header(
     headers['X-Server-Timeout'] = str(math.ceil(timeout_in_seconds))
 
 
-def _join_url_path(base_url: str, path: str) -> str:
+def join_url_path(base_url: str, path: str) -> str:
   parsed_base = urlparse(base_url)
   base_path = (
       parsed_base.path[:-1]
@@ -178,7 +178,7 @@ def _join_url_path(base_url: str, path: str) -> str:
   return urlunparse(parsed_base._replace(path=base_path + '/' + path))
 
 
-def _load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
+def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   """Loads google auth credentials and project id."""
   credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
       scopes=['https://www.googleapis.com/auth/cloud-platform'],
@@ -195,12 +195,12 @@ def _load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   return credentials, project
 
 
-def _refresh_auth(credentials: Credentials) -> Credentials:
+def refresh_auth(credentials: Credentials) -> Credentials:
   credentials.refresh(Request())  # type: ignore[no-untyped-call]
   return credentials
 
 
-def _get_timeout_in_seconds(
+def get_timeout_in_seconds(
     timeout: Optional[Union[float, int]],
 ) -> Optional[float]:
   """Converts the timeout to seconds."""
@@ -454,7 +454,7 @@ _RETRY_HTTP_STATUS_CODES = (
 )
 
 
-def _retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
+def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   """Returns the retry args for the given http retry options.
 
   Args:
@@ -574,7 +574,7 @@ class BaseApiClient:
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
-    env_api_key = _get_env_api_key()
+    env_api_key = get_env_api_key()
     self.project = project or env_project
     self.location = location or env_location
     self.api_key = api_key or env_api_key
@@ -631,7 +631,7 @@ class BaseApiClient:
           and not self.api_key
           and not validated_http_options.base_url
       ):
-        credentials, self.project = _load_auth(project=None)
+        credentials, self.project = load_auth(project=None)
         if not self._credentials:
           self._credentials = credentials
 
@@ -670,12 +670,12 @@ class BaseApiClient:
         self._http_options.headers['x-goog-api-key'] = self.api_key
     # Update the http options with the user provided http options.
     if http_options:
-      self._http_options = _patch_http_options(
+      self._http_options = patch_http_options(
           self._http_options, validated_http_options
       )
     else:
       if self._http_options.headers is not None:
-        _append_library_version_headers(self._http_options.headers)
+        append_library_version_headers(self._http_options.headers)
 
     client_args, async_client_args = self._ensure_httpx_ssl_ctx(
         self._http_options
@@ -689,7 +689,7 @@ class BaseApiClient:
       )
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
 
-    retry_kwargs = _retry_args(self._http_options.retry_options)
+    retry_kwargs = retry_args(self._http_options.retry_options)
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
 
@@ -889,14 +889,14 @@ class BaseApiClient:
     """Retrieves the access token for the credentials."""
     with self._sync_auth_lock:
       if not self._credentials:
-        self._credentials, project = _load_auth(project=self.project)
+        self._credentials, project = load_auth(project=self.project)
         if not self.project:
           self.project = project
 
       if self._credentials:
         if self._credentials.expired or not self._credentials.token:
           # Only refresh when it needs to. Default expiration is 3600 seconds.
-          _refresh_auth(self._credentials)
+          refresh_auth(self._credentials)
         if not self._credentials.token:
           raise RuntimeError('Could not resolve API token from the environment')
         return self._credentials.token  # type: ignore[no-any-return]
@@ -912,7 +912,7 @@ class BaseApiClient:
         if not self._credentials:
           # Double check that the credentials are not set before loading them.
           self._credentials, project = await asyncio.to_thread(
-              _load_auth, project=self.project
+              load_auth, project=self.project
           )
           if not self.project:
             self.project = project
@@ -923,7 +923,7 @@ class BaseApiClient:
         async with self._async_auth_lock:
           if self._credentials.expired or not self._credentials.token:
             # Double check that the credentials expired before refreshing.
-            await asyncio.to_thread(_refresh_auth, self._credentials)
+            await asyncio.to_thread(refresh_auth, self._credentials)
 
       if not self._credentials.token:
         raise RuntimeError('Could not resolve API token from the environment')
@@ -946,12 +946,12 @@ class BaseApiClient:
     # patch the http options with the user provided settings.
     if http_options:
       if isinstance(http_options, HttpOptions):
-        patched_http_options = _patch_http_options(
+        patched_http_options = patch_http_options(
             self._http_options,
             http_options,
         )
       else:
-        patched_http_options = _patch_http_options(
+        patched_http_options = patch_http_options(
             self._http_options, HttpOptions.model_validate(http_options)
         )
     else:
@@ -993,7 +993,7 @@ class BaseApiClient:
           request_dict, patched_http_options.extra_body
       )
 
-    url = _join_url_path(
+    url = join_url_path(
         base_url,
         versioned_path,
     )
@@ -1003,11 +1003,11 @@ class BaseApiClient:
           'Ephemeral tokens can only be used with the live API.'
       )
 
-    timeout_in_seconds = _get_timeout_in_seconds(patched_http_options.timeout)
+    timeout_in_seconds = get_timeout_in_seconds(patched_http_options.timeout)
 
     if patched_http_options.headers is None:
       raise ValueError('Request headers must be set.')
-    _populate_server_timeout_header(
+    populate_server_timeout_header(
         patched_http_options.headers, timeout_in_seconds
     )
     return HttpRequest(
@@ -1079,7 +1079,7 @@ class BaseApiClient:
       )
       # Support per request retry options.
       if parameter_model.retry_options:
-        retry_kwargs = _retry_args(parameter_model.retry_options)
+        retry_kwargs = retry_args(parameter_model.retry_options)
         retry = tenacity.Retrying(**retry_kwargs)
         return retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
 
@@ -1239,7 +1239,7 @@ class BaseApiClient:
       )
       # Support per request retry options.
       if parameter_model.retry_options:
-        retry_kwargs = _retry_args(parameter_model.retry_options)
+        retry_kwargs = retry_args(parameter_model.retry_options)
         retry = tenacity.AsyncRetrying(**retry_kwargs)
         return await retry(self._async_request_once, http_request, stream)  # type: ignore[no-any-return]
     return await self._async_retry(  # type: ignore[no-any-return]
@@ -1398,13 +1398,13 @@ class BaseApiClient:
             if isinstance(self._http_options, dict)
             else self._http_options.timeout
         )
-      timeout_in_seconds = _get_timeout_in_seconds(timeout)
+      timeout_in_seconds = get_timeout_in_seconds(timeout)
       upload_headers = {
           'X-Goog-Upload-Command': upload_command,
           'X-Goog-Upload-Offset': str(offset),
           'Content-Length': str(chunk_size),
       }
-      _populate_server_timeout_header(upload_headers, timeout_in_seconds)
+      populate_server_timeout_header(upload_headers, timeout_in_seconds)
       retry_count = 0
       while retry_count < MAX_RETRY_COUNT:
         response = self._httpx_client.request(
@@ -1558,13 +1558,13 @@ class BaseApiClient:
                 if isinstance(self._http_options, dict)
                 else self._http_options.timeout
             )
-          timeout_in_seconds = _get_timeout_in_seconds(timeout)
+          timeout_in_seconds = get_timeout_in_seconds(timeout)
           upload_headers = {
               'X-Goog-Upload-Command': upload_command,
               'X-Goog-Upload-Offset': str(offset),
               'Content-Length': str(chunk_size),
           }
-          _populate_server_timeout_header(upload_headers, timeout_in_seconds)
+          populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
           retry_count = 0
           response = None
@@ -1634,13 +1634,13 @@ class BaseApiClient:
               if isinstance(self._http_options, dict)
               else self._http_options.timeout
           )
-        timeout_in_seconds = _get_timeout_in_seconds(timeout)
+        timeout_in_seconds = get_timeout_in_seconds(timeout)
         upload_headers = {
             'X-Goog-Upload-Command': upload_command,
             'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
         }
-        _populate_server_timeout_header(upload_headers, timeout_in_seconds)
+        populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
         retry_count = 0
         client_response = None

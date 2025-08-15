@@ -73,7 +73,7 @@ def _httpx_response(code: int):
 
 
 def test_retry_args_disabled():
-  args = api_client._retry_args(None)
+  args = api_client.retry_args(None)
 
   assert set(args.keys()) == {'stop', 'reraise'}
   assert args['stop'].max_attempt_number == 1
@@ -82,7 +82,7 @@ def test_retry_args_disabled():
 
 def test_retry_args_enabled_with_defaults():
   # Empty options means use the default values whereas None means no retries.
-  args = api_client._retry_args(types.HttpRetryOptions())
+  args = api_client.retry_args(types.HttpRetryOptions())
 
   assert set(args.keys()) == {'stop', 'retry', 'wait', 'reraise'}
 
@@ -122,7 +122,7 @@ def test_retry_wait():
     raise errors.APIError.raise_for_response(_httpx_response(429))
 
   retrying = tenacity.Retrying(
-      **api_client._retry_args(types.HttpRetryOptions())
+      **api_client.retry_args(types.HttpRetryOptions())
   )
 
   try:
@@ -147,7 +147,7 @@ def test_retry_args_enabled_with_custom_values_are_not_overridden():
       jitter=0.5,
       http_status_codes=[408, 429],
   )
-  retry_args = api_client._retry_args(options)
+  retry_args = api_client.retry_args(options)
   assert retry_args['stop'].max_attempt_number == 10
 
   wait = retry_args['wait']

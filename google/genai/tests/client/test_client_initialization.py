@@ -30,6 +30,7 @@ from ... import _api_client as api_client
 from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
+from ... import types
 
 
 @pytest.fixture(autouse=True)
@@ -223,12 +224,12 @@ def test_constructor_with_invalid_http_options_key():
 
 
 def test_constructor_with_http_options_as_pydantic_type():
-  mldev_http_options = api_client.HttpOptions(
+  mldev_http_options = types.HttpOptions(
       api_version="v1",
       base_url="https://placeholder-fake-url.com/",
       headers={"X-Custom-Header": "custom_value"},
   )
-  vertexai_http_options = api_client.HttpOptions(
+  vertexai_http_options = types.HttpOptions(
       api_version="v1",
       base_url=(
           "https://{self.location}-aiplatform.googleapis.com/{{api_version}}/"
@@ -751,7 +752,7 @@ def test_client_logs_to_logger_instance(monkeypatch, caplog):
 
 def test_client_ssl_context_implicit_initialization():
   client_args, async_client_args = (
-      api_client.BaseApiClient._ensure_httpx_ssl_ctx(api_client.HttpOptions())
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(types.HttpOptions())
   )
 
   assert client_args["verify"]
@@ -760,7 +761,7 @@ def test_client_ssl_context_implicit_initialization():
     import aiohttp  # pylint: disable=g-import-not-at-top
 
     async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(
-        api_client.HttpOptions()
+        types.HttpOptions()
     )
     assert async_client_args["ssl"]
     assert isinstance(async_client_args["ssl"], ssl.SSLContext)
@@ -775,7 +776,7 @@ def test_client_ssl_context_explicit_initialization_same_args():
       capath=os.environ.get("SSL_CERT_DIR"),
   )
 
-  options = api_client.HttpOptions(
+  options = types.HttpOptions(
       client_args={"verify": ctx}, async_client_args={"verify": ctx}
   )
   client_args, async_client_args = (
@@ -807,7 +808,7 @@ def test_client_ssl_context_explicit_initialization_separate_args():
       capath=os.environ.get("SSL_CERT_DIR"),
   )
 
-  options = api_client.HttpOptions(
+  options = types.HttpOptions(
       client_args={"verify": ctx}, async_client_args={"verify": async_ctx}
   )
   client_args, async_client_args = (
@@ -834,7 +835,7 @@ def test_client_ssl_context_explicit_initialization_sync_args():
       capath=os.environ.get("SSL_CERT_DIR"),
   )
 
-  options = api_client.HttpOptions(client_args={"verify": ctx})
+  options = types.HttpOptions(client_args={"verify": ctx})
   client_args, async_client_args = (
       api_client.BaseApiClient._ensure_httpx_ssl_ctx(options)
   )
@@ -859,7 +860,7 @@ def test_client_ssl_context_explicit_initialization_async_args():
       capath=os.environ.get("SSL_CERT_DIR"),
   )
 
-  options = api_client.HttpOptions(async_client_args={"verify": ctx})
+  options = types.HttpOptions(async_client_args={"verify": ctx})
   client_args, async_client_args = (
       api_client.BaseApiClient._ensure_httpx_ssl_ctx(options)
   )
@@ -1097,7 +1098,7 @@ def test_async_async_client_args_without_transport_allows_aiohttp_to_be_used():
       vertexai=True,
       project="fake_project_id",
       location="fake-location",
-      http_options=api_client.HttpOptions(async_client_args={}),
+      http_options=types.HttpOptions(async_client_args={}),
   )
 
   api_client.has_aiohttp = False
@@ -1113,7 +1114,7 @@ def test_async_transport_forces_httpx_regardless_of_aiohttp_availability():
       vertexai=True,
       project="fake_project_id",
       location="fake-location",
-      http_options=api_client.HttpOptions(
+      http_options=types.HttpOptions(
           async_client_args={"transport": httpx.AsyncBaseTransport()}
       ),
   )

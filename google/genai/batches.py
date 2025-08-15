@@ -30,6 +30,7 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
+
 logger = logging.getLogger('google_genai.batches')
 
 
