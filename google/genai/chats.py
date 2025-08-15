@@ -335,6 +335,15 @@ class Chat(_BaseChat):
           and finish_reason is not None,
       )
 
+  @property
+  def history(self) -> list[Content]:
+    """Returns the conversation history.
+    
+    
+    Returns:
+        list[Content]: The conversation history.
+    """
+    return self._curated_history
 
 class Chats:
   """A util class to create chat sessions."""
