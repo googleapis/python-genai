@@ -30,6 +30,18 @@ if sys.version_info >= (3, 10):
 else:
   VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
 
+
+__all__ = [
+    '_py_builtin_type_to_schema_type',
+    '_raise_for_unsupported_param',
+    '_handle_params_as_deferred_annotations',
+    '_add_unevaluated_items_to_fixed_len_tuple_schema',
+    '_is_builtin_primitive_or_compound',
+    '_is_default_value_compatible',
+    '_parse_schema_from_parameter',
+    '_get_required_fields',
+]
+
 _py_builtin_type_to_schema_type = {
     str: types.Type.STRING,
     int: types.Type.INTEGER,

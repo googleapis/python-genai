@@ -32,7 +32,7 @@ def test_join_url_path_base_url_with_trailing_slash_and_path_with_leading_slash(
   base_url = 'https://fake-url.com/some_path/'
   path = '/v1beta/models'
   assert (
-      api_client._join_url_path(base_url, path)
+      api_client.join_url_path(base_url, path)
       == 'https://fake-url.com/some_path/v1beta/models'
   )
 
@@ -41,7 +41,7 @@ def test_join_url_path_with_base_url_with_trailing_slash_and_path_without_leadin
   base_url = 'https://fake-url.com/some_path/'
   path = 'v1beta/models'
   assert (
-      api_client._join_url_path(base_url, path)
+      api_client.join_url_path(base_url, path)
       == 'https://fake-url.com/some_path/v1beta/models'
   )
 
@@ -50,7 +50,7 @@ def test_join_url_path_with_base_url_without_trailing_slash_and_path_with_leadin
   base_url = 'https://fake-url.com/some_path'
   path = '/v1beta/models'
   assert (
-      api_client._join_url_path(base_url, path)
+      api_client.join_url_path(base_url, path)
       == 'https://fake-url.com/some_path/v1beta/models'
   )
 
@@ -59,7 +59,7 @@ def test_join_url_path_with_base_url_without_trailing_slash_and_path_without_lea
   base_url = 'https://fake-url.com/some_path'
   path = 'v1beta/models'
   assert (
-      api_client._join_url_path(base_url, path)
+      api_client.join_url_path(base_url, path)
       == 'https://fake-url.com/some_path/v1beta/models'
   )
 
@@ -68,7 +68,7 @@ def test_join_url_path_base_url_without_path_with_trailing_slash():
   base_url = 'https://fake-url.com/'
   path = 'v1beta/models'
   assert (
-      api_client._join_url_path(base_url, path)
+      api_client.join_url_path(base_url, path)
       == 'https://fake-url.com/v1beta/models'
   )
 
@@ -77,7 +77,7 @@ def test_join_url_path_base_url_without_path_without_trailing_slash():
   base_url = 'https://fake-url.com'
   path = 'v1beta/models'
   assert (
-      api_client._join_url_path(base_url, path)
+      api_client.join_url_path(base_url, path)
       == 'https://fake-url.com/v1beta/models'
   )
 
@@ -129,7 +129,7 @@ def test_build_request_appends_to_goog_api_client_headers(monkeypatch):
 
 def test_build_request_keeps_sdk_version_headers(monkeypatch):
   headers_to_inject = {}
-  api_client._append_library_version_headers(headers_to_inject)
+  api_client.append_library_version_headers(headers_to_inject)
   assert 'google-genai-sdk/' in headers_to_inject['user-agent']
   request_client = build_test_client(monkeypatch).models._api_client
   request = request_client._build_request(

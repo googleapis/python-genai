@@ -41,6 +41,12 @@ def pytest_addoption(parser):
   * tap: Always replay, fail if replay files do not exist. Also sets default values for the API key and replay directory.
 """,
   )
+  parser.addoption(
+      '--private',
+      action='store_true',
+      default=False,
+      help='Run private tests.',
+  )
 
 
 # Overridden via parameterized test.

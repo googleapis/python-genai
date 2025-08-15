@@ -30,6 +30,7 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
+
 logger = logging.getLogger('google_genai.batches')
 
 
@@ -1488,6 +1489,82 @@ def _Candidate_from_mldev(
   return to_object
 
 
+def _GenerateContentResponseUsageMetadata_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['cacheTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['cache_tokens_details'],
+        getv(from_object, ['cacheTokensDetails']),
+    )
+
+  if getv(from_object, ['cachedContentTokenCount']) is not None:
+    setv(
+        to_object,
+        ['cached_content_token_count'],
+        getv(from_object, ['cachedContentTokenCount']),
+    )
+
+  if getv(from_object, ['candidatesTokenCount']) is not None:
+    setv(
+        to_object,
+        ['candidates_token_count'],
+        getv(from_object, ['candidatesTokenCount']),
+    )
+
+  if getv(from_object, ['candidatesTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['candidates_tokens_details'],
+        getv(from_object, ['candidatesTokensDetails']),
+    )
+
+  if getv(from_object, ['promptTokenCount']) is not None:
+    setv(
+        to_object,
+        ['prompt_token_count'],
+        getv(from_object, ['promptTokenCount']),
+    )
+
+  if getv(from_object, ['promptTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['prompt_tokens_details'],
+        getv(from_object, ['promptTokensDetails']),
+    )
+
+  if getv(from_object, ['thoughtsTokenCount']) is not None:
+    setv(
+        to_object,
+        ['thoughts_token_count'],
+        getv(from_object, ['thoughtsTokenCount']),
+    )
+
+  if getv(from_object, ['toolUsePromptTokenCount']) is not None:
+    setv(
+        to_object,
+        ['tool_use_prompt_token_count'],
+        getv(from_object, ['toolUsePromptTokenCount']),
+    )
+
+  if getv(from_object, ['toolUsePromptTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['tool_use_prompt_tokens_details'],
+        getv(from_object, ['toolUsePromptTokensDetails']),
+    )
+
+  if getv(from_object, ['totalTokenCount']) is not None:
+    setv(
+        to_object, ['total_token_count'], getv(from_object, ['totalTokenCount'])
+    )
+
+  return to_object
+
+
 def _GenerateContentResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1508,6 +1585,15 @@ def _GenerateContentResponse_from_mldev(
         ],
     )
 
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(
+        to_object,
+        ['usage_metadata'],
+        _GenerateContentResponseUsageMetadata_from_mldev(
+            getv(from_object, ['usageMetadata']), to_object
+        ),
+    )
+
   if getv(from_object, ['modelVersion']) is not None:
     setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
 
@@ -1516,9 +1602,6 @@ def _GenerateContentResponse_from_mldev(
 
   if getv(from_object, ['responseId']) is not None:
     setv(to_object, ['response_id'], getv(from_object, ['responseId']))
-
-  if getv(from_object, ['usageMetadata']) is not None:
-    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
 
   return to_object
 

@@ -312,23 +312,6 @@ class HarmSeverity(_common.CaseInSensitiveEnum):
   """High level of harm severity."""
 
 
-class BlockedReason(_common.CaseInSensitiveEnum):
-  """Output only. Blocked reason."""
-
-  BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
-  """Unspecified blocked reason."""
-  SAFETY = 'SAFETY'
-  """Candidates blocked due to safety."""
-  OTHER = 'OTHER'
-  """Candidates blocked due to other reason."""
-  BLOCKLIST = 'BLOCKLIST'
-  """Candidates blocked due to the terms which are included from the terminology blocklist."""
-  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
-  """Candidates blocked due to prohibited content."""
-  IMAGE_SAFETY = 'IMAGE_SAFETY'
-  """Candidates blocked due to unsafe image generation content."""
-
-
 class TrafficType(_common.CaseInSensitiveEnum):
   """Output only.
 
@@ -355,6 +338,23 @@ class Modality(_common.CaseInSensitiveEnum):
   """Indicates the model should return images."""
   AUDIO = 'AUDIO'
   """Indicates the model should return audio."""
+
+
+class BlockedReason(_common.CaseInSensitiveEnum):
+  """Output only. Blocked reason."""
+
+  BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
+  """Unspecified blocked reason."""
+  SAFETY = 'SAFETY'
+  """Candidates blocked due to safety."""
+  OTHER = 'OTHER'
+  """Candidates blocked due to other reason."""
+  BLOCKLIST = 'BLOCKLIST'
+  """Candidates blocked due to the terms which are included from the terminology blocklist."""
+  PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
+  """Candidates blocked due to prohibited content."""
+  IMAGE_SAFETY = 'IMAGE_SAFETY'
+  """Candidates blocked due to unsafe image generation content."""
 
 
 class MediaResolution(_common.CaseInSensitiveEnum):
@@ -5278,40 +5278,6 @@ class CandidateDict(TypedDict, total=False):
 CandidateOrDict = Union[Candidate, CandidateDict]
 
 
-class GenerateContentResponsePromptFeedback(_common.BaseModel):
-  """Content filter results for a prompt sent in the request."""
-
-  block_reason: Optional[BlockedReason] = Field(
-      default=None, description="""Output only. Blocked reason."""
-  )
-  block_reason_message: Optional[str] = Field(
-      default=None,
-      description="""Output only. A readable block reason message.""",
-  )
-  safety_ratings: Optional[list[SafetyRating]] = Field(
-      default=None, description="""Output only. Safety ratings."""
-  )
-
-
-class GenerateContentResponsePromptFeedbackDict(TypedDict, total=False):
-  """Content filter results for a prompt sent in the request."""
-
-  block_reason: Optional[BlockedReason]
-  """Output only. Blocked reason."""
-
-  block_reason_message: Optional[str]
-  """Output only. A readable block reason message."""
-
-  safety_ratings: Optional[list[SafetyRatingDict]]
-  """Output only. Safety ratings."""
-
-
-GenerateContentResponsePromptFeedbackOrDict = Union[
-    GenerateContentResponsePromptFeedback,
-    GenerateContentResponsePromptFeedbackDict,
-]
-
-
 class ModalityTokenCount(_common.BaseModel):
   """Represents token counting info for a single modality."""
 
@@ -5428,6 +5394,40 @@ GenerateContentResponseUsageMetadataOrDict = Union[
 ]
 
 
+class GenerateContentResponsePromptFeedback(_common.BaseModel):
+  """Content filter results for a prompt sent in the request."""
+
+  block_reason: Optional[BlockedReason] = Field(
+      default=None, description="""Output only. Blocked reason."""
+  )
+  block_reason_message: Optional[str] = Field(
+      default=None,
+      description="""Output only. A readable block reason message.""",
+  )
+  safety_ratings: Optional[list[SafetyRating]] = Field(
+      default=None, description="""Output only. Safety ratings."""
+  )
+
+
+class GenerateContentResponsePromptFeedbackDict(TypedDict, total=False):
+  """Content filter results for a prompt sent in the request."""
+
+  block_reason: Optional[BlockedReason]
+  """Output only. Blocked reason."""
+
+  block_reason_message: Optional[str]
+  """Output only. A readable block reason message."""
+
+  safety_ratings: Optional[list[SafetyRatingDict]]
+  """Output only. Safety ratings."""
+
+
+GenerateContentResponsePromptFeedbackOrDict = Union[
+    GenerateContentResponsePromptFeedback,
+    GenerateContentResponsePromptFeedbackDict,
+]
+
+
 class GenerateContentResponse(_common.BaseModel):
   """Response message for PredictionService.GenerateContent."""
 
@@ -5444,6 +5444,9 @@ class GenerateContentResponse(_common.BaseModel):
       description="""Timestamp when the request is made to the server.
       """,
   )
+  usage_metadata: Optional[GenerateContentResponseUsageMetadata] = Field(
+      default=None, description="""Usage metadata about the response(s)."""
+  )
   model_version: Optional[str] = Field(
       default=None,
       description="""Output only. The model version used to generate the response.""",
@@ -5455,9 +5458,6 @@ class GenerateContentResponse(_common.BaseModel):
   response_id: Optional[str] = Field(
       default=None,
       description="""Output only. response_id is used to identify each response. It is the encoding of the event_id.""",
-  )
-  usage_metadata: Optional[GenerateContentResponseUsageMetadata] = Field(
-      default=None, description="""Usage metadata about the response(s)."""
   )
   automatic_function_calling_history: Optional[list[Content]] = None
   parsed: Optional[Union[pydantic.BaseModel, dict[Any, Any], Enum]] = Field(
@@ -5702,6 +5702,9 @@ class GenerateContentResponseDict(TypedDict, total=False):
   """Timestamp when the request is made to the server.
       """
 
+  usage_metadata: Optional[GenerateContentResponseUsageMetadataDict]
+  """Usage metadata about the response(s)."""
+
   model_version: Optional[str]
   """Output only. The model version used to generate the response."""
 
@@ -5710,9 +5713,6 @@ class GenerateContentResponseDict(TypedDict, total=False):
 
   response_id: Optional[str]
   """Output only. response_id is used to identify each response. It is the encoding of the event_id."""
-
-  usage_metadata: Optional[GenerateContentResponseUsageMetadataDict]
-  """Usage metadata about the response(s)."""
 
 
 GenerateContentResponseOrDict = Union[
