@@ -7139,6 +7139,10 @@ class RecontextImageConfig(_common.BaseModel):
       description="""Whether allow to generate person images, and restrict to specific
       ages.""",
   )
+  add_watermark: Optional[bool] = Field(
+      default=None,
+      description="""Whether to add a SynthID watermark to the generated images.""",
+  )
   output_mime_type: Optional[str] = Field(
       default=None, description="""MIME type of the generated image."""
   )
@@ -7177,6 +7181,9 @@ class RecontextImageConfigDict(TypedDict, total=False):
   person_generation: Optional[PersonGeneration]
   """Whether allow to generate person images, and restrict to specific
       ages."""
+
+  add_watermark: Optional[bool]
+  """Whether to add a SynthID watermark to the generated images."""
 
   output_mime_type: Optional[str]
   """MIME type of the generated image."""
