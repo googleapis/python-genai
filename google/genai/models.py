@@ -1338,6 +1338,11 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['last_frame']) is not None:
     raise ValueError('last_frame parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['reference_images']) is not None:
+    raise ValueError(
+        'reference_images parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['compression_quality']) is not None:
     raise ValueError(
         'compression_quality parameter is not supported in Gemini API.'
@@ -3391,6 +3396,24 @@ def _Video_to_vertex(
   return to_object
 
 
+def _VideoGenerationReferenceImage_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['reference_type']) is not None:
+    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
+
+  return to_object
+
+
 def _GenerateVideosConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3478,6 +3501,16 @@ def _GenerateVideosConfig_to_vertex(
         parent_object,
         ['instances[0]', 'lastFrame'],
         _Image_to_vertex(getv(from_object, ['last_frame']), to_object),
+    )
+
+  if getv(from_object, ['reference_images']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'referenceImages'],
+        [
+            _VideoGenerationReferenceImage_to_vertex(item, to_object)
+            for item in getv(from_object, ['reference_images'])
+        ],
     )
 
   if getv(from_object, ['compression_quality']) is not None:
