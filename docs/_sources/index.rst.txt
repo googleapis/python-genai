@@ -1180,6 +1180,50 @@ Send Message (Asynchronous Streaming)
     async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text, end='') # end='' is optional, for demo purposes.
 
+Chat History
+------------
+
+The ``Chat`` object automatically manages the conversation history. It distinguishes
+between two types of history:
+
+*   **Comprehensive History:** This is the complete history of the conversation,
+    including all user inputs and all model responses, even those that were
+    deemed invalid or were rejected. This history is useful for debugging and for
+    auditing the complete interaction with the model.
+
+*   **Curated History:** This is a filtered version of the history that only
+    includes valid and successful turns of the conversation. This is the history
+    that is actually sent to the model in subsequent requests.
+
+You can access both types of history using the ``Chat.get_history()`` method. By
+default, it returns the comprehensive history. To get the curated history, use
+``chat.get_history(curated=True)``.
+
+Example of usage:
+
+.. code-block:: python
+
+    import google.generativeai as genai
+
+    genai.configure(api_key="YOUR_API_KEY")
+
+    # Create a chat session
+    chat = genai.chats.create(model='gemini-1.5-flash')
+
+    # Send a message
+    response = chat.send_message("Hello!")
+    print(response.text)
+
+    # The history is automatically managed.
+    # Get the comprehensive history
+    comprehensive_history = chat.get_history()
+    print("Comprehensive History:", comprehensive_history)
+
+    # Get the curated history
+    curated_history = chat.get_history(curated=True)
+    print("Curated History:", curated_history)
+
+
 Files
 ======================
 
