@@ -1178,67 +1178,6 @@ class Content(_common.BaseModel):
   )
 
 
-class UserContent(Content):
-  """UserContent facilitates the creation of a Content object with a user role.
-
-  Example usages:
-
-
-  - Create a user Content object with a string:
-    user_content = UserContent("Why is the sky blue?")
-  - Create a user Content object with a file data Part object:
-    user_content = UserContent(Part.from_uri(file_uril="gs://bucket/file.txt",
-    mime_type="text/plain"))
-  - Create a user Content object with byte data Part object:
-    user_content = UserContent(Part.from_bytes(data=b"Hello, World!",
-    mime_type="text/plain"))
-
-    You can create a user Content object using other classmethods in the Part
-    class as well.
-    You can also create a user Content using a list of Part objects or strings.
-  """
-
-  role: Literal['user'] = Field(default='user', init=False, frozen=True)
-  parts: list[Part] = Field()
-
-  def __init__(
-      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
-  ):
-    from . import _transformers as t
-
-    super().__init__(parts=t.t_parts(parts=parts))
-
-
-class ModelContent(Content):
-  """ModelContent facilitates the creation of a Content object with a model role.
-
-  Example usages:
-
-  - Create a model Content object with a string:
-    model_content = ModelContent("Why is the sky blue?")
-  - Create a model Content object with a file data Part object:
-    model_content = ModelContent(Part.from_uri(file_uril="gs://bucket/file.txt",
-    mime_type="text/plain"))
-  - Create a model Content object with byte data Part object:
-    model_content = ModelContent(Part.from_bytes(data=b"Hello, World!",
-    mime_type="text/plain"))
-
-    You can create a model Content object using other classmethods in the Part
-    class as well.
-    You can also create a model Content using a list of Part objects or strings.
-  """
-
-  role: Literal['model'] = Field(default='model', init=False, frozen=True)
-  parts: list[Part] = Field()
-
-  def __init__(
-      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
-  ):
-    from . import _transformers as t
-
-    super().__init__(parts=t.t_parts(parts=parts))
-
-
 class ContentDict(TypedDict, total=False):
   """Contains the multi-part content of a message."""
 
@@ -1520,19 +1459,6 @@ class JSONSchema(_common.BaseModel):
           ' keyword’s value.'
       ),
   )
-
-
-class JSONSchemaDict(TypedDict, total=False):
-  """A subset of JSON Schema according to 2020-12 JSON Schema draft.
-
-  Represents a subset of a JSON Schema object that is used by the Gemini model.
-  The difference between this class and the Schema class is that this class is
-  compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
-  make API call to Gemini model.
-  """
-
-
-JSONSchemaOrDict = Union[JSONSchema, JSONSchemaDict]
 
 
 class Schema(_common.BaseModel):
@@ -14865,6 +14791,67 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
 CreateTuningJobParametersOrDict = Union[
     CreateTuningJobParameters, CreateTuningJobParametersDict
 ]
+
+
+class UserContent(Content):
+  """UserContent facilitates the creation of a Content object with a user role.
+
+  Example usages:
+
+
+  - Create a user Content object with a string:
+    user_content = UserContent("Why is the sky blue?")
+  - Create a user Content object with a file data Part object:
+    user_content = UserContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    mime_type="text/plain"))
+  - Create a user Content object with byte data Part object:
+    user_content = UserContent(Part.from_bytes(data=b"Hello, World!",
+    mime_type="text/plain"))
+
+    You can create a user Content object using other classmethods in the Part
+    class as well.
+    You can also create a user Content using a list of Part objects or strings.
+  """
+
+  role: Literal['user'] = Field(default='user', init=False, frozen=True)
+  parts: list[Part] = Field()
+
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
+    from . import _transformers as t
+
+    super().__init__(parts=t.t_parts(parts=parts))
+
+
+class ModelContent(Content):
+  """ModelContent facilitates the creation of a Content object with a model role.
+
+  Example usages:
+
+  - Create a model Content object with a string:
+    model_content = ModelContent("Why is the sky blue?")
+  - Create a model Content object with a file data Part object:
+    model_content = ModelContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    mime_type="text/plain"))
+  - Create a model Content object with byte data Part object:
+    model_content = ModelContent(Part.from_bytes(data=b"Hello, World!",
+    mime_type="text/plain"))
+
+    You can create a model Content object using other classmethods in the Part
+    class as well.
+    You can also create a model Content using a list of Part objects or strings.
+  """
+
+  role: Literal['model'] = Field(default='model', init=False, frozen=True)
+  parts: list[Part] = Field()
+
+  def __init__(
+      self, parts: Union['PartUnionDict', list['PartUnionDict'], list['Part']]
+  ):
+    from . import _transformers as t
+
+    super().__init__(parts=t.t_parts(parts=parts))
 
 
 class CustomOutputFormatConfig(_common.BaseModel):
