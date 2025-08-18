@@ -1,18 +1,5 @@
 # Changelog
 
-## [1.31.0](https://github.com/googleapis/python-genai/compare/v1.30.0...v1.31.0) (2025-08-18)
-
-
-### Features
-
-* Support Imagen image segmentation on Vertex ([a3c46f5](https://github.com/googleapis/python-genai/commit/a3c46f510a158218d21af44fcdc0fdff9e04d0f2))
-* Support Veo 2 Reference Images to Video Generation on Vertex ([3712351](https://github.com/googleapis/python-genai/commit/3712351caa889a147198a2d31543f762cf550dbd))
-
-
-### Bug Fixes
-
-* Fix the bug to support Gemini Batch inlined requests system instruction ([3abf441](https://github.com/googleapis/python-genai/commit/3abf4414002cde35c8f6d023271b12577bc98016))
-
 ## [1.30.0](https://github.com/googleapis/python-genai/compare/v1.29.0...v1.30.0) (2025-08-13)
 
 

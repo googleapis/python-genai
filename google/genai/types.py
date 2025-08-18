@@ -8220,7 +8220,7 @@ class TokensInfo(_common.BaseModel):
 
   role: Optional[str] = Field(
       default=None,
-      description="""Optional. Optional fields for the role from the corresponding Content.""",
+      description="""Optional fields for the role from the corresponding Content.""",
   )
   token_ids: Optional[list[int]] = Field(
       default=None, description="""A list of token ids from the input."""
@@ -8234,7 +8234,7 @@ class TokensInfoDict(TypedDict, total=False):
   """Tokens info with a list of tokens and the corresponding list of token ids."""
 
   role: Optional[str]
-  """Optional. Optional fields for the role from the corresponding Content."""
+  """Optional fields for the role from the corresponding Content."""
 
   token_ids: Optional[list[int]]
   """A list of token ids from the input."""
