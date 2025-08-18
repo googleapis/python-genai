@@ -8437,6 +8437,40 @@ class VideoDict(TypedDict, total=False):
 VideoOrDict = Union[Video, VideoDict]
 
 
+class VideoGenerationReferenceImage(_common.BaseModel):
+  """A reference image for video generation."""
+
+  image: Optional[Image] = Field(
+      default=None,
+      description="""The reference image.
+      """,
+  )
+  reference_type: Optional[str] = Field(
+      default=None,
+      description="""The type of the reference image, which defines how the reference
+      image will be used to generate the video. Supported values are 'asset'
+      or 'style'.""",
+  )
+
+
+class VideoGenerationReferenceImageDict(TypedDict, total=False):
+  """A reference image for video generation."""
+
+  image: Optional[ImageDict]
+  """The reference image.
+      """
+
+  reference_type: Optional[str]
+  """The type of the reference image, which defines how the reference
+      image will be used to generate the video. Supported values are 'asset'
+      or 'style'."""
+
+
+VideoGenerationReferenceImageOrDict = Union[
+    VideoGenerationReferenceImage, VideoGenerationReferenceImageDict
+]
+
+
 class GenerateVideosConfig(_common.BaseModel):
   """Configuration for generating videos."""
 
@@ -8492,6 +8526,14 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""Image to use as the last frame of generated videos. Only supported for image to video use cases.""",
   )
+  reference_images: Optional[list[VideoGenerationReferenceImage]] = Field(
+      default=None,
+      description="""The images to use as the references to generate the videos.
+      If this field is provided, the text prompt field must also be provided.
+      The image, video, or last_frame field are not supported. Each image must
+      be associated with a type. Veo 2 supports up to 3 asset images *or* 1
+      style image.""",
+  )
   compression_quality: Optional[VideoCompressionQuality] = Field(
       default=None,
       description="""Compression quality of the generated videos.""",
@@ -8542,6 +8584,13 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   last_frame: Optional[ImageDict]
   """Image to use as the last frame of generated videos. Only supported for image to video use cases."""
+
+  reference_images: Optional[list[VideoGenerationReferenceImageDict]]
+  """The images to use as the references to generate the videos.
+      If this field is provided, the text prompt field must also be provided.
+      The image, video, or last_frame field are not supported. Each image must
+      be associated with a type. Veo 2 supports up to 3 asset images *or* 1
+      style image."""
 
   compression_quality: Optional[VideoCompressionQuality]
   """Compression quality of the generated videos."""
