@@ -2973,6 +2973,13 @@ def _RecontextImageConfig_to_vertex(
         getv(from_object, ['person_generation']),
     )
 
+  if getv(from_object, ['add_watermark']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'addWatermark'],
+        getv(from_object, ['add_watermark']),
+    )
+
   if getv(from_object, ['output_mime_type']) is not None:
     setv(
         parent_object,
