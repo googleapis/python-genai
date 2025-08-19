@@ -14759,6 +14759,42 @@ CreateAuthTokenParametersOrDict = Union[
 ]
 
 
+class CountTokensResult(_common.BaseModel):
+  """Local tokenizer count tokens result."""
+
+  total_tokens: Optional[int] = Field(
+      default=None, description="""The total number of tokens."""
+  )
+
+
+class CountTokensResultDict(TypedDict, total=False):
+  """Local tokenizer count tokens result."""
+
+  total_tokens: Optional[int]
+  """The total number of tokens."""
+
+
+CountTokensResultOrDict = Union[CountTokensResult, CountTokensResultDict]
+
+
+class ComputeTokensResult(_common.BaseModel):
+  """Local tokenizer compute tokens result."""
+
+  tokens_info: Optional[list[TokensInfo]] = Field(
+      default=None, description="""Lists of tokens info from the input."""
+  )
+
+
+class ComputeTokensResultDict(TypedDict, total=False):
+  """Local tokenizer compute tokens result."""
+
+  tokens_info: Optional[list[TokensInfoDict]]
+  """Lists of tokens info from the input."""
+
+
+ComputeTokensResultOrDict = Union[ComputeTokensResult, ComputeTokensResultDict]
+
+
 class CreateTuningJobParameters(_common.BaseModel):
   """Supervised fine-tuning job creation parameters - optional fields."""
 
