@@ -8634,6 +8634,24 @@ class GenerateVideosResponse(_common.BaseModel):
   )
 
 
+class GenerateVideosResponseDict(TypedDict, total=False):
+  """Response with generated videos."""
+
+  generated_videos: Optional[list[GeneratedVideoDict]]
+  """List of the generated videos"""
+
+  rai_media_filtered_count: Optional[int]
+  """Returns if any videos were filtered due to RAI policies."""
+
+  rai_media_filtered_reasons: Optional[list[str]]
+  """Returns rai failure reasons if any."""
+
+
+GenerateVideosResponseOrDict = Union[
+    GenerateVideosResponse, GenerateVideosResponseDict
+]
+
+
 class Operation(ABC):
   """A long-running operation."""
 
@@ -8669,7 +8687,6 @@ class GenerateVideosOperation(_common.BaseModel, Operation):
   response: Optional[GenerateVideosResponse] = Field(
       default=None, description="""The generated videos."""
   )
-
   result: Optional[GenerateVideosResponse] = Field(
       default=None, description="""The generated videos."""
   )
@@ -8731,24 +8748,6 @@ class GenerateVideosOperation(_common.BaseModel, Operation):
         )
     new_operation.result = new_operation.response
     return new_operation
-
-
-class GenerateVideosResponseDict(TypedDict, total=False):
-  """Response with generated videos."""
-
-  generated_videos: Optional[list[GeneratedVideoDict]]
-  """List of the generated videos"""
-
-  rai_media_filtered_count: Optional[int]
-  """Returns if any videos were filtered due to RAI policies."""
-
-  rai_media_filtered_reasons: Optional[list[str]]
-  """Returns rai failure reasons if any."""
-
-
-GenerateVideosResponseOrDict = Union[
-    GenerateVideosResponse, GenerateVideosResponseDict
-]
 
 
 class GetTuningJobConfig(_common.BaseModel):
