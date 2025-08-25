@@ -469,6 +469,23 @@ def test_sync_with_headers(client):
   assert response.sdk_http_response.headers is not None
   assert response.sdk_http_response.body is None
 
+
+def test_sync_with_full_response(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  print(response.sdk_http_response.body)
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.generate_content(
@@ -489,6 +506,23 @@ async def test_async_with_headers(client):
   )
   assert response.sdk_http_response.headers is not None
   assert response.sdk_http_response.body is None
+
+
+@pytest.mark.asyncio
+async def test_async_with_full_response(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
 
 
 def test_sync_stream(client):
