@@ -79,6 +79,82 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name="test_from_text_source",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            source=types.GenerateVideosSource(prompt="Man with a dog"),
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_from_image_source",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            source=types.GenerateVideosSource(
+                image=LOCAL_IMAGE,
+            ),
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_from_text_and_image_source",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            source=types.GenerateVideosSource(
+                prompt="Lightning storm",
+                image=LOCAL_IMAGE,
+            ),
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_from_video_source",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            source=types.GenerateVideosSource(
+                video=types.Video(
+                    uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+                ),
+            ),
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                output_gcs_uri=(
+                    "gs://unified-genai-tests/tmp/genai/video/outputs"
+                ),
+            ),
+        ),
+        exception_if_mldev=(
+            "not supported in Gemini API"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_from_text_and_video_source",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            source=types.GenerateVideosSource(
+                prompt="Rain",
+                video=types.Video(
+                    uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+                ),
+            ),
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                output_gcs_uri=(
+                    "gs://unified-genai-tests/tmp/genai/video/outputs"
+                ),
+            ),
+        ),
+        exception_if_mldev=(
+            "not supported in Gemini API"
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name="test_all_parameters_mldev",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
@@ -296,6 +372,15 @@ def test_create_operation_to_poll(client):
     operation = client.operations.get(operation=operation)
 
   assert operation.result.generated_videos[0].video.uri
+
+
+def test_source_and_prompt_raises(client):
+  with pytest.raises(ValueError):
+    client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="Prompt 1",
+        source=types.GenerateVideosSource(prompt="Prompt 2"),
+    )
 
 
 @pytest.mark.asyncio

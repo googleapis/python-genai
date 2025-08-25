@@ -1270,6 +1270,29 @@ def _Image_to_mldev(
   return to_object
 
 
+def _GenerateVideosSource_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'image'],
+        _Image_to_mldev(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['video']) is not None:
+    raise ValueError('video parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _GenerateVideosConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1377,6 +1400,15 @@ def _GenerateVideosParameters_to_mldev(
 
   if getv(from_object, ['video']) is not None:
     raise ValueError('video parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['source']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _GenerateVideosSource_to_mldev(
+            getv(from_object, ['source']), to_object
+        ),
+    )
 
   if getv(from_object, ['config']) is not None:
     setv(
@@ -3404,6 +3436,33 @@ def _Video_to_vertex(
   return to_object
 
 
+def _GenerateVideosSource_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['video']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'video'],
+        _Video_to_vertex(getv(from_object, ['video']), to_object),
+    )
+
+  return to_object
+
+
 def _VideoGenerationReferenceImage_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3559,6 +3618,15 @@ def _GenerateVideosParameters_to_vertex(
         to_object,
         ['instances[0]', 'video'],
         _Video_to_vertex(getv(from_object, ['video']), to_object),
+    )
+
+  if getv(from_object, ['source']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _GenerateVideosSource_to_vertex(
+            getv(from_object, ['source']), to_object
+        ),
     )
 
   if getv(from_object, ['config']) is not None:
@@ -6243,6 +6311,7 @@ class Models(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -6284,6 +6353,7 @@ class Models(_api_module.BaseModule):
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )
 
@@ -6831,6 +6901,7 @@ class Models(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -6845,11 +6916,15 @@ class Models(_api_module.BaseModule):
     Args:
       model: The model to use.
       prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
+        video and video extension use cases. This argument is deprecated, please
+        use source instead.
       image: The input image for generating the videos. Optional if prompt is
-        provided.
+        provided. This argument is deprecated, please use source instead.
       video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
+        or image is provided. This argument is deprecated, please use source
+        instead.
+      source: The input source for generating the videos (prompt, image, and/or
+        video)
       config: Configuration for generation.
 
     Usage:
@@ -6857,7 +6932,9 @@ class Models(_api_module.BaseModule):
       ```
       operation = client.models.generate_videos(
           model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
       )
       while not operation.done:
           time.sleep(10)
@@ -6866,11 +6943,17 @@ class Models(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
+    if (prompt or image or video) and source:
+      raise ValueError(
+          'Source and prompt/image/video are mutually exclusive.'
+          + ' Please only use source.'
+      )
     return self._generate_videos(
         model=model,
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )
 
@@ -8061,6 +8144,7 @@ class AsyncModels(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -8102,6 +8186,7 @@ class AsyncModels(_api_module.BaseModule):
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )
 
@@ -8682,6 +8767,7 @@ class AsyncModels(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -8696,11 +8782,15 @@ class AsyncModels(_api_module.BaseModule):
     Args:
       model: The model to use.
       prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
+        video and video extension use cases. This argument is deprecated, please
+        use source instead.
       image: The input image for generating the videos. Optional if prompt is
-        provided.
+        provided. This argument is deprecated, please use source instead.
       video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
+        or image is provided. This argument is deprecated, please use source
+        instead.
+      source: The input source for generating the videos (prompt, image, and/or
+        video)
       config: Configuration for generation.
 
     Usage:
@@ -8708,7 +8798,9 @@ class AsyncModels(_api_module.BaseModule):
       ```
       operation = client.models.generate_videos(
           model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
       )
       while not operation.done:
           time.sleep(10)
@@ -8717,10 +8809,16 @@ class AsyncModels(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
+    if (prompt or image or video) and source:
+      raise ValueError(
+          'Source and prompt/image/video are mutually exclusive.'
+          + ' Please only use source.'
+      )
     return await self._generate_videos(
         model=model,
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )

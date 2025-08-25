@@ -8388,6 +8388,47 @@ class VideoDict(TypedDict, total=False):
 VideoOrDict = Union[Video, VideoDict]
 
 
+class GenerateVideosSource(_common.BaseModel):
+  """A set of source input(s) for video generation."""
+
+  prompt: Optional[str] = Field(
+      default=None,
+      description="""The text prompt for generating the videos.
+      Optional if image or video is provided.""",
+  )
+  image: Optional[Image] = Field(
+      default=None,
+      description="""The input image for generating the videos.
+      Optional if prompt or video is provided.""",
+  )
+  video: Optional[Video] = Field(
+      default=None,
+      description="""The input video for video extension use cases.
+      Optional if prompt or image is provided.""",
+  )
+
+
+class GenerateVideosSourceDict(TypedDict, total=False):
+  """A set of source input(s) for video generation."""
+
+  prompt: Optional[str]
+  """The text prompt for generating the videos.
+      Optional if image or video is provided."""
+
+  image: Optional[ImageDict]
+  """The input image for generating the videos.
+      Optional if prompt or video is provided."""
+
+  video: Optional[VideoDict]
+  """The input video for video extension use cases.
+      Optional if prompt or image is provided."""
+
+
+GenerateVideosSourceOrDict = Union[
+    GenerateVideosSource, GenerateVideosSourceDict
+]
+
+
 class VideoGenerationReferenceImage(_common.BaseModel):
   """A reference image for video generation."""
 
@@ -8574,6 +8615,10 @@ class _GenerateVideosParameters(_common.BaseModel):
       description="""The input video for video extension use cases.
       Optional if prompt or image is provided.""",
   )
+  source: Optional[GenerateVideosSource] = Field(
+      default=None,
+      description="""A set of source input(s) for video generation.""",
+  )
   config: Optional[GenerateVideosConfig] = Field(
       default=None, description="""Configuration for generating videos."""
   )
@@ -8596,6 +8641,9 @@ class _GenerateVideosParametersDict(TypedDict, total=False):
   video: Optional[VideoDict]
   """The input video for video extension use cases.
       Optional if prompt or image is provided."""
+
+  source: Optional[GenerateVideosSourceDict]
+  """A set of source input(s) for video generation."""
 
   config: Optional[GenerateVideosConfigDict]
   """Configuration for generating videos."""
