@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.32.0](https://github.com/googleapis/python-genai/compare/v1.31.0...v1.32.0) (2025-08-25)
+
+
+### Features
+
+* Add `sdkHttpResponse.headers` to *Delete responses. ([0101d47](https://github.com/googleapis/python-genai/commit/0101d47a2cdb9418c15403a24063e489c5c551e1))
+* Add add_watermark field for recontext_image (Virtual Try-On, Product Recontext) ([0428877](https://github.com/googleapis/python-genai/commit/0428877737218a06315538747c5e852d76192e2a))
+* Support GenerateVideosSource for Veo GenerateVideos ([a6c2bb7](https://github.com/googleapis/python-genai/commit/a6c2bb746d13938dfb4de6c2dd7506d0652c62c4))
+
+
+### Documentation
+
+* Prompt and schema fix for json schema sample ([6efd242](https://github.com/googleapis/python-genai/commit/6efd242b287e8585c871155a2ff3b53db3de444b))
+* Regenerate docs for 1.31.0 ([51903d4](https://github.com/googleapis/python-genai/commit/51903d46897e5ca5dafe7f4418980e6a0d6e91ee))
+* Update TokensInfo docstring ([921afa1](https://github.com/googleapis/python-genai/commit/921afa101cb4026642b73cf3fd3e874381df07f9))
+
 ## [1.31.0](https://github.com/googleapis/python-genai/compare/v1.30.0...v1.31.0) (2025-08-18)
 
 
