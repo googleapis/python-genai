@@ -7862,12 +7862,15 @@ _DeleteModelParametersOrDict = Union[
 
 class DeleteModelResponse(_common.BaseModel):
 
-  pass
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
 
 
 class DeleteModelResponseDict(TypedDict, total=False):
 
-  pass
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
 
 DeleteModelResponseOrDict = Union[DeleteModelResponse, DeleteModelResponseDict]
@@ -10832,13 +10835,16 @@ _DeleteCachedContentParametersOrDict = Union[
 class DeleteCachedContentResponse(_common.BaseModel):
   """Empty response for caches.delete method."""
 
-  pass
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
 
 
 class DeleteCachedContentResponseDict(TypedDict, total=False):
   """Empty response for caches.delete method."""
 
-  pass
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
 
 DeleteCachedContentResponseOrDict = Union[
@@ -11243,13 +11249,16 @@ _DeleteFileParametersOrDict = Union[
 class DeleteFileResponse(_common.BaseModel):
   """Response for the delete file method."""
 
-  pass
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
 
 
 class DeleteFileResponseDict(TypedDict, total=False):
   """Response for the delete file method."""
 
-  pass
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
 
 
 DeleteFileResponseOrDict = Union[DeleteFileResponse, DeleteFileResponseDict]
