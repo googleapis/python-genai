@@ -790,10 +790,10 @@ user_profile = {
 
 response = client.models.generate_content(
     model='gemini-2.0-flash',
-    contents='Give me information of the United States.',
+    contents='Give me a random user profile.',
     config={
         'response_mime_type': 'application/json',
-        'response_json_schema': userProfile
+        'response_json_schema': user_profile
     },
 )
 print(response.parsed)
