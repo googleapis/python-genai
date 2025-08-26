@@ -149,7 +149,7 @@ Then, you can pass it through the following way:
 
 http_options = types.HttpOptions(
     client_args={'proxy': 'socks5://user:pass@host:port'},
-    async_client_args={'proxy': 'socks5://user:pass@host:port'},,
+    async_client_args={'proxy': 'socks5://user:pass@host:port'},
 )
 
 client=Client(..., http_options=http_options)
@@ -354,7 +354,7 @@ The SDK converts all non function call parts into a content with a `user` role.
 [
   types.UserContent(parts=[
     types.Part.from_uri(
-     file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+      file_uri: 'gs://generativeai-downloads/images/scones.jpg',
       mime_type: 'image/jpeg',
     )
   ])
@@ -1554,7 +1554,7 @@ batch_job = client.batches.create(
         }],
        "role": "user",
      }],
-     "config:": {"response_modalities": ["text"]},
+     "config": {"response_modalities": ["text"]},
     }],
 )
 
