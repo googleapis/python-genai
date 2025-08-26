@@ -363,6 +363,21 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
     ),
+    pytest_helper.TestTableItem(
+        name='test_function_calling_config_validated_mode',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'How is the weather in Kirkland?'
+            ),
+            config={
+                'tools': [{'function_declarations': function_declarations}],
+                'tool_config': {
+                    'function_calling_config': {'mode': 'VALIDATED'}
+                },
+            },
+        ),
+    ),
 ]
 
 
