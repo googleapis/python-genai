@@ -5256,13 +5256,6 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    if config is not None and getattr(
-        config, 'should_return_http_response', None
-    ):
-      return_value = types.GenerateContentResponse(sdk_http_response=response)
-      self._api_client._verify_response(return_value)
-      return return_value
-
     response_dict = '' if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
@@ -7087,13 +7080,6 @@ class AsyncModels(_api_module.BaseModule):
     response = await self._api_client.async_request(
         'post', path, request_dict, http_options
     )
-
-    if config is not None and getattr(
-        config, 'should_return_http_response', None
-    ):
-      return_value = types.GenerateContentResponse(sdk_http_response=response)
-      self._api_client._verify_response(return_value)
-      return return_value
 
     response_dict = '' if not response.body else json.loads(response.body)
 
