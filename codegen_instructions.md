@@ -28,7 +28,11 @@ If you'd like to reduce context window consumption, you can experiment with
 removing sections on this file. You can let us know how it works at our
 [community forums](https://discuss.ai.google.dev/c/gemini-api).
 
-Note: These instructions are for the [Gemini API](https://ai.google.dev/gemini-api/docs). Vertex AI developers should note that while the APIs are similar, there may be minor differences, and the [official Vertex AI documentation](https://cloud.google.com/vertex-ai/docs) should be used for definitive guidance
+Note: These instructions are for the [Gemini
+API](https://ai.google.dev/gemini-api/docs). Vertex AI developers should note
+that while the APIs are similar, there may be minor differences, and the
+[official Vertex AI documentation](https://cloud.google.com/vertex-ai/docs)
+should be used for definitive guidance
 
 ## Contributions
 
@@ -103,8 +107,11 @@ The `google-genai` library requires creating a client object for all API calls.
 -   By default, use the following models when using `google-genai`:
     -   **General Text & Multimodal Tasks:** `gemini-2.5-flash`
     -   **Coding and Complex Reasoning Tasks:** `gemini-2.5-pro`
-    -   **Image Generation Tasks:** `imagen-3.0-generate-002`
-    -   **Video Generation Tasks:** `veo-2.0-generate-001`
+    -   **Image Generation Tasks:** `imagen-4.0-fast-generate-001`,
+        `imagen-4.0-generate-001` or `imagen-4.0-ultra-generate-001`
+    -   **Image Editing Tasks:** `gemini-2.5-flash-image-preview`
+    -   **Video Generation Tasks:** `veo-3.0-fast-generate-preview` or
+        `veo-3.0-generate-preview`.
 
 -   It is also acceptable to use following models if explicitly requested by the
     user:
@@ -397,7 +404,9 @@ else:
 
 ### Generate Images
 
-Here's how to generate images using the Imagen models.
+Here's how to generate images using the Imagen models. Start with the fast model
+as it should cover most use-cases, and move to the more standard or the ultra
+models for advanced use-cases.
 
 ```python
 from google import genai
@@ -407,10 +416,10 @@ from io import BytesIO
 client = genai.Client()
 
 result = client.models.generate_images(
-    model='imagen-3.0-generate-002',
+    model='imagen-4.0-fast-generate-001',
     prompt="Image of a cat",
     config=dict(
-        number_of_images=1, # 1 to 4
+        number_of_images=1, # 1 to 4 (always 1 for the ultra model)
         output_mime_type="image/jpeg",
         person_generation="ALLOW_ADULT" # 'ALLOW_ALL' (but not in Europe/Mena), 'DONT_ALLOW' or 'ALLOW_ADULT'
         aspect_ratio="1:1" # "1:1", "3:4", "4:3", "9:16", or "16:9"
@@ -421,10 +430,47 @@ for generated_image in result.generated_images:
    image = Image.open(BytesIO(generated_image.image.image_bytes))
 ```
 
+### Edit images
+
+Editing images is better done using the Gemini native image generation model,
+and it is recommended to use chat mode. Configs are not supported in this model
+(except modality).
+
+```python
+from google import genai
+from PIL import Image
+from io import BytesIO
+
+client = genai.Client()
+
+prompt = """
+  Create a picture of my cat eating a nano-banana in a fancy restaurant under the gemini constellation
+"""
+image = PIL.Image.open('/path/to/image.png')
+
+# Create the chat
+chat = client.chats.create(model="gemini-2.5-flash-image-preview
+# Send the image and ask for it to be edited
+response = chat.send_message([prompt, image])
+
+# Get the text and the image generated
+for i, part in enumerate(response.candidates[0].content.parts):
+  if part.text is not None:
+    print(part.text)
+  elif part.inline_data is not None:
+    image = Image.open(BytesIO(part.inline_data.data))
+    image.save(f"generated_image_{i}.png") # Multiple images can be generated
+
+# Continue iterating
+chat.send_message("Can you make it a bananas foster?")
+```
+
 ### Generate Videos
 
 Here's how to generate videos using the Veo models. Usage of Veo can be costly,
 so after generating code for it, give user a heads up to check pricing for Veo.
+Start with the fast model since the result quality is usually sufficient, and
+swap to the larger model if needed.
 
 ```python
 import time
@@ -437,7 +483,7 @@ client = genai.Client()
 PIL_image = Image.open("path/to/image.png") # Optional
 
 operation = client.models.generate_videos(
-    model="veo-2.0-generate-001",
+    model="veo-3.0-fast-generate-preview",
     prompt="Panning wide shot of a calico kitten sleeping in the sunshine",
     image = PIL_image,
     config=types.GenerateVideosConfig(
@@ -463,7 +509,7 @@ for n, generated_video in enumerate(operation.response.generated_videos):
 Google Search can be used as a tool for grounding queries that with up to date
 information from the web.
 
-**Correct** 
+**Correct**
 ```python
 from google import genai
 
