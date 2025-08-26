@@ -6890,6 +6890,10 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
+  output_gcs_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage URI used to store the generated images.""",
+  )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include a reason for filtered-out images in the
@@ -6930,6 +6934,9 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
+
+  output_gcs_uri: Optional[str]
+  """Cloud Storage URI used to store the generated images."""
 
   include_rai_reason: Optional[bool]
   """Whether to include a reason for filtered-out images in the
@@ -12334,6 +12341,10 @@ class UpscaleImageConfig(_common.BaseModel):
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
+  output_gcs_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage URI used to store the generated images.""",
+  )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include a reason for filtered-out images in the
@@ -12373,6 +12384,9 @@ class UpscaleImageConfigDict(TypedDict, total=False):
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
+
+  output_gcs_uri: Optional[str]
+  """Cloud Storage URI used to store the generated images."""
 
   include_rai_reason: Optional[bool]
   """Whether to include a reason for filtered-out images in the

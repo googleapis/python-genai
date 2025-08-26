@@ -24,6 +24,7 @@ import pytest
 from ... import types
 from .. import pytest_helper
 
+IMAGEN_MODEL_LATEST = 'imagen-3.0-generate-002'
 
 IMAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/bridge1.png')
@@ -34,7 +35,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_upscale_no_config',
         exception_if_mldev='only supported in the Vertex AI client',
         parameters=types.UpscaleImageParameters(
-            model='imagen-3.0-generate-001',
+            model=IMAGEN_MODEL_LATEST,
             image=types.Image.from_file(location=IMAGE_FILE_PATH),
             upscale_factor='x2',
         ),
@@ -43,7 +44,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_upscale',
         exception_if_mldev='only supported in the Vertex AI client',
         parameters=types.UpscaleImageParameters(
-            model='imagen-3.0-generate-001',
+            model=IMAGEN_MODEL_LATEST,
             image=types.Image.from_file(location=IMAGE_FILE_PATH),
             upscale_factor='x2',
             config={
@@ -52,6 +53,18 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'output_compression_quality': 80,
                 'enhance_input_image': True,
                 'image_preservation_factor': 0.6,
+            },
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_upscale_gcs',
+        exception_if_mldev='only supported in the Vertex AI client',
+        parameters=types.UpscaleImageParameters(
+            model=IMAGEN_MODEL_LATEST,
+            image=types.Image.from_file(location=IMAGE_FILE_PATH),
+            upscale_factor='x2',
+            config={
+                'output_gcs_uri': 'gs://genai-sdk-tests/temp/images/',
             },
         ),
     ),
@@ -70,7 +83,7 @@ def test_upscale_extra_config_parameters(client):
   try:
     # User is not allowed to set mode or number_of_images
     client.models.upscale_image(
-        model='imagen-3.0-generate-001',
+        model=IMAGEN_MODEL_LATEST,
         image=types.Image.from_file(location=IMAGE_FILE_PATH),
         upscale_factor='x2',
         config={
@@ -89,7 +102,7 @@ def test_upscale_extra_config_parameters(client):
 async def test_upscale_async(client):
   with pytest_helper.exception_if_mldev(client, ValueError):
     response = await client.aio.models.upscale_image(
-        model='imagen-3.0-generate-001',
+        model=IMAGEN_MODEL_LATEST,
         image=types.Image.from_file(location=IMAGE_FILE_PATH),
         upscale_factor='x2',
         config={
@@ -104,13 +117,27 @@ async def test_upscale_async(client):
 
 
 @pytest.mark.asyncio
+async def test_upscale_gcs_async(client):
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    response = await client.aio.models.upscale_image(
+        model=IMAGEN_MODEL_LATEST,
+        image=types.Image.from_file(location=IMAGE_FILE_PATH),
+        upscale_factor='x2',
+        config={
+            'output_gcs_uri': 'gs://genai-sdk-tests/temp/images/',
+        },
+    )
+    assert response.generated_images[0].image.gcs_uri
+
+
+@pytest.mark.asyncio
 async def test_upscale_extra_config_parameters_async(client):
   # MLDev currently does not support upscale_image, but the ValidationError
   # occurs before the ValueError.
   try:
     # User is not allowed to set mode or number_of_images
     await client.aio.models.upscale_image(
-        model='imagen-3.0-generate-001',
+        model=IMAGEN_MODEL_LATEST,
         image=types.Image.from_file(location=IMAGE_FILE_PATH),
         upscale_factor='x2',
         config={

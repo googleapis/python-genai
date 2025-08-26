@@ -2830,6 +2830,13 @@ def _UpscaleImageAPIConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
+  if getv(from_object, ['output_gcs_uri']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'storageUri'],
+        getv(from_object, ['output_gcs_uri']),
+    )
+
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
@@ -6889,6 +6896,7 @@ class Models(_api_module.BaseModule):
       config_dct = dict(config)
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
+        output_gcs_uri=config_dct.get('output_gcs_uri', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
@@ -8764,6 +8772,7 @@ class AsyncModels(_api_module.BaseModule):
       config_dct = dict(config)
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
+        output_gcs_uri=config_dct.get('output_gcs_uri', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
