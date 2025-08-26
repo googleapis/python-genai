@@ -471,6 +471,21 @@ class ReplayApiClient(BaseApiClient):
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
+    # The sdk_http_response.body has format in the string, need to get rid of
+    # the format information before comparing.
+    if isinstance(expected, dict):
+      if 'sdk_http_response' in expected and isinstance(
+          expected['sdk_http_response'], dict
+      ):
+        if 'body' in expected['sdk_http_response']:
+          raw_body = expected['sdk_http_response']['body']
+          print('raw_body length: ', len(raw_body))
+          print('raw_body: ', raw_body)
+          if isinstance(raw_body, str) and raw_body != '':
+            raw_body = json.loads(raw_body)
+            raw_body = json.dumps(raw_body)
+            expected['sdk_http_response']['body'] = raw_body
+
     assert (
         actual == expected
     ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
