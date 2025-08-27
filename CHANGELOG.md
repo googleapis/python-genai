@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.32.0](https://github.com/googleapis/python-genai/compare/v1.31.0...v1.32.0) (2025-08-27)
+
+
+### Features
+
+* Add `sdkHttpResponse.headers` to *Delete responses. ([0101d47](https://github.com/googleapis/python-genai/commit/0101d47a2cdb9418c15403a24063e489c5c551e1))
+* Add add_watermark field for recontext_image (Virtual Try-On, Product Recontext) ([0428877](https://github.com/googleapis/python-genai/commit/0428877737218a06315538747c5e852d76192e2a))
+* Add GenerateContentResponse.parts, Part.as_image(), and Blob.as_image() ([75c0955](https://github.com/googleapis/python-genai/commit/75c0955f0c1faa2db12b878d7359b97f660210a0))
+* Add output_gcs_uri to Imagen upscale_image ([3fecf29](https://github.com/googleapis/python-genai/commit/3fecf29f3334af545b3da4c8e9003c4f1ff7a2ce))
+* Add the response body for generateContent ([8cc4754](https://github.com/googleapis/python-genai/commit/8cc475420f4c1a3339cd226a72b820d077a2e8b9))
+* Add the response body for generateContent ([917cc2c](https://github.com/googleapis/python-genai/commit/917cc2c2b0bcf434113255f7df01e93db061e4af))
+* Add VALIDATED mode into FunctionCallingConfigMode ([f6bf934](https://github.com/googleapis/python-genai/commit/f6bf93426dbb64c4dc688e68b2591d827a28c566))
+* Add VideoGenerationReferenceType enum for generate_videos ([cd53aff](https://github.com/googleapis/python-genai/commit/cd53aff2b34fcf13807557b06c8af93cc1eb61b6))
+* Support GenerateVideosSource for Veo GenerateVideos ([a6c2bb7](https://github.com/googleapis/python-genai/commit/a6c2bb746d13938dfb4de6c2dd7506d0652c62c4))
+* Support tunings.cancel in the genai SDK for Python, Java, JS, and Go ([ffd8b06](https://github.com/googleapis/python-genai/commit/ffd8b0662424821b91fcaa7e4899f1fe48486d7f))
+
+
+### Documentation
+
+* Fix typo in README ([0cef3e6](https://github.com/googleapis/python-genai/commit/0cef3e66f7a19054bd1bd2f98232de6da5d9b023))
+* Prompt and schema fix for json schema sample ([6efd242](https://github.com/googleapis/python-genai/commit/6efd242b287e8585c871155a2ff3b53db3de444b))
+* Regenerate docs for 1.31.0 ([51903d4](https://github.com/googleapis/python-genai/commit/51903d46897e5ca5dafe7f4418980e6a0d6e91ee))
+* Update TokensInfo docstring ([921afa1](https://github.com/googleapis/python-genai/commit/921afa101cb4026642b73cf3fd3e874381df07f9))
+* Updating Imagen 4 code snippet ([630262b](https://github.com/googleapis/python-genai/commit/630262b0512ea386c447d0f81a03d2e24380fc86))
+* Updating Veo model to Veo 3 and adding instruction to edit images using the native image-out model (codegen instructions). ([b34a5c6](https://github.com/googleapis/python-genai/commit/b34a5c6f35db4c3e1780991861c7bc54da793413))
+
 ## [1.31.0](https://github.com/googleapis/python-genai/compare/v1.30.0...v1.31.0) (2025-08-18)
 
 
