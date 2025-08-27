@@ -539,7 +539,7 @@ def test_sync_stream_with_non_text_modality(client):
     chunks += 1
     if chunk.candidates[0].finish_reason is not None:
       continue
-    for part in chunk.candidates[0].content.parts:
+    for part in chunk.parts:
       assert part.text is not None or part.inline_data is not None
 
   assert chunks > 2
@@ -592,7 +592,7 @@ async def test_async_stream_with_non_text_modality(client):
     chunks += 1
     if chunk.candidates[0].finish_reason is not None:
       continue
-    for part in chunk.candidates[0].content.parts:
+    for part in chunk.parts:
       assert part.text is not None or part.inline_data is not None
 
   assert chunks > 2
@@ -1856,7 +1856,7 @@ def test_json_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1882,7 +1882,7 @@ def test_pydantic_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1973,7 +1973,6 @@ def test_function(client):
       },
   )
   assert '100' in response.text
-
 
 def test_invalid_input_without_transformer(client):
   with pytest.raises(ValidationError) as e:

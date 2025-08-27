@@ -546,9 +546,9 @@ def test_disable_automatic_function_calling_stream(client):
       },
   )
   chunks = 0
-  for part in response:
+  for chunk in response:
     chunks += 1
-    assert part.candidates[0].content.parts[0].function_call is not None
+    assert chunk.parts[0].function_call is not None
 
 
 def test_automatic_function_calling_no_function_response_stream(client):
@@ -578,9 +578,9 @@ async def test_disable_automatic_function_calling_stream_async(client):
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.candidates[0].content.parts[0].function_call is not None
+    assert chunk.parts[0].function_call is not None
 
 
 @pytest.mark.asyncio
@@ -596,9 +596,9 @@ async def test_automatic_function_calling_no_function_response_stream_async(
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
+    assert chunk.text is not None or chunk.candidates[0].finish_reason
 
 
 @pytest.mark.asyncio
@@ -612,9 +612,9 @@ async def test_automatic_function_calling_stream_async(client):
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
+    assert chunk.text is not None or chunk.candidates[0].finish_reason
 
 
 def test_callable_tools_user_disable_afc(client):
@@ -1209,15 +1209,9 @@ async def test_automatic_function_calling_async_with_async_function_stream(
 
   chunk = None
   async for chunk in response:
-    if chunk.candidates[0].content.parts[0].function_call:
-      assert (
-          chunk.candidates[0].content.parts[0].function_call.name
-          == 'get_current_weather_async'
-      )
-      assert (
-          chunk.candidates[0].content.parts[0].function_call.args['city']
-          == 'San Francisco'
-      )
+    if chunk.parts[0].function_call:
+      assert chunk.parts[0].function_call.name == 'get_current_weather_async'
+      assert chunk.parts[0].function_call.args['city'] == 'San Francisco'
 
 
 def test_2_function_with_history(client):

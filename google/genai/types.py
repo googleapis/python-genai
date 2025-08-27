@@ -19,6 +19,7 @@ from abc import ABC, abstractmethod
 import datetime
 from enum import Enum, EnumMeta
 import inspect
+import io
 import json
 import logging
 import sys
@@ -823,6 +824,21 @@ class Blob(_common.BaseModel):
       description="""Required. The IANA standard MIME type of the source data.""",
   )
 
+  def as_image(self) -> Optional['PIL_Image']:
+    """Returns the Blob as a PIL Image, or None if the Blob is not an image."""
+    if (
+        not self.data
+        or not self.mime_type
+        or not self.mime_type.startswith('image/')
+    ):
+      return None
+    if not _is_pillow_image_imported:
+      raise ImportError(
+          'The PIL module is not available. Please install the Pillow'
+          ' package. `pip install pillow`'
+      )
+    return PIL.Image.open(io.BytesIO(self.data))
+
 
 class BlobDict(TypedDict, total=False):
   """Content blob."""
@@ -1081,6 +1097,12 @@ class Part(_common.BaseModel):
   text: Optional[str] = Field(
       default=None, description="""Optional. Text part (can be code)."""
   )
+
+  def as_image(self) -> Optional['PIL_Image']:
+    """Returns the part as a PIL Image, or None if the part is not an image."""
+    if not self.inline_data:
+      return None
+    return self.inline_data.as_image()
 
   @classmethod
   def from_uri(
@@ -5464,6 +5486,23 @@ class GenerateContentResponse(_common.BaseModel):
       )
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
+
+  @property
+  def parts(self) -> Optional[list[Part]]:
+    """Returns the content-parts in the response."""
+    if (
+        not self.candidates
+        or self.candidates[0].content is None
+        or self.candidates[0].content.parts is None
+    ):
+      return None
+    if len(self.candidates) > 1:
+      logger.warning(
+          'Warning: there are multiple candidates in the response, returning'
+          ' parts from the first one.'
+      )
+
+    return self.candidates[0].content.parts
 
   @property
   def text(self) -> Optional[str]:
