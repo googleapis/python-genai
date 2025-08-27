@@ -510,6 +510,7 @@ Google Search can be used as a tool for grounding queries that with up to date
 information from the web.
 
 **Correct**
+
 ```python
 from google import genai
 
