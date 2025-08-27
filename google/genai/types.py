@@ -10240,6 +10240,52 @@ ListTuningJobsResponseOrDict = Union[
 ]
 
 
+class CancelTuningJobConfig(_common.BaseModel):
+  """Optional parameters for tunings.cancel method."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class CancelTuningJobConfigDict(TypedDict, total=False):
+  """Optional parameters for tunings.cancel method."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+
+CancelTuningJobConfigOrDict = Union[
+    CancelTuningJobConfig, CancelTuningJobConfigDict
+]
+
+
+class _CancelTuningJobParameters(_common.BaseModel):
+  """Parameters for the cancel method."""
+
+  name: Optional[str] = Field(
+      default=None, description="""The resource name of the tuning job."""
+  )
+  config: Optional[CancelTuningJobConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
+
+
+class _CancelTuningJobParametersDict(TypedDict, total=False):
+  """Parameters for the cancel method."""
+
+  name: Optional[str]
+  """The resource name of the tuning job."""
+
+  config: Optional[CancelTuningJobConfigDict]
+  """Optional parameters for the request."""
+
+
+_CancelTuningJobParametersOrDict = Union[
+    _CancelTuningJobParameters, _CancelTuningJobParametersDict
+]
+
+
 class TuningExample(_common.BaseModel):
 
   text_input: Optional[str] = Field(

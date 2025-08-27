@@ -87,6 +87,20 @@ def _ListTuningJobsParameters_to_mldev(
   return to_object
 
 
+def _CancelTuningJobParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
+  return to_object
+
+
 def _TuningExample_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -281,6 +295,20 @@ def _ListTuningJobsParameters_to_vertex(
             getv(from_object, ['config']), to_object
         ),
     )
+
+  return to_object
+
+
+def _CancelTuningJobParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -1060,6 +1088,59 @@ class Tunings(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  def cancel(
+      self,
+      *,
+      name: str,
+      config: Optional[types.CancelTuningJobConfigOrDict] = None,
+  ) -> None:
+    """Cancels a tuning job.
+
+    Args:
+      name (str): TuningJob resource name.
+    """
+
+    parameter_model = types._CancelTuningJobParameters(
+        name=name,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+
+    if self._api_client.vertexai:
+      request_dict = _CancelTuningJobParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{name}:cancel'.format_map(request_url_dict)
+      else:
+        path = '{name}:cancel'
+    else:
+      request_dict = _CancelTuningJobParameters_to_mldev(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{name}:cancel'.format_map(request_url_dict)
+      else:
+        path = '{name}:cancel'
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
   def _tune(
       self,
       *,
@@ -1456,6 +1537,59 @@ class AsyncTunings(_api_module.BaseModule):
     )
     self._api_client._verify_response(return_value)
     return return_value
+
+  async def cancel(
+      self,
+      *,
+      name: str,
+      config: Optional[types.CancelTuningJobConfigOrDict] = None,
+  ) -> None:
+    """Cancels a tuning job asynchronously.
+
+    Args:
+      name (str): A TuningJob resource name.
+    """
+
+    parameter_model = types._CancelTuningJobParameters(
+        name=name,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+
+    if self._api_client.vertexai:
+      request_dict = _CancelTuningJobParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{name}:cancel'.format_map(request_url_dict)
+      else:
+        path = '{name}:cancel'
+    else:
+      request_dict = _CancelTuningJobParameters_to_mldev(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{name}:cancel'.format_map(request_url_dict)
+      else:
+        path = '{name}:cancel'
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
 
   async def _tune(
       self,
