@@ -179,7 +179,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 reference_images=[
                     types.VideoGenerationReferenceImage(
                         image=GCS_IMAGE,
-                        reference_type="style",
+                        reference_type=types.VideoGenerationReferenceType.STYLE,
                     )
                 ],
             ),
@@ -341,8 +341,8 @@ def test_reference_images_to_video_poll(client):
           reference_images=[
               types.VideoGenerationReferenceImage(
                   image=GCS_IMAGE,
-                  reference_type="style",
-              )
+                  reference_type=types.VideoGenerationReferenceType.STYLE,
+              ),
           ],
       ),
   )

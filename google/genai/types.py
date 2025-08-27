@@ -597,6 +597,18 @@ class SegmentMode(_common.CaseInSensitiveEnum):
   INTERACTIVE = 'INTERACTIVE'
 
 
+class VideoGenerationReferenceType(_common.CaseInSensitiveEnum):
+  """Enum for the reference type of a video generation reference image."""
+
+  ASSET = 'ASSET'
+  """A reference image that provides assets to the generated video,
+      such as the scene, an object, a character, etc."""
+  STYLE = 'STYLE'
+  """A reference image that provides aesthetics including colors,
+      lighting, texture, etc., to be used as the style of the generated video,
+      such as 'anime', 'photography', 'origami', etc."""
+
+
 class VideoCompressionQuality(_common.CaseInSensitiveEnum):
   """Enum that controls the compression quality of the generated videos."""
 
@@ -8449,11 +8461,10 @@ class VideoGenerationReferenceImage(_common.BaseModel):
       description="""The reference image.
       """,
   )
-  reference_type: Optional[str] = Field(
+  reference_type: Optional[VideoGenerationReferenceType] = Field(
       default=None,
       description="""The type of the reference image, which defines how the reference
-      image will be used to generate the video. Supported values are 'asset'
-      or 'style'.""",
+      image will be used to generate the video.""",
   )
 
 
@@ -8464,10 +8475,9 @@ class VideoGenerationReferenceImageDict(TypedDict, total=False):
   """The reference image.
       """
 
-  reference_type: Optional[str]
+  reference_type: Optional[VideoGenerationReferenceType]
   """The type of the reference image, which defines how the reference
-      image will be used to generate the video. Supported values are 'asset'
-      or 'style'."""
+      image will be used to generate the video."""
 
 
 VideoGenerationReferenceImageOrDict = Union[
