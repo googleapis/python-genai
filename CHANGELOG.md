@@ -9,8 +9,6 @@
 * Add add_watermark field for recontext_image (Virtual Try-On, Product Recontext) ([0428877](https://github.com/googleapis/python-genai/commit/0428877737218a06315538747c5e852d76192e2a))
 * Add GenerateContentResponse.parts, Part.as_image(), and Blob.as_image() ([75c0955](https://github.com/googleapis/python-genai/commit/75c0955f0c1faa2db12b878d7359b97f660210a0))
 * Add output_gcs_uri to Imagen upscale_image ([3fecf29](https://github.com/googleapis/python-genai/commit/3fecf29f3334af545b3da4c8e9003c4f1ff7a2ce))
-* Add the response body for generateContent ([8cc4754](https://github.com/googleapis/python-genai/commit/8cc475420f4c1a3339cd226a72b820d077a2e8b9))
-* Add the response body for generateContent ([917cc2c](https://github.com/googleapis/python-genai/commit/917cc2c2b0bcf434113255f7df01e93db061e4af))
 * Add VALIDATED mode into FunctionCallingConfigMode ([f6bf934](https://github.com/googleapis/python-genai/commit/f6bf93426dbb64c4dc688e68b2591d827a28c566))
 * Add VideoGenerationReferenceType enum for generate_videos ([cd53aff](https://github.com/googleapis/python-genai/commit/cd53aff2b34fcf13807557b06c8af93cc1eb61b6))
 * Support GenerateVideosSource for Veo GenerateVideos ([a6c2bb7](https://github.com/googleapis/python-genai/commit/a6c2bb746d13938dfb4de6c2dd7506d0652c62c4))
