@@ -3901,6 +3901,10 @@ class GenerateContentConfig(_common.BaseModel):
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
+  should_return_http_response: Optional[bool] = Field(
+      default=None,
+      description=""" If true, the raw HTTP response will be returned in the 'sdk_http_response' field.""",
+  )
   system_instruction: Optional[ContentUnion] = Field(
       default=None,
       description="""Instructions for the model to steer it toward better performance.
@@ -4114,6 +4118,9 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
+
+  should_return_http_response: Optional[bool]
+  """ If true, the raw HTTP response will be returned in the 'sdk_http_response' field."""
 
   system_instruction: Optional[ContentUnionDict]
   """Instructions for the model to steer it toward better performance.

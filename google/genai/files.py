@@ -434,6 +434,7 @@ class Files(_api_module.BaseModule):
         config, 'should_return_http_response', None
     ):
       return_value = types.CreateFileResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
       return return_value
 
     response_dict = '' if not response.body else json.loads(response.body)
@@ -916,6 +917,7 @@ class AsyncFiles(_api_module.BaseModule):
         config, 'should_return_http_response', None
     ):
       return_value = types.CreateFileResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
       return return_value
 
     response_dict = '' if not response.body else json.loads(response.body)
