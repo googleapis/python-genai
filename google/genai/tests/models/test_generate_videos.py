@@ -26,6 +26,8 @@ from .. import pytest_helper
 
 VEO_MODEL_LATEST = "veo-2.0-generate-001"
 
+OUTPUT_GCS_URI = "gs://genai-sdk-tests/temp/videos/"
+
 GCS_IMAGE = types.Image(
     gcs_uri="gs://cloud-samples-data/vertex-ai/llm/prompts/landmark1.png",
     # Required
@@ -59,9 +61,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             prompt="A neon hologram of a cat driving at top speed",
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
-                output_gcs_uri=(
-                    "gs://unified-genai-tests/tmp/genai/video/outputs"
-                ),
+                output_gcs_uri=OUTPUT_GCS_URI,
                 fps=30,
                 duration_seconds=6,
                 seed=1,
@@ -124,9 +124,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
-                output_gcs_uri=(
-                    "gs://unified-genai-tests/tmp/genai/video/outputs"
-                ),
+                output_gcs_uri=OUTPUT_GCS_URI,
             ),
         ),
         exception_if_mldev=(
@@ -145,9 +143,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
-                output_gcs_uri=(
-                    "gs://unified-genai-tests/tmp/genai/video/outputs"
-                ),
+                output_gcs_uri=OUTPUT_GCS_URI,
             ),
         ),
         exception_if_mldev=(
@@ -175,7 +171,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model="veo-2.0-generate-exp",
             prompt="Rain",
             config=types.GenerateVideosConfig(
-                output_gcs_uri="gs://genai-sdk-tests/temp/videos/",
+                output_gcs_uri=OUTPUT_GCS_URI,
                 reference_images=[
                     types.VideoGenerationReferenceImage(
                         image=GCS_IMAGE,
@@ -203,9 +199,7 @@ def test_text_to_video_poll(client):
       model=VEO_MODEL_LATEST,
       prompt="A neon hologram of a cat driving at top speed",
       config=types.GenerateVideosConfig(
-          output_gcs_uri="gs://unified-genai-tests/tmp/genai/video/outputs"
-          if client.vertexai
-          else None,
+          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
       ),
   )
   while not operation.done:
@@ -218,12 +212,11 @@ def test_text_to_video_poll(client):
 
 
 def test_image_to_video_poll(client):
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs" if client.vertexai else None
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
       image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
       ),
   )
   while not operation.done:
@@ -236,13 +229,12 @@ def test_image_to_video_poll(client):
 
 
 def test_text_and_image_to_video_poll(client):
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs" if client.vertexai else None
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
       prompt="Lightning storm",
       image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
       ),
   )
   while not operation.done:
@@ -258,7 +250,6 @@ def test_video_to_video_poll(client):
   # Video extension is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs"
 
   operation = client.models.generate_videos(
       model="veo-2.0-generate-exp",
@@ -266,7 +257,7 @@ def test_video_to_video_poll(client):
           uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
       ),
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI,
       ),
   )
   while not operation.done:
@@ -282,7 +273,6 @@ def test_text_and_video_to_video_poll(client):
   # Video extension is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs"
 
   operation = client.models.generate_videos(
       model="veo-2.0-generate-exp",
@@ -291,7 +281,7 @@ def test_text_and_video_to_video_poll(client):
           uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
       ),
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI,
       ),
   )
   while not operation.done:
@@ -307,14 +297,13 @@ def test_image_to_video_frame_interpolation_poll(client):
   # Video extension is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs"
 
   operation = client.models.generate_videos(
       model="veo-2.0-generate-exp",
       prompt="Rain",
       image=GCS_IMAGE,
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI,
           last_frame=GCS_IMAGE2,
       ),
   )
@@ -331,13 +320,12 @@ def test_reference_images_to_video_poll(client):
   # Reference images to Video is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://genai-sdk-tests/temp/videos/"
 
   operation = client.models.generate_videos(
       model="veo-2.0-generate-exp",
       prompt="Rain",
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI,
           reference_images=[
               types.VideoGenerationReferenceImage(
                   image=GCS_IMAGE,
@@ -389,9 +377,7 @@ async def test_text_to_video_poll_async(client):
       model=VEO_MODEL_LATEST,
       prompt="A neon hologram of a cat driving at top speed",
       config=types.GenerateVideosConfig(
-          output_gcs_uri="gs://unified-genai-tests/tmp/genai/video/outputs"
-          if client.vertexai
-          else None,
+          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
       ),
   )
   while not operation.done:

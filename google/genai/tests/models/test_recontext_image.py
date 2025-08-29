@@ -16,8 +16,6 @@
 
 """Tests for recontext_image."""
 
-import os
-
 import pytest
 
 from ... import types

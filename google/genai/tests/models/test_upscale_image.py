@@ -47,13 +47,13 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=IMAGEN_MODEL_LATEST,
             image=types.Image.from_file(location=IMAGE_FILE_PATH),
             upscale_factor='x2',
-            config={
-                'include_rai_reason': True,
-                'output_mime_type': 'image/jpeg',
-                'output_compression_quality': 80,
-                'enhance_input_image': True,
-                'image_preservation_factor': 0.6,
-            },
+            config=types.UpscaleImageConfig(
+                include_rai_reason=True,
+                output_mime_type='image/jpeg',
+                output_compression_quality=80,
+                enhance_input_image=True,
+                image_preservation_factor=0.6,
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -63,9 +63,9 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=IMAGEN_MODEL_LATEST,
             image=types.Image.from_file(location=IMAGE_FILE_PATH),
             upscale_factor='x2',
-            config={
-                'output_gcs_uri': 'gs://genai-sdk-tests/temp/images/',
-            },
+            config=types.UpscaleImageConfig(
+                output_gcs_uri='gs://genai-sdk-tests/temp/images/',
+            ),
         ),
     ),
 ]
@@ -105,13 +105,13 @@ async def test_upscale_async(client):
         model=IMAGEN_MODEL_LATEST,
         image=types.Image.from_file(location=IMAGE_FILE_PATH),
         upscale_factor='x2',
-        config={
-            'include_rai_reason': True,
-            'output_mime_type': 'image/jpeg',
-            'output_compression_quality': 80,
-            'enhance_input_image': True,
-            'image_preservation_factor': 0.6,
-        },
+        config=types.UpscaleImageConfig(
+            include_rai_reason=True,
+            output_mime_type='image/jpeg',
+            output_compression_quality=80,
+            enhance_input_image=True,
+            image_preservation_factor=0.6,
+        ),
     )
     assert response.generated_images[0].image.image_bytes
 
@@ -123,9 +123,9 @@ async def test_upscale_gcs_async(client):
         model=IMAGEN_MODEL_LATEST,
         image=types.Image.from_file(location=IMAGE_FILE_PATH),
         upscale_factor='x2',
-        config={
-            'output_gcs_uri': 'gs://genai-sdk-tests/temp/images/',
-        },
+        config=types.UpscaleImageConfig(
+            output_gcs_uri='gs://genai-sdk-tests/temp/images/',
+        ),
     )
     assert response.generated_images[0].image.gcs_uri
 

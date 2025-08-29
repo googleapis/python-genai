@@ -576,7 +576,7 @@ class SubjectReferenceType(_common.CaseInSensitiveEnum):
 
 
 class EditMode(_common.CaseInSensitiveEnum):
-  """Enum representing the Imagen 3 Edit mode."""
+  """Enum representing the editing mode."""
 
   EDIT_MODE_DEFAULT = 'EDIT_MODE_DEFAULT'
   EDIT_MODE_INPAINT_REMOVAL = 'EDIT_MODE_INPAINT_REMOVAL'
@@ -6001,91 +6001,69 @@ class GenerateImagesConfig(_common.BaseModel):
   )
   output_gcs_uri: Optional[str] = Field(
       default=None,
-      description="""Cloud Storage URI used to store the generated images.
-      """,
+      description="""Cloud Storage URI used to store the generated images.""",
   )
   negative_prompt: Optional[str] = Field(
       default=None,
-      description="""Description of what to discourage in the generated images.
-      """,
+      description="""Description of what to discourage in the generated images.""",
   )
   number_of_images: Optional[int] = Field(
-      default=None,
-      description="""Number of images to generate.
-      """,
+      default=None, description="""Number of images to generate."""
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
       description="""Aspect ratio of the generated images. Supported values are
-      "1:1", "3:4", "4:3", "9:16", and "16:9".
-      """,
+      "1:1", "3:4", "4:3", "9:16", and "16:9".""",
   )
   guidance_scale: Optional[float] = Field(
       default=None,
       description="""Controls how much the model adheres to the text prompt. Large
       values increase output and prompt alignment, but may compromise image
-      quality.
-      """,
+      quality.""",
   )
   seed: Optional[int] = Field(
       default=None,
       description="""Random seed for image generation. This is not available when
-      ``add_watermark`` is set to true.
-      """,
+      ``add_watermark`` is set to true.""",
   )
   safety_filter_level: Optional[SafetyFilterLevel] = Field(
-      default=None,
-      description="""Filter level for safety filtering.
-      """,
+      default=None, description="""Filter level for safety filtering."""
   )
   person_generation: Optional[PersonGeneration] = Field(
-      default=None,
-      description="""Allows generation of people by the model.
-      """,
+      default=None, description="""Allows generation of people by the model."""
   )
   include_safety_attributes: Optional[bool] = Field(
       default=None,
       description="""Whether to report the safety scores of each generated image and
-      the positive prompt in the response.
-      """,
+      the positive prompt in the response.""",
   )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include the Responsible AI filter reason if the image
-      is filtered out of the response.
-      """,
+      is filtered out of the response.""",
   )
   language: Optional[ImagePromptLanguage] = Field(
-      default=None,
-      description="""Language of the text in the prompt.
-      """,
+      default=None, description="""Language of the text in the prompt."""
   )
   output_mime_type: Optional[str] = Field(
-      default=None,
-      description="""MIME type of the generated image.
-      """,
+      default=None, description="""MIME type of the generated image."""
   )
   output_compression_quality: Optional[int] = Field(
       default=None,
       description="""Compression quality of the generated image (for ``image/jpeg``
-      only).
-      """,
+      only).""",
   )
   add_watermark: Optional[bool] = Field(
       default=None,
-      description="""Whether to add a watermark to the generated images.
-      """,
+      description="""Whether to add a watermark to the generated images.""",
   )
   image_size: Optional[str] = Field(
       default=None,
       description="""The size of the largest dimension of the generated image.
-      Supported sizes are 1K and 2K (not supported for Imagen 3 models).
-      """,
+      Supported sizes are 1K and 2K (not supported for Imagen 3 models).""",
   )
   enhance_prompt: Optional[bool] = Field(
-      default=None,
-      description="""Whether to use the prompt rewriting logic.
-      """,
+      default=None, description="""Whether to use the prompt rewriting logic."""
   )
 
 
@@ -6096,76 +6074,60 @@ class GenerateImagesConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   output_gcs_uri: Optional[str]
-  """Cloud Storage URI used to store the generated images.
-      """
+  """Cloud Storage URI used to store the generated images."""
 
   negative_prompt: Optional[str]
-  """Description of what to discourage in the generated images.
-      """
+  """Description of what to discourage in the generated images."""
 
   number_of_images: Optional[int]
-  """Number of images to generate.
-      """
+  """Number of images to generate."""
 
   aspect_ratio: Optional[str]
   """Aspect ratio of the generated images. Supported values are
-      "1:1", "3:4", "4:3", "9:16", and "16:9".
-      """
+      "1:1", "3:4", "4:3", "9:16", and "16:9"."""
 
   guidance_scale: Optional[float]
   """Controls how much the model adheres to the text prompt. Large
       values increase output and prompt alignment, but may compromise image
-      quality.
-      """
+      quality."""
 
   seed: Optional[int]
   """Random seed for image generation. This is not available when
-      ``add_watermark`` is set to true.
-      """
+      ``add_watermark`` is set to true."""
 
   safety_filter_level: Optional[SafetyFilterLevel]
-  """Filter level for safety filtering.
-      """
+  """Filter level for safety filtering."""
 
   person_generation: Optional[PersonGeneration]
-  """Allows generation of people by the model.
-      """
+  """Allows generation of people by the model."""
 
   include_safety_attributes: Optional[bool]
   """Whether to report the safety scores of each generated image and
-      the positive prompt in the response.
-      """
+      the positive prompt in the response."""
 
   include_rai_reason: Optional[bool]
   """Whether to include the Responsible AI filter reason if the image
-      is filtered out of the response.
-      """
+      is filtered out of the response."""
 
   language: Optional[ImagePromptLanguage]
-  """Language of the text in the prompt.
-      """
+  """Language of the text in the prompt."""
 
   output_mime_type: Optional[str]
-  """MIME type of the generated image.
-      """
+  """MIME type of the generated image."""
 
   output_compression_quality: Optional[int]
   """Compression quality of the generated image (for ``image/jpeg``
-      only).
-      """
+      only)."""
 
   add_watermark: Optional[bool]
-  """Whether to add a watermark to the generated images.
-      """
+  """Whether to add a watermark to the generated images."""
 
   image_size: Optional[str]
   """The size of the largest dimension of the generated image.
-      Supported sizes are 1K and 2K (not supported for Imagen 3 models).
-      """
+      Supported sizes are 1K and 2K (not supported for Imagen 3 models)."""
 
   enhance_prompt: Optional[bool]
-  """Whether to use the prompt rewriting logic.
-      """
+  """Whether to use the prompt rewriting logic."""
 
 
 GenerateImagesConfigOrDict = Union[
@@ -6220,14 +6182,12 @@ class Image(_common.BaseModel):
   gcs_uri: Optional[str] = Field(
       default=None,
       description="""The Cloud Storage URI of the image. ``Image`` can contain a value
-      for this field or the ``image_bytes`` field but not both.
-      """,
+      for this field or the ``image_bytes`` field but not both.""",
   )
   image_bytes: Optional[bytes] = Field(
       default=None,
       description="""The image bytes data. ``Image`` can contain a value for this field
-      or the ``gcs_uri`` field but not both.
-      """,
+      or the ``gcs_uri`` field but not both.""",
   )
   mime_type: Optional[str] = Field(
       default=None, description="""The MIME type of the image."""
@@ -6356,13 +6316,11 @@ class ImageDict(TypedDict, total=False):
 
   gcs_uri: Optional[str]
   """The Cloud Storage URI of the image. ``Image`` can contain a value
-      for this field or the ``image_bytes`` field but not both.
-      """
+      for this field or the ``image_bytes`` field but not both."""
 
   image_bytes: Optional[bytes]
   """The image bytes data. ``Image`` can contain a value for this field
-      or the ``gcs_uri`` field but not both.
-      """
+      or the ``gcs_uri`` field but not both."""
 
   mime_type: Optional[str]
   """The MIME type of the image."""
@@ -6375,19 +6333,13 @@ class SafetyAttributes(_common.BaseModel):
   """Safety attributes of a GeneratedImage or the user-provided prompt."""
 
   categories: Optional[list[str]] = Field(
-      default=None,
-      description="""List of RAI categories.
-      """,
+      default=None, description="""List of RAI categories."""
   )
   scores: Optional[list[float]] = Field(
-      default=None,
-      description="""List of scores of each categories.
-      """,
+      default=None, description="""List of scores of each categories."""
   )
   content_type: Optional[str] = Field(
-      default=None,
-      description="""Internal use only.
-      """,
+      default=None, description="""Internal use only."""
   )
 
 
@@ -6395,16 +6347,13 @@ class SafetyAttributesDict(TypedDict, total=False):
   """Safety attributes of a GeneratedImage or the user-provided prompt."""
 
   categories: Optional[list[str]]
-  """List of RAI categories.
-      """
+  """List of RAI categories."""
 
   scores: Optional[list[float]]
-  """List of scores of each categories.
-      """
+  """List of scores of each categories."""
 
   content_type: Optional[str]
-  """Internal use only.
-      """
+  """Internal use only."""
 
 
 SafetyAttributesOrDict = Union[SafetyAttributes, SafetyAttributesDict]
@@ -6414,27 +6363,22 @@ class GeneratedImage(_common.BaseModel):
   """An output image."""
 
   image: Optional[Image] = Field(
-      default=None,
-      description="""The output image data.
-      """,
+      default=None, description="""The output image data."""
   )
   rai_filtered_reason: Optional[str] = Field(
       default=None,
       description="""Responsible AI filter reason if the image is filtered out of the
-      response.
-      """,
+      response.""",
   )
   safety_attributes: Optional[SafetyAttributes] = Field(
       default=None,
       description="""Safety attributes of the image. Lists of RAI categories and their
-      scores of each content.
-      """,
+      scores of each content.""",
   )
   enhanced_prompt: Optional[str] = Field(
       default=None,
       description="""The rewritten prompt used for the image generation if the prompt
-      enhancer is enabled.
-      """,
+      enhancer is enabled.""",
   )
 
 
@@ -6442,23 +6386,19 @@ class GeneratedImageDict(TypedDict, total=False):
   """An output image."""
 
   image: Optional[ImageDict]
-  """The output image data.
-      """
+  """The output image data."""
 
   rai_filtered_reason: Optional[str]
   """Responsible AI filter reason if the image is filtered out of the
-      response.
-      """
+      response."""
 
   safety_attributes: Optional[SafetyAttributesDict]
   """Safety attributes of the image. Lists of RAI categories and their
-      scores of each content.
-      """
+      scores of each content."""
 
   enhanced_prompt: Optional[str]
   """The rewritten prompt used for the image generation if the prompt
-      enhancer is enabled.
-      """
+      enhancer is enabled."""
 
 
 GeneratedImageOrDict = Union[GeneratedImage, GeneratedImageDict]
@@ -6471,15 +6411,12 @@ class GenerateImagesResponse(_common.BaseModel):
       default=None, description="""Used to retain the full HTTP response."""
   )
   generated_images: Optional[list[GeneratedImage]] = Field(
-      default=None,
-      description="""List of generated images.
-      """,
+      default=None, description="""List of generated images."""
   )
   positive_prompt_safety_attributes: Optional[SafetyAttributes] = Field(
       default=None,
       description="""Safety attributes of the positive prompt. Only populated if
-      ``include_safety_attributes`` is set to True.
-      """,
+      ``include_safety_attributes`` is set to True.""",
   )
 
   @property
@@ -6501,13 +6438,11 @@ class GenerateImagesResponseDict(TypedDict, total=False):
   """Used to retain the full HTTP response."""
 
   generated_images: Optional[list[GeneratedImageDict]]
-  """List of generated images.
-      """
+  """List of generated images."""
 
   positive_prompt_safety_attributes: Optional[SafetyAttributesDict]
   """Safety attributes of the positive prompt. Only populated if
-      ``include_safety_attributes`` is set to True.
-      """
+      ``include_safety_attributes`` is set to True."""
 
 
 GenerateImagesResponseOrDict = Union[
@@ -6702,80 +6637,61 @@ class EditImageConfig(_common.BaseModel):
   )
   output_gcs_uri: Optional[str] = Field(
       default=None,
-      description="""Cloud Storage URI used to store the generated images.
-      """,
+      description="""Cloud Storage URI used to store the generated images.""",
   )
   negative_prompt: Optional[str] = Field(
       default=None,
-      description="""Description of what to discourage in the generated images.
-      """,
+      description="""Description of what to discourage in the generated images.""",
   )
   number_of_images: Optional[int] = Field(
-      default=None,
-      description="""Number of images to generate.
-      """,
+      default=None, description="""Number of images to generate."""
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
       description="""Aspect ratio of the generated images. Supported values are
-      "1:1", "3:4", "4:3", "9:16", and "16:9".
-      """,
+      "1:1", "3:4", "4:3", "9:16", and "16:9".""",
   )
   guidance_scale: Optional[float] = Field(
       default=None,
       description="""Controls how much the model adheres to the text prompt. Large
       values increase output and prompt alignment, but may compromise image
-      quality.
-      """,
+      quality.""",
   )
   seed: Optional[int] = Field(
       default=None,
       description="""Random seed for image generation. This is not available when
-      ``add_watermark`` is set to true.
-      """,
+      ``add_watermark`` is set to true.""",
   )
   safety_filter_level: Optional[SafetyFilterLevel] = Field(
-      default=None,
-      description="""Filter level for safety filtering.
-      """,
+      default=None, description="""Filter level for safety filtering."""
   )
   person_generation: Optional[PersonGeneration] = Field(
-      default=None,
-      description="""Allows generation of people by the model.
-      """,
+      default=None, description="""Allows generation of people by the model."""
   )
   include_safety_attributes: Optional[bool] = Field(
       default=None,
       description="""Whether to report the safety scores of each generated image and
-      the positive prompt in the response.
-      """,
+      the positive prompt in the response.""",
   )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include the Responsible AI filter reason if the image
-      is filtered out of the response.
-      """,
+      is filtered out of the response.""",
   )
   language: Optional[ImagePromptLanguage] = Field(
-      default=None,
-      description="""Language of the text in the prompt.
-      """,
+      default=None, description="""Language of the text in the prompt."""
   )
   output_mime_type: Optional[str] = Field(
-      default=None,
-      description="""MIME type of the generated image.
-      """,
+      default=None, description="""MIME type of the generated image."""
   )
   output_compression_quality: Optional[int] = Field(
       default=None,
       description="""Compression quality of the generated image (for ``image/jpeg``
-      only).
-      """,
+      only).""",
   )
   add_watermark: Optional[bool] = Field(
       default=None,
-      description="""Whether to add a watermark to the generated images.
-      """,
+      description="""Whether to add a watermark to the generated images.""",
   )
   edit_mode: Optional[EditMode] = Field(
       default=None,
@@ -6795,67 +6711,53 @@ class EditImageConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   output_gcs_uri: Optional[str]
-  """Cloud Storage URI used to store the generated images.
-      """
+  """Cloud Storage URI used to store the generated images."""
 
   negative_prompt: Optional[str]
-  """Description of what to discourage in the generated images.
-      """
+  """Description of what to discourage in the generated images."""
 
   number_of_images: Optional[int]
-  """Number of images to generate.
-      """
+  """Number of images to generate."""
 
   aspect_ratio: Optional[str]
   """Aspect ratio of the generated images. Supported values are
-      "1:1", "3:4", "4:3", "9:16", and "16:9".
-      """
+      "1:1", "3:4", "4:3", "9:16", and "16:9"."""
 
   guidance_scale: Optional[float]
   """Controls how much the model adheres to the text prompt. Large
       values increase output and prompt alignment, but may compromise image
-      quality.
-      """
+      quality."""
 
   seed: Optional[int]
   """Random seed for image generation. This is not available when
-      ``add_watermark`` is set to true.
-      """
+      ``add_watermark`` is set to true."""
 
   safety_filter_level: Optional[SafetyFilterLevel]
-  """Filter level for safety filtering.
-      """
+  """Filter level for safety filtering."""
 
   person_generation: Optional[PersonGeneration]
-  """Allows generation of people by the model.
-      """
+  """Allows generation of people by the model."""
 
   include_safety_attributes: Optional[bool]
   """Whether to report the safety scores of each generated image and
-      the positive prompt in the response.
-      """
+      the positive prompt in the response."""
 
   include_rai_reason: Optional[bool]
   """Whether to include the Responsible AI filter reason if the image
-      is filtered out of the response.
-      """
+      is filtered out of the response."""
 
   language: Optional[ImagePromptLanguage]
-  """Language of the text in the prompt.
-      """
+  """Language of the text in the prompt."""
 
   output_mime_type: Optional[str]
-  """MIME type of the generated image.
-      """
+  """MIME type of the generated image."""
 
   output_compression_quality: Optional[int]
   """Compression quality of the generated image (for ``image/jpeg``
-      only).
-      """
+      only)."""
 
   add_watermark: Optional[bool]
-  """Whether to add a watermark to the generated images.
-      """
+  """Whether to add a watermark to the generated images."""
 
   edit_mode: Optional[EditMode]
   """Describes the editing mode for the request."""
@@ -6956,8 +6858,8 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
   )
   output_compression_quality: Optional[int] = Field(
       default=None,
-      description="""The level of compression if the ``output_mime_type`` is
-      ``image/jpeg``.""",
+      description="""The level of compression. Only applicable if the
+      ``output_mime_type`` is ``image/jpeg``.""",
   )
   enhance_input_image: Optional[bool] = Field(
       default=None,
@@ -6997,8 +6899,8 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
   """The image format that the output should be saved as."""
 
   output_compression_quality: Optional[int]
-  """The level of compression if the ``output_mime_type`` is
-      ``image/jpeg``."""
+  """The level of compression. Only applicable if the
+      ``output_mime_type`` is ``image/jpeg``."""
 
   enhance_input_image: Optional[bool]
   """Whether to add an image enhancing step before upscaling.
@@ -8365,7 +8267,7 @@ class Video(_common.BaseModel):
       default=None, description="""Video bytes."""
   )
   mime_type: Optional[str] = Field(
-      default=None, description="""Video encoding, for example "video/mp4"."""
+      default=None, description="""Video encoding, for example ``video/mp4``."""
   )
 
   @classmethod
@@ -8452,7 +8354,7 @@ class VideoDict(TypedDict, total=False):
   """Video bytes."""
 
   mime_type: Optional[str]
-  """Video encoding, for example "video/mp4"."""
+  """Video encoding, for example ``video/mp4``."""
 
 
 VideoOrDict = Union[Video, VideoDict]
@@ -8469,12 +8371,12 @@ class GenerateVideosSource(_common.BaseModel):
   image: Optional[Image] = Field(
       default=None,
       description="""The input image for generating the videos.
-      Optional if prompt or video is provided.""",
+      Optional if prompt is provided. Not allowed if video is provided.""",
   )
   video: Optional[Video] = Field(
       default=None,
       description="""The input video for video extension use cases.
-      Optional if prompt or image is provided.""",
+      Optional if prompt is provided. Not allowed if image is provided.""",
   )
 
 
@@ -8487,11 +8389,11 @@ class GenerateVideosSourceDict(TypedDict, total=False):
 
   image: Optional[ImageDict]
   """The input image for generating the videos.
-      Optional if prompt or video is provided."""
+      Optional if prompt is provided. Not allowed if video is provided."""
 
   video: Optional[VideoDict]
   """The input video for video extension use cases.
-      Optional if prompt or image is provided."""
+      Optional if prompt is provided. Not allowed if image is provided."""
 
 
 GenerateVideosSourceOrDict = Union[
@@ -8503,9 +8405,7 @@ class VideoGenerationReferenceImage(_common.BaseModel):
   """A reference image for video generation."""
 
   image: Optional[Image] = Field(
-      default=None,
-      description="""The reference image.
-      """,
+      default=None, description="""The reference image."""
   )
   reference_type: Optional[VideoGenerationReferenceType] = Field(
       default=None,
@@ -8518,8 +8418,7 @@ class VideoGenerationReferenceImageDict(TypedDict, total=False):
   """A reference image for video generation."""
 
   image: Optional[ImageDict]
-  """The reference image.
-      """
+  """The reference image."""
 
   reference_type: Optional[VideoGenerationReferenceType]
   """The type of the reference image, which defines how the reference
@@ -8553,27 +8452,35 @@ class GenerateVideosConfig(_common.BaseModel):
   )
   seed: Optional[int] = Field(
       default=None,
-      description="""The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result.""",
+      description="""The RNG seed. If RNG seed is exactly same for each request with
+      unchanged inputs, the prediction results will be consistent. Otherwise,
+      a random RNG seed will be used each time to produce a different
+      result.""",
   )
   aspect_ratio: Optional[str] = Field(
       default=None,
-      description="""The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported.""",
+      description="""The aspect ratio for the generated video. 16:9 (landscape) and
+      9:16 (portrait) are supported.""",
   )
   resolution: Optional[str] = Field(
       default=None,
-      description="""The resolution for the generated video. 720p and 1080p are supported.""",
+      description="""The resolution for the generated video. 720p and 1080p are
+      supported.""",
   )
   person_generation: Optional[str] = Field(
       default=None,
-      description="""Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult.""",
+      description="""Whether allow to generate person videos, and restrict to specific
+      ages. Supported values are: dont_allow, allow_adult.""",
   )
   pubsub_topic: Optional[str] = Field(
       default=None,
-      description="""The pubsub topic where to publish the video generation progress.""",
+      description="""The pubsub topic where to publish the video generation
+      progress.""",
   )
   negative_prompt: Optional[str] = Field(
       default=None,
-      description="""Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video.""",
+      description="""Explicitly state what should not be included in the generated
+      videos.""",
   )
   enhance_prompt: Optional[bool] = Field(
       default=None, description="""Whether to use the prompt rewriting logic."""
@@ -8584,7 +8491,8 @@ class GenerateVideosConfig(_common.BaseModel):
   )
   last_frame: Optional[Image] = Field(
       default=None,
-      description="""Image to use as the last frame of generated videos. Only supported for image to video use cases.""",
+      description="""Image to use as the last frame of generated videos.
+      Only supported for image to video use cases.""",
   )
   reference_images: Optional[list[VideoGenerationReferenceImage]] = Field(
       default=None,
@@ -8619,22 +8527,30 @@ class GenerateVideosConfigDict(TypedDict, total=False):
   """Duration of the clip for video generation in seconds."""
 
   seed: Optional[int]
-  """The RNG seed. If RNG seed is exactly same for each request with unchanged inputs, the prediction results will be consistent. Otherwise, a random RNG seed will be used each time to produce a different result."""
+  """The RNG seed. If RNG seed is exactly same for each request with
+      unchanged inputs, the prediction results will be consistent. Otherwise,
+      a random RNG seed will be used each time to produce a different
+      result."""
 
   aspect_ratio: Optional[str]
-  """The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are supported."""
+  """The aspect ratio for the generated video. 16:9 (landscape) and
+      9:16 (portrait) are supported."""
 
   resolution: Optional[str]
-  """The resolution for the generated video. 720p and 1080p are supported."""
+  """The resolution for the generated video. 720p and 1080p are
+      supported."""
 
   person_generation: Optional[str]
-  """Whether allow to generate person videos, and restrict to specific ages. Supported values are: dont_allow, allow_adult."""
+  """Whether allow to generate person videos, and restrict to specific
+      ages. Supported values are: dont_allow, allow_adult."""
 
   pubsub_topic: Optional[str]
-  """The pubsub topic where to publish the video generation progress."""
+  """The pubsub topic where to publish the video generation
+      progress."""
 
   negative_prompt: Optional[str]
-  """Optional field in addition to the text content. Negative prompts can be explicitly stated here to help generate the video."""
+  """Explicitly state what should not be included in the generated
+      videos."""
 
   enhance_prompt: Optional[bool]
   """Whether to use the prompt rewriting logic."""
@@ -8643,7 +8559,8 @@ class GenerateVideosConfigDict(TypedDict, total=False):
   """Whether to generate audio along with the video."""
 
   last_frame: Optional[ImageDict]
-  """Image to use as the last frame of generated videos. Only supported for image to video use cases."""
+  """Image to use as the last frame of generated videos.
+      Only supported for image to video use cases."""
 
   reference_images: Optional[list[VideoGenerationReferenceImageDict]]
   """The images to use as the references to generate the videos.
@@ -8671,17 +8588,18 @@ class _GenerateVideosParameters(_common.BaseModel):
   )
   prompt: Optional[str] = Field(
       default=None,
-      description="""The text prompt for generating the videos. Optional for image to video use cases.""",
+      description="""The text prompt for generating the videos.
+      Optional if image or video is provided.""",
   )
   image: Optional[Image] = Field(
       default=None,
       description="""The input image for generating the videos.
-      Optional if prompt or video is provided.""",
+      Optional if prompt is provided. Not allowed if video is provided.""",
   )
   video: Optional[Video] = Field(
       default=None,
       description="""The input video for video extension use cases.
-      Optional if prompt or image is provided.""",
+      Optional if prompt is provided. Not allowed if image is provided.""",
   )
   source: Optional[GenerateVideosSource] = Field(
       default=None,
@@ -8700,15 +8618,16 @@ class _GenerateVideosParametersDict(TypedDict, total=False):
     <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
 
   prompt: Optional[str]
-  """The text prompt for generating the videos. Optional for image to video use cases."""
+  """The text prompt for generating the videos.
+      Optional if image or video is provided."""
 
   image: Optional[ImageDict]
   """The input image for generating the videos.
-      Optional if prompt or video is provided."""
+      Optional if prompt is provided. Not allowed if video is provided."""
 
   video: Optional[VideoDict]
   """The input video for video extension use cases.
-      Optional if prompt or image is provided."""
+      Optional if prompt is provided. Not allowed if image is provided."""
 
   source: Optional[GenerateVideosSourceDict]
   """A set of source input(s) for video generation."""
@@ -12451,8 +12370,8 @@ class UpscaleImageConfig(_common.BaseModel):
   )
   output_compression_quality: Optional[int] = Field(
       default=None,
-      description="""The level of compression if the ``output_mime_type`` is
-      ``image/jpeg``.""",
+      description="""The level of compression. Only applicable if the
+      ``output_mime_type`` is ``image/jpeg``.""",
   )
   enhance_input_image: Optional[bool] = Field(
       default=None,
@@ -12491,8 +12410,8 @@ class UpscaleImageConfigDict(TypedDict, total=False):
   """The image format that the output should be saved as."""
 
   output_compression_quality: Optional[int]
-  """The level of compression if the ``output_mime_type`` is
-      ``image/jpeg``."""
+  """The level of compression. Only applicable if the
+      ``output_mime_type`` is ``image/jpeg``."""
 
   enhance_input_image: Optional[bool]
   """Whether to add an image enhancing step before upscaling.

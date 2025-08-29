@@ -5462,13 +5462,7 @@ class Models(_api_module.BaseModule):
       prompt: str,
       config: Optional[types.GenerateImagesConfigOrDict] = None,
   ) -> types.GenerateImagesResponse:
-    """Generates images based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the images to generate.
-      config (GenerateImagesConfig): Configuration for generation.
-    """
+    """Private method for generating images."""
 
     parameter_model = types._GenerateImagesParameters(
         model=model,
@@ -5541,47 +5535,7 @@ class Models(_api_module.BaseModule):
       reference_images: list[types._ReferenceImageAPIOrDict],
       config: Optional[types.EditImageConfigOrDict] = None,
   ) -> types.EditImageResponse:
-    """Edits an image based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
-        ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
-        reference images for editing.
-      config (EditImageConfig): Configuration for editing.
-
-    Usage:
-
-    .. code-block:: python
-
-      from google.genai.types import RawReferenceImage, MaskReferenceImage
-
-      raw_ref_image = RawReferenceImage(
-        reference_id=1,
-        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
-      )
-
-      mask_ref_image = MaskReferenceImage(
-        reference_id=2,
-        config=types.MaskReferenceConfig(
-            mask_mode='MASK_MODE_FOREGROUND',
-            mask_dilation=0.06,
-        ),
-      )
-      response = client.models.edit_image(
-        model='imagen-3.0-capability-001',
-        prompt='man with dog',
-        reference_images=[raw_ref_image, mask_ref_image],
-        config=types.EditImageConfig(
-            edit_mode= "EDIT_MODE_INPAINT_INSERTION",
-            number_of_images= 1,
-            include_rai_reason= True,
-        )
-      )
-      response.generated_images[0].image.show()
-      # Shows a man with a dog instead of a cat.
-    """
+    """Private method for editing an image."""
 
     parameter_model = types._EditImageParameters(
         model=model,
@@ -5645,14 +5599,7 @@ class Models(_api_module.BaseModule):
       upscale_factor: str,
       config: Optional[types._UpscaleImageAPIConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
-    """Upscales an image.
-
-    Args:
-      model (str): The model to use.
-      image (Image): The input image for upscaling.
-      upscale_factor (str): The factor to upscale the image (x2 or x4).
-      config (_UpscaleImageAPIConfig): Configuration for upscaling.
-    """
+    """Private method for upscaling an image."""
 
     parameter_model = types._UpscaleImageAPIParameters(
         model=model,
@@ -6338,39 +6285,7 @@ class Models(_api_module.BaseModule):
       source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
-    """Generates videos based on an input (text, image, or video) and configuration.
-
-    The following use cases are supported:
-    1. Text to video generation.
-    2a. Image to video generation (additional text prompt is optional).
-    2b. Image to video generation with frame interpolation (specify last_frame
-    in config).
-    3. Video extension (additional text prompt is optional)
-
-    Args:
-      model: The model to use.
-      prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
-      image: The input image for generating the videos. Optional if prompt is
-        provided.
-      video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
-      config: Configuration for generation.
-
-    Usage:
-
-      ```
-      operation = client.models.generate_videos(
-          model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
-      )
-      while not operation.done:
-          time.sleep(10)
-          operation = client.operations.get(operation)
-
-      operation.result.generated_videos[0].video.uri
-      ```
-    """
+    """Private method for generating videos."""
 
     parameter_model = types._GenerateVideosParameters(
         model=model,
@@ -7299,13 +7214,7 @@ class AsyncModels(_api_module.BaseModule):
       prompt: str,
       config: Optional[types.GenerateImagesConfigOrDict] = None,
   ) -> types.GenerateImagesResponse:
-    """Generates images based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the images to generate.
-      config (GenerateImagesConfig): Configuration for generation.
-    """
+    """Private method for generating images asynchronously."""
 
     parameter_model = types._GenerateImagesParameters(
         model=model,
@@ -7378,47 +7287,7 @@ class AsyncModels(_api_module.BaseModule):
       reference_images: list[types._ReferenceImageAPIOrDict],
       config: Optional[types.EditImageConfigOrDict] = None,
   ) -> types.EditImageResponse:
-    """Edits an image based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
-        ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
-        reference images for editing.
-      config (EditImageConfig): Configuration for editing.
-
-    Usage:
-
-    .. code-block:: python
-
-      from google.genai.types import RawReferenceImage, MaskReferenceImage
-
-      raw_ref_image = RawReferenceImage(
-        reference_id=1,
-        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
-      )
-
-      mask_ref_image = MaskReferenceImage(
-        reference_id=2,
-        config=types.MaskReferenceConfig(
-            mask_mode='MASK_MODE_FOREGROUND',
-            mask_dilation=0.06,
-        ),
-      )
-      response = await client.aio.models.edit_image(
-        model='imagen-3.0-capability-001',
-        prompt='man with dog',
-        reference_images=[raw_ref_image, mask_ref_image],
-        config=types.EditImageConfig(
-            edit_mode= "EDIT_MODE_INPAINT_INSERTION",
-            number_of_images= 1,
-            include_rai_reason= True,
-        )
-      )
-      response.generated_images[0].image.show()
-      # Shows a man with a dog instead of a cat.
-    """
+    """Private method for editing an image asynchronously."""
 
     parameter_model = types._EditImageParameters(
         model=model,
@@ -7482,14 +7351,7 @@ class AsyncModels(_api_module.BaseModule):
       upscale_factor: str,
       config: Optional[types._UpscaleImageAPIConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
-    """Upscales an image.
-
-    Args:
-      model (str): The model to use.
-      image (Image): The input image for upscaling.
-      upscale_factor (str): The factor to upscale the image (x2 or x4).
-      config (_UpscaleImageAPIConfig): Configuration for upscaling.
-    """
+    """Private method for upscaling an image asynchronously."""
 
     parameter_model = types._UpscaleImageAPIParameters(
         model=model,
@@ -8181,39 +8043,7 @@ class AsyncModels(_api_module.BaseModule):
       source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
-    """Generates videos based on an input (text, image, or video) and configuration.
-
-    The following use cases are supported:
-    1. Text to video generation.
-    2a. Image to video generation (additional text prompt is optional).
-    2b. Image to video generation with frame interpolation (specify last_frame
-    in config).
-    3. Video extension (additional text prompt is optional)
-
-    Args:
-      model: The model to use.
-      prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
-      image: The input image for generating the videos. Optional if prompt is
-        provided.
-      video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
-      config: Configuration for generation.
-
-    Usage:
-
-      ```
-      operation = client.models.generate_videos(
-          model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
-      )
-      while not operation.done:
-          time.sleep(10)
-          operation = client.operations.get(operation)
-
-      operation.result.generated_videos[0].video.uri
-      ```
-    """
+    """Private method for generating videos asynchronously."""
 
     parameter_model = types._GenerateVideosParameters(
         model=model,
