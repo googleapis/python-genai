@@ -166,6 +166,19 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name="test_all_parameters_veo3_mldev",
+        parameters=types._GenerateVideosParameters(
+            model="veo-3.0-generate-preview",
+            prompt="A neon hologram of a cat driving at top speed",
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                aspect_ratio="16:9",
+                resolution="1080p",
+                negative_prompt="ugly, low quality",
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name="test_reference_to_video",
         parameters=types._GenerateVideosParameters(
             model="veo-2.0-generate-exp",
