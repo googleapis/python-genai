@@ -19,7 +19,6 @@ from abc import ABC, abstractmethod
 import datetime
 from enum import Enum, EnumMeta
 import inspect
-import io
 import json
 import logging
 import sys
@@ -824,20 +823,18 @@ class Blob(_common.BaseModel):
       description="""Required. The IANA standard MIME type of the source data.""",
   )
 
-  def as_image(self) -> Optional['PIL_Image']:
-    """Returns the Blob as a PIL Image, or None if the Blob is not an image."""
+  def as_image(self) -> Optional['Image']:
+    """Returns the Blob as a Image, or None if the Blob is not an image."""
     if (
         not self.data
         or not self.mime_type
         or not self.mime_type.startswith('image/')
     ):
       return None
-    if not _is_pillow_image_imported:
-      raise ImportError(
-          'The PIL module is not available. Please install the Pillow'
-          ' package. `pip install pillow`'
-      )
-    return PIL.Image.open(io.BytesIO(self.data))
+    return Image(
+        image_bytes=self.data,
+        mime_type=self.mime_type,
+    )
 
 
 class BlobDict(TypedDict, total=False):
@@ -1098,7 +1095,7 @@ class Part(_common.BaseModel):
       default=None, description="""Optional. Text part (can be code)."""
   )
 
-  def as_image(self) -> Optional['PIL_Image']:
+  def as_image(self) -> Optional['Image']:
     """Returns the part as a PIL Image, or None if the part is not an image."""
     if not self.inline_data:
       return None
@@ -6244,13 +6241,19 @@ class Image(_common.BaseModel):
 
     This method only works in a notebook environment.
     """
-    try:
-      from IPython import display as IPython_display
-    except ImportError:
-      IPython_display = None
+    in_notebook = 'ipykernel' in sys.modules
+    if in_notebook:
+      try:
+        from IPython import display as IPython_display
+      except ImportError:
+        IPython_display = None
 
-    if IPython_display:
-      IPython_display.display(self._pil_image)
+      if IPython_display:
+        IPython_display.display(self._pil_image)
+    else:
+      img = self._pil_image
+      if img is not None:
+        img.show()
 
   @property
   def _pil_image(self) -> Optional['PIL_Image']:

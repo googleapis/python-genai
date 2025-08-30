@@ -44,7 +44,7 @@ def test_image(image_jpeg):
   assert blob.data[6:10] == b'JFIF'
   assert blob.mime_type == 'image/jpeg'
 
-  round_trip_image = blob.as_image()
+  round_trip_image = blob.as_image()._pil_image
   assert round_trip_image is not None
   assert round_trip_image.size == image_jpeg.size
   assert round_trip_image.mode == image_jpeg.mode
@@ -59,7 +59,7 @@ def test_part_image(image_jpeg):
   assert part.inline_data.data[6:10] == b'JFIF'
   assert part.inline_data.mime_type == 'image/jpeg'
 
-  round_trip_image = part.as_image()
+  round_trip_image = part.as_image()._pil_image
   assert round_trip_image is not None
   assert round_trip_image.size == image_jpeg.size
   assert round_trip_image.mode == image_jpeg.mode
