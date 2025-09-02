@@ -1330,7 +1330,11 @@ def _GenerateVideosConfig_to_mldev(
     )
 
   if getv(from_object, ['resolution']) is not None:
-    raise ValueError('resolution parameter is not supported in Gemini API.')
+    setv(
+        parent_object,
+        ['parameters', 'resolution'],
+        getv(from_object, ['resolution']),
+    )
 
   if getv(from_object, ['person_generation']) is not None:
     setv(
