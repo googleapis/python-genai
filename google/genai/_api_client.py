@@ -584,13 +584,9 @@ class BaseApiClient:
     # Initialize the lock. This lock will be used to protect access to the
     # credentials. This is crucial for thread safety when multiple coroutines
     # might be accessing the credentials at the same time.
-    try:
-      self._sync_auth_lock = threading.Lock()
-      self._async_auth_lock = asyncio.Lock()
-    except RuntimeError:
-      asyncio.set_event_loop(asyncio.new_event_loop())
-      self._sync_auth_lock = threading.Lock()
-      self._async_auth_lock = asyncio.Lock()
+    self._sync_auth_lock = threading.Lock()
+    self._async_auth_lock: Optional[asyncio.Lock] = None
+    self._async_auth_lock_creation_lock: Optional[asyncio.Lock] = None
 
     # Handle when to use Vertex AI in express mode (api key).
     # Explicit initializer arguments are already validated above.
@@ -903,10 +899,36 @@ class BaseApiClient:
       else:
         raise RuntimeError('Could not resolve API token from the environment')
 
+  async def _get_async_auth_lock(self) -> asyncio.Lock:
+    """Lazily initializes and returns an asyncio.Lock for async authentication.
+
+    This method ensures that a single `asyncio.Lock` instance is created and
+    shared among all asynchronous operations that require authentication,
+    preventing race conditions when accessing or refreshing credentials.
+
+    The lock is created on the first call to this method. An internal async lock
+    is used to protect the creation of the main authentication lock to ensure
+    it's a singleton within the client instance.
+
+    Returns:
+        The asyncio.Lock instance for asynchronous authentication operations.
+    """
+    if self._async_auth_lock is None:
+      # Create async creation lock if needed
+      if self._async_auth_lock_creation_lock is None:
+        self._async_auth_lock_creation_lock = asyncio.Lock()
+
+      async with self._async_auth_lock_creation_lock:
+        if self._async_auth_lock is None:
+          self._async_auth_lock = asyncio.Lock()
+
+    return self._async_auth_lock
+
   async def _async_access_token(self) -> Union[str, Any]:
     """Retrieves the access token for the credentials asynchronously."""
     if not self._credentials:
-      async with self._async_auth_lock:
+      async_auth_lock = await self._get_async_auth_lock()
+      async with async_auth_lock:
         # This ensures that only one coroutine can execute the auth logic at a
         # time for thread safety.
         if not self._credentials:
@@ -920,7 +942,8 @@ class BaseApiClient:
     if self._credentials:
       if self._credentials.expired or not self._credentials.token:
         # Only refresh when it needs to. Default expiration is 3600 seconds.
-        async with self._async_auth_lock:
+        async_auth_lock = await self._get_async_auth_lock()
+        async with async_auth_lock:
           if self._credentials.expired or not self._credentials.token:
             # Double check that the credentials expired before refreshing.
             await asyncio.to_thread(refresh_auth, self._credentials)
