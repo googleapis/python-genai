@@ -100,7 +100,11 @@ def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: An
             f' Existing value: {existing_data}; New value: {value}.'
         )
     else:
-      data[keys[-1]] = value
+      if (keys[-1] == '_self' and isinstance(data, dict)
+          and isinstance(value, dict)):
+        data.update(value)
+      else:
+        data[keys[-1]] = value
 
 
 def get_value_by_path(data: Any, keys: list[str]) -> Any:
