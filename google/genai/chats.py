@@ -35,8 +35,6 @@ def _validate_content(content: Content) -> bool:
   for part in content.parts:
     if part == Part():
       return False
-    if part.text is not None and part.text == "":
-      return False
   return True
 
 

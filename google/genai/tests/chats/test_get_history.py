@@ -64,7 +64,7 @@ def mock_generate_content_invalid_content():
             types.Candidate(
                 content=types.Content(
                     role='model',
-                    parts=[types.Part(text='')],
+                    parts=[types.Part()],
                 )
             )
         ]
@@ -491,7 +491,7 @@ def test_chat_with_invalid_content(mock_generate_content_invalid_content):
   expected_comprehensive_history = [
       types.UserContent(parts=[types.Part.from_text(text='Hello')]),
       types.Content(
-          parts=[types.Part(text='')],
+          parts=[types.Part()],
           role='model',
       ),
   ]
