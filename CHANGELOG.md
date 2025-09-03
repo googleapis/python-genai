@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.33.0](https://github.com/googleapis/python-genai/compare/v1.32.0...v1.33.0) (2025-09-02)
+
+
+### Features
+
+* Add resolution field for Gemini Developer API Veo 3 generation ([cd2620c](https://github.com/googleapis/python-genai/commit/cd2620c288a02f5b8c38c66f0db9d35878aa5556))
+* Add the response body for generateContent ([e032208](https://github.com/googleapis/python-genai/commit/e0322085c76a032707288f502bfddde798fc66d5))
+
+
+### Bug Fixes
+
+* Defer `asyncio.Lock` initialization in `_api_client.py`. ([c6a6c70](https://github.com/googleapis/python-genai/commit/c6a6c706aa24b0e52fc005471c00b3e667630d58))
+* Return genai.types.Image, not PIL.Image ([67611ed](https://github.com/googleapis/python-genai/commit/67611edebf164887d3d6004d736dd8cc4c93ed1c))
+
+
+### Documentation
+
+* Refactor/update docstrings for Imagen and Veo ([214d017](https://github.com/googleapis/python-genai/commit/214d01790b5fa9c008e150f0ffb77c4c363d9124))
+* Regenerate docs for 1.32.0 ([637b490](https://github.com/googleapis/python-genai/commit/637b4909d67b6072188b4223f1f75319f7160888))
+
 ## [1.32.0](https://github.com/googleapis/python-genai/compare/v1.31.0...v1.32.0) (2025-08-27)
 
 
