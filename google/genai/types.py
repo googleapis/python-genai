@@ -13103,6 +13103,12 @@ class LiveServerContent(_common.BaseModel):
       default=None,
       description="""Metadata related to url context retrieval tool.""",
   )
+  waiting_for_input: Optional[bool] = Field(
+      default=None,
+      description="""If true, indicates that the model is not generating content because
+      it is waiting for more input from the user, e.g. because it expects the
+      user to continue talking.""",
+  )
 
 
 class LiveServerContentDict(TypedDict, total=False):
@@ -13147,6 +13153,11 @@ class LiveServerContentDict(TypedDict, total=False):
 
   url_context_metadata: Optional[UrlContextMetadataDict]
   """Metadata related to url context retrieval tool."""
+
+  waiting_for_input: Optional[bool]
+  """If true, indicates that the model is not generating content because
+      it is waiting for more input from the user, e.g. because it expects the
+      user to continue talking."""
 
 
 LiveServerContentOrDict = Union[LiveServerContent, LiveServerContentDict]
