@@ -1029,6 +1029,20 @@ response = await client.aio.models.count_tokens(
 print(response)
 ```
 
+#### Local Count Tokens
+
+```python
+tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+result = tokenizer.count_tokens("What is your name?")
+```
+
+#### Local Compute Tokens
+
+```python
+tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+result = tokenizer.compute_tokens("What is your name?")
+```
+
 ### Embed Content
 
 ```python

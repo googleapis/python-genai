@@ -303,9 +303,20 @@ class LocalTokenizer:
 
     Args:
       contents: The contents to tokenize.
+      config: The configuration for counting tokens.
 
     Returns:
       A `CountTokensResult` containing the total number of tokens.
+
+    Usage:
+
+    .. code-block:: python
+
+      from google import genai
+      tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+      result = tokenizer.count_tokens("What is your name?")
+      print(result)
+      # total_tokens=5
     """
     processed_contents = t.t_contents(contents)
     text_accumulator = _TextsAccumulator()
@@ -330,7 +341,24 @@ class LocalTokenizer:
       self,
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
   ) -> types.ComputeTokensResult:
-    """Computes the tokens ids and string pieces in the input."""
+    """Computes the tokens ids and string pieces in the input.
+
+    Args:
+      contents: The contents to tokenize.
+
+    Returns:
+      A `ComputeTokensResult` containing the token information.
+
+    Usage:
+
+    .. code-block:: python
+
+      from google import genai
+      tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+      result = tokenizer.compute_tokens("What is your name?")
+      print(result)
+      # tokens_info=[TokensInfo(token_ids=[279, 329, 1313, 2508, 13], tokens=[b' What', b' is', b' your', b' name', b'?'], role='user')]
+    """
     processed_contents = t.t_contents(contents)
     text_accumulator = _TextsAccumulator()
     for content in processed_contents:
