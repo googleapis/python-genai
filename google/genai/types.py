@@ -10432,6 +10432,10 @@ class CreateTuningJobConfig(_common.BaseModel):
   evaluation_config: Optional[EvaluationConfig] = Field(
       default=None, description="""Evaluation config for the tuning job."""
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Optional. The labels with user-defined metadata to organize TuningJob and generated resources such as Model and Endpoint. Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf for more information and examples of labels.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -10472,6 +10476,9 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   evaluation_config: Optional[EvaluationConfigDict]
   """Evaluation config for the tuning job."""
+
+  labels: Optional[dict[str, str]]
+  """Optional. The labels with user-defined metadata to organize TuningJob and generated resources such as Model and Endpoint. Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf for more information and examples of labels."""
 
 
 CreateTuningJobConfigOrDict = Union[

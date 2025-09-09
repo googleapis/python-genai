@@ -172,6 +172,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 validation_dataset=genai_types.TuningDataset(
                     vertex_dataset_resource="projects/613165508263/locations/us-central1/datasets/5556912525326417920",
                 ),
+                labels={"testlabelkey": "testlabelvalue"},
                 # Not supported in Vertex AI
                 # batch_size=4,
                 # learning_rate=0.01,

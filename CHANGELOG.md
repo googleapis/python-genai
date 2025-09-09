@@ -1,17 +1,5 @@
 # Changelog
 
-## [1.35.0](https://github.com/googleapis/python-genai/compare/v1.34.0...v1.35.0) (2025-09-09)
-
-
-### Features
-
-* Support Veo 2 Editing on Vertex ([effb53a](https://github.com/googleapis/python-genai/commit/effb53a3165252edd199bb03232bdd57c5a70724))
-
-
-### Bug Fixes
-
-* Enable `id` field in `FunctionCall` for Vertex AI. ([717c1b0](https://github.com/googleapis/python-genai/commit/717c1b0f1b27baeb2f1bd7852d9c2e8e4fd9db0f))
-
 ## [1.34.0](https://github.com/googleapis/python-genai/compare/v1.33.0...v1.34.0) (2025-09-09)
 
 

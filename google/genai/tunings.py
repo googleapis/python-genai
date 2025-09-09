@@ -209,6 +209,9 @@ def _CreateTuningJobConfig_to_mldev(
         'evaluation_config parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
   return to_object
 
 
@@ -506,6 +509,9 @@ def _CreateTuningJobConfig_to_vertex(
             getv(from_object, ['evaluation_config']), to_object
         ),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   return to_object
 
