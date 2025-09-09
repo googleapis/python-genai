@@ -45,6 +45,21 @@ IMAGE_FILE_PATH = os.path.abspath(
 )
 LOCAL_IMAGE = types.Image.from_file(location=IMAGE_FILE_PATH)
 
+GCS_OUTPAINT_MASK = types.Image(
+    gcs_uri="gs://genai-sdk-tests/inputs/videos/video_outpaint_mask.png",
+    mime_type="image/png",
+)
+
+GCS_REMOVE_MASK = types.Image(
+    gcs_uri="gs://genai-sdk-tests/inputs/videos/video_remove_mask.png",
+    mime_type="image/png",
+)
+
+GCS_REMOVE_STATIC_MASK = types.Image(
+    gcs_uri="gs://genai-sdk-tests/inputs/videos/video_remove_static_mask.png",
+    mime_type="image/png",
+)
+
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
@@ -144,6 +159,29 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
                 output_gcs_uri=OUTPUT_GCS_URI,
+            ),
+        ),
+        exception_if_mldev=(
+            "not supported in Gemini API"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_video_edit_outpaint",
+        parameters=types._GenerateVideosParameters(
+            model="veo-2.0-generate-exp",
+            source=types.GenerateVideosSource(
+                prompt="A mountain landscape",
+                video=types.Video(
+                    uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+                ),
+            ),
+            config=types.GenerateVideosConfig(
+                output_gcs_uri=OUTPUT_GCS_URI,
+                aspect_ratio="16:9",
+                mask=types.VideoGenerationMask(
+                    image=GCS_OUTPAINT_MASK,
+                    mask_mode="OUTPAINT",
+                ),
             ),
         ),
         exception_if_mldev=(
@@ -345,6 +383,99 @@ def test_reference_images_to_video_poll(client):
                   reference_type=types.VideoGenerationReferenceType.STYLE,
               ),
           ],
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
+def test_video_edit_outpaint_poll(client):
+  # Editing videos is only supported in Vertex AI.
+  if not client.vertexai:
+    return
+
+  operation = client.models.generate_videos(
+      model="veo-2.0-generate-exp",
+      source=types.GenerateVideosSource(
+          prompt="A mountain landscape",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+          ),
+      ),
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              image=GCS_OUTPAINT_MASK,
+              mask_mode="OUTPAINT",
+          ),
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
+def test_video_edit_remove_poll(client):
+  # Editing videos is only supported in Vertex AI.
+  if not client.vertexai:
+    return
+
+  operation = client.models.generate_videos(
+      model="veo-2.0-generate-exp",
+      source=types.GenerateVideosSource(
+          prompt="A red dune buggy",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+          ),
+      ),
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              image=GCS_REMOVE_MASK,
+              mask_mode="INPAINT_DYNAMIC",
+          ),
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
+def test_video_edit_remove_static_poll(client):
+  # Editing videos is only supported in Vertex AI.
+  if not client.vertexai:
+    return
+
+  operation = client.models.generate_videos(
+      model="veo-2.0-generate-exp",
+      source=types.GenerateVideosSource(
+          prompt="A red dune buggy",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+          ),
+      ),
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              image=GCS_REMOVE_STATIC_MASK,
+              mask_mode="INPAINT",
+          ),
       ),
   )
   while not operation.done:

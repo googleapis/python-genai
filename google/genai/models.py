@@ -1392,6 +1392,9 @@ def _GenerateVideosConfig_to_mldev(
         'reference_images parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['mask']) is not None:
+    raise ValueError('mask parameter is not supported in Gemini API.')
+
   if getv(from_object, ['compression_quality']) is not None:
     raise ValueError(
         'compression_quality parameter is not supported in Gemini API.'
@@ -3536,6 +3539,24 @@ def _VideoGenerationReferenceImage_to_vertex(
   return to_object
 
 
+def _VideoGenerationMask_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['_self'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['mask_mode']) is not None:
+    setv(to_object, ['maskMode'], getv(from_object, ['mask_mode']))
+
+  return to_object
+
+
 def _GenerateVideosConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3633,6 +3654,13 @@ def _GenerateVideosConfig_to_vertex(
             _VideoGenerationReferenceImage_to_vertex(item, to_object)
             for item in getv(from_object, ['reference_images'])
         ],
+    )
+
+  if getv(from_object, ['mask']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'mask'],
+        _VideoGenerationMask_to_vertex(getv(from_object, ['mask']), to_object),
     )
 
   if getv(from_object, ['compression_quality']) is not None:

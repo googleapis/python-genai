@@ -8437,6 +8437,36 @@ VideoGenerationReferenceImageOrDict = Union[
 ]
 
 
+class VideoGenerationMask(_common.BaseModel):
+  """A mask for video generation."""
+
+  image: Optional[Image] = Field(
+      default=None,
+      description="""The image mask to use for generating videos.""",
+  )
+  mask_mode: Optional[str] = Field(
+      default=None,
+      description="""Describes how the mask will be used. Inpainting masks must
+      match the aspect ratio of the input video. Outpainting masks can be
+      either 9:16 or 16:9.""",
+  )
+
+
+class VideoGenerationMaskDict(TypedDict, total=False):
+  """A mask for video generation."""
+
+  image: Optional[ImageDict]
+  """The image mask to use for generating videos."""
+
+  mask_mode: Optional[str]
+  """Describes how the mask will be used. Inpainting masks must
+      match the aspect ratio of the input video. Outpainting masks can be
+      either 9:16 or 16:9."""
+
+
+VideoGenerationMaskOrDict = Union[VideoGenerationMask, VideoGenerationMaskDict]
+
+
 class GenerateVideosConfig(_common.BaseModel):
   """Configuration for generating videos."""
 
@@ -8509,6 +8539,9 @@ class GenerateVideosConfig(_common.BaseModel):
       be associated with a type. Veo 2 supports up to 3 asset images *or* 1
       style image.""",
   )
+  mask: Optional[VideoGenerationMask] = Field(
+      default=None, description="""The mask to use for generating videos."""
+  )
   compression_quality: Optional[VideoCompressionQuality] = Field(
       default=None,
       description="""Compression quality of the generated videos.""",
@@ -8575,6 +8608,9 @@ class GenerateVideosConfigDict(TypedDict, total=False):
       The image, video, or last_frame field are not supported. Each image must
       be associated with a type. Veo 2 supports up to 3 asset images *or* 1
       style image."""
+
+  mask: Optional[VideoGenerationMaskDict]
+  """The mask to use for generating videos."""
 
   compression_quality: Optional[VideoCompressionQuality]
   """Compression quality of the generated videos."""
