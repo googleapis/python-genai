@@ -1507,7 +1507,7 @@ def _FunctionCall_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['id']) is not None:
-    raise ValueError('id parameter is not supported in Vertex AI.')
+    setv(to_object, ['id'], getv(from_object, ['id']))
 
   if getv(from_object, ['args']) is not None:
     setv(to_object, ['args'], getv(from_object, ['args']))
@@ -4476,6 +4476,8 @@ def _FunctionCall_from_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
 
   if getv(from_object, ['args']) is not None:
     setv(to_object, ['args'], getv(from_object, ['args']))
