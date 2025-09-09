@@ -964,30 +964,30 @@ def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
 
 def t_batch_job_source(
     client: _api_client.BaseApiClient,
-    src: Union[
-        str, List[types.InlinedRequestOrDict], types.BatchJobSourceOrDict
-    ],
+    src: types.BatchJobSourceUnionDict,
 ) -> types.BatchJobSource:
   if isinstance(src, dict):
     src = types.BatchJobSource(**src)
   if isinstance(src, types.BatchJobSource):
+    vertex_sources = sum(
+        [src.gcs_uri is not None, src.bigquery_uri is not None]
+    )
+    mldev_sources = sum([
+        src.inlined_requests is not None,
+        src.file_name is not None,
+    ])
     if client.vertexai:
-      if src.gcs_uri and src.bigquery_uri:
+      if mldev_sources or vertex_sources != 1:
         raise ValueError(
-            'Only one of `gcs_uri` or `bigquery_uri` can be set.'
-        )
-      elif not src.gcs_uri and not src.bigquery_uri:
-        raise ValueError(
-            'One of `gcs_uri` or `bigquery_uri` must be set.'
+            'Exactly one of `gcs_uri` or `bigquery_uri` must be set, other '
+            'sources are not supported in Vertex AI.'
         )
     else:
-      if src.inlined_requests and src.file_name:
+      if vertex_sources or mldev_sources != 1:
         raise ValueError(
-            'Only one of `inlined_requests` or `file_name` can be set.'
-        )
-      elif not src.inlined_requests and not src.file_name:
-        raise ValueError(
-            'One of `inlined_requests` or `file_name` must be set.'
+            'Exactly one of `inlined_requests`, `file_name`, '
+            '`inlined_embed_content_requests`, or `embed_content_file_name` '
+            'must be set, other sources are not supported in Gemini API.'
         )
     return src
 
@@ -1010,6 +1010,29 @@ def t_batch_job_source(
       )
 
   raise ValueError(f'Unsupported source: {src}')
+
+
+def t_embedding_batch_job_source(
+    client: _api_client.BaseApiClient,
+    src: types.EmbeddingsBatchJobSourceOrDict,
+) -> types.EmbeddingsBatchJobSource:
+  if isinstance(src, dict):
+    src = types.EmbeddingsBatchJobSource(**src)
+
+  if isinstance(src, types.EmbeddingsBatchJobSource):
+    mldev_sources = sum([
+        src.inlined_requests is not None,
+        src.file_name is not None,
+    ])
+    if mldev_sources != 1:
+      raise ValueError(
+          'Exactly one of `inlined_requests`, `file_name`, '
+          '`inlined_embed_content_requests`, or `embed_content_file_name` '
+          'must be set, other sources are not supported in Gemini API.'
+      )
+    return src
+  else:
+    raise ValueError(f'Unsupported source type: {type(src)}')
 
 
 def t_batch_job_destination(
@@ -1035,6 +1058,23 @@ def t_batch_job_destination(
     return dest
   else:
     raise ValueError(f'Unsupported destination: {dest}')
+
+
+def t_recv_batch_job_destination(dest: dict[str, Any]) -> dict[str, Any]:
+  # Rename inlinedResponses if it looks like an embedding response.
+  inline_responses = dest.get('inlinedResponses', {}).get(
+      'inlinedResponses', []
+  )
+  if not inline_responses:
+    return dest
+  for response in inline_responses:
+    inner_response = response.get('response', {})
+    if not inner_response:
+      continue
+    if 'embedding' in inner_response:
+      dest['inlinedEmbedContentResponses'] = dest.pop('inlinedResponses')
+      break
+  return dest
 
 
 def t_batch_job_name(client: _api_client.BaseApiClient, name: str) -> str:

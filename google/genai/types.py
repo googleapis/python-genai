@@ -11461,6 +11461,70 @@ class InlinedResponseDict(TypedDict, total=False):
 InlinedResponseOrDict = Union[InlinedResponse, InlinedResponseDict]
 
 
+class SingleEmbedContentResponse(_common.BaseModel):
+  """Config for `response` parameter."""
+
+  embedding: Optional[ContentEmbedding] = Field(
+      default=None,
+      description="""The response to the request.
+      """,
+  )
+  token_count: Optional[int] = Field(
+      default=None,
+      description="""The error encountered while processing the request.
+      """,
+  )
+
+
+class SingleEmbedContentResponseDict(TypedDict, total=False):
+  """Config for `response` parameter."""
+
+  embedding: Optional[ContentEmbeddingDict]
+  """The response to the request.
+      """
+
+  token_count: Optional[int]
+  """The error encountered while processing the request.
+      """
+
+
+SingleEmbedContentResponseOrDict = Union[
+    SingleEmbedContentResponse, SingleEmbedContentResponseDict
+]
+
+
+class InlinedEmbedContentResponse(_common.BaseModel):
+  """Config for `inlined_embedding_responses` parameter."""
+
+  response: Optional[SingleEmbedContentResponse] = Field(
+      default=None,
+      description="""The response to the request.
+      """,
+  )
+  error: Optional[JobError] = Field(
+      default=None,
+      description="""The error encountered while processing the request.
+      """,
+  )
+
+
+class InlinedEmbedContentResponseDict(TypedDict, total=False):
+  """Config for `inlined_embedding_responses` parameter."""
+
+  response: Optional[SingleEmbedContentResponseDict]
+  """The response to the request.
+      """
+
+  error: Optional[JobErrorDict]
+  """The error encountered while processing the request.
+      """
+
+
+InlinedEmbedContentResponseOrDict = Union[
+    InlinedEmbedContentResponse, InlinedEmbedContentResponseDict
+]
+
+
 class BatchJobDestination(_common.BaseModel):
   """Config for `des` parameter."""
 
@@ -11496,6 +11560,15 @@ class BatchJobDestination(_common.BaseModel):
       the input requests.
       """,
   )
+  inlined_embed_content_responses: Optional[
+      list[InlinedEmbedContentResponse]
+  ] = Field(
+      default=None,
+      description="""The responses to the requests in the batch. Returned when the batch was
+      built using inlined requests. The responses will be in the same order as
+      the input requests.
+      """,
+  )
 
 
 class BatchJobDestinationDict(TypedDict, total=False):
@@ -11523,6 +11596,14 @@ class BatchJobDestinationDict(TypedDict, total=False):
       """
 
   inlined_responses: Optional[list[InlinedResponseDict]]
+  """The responses to the requests in the batch. Returned when the batch was
+      built using inlined requests. The responses will be in the same order as
+      the input requests.
+      """
+
+  inlined_embed_content_responses: Optional[
+      list[InlinedEmbedContentResponseDict]
+  ]
   """The responses to the requests in the batch. Returned when the batch was
       built using inlined requests. The responses will be in the same order as
       the input requests.
@@ -11688,6 +11769,13 @@ class BatchJob(_common.BaseModel):
       """,
   )
 
+  @property
+  def done(self) -> bool:
+    """Returns True if the batch job has ended."""
+    if self.state is None:
+      return False
+    return self.state.name in JOB_STATES_ENDED
+
 
 class BatchJobDict(TypedDict, total=False):
   """Config for batches.create return value."""
@@ -11736,6 +11824,138 @@ class BatchJobDict(TypedDict, total=False):
 
 
 BatchJobOrDict = Union[BatchJob, BatchJobDict]
+
+
+class EmbedContentBatch(_common.BaseModel):
+  """Parameters for the embed_content method."""
+
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""The content to embed. Only the `parts.text` fields will be counted.
+      """,
+  )
+  config: Optional[EmbedContentConfig] = Field(
+      default=None,
+      description="""Configuration that contains optional parameters.
+      """,
+  )
+
+
+class EmbedContentBatchDict(TypedDict, total=False):
+  """Parameters for the embed_content method."""
+
+  contents: Optional[ContentListUnionDict]
+  """The content to embed. Only the `parts.text` fields will be counted.
+      """
+
+  config: Optional[EmbedContentConfigDict]
+  """Configuration that contains optional parameters.
+      """
+
+
+EmbedContentBatchOrDict = Union[EmbedContentBatch, EmbedContentBatchDict]
+
+
+class EmbeddingsBatchJobSource(_common.BaseModel):
+
+  file_name: Optional[str] = Field(
+      default=None,
+      description="""The Gemini Developer API's file resource name of the input data
+      (e.g. "files/12345").
+      """,
+  )
+  inlined_requests: Optional[EmbedContentBatch] = Field(
+      default=None,
+      description="""The Gemini Developer API's inlined input data to run batch job.
+      """,
+  )
+
+
+class EmbeddingsBatchJobSourceDict(TypedDict, total=False):
+
+  file_name: Optional[str]
+  """The Gemini Developer API's file resource name of the input data
+      (e.g. "files/12345").
+      """
+
+  inlined_requests: Optional[EmbedContentBatchDict]
+  """The Gemini Developer API's inlined input data to run batch job.
+      """
+
+
+EmbeddingsBatchJobSourceOrDict = Union[
+    EmbeddingsBatchJobSource, EmbeddingsBatchJobSourceDict
+]
+
+
+class CreateEmbeddingsBatchJobConfig(_common.BaseModel):
+  """Config for optional parameters."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""The user-defined name of this BatchJob.
+      """,
+  )
+
+
+class CreateEmbeddingsBatchJobConfigDict(TypedDict, total=False):
+  """Config for optional parameters."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  display_name: Optional[str]
+  """The user-defined name of this BatchJob.
+      """
+
+
+CreateEmbeddingsBatchJobConfigOrDict = Union[
+    CreateEmbeddingsBatchJobConfig, CreateEmbeddingsBatchJobConfigDict
+]
+
+
+class _CreateEmbeddingsBatchJobParameters(_common.BaseModel):
+  """Config for batches.create parameters."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""The name of the model to produces the predictions via the BatchJob.
+      """,
+  )
+  src: Optional[EmbeddingsBatchJobSource] = Field(
+      default=None,
+      description="""input data to run batch job".
+      """,
+  )
+  config: Optional[CreateEmbeddingsBatchJobConfig] = Field(
+      default=None,
+      description="""Optional parameters for creating a BatchJob.
+      """,
+  )
+
+
+class _CreateEmbeddingsBatchJobParametersDict(TypedDict, total=False):
+  """Config for batches.create parameters."""
+
+  model: Optional[str]
+  """The name of the model to produces the predictions via the BatchJob.
+      """
+
+  src: Optional[EmbeddingsBatchJobSourceDict]
+  """input data to run batch job".
+      """
+
+  config: Optional[CreateEmbeddingsBatchJobConfigDict]
+  """Optional parameters for creating a BatchJob.
+      """
+
+
+_CreateEmbeddingsBatchJobParametersOrDict = Union[
+    _CreateEmbeddingsBatchJobParameters, _CreateEmbeddingsBatchJobParametersDict
+]
 
 
 class GetBatchJobConfig(_common.BaseModel):

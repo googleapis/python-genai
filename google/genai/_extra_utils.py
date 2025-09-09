@@ -90,14 +90,12 @@ def _get_bigquery_uri(
 
 
 def format_destination(
-    src: Union[str, types.BatchJobSourceOrDict],
-    config: Optional[types.CreateBatchJobConfigOrDict] = None,
+    src: Union[str, types.BatchJobSource],
+    config: Optional[types.CreateBatchJobConfig] = None,
 ) -> types.CreateBatchJobConfig:
   """Formats the destination uri based on the source uri for Vertex AI."""
-  config = (
-      types._CreateBatchJobParameters(config=config).config
-      or types.CreateBatchJobConfig()
-  )
+  if config is None:
+    config = types.CreateBatchJobConfig()
 
   unique_name = None
   if not config.display_name:
@@ -113,8 +111,7 @@ def format_destination(
     elif bigquery_source_uri:
       unique_name = unique_name or _common.timestamped_unique_name()
       config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
-    else:
-      raise ValueError(f'The source {src} is not supported.')
+
   return config
 
 

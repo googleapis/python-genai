@@ -69,9 +69,15 @@ def base_test_function(
     client._api_client.close()
   except Exception as e:
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
-      assert test_table_item.exception_if_mldev in str(e), str(e)
+      if test_table_item.exception_if_mldev not in str(e):
+        raise AssertionError(
+            f"'{test_table_item.exception_if_mldev}' not in '{str(e)}'"
+        ) from e
     elif test_table_item.exception_if_vertex and client._api_client.vertexai:
-      assert test_table_item.exception_if_vertex in str(e), str(e)
+      if test_table_item.exception_if_vertex not in str(e):
+        raise AssertionError(
+            f"'{test_table_item.exception_if_vertex}' not in '{str(e)}'"
+        ) from e
     else:
       raise e
 
