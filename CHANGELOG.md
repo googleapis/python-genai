@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.34.0](https://github.com/googleapis/python-genai/compare/v1.33.0...v1.34.0) (2025-09-09)
+
+
+### Features
+
+* [Python] Implement async embedding batches for MLDev. ([468d529](https://github.com/googleapis/python-genai/commit/468d5299a9b5c2699e343c0c405c30e08e4d1dcc))
+* Generate the function_call class's converters ([77d1d40](https://github.com/googleapis/python-genai/commit/77d1d40ac1da804311bacfd06437ab8d5f4e6619))
+
 ## [1.33.0](https://github.com/googleapis/python-genai/compare/v1.32.0...v1.33.0) (2025-09-02)
 
 
