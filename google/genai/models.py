@@ -8342,7 +8342,7 @@ class AsyncModels(_api_module.BaseModule):
       model: str,
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
-  ) -> AsyncIterator[types.GenerateContentResponse]:
+  ) -> Awaitable[AsyncIterator[types.GenerateContentResponse]]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
 
     For the `model` parameter, supported formats for Vertex AI API include:
