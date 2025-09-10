@@ -47,9 +47,6 @@ def _CreateFileParameters_to_mldev(
         _File_to_mldev(getv(from_object, ['file']), to_object),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -75,9 +72,6 @@ def _DeleteFileParameters_to_mldev(
     setv(
         to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -247,9 +241,6 @@ def _GetFileParameters_to_mldev(
         to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -280,11 +271,7 @@ def _ListFilesParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
+    _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 

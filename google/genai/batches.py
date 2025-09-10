@@ -379,9 +379,6 @@ def _CancelBatchJobParameters_to_mldev(
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -397,9 +394,6 @@ def _CancelBatchJobParameters_to_vertex(
         ['_url', 'name'],
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -591,13 +585,7 @@ def _CreateBatchJobParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateBatchJobConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _CreateBatchJobConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -626,13 +614,7 @@ def _CreateBatchJobParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateBatchJobConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _CreateBatchJobConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -676,12 +658,8 @@ def _CreateEmbeddingsBatchJobParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateEmbeddingsBatchJobConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
+    _CreateEmbeddingsBatchJobConfig_to_mldev(
+        getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -700,9 +678,6 @@ def _DeleteBatchJobParameters_to_mldev(
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -718,9 +693,6 @@ def _DeleteBatchJobParameters_to_vertex(
         ['_url', 'name'],
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -1210,9 +1182,6 @@ def _GetBatchJobParameters_to_mldev(
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -1228,9 +1197,6 @@ def _GetBatchJobParameters_to_vertex(
         ['_url', 'name'],
         t.t_batch_job_name(api_client, getv(from_object, ['name'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -1471,11 +1437,7 @@ def _ListBatchJobsParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListBatchJobsConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
+    _ListBatchJobsConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -1486,13 +1448,7 @@ def _ListBatchJobsParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListBatchJobsConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _ListBatchJobsConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
