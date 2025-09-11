@@ -428,10 +428,20 @@ class HttpResponse:
   def _load_json_from_response(cls, response: Any) -> Any:
     """Loads JSON from the response, or raises an error if the parsing fails."""
     try:
-      return json.loads(response)
+      # Get the response data (handle both response object and string)
+      response_data = response.data if hasattr(response, 'data') else str(response)
+      
+      # Handle SSE format (data:{"json"})
+      if isinstance(response_data, str) and response_data.startswith('data:'):
+        # Extract JSON from SSE format
+        json_part = response_data[5:].strip()  # Remove "data:" prefix
+        return json.loads(json_part)
+      
+      # Standard JSON parsing
+      return json.loads(response_data)
     except json.JSONDecodeError as e:
       raise errors.UnknownApiResponseError(
-          f'Failed to parse response as JSON. Raw response: {response}'
+          f'Failed to parse response as JSON. Raw response: {response_data}'
       ) from e
 
 
