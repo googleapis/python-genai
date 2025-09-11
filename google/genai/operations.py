@@ -30,6 +30,27 @@ from ._common import set_value_by_path as setv
 logger = logging.getLogger('google_genai.operations')
 
 
+def _FetchPredictOperationParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['operation_name']) is not None:
+    setv(to_object, ['operationName'], getv(from_object, ['operation_name']))
+
+  if getv(from_object, ['resource_name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'resourceName'],
+        getv(from_object, ['resource_name']),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
+  return to_object
+
+
 def _GetOperationParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -58,27 +79,6 @@ def _GetOperationParameters_to_vertex(
         to_object,
         ['_url', 'operationName'],
         getv(from_object, ['operation_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _FetchPredictOperationParameters_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(to_object, ['operationName'], getv(from_object, ['operation_name']))
-
-  if getv(from_object, ['resource_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'resourceName'],
-        getv(from_object, ['resource_name']),
     )
 
   if getv(from_object, ['config']) is not None:
