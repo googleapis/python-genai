@@ -35,7 +35,6 @@ from ._api_client import HttpRequest
 from ._api_client import HttpResponse
 from ._common import BaseModel
 from .types import HttpOptions, HttpOptionsOrDict
-from .types import GenerateVideosOperation
 
 
 def to_snake_case(name: str) -> str:
