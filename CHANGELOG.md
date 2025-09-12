@@ -1,23 +1,5 @@
 # Changelog
 
-## [1.36.0](https://github.com/googleapis/python-genai/compare/v1.35.0...v1.36.0) (2025-09-10)
-
-
-### Features
-
-* Add labels to create tuning job config ([a6a2988](https://github.com/googleapis/python-genai/commit/a6a2988e17f17ea2c837c81a5e7f175524ecaf30))
-
-
-### Bug Fixes
-
-* Fix the return type of generate_content_stream. ([28c735f](https://github.com/googleapis/python-genai/commit/28c735f454c95dd3c73b4dd05751b465a0e86191))
-* Fix the return type of generate_content_stream. ([ebc7180](https://github.com/googleapis/python-genai/commit/ebc71803f4066caf6fd718f1d938307c05327331))
-
-
-### Documentation
-
-* Regenerate docs for 1.35.0 ([aa2f97b](https://github.com/googleapis/python-genai/commit/aa2f97b243a15fe1c5804806345dd194e6034f44))
-
 ## [1.35.0](https://github.com/googleapis/python-genai/compare/v1.34.0...v1.35.0) (2025-09-09)
 
 

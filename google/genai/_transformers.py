@@ -1290,10 +1290,14 @@ def t_metrics(
 
       elif hasattr(metric, 'prompt_template') and metric.prompt_template:
         pointwise_spec = {'metric_prompt_template': metric.prompt_template}
-        system_instruction = getv(metric, ['judge_model_system_instruction'])
+        system_instruction = getv(
+            metric, ['judge_model_system_instruction']
+        )
         if system_instruction:
           pointwise_spec['system_instruction'] = system_instruction
-        return_raw_output = getv(metric, ['return_raw_output'])
+        return_raw_output = getv(
+            metric, ['return_raw_output']
+        )
         if return_raw_output:
           pointwise_spec['custom_output_format_config'] = {  # type: ignore[assignment]
               'return_raw_output': return_raw_output
