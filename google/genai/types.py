@@ -609,6 +609,26 @@ class VideoGenerationReferenceType(_common.CaseInSensitiveEnum):
       such as 'anime', 'photography', 'origami', etc."""
 
 
+class VideoGenerationMaskMode(_common.CaseInSensitiveEnum):
+  """Enum for the mask mode of a video generation mask."""
+
+  INSERT = 'INSERT'
+  """The image mask contains a masked rectangular region which is
+      applied on the first frame of the input video. The object described in
+      the prompt is inserted into this region and will appear in subsequent
+      frames."""
+  REMOVE = 'REMOVE'
+  """The image mask is used to determine an object in the
+      first video frame to track. This object is removed from the video."""
+  REMOVE_STATIC = 'REMOVE_STATIC'
+  """The image mask is used to determine a region in the
+      video. Objects in this region will be removed."""
+  OUTPAINT = 'OUTPAINT'
+  """The image mask contains a masked rectangular region where
+      the input video will go. The remaining area will be generated. Video
+      masks are not supported."""
+
+
 class VideoCompressionQuality(_common.CaseInSensitiveEnum):
   """Enum that controls the compression quality of the generated videos."""
 
@@ -8444,7 +8464,7 @@ class VideoGenerationMask(_common.BaseModel):
       default=None,
       description="""The image mask to use for generating videos.""",
   )
-  mask_mode: Optional[str] = Field(
+  mask_mode: Optional[VideoGenerationMaskMode] = Field(
       default=None,
       description="""Describes how the mask will be used. Inpainting masks must
       match the aspect ratio of the input video. Outpainting masks can be
@@ -8458,7 +8478,7 @@ class VideoGenerationMaskDict(TypedDict, total=False):
   image: Optional[ImageDict]
   """The image mask to use for generating videos."""
 
-  mask_mode: Optional[str]
+  mask_mode: Optional[VideoGenerationMaskMode]
   """Describes how the mask will be used. Inpainting masks must
       match the aspect ratio of the input video. Outpainting masks can be
       either 9:16 or 16:9."""
