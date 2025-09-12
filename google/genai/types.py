@@ -12360,6 +12360,78 @@ _FetchPredictOperationParametersOrDict = Union[
 ]
 
 
+class _GetProjectOperationParameters(_common.BaseModel):
+  """Parameters for the getProjectOperation method."""
+
+  operation_id: Optional[str] = Field(
+      default=None,
+      description="""The ID of the project-level Vertex operation to get. For example if the operation resource name is
+      projects/123/locations/us-central1/operations/456, the operation_id is
+      456.""",
+  )
+  config: Optional[GetOperationConfig] = Field(
+      default=None,
+      description="""Used to override the default configuration.""",
+  )
+
+
+class _GetProjectOperationParametersDict(TypedDict, total=False):
+  """Parameters for the getProjectOperation method."""
+
+  operation_id: Optional[str]
+  """The ID of the project-level Vertex operation to get. For example if the operation resource name is
+      projects/123/locations/us-central1/operations/456, the operation_id is
+      456."""
+
+  config: Optional[GetOperationConfigDict]
+  """Used to override the default configuration."""
+
+
+_GetProjectOperationParametersOrDict = Union[
+    _GetProjectOperationParameters, _GetProjectOperationParametersDict
+]
+
+
+class ProjectOperation(_common.BaseModel):
+  """A project-level operation in Vertex."""
+
+  name: Optional[str] = Field(
+      default=None,
+      description="""The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.""",
+  )
+  metadata: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any.""",
+  )
+  done: Optional[bool] = Field(
+      default=None,
+      description="""If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.""",
+  )
+  error: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""The error result of the operation in case of failure or cancellation.""",
+  )
+
+
+class ProjectOperationDict(TypedDict, total=False):
+  """A project-level operation in Vertex."""
+
+  name: Optional[str]
+  """The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`."""
+
+  metadata: Optional[dict[str, Any]]
+  """Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata.  Any method that returns a long-running operation should document the metadata type, if any."""
+
+  done: Optional[bool]
+  """If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available."""
+
+  error: Optional[dict[str, Any]]
+  """The error result of the operation in case of failure or cancellation."""
+
+
+ProjectOperationOrDict = Union[ProjectOperation, ProjectOperationDict]
+
+
 class TestTableItem(_common.BaseModel):
 
   name: Optional[str] = Field(
