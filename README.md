@@ -21,6 +21,12 @@ APIs.
 pip install google-genai
 ```
 
+<small>With `uv`:</small>
+
+```sh
+uv pip install google-genai
+```
+
 ## Imports
 
 ```python

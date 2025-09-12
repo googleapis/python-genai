@@ -42,6 +42,9 @@ class APIError(Exception):
           Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
       ] = None,
   ):
+    if isinstance(response_json, list) and len(response_json) == 1:
+      response_json = response_json[0]
+
     self.response = response
     self.details = response_json
     self.message = self._get_message(response_json)
