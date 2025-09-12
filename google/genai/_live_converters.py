@@ -795,7 +795,11 @@ def _LiveSendRealtimeInputParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['media']) is not None:
-    setv(to_object, ['mediaChunks'], t.t_blobs(getv(from_object, ['media'])))
+    setv(
+        to_object,
+        ['mediaChunks'],
+        [item for item in t.t_blobs(getv(from_object, ['media']))],
+    )
 
   if getv(from_object, ['audio']) is not None:
     setv(to_object, ['audio'], t.t_audio_blob(getv(from_object, ['audio'])))
@@ -2057,7 +2061,11 @@ def _LiveSendRealtimeInputParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['media']) is not None:
-    setv(to_object, ['mediaChunks'], t.t_blobs(getv(from_object, ['media'])))
+    setv(
+        to_object,
+        ['mediaChunks'],
+        [item for item in t.t_blobs(getv(from_object, ['media']))],
+    )
 
   if getv(from_object, ['audio']) is not None:
     setv(to_object, ['audio'], t.t_audio_blob(getv(from_object, ['audio'])))
