@@ -13,4 +13,26 @@
 # limitations under the License.
 #
 
-__version__ = '1.36.0' # x-release-please-version
+
+"""Tests for operations._get."""
+
+from .. import pytest_helper
+from ... import types
+
+
+def test_project_operation_get(client):
+  test_operation_id = '3787416390563004416'
+  if client._api_client.vertexai:
+    operation = client.operations._get(
+        operation_id=test_operation_id
+    )
+    assert operation.name.endswith(test_operation_id)
+    assert operation.done
+    assert isinstance(operation, types.ProjectOperation)
+
+
+pytestmark = pytest_helper.setup(
+    file=__file__,
+    globals_for_file=globals(),
+    test_method='operations._get',
+)
