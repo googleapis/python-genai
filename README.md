@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/googleapis-python-genai-badge.png)](https://mseep.ai/app/googleapis-python-genai)
+
 # Google Gen AI SDK
 
 [![PyPI version](https://img.shields.io/pypi/v/google-genai.svg)](https://pypi.org/project/google-genai/)
