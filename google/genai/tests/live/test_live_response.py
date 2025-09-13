@@ -97,7 +97,8 @@ async def test_receive_server_content(mock_websocket, vertexai):
                       "title": "Search results",
                   }
               }]
-          }
+          },
+          "waitingForInput": True,
       }
   })
   mock_websocket.recv.return_value = raw_response_json
@@ -118,6 +119,9 @@ async def test_receive_server_content(mock_websocket, vertexai):
   assert result.server_content.grounding_metadata.web_search_queries == ["test query"]
   assert result.server_content.grounding_metadata.grounding_chunks[0].web.domain == "google.com"
   assert result.server_content.grounding_metadata.grounding_chunks[0].web.title == "Search results"
+
+  assert result.server_content.waiting_for_input is True
+
   # Verify usageMetadata was parsed
   assert isinstance(result.usage_metadata, types.UsageMetadata)
   assert result.usage_metadata.prompt_token_count == 15

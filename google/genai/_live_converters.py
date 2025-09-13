@@ -2655,6 +2655,11 @@ def _LiveServerContent_from_mldev(
         ),
     )
 
+  if getv(from_object, ['waitingForInput']) is not None:
+    setv(
+        to_object, ['waiting_for_input'], getv(from_object, ['waitingForInput'])
+    )
+
   return to_object
 
 
@@ -3331,6 +3336,11 @@ def _LiveServerContent_from_vertex(
         _Transcription_from_vertex(
             getv(from_object, ['outputTranscription']), to_object
         ),
+    )
+
+  if getv(from_object, ['waitingForInput']) is not None:
+    setv(
+        to_object, ['waiting_for_input'], getv(from_object, ['waitingForInput'])
     )
 
   return to_object
