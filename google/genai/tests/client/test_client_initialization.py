@@ -1550,3 +1550,17 @@ async def test_get_async_auth_lock_memory_efficiency():
 
   assert final_lock is initial_lock
   assert final_creation_lock is initial_creation_lock
+
+
+@pytest.mark.asyncio
+async def test_get_aiohttp_session():
+  """Tests that _get_async_auth_lock works correctly with aiohttp session lock."""
+
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  api_client.has_aiohttp = True
+  initial_session = await client._api_client._get_aiohttp_session()
+  assert initial_session is not None
+  session = await client._api_client._get_aiohttp_session()
+  assert session is initial_session
