@@ -15,8 +15,8 @@ pluggy==1.5.0
 py==1.11.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
-pydantic==2.9.2
-pydantic_core==2.23.4
+pydantic==2.11.0
+pydantic_core==2.33.0
 pytest==8.3.4
 pytest-asyncio==0.25.0
 pytest-cov==6.0.0
@@ -27,6 +27,6 @@ tenacity==8.2.3
 typing_extensions==4.12.2
 urllib3==2.2.3
 websockets==15.0.0
-mcp==1.8.1; python_version > '3.9'
+mcp==1.14.0; python_version > '3.9'
 sentencepiece >= 0.2.0
 protobuf
