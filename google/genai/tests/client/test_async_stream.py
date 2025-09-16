@@ -85,6 +85,17 @@ def responses() -> api_client.HttpResponse:
   return api_client.HttpResponse(headers={})
 
 
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
+
+
+@pytest.fixture(autouse=True)
+def reset_has_aiohttp():
+  yield
+  api_client.has_aiohttp = False
+
+
 def test_invalid_response_stream_type(responses: api_client.HttpResponse):
   """Tests that an invalid response stream type raises an error."""
   api_client.has_aiohttp = False
@@ -175,6 +186,7 @@ async def test_httpx_empty_stream(responses: api_client.HttpResponse):
 
 
 # Async aiohttp
+@requires_aiohttp
 @pytest.mark.asyncio
 async def test_aiohttp_simple_lines(responses: api_client.HttpResponse):
   api_client.has_aiohttp = True  # Force aiohttp
@@ -190,6 +202,7 @@ async def test_aiohttp_simple_lines(responses: api_client.HttpResponse):
   mock_response.release.assert_called_once()
 
 
+@requires_aiohttp
 @pytest.mark.asyncio
 async def test_aiohttp_data_prefix(responses: api_client.HttpResponse):
   api_client.has_aiohttp = True  # Force aiohttp
@@ -205,6 +218,7 @@ async def test_aiohttp_data_prefix(responses: api_client.HttpResponse):
   mock_response.release.assert_called_once()
 
 
+@requires_aiohttp
 @pytest.mark.asyncio
 async def test_aiohttp_multiple_json_chunks(responses: api_client.HttpResponse):
   api_client.has_aiohttp = True  # Force aiohttp
@@ -225,6 +239,7 @@ async def test_aiohttp_multiple_json_chunks(responses: api_client.HttpResponse):
   mock_response.release.assert_called_once()
 
 
+@requires_aiohttp
 @pytest.mark.asyncio
 async def test_aiohttp_incomplete_json_at_end(
     responses: api_client.HttpResponse,
