@@ -1428,6 +1428,9 @@ class BaseApiClient:
           'X-Goog-Upload-Offset': str(offset),
           'Content-Length': str(chunk_size),
       }
+      if self._http_options.headers:
+        upload_headers.update(self._http_options.headers)
+
       populate_server_timeout_header(upload_headers, timeout_in_seconds)
       retry_count = 0
       while retry_count < MAX_RETRY_COUNT:
@@ -1584,6 +1587,9 @@ class BaseApiClient:
              'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
         }
+          if self._http_options.headers:
+            upload_headers.update(self._http_options.headers)
+
         populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
         retry_count = 0
@@ -1658,6 +1664,9 @@ class BaseApiClient:
             'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
         }
+        if self._http_options.headers:
+          upload_headers.update(self._http_options.headers)
+
         populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
         retry_count = 0
