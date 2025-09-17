@@ -6565,10 +6565,6 @@ class Models(_api_module.BaseModule):
       response = self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
-      logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(parsed_config)
       if not function_map:
@@ -6586,6 +6582,11 @@ class Models(_api_module.BaseModule):
       )
       if not func_response_parts:
         break
+      logger.info(f'AFC remote call {i} is done.')
+      remaining_remote_calls_afc -= 1
+      if remaining_remote_calls_afc == 0:
+        logger.info('Reached max remote calls for automatic function calling.')
+
       func_call_content = response.candidates[0].content
       func_response_content = types.Content(
           role='user',
@@ -6703,10 +6704,6 @@ class Models(_api_module.BaseModule):
       response = self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
-      logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(parsed_config)
 
@@ -6756,6 +6753,10 @@ class Models(_api_module.BaseModule):
         break
       if not func_response_parts:
         break
+      logger.info(f'AFC remote call {i} is done.')
+      remaining_remote_calls_afc -= 1
+      if remaining_remote_calls_afc == 0:
+        logger.info('Reached max remote calls for automatic function calling.')
 
       # Append function response parts to contents for the next request.
       if chunk is not None and chunk.candidates is not None:
