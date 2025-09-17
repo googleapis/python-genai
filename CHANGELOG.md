@@ -1,22 +1,5 @@
 # Changelog
 
-## [1.38.0](https://github.com/googleapis/python-genai/compare/v1.37.0...v1.38.0) (2025-09-16)
-
-
-### Features
-
-* Add 'turn_complete_reason' and 'waiting_for_input' fields. ([c1f57a5](https://github.com/googleapis/python-genai/commit/c1f57a5172f2f1505ac8b6a971401def7cb6963c))
-
-
-### Bug Fixes
-
-* Skip aiohttp related tests when package is not installed ([50badf6](https://github.com/googleapis/python-genai/commit/50badf6779cf33e5af9df5ef1ab81374206c8671))
-
-
-### Documentation
-
-* Regenerate docs for 1.37.0 ([1631b2e](https://github.com/googleapis/python-genai/commit/1631b2e936e2edd173784956d59ea14901b87579))
-
 ## [1.37.0](https://github.com/googleapis/python-genai/compare/v1.36.0...v1.37.0) (2025-09-16)
 
 
