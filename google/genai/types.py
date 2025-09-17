@@ -434,6 +434,19 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 32."""
 
 
+class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
+  """Specifies how the response should be scheduled in the conversation."""
+
+  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
+  """This value is unused."""
+  SILENT = 'SILENT'
+  """Only add the result to the conversation context, do not interrupt or trigger generation."""
+  WHEN_IDLE = 'WHEN_IDLE'
+  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
+  INTERRUPT = 'INTERRUPT'
+  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
+
+
 class JSONSchemaType(Enum):
   """The type of the data supported by JSON Schema.
 
@@ -685,19 +698,6 @@ class MediaModality(_common.CaseInSensitiveEnum):
   """Audio."""
   DOCUMENT = 'DOCUMENT'
   """Document, e.g. PDF."""
-
-
-class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
-  """Specifies how the response should be scheduled in the conversation."""
-
-  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
-  """This value is unused."""
-  SILENT = 'SILENT'
-  """Only add the result to the conversation context, do not interrupt or trigger generation."""
-  WHEN_IDLE = 'WHEN_IDLE'
-  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
-  INTERRUPT = 'INTERRUPT'
-  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
 
 
 class StartSensitivity(_common.CaseInSensitiveEnum):
@@ -953,6 +953,68 @@ class FunctionCallDict(TypedDict, total=False):
 FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
 
 
+class FunctionResponse(_common.BaseModel):
+  """A function response."""
+
+  will_continue: Optional[bool] = Field(
+      default=None,
+      description="""Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished.""",
+  )
+  scheduling: Optional[FunctionResponseScheduling] = Field(
+      default=None,
+      description="""Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.""",
+  )
+  id: Optional[str] = Field(
+      default=None,
+      description="""Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name].""",
+  )
+  response: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output.""",
+  )
+
+  @classmethod
+  def from_mcp_response(
+      cls, *, name: str, response: McpCallToolResult
+  ) -> 'FunctionResponse':
+    if not _is_mcp_imported:
+      raise ValueError(
+          'MCP response is not supported. Please ensure that the MCP library is'
+          ' imported.'
+      )
+
+    if response.isError:
+      return cls(name=name, response={'error': 'MCP response is error.'})
+    else:
+      return cls(name=name, response={'result': response.content})
+
+
+class FunctionResponseDict(TypedDict, total=False):
+  """A function response."""
+
+  will_continue: Optional[bool]
+  """Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished."""
+
+  scheduling: Optional[FunctionResponseScheduling]
+  """Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE."""
+
+  id: Optional[str]
+  """Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`."""
+
+  name: Optional[str]
+  """Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name]."""
+
+  response: Optional[dict[str, Any]]
+  """Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output."""
+
+
+FunctionResponseOrDict = Union[FunctionResponse, FunctionResponseDict]
+
+
 class CodeExecutionResult(_common.BaseModel):
   """Result of executing the [ExecutableCode].
 
@@ -1021,68 +1083,6 @@ class ExecutableCodeDict(TypedDict, total=False):
 ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
 
 
-class FunctionResponse(_common.BaseModel):
-  """A function response."""
-
-  will_continue: Optional[bool] = Field(
-      default=None,
-      description="""Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished.""",
-  )
-  scheduling: Optional[FunctionResponseScheduling] = Field(
-      default=None,
-      description="""Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.""",
-  )
-  id: Optional[str] = Field(
-      default=None,
-      description="""Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`.""",
-  )
-  name: Optional[str] = Field(
-      default=None,
-      description="""Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name].""",
-  )
-  response: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output.""",
-  )
-
-  @classmethod
-  def from_mcp_response(
-      cls, *, name: str, response: McpCallToolResult
-  ) -> 'FunctionResponse':
-    if not _is_mcp_imported:
-      raise ValueError(
-          'MCP response is not supported. Please ensure that the MCP library is'
-          ' imported.'
-      )
-
-    if response.isError:
-      return cls(name=name, response={'error': 'MCP response is error.'})
-    else:
-      return cls(name=name, response={'result': response.content})
-
-
-class FunctionResponseDict(TypedDict, total=False):
-  """A function response."""
-
-  will_continue: Optional[bool]
-  """Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished."""
-
-  scheduling: Optional[FunctionResponseScheduling]
-  """Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE."""
-
-  id: Optional[str]
-  """Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`."""
-
-  name: Optional[str]
-  """Required. The name of the function to call. Matches [FunctionDeclaration.name] and [FunctionCall.name]."""
-
-  response: Optional[dict[str, Any]]
-  """Required. The function response in JSON object format. Use "output" key to specify function output and "error" key to specify error details (if any). If "output" and "error" keys are not specified, then whole "response" is treated as function output."""
-
-
-FunctionResponseOrDict = Union[FunctionResponse, FunctionResponseDict]
-
-
 class Part(_common.BaseModel):
   """A datatype containing media content.
 
@@ -1114,6 +1114,10 @@ class Part(_common.BaseModel):
       representing the [FunctionDeclaration.name] and a structured JSON object
       containing the parameters and their values.""",
   )
+  function_response: Optional[FunctionResponse] = Field(
+      default=None,
+      description="""Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model.""",
+  )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
       description="""Optional. Result of executing the [ExecutableCode].""",
@@ -1121,10 +1125,6 @@ class Part(_common.BaseModel):
   executable_code: Optional[ExecutableCode] = Field(
       default=None,
       description="""Optional. Code generated by the model that is meant to be executed.""",
-  )
-  function_response: Optional[FunctionResponse] = Field(
-      default=None,
-      description="""Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model.""",
   )
   text: Optional[str] = Field(
       default=None, description="""Optional. Text part (can be code)."""
@@ -1221,14 +1221,14 @@ class PartDict(TypedDict, total=False):
       representing the [FunctionDeclaration.name] and a structured JSON object
       containing the parameters and their values."""
 
+  function_response: Optional[FunctionResponseDict]
+  """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
+
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
 
   executable_code: Optional[ExecutableCodeDict]
   """Optional. Code generated by the model that is meant to be executed."""
-
-  function_response: Optional[FunctionResponseDict]
-  """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
 
   text: Optional[str]
   """Optional. Text part (can be code)."""
