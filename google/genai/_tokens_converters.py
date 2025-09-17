@@ -23,459 +23,27 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 
-def _PrebuiltVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
-
-  return to_object
-
-
-def _VoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prebuilt_voice_config']) is not None:
-    setv(
-        to_object,
-        ['prebuiltVoiceConfig'],
-        _PrebuiltVoiceConfig_to_mldev(
-            getv(from_object, ['prebuilt_voice_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _SpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker']) is not None:
-    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
-
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  return to_object
-
-
-def _MultiSpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker_voice_configs']) is not None:
-    setv(
-        to_object,
-        ['speakerVoiceConfigs'],
-        [
-            _SpeakerVoiceConfig_to_mldev(item, to_object)
-            for item in getv(from_object, ['speaker_voice_configs'])
-        ],
-    )
-
-  return to_object
-
-
-def _SpeechConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    setv(
-        to_object,
-        ['multiSpeakerVoiceConfig'],
-        _MultiSpeakerVoiceConfig_to_mldev(
-            getv(from_object, ['multi_speaker_voice_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _VideoMetadata_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
-
-  if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
-
-  return to_object
-
-
-def _Blob_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _FileData_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _FunctionCall_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['id']) is not None:
-    setv(to_object, ['id'], getv(from_object, ['id']))
-
-  if getv(from_object, ['args']) is not None:
-    setv(to_object, ['args'], getv(from_object, ['args']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _Part_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(
-        to_object,
-        ['videoMetadata'],
-        _VideoMetadata_to_mldev(
-            getv(from_object, ['video_metadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
-    )
-
-  if getv(from_object, ['thought_signature']) is not None:
-    setv(
-        to_object,
-        ['thoughtSignature'],
-        getv(from_object, ['thought_signature']),
-    )
-
-  if getv(from_object, ['function_call']) is not None:
-    setv(
-        to_object,
-        ['functionCall'],
-        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
-    )
-
-  if getv(from_object, ['code_execution_result']) is not None:
-    setv(
-        to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
-    )
-
-  if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
-def _Content_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_to_mldev(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
-
-  if getv(from_object, ['role']) is not None:
-    setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _FunctionDeclaration_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  if getv(from_object, ['parameters_json_schema']) is not None:
-    setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  return to_object
-
-
-def _Interval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
-
-  if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
-
-  return to_object
-
-
-def _GoogleSearch_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object,
-        ['timeRangeFilter'],
-        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
-    )
-
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
-
-  return to_object
-
-
-def _DynamicRetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
-
-  return to_object
-
-
-def _GoogleSearchRetrieval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_mldev(
-            getv(from_object, ['dynamic_retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _UrlContext_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _ToolComputerUse_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  return to_object
-
-
-def _Tool_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_mldev(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
-  if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
-    )
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_mldev(
-            getv(from_object, ['google_search_retrieval']), to_object
-        ),
-    )
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['google_maps']) is not None:
-    raise ValueError('google_maps parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['url_context']) is not None:
-    setv(
-        to_object,
-        ['urlContext'],
-        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
-    )
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ToolComputerUse_to_mldev(
-            getv(from_object, ['computer_use']), to_object
-        ),
-    )
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  return to_object
-
-
-def _SessionResumptionConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['handle']) is not None:
-    setv(to_object, ['handle'], getv(from_object, ['handle']))
-
-  if getv(from_object, ['transparent']) is not None:
-    raise ValueError('transparent parameter is not supported in Gemini API.')
-
-  return to_object
-
-
 def _AudioTranscriptionConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _AuthToken_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  return to_object
+
+
+def _AuthToken_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -521,40 +89,40 @@ def _AutomaticActivityDetection_to_mldev(
   return to_object
 
 
-def _RealtimeInputConfig_to_mldev(
+def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['automatic_activity_detection']) is not None:
-    setv(
-        to_object,
-        ['automaticActivityDetection'],
-        _AutomaticActivityDetection_to_mldev(
-            getv(from_object, ['automatic_activity_detection']), to_object
-        ),
-    )
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['activity_handling']) is not None:
-    setv(
-        to_object,
-        ['activityHandling'],
-        getv(from_object, ['activity_handling']),
-    )
+  if getv(from_object, ['data']) is not None:
+    setv(to_object, ['data'], getv(from_object, ['data']))
 
-  if getv(from_object, ['turn_coverage']) is not None:
-    setv(to_object, ['turnCoverage'], getv(from_object, ['turn_coverage']))
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
 
   return to_object
 
 
-def _SlidingWindow_to_mldev(
+def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['target_tokens']) is not None:
-    setv(to_object, ['targetTokens'], getv(from_object, ['target_tokens']))
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _Part_to_mldev(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['role']) is not None:
+    setv(to_object, ['role'], getv(from_object, ['role']))
 
   return to_object
 
@@ -579,13 +147,212 @@ def _ContextWindowCompressionConfig_to_mldev(
   return to_object
 
 
-def _ProactivityConfig_to_mldev(
+def _CreateAuthTokenConfig_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['proactive_audio']) is not None:
-    setv(to_object, ['proactiveAudio'], getv(from_object, ['proactive_audio']))
+
+  if getv(from_object, ['expire_time']) is not None:
+    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
+
+  if getv(from_object, ['new_session_expire_time']) is not None:
+    setv(
+        parent_object,
+        ['newSessionExpireTime'],
+        getv(from_object, ['new_session_expire_time']),
+    )
+
+  if getv(from_object, ['uses']) is not None:
+    setv(parent_object, ['uses'], getv(from_object, ['uses']))
+
+  if getv(from_object, ['live_connect_constraints']) is not None:
+    setv(
+        parent_object,
+        ['bidiGenerateContentSetup'],
+        _LiveConnectConstraints_to_mldev(
+            api_client,
+            getv(from_object, ['live_connect_constraints']),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['lock_additional_fields']) is not None:
+    setv(
+        parent_object,
+        ['fieldMask'],
+        getv(from_object, ['lock_additional_fields']),
+    )
+
+  return to_object
+
+
+def _CreateAuthTokenParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _CreateAuthTokenConfig_to_mldev(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _CreateAuthTokenParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['config']) is not None:
+    raise ValueError('config parameter is not supported in Vertex AI.')
+
+  return to_object
+
+
+def _DynamicRetrievalConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['dynamic_threshold']) is not None:
+    setv(
+        to_object,
+        ['dynamicThreshold'],
+        getv(from_object, ['dynamic_threshold']),
+    )
+
+  return to_object
+
+
+def _FileData_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _FunctionCall_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['args']) is not None:
+    setv(to_object, ['args'], getv(from_object, ['args']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  return to_object
+
+
+def _FunctionDeclaration_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['parameters_json_schema']) is not None:
+    setv(
+        to_object,
+        ['parametersJsonSchema'],
+        getv(from_object, ['parameters_json_schema']),
+    )
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
+  return to_object
+
+
+def _GoogleSearchRetrieval_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['dynamic_retrieval_config']) is not None:
+    setv(
+        to_object,
+        ['dynamicRetrievalConfig'],
+        _DynamicRetrievalConfig_to_mldev(
+            getv(from_object, ['dynamic_retrieval_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _GoogleSearch_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object,
+        ['timeRangeFilter'],
+        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
+    )
+
+  return to_object
+
+
+def _Interval_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['start_time']) is not None:
+    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
 
   return to_object
 
@@ -771,91 +538,324 @@ def _LiveConnectConstraints_to_mldev(
   return to_object
 
 
-def _CreateAuthTokenConfig_to_mldev(
-    api_client: BaseApiClient,
+def _MultiSpeakerVoiceConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['expire_time']) is not None:
-    setv(parent_object, ['expireTime'], getv(from_object, ['expire_time']))
-
-  if getv(from_object, ['new_session_expire_time']) is not None:
-    setv(
-        parent_object,
-        ['newSessionExpireTime'],
-        getv(from_object, ['new_session_expire_time']),
-    )
-
-  if getv(from_object, ['uses']) is not None:
-    setv(parent_object, ['uses'], getv(from_object, ['uses']))
-
-  if getv(from_object, ['live_connect_constraints']) is not None:
-    setv(
-        parent_object,
-        ['bidiGenerateContentSetup'],
-        _LiveConnectConstraints_to_mldev(
-            api_client,
-            getv(from_object, ['live_connect_constraints']),
-            to_object,
-        ),
-    )
-
-  if getv(from_object, ['lock_additional_fields']) is not None:
-    setv(
-        parent_object,
-        ['fieldMask'],
-        getv(from_object, ['lock_additional_fields']),
-    )
-
-  return to_object
-
-
-def _CreateAuthTokenParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
+  if getv(from_object, ['speaker_voice_configs']) is not None:
     setv(
         to_object,
-        ['config'],
-        _CreateAuthTokenConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
+        ['speakerVoiceConfigs'],
+        [
+            _SpeakerVoiceConfig_to_mldev(item, to_object)
+            for item in getv(from_object, ['speaker_voice_configs'])
+        ],
     )
 
   return to_object
 
 
-def _CreateAuthTokenParameters_to_vertex(
+def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Vertex AI.')
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(
+        to_object,
+        ['videoMetadata'],
+        _VideoMetadata_to_mldev(
+            getv(from_object, ['video_metadata']), to_object
+        ),
+    )
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(
+        to_object,
+        ['inlineData'],
+        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
+    )
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(
+        to_object,
+        ['functionCall'],
+        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
+    )
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
 
   return to_object
 
 
-def _AuthToken_from_mldev(
+def _PrebuiltVoiceConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
+  if getv(from_object, ['voice_name']) is not None:
+    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
 
   return to_object
 
 
-def _AuthToken_from_vertex(
+def _ProactivityConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['proactive_audio']) is not None:
+    setv(to_object, ['proactiveAudio'], getv(from_object, ['proactive_audio']))
+
+  return to_object
+
+
+def _RealtimeInputConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['automatic_activity_detection']) is not None:
+    setv(
+        to_object,
+        ['automaticActivityDetection'],
+        _AutomaticActivityDetection_to_mldev(
+            getv(from_object, ['automatic_activity_detection']), to_object
+        ),
+    )
+
+  if getv(from_object, ['activity_handling']) is not None:
+    setv(
+        to_object,
+        ['activityHandling'],
+        getv(from_object, ['activity_handling']),
+    )
+
+  if getv(from_object, ['turn_coverage']) is not None:
+    setv(to_object, ['turnCoverage'], getv(from_object, ['turn_coverage']))
+
+  return to_object
+
+
+def _SessionResumptionConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['handle']) is not None:
+    setv(to_object, ['handle'], getv(from_object, ['handle']))
+
+  if getv(from_object, ['transparent']) is not None:
+    raise ValueError('transparent parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _SlidingWindow_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['target_tokens']) is not None:
+    setv(to_object, ['targetTokens'], getv(from_object, ['target_tokens']))
+
+  return to_object
+
+
+def _SpeakerVoiceConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
+    )
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    setv(
+        to_object,
+        ['multiSpeakerVoiceConfig'],
+        _MultiSpeakerVoiceConfig_to_mldev(
+            getv(from_object, ['multi_speaker_voice_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  return to_object
+
+
+def _ToolComputerUse_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  return to_object
+
+
+def _Tool_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_mldev(item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
+  if getv(from_object, ['retrieval']) is not None:
+    raise ValueError('retrieval parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        _GoogleSearchRetrieval_to_mldev(
+            getv(from_object, ['google_search_retrieval']), to_object
+        ),
+    )
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['google_maps']) is not None:
+    raise ValueError('google_maps parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['url_context']) is not None:
+    setv(
+        to_object,
+        ['urlContext'],
+        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
+    )
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(
+        to_object,
+        ['computerUse'],
+        _ToolComputerUse_to_mldev(
+            getv(from_object, ['computer_use']), to_object
+        ),
+    )
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  return to_object
+
+
+def _UrlContext_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  return to_object
+
+
+def _VideoMetadata_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fps']) is not None:
+    setv(to_object, ['fps'], getv(from_object, ['fps']))
+
+  if getv(from_object, ['end_offset']) is not None:
+    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+
+  if getv(from_object, ['start_offset']) is not None:
+    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+
+  return to_object
+
+
+def _VoiceConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prebuilt_voice_config']) is not None:
+    setv(
+        to_object,
+        ['prebuiltVoiceConfig'],
+        _PrebuiltVoiceConfig_to_mldev(
+            getv(from_object, ['prebuilt_voice_config']), to_object
+        ),
+    )
 
   return to_object
