@@ -34,6 +34,17 @@ from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 from ... import types
+try:
+  import aiohttp
+  AIOHTTP_NOT_INSTALLED = False
+except ImportError:
+  AIOHTTP_NOT_INSTALLED = True
+  aiohttp = mock.MagicMock()
+
+
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
 
 
 @pytest.fixture(autouse=True)
@@ -1550,3 +1561,18 @@ async def test_get_async_auth_lock_memory_efficiency():
 
   assert final_lock is initial_lock
   assert final_creation_lock is initial_creation_lock
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+async def test_get_aiohttp_session():
+  """Tests that _get_async_auth_lock works correctly with aiohttp session lock."""
+
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  api_client.has_aiohttp = True
+  initial_session = await client._api_client._get_aiohttp_session()
+  assert initial_session is not None
+  session = await client._api_client._get_aiohttp_session()
+  assert session is initial_session
