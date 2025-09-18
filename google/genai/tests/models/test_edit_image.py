@@ -87,6 +87,23 @@ subject_ref_image_customization = types.SubjectReferenceImage(
     ),
 )
 
+dog_content_ref_image = types.ContentReferenceImage(
+    reference_id=1,
+    reference_image=types.Image(
+        gcs_uri='gs://genai-sdk-tests/inputs/images/dog.jpg'
+    ),
+)
+
+cyberpunk_style_ref_image = types.StyleReferenceImage(
+    reference_id=2,
+    reference_image=types.Image(
+        gcs_uri='gs://genai-sdk-tests/inputs/images/cyberpunk.jpg'
+    ),
+    config=types.StyleReferenceConfig(
+        style_description='cyberpunk style',
+    ),
+)
+
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_edit_mask_inpaint_insert',
@@ -173,6 +190,25 @@ test_table: list[pytest_helper.TestTableItem] = [
                 number_of_images=1,
                 aspect_ratio='9:16',
                 include_rai_reason=True,
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_edit_content_image_ingredients',
+        exception_if_mldev='only supported in the Vertex AI client',
+        parameters=types._EditImageParameters(
+            model='imagen-4.0-ingredients-preview',
+            prompt=(
+                'Dog in [1] sleeping on the ground at the bottom of the image'
+                ' with the cyberpunk city landscape in [2] in the background'
+                ' visible on the side of the mug.'
+            ),
+            reference_images=[dog_content_ref_image, cyberpunk_style_ref_image],
+            config=types.EditImageConfig(
+                number_of_images=1,
+                aspect_ratio='9:16',
+                include_rai_reason=True,
+                output_mime_type='image/jpeg',
             ),
         ),
     ),

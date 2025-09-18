@@ -6821,7 +6821,7 @@ class _EditImageParameters(_common.BaseModel):
       description="""A text description of the edit to apply to the image.""",
   )
   reference_images: Optional[list[_ReferenceImageAPI]] = Field(
-      default=None, description="""The reference images for Imagen 3 editing."""
+      default=None, description="""The reference images for editing."""
   )
   config: Optional[EditImageConfig] = Field(
       default=None, description="""Configuration for editing."""
@@ -6838,7 +6838,7 @@ class _EditImageParametersDict(TypedDict, total=False):
   """A text description of the edit to apply to the image."""
 
   reference_images: Optional[list[_ReferenceImageAPIDict]]
-  """The reference images for Imagen 3 editing."""
+  """The reference images for editing."""
 
   config: Optional[EditImageConfigDict]
   """Configuration for editing."""
@@ -13169,6 +13169,58 @@ class SubjectReferenceImageDict(TypedDict, total=False):
 
 SubjectReferenceImageOrDict = Union[
     SubjectReferenceImage, SubjectReferenceImageDict
+]
+
+
+class ContentReferenceImage(_common.BaseModel):
+  """A content reference image.
+
+  A content reference image represents a subject to reference (ex. person,
+  product, animal) provided by the user. It can optionally be provided in
+  addition to a style reference image (ex. background, style reference).
+  """
+
+  reference_image: Optional[Image] = Field(
+      default=None,
+      description="""The reference image for the editing operation.""",
+  )
+  reference_id: Optional[int] = Field(
+      default=None, description="""The id of the reference image."""
+  )
+  reference_type: Optional[str] = Field(
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
+  )
+
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values: Any) -> Any:
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_CONTENT'
+    return values
+
+
+class ContentReferenceImageDict(TypedDict, total=False):
+  """A content reference image.
+
+  A content reference image represents a subject to reference (ex. person,
+  product, animal) provided by the user. It can optionally be provided in
+  addition to a style reference image (ex. background, style reference).
+  """
+
+  reference_image: Optional[ImageDict]
+  """The reference image for the editing operation."""
+
+  reference_id: Optional[int]
+  """The id of the reference image."""
+
+  reference_type: Optional[str]
+  """The type of the reference image. Only set by the SDK."""
+
+
+ContentReferenceImageOrDict = Union[
+    ContentReferenceImage, ContentReferenceImageDict
 ]
 
 
