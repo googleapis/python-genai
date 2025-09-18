@@ -5374,6 +5374,8 @@ class Models(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
+    print('path: ', path)
+    print('request_dict: ', request_dict)
     response = self._api_client.request(
         'post', path, request_dict, http_options
     )
