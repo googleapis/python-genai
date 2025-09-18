@@ -30,6 +30,27 @@ from ._common import set_value_by_path as setv
 logger = logging.getLogger('google_genai.operations')
 
 
+def _FetchPredictOperationParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['operation_name']) is not None:
+    setv(to_object, ['operationName'], getv(from_object, ['operation_name']))
+
+  if getv(from_object, ['resource_name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'resourceName'],
+        getv(from_object, ['resource_name']),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
+  return to_object
+
+
 def _GetOperationParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -66,23 +87,38 @@ def _GetOperationParameters_to_vertex(
   return to_object
 
 
-def _FetchPredictOperationParameters_to_vertex(
+def _GetProjectOperationParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(to_object, ['operationName'], getv(from_object, ['operation_name']))
-
-  if getv(from_object, ['resource_name']) is not None:
+  if getv(from_object, ['operation_id']) is not None:
     setv(
-        to_object,
-        ['_url', 'resourceName'],
-        getv(from_object, ['resource_name']),
+        to_object, ['_url', 'operation_id'], getv(from_object, ['operation_id'])
     )
 
   if getv(from_object, ['config']) is not None:
     setv(to_object, ['config'], getv(from_object, ['config']))
+
+  return to_object
+
+
+def _ProjectOperation_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(from_object, ['done']) is not None:
+    setv(to_object, ['done'], getv(from_object, ['done']))
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
 
   return to_object
 
@@ -187,6 +223,58 @@ class Operations(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     return response_dict
+
+  def _get(
+      self,
+      *,
+      operation_id: str,
+      config: Optional[types.GetOperationConfigOrDict] = None,
+  ) -> types.ProjectOperation:
+    parameter_model = types._GetProjectOperationParameters(
+        operation_id=operation_id,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'operations/{operation_id}'.format_map(request_url_dict)
+      else:
+        path = 'operations/{operation_id}'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request('get', path, request_dict, http_options)
+
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _ProjectOperation_from_vertex(response_dict)
+
+    return_value = types.ProjectOperation._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
 
   T = TypeVar('T', bound=types.Operation)
 
@@ -343,6 +431,60 @@ class AsyncOperations(_api_module.BaseModule):
     response_dict = '' if not response.body else json.loads(response.body)
 
     return response_dict
+
+  async def _get(
+      self,
+      *,
+      operation_id: str,
+      config: Optional[types.GetOperationConfigOrDict] = None,
+  ) -> types.ProjectOperation:
+    parameter_model = types._GetProjectOperationParameters(
+        operation_id=operation_id,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'operations/{operation_id}'.format_map(request_url_dict)
+      else:
+        path = 'operations/{operation_id}'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'get', path, request_dict, http_options
+    )
+
+    response_dict = '' if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _ProjectOperation_from_vertex(response_dict)
+
+    return_value = types.ProjectOperation._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
 
   T = TypeVar('T', bound=types.Operation)
 

@@ -1,5 +1,58 @@
 # Changelog
 
+## [1.38.0](https://github.com/googleapis/python-genai/compare/v1.37.0...v1.38.0) (2025-09-16)
+
+
+### Features
+
+* Add 'turn_complete_reason' and 'waiting_for_input' fields. ([c1f57a5](https://github.com/googleapis/python-genai/commit/c1f57a5172f2f1505ac8b6a971401def7cb6963c))
+
+
+### Bug Fixes
+
+* Skip aiohttp related tests when package is not installed ([50badf6](https://github.com/googleapis/python-genai/commit/50badf6779cf33e5af9df5ef1ab81374206c8671))
+
+
+### Documentation
+
+* Regenerate docs for 1.37.0 ([1631b2e](https://github.com/googleapis/python-genai/commit/1631b2e936e2edd173784956d59ea14901b87579))
+
+## [1.37.0](https://github.com/googleapis/python-genai/compare/v1.36.0...v1.37.0) (2025-09-16)
+
+
+### Features
+
+* Add `VideoGenerationMaskMode` enum for Veo 2 Editing ([3d73cc5](https://github.com/googleapis/python-genai/commit/3d73cc5f6ca3a94a512159c3f48aeaf0440e3a3d))
+
+
+### Bug Fixes
+
+* Handle single-element list responses in error details. ([2629fb4](https://github.com/googleapis/python-genai/commit/2629fb429f773c3472c33efd1f7e6ddc3e61e7d7))
+* Reuse aiohttp ClientSession for sharing connection pool ([d866313](https://github.com/googleapis/python-genai/commit/d8663138cdd0aee5a69129b3ce37d218040060e5))
+
+
+### Documentation
+
+* Add uv package installation command to README ([09a8bee](https://github.com/googleapis/python-genai/commit/09a8beece994dd5fd86deeac5082e7b313b2aede))
+
+## [1.36.0](https://github.com/googleapis/python-genai/compare/v1.35.0...v1.36.0) (2025-09-10)
+
+
+### Features
+
+* Add labels to create tuning job config ([a6a2988](https://github.com/googleapis/python-genai/commit/a6a2988e17f17ea2c837c81a5e7f175524ecaf30))
+
+
+### Bug Fixes
+
+* Fix the return type of generate_content_stream. ([28c735f](https://github.com/googleapis/python-genai/commit/28c735f454c95dd3c73b4dd05751b465a0e86191))
+* Fix the return type of generate_content_stream. ([ebc7180](https://github.com/googleapis/python-genai/commit/ebc71803f4066caf6fd718f1d938307c05327331))
+
+
+### Documentation
+
+* Regenerate docs for 1.35.0 ([aa2f97b](https://github.com/googleapis/python-genai/commit/aa2f97b243a15fe1c5804806345dd194e6034f44))
+
 ## [1.35.0](https://github.com/googleapis/python-genai/compare/v1.34.0...v1.35.0) (2025-09-09)
 
 

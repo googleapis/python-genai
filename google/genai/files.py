@@ -35,113 +35,6 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.files')
 
 
-def _ListFilesConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  return to_object
-
-
-def _ListFilesParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
-
-  return to_object
-
-
-def _FileStatus_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['details']) is not None:
-    setv(to_object, ['details'], getv(from_object, ['details']))
-
-  if getv(from_object, ['message']) is not None:
-    setv(to_object, ['message'], getv(from_object, ['message']))
-
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  return to_object
-
-
-def _File_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  if getv(from_object, ['size_bytes']) is not None:
-    setv(to_object, ['sizeBytes'], getv(from_object, ['size_bytes']))
-
-  if getv(from_object, ['create_time']) is not None:
-    setv(to_object, ['createTime'], getv(from_object, ['create_time']))
-
-  if getv(from_object, ['expiration_time']) is not None:
-    setv(to_object, ['expirationTime'], getv(from_object, ['expiration_time']))
-
-  if getv(from_object, ['update_time']) is not None:
-    setv(to_object, ['updateTime'], getv(from_object, ['update_time']))
-
-  if getv(from_object, ['sha256_hash']) is not None:
-    setv(to_object, ['sha256Hash'], getv(from_object, ['sha256_hash']))
-
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['download_uri']) is not None:
-    setv(to_object, ['downloadUri'], getv(from_object, ['download_uri']))
-
-  if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
-
-  if getv(from_object, ['source']) is not None:
-    setv(to_object, ['source'], getv(from_object, ['source']))
-
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _FileStatus_to_mldev(getv(from_object, ['error']), to_object),
-    )
-
-  return to_object
-
-
 def _CreateFileParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -160,18 +53,15 @@ def _CreateFileParameters_to_mldev(
   return to_object
 
 
-def _GetFileParameters_to_mldev(
+def _CreateFileResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
+  if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
-        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -192,7 +82,37 @@ def _DeleteFileParameters_to_mldev(
   return to_object
 
 
+def _DeleteFileResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
 def _FileStatus_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['details']) is not None:
+    setv(to_object, ['details'], getv(from_object, ['details']))
+
+  if getv(from_object, ['message']) is not None:
+    setv(to_object, ['message'], getv(from_object, ['message']))
+
+  if getv(from_object, ['code']) is not None:
+    setv(to_object, ['code'], getv(from_object, ['code']))
+
+  return to_object
+
+
+def _FileStatus_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -263,6 +183,112 @@ def _File_from_mldev(
   return to_object
 
 
+def _File_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  if getv(from_object, ['size_bytes']) is not None:
+    setv(to_object, ['sizeBytes'], getv(from_object, ['size_bytes']))
+
+  if getv(from_object, ['create_time']) is not None:
+    setv(to_object, ['createTime'], getv(from_object, ['create_time']))
+
+  if getv(from_object, ['expiration_time']) is not None:
+    setv(to_object, ['expirationTime'], getv(from_object, ['expiration_time']))
+
+  if getv(from_object, ['update_time']) is not None:
+    setv(to_object, ['updateTime'], getv(from_object, ['update_time']))
+
+  if getv(from_object, ['sha256_hash']) is not None:
+    setv(to_object, ['sha256Hash'], getv(from_object, ['sha256_hash']))
+
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
+
+  if getv(from_object, ['download_uri']) is not None:
+    setv(to_object, ['downloadUri'], getv(from_object, ['download_uri']))
+
+  if getv(from_object, ['state']) is not None:
+    setv(to_object, ['state'], getv(from_object, ['state']))
+
+  if getv(from_object, ['source']) is not None:
+    setv(to_object, ['source'], getv(from_object, ['source']))
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['error']) is not None:
+    setv(
+        to_object,
+        ['error'],
+        _FileStatus_to_mldev(getv(from_object, ['error']), to_object),
+    )
+
+  return to_object
+
+
+def _GetFileParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(to_object, ['config'], getv(from_object, ['config']))
+
+  return to_object
+
+
+def _ListFilesConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['page_size']) is not None:
+    setv(
+        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+    )
+
+  if getv(from_object, ['page_token']) is not None:
+    setv(
+        parent_object,
+        ['_query', 'pageToken'],
+        getv(from_object, ['page_token']),
+    )
+
+  return to_object
+
+
+def _ListFilesParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['config'],
+        _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object),
+    )
+
+  return to_object
+
+
 def _ListFilesResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -284,32 +310,6 @@ def _ListFilesResponse_from_mldev(
             _File_from_mldev(item, to_object)
             for item in getv(from_object, ['files'])
         ],
-    )
-
-  return to_object
-
-
-def _CreateFileResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  return to_object
-
-
-def _DeleteFileResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
     )
 
   return to_object

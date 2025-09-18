@@ -180,7 +180,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 aspect_ratio="16:9",
                 mask=types.VideoGenerationMask(
                     image=GCS_OUTPAINT_MASK,
-                    mask_mode="OUTPAINT",
+                    mask_mode=types.VideoGenerationMaskMode.OUTPAINT,
                 ),
             ),
         ),
@@ -412,7 +412,7 @@ def test_video_edit_outpaint_poll(client):
           aspect_ratio="16:9",
           mask=types.VideoGenerationMask(
               image=GCS_OUTPAINT_MASK,
-              mask_mode="OUTPAINT",
+              mask_mode=types.VideoGenerationMaskMode.OUTPAINT,
           ),
       ),
   )
@@ -443,7 +443,7 @@ def test_video_edit_remove_poll(client):
           aspect_ratio="16:9",
           mask=types.VideoGenerationMask(
               image=GCS_REMOVE_MASK,
-              mask_mode="INPAINT_DYNAMIC",
+              mask_mode=types.VideoGenerationMaskMode.REMOVE,
           ),
       ),
   )
@@ -474,7 +474,39 @@ def test_video_edit_remove_static_poll(client):
           aspect_ratio="16:9",
           mask=types.VideoGenerationMask(
               image=GCS_REMOVE_STATIC_MASK,
-              mask_mode="INPAINT",
+              mask_mode=types.VideoGenerationMaskMode.REMOVE_STATIC,
+          ),
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
+def test_video_edit_insert_poll(client):
+  # Editing videos is only supported in Vertex AI.
+  if not client.vertexai:
+    return
+
+  operation = client.models.generate_videos(
+      model="veo-2.0-generate-exp",
+      source=types.GenerateVideosSource(
+          prompt="Bike",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+          ),
+      ),
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              # Insert and remove masks are the same for this input.
+              image=GCS_REMOVE_MASK,
+              mask_mode=types.VideoGenerationMaskMode.INSERT,
           ),
       ),
   )

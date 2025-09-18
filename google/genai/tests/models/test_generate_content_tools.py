@@ -1411,7 +1411,7 @@ def test_afc_logs_to_logger_instance(client, caplog):
           'tools': [divide_integers],
           'automatic_function_calling': {
               'disable': False,
-              'maximum_remote_calls': 2,
+              'maximum_remote_calls': 1,
               'ignore_call_history': True,
           },
       },
@@ -1420,9 +1420,8 @@ def test_afc_logs_to_logger_instance(client, caplog):
     assert log.levelname == 'INFO'
     assert log.name == 'google_genai.models'
 
-  assert 'AFC is enabled with max remote calls: 2' in caplog.text
+  assert 'AFC is enabled with max remote calls: 1' in caplog.text
   assert 'remote call 1 is done' in caplog.text
-  assert 'remote call 2 is done' in caplog.text
   assert 'Reached max remote calls' in caplog.text
 
 
