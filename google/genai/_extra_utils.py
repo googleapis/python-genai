@@ -122,7 +122,11 @@ def get_function_map(
     ] = None,
     is_caller_method_async: bool = False,
 ) -> dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]]:
-  """Returns a function map from the config."""
+  """Returns a function map for executing functions from the config.
+
+  If there are async functions in the tools list, or non-executable tools, raise
+  an error.
+  """
   function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]] = {}
   if not config:
     return function_map
@@ -134,9 +138,19 @@ def get_function_map(
           raise errors.UnsupportedFunctionError(
               f'Function {tool.__name__} is a coroutine function, which is not'
               ' supported for automatic function calling. Please manually'
-              f' invoke {tool.__name__} to get the function response.'
+              f' invoke {tool.__name__} to get the function response'
           )
         function_map[tool.__name__] = tool
+      elif (
+          isinstance(tool, types.Tool)
+          and tool.function_declarations
+          and isinstance(tool.function_declarations, list)
+      ):
+        raise errors.UnsupportedFunctionError(
+            'Function declarations are not supported for automatic function'
+            ' calling. Please manually invoke the functions to get the'
+            ' function response.'
+        )
   if mcp_to_genai_tool_adapters:
     if not is_caller_method_async:
       raise errors.UnsupportedFunctionError(
