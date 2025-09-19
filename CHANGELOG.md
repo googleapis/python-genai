@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.39.0](https://github.com/googleapis/python-genai/compare/v1.38.0...v1.39.0) (2025-09-19)
+
+
+### Features
+
+* Support explicitly closing the client and context manager ([f982dfb](https://github.com/googleapis/python-genai/commit/f982dfbda9dc63f38996be3a4f8f90c0d7f14154))
+* Support Imagen 4 Ingredients on Vertex ([1fe3bec](https://github.com/googleapis/python-genai/commit/1fe3becdff30ca0f18bdd67d64faf3dbfc52dba4))
+
+
+### Bug Fixes
+
+* Fix AFC logging ([249f1af](https://github.com/googleapis/python-genai/commit/249f1aff4840ae8e74d2ef6a4b71e5ca5d919f8b))
+
 ## [1.38.0](https://github.com/googleapis/python-genai/compare/v1.37.0...v1.38.0) (2025-09-16)
 
 
