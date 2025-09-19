@@ -16,8 +16,6 @@
 
 """Tests for client behavior when issuing requests."""
 
-import http
-
 from ... import _api_client as api_client
 from ... import Client
 from ... import types

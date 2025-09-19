@@ -1763,3 +1763,14 @@ class BaseApiClient:
   # recorded response.
   def _verify_response(self, response_model: _common.BaseModel) -> None:
     pass
+
+  def close(self) -> None:
+    """Closes the API client."""
+    self._httpx_client.close()
+
+  async def aclose(self) -> None:
+    """Closes the API async client."""
+
+    await self._async_httpx_client.aclose()
+    if self._aiohttp_session:
+      await self._aiohttp_session.close()
