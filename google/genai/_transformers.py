@@ -64,6 +64,14 @@ else:
     McpTool = None
 
 
+metric_name_sdk_api_map = {
+    'exact_match': 'exactMatchSpec',
+    'bleu': 'bleuSpec',
+    'rouge_spec': 'rougeSpec',
+}
+metric_name_api_sdk_map = {v: k for k, v in metric_name_sdk_api_map.items()}
+
+
 def _resource_name(
     client: _api_client.BaseApiClient,
     resource_name: str,

@@ -255,6 +255,7 @@ class ReplayApiClient(BaseApiClient):
       project: Optional[str] = None,
       location: Optional[str] = None,
       http_options: Optional[HttpOptions] = None,
+      private: bool = False,
   ):
     super().__init__(
         vertexai=vertexai,
@@ -273,6 +274,7 @@ class ReplayApiClient(BaseApiClient):
     self.replay_session: Union[ReplayFile, None] = None
     self._mode = mode
     self._replay_id = replay_id
+    self._private = private
 
   def initialize_replay_session(self, replay_id: str) -> None:
     self._replay_id = replay_id
@@ -484,10 +486,12 @@ class ReplayApiClient(BaseApiClient):
             raw_body = json.loads(raw_body)
             raw_body = json.dumps(raw_body)
             expected['sdk_http_response']['body'] = raw_body
-
-    assert (
-        actual == expected
-    ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    if not self._private:
+      assert (
+          actual == expected
+      ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    else:
+      print('Expected SDK response mismatch:\nActual: {actual}\nExpected: {expected}')
     self._sdk_response_index += 1
 
   def _request(

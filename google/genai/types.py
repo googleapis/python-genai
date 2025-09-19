@@ -1658,7 +1658,7 @@ class Schema(_common.BaseModel):
 
     def convert_schema(schema: Union['Schema', dict[str, Any]]) -> JSONSchema:
       if isinstance(schema, pydantic.BaseModel):
-        schema_dict = schema.model_dump()
+        schema_dict = schema.model_dump(exclude_none=True)
       else:
         schema_dict = schema
       json_schema = JSONSchema()
@@ -1666,7 +1666,13 @@ class Schema(_common.BaseModel):
         if field_value is None:
           continue
         elif field_name == 'nullable':
-          json_schema.type = JSONSchemaType.NULL
+          if json_schema.type is None:
+            json_schema.type = JSONSchemaType.NULL
+          elif isinstance(json_schema.type, JSONSchemaType):
+            current_type: JSONSchemaType = json_schema.type
+            json_schema.type = [current_type, JSONSchemaType.NULL]
+          elif isinstance(json_schema.type, list):
+            json_schema.type.append(JSONSchemaType.NULL)
         elif field_name not in json_schema_field_names:
           continue
         elif field_name == 'type':
