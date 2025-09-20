@@ -32,6 +32,23 @@ pytestmark = pytest_helper.setup(
     test_table=test_table,
 )
 
+def test_image_png_upload_with_config_headers(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    new_headers = {
+        **client._api_client._http_options.headers,
+        'custom-header': 'test_value_set_by_client',
+        'client-header-2': 'test_value_set_by_client_2',
+        'Content-Type': 'will_be_overridden',
+    }
+    client._api_client._http_options.headers = new_headers
+    file = client.files.upload(
+        file='tests/data/google.png',
+        config=types.UploadFileConfig(
+            http_options={
+                'headers': {'custom-header': 'test_value_set_by_config'}
+            }),
+    )
+    assert file.name.startswith('files/')
 
 def test_image_png_upload(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
@@ -183,6 +200,24 @@ def test_audio_m4a_upload_with_config_dict(client):
     )
     assert file.name.startswith('files/')
 
+@pytest.mark.asyncio
+async def test_image_png_upload_with_config_headers_async(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    new_headers = {
+        **client.aio._api_client._http_options.headers,
+        'custom-header': 'test_value_set_by_client',
+        'client-header-2': 'test_value_set_by_client_2',
+        'Content-Type': 'will_be_overridden',
+    }
+    client.aio._api_client._http_options.headers = new_headers
+    file = await client.aio.files.upload(
+        file='tests/data/google.png',
+        config=types.UploadFileConfig(
+            http_options={
+                'headers': {'custom-header': 'test_value_set_by_config'}
+            }),
+    )
+    assert file.name.startswith('files/')
 
 @pytest.mark.asyncio
 async def test_image_upload_async(client):
