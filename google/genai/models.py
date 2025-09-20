@@ -6547,7 +6547,8 @@ class Models(_api_module.BaseModule):
       raise errors.UnsupportedFunctionError(
           'MCP sessions are not supported in synchronous methods.'
       )
-    if _extra_utils.should_disable_afc(parsed_config):
+    function_map = _extra_utils.get_function_map(parsed_config)
+    if _extra_utils.should_disable_afc(parsed_config) or function_map is None:
       return self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
@@ -6565,10 +6566,6 @@ class Models(_api_module.BaseModule):
       response = self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
-
-      function_map = _extra_utils.get_function_map(parsed_config)
-      if not function_map:
-        break
       if not response:
         break
       if (
@@ -6683,7 +6680,8 @@ class Models(_api_module.BaseModule):
       raise errors.UnsupportedFunctionError(
           'MCP sessions are not supported in synchronous methods.'
       )
-    if _extra_utils.should_disable_afc(parsed_config):
+    function_map = _extra_utils.get_function_map(parsed_config)
+    if _extra_utils.should_disable_afc(parsed_config) or function_map is None:
       yield from self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
@@ -6705,29 +6703,23 @@ class Models(_api_module.BaseModule):
           model=model, contents=contents, config=parsed_config
       )
 
-      function_map = _extra_utils.get_function_map(parsed_config)
-
       if i == 1:
         # First request gets a function call.
         # Then get function response parts.
         # Yield chunks only if there's no function response parts.
         for chunk in response:
-          if not function_map:
+          if (
+              not chunk.candidates
+              or not chunk.candidates[0].content
+              or not chunk.candidates[0].content.parts
+          ):
+            break
+          func_response_parts = _extra_utils.get_function_response_parts(
+              chunk, function_map
+          )
+          if not func_response_parts:
             _extra_utils.append_chunk_contents(contents, chunk)
             yield chunk
-          else:
-            if (
-                not chunk.candidates
-                or not chunk.candidates[0].content
-                or not chunk.candidates[0].content.parts
-            ):
-              break
-            func_response_parts = _extra_utils.get_function_response_parts(
-                chunk, function_map
-            )
-            if not func_response_parts:
-              _extra_utils.append_chunk_contents(contents, chunk)
-              yield chunk
 
       else:
         #  Second request and beyond, yield chunks.
@@ -6749,8 +6741,6 @@ class Models(_api_module.BaseModule):
             chunk, function_map
         )
 
-      if not function_map:
-        break
       if not func_response_parts:
         break
       logger.info(f'AFC remote call {i} is done.')
@@ -8274,7 +8264,10 @@ class AsyncModels(_api_module.BaseModule):
     parsed_config, mcp_to_genai_tool_adapters = (
         await _extra_utils.parse_config_for_mcp_sessions(config)
     )
-    if _extra_utils.should_disable_afc(parsed_config):
+    function_map = _extra_utils.get_function_map(
+        parsed_config, mcp_to_genai_tool_adapters, is_caller_method_async=True
+    )
+    if _extra_utils.should_disable_afc(parsed_config) or function_map is None:
       return await self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
@@ -8294,11 +8287,6 @@ class AsyncModels(_api_module.BaseModule):
       if remaining_remote_calls_afc == 0:
         logger.info('Reached max remote calls for automatic function calling.')
 
-      function_map = _extra_utils.get_function_map(
-          parsed_config, mcp_to_genai_tool_adapters, is_caller_method_async=True
-      )
-      if not function_map:
-        break
       if not response:
         break
       if (
@@ -8406,7 +8394,10 @@ class AsyncModels(_api_module.BaseModule):
     parsed_config, mcp_to_genai_tool_adapters = (
         await _extra_utils.parse_config_for_mcp_sessions(config)
     )
-    if _extra_utils.should_disable_afc(parsed_config):
+    function_map = _extra_utils.get_function_map(
+        parsed_config, mcp_to_genai_tool_adapters, is_caller_method_async=True
+    )
+    if _extra_utils.should_disable_afc(parsed_config) or function_map is None:
       response = await self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
@@ -8438,33 +8429,25 @@ class AsyncModels(_api_module.BaseModule):
               'Reached max remote calls for automatic function calling.'
           )
 
-        function_map = _extra_utils.get_function_map(
-            config, mcp_to_genai_tool_adapters, is_caller_method_async=True
-        )
-
         if i == 1:
           # First request gets a function call.
           # Then get function response parts.
           # Yield chunks only if there's no function response parts.
           async for chunk in response:  # type: ignore[attr-defined]
-            if not function_map:
+            if (
+                not chunk.candidates
+                or not chunk.candidates[0].content
+                or not chunk.candidates[0].content.parts
+            ):
+              break
+            func_response_parts = (
+                await _extra_utils.get_function_response_parts_async(
+                    chunk, function_map
+                )
+            )
+            if not func_response_parts:
               _extra_utils.append_chunk_contents(contents, chunk)
               yield chunk
-            else:
-              if (
-                  not chunk.candidates
-                  or not chunk.candidates[0].content
-                  or not chunk.candidates[0].content.parts
-              ):
-                break
-              func_response_parts = (
-                  await _extra_utils.get_function_response_parts_async(
-                      chunk, function_map
-                  )
-              )
-              if not func_response_parts:
-                _extra_utils.append_chunk_contents(contents, chunk)
-                yield chunk
 
         else:
           #  Second request and beyond, yield chunks.
@@ -8488,9 +8471,6 @@ class AsyncModels(_api_module.BaseModule):
                   chunk, function_map
               )
           )
-        if not function_map:
-          break
-
         if not func_response_parts:
           break
 

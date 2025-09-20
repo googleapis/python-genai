@@ -1468,3 +1468,67 @@ def test_tools_chat_curation(client, caplog):
 
   history = chat.get_history(curated=True)
   assert len(history) == 4
+
+
+def test_function_declaration_with_callable(client):
+  with pytest.raises(errors.UnsupportedFunctionError):
+    client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents=(
+            'Divide 1000 by 2. And tell'
+            ' me the weather in London.'
+        ),
+        config={
+            'tools': [
+                divide_integers,
+                {'function_declarations': function_declarations},
+            ],
+        },
+    )
+
+def test_function_declaration_with_callable_stream_now(client):
+  with pytest.raises(errors.UnsupportedFunctionError):
+    for chunk in client.models.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Divide 1000 by 2. And tell me the weather in London.',
+        config={
+            'tools': [
+                divide_integers,
+                {'function_declarations': function_declarations},
+            ],
+        },
+    ):
+      pass
+
+
+@pytest.mark.asyncio
+async def test_function_declaration_with_callable_async(client):
+  with pytest.raises(errors.UnsupportedFunctionError):
+    await client.aio.models.generate_content(
+        model='gemini-2.5-pro',
+        contents=(
+            'Divide 1000 by 2. And tell'
+            ' me the weather in London.'
+        ),
+        config={
+            'tools': [
+                divide_integers,
+                {'function_declarations': function_declarations},
+            ],
+        },
+    )
+
+
+@pytest.mark.asyncio
+async def test_function_declaration_with_callable_async_stream(client):
+  with pytest.raises(errors.UnsupportedFunctionError):
+    await client.aio.models.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Divide 1000 by 2. And tell me the weather in London.',
+        config={
+            'tools': [
+                divide_integers,
+                {'function_declarations': function_declarations},
+            ],
+        },
+    )
