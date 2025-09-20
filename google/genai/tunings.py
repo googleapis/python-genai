@@ -74,9 +74,6 @@ def _CancelTuningJobParameters_to_mldev(
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -87,9 +84,6 @@ def _CancelTuningJobParameters_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -270,13 +264,7 @@ def _CreateTuningJobParametersPrivate_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateTuningJobConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _CreateTuningJobConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -302,13 +290,7 @@ def _CreateTuningJobParametersPrivate_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateTuningJobConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _CreateTuningJobConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -405,9 +387,6 @@ def _GetTuningJobParameters_to_mldev(
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -418,9 +397,6 @@ def _GetTuningJobParameters_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -479,13 +455,7 @@ def _ListTuningJobsParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListTuningJobsConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _ListTuningJobsConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -496,13 +466,7 @@ def _ListTuningJobsParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListTuningJobsConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _ListTuningJobsConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 

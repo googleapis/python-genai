@@ -45,9 +45,6 @@ def _FetchPredictOperationParameters_to_vertex(
         getv(from_object, ['resource_name']),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -62,9 +59,6 @@ def _GetOperationParameters_to_mldev(
         ['_url', 'operationName'],
         getv(from_object, ['operation_name']),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -81,9 +75,6 @@ def _GetOperationParameters_to_vertex(
         getv(from_object, ['operation_name']),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -96,9 +87,6 @@ def _GetProjectOperationParameters_to_vertex(
     setv(
         to_object, ['_url', 'operation_id'], getv(from_object, ['operation_id'])
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
