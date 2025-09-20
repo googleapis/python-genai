@@ -7634,6 +7634,31 @@ class Model(_common.BaseModel):
   checkpoints: Optional[list[Checkpoint]] = Field(
       default=None, description="""The checkpoints of the model."""
   )
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Controls the randomness of the output.
+      """,
+  )
+  max_temperature: Optional[float] = Field(
+      default=None,
+      description="""The maximum temperature this model can use.
+      """,
+  )
+  thinking: Optional[bool] = Field(
+      default=None,
+      description="""Whether the model supports thinking.
+      """,
+  )
+  top_p: Optional[float] = Field(
+      default=None,
+      description="""Nucleus sampling considers the smallest set of tokens whose probability sum is at least topP.
+      """,
+  )
+  top_k: Optional[int] = Field(
+      default=None,
+      description="""Top-k sampling considers the set of topK most probable tokens.
+      """,
+  )
 
 
 class ModelDict(TypedDict, total=False):
@@ -7680,6 +7705,25 @@ class ModelDict(TypedDict, total=False):
   checkpoints: Optional[list[CheckpointDict]]
   """The checkpoints of the model."""
 
+  temperature: Optional[float]
+  """Controls the randomness of the output.
+      """
+
+  max_temperature: Optional[float]
+  """The maximum temperature this model can use.
+      """
+
+  thinking: Optional[bool]
+  """Whether the model supports thinking.
+      """
+
+  top_p: Optional[float]
+  """Nucleus sampling considers the smallest set of tokens whose probability sum is at least topP.
+      """
+
+  top_k: Optional[int]
+  """Top-k sampling considers the set of topK most probable tokens.
+      """
 
 ModelOrDict = Union[Model, ModelDict]
 

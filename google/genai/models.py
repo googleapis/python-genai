@@ -3398,6 +3398,37 @@ def _Model_from_mldev(
         getv(from_object, ['supportedGenerationMethods']),
     )
 
+  if getv(from_object, ['temperature']) is not None:
+    setv(
+        to_object,
+        ['temperature'],
+        getv(from_object, ['temperature']),
+    )
+  if getv(from_object, ['maxTemperature']) is not None:
+    setv(
+        to_object,
+        ['max_temperature'],
+        getv(from_object, ['maxTemperature']),
+  )
+  if getv(from_object, ['thinking']) is not None:
+    setv(
+        to_object,
+        ['thinking'],
+        getv(from_object, ['thinking']),
+    )
+  if getv(from_object, ['topP']) is not None:
+    setv(
+        to_object,
+        ['top_p'],
+        getv(from_object, ['topP']),
+    )
+  if getv(from_object, ['topK']) is not None:
+    setv(
+        to_object,
+        ['top_k'],
+        getv(from_object, ['topK']),
+    )
+
   return to_object
 
 
