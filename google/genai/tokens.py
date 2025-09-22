@@ -257,12 +257,7 @@ class Tokens(_api_module.BaseModule):
     response = self._api_client.request(
         'post', path, request_dict, http_options
     )
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = tokens_converters._AuthToken_from_mldev(
-          response_dict
-      )
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.AuthToken._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -358,12 +353,7 @@ class AsyncTokens(_api_module.BaseModule):
         request_dict,
         http_options=http_options,
     )
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = tokens_converters._AuthToken_from_mldev(
-          response_dict
-      )
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.AuthToken._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
