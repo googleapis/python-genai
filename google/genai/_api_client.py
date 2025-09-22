@@ -34,7 +34,7 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Dict, Set, Iterator, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
@@ -157,37 +157,6 @@ def patch_http_options(
   if copy_option.headers is not None:
     append_library_version_headers(copy_option.headers)
   return copy_option
-
-
-def _update_headers_with_append_keys(
-    original_http_options: Optional[HttpOptions],
-    patching_http_options: Optional[HttpOptionsOrDict],
-) -> Dict[str, Any]:
-  """updating headers with append logic for user-agent and x-goog-api-client, and overriding logic for the rest keys."""
-  original_headers: Dict[str, Any] = {}
-  if original_http_options:
-    original_headers = original_http_options.headers or {}
-
-  patching_headers: Dict[str, Any] = {}
-  if patching_http_options:
-    if isinstance(patching_http_options, HttpOptions):
-      patching_headers = patching_http_options.headers or {}
-    else:
-      patching_headers = patching_http_options.get('headers', {}) or {}
-
-  updated_headers = original_headers.copy()
-  append_keys = {'user-agent', 'x-goog-api-client'}
-  for key, value in patching_headers.items():
-    key = key.lower()
-    if (
-        key in append_keys
-        and key in updated_headers
-        and updated_headers[key]
-    ):
-      updated_headers[key] = f'{updated_headers[key]}, {value}'
-    else:
-      updated_headers[key] = value
-  return updated_headers
 
 
 def populate_server_timeout_header(
@@ -1409,8 +1378,6 @@ class BaseApiClient:
             file, upload_url, upload_size, http_options=http_options
         )
 
-
-
   def _upload_fd(
       self,
       file: io.IOBase,
@@ -1456,10 +1423,7 @@ class BaseApiClient:
             else self._http_options.timeout
         )
       timeout_in_seconds = get_timeout_in_seconds(timeout)
-
-      updated_headers = _update_headers_with_append_keys(self._http_options, http_options)
       upload_headers = {
-          **updated_headers,
           'X-Goog-Upload-Command': upload_command,
           'X-Goog-Upload-Offset': str(offset),
           'Content-Length': str(chunk_size),
@@ -1585,7 +1549,6 @@ class BaseApiClient:
     returns:
           The HttpResponse object from the finalized request.
     """
-    updated_headers = _update_headers_with_append_keys(self._http_options, http_options)
     offset = 0
     # Upload the file in chunks
     if self._use_aiohttp():  # pylint: disable=g-import-not-at-top
@@ -1605,8 +1568,8 @@ class BaseApiClient:
         http_options = http_options if http_options else self._http_options
         timeout = (
             http_options.get('timeout')
-            if isinstance(http_options, dict)
-            else http_options.timeout
+             if isinstance(http_options, dict)
+             else http_options.timeout
         )
         if timeout is None:
           # Per request timeout is not configured. Check the global timeout.
@@ -1616,12 +1579,9 @@ class BaseApiClient:
               else self._http_options.timeout
           )
         timeout_in_seconds = get_timeout_in_seconds(timeout)
-
-        # Define and merge headers, with upload headers taking priority
         upload_headers = {
-            **updated_headers,
             'X-Goog-Upload-Command': upload_command,
-            'X-Goog-Upload-Offset': str(offset),
+             'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
         }
         populate_server_timeout_header(upload_headers, timeout_in_seconds)
@@ -1693,10 +1653,7 @@ class BaseApiClient:
               else self._http_options.timeout
           )
         timeout_in_seconds = get_timeout_in_seconds(timeout)
-
-        # Define and merge headers, with upload headers taking priority
         upload_headers = {
-            **updated_headers,
             'X-Goog-Upload-Command': upload_command,
             'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),

@@ -649,27 +649,29 @@ class Files(_api_module.BaseModule):
             'Unknown mime type: Could not determine the mimetype for your'
             ' file\n    please set the `mime_type` argument'
         )
-    request_specific_headers = (
-        (config_model.http_options.headers or {})
-        if config_model.http_options
-        else {}
-    )
 
-    # Define and merge headers, with upload headers taking priority
-    final_headers = {
-        **request_specific_headers,
-        'Content-Type': 'application/json',
-        'X-Goog-Upload-Protocol': 'resumable',
-        'X-Goog-Upload-Command': 'start',
-        'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-        'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-    }
-
-    http_options = types.HttpOptions(
-        api_version='',
-        headers=final_headers,
-    )
-
+    http_options: types.HttpOptions
+    if config_model and config_model.http_options:
+      http_options = config_model.http_options
+      http_options.api_version = ''
+      http_options.headers = {
+          'Content-Type': 'application/json',
+          'X-Goog-Upload-Protocol': 'resumable',
+          'X-Goog-Upload-Command': 'start',
+          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+      }
+    else:
+      http_options = types.HttpOptions(
+          api_version='',
+          headers={
+              'Content-Type': 'application/json',
+              'X-Goog-Upload-Protocol': 'resumable',
+              'X-Goog-Upload-Command': 'start',
+              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+          },
+      )
     response = self._create(
         file=file_obj,
         config=types.CreateFileConfig(
@@ -1133,27 +1135,28 @@ class AsyncFiles(_api_module.BaseModule):
             ' file\n    please set the `mime_type` argument'
         )
 
-    request_specific_headers = (
-        (config_model.http_options.headers or {})
-        if config_model.http_options
-        else {}
-    )
-
-    # Define and merge headers, with upload headers taking priority
-    final_headers = {
-        **request_specific_headers,
-        'Content-Type': 'application/json',
-        'X-Goog-Upload-Protocol': 'resumable',
-        'X-Goog-Upload-Command': 'start',
-        'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-        'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-    }
-
-    http_options = types.HttpOptions(
-        api_version='',
-        headers=final_headers,
-    )
-
+    http_options: types.HttpOptions
+    if config_model and config_model.http_options:
+      http_options = config_model.http_options
+      http_options.api_version = ''
+      http_options.headers = {
+          'Content-Type': 'application/json',
+          'X-Goog-Upload-Protocol': 'resumable',
+          'X-Goog-Upload-Command': 'start',
+          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+      }
+    else:
+      http_options = types.HttpOptions(
+          api_version='',
+          headers={
+              'Content-Type': 'application/json',
+              'X-Goog-Upload-Protocol': 'resumable',
+              'X-Goog-Upload-Command': 'start',
+              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
+              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
+          },
+      )
     response = await self._create(
         file=file_obj,
         config=types.CreateFileConfig(
@@ -1163,23 +1166,19 @@ class AsyncFiles(_api_module.BaseModule):
     if (
         response.sdk_http_response is None
         or response.sdk_http_response.headers is None
+        or (
+            'x-goog-upload-url' not in response.sdk_http_response.headers
+            and 'X-Goog-Upload-URL' not in response.sdk_http_response.headers
+        )
     ):
       raise KeyError(
-          'Failed to create file. The SDK HTTP response or its headers were'
-          ' missing.'
+          'Failed to create file. Upload URL did not returned from the create'
+          ' file request.'
       )
-
-    upload_url = None
-    for key, value in response.sdk_http_response.headers.items():
-      if key.lower() == 'x-goog-upload-url':
-        upload_url = value
-        break  # Stop as soon as we find the first match
-
-    if upload_url is None:
-      raise KeyError(
-          'Failed to create file. Upload URL was not returned in the response'
-          ' headers.'
-      )
+    elif 'x-goog-upload-url' in response.sdk_http_response.headers:
+      upload_url = response.sdk_http_response.headers['x-goog-upload-url']
+    else:
+      upload_url = response.sdk_http_response.headers['X-Goog-Upload-URL']
 
     if isinstance(file, io.IOBase):
       return_file = await self._api_client.async_upload_file(
