@@ -41,11 +41,7 @@ def _CreateFileParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['file']) is not None:
-    setv(
-        to_object,
-        ['file'],
-        _File_to_mldev(getv(from_object, ['file']), to_object),
-    )
+    setv(to_object, ['file'], getv(from_object, ['file']))
 
   return to_object
 
@@ -84,148 +80,6 @@ def _DeleteFileResponse_from_mldev(
   if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
         to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  return to_object
-
-
-def _FileStatus_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['details']) is not None:
-    setv(to_object, ['details'], getv(from_object, ['details']))
-
-  if getv(from_object, ['message']) is not None:
-    setv(to_object, ['message'], getv(from_object, ['message']))
-
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  return to_object
-
-
-def _FileStatus_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['details']) is not None:
-    setv(to_object, ['details'], getv(from_object, ['details']))
-
-  if getv(from_object, ['message']) is not None:
-    setv(to_object, ['message'], getv(from_object, ['message']))
-
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  return to_object
-
-
-def _File_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  if getv(from_object, ['sizeBytes']) is not None:
-    setv(to_object, ['size_bytes'], getv(from_object, ['sizeBytes']))
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['expirationTime']) is not None:
-    setv(to_object, ['expiration_time'], getv(from_object, ['expirationTime']))
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  if getv(from_object, ['sha256Hash']) is not None:
-    setv(to_object, ['sha256_hash'], getv(from_object, ['sha256Hash']))
-
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['downloadUri']) is not None:
-    setv(to_object, ['download_uri'], getv(from_object, ['downloadUri']))
-
-  if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
-
-  if getv(from_object, ['source']) is not None:
-    setv(to_object, ['source'], getv(from_object, ['source']))
-
-  if getv(from_object, ['videoMetadata']) is not None:
-    setv(to_object, ['video_metadata'], getv(from_object, ['videoMetadata']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _FileStatus_from_mldev(getv(from_object, ['error']), to_object),
-    )
-
-  return to_object
-
-
-def _File_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  if getv(from_object, ['size_bytes']) is not None:
-    setv(to_object, ['sizeBytes'], getv(from_object, ['size_bytes']))
-
-  if getv(from_object, ['create_time']) is not None:
-    setv(to_object, ['createTime'], getv(from_object, ['create_time']))
-
-  if getv(from_object, ['expiration_time']) is not None:
-    setv(to_object, ['expirationTime'], getv(from_object, ['expiration_time']))
-
-  if getv(from_object, ['update_time']) is not None:
-    setv(to_object, ['updateTime'], getv(from_object, ['update_time']))
-
-  if getv(from_object, ['sha256_hash']) is not None:
-    setv(to_object, ['sha256Hash'], getv(from_object, ['sha256_hash']))
-
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['download_uri']) is not None:
-    setv(to_object, ['downloadUri'], getv(from_object, ['download_uri']))
-
-  if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
-
-  if getv(from_object, ['source']) is not None:
-    setv(to_object, ['source'], getv(from_object, ['source']))
-
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _FileStatus_to_mldev(getv(from_object, ['error']), to_object),
     )
 
   return to_object
@@ -290,14 +144,7 @@ def _ListFilesResponse_from_mldev(
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
   if getv(from_object, ['files']) is not None:
-    setv(
-        to_object,
-        ['files'],
-        [
-            _File_from_mldev(item, to_object)
-            for item in getv(from_object, ['files'])
-        ],
-    )
+    setv(to_object, ['files'], [item for item in getv(from_object, ['files'])])
 
   return to_object
 
@@ -359,7 +206,7 @@ class Files(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _ListFilesResponse_from_mldev(response_dict)
@@ -424,7 +271,7 @@ class Files(_api_module.BaseModule):
       self._api_client._verify_response(return_value)
       return return_value
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _CreateFileResponse_from_mldev(response_dict)
@@ -492,10 +339,7 @@ class Files(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = _File_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.File._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -561,7 +405,7 @@ class Files(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _DeleteFileResponse_from_mldev(response_dict)
@@ -687,7 +531,7 @@ class Files(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(return_file.json['file']),
+        response=return_file.json['file'],
         kwargs=config_model.model_dump() if config else {},
     )
 
@@ -842,7 +686,7 @@ class AsyncFiles(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _ListFilesResponse_from_mldev(response_dict)
@@ -907,7 +751,7 @@ class AsyncFiles(_api_module.BaseModule):
       self._api_client._verify_response(return_value)
       return return_value
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _CreateFileResponse_from_mldev(response_dict)
@@ -977,10 +821,7 @@ class AsyncFiles(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = _File_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.File._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1046,7 +887,7 @@ class AsyncFiles(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _DeleteFileResponse_from_mldev(response_dict)
@@ -1177,7 +1018,7 @@ class AsyncFiles(_api_module.BaseModule):
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(return_file.json['file']),
+        response=return_file.json['file'],
         kwargs=config_model.model_dump() if config else {},
     )
 
