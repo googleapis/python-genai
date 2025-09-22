@@ -33,62 +33,6 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.caches')
 
 
-def _Behavior_to_vertex_enum_validate(enum_value: Any) -> None:
-  if enum_value in set(['UNSPECIFIED', 'BLOCKING', 'NON_BLOCKING']):
-    raise ValueError(f'{enum_value} enum value is not supported in Vertex AI.')
-
-
-def _ApiKeyConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['api_key_string']) is not None:
-    setv(to_object, ['apiKeyString'], getv(from_object, ['api_key_string']))
-
-  return to_object
-
-
-def _AuthConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['api_key_config']) is not None:
-    setv(
-        to_object,
-        ['apiKeyConfig'],
-        _ApiKeyConfig_to_vertex(
-            getv(from_object, ['api_key_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['auth_type']) is not None:
-    setv(to_object, ['authType'], getv(from_object, ['auth_type']))
-
-  if getv(from_object, ['google_service_account_config']) is not None:
-    setv(
-        to_object,
-        ['googleServiceAccountConfig'],
-        getv(from_object, ['google_service_account_config']),
-    )
-
-  if getv(from_object, ['http_basic_auth_config']) is not None:
-    setv(
-        to_object,
-        ['httpBasicAuthConfig'],
-        getv(from_object, ['http_basic_auth_config']),
-    )
-
-  if getv(from_object, ['oauth_config']) is not None:
-    setv(to_object, ['oauthConfig'], getv(from_object, ['oauth_config']))
-
-  if getv(from_object, ['oidc_config']) is not None:
-    setv(to_object, ['oidcConfig'], getv(from_object, ['oidc_config']))
-
-  return to_object
-
-
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -106,81 +50,6 @@ def _Blob_to_mldev(
   return to_object
 
 
-def _Blob_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _CachedContent_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['model']) is not None:
-    setv(to_object, ['model'], getv(from_object, ['model']))
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  if getv(from_object, ['expireTime']) is not None:
-    setv(to_object, ['expire_time'], getv(from_object, ['expireTime']))
-
-  if getv(from_object, ['usageMetadata']) is not None:
-    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
-
-  return to_object
-
-
-def _CachedContent_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['model']) is not None:
-    setv(to_object, ['model'], getv(from_object, ['model']))
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  if getv(from_object, ['expireTime']) is not None:
-    setv(to_object, ['expire_time'], getv(from_object, ['expireTime']))
-
-  if getv(from_object, ['usageMetadata']) is not None:
-    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
-
-  return to_object
-
-
 def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -192,27 +61,6 @@ def _Content_to_mldev(
         ['parts'],
         [
             _Part_to_mldev(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
-
-  if getv(from_object, ['role']) is not None:
-    setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _Content_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_to_vertex(item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -268,11 +116,7 @@ def _CreateCachedContentConfig_to_mldev(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
-    )
+    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
 
   if getv(from_object, ['kms_key_name']) is not None:
     raise ValueError('kms_key_name parameter is not supported in Gemini API.')
@@ -299,19 +143,14 @@ def _CreateCachedContentConfig_to_vertex(
     setv(
         parent_object,
         ['contents'],
-        [
-            _Content_to_vertex(item, to_object)
-            for item in t.t_contents(getv(from_object, ['contents']))
-        ],
+        [item for item in t.t_contents(getv(from_object, ['contents']))],
     )
 
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
         ['systemInstruction'],
-        _Content_to_vertex(
-            t.t_content(getv(from_object, ['system_instruction'])), to_object
-        ),
+        t.t_content(getv(from_object, ['system_instruction'])),
     )
 
   if getv(from_object, ['tools']) is not None:
@@ -325,11 +164,7 @@ def _CreateCachedContentConfig_to_vertex(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_vertex(getv(from_object, ['tool_config']), to_object),
-    )
+    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
 
   if getv(from_object, ['kms_key_name']) is not None:
     setv(
@@ -441,53 +276,6 @@ def _DeleteCachedContentResponse_from_vertex(
   return to_object
 
 
-def _DynamicRetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
-
-  return to_object
-
-
-def _DynamicRetrievalConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
-
-  return to_object
-
-
-def _EnterpriseWebSearch_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    setv(to_object, ['excludeDomains'], getv(from_object, ['exclude_domains']))
-
-  return to_object
-
-
 def _FileData_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -501,130 +289,6 @@ def _FileData_to_mldev(
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _FileData_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _FunctionCall_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['id']) is not None:
-    setv(to_object, ['id'], getv(from_object, ['id']))
-
-  if getv(from_object, ['args']) is not None:
-    setv(to_object, ['args'], getv(from_object, ['args']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _FunctionCall_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['id']) is not None:
-    setv(to_object, ['id'], getv(from_object, ['id']))
-
-  if getv(from_object, ['args']) is not None:
-    setv(to_object, ['args'], getv(from_object, ['args']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _FunctionCallingConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['allowed_function_names']) is not None:
-    setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
-    )
-
-  return to_object
-
-
-def _FunctionCallingConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['allowed_function_names']) is not None:
-    setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
-    )
-
-  return to_object
-
-
-def _FunctionDeclaration_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  if getv(from_object, ['parameters_json_schema']) is not None:
-    setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
 
   return to_object
 
@@ -698,55 +362,6 @@ def _GetCachedContentParameters_to_vertex(
   return to_object
 
 
-def _GoogleMaps_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['auth_config']) is not None:
-    setv(
-        to_object,
-        ['authConfig'],
-        _AuthConfig_to_vertex(getv(from_object, ['auth_config']), to_object),
-    )
-
-  return to_object
-
-
-def _GoogleSearchRetrieval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_mldev(
-            getv(from_object, ['dynamic_retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _GoogleSearchRetrieval_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_vertex(
-            getv(from_object, ['dynamic_retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -754,91 +369,13 @@ def _GoogleSearch_to_mldev(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
-        to_object,
-        ['timeRangeFilter'],
-        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
+        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
     )
 
   if getv(from_object, ['exclude_domains']) is not None:
     raise ValueError(
         'exclude_domains parameter is not supported in Gemini API.'
     )
-
-  return to_object
-
-
-def _GoogleSearch_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object,
-        ['timeRangeFilter'],
-        _Interval_to_vertex(
-            getv(from_object, ['time_range_filter']), to_object
-        ),
-    )
-
-  if getv(from_object, ['exclude_domains']) is not None:
-    setv(to_object, ['excludeDomains'], getv(from_object, ['exclude_domains']))
-
-  return to_object
-
-
-def _Interval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
-
-  if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
-
-  return to_object
-
-
-def _Interval_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
-
-  if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
-
-  return to_object
-
-
-def _LatLng_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['latitude']) is not None:
-    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
-
-  if getv(from_object, ['longitude']) is not None:
-    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
-
-  return to_object
-
-
-def _LatLng_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['latitude']) is not None:
-    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
-
-  if getv(from_object, ['longitude']) is not None:
-    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
 
   return to_object
 
@@ -926,10 +463,7 @@ def _ListCachedContentsResponse_from_mldev(
     setv(
         to_object,
         ['cached_contents'],
-        [
-            _CachedContent_from_mldev(item, to_object)
-            for item in getv(from_object, ['cachedContents'])
-        ],
+        [item for item in getv(from_object, ['cachedContents'])],
     )
 
   return to_object
@@ -952,10 +486,7 @@ def _ListCachedContentsResponse_from_vertex(
     setv(
         to_object,
         ['cached_contents'],
-        [
-            _CachedContent_from_vertex(item, to_object)
-            for item in getv(from_object, ['cachedContents'])
-        ],
+        [item for item in getv(from_object, ['cachedContents'])],
     )
 
   return to_object
@@ -967,13 +498,7 @@ def _Part_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    setv(
-        to_object,
-        ['videoMetadata'],
-        _VideoMetadata_to_mldev(
-            getv(from_object, ['video_metadata']), to_object
-        ),
-    )
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -1000,11 +525,7 @@ def _Part_to_mldev(
     )
 
   if getv(from_object, ['function_call']) is not None:
-    setv(
-        to_object,
-        ['functionCall'],
-        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
-    )
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -1025,200 +546,6 @@ def _Part_to_mldev(
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
-def _Part_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(
-        to_object,
-        ['videoMetadata'],
-        _VideoMetadata_to_vertex(
-            getv(from_object, ['video_metadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_vertex(getv(from_object, ['inline_data']), to_object),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_vertex(getv(from_object, ['file_data']), to_object),
-    )
-
-  if getv(from_object, ['thought_signature']) is not None:
-    setv(
-        to_object,
-        ['thoughtSignature'],
-        getv(from_object, ['thought_signature']),
-    )
-
-  if getv(from_object, ['function_call']) is not None:
-    setv(
-        to_object,
-        ['functionCall'],
-        _FunctionCall_to_vertex(
-            getv(from_object, ['function_call']), to_object
-        ),
-    )
-
-  if getv(from_object, ['code_execution_result']) is not None:
-    setv(
-        to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
-    )
-
-  if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
-def _RetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['lat_lng']) is not None:
-    setv(
-        to_object,
-        ['latLng'],
-        _LatLng_to_mldev(getv(from_object, ['lat_lng']), to_object),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _RetrievalConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['lat_lng']) is not None:
-    setv(
-        to_object,
-        ['latLng'],
-        _LatLng_to_vertex(getv(from_object, ['lat_lng']), to_object),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _ToolComputerUse_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  return to_object
-
-
-def _ToolComputerUse_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  return to_object
-
-
-def _ToolConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_mldev(
-            getv(from_object, ['function_calling_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['retrievalConfig'],
-        _RetrievalConfig_to_mldev(
-            getv(from_object, ['retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _ToolConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_vertex(
-            getv(from_object, ['function_calling_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['retrievalConfig'],
-        _RetrievalConfig_to_vertex(
-            getv(from_object, ['retrieval_config']), to_object
-        ),
-    )
 
   return to_object
 
@@ -1232,10 +559,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_mldev(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
+        [item for item in getv(from_object, ['function_declarations'])],
     )
 
   if getv(from_object, ['retrieval']) is not None:
@@ -1252,9 +576,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_mldev(
-            getv(from_object, ['google_search_retrieval']), to_object
-        ),
+        getv(from_object, ['google_search_retrieval']),
     )
 
   if getv(from_object, ['enterprise_web_search']) is not None:
@@ -1266,20 +588,10 @@ def _Tool_to_mldev(
     raise ValueError('google_maps parameter is not supported in Gemini API.')
 
   if getv(from_object, ['url_context']) is not None:
-    setv(
-        to_object,
-        ['urlContext'],
-        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
-    )
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ToolComputerUse_to_mldev(
-            getv(from_object, ['computer_use']), to_object
-        ),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -1306,54 +618,30 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_vertex(
-            getv(from_object, ['google_search']), to_object
-        ),
-    )
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
 
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
         ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_vertex(
-            getv(from_object, ['google_search_retrieval']), to_object
-        ),
+        getv(from_object, ['google_search_retrieval']),
     )
 
   if getv(from_object, ['enterprise_web_search']) is not None:
     setv(
         to_object,
         ['enterpriseWebSearch'],
-        _EnterpriseWebSearch_to_vertex(
-            getv(from_object, ['enterprise_web_search']), to_object
-        ),
+        getv(from_object, ['enterprise_web_search']),
     )
 
   if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_vertex(getv(from_object, ['google_maps']), to_object),
-    )
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['url_context']) is not None:
-    setv(
-        to_object,
-        ['urlContext'],
-        _UrlContext_to_vertex(getv(from_object, ['url_context']), to_object),
-    )
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ToolComputerUse_to_vertex(
-            getv(from_object, ['computer_use']), to_object
-        ),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -1433,58 +721,6 @@ def _UpdateCachedContentParameters_to_vertex(
   return to_object
 
 
-def _UrlContext_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _UrlContext_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _VideoMetadata_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
-
-  if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
-
-  return to_object
-
-
-def _VideoMetadata_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
-
-  if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
-
-  return to_object
-
-
 class Caches(_api_module.BaseModule):
 
   def create(
@@ -1556,13 +792,7 @@ class Caches(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(response_dict)
-
-    else:
-      response_dict = _CachedContent_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1627,13 +857,7 @@ class Caches(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(response_dict)
-
-    else:
-      response_dict = _CachedContent_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1702,12 +926,12 @@ class Caches(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _DeleteCachedContentResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _DeleteCachedContentResponse_from_mldev(response_dict)
 
     return_value = types.DeleteCachedContentResponse._from_response(
@@ -1782,13 +1006,7 @@ class Caches(_api_module.BaseModule):
         'patch', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(response_dict)
-
-    else:
-      response_dict = _CachedContent_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1847,12 +1065,12 @@ class Caches(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ListCachedContentsResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _ListCachedContentsResponse_from_mldev(response_dict)
 
     return_value = types.ListCachedContentsResponse._from_response(
@@ -1946,13 +1164,7 @@ class AsyncCaches(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(response_dict)
-
-    else:
-      response_dict = _CachedContent_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2020,13 +1232,7 @@ class AsyncCaches(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(response_dict)
-
-    else:
-      response_dict = _CachedContent_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2096,12 +1302,12 @@ class AsyncCaches(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _DeleteCachedContentResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _DeleteCachedContentResponse_from_mldev(response_dict)
 
     return_value = types.DeleteCachedContentResponse._from_response(
@@ -2176,13 +1382,7 @@ class AsyncCaches(_api_module.BaseModule):
         'patch', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _CachedContent_from_vertex(response_dict)
-
-    else:
-      response_dict = _CachedContent_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2243,12 +1443,12 @@ class AsyncCaches(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ListCachedContentsResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _ListCachedContentsResponse_from_mldev(response_dict)
 
     return_value = types.ListCachedContentsResponse._from_response(
