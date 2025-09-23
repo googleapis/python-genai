@@ -21,6 +21,7 @@ import datetime
 import enum
 import functools
 import logging
+import re
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
@@ -142,13 +143,21 @@ def get_value_by_path(data: Any, keys: list[str]) -> Any:
   return data
 
 
-def convert_to_dict(obj: object) -> Any:
+def maybe_snake_to_camel(snake_str: str, convert: bool = True) -> str:
+  """Converts a snake_case string to CamelCase, if convert is True."""
+  if not convert:
+    return snake_str
+  return re.sub(r'_([a-zA-Z])', lambda match: match.group(1).upper(), snake_str)
+
+
+def convert_to_dict(obj: object, convert_keys: bool = False) -> Any:
   """Recursively converts a given object to a dictionary.
 
   If the object is a Pydantic model, it uses the model's `model_dump()` method.
 
   Args:
     obj: The object to convert.
+    convert_keys: Whether to convert the keys from snake case to camel case.
 
   Returns:
     A dictionary representation of the object, a list of objects if a list is
@@ -156,11 +165,16 @@ def convert_to_dict(obj: object) -> Any:
     model.
   """
   if isinstance(obj, pydantic.BaseModel):
-    return obj.model_dump(exclude_none=True)
+    return convert_to_dict(obj.model_dump(exclude_none=True), convert_keys)
   elif isinstance(obj, dict):
-    return {key: convert_to_dict(value) for key, value in obj.items()}
+    return {
+        maybe_snake_to_camel(key, convert_keys): convert_to_dict(
+            value, convert_keys
+        )
+        for key, value in obj.items()
+    }
   elif isinstance(obj, list):
-    return [convert_to_dict(item) for item in obj]
+    return [convert_to_dict(item, convert_keys) for item in obj]
   else:
     return obj
 
@@ -642,3 +656,4 @@ def recursive_dict_update(
       target_dict[key] = value
     else:
       target_dict[key] = value
+
