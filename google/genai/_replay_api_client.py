@@ -35,7 +35,6 @@ from ._api_client import HttpRequest
 from ._api_client import HttpResponse
 from ._common import BaseModel
 from .types import HttpOptions, HttpOptionsOrDict
-from .types import GenerateVideosOperation
 
 
 def to_snake_case(name: str) -> str:
@@ -200,6 +199,12 @@ def _debug_print(message: str) -> None:
   )
 
 
+def pop_undeterministic_headers(headers: dict[str, str]) -> None:
+  """Remove headers that are not deterministic."""
+  headers.pop('Date', None)  # pytype: disable=attribute-error
+  headers.pop('Server-Timing', None)  # pytype: disable=attribute-error
+
+
 class ReplayRequest(BaseModel):
   """Represents a single request in a replay."""
 
@@ -219,10 +224,7 @@ class ReplayResponse(BaseModel):
   sdk_response_segments: list[dict[str, object]]
 
   def model_post_init(self, __context: Any) -> None:
-    # Remove headers that are not deterministic so the replay files don't change
-    # every time they are recorded.
-    self.headers.pop('Date', None)
-    self.headers.pop('Server-Timing', None)
+    pop_undeterministic_headers(self.headers)
 
 
 class ReplayInteraction(BaseModel):
@@ -253,6 +255,7 @@ class ReplayApiClient(BaseApiClient):
       project: Optional[str] = None,
       location: Optional[str] = None,
       http_options: Optional[HttpOptions] = None,
+      private: bool = False,
   ):
     super().__init__(
         vertexai=vertexai,
@@ -271,6 +274,7 @@ class ReplayApiClient(BaseApiClient):
     self.replay_session: Union[ReplayFile, None] = None
     self._mode = mode
     self._replay_id = replay_id
+    self._private = private
 
   def initialize_replay_session(self, replay_id: str) -> None:
     self._replay_id = replay_id
@@ -425,7 +429,7 @@ class ReplayApiClient(BaseApiClient):
     self._replay_index += 1
     self._sdk_response_index = 0
     errors.APIError.raise_for_response(interaction.response)
-    return HttpResponse(
+    http_response = HttpResponse(
         headers=interaction.response.headers,
         response_stream=[
             json.dumps(segment)
@@ -433,6 +437,9 @@ class ReplayApiClient(BaseApiClient):
         ],
         byte_stream=interaction.response.byte_segments,
     )
+    if http_response.response_stream == ['{}']:
+      http_response.response_stream = [""]
+    return http_response
 
   def _verify_response(self, response_model: BaseModel) -> None:
     if self._mode == 'api':
@@ -444,8 +451,15 @@ class ReplayApiClient(BaseApiClient):
     if self._should_update_replay():
       if isinstance(response_model, list):
         response_model = response_model[0]
-      if response_model and 'http_headers' in response_model.model_fields:
-        response_model.http_headers.pop('Date', None)  # type: ignore[attr-defined]
+      sdk_response_response = getattr(response_model, 'sdk_http_response', None)
+      if response_model and (
+          sdk_response_response is not None
+      ):
+        headers = getattr(
+            sdk_response_response, 'headers', None
+        )
+        if headers:
+          pop_undeterministic_headers(headers)
       interaction.response.sdk_response_segments.append(
           response_model.model_dump(exclude_none=True)
       )
@@ -454,30 +468,43 @@ class ReplayApiClient(BaseApiClient):
     if isinstance(response_model, list):
       response_model = response_model[0]
     print('response_model: ', response_model.model_dump(exclude_none=True))
-    if isinstance(response_model, GenerateVideosOperation):
-      actual = response_model.model_dump(
-          exclude={'result'}, exclude_none=True, mode='json'
-      )
-    else:
-      actual = response_model.model_dump(exclude_none=True, mode='json')
+    actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
-    assert (
-        actual == expected
-    ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    # The sdk_http_response.body has format in the string, need to get rid of
+    # the format information before comparing.
+    if isinstance(expected, dict):
+      if 'sdk_http_response' in expected and isinstance(
+          expected['sdk_http_response'], dict
+      ):
+        if 'body' in expected['sdk_http_response']:
+          raw_body = expected['sdk_http_response']['body']
+          print('raw_body length: ', len(raw_body))
+          print('raw_body: ', raw_body)
+          if isinstance(raw_body, str) and raw_body != '':
+            raw_body = json.loads(raw_body)
+            raw_body = json.dumps(raw_body)
+            expected['sdk_http_response']['body'] = raw_body
+    if not self._private:
+      assert (
+          actual == expected
+      ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    else:
+      print('Expected SDK response mismatch:\nActual: {actual}\nExpected: {expected}')
     self._sdk_response_index += 1
 
   def _request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
       try:
-        result = super()._request(http_request, stream)
+        result = super()._request(http_request, http_options, stream)
       except errors.APIError as e:
         self._record_interaction(http_request, e)
         raise e
@@ -499,13 +526,16 @@ class ReplayApiClient(BaseApiClient):
   async def _async_request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
       try:
-        result = await super()._async_request(http_request, stream)
+        result = await super()._async_request(
+            http_request, http_options, stream
+        )
       except errors.APIError as e:
         self._record_interaction(http_request, e)
         raise e

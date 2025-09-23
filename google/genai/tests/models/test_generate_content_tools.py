@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import collections
 import logging
 import sys
 import typing
@@ -108,7 +109,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_google_search_retrieval',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'Why is the sky blue?'),
+            contents=t.t_contents('Why is the sky blue?'),
             config={'tools': [{'google_search_retrieval': {}}]},
         ),
     ),
@@ -116,7 +117,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_vai_search',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'what is vertex ai search?'),
+            contents=t.t_contents('what is vertex ai search?'),
             config={
                 'tools': [{
                     'retrieval': {
@@ -135,7 +136,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_vai_google_search',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'why is the sky blue?'),
+            contents=t.t_contents('why is the sky blue?'),
             config={
                 'tools': [
                     types.Tool(
@@ -156,7 +157,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_vai_search_engine',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-001',
-            contents=t.t_contents(None, 'why is the sky blue?'),
+            contents=t.t_contents('why is the sky blue?'),
             config={
                 'tools': [
                     types.Tool(
@@ -176,7 +177,6 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=t.t_contents(
-                None,
                 'How much gain or loss did Google get in the Motorola Mobile'
                 ' deal in 2014?',
             ),
@@ -204,7 +204,6 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-001',
             contents=t.t_contents(
-                None,
                 'How much gain or loss did Google get in the Motorola Mobile'
                 ' deal in 2014?',
             ),
@@ -253,7 +252,6 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=t.t_contents(
-                None,
                 'What is the sum of the first 50 prime numbers? '
                 + 'Generate and run code for the calculation, and make sure you'
                 ' get all 50.',
@@ -265,7 +263,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_function_google_search_retrieval_with_long_lat',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'what is the price of GOOG?'),
+            contents=t.t_contents('what is the price of GOOG?'),
             config=types.GenerateContentConfig(
                 tools=[
                     types.Tool(
@@ -289,13 +287,96 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_url_context',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash-preview-04-17',
+            model='gemini-2.5-flash',
             contents=t.t_contents(
-                None, 'what are the top headlines on https://news.google.com'
+                'what are the top headlines on https://news.google.com'
             ),
             config={'tools': [{'url_context': {}}]},
         ),
-        exception_if_vertex='not supported in Vertex AI',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_url_context_paywall_status',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'Read the content of this URL:'
+                ' https://unsplash.com/photos/portrait-of-an-adorable-golden-retriever-puppy-studio-shot-isolated-on-black-yRYCnnQASnc'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_url_context_unsafe_status',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'Fetch the content of http://0k9.me/test.html'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        # https://github.com/googleapis/python-genai/issues/830
+        # - models started returning empty thought in response to queries
+        #   containing tools.
+        # - The API needs to accept any Content response it sends (otherwise
+        #   chat breaks)
+        # - MLDev is not returning the, so it's okay that MLDev doesn't accept
+        #   them?
+        # - This is also important to configm forward compatibility.
+        #   when the models start returning thought_signature, those will get
+        #   dropped by the SDK leaving a `{'thought: True}` part.
+        name='test_chat_tools_empty_thoughts',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-05-20',
+            contents=[
+                types.Content.model_validate(item)
+                for item in [
+                    {
+                        'parts': [{'text': 'Who won the 1955 world cup?'}],
+                        'role': 'user',
+                    },
+                    {
+                        'parts': [
+                            {'thought': True},
+                            {
+                                'text': (
+                                    'The FIFA World Cup is held every four'
+                                    ' years. The 1954 FIFA World Cup was won by'
+                                    ' West Germany, who defeated Hungary in the'
+                                    ' final.'
+                                )
+                            },
+                        ],
+                        'role': 'model',
+                    },
+                    {
+                        'parts': [{
+                            'text': 'What was the population of canada in 1955?'
+                        }],
+                        'role': 'user',
+                    },
+                ]
+            ],
+            config={
+                'tools': [{'function_declarations': function_declarations}],
+            },
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_function_calling_config_validated_mode',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'How is the weather in Kirkland?'
+            ),
+            config={
+                'tools': [{'function_declarations': function_declarations}],
+                'tool_config': {
+                    'function_calling_config': {'mode': 'VALIDATED'}
+                },
+            },
+        ),
     ),
 ]
 
@@ -403,7 +484,7 @@ def test_automatic_function_calling_with_customized_math_rule(client):
     return numerator // denominator + 1
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents='what is the result of 1000/2?',
       config={
           'tools': [customized_divide_integers],
@@ -465,9 +546,9 @@ def test_disable_automatic_function_calling_stream(client):
       },
   )
   chunks = 0
-  for part in response:
+  for chunk in response:
     chunks += 1
-    assert part.candidates[0].content.parts[0].function_call is not None
+    assert chunk.parts[0].function_call is not None
 
 
 def test_automatic_function_calling_no_function_response_stream(client):
@@ -497,9 +578,9 @@ async def test_disable_automatic_function_calling_stream_async(client):
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.candidates[0].content.parts[0].function_call is not None
+    assert chunk.parts[0].function_call is not None
 
 
 @pytest.mark.asyncio
@@ -515,9 +596,9 @@ async def test_automatic_function_calling_no_function_response_stream_async(
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
+    assert chunk.text is not None or chunk.candidates[0].finish_reason
 
 
 @pytest.mark.asyncio
@@ -531,9 +612,9 @@ async def test_automatic_function_calling_stream_async(client):
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
+    assert chunk.text is not None or chunk.candidates[0].finish_reason
 
 
 def test_callable_tools_user_disable_afc(client):
@@ -785,6 +866,89 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
     assert 'cat' in response.text
 
 
+def test_automatic_function_calling_with_union_operator(client):
+  class AnimalObject(pydantic.BaseModel):
+    name: str
+    age: int
+    species: str
+
+  def get_information(
+      object_of_interest: str | AnimalObject,
+  ) -> str:
+    if isinstance(object_of_interest, AnimalObject):
+      return (
+          f'The animal is of {object_of_interest.species} species and is named'
+          f' {object_of_interest.name} is {object_of_interest.age} years old'
+      )
+    else:
+      return f'The object of interest is {object_of_interest}'
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'I have a one year old cat named Sundae, can you get the'
+          ' information of the cat for me?'
+      ),
+      config={
+          'tools': [get_information],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
+
+
+def test_automatic_function_calling_with_tuple_param(client):
+  def output_latlng(
+      latlng: tuple[float, float],
+  ) -> str:
+    return f'The latitude is {latlng[0]} and the longitude is {latlng[1]}'
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'The coordinates are (51.509, -0.118). What is the latitude and longitude?'
+      ),
+      config={
+          'tools': [output_latlng],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason='| is only supported in Python 3.10 and above.',
+)
+def test_automatic_function_calling_with_union_operator_return_type(client):
+  def get_cheese_age(cheese: int) -> int | float:
+    """
+    Retrieves data about the age of the cheese given its ID.
+
+    Args:
+        cheese_id: The ID of the cheese.
+
+    Returns:
+        An int or float of the age of the cheese.
+    """
+    if cheese == 1:
+      return 2.5
+    elif cheese == 2:
+      return 3
+    else:
+      return 0.0
+
+  response = client.models.generate_content(
+      model='gemini-2.5-flash',
+      contents='How old is the cheese with id 2?',
+      config={
+          'tools': [get_cheese_age],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert '3' in response.text
+
+
 def test_automatic_function_calling_with_parameterized_generic_union_type(
     client,
 ):
@@ -802,7 +966,7 @@ def test_automatic_function_calling_with_parameterized_generic_union_type(
 
   response = client.models.generate_content(
       model='gemini-1.5-flash',
-      contents='Can you describe the city of San Francisco?',
+      contents='Can you describe the city of San Francisco, USA?',
       config={
           'tools': [describe_cities],
           'automatic_function_calling': {'ignore_call_history': True},
@@ -918,7 +1082,7 @@ async def test_automatic_function_calling_with_coroutine_function_async(
     return a // b
 
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -935,7 +1099,7 @@ async def test_automatic_function_calling_async(client):
     return a // b
 
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -967,7 +1131,7 @@ async def test_automatic_function_calling_async_with_exception(client):
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_float_without_decimal(client):
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the result of 1000.0/2.0?',
       config={
           'tools': [divide_floats, divide_integers],
@@ -1013,7 +1177,7 @@ async def test_automatic_function_calling_async_with_async_function(client):
     return 'windy'
 
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the weather in San Francisco?',
       config={
           'tools': [get_current_weather_async],
@@ -1035,7 +1199,7 @@ async def test_automatic_function_calling_async_with_async_function_stream(
     return 'windy'
 
   response = await client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash-preview-05-20',
       contents='what is the weather in San Francisco?',
       config={
           'tools': [get_current_weather_async],
@@ -1045,15 +1209,9 @@ async def test_automatic_function_calling_async_with_async_function_stream(
 
   chunk = None
   async for chunk in response:
-    if chunk.candidates[0].content.parts[0].function_call:
-      assert (
-          chunk.candidates[0].content.parts[0].function_call.name
-          == 'get_current_weather_async'
-      )
-      assert (
-          chunk.candidates[0].content.parts[0].function_call.args['city']
-          == 'San Francisco'
-      )
+    if chunk.parts[0].function_call:
+      assert chunk.parts[0].function_call.name == 'get_current_weather_async'
+      assert chunk.parts[0].function_call.args['city'] == 'San Francisco'
 
 
 def test_2_function_with_history(client):
@@ -1253,7 +1411,7 @@ def test_afc_logs_to_logger_instance(client, caplog):
           'tools': [divide_integers],
           'automatic_function_calling': {
               'disable': False,
-              'maximum_remote_calls': 2,
+              'maximum_remote_calls': 1,
               'ignore_call_history': True,
           },
       },
@@ -1262,9 +1420,8 @@ def test_afc_logs_to_logger_instance(client, caplog):
     assert log.levelname == 'INFO'
     assert log.name == 'google_genai.models'
 
-  assert 'AFC is enabled with max remote calls: 2' in caplog.text
+  assert 'AFC is enabled with max remote calls: 1' in caplog.text
   assert 'remote call 1 is done' in caplog.text
-  assert 'remote call 2 is done' in caplog.text
   assert 'Reached max remote calls' in caplog.text
 
 
@@ -1285,3 +1442,29 @@ def test_suppress_logs_with_sdk_logger(client, caplog):
       },
   )
   assert not caplog.text
+
+
+def test_tools_chat_curation(client, caplog):
+  caplog.set_level(logging.DEBUG, logger='google_genai.models')
+  sdk_logger = logging.getLogger('google_genai.models')
+  sdk_logger.setLevel(logging.ERROR)
+
+  config = {
+      'tools': [{'function_declarations': function_declarations}],
+  }
+
+  chat = client.chats.create(
+      model='gemini-2.5-flash-preview-05-20',
+      config=config,
+  )
+
+  response = chat.send_message(
+      message='Who won the 1955 world cup?',
+  )
+
+  response = chat.send_message(
+      message='What was the population of canada in 1955?',
+  )
+
+  history = chat.get_history(curated=True)
+  assert len(history) == 4

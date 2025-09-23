@@ -26,8 +26,9 @@ import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, Optional, Sequence, Union  # type: ignore[attr-defined]
+from typing import Any, GenericAlias, List, Optional, Sequence, Union  # type: ignore[attr-defined]
 from ._mcp_utils import mcp_to_gemini_tool
+from ._common import get_value_by_path as getv
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -35,6 +36,7 @@ if typing.TYPE_CHECKING:
 import pydantic
 
 from . import _api_client
+from . import _common
 from . import types
 
 logger = logging.getLogger('google_genai._transformers')
@@ -60,6 +62,14 @@ else:
   except ImportError:
     McpClientSession = None
     McpTool = None
+
+
+metric_name_sdk_api_map = {
+    'exact_match': 'exactMatchSpec',
+    'bleu': 'bleuSpec',
+    'rouge_spec': 'rougeSpec',
+}
+metric_name_api_sdk_map = {v: k for k, v in metric_name_sdk_api_map.items()}
 
 
 def _resource_name(
@@ -195,21 +205,20 @@ def t_models_url(
 
 
 def t_extract_models(
-    api_client: _api_client.BaseApiClient,
-    response: dict[str, Any],
-) -> list[dict[str, Any]]:
+    response: _common.StringDict,
+) -> list[_common.StringDict]:
   if not response:
     return []
 
-  models: Optional[list[dict[str, Any]]] = response.get('models')
+  models: Optional[list[_common.StringDict]] = response.get('models')
   if models is not None:
     return models
 
-  tuned_models: Optional[list[dict[str, Any]]] = response.get('tunedModels')
+  tuned_models: Optional[list[_common.StringDict]] = response.get('tunedModels')
   if tuned_models is not None:
     return tuned_models
 
-  publisher_models: Optional[list[dict[str, Any]]] = response.get(
+  publisher_models: Optional[list[_common.StringDict]] = response.get(
       'publisherModels'
   )
   if publisher_models is not None:
@@ -299,18 +308,15 @@ def t_function_responses(
 
 
 def t_blobs(
-    api_client: _api_client.BaseApiClient,
     blobs: Union[types.BlobImageUnionDict, list[types.BlobImageUnionDict]],
 ) -> list[types.Blob]:
   if isinstance(blobs, list):
-    return [t_blob(api_client, blob) for blob in blobs]
+    return [t_blob(blob) for blob in blobs]
   else:
-    return [t_blob(api_client, blobs)]
+    return [t_blob(blobs)]
 
 
-def t_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
-) -> types.Blob:
+def t_blob(blob: types.BlobImageUnionDict) -> types.Blob:
   try:
     import PIL.Image
 
@@ -335,19 +341,15 @@ def t_blob(
   )
 
 
-def t_image_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
-) -> types.Blob:
-  blob = t_blob(api_client, blob)
+def t_image_blob(blob: types.BlobImageUnionDict) -> types.Blob:
+  blob = t_blob(blob)
   if blob.mime_type and blob.mime_type.startswith('image/'):
     return blob
   raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
 
 
-def t_audio_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobOrDict
-) -> types.Blob:
-  blob = t_blob(api_client, blob)
+def t_audio_blob(blob: types.BlobOrDict) -> types.Blob:
+  blob = t_blob(blob)
   if blob.mime_type and blob.mime_type.startswith('audio/'):
     return blob
   raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
@@ -393,7 +395,6 @@ def t_parts(
 
 
 def t_image_predictions(
-    client: _api_client.BaseApiClient,
     predictions: Optional[Iterable[Mapping[str, Any]]],
 ) -> Optional[list[types.GeneratedImage]]:
   if not predictions:
@@ -416,7 +417,6 @@ ContentType = Union[types.Content, types.ContentDict, types.PartUnionDict]
 
 
 def t_content(
-    client: _api_client.BaseApiClient,
     content: Optional[ContentType],
 ) -> types.Content:
   if content is None:
@@ -447,9 +447,9 @@ def t_contents_for_embed(
     contents: Union[list[types.Content], list[types.ContentDict], ContentType],
 ) -> Union[list[str], list[types.Content]]:
   if isinstance(contents, list):
-    transformed_contents = [t_content(client, content) for content in contents]
+    transformed_contents = [t_content(content) for content in contents]
   else:
-    transformed_contents = [t_content(client, contents)]
+    transformed_contents = [t_content(contents)]
 
   if client.vertexai:
     text_parts = []
@@ -469,7 +469,6 @@ def t_contents_for_embed(
 
 
 def t_contents(
-    client: _api_client.BaseApiClient,
     contents: Optional[
         Union[types.ContentListUnion, types.ContentListUnionDict, types.Content]
     ],
@@ -477,7 +476,7 @@ def t_contents(
   if contents is None or (isinstance(contents, list) and not contents):
     raise ValueError('contents are required.')
   if not isinstance(contents, list):
-    return [t_content(client, contents)]
+    return [t_content(contents)]
 
   try:
     import PIL.Image
@@ -571,7 +570,7 @@ def t_contents(
   return result
 
 
-def handle_null_fields(schema: dict[str, Any]) -> None:
+def handle_null_fields(schema: _common.StringDict) -> None:
   """Process null fields in the schema so it is compatible with OpenAPI.
 
   The OpenAPI spec does not support 'type: 'null' in the schema. This function
@@ -635,20 +634,24 @@ def _raise_for_unsupported_schema_type(origin: Any) -> None:
   raise ValueError(f'Unsupported schema type: {origin}')
 
 
-def _raise_for_unsupported_mldev_properties(schema: Any, client: _api_client.BaseApiClient) -> None:
-  if not client.vertexai and (
-      schema.get('additionalProperties')
-      or schema.get('additional_properties')
+def _raise_for_unsupported_mldev_properties(
+    schema: Any, client: Optional[_api_client.BaseApiClient]
+) -> None:
+  if (
+      client
+      and not client.vertexai
+      and (
+          schema.get('additionalProperties')
+          or schema.get('additional_properties')
+      )
   ):
-    raise ValueError(
-        'additionalProperties is not supported in the Gemini API.'
-    )
+    raise ValueError('additionalProperties is not supported in the Gemini API.')
 
 
 def process_schema(
-    schema: dict[str, Any],
-    client: _api_client.BaseApiClient,
-    defs: Optional[dict[str, Any]] = None,
+    schema: _common.StringDict,
+    client: Optional[_api_client.BaseApiClient],
+    defs: Optional[_common.StringDict] = None,
     *,
     order_properties: bool = True,
 ) -> None:
@@ -747,7 +750,7 @@ def process_schema(
   if (ref := schema.pop('$ref', None)) is not None:
     schema.update(defs[ref.split('defs/')[-1]])
 
-  def _recurse(sub_schema: dict[str, Any]) -> dict[str, Any]:
+  def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
       sub_schema = defs[ref.split('defs/')[-1]]
@@ -761,7 +764,8 @@ def process_schema(
   schema_type = schema.get('type')
   if isinstance(schema_type, Enum):
     schema_type = schema_type.value
-  schema_type = schema_type.upper()
+  if isinstance(schema_type, str):
+    schema_type = schema_type.upper()
 
   # model_json_schema() returns a schema with a 'const' field when a Literal with one value is provided as a pydantic field
   # For example `genre: Literal['action']` becomes: {'const': 'action', 'title': 'Genre', 'type': 'string'}
@@ -796,17 +800,27 @@ def process_schema(
 
 
 def _process_enum(
-    enum: EnumMeta, client: _api_client.BaseApiClient
+    enum: EnumMeta, client: Optional[_api_client.BaseApiClient]
 ) -> types.Schema:
+  is_integer_enum = False
+
   for member in enum:  # type: ignore
-    if not isinstance(member.value, str):
+    if isinstance(member.value, int):
+      is_integer_enum = True
+    elif not isinstance(member.value, str):
       raise TypeError(
-          f'Enum member {member.name} value must be a string, got'
+          f'Enum member {member.name} value must be a string or integer, got'
           f' {type(member.value)}'
       )
 
+  enum_to_process = enum
+  if is_integer_enum:
+    str_members = [str(member.value) for member in enum]  # type: ignore
+    str_enum = Enum(enum.__name__, str_members, type=str)  # type: ignore
+    enum_to_process = str_enum
+
   class Placeholder(pydantic.BaseModel):
-    placeholder: enum  # type: ignore[valid-type]
+    placeholder: enum_to_process  # type: ignore[valid-type]
 
   enum_schema = Placeholder.model_json_schema()
   process_schema(enum_schema, client)
@@ -816,7 +830,7 @@ def _process_enum(
 
 def _is_type_dict_str_any(
     origin: Union[types.SchemaUnionDict, Any],
-) -> TypeGuard[dict[str, Any]]:
+) -> TypeGuard[_common.StringDict]:
   """Verifies the schema is of type dict[str, Any] for mypy type checking."""
   return isinstance(origin, dict) and all(
       isinstance(key, str) for key in origin
@@ -824,7 +838,8 @@ def _is_type_dict_str_any(
 
 
 def t_schema(
-    client: _api_client.BaseApiClient, origin: Union[types.SchemaUnionDict, Any]
+    client: Optional[_api_client.BaseApiClient],
+    origin: Union[types.SchemaUnionDict, Any],
 ) -> Optional[types.Schema]:
   if not origin:
     return None
@@ -871,7 +886,6 @@ def t_schema(
 
 
 def t_speech_config(
-    _: _api_client.BaseApiClient,
     origin: Union[types.SpeechConfigUnionDict, Any],
 ) -> Optional[types.SpeechConfig]:
   if not origin:
@@ -891,7 +905,6 @@ def t_speech_config(
 
 
 def t_live_speech_config(
-    client: _api_client.BaseApiClient,
     origin: types.SpeechConfigOrDict,
 ) -> Optional[types.SpeechConfig]:
   if isinstance(origin, types.SpeechConfig):
@@ -958,50 +971,151 @@ def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
 
 
 def t_batch_job_source(
-    client: _api_client.BaseApiClient, src: str
+    client: _api_client.BaseApiClient,
+    src: types.BatchJobSourceUnionDict,
 ) -> types.BatchJobSource:
-  if src.startswith('gs://'):
-    return types.BatchJobSource(
-        format='jsonl',
-        gcs_uri=[src],
+  if isinstance(src, dict):
+    src = types.BatchJobSource(**src)
+  if isinstance(src, types.BatchJobSource):
+    vertex_sources = sum(
+        [src.gcs_uri is not None, src.bigquery_uri is not None]
     )
-  elif src.startswith('bq://'):
-    return types.BatchJobSource(
-        format='bigquery',
-        bigquery_uri=src,
-    )
+    mldev_sources = sum([
+        src.inlined_requests is not None,
+        src.file_name is not None,
+    ])
+    if client.vertexai:
+      if mldev_sources or vertex_sources != 1:
+        raise ValueError(
+            'Exactly one of `gcs_uri` or `bigquery_uri` must be set, other '
+            'sources are not supported in Vertex AI.'
+        )
+    else:
+      if vertex_sources or mldev_sources != 1:
+        raise ValueError(
+            'Exactly one of `inlined_requests`, `file_name`, '
+            '`inlined_embed_content_requests`, or `embed_content_file_name` '
+            'must be set, other sources are not supported in Gemini API.'
+        )
+    return src
+
+  elif isinstance(src, list):
+    return types.BatchJobSource(inlined_requests=src)
+  elif isinstance(src, str):
+    if src.startswith('gs://'):
+      return types.BatchJobSource(
+          format='jsonl',
+          gcs_uri=[src],
+      )
+    elif src.startswith('bq://'):
+      return types.BatchJobSource(
+          format='bigquery',
+          bigquery_uri=src,
+      )
+    elif src.startswith('files/'):
+      return types.BatchJobSource(
+          file_name=src,
+      )
+
+  raise ValueError(f'Unsupported source: {src}')
+
+
+def t_embedding_batch_job_source(
+    client: _api_client.BaseApiClient,
+    src: types.EmbeddingsBatchJobSourceOrDict,
+) -> types.EmbeddingsBatchJobSource:
+  if isinstance(src, dict):
+    src = types.EmbeddingsBatchJobSource(**src)
+
+  if isinstance(src, types.EmbeddingsBatchJobSource):
+    mldev_sources = sum([
+        src.inlined_requests is not None,
+        src.file_name is not None,
+    ])
+    if mldev_sources != 1:
+      raise ValueError(
+          'Exactly one of `inlined_requests`, `file_name`, '
+          '`inlined_embed_content_requests`, or `embed_content_file_name` '
+          'must be set, other sources are not supported in Gemini API.'
+      )
+    return src
   else:
-    raise ValueError(f'Unsupported source: {src}')
+    raise ValueError(f'Unsupported source type: {type(src)}')
 
 
 def t_batch_job_destination(
-    client: _api_client.BaseApiClient, dest: str
+    dest: Union[str, types.BatchJobDestinationOrDict],
 ) -> types.BatchJobDestination:
-  if dest.startswith('gs://'):
-    return types.BatchJobDestination(
-        format='jsonl',
-        gcs_uri=dest,
-    )
-  elif dest.startswith('bq://'):
-    return types.BatchJobDestination(
-        format='bigquery',
-        bigquery_uri=dest,
-    )
+  if isinstance(dest, dict):
+    dest = types.BatchJobDestination(**dest)
+    return dest
+  elif isinstance(dest, str):
+    if dest.startswith('gs://'):
+      return types.BatchJobDestination(
+          format='jsonl',
+          gcs_uri=dest,
+      )
+    elif dest.startswith('bq://'):
+      return types.BatchJobDestination(
+          format='bigquery',
+          bigquery_uri=dest,
+      )
+    else:
+      raise ValueError(f'Unsupported destination: {dest}')
+  elif isinstance(dest, types.BatchJobDestination):
+    return dest
   else:
     raise ValueError(f'Unsupported destination: {dest}')
 
 
+def t_recv_batch_job_destination(dest: dict[str, Any]) -> dict[str, Any]:
+  # Rename inlinedResponses if it looks like an embedding response.
+  inline_responses = dest.get('inlinedResponses', {}).get(
+      'inlinedResponses', []
+  )
+  if not inline_responses:
+    return dest
+  for response in inline_responses:
+    inner_response = response.get('response', {})
+    if not inner_response:
+      continue
+    if 'embedding' in inner_response:
+      dest['inlinedEmbedContentResponses'] = dest.pop('inlinedResponses')
+      break
+  return dest
+
+
 def t_batch_job_name(client: _api_client.BaseApiClient, name: str) -> str:
   if not client.vertexai:
-    return name
+    mldev_pattern = r'batches/[^/]+$'
+    if re.match(mldev_pattern, name):
+      return name.split('/')[-1]
+    else:
+      raise ValueError(f'Invalid batch job name: {name}.')
 
-  pattern = r'^projects/[^/]+/locations/[^/]+/batchPredictionJobs/[^/]+$'
-  if re.match(pattern, name):
+  vertex_pattern = r'^projects/[^/]+/locations/[^/]+/batchPredictionJobs/[^/]+$'
+
+  if re.match(vertex_pattern, name):
     return name.split('/')[-1]
   elif name.isdigit():
     return name
   else:
     raise ValueError(f'Invalid batch job name: {name}.')
+
+
+def t_job_state(state: str) -> str:
+  if state == 'BATCH_STATE_UNSPECIFIED':
+    return 'JOB_STATE_UNSPECIFIED'
+  elif state == 'BATCH_STATE_PENDING':
+    return 'JOB_STATE_PENDING'
+  elif state == 'BATCH_STATE_SUCCEEDED':
+    return 'JOB_STATE_SUCCEEDED'
+  elif state == 'BATCH_STATE_FAILED':
+    return 'JOB_STATE_FAILED'
+  elif state == 'BATCH_STATE_CANCELLED':
+    return 'JOB_STATE_CANCELLED'
+  else:
+    return state
 
 
 LRO_POLLING_INITIAL_DELAY_SECONDS = 1.0
@@ -1011,10 +1125,10 @@ LRO_POLLING_MULTIPLIER = 1.5
 
 
 def t_resolve_operation(
-    api_client: _api_client.BaseApiClient, struct: dict[str, Any]
+    api_client: _api_client.BaseApiClient, struct: _common.StringDict
 ) -> Any:
   if (name := struct.get('name')) and '/operations/' in name:
-    operation: dict[str, Any] = struct
+    operation: _common.StringDict = struct
     total_seconds = 0.0
     delay_seconds = LRO_POLLING_INITIAL_DELAY_SECONDS
     while operation.get('done') != True:
@@ -1041,7 +1155,6 @@ def t_resolve_operation(
 
 
 def t_file_name(
-    api_client: _api_client.BaseApiClient,
     name: Optional[Union[str, types.File, types.Video, types.GeneratedVideo]],
 ) -> str:
   # Remove the files/ prefix since it's added to the url path.
@@ -1075,9 +1188,7 @@ def t_file_name(
   return name
 
 
-def t_tuning_job_status(
-    api_client: _api_client.BaseApiClient, status: str
-) -> Union[types.JobState, str]:
+def t_tuning_job_status(status: str) -> Union[types.JobState, str]:
   if status == 'STATE_UNSPECIFIED':
     return types.JobState.JOB_STATE_UNSPECIFIED
   elif status == 'CREATING':
@@ -1091,16 +1202,6 @@ def t_tuning_job_status(
       if str(state.value) == status:
         return state
     return status
-
-
-# Some fields don't accept url safe base64 encoding.
-# We shouldn't use this transformer if the backend adhere to Cloud Type
-# format https://cloud.google.com/docs/discovery/type-format.
-# TODO(b/389133914,b/390320301): Remove the hack after backend fix the issue.
-def t_bytes(api_client: _api_client.BaseApiClient, data: bytes) -> str:
-  if not isinstance(data, bytes):
-    return data
-  return base64.b64encode(data).decode('ascii')
 
 
 def t_content_strict(content: types.ContentOrDict) -> types.Content:
@@ -1162,3 +1263,57 @@ def t_tool_response(
         f'Could not convert input (type "{type(input)}") to '
         '`types.LiveClientToolResponse`'
     ) from e
+
+
+def t_metrics(
+    metrics: list[types.MetricSubclass]
+) -> list[dict[str, Any]]:
+    """Prepares the metric payload for the evaluation request.
+
+    Args:
+        request_dict: The dictionary containing the request details.
+        resolved_metrics: A list of resolved metric objects.
+
+    Returns:
+        The updated request dictionary with the prepared metric payload.
+    """
+    metrics_payload = []
+
+    for metric in metrics:
+      metric_payload_item: dict[str, Any] = {}
+      metric_payload_item['aggregation_metrics'] = [
+          'AVERAGE',
+          'STANDARD_DEVIATION',
+      ]
+
+      metric_name = getv(metric, ['name']).lower()
+
+      if metric_name == 'exact_match':
+        metric_payload_item['exact_match_spec'] = {}
+      elif metric_name == 'bleu':
+        metric_payload_item['bleu_spec'] = {}
+      elif metric_name.startswith('rouge'):
+        rouge_type = metric_name.replace("_", "")
+        metric_payload_item['rouge_spec'] = {'rouge_type': rouge_type}
+
+      elif hasattr(metric, 'prompt_template') and metric.prompt_template:
+        pointwise_spec = {'metric_prompt_template': metric.prompt_template}
+        system_instruction = getv(
+            metric, ['judge_model_system_instruction']
+        )
+        if system_instruction:
+          pointwise_spec['system_instruction'] = system_instruction
+        return_raw_output = getv(
+            metric, ['return_raw_output']
+        )
+        if return_raw_output:
+          pointwise_spec['custom_output_format_config'] = {  # type: ignore[assignment]
+              'return_raw_output': return_raw_output
+          }
+        metric_payload_item['pointwise_metric_spec'] = pointwise_spec
+      else:
+        raise ValueError(
+            'Unsupported metric type or invalid metric name:' f' {metric_name}'
+        )
+      metrics_payload.append(metric_payload_item)
+    return metrics_payload

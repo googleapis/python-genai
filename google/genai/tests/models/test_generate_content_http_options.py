@@ -23,7 +23,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_generate_content_with_http_options',
         parameters=types._GenerateContentParameters(
             model='models/gemini-1.5-flash',
-            contents=t.t_contents(None, 'how are you doing?'),
+            contents=t.t_contents('how are you doing?'),
         ),
         exception_if_vertex='404',
     ),

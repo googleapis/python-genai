@@ -16,19 +16,26 @@
 """Common utilities for the SDK."""
 
 import base64
+import collections.abc
 import datetime
 import enum
 import functools
+import logging
 import typing
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
 import warnings
-
 import pydantic
 from pydantic import alias_generators
+from typing_extensions import TypeAlias
 
-from . import _api_client
-from . import errors
+logger = logging.getLogger('google_genai._common')
+
+StringDict: TypeAlias = dict[str, Any]
+
+
+class ExperimentalWarning(Warning):
+  """Warning for experimental features."""
 
 
 def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: Any) -> None:
@@ -93,7 +100,11 @@ def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: An
             f' Existing value: {existing_data}; New value: {value}.'
         )
     else:
-      data[keys[-1]] = value
+      if (keys[-1] == '_self' and isinstance(data, dict)
+          and isinstance(value, dict)):
+        data.update(value)
+      else:
+        data[keys[-1]] = value
 
 
 def get_value_by_path(data: Any, keys: list[str]) -> Any:
@@ -154,6 +165,38 @@ def convert_to_dict(obj: object) -> Any:
     return obj
 
 
+def _is_struct_type(annotation: type) -> bool:
+  """Checks if the given annotation is list[dict[str, typing.Any]]
+  or typing.List[typing.Dict[str, typing.Any]].
+
+  This maps to Struct type in the API.
+  """
+  outer_origin = get_origin(annotation)
+  outer_args = get_args(annotation)
+
+  if outer_origin is not list: # Python 3.9+ normalizes list
+    return False
+
+  if not outer_args or len(outer_args) != 1:
+    return False
+
+  inner_annotation = outer_args[0]
+
+  inner_origin = get_origin(inner_annotation)
+  inner_args = get_args(inner_annotation)
+
+  if inner_origin is not dict: # Python 3.9+ normalizes to dict
+    return False
+
+  if not inner_args or len(inner_args) != 2:
+    # dict should have exactly two type arguments
+    return False
+
+  # Check if the dict arguments are str and typing.Any
+  key_type, value_type = inner_args
+  return key_type is str and value_type is typing.Any
+
+
 def _remove_extra_fields(
     model: Any, response: dict[str, object]
 ) -> None:
@@ -188,12 +231,187 @@ def _remove_extra_fields(
     if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
       _remove_extra_fields(annotation, value)
     elif isinstance(value, list):
+      if _is_struct_type(annotation):
+        continue
+
       for item in value:
         # assume a list of dict is list of BaseModel
         if isinstance(item, dict):
           _remove_extra_fields(typing.get_args(annotation)[0], item)
 
 T = typing.TypeVar('T', bound='BaseModel')
+
+
+def _pretty_repr(
+    obj: Any,
+    *,
+    indent_level: int = 0,
+    indent_delta: int = 2,
+    max_len: int = 100,
+    max_items: int = 5,
+    depth: int = 6,
+    visited: Optional[FrozenSet[int]] = None,
+) -> str:
+  """Returns a representation of the given object."""
+  if visited is None:
+    visited = frozenset()
+
+  obj_id = id(obj)
+  if obj_id in visited:
+    return '<... Circular reference ...>'
+
+  if depth < 0:
+    return '<... Max depth ...>'
+
+  visited = frozenset(list(visited) + [obj_id])
+
+  indent = ' ' * indent_level
+  next_indent_str = ' ' * (indent_level + indent_delta)
+
+  if isinstance(obj, pydantic.BaseModel):
+    cls_name = obj.__class__.__name__
+    items = []
+    # Sort fields for consistent output
+    fields = sorted(type(obj).model_fields)
+
+    for field_name in fields:
+      field_info = type(obj).model_fields[field_name]
+      if not field_info.repr:  # Respect Field(repr=False)
+        continue
+
+      try:
+        value = getattr(obj, field_name)
+      except AttributeError:
+        continue
+
+      if value is None:
+        continue
+
+      value_repr = _pretty_repr(
+          value,
+          indent_level=indent_level + indent_delta,
+          indent_delta=indent_delta,
+          max_len=max_len,
+          max_items=max_items,
+          depth=depth - 1,
+          visited=visited,
+      )
+      items.append(f'{next_indent_str}{field_name}={value_repr}')
+
+    if not items:
+      return f'{cls_name}()'
+    return f'{cls_name}(\n' + ',\n'.join(items) + f'\n{indent})'
+  elif isinstance(obj, str):
+    if '\n' in obj:
+      escaped = obj.replace('"""', '\\"\\"\\"')
+      # Indent the multi-line string block contents
+      return f'"""{escaped}"""'
+    return repr(obj)
+  elif isinstance(obj, bytes):
+    if len(obj) > max_len:
+      return f"{repr(obj[:max_len-3])[:-1]}...'"
+    return repr(obj)
+  elif isinstance(obj, collections.abc.Mapping):
+    if not obj:
+      return '{}'
+    if len(obj) > max_items:
+      return f'<dict len={len(obj)}>'
+    items = []
+    try:
+      sorted_keys = sorted(obj.keys(), key=str)
+    except TypeError:
+      sorted_keys = list(obj.keys())
+
+    for k in sorted_keys:
+      v = obj[k]
+      k_repr = _pretty_repr(
+          k,
+          indent_level=indent_level + indent_delta,
+          indent_delta=indent_delta,
+          max_len=max_len,
+          max_items=max_items,
+          depth=depth - 1,
+          visited=visited,
+      )
+      v_repr = _pretty_repr(
+          v,
+          indent_level=indent_level + indent_delta,
+          indent_delta=indent_delta,
+          max_len=max_len,
+          max_items=max_items,
+          depth=depth - 1,
+          visited=visited,
+      )
+      items.append(f'{next_indent_str}{k_repr}: {v_repr}')
+    return f'{{\n' + ',\n'.join(items) + f'\n{indent}}}'
+  elif isinstance(obj, (list, tuple, set)):
+    return _format_collection(
+        obj,
+        indent_level=indent_level,
+        indent_delta=indent_delta,
+        max_len=max_len,
+        max_items=max_items,
+        depth=depth,
+        visited=visited,
+    )
+  else:
+    # Fallback to standard repr, indenting subsequent lines only
+    raw_repr = repr(obj)
+    # Replace newlines with newline + indent
+    return raw_repr.replace('\n', f'\n{next_indent_str}')
+
+
+def _format_collection(
+    obj: Any,
+    *,
+    indent_level: int,
+    indent_delta: int,
+    max_len: int,
+    max_items: int,
+    depth: int,
+    visited: FrozenSet[int],
+) -> str:
+    """Formats a collection (list, tuple, set)."""
+    if isinstance(obj, list):
+        brackets = ('[', ']')
+    elif isinstance(obj, tuple):
+        brackets = ('(', ')')
+    elif isinstance(obj, set):
+        obj = list(obj)
+        if obj:
+          brackets = ('{', '}')
+        else:
+          brackets = ('set(', ')')
+    else:
+        raise ValueError(f"Unsupported collection type: {type(obj)}")
+
+    if not obj:
+        return brackets[0] + brackets[1]
+
+    indent = ' ' * indent_level
+    next_indent_str = ' ' * (indent_level + indent_delta)
+    elements = []
+    for i, elem in enumerate(obj):
+        if i >= max_items:
+            elements.append(
+                f'{next_indent_str}<... {len(obj) - max_items} more items ...>'
+            )
+            break
+        # Each element starts on a new line, fully indented
+        elements.append(
+            next_indent_str
+            + _pretty_repr(
+                elem,
+                indent_level=indent_level + indent_delta,
+                indent_delta=indent_delta,
+                max_len=max_len,
+                max_items=max_items,
+                depth=depth - 1,
+                visited=visited,
+            )
+        )
+
+    return f'{brackets[0]}\n' + ',\n'.join(elements) + "," + f'\n{indent}{brackets[1]}'
 
 
 class BaseModel(pydantic.BaseModel):
@@ -211,6 +429,12 @@ class BaseModel(pydantic.BaseModel):
       ignored_types=(typing.TypeVar,)
   )
 
+  def __repr__(self) -> str:
+    try:
+      return _pretty_repr(self)
+    except Exception:
+      return super().__repr__()
+
   @classmethod
   def _from_response(
       cls: typing.Type[T], *, response: dict[str, object], kwargs: dict[str, object]
@@ -218,7 +442,21 @@ class BaseModel(pydantic.BaseModel):
     # To maintain forward compatibility, we need to remove extra fields from
     # the response.
     # We will provide another mechanism to allow users to access these fields.
-    _remove_extra_fields(cls, response)
+
+    # For Agent Engine we don't want to call _remove_all_fields because the
+    # user may pass a dict that is not a subclass of BaseModel.
+    # If more modules require we skip this, we may want a different approach
+    should_skip_removing_fields = (
+        kwargs is not None and
+        'config' in kwargs and
+        kwargs['config'] is not None and
+        isinstance(kwargs['config'], dict) and
+        'include_all_fields' in kwargs['config']
+        and kwargs['config']['include_all_fields']
+    )
+
+    if not should_skip_removing_fields:
+      _remove_extra_fields(cls, response)
     validated_response = cls.model_validate(response)
     return validated_response
 
@@ -309,10 +547,83 @@ def experimental_warning(message: str) -> Callable[[Callable[..., Any]], Callabl
         warning_done = True
         warnings.warn(
             message=message,
-            category=errors.ExperimentalWarning,
+            category=ExperimentalWarning,
             stacklevel=2,
         )
       return func(*args, **kwargs)
     return wrapper
   return decorator
 
+
+def _normalize_key_for_matching(key_str: str) -> str:
+  """Normalizes a key for case-insensitive and snake/camel matching."""
+  return key_str.replace("_", "").lower()
+
+
+def align_key_case(
+    target_dict: StringDict, update_dict: StringDict
+) -> StringDict:
+  """Aligns the keys of update_dict to the case of target_dict keys.
+
+  Args:
+      target_dict: The dictionary with the target key casing.
+      update_dict: The dictionary whose keys need to be aligned.
+
+  Returns:
+      A new dictionary with keys aligned to target_dict's key casing.
+  """
+  aligned_update_dict: StringDict = {}
+  target_keys_map = {_normalize_key_for_matching(key): key for key in target_dict.keys()}
+
+  for key, value in update_dict.items():
+    normalized_update_key = _normalize_key_for_matching(key)
+
+    if normalized_update_key in target_keys_map:
+      aligned_key = target_keys_map[normalized_update_key]
+    else:
+      aligned_key = key
+
+    if isinstance(value, dict) and isinstance(target_dict.get(aligned_key), dict):
+      aligned_update_dict[aligned_key] = align_key_case(target_dict[aligned_key], value)
+    elif isinstance(value, list) and isinstance(target_dict.get(aligned_key), list):
+      # Direct assign as we treat update_dict list values as golden source.
+      aligned_update_dict[aligned_key] = value
+    else:
+      aligned_update_dict[aligned_key] = value
+  return aligned_update_dict
+
+
+def recursive_dict_update(
+    target_dict: StringDict, update_dict: StringDict
+) -> None:
+  """Recursively updates a target dictionary with values from an update dictionary.
+
+  We don't enforce the updated dict values to have the same type with the
+  target_dict values except log warnings.
+  Users providing the update_dict should be responsible for constructing correct
+  data.
+
+  Args:
+      target_dict (dict): The dictionary to be updated.
+      update_dict (dict): The dictionary containing updates.
+  """
+  # Python SDK http request may change in camel case or snake case:
+  # If the field is directly set via setv() function, then it is camel case;
+  # otherwise it is snake case.
+  # Align the update_dict key case to target_dict to ensure correct dict update.
+  aligned_update_dict = align_key_case(target_dict, update_dict)
+  for key, value in aligned_update_dict.items():
+    if (
+        key in target_dict
+        and isinstance(target_dict[key], dict)
+        and isinstance(value, dict)
+    ):
+      recursive_dict_update(target_dict[key], value)
+    elif key in target_dict and not isinstance(target_dict[key], type(value)):
+      logger.warning(
+          f"Type mismatch for key '{key}'. Existing type:"
+          f' {type(target_dict[key])}, new type: {type(value)}. Overwriting.'
+      )
+      target_dict[key] = value
+    else:
+      target_dict[key] = value
