@@ -4574,13 +4574,6 @@ def _ToolComputerUse_to_mldev(
   if getv(from_object, ['environment']) is not None:
     setv(to_object, ['environment'], getv(from_object, ['environment']))
 
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
   return to_object
 
 
@@ -4591,13 +4584,6 @@ def _ToolComputerUse_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['environment']) is not None:
     setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
 
   return to_object
 
