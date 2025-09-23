@@ -347,9 +347,6 @@ def _ComputeTokensParameters_to_vertex(
         ],
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -597,11 +594,7 @@ def _CountTokensParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CountTokensConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
+    _CountTokensConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -630,11 +623,7 @@ def _CountTokensParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CountTokensConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
+    _CountTokensConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -691,9 +680,6 @@ def _DeleteModelParameters_to_mldev(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -709,9 +695,6 @@ def _DeleteModelParameters_to_vertex(
         ['_url', 'name'],
         t.t_model(api_client, getv(from_object, ['model'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -922,11 +905,7 @@ def _EditImageParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _EditImageConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
+    _EditImageConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -1071,11 +1050,7 @@ def _EmbedContentParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
+    _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   setv(
       to_object,
@@ -1106,11 +1081,7 @@ def _EmbedContentParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _EmbedContentConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
+    _EmbedContentConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -2192,13 +2163,7 @@ def _GenerateImagesParameters_to_mldev(
     setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateImagesConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _GenerateImagesConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -2220,13 +2185,7 @@ def _GenerateImagesParameters_to_vertex(
     setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateImagesConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _GenerateImagesConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -2603,22 +2562,10 @@ def _GenerateVideosParameters_to_mldev(
     raise ValueError('video parameter is not supported in Gemini API.')
 
   if getv(from_object, ['source']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateVideosSource_to_mldev(
-            getv(from_object, ['source']), to_object
-        ),
-    )
+    _GenerateVideosSource_to_mldev(getv(from_object, ['source']), to_object)
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateVideosConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _GenerateVideosConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -2654,22 +2601,10 @@ def _GenerateVideosParameters_to_vertex(
     )
 
   if getv(from_object, ['source']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateVideosSource_to_vertex(
-            getv(from_object, ['source']), to_object
-        ),
-    )
+    _GenerateVideosSource_to_vertex(getv(from_object, ['source']), to_object)
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateVideosConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _GenerateVideosConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -2917,9 +2852,6 @@ def _GetModelParameters_to_mldev(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -2935,9 +2867,6 @@ def _GetModelParameters_to_vertex(
         ['_url', 'name'],
         t.t_model(api_client, getv(from_object, ['model'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -3240,12 +3169,8 @@ def _ListModelsParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListModelsConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
+    _ListModelsConfig_to_mldev(
+        api_client, getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -3258,12 +3183,8 @@ def _ListModelsParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListModelsConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
+    _ListModelsConfig_to_vertex(
+        api_client, getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -3880,22 +3801,10 @@ def _RecontextImageParameters_to_vertex(
     )
 
   if getv(from_object, ['source']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _RecontextImageSource_to_vertex(
-            getv(from_object, ['source']), to_object
-        ),
-    )
+    _RecontextImageSource_to_vertex(getv(from_object, ['source']), to_object)
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _RecontextImageConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _RecontextImageConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -4370,18 +4279,10 @@ def _SegmentImageParameters_to_vertex(
     )
 
   if getv(from_object, ['source']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _SegmentImageSource_to_vertex(getv(from_object, ['source']), to_object),
-    )
+    _SegmentImageSource_to_vertex(getv(from_object, ['source']), to_object)
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _SegmentImageConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
+    _SegmentImageConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -4877,11 +4778,7 @@ def _UpdateModelParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateModelConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
+    _UpdateModelConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -4900,11 +4797,7 @@ def _UpdateModelParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateModelConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
+    _UpdateModelConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -4998,13 +4891,7 @@ def _UpscaleImageAPIParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpscaleImageAPIConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _UpscaleImageAPIConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 

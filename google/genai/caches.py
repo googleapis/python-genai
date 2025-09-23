@@ -355,12 +355,8 @@ def _CreateCachedContentParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateCachedContentConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
+    _CreateCachedContentConfig_to_mldev(
+        getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -380,12 +376,8 @@ def _CreateCachedContentParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateCachedContentConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
+    _CreateCachedContentConfig_to_vertex(
+        getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -404,9 +396,6 @@ def _DeleteCachedContentParameters_to_mldev(
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -422,9 +411,6 @@ def _DeleteCachedContentParameters_to_vertex(
         ['_url', 'name'],
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -693,9 +679,6 @@ def _GetCachedContentParameters_to_mldev(
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
@@ -711,9 +694,6 @@ def _GetCachedContentParameters_to_vertex(
         ['_url', 'name'],
         t.t_cached_content_name(api_client, getv(from_object, ['name'])),
     )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -911,13 +891,7 @@ def _ListCachedContentsParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListCachedContentsConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
+    _ListCachedContentsConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -928,12 +902,8 @@ def _ListCachedContentsParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListCachedContentsConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
+    _ListCachedContentsConfig_to_vertex(
+        getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -1421,12 +1391,8 @@ def _UpdateCachedContentParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateCachedContentConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
+    _UpdateCachedContentConfig_to_mldev(
+        getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -1446,12 +1412,8 @@ def _UpdateCachedContentParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateCachedContentConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
+    _UpdateCachedContentConfig_to_vertex(
+        getv(from_object, ['config']), to_object
     )
 
   return to_object
