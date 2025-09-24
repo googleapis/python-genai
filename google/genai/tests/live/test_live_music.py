@@ -186,9 +186,19 @@ async def test_async_session_send_config(
   )
   if vertexai:
     with pytest.raises(NotImplementedError):
-      await session.set_music_generation_config(config=types.LiveMusicGenerationConfig(bpm=140))
+      await session.set_music_generation_config(
+          config=types.LiveMusicGenerationConfig(
+              bpm=140,
+              music_generation_mode=types.MusicGenerationMode.VOCALIZATION,
+          )
+      )
     return
-  await session.set_music_generation_config(config=types.LiveMusicGenerationConfig(bpm=140))
+  await session.set_music_generation_config(
+      config=types.LiveMusicGenerationConfig(
+          bpm=140,
+          music_generation_mode=types.MusicGenerationMode.VOCALIZATION,
+      )
+  )
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'musicGenerationConfig' in sent_data

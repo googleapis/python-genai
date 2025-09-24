@@ -14,6 +14,7 @@
 #
 
 import os
+from types import TracebackType
 from typing import Optional, Union
 
 import google.auth
@@ -31,7 +32,7 @@ from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
 from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
-from .types import HttpOptions, HttpOptionsDict
+from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
 
 
 class AsyncClient:
@@ -84,6 +85,44 @@ class AsyncClient:
   @property
   def operations(self) -> AsyncOperations:
     return self._operations
+
+  async def aclose(self) -> None:
+    """Closes the async client explicitly.
+
+    However, it doesn't close the sync client, which can be closed using the
+    Client.close() method or using the context manager.
+
+    Usage:
+    .. code-block:: python
+
+      from google.genai import Client
+
+      async_client = Client(
+          vertexai=True, project='my-project-id', location='us-central1'
+      ).aio
+      response_1 = await async_client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      response_2 = await async_client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      # Close the client to release resources.
+      await async_client.aclose()
+    """
+    await self._api_client.aclose()
+
+  async def __aenter__(self) -> 'AsyncClient':
+    return self
+
+  async def __aexit__(
+      self,
+      exc_type: Optional[Exception],
+      exc_value: Optional[Exception],
+      traceback: Optional[TracebackType],
+  ) -> None:
+    await self.aclose()
 
 
 class DebugConfig(pydantic.BaseModel):
@@ -311,3 +350,41 @@ class Client:
   def vertexai(self) -> bool:
     """Returns whether the client is using the Vertex AI API."""
     return self._api_client.vertexai or False
+
+  def close(self) -> None:
+    """Closes the synchronous client explicitly.
+
+    However, it doesn't close the async client, which can be closed using the
+    Client.aio.aclose() method or using the async context manager.
+
+    Usage:
+    .. code-block:: python
+
+      from google.genai import Client
+
+      client = Client(
+          vertexai=True, project='my-project-id', location='us-central1'
+      )
+      response_1 = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      response_2 = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      # Close the client to release resources.
+      client.close()
+    """
+    self._api_client.close()
+
+  def __enter__(self) -> 'Client':
+    return self
+
+  def __exit__(
+      self,
+      exc_type: Optional[Exception],
+      exc_value: Optional[Exception],
+      traceback: Optional[TracebackType],
+  ) -> None:
+    self.close()

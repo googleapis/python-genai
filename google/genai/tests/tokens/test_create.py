@@ -22,7 +22,7 @@ from ... import types
 from .. import pytest_helper
 
 
-_MODEL = 'models/gemini-2.0-flash-live-001'
+_MODEL = 'models/gemini-live-2.5-flash-preview'
 
 
 # All tests will be run for both Vertex and MLDev.
@@ -30,7 +30,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_create_no_lock',
         parameters=types.CreateAuthTokenParameters(
-            # remove v1alpha1 after v1beta is available.
+            # remove v1alpha after v1beta is available.
             config={'http_options': {'api_version': 'v1alpha'}},
         ),
         exception_if_vertex='only supported in the Gemini Developer client',
@@ -38,11 +38,11 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_create_global_lock',
         parameters=types.CreateAuthTokenParameters(
-            # remove v1alpha1 after v1beta is available.
+            # remove v1alpha after v1beta is available.
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -56,11 +56,11 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_create_lock_non_null_fields',
         parameters=types.CreateAuthTokenParameters(
-            # remove v1alpha1 after v1beta is available.
+            # remove v1alpha after v1beta is available.
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -75,11 +75,11 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_create_lock_unset_fields_as_default',
         parameters=types.CreateAuthTokenParameters(
-            # remove v1alpha1 after v1beta is available.
+            # remove v1alpha after v1beta is available.
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -94,11 +94,11 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_create_lock_additional_fields',
         parameters=types.CreateAuthTokenParameters(
-            # remove v1alpha1 after v1beta is available.
+            # remove v1alpha after v1beta is available.
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'uses': 2,
-                'live_ephemeral_parameters': {
+                'live_connect_constraints': {
                     'model': _MODEL,
                     'config': {
                         'response_modalities': ['TEXT'],
@@ -113,7 +113,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_create_lock_with_no_params',
         parameters=types.CreateAuthTokenParameters(
-            # remove v1alpha1 after v1beta is available.
+            # remove v1alpha after v1beta is available.
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'lock_additional_fields': ['output_audio_transcription'],
@@ -124,11 +124,11 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_create_lock_with_empty_params',
         parameters=types.CreateAuthTokenParameters(
-            # remove v1alpha1 after v1beta is available.
+            # remove v1alpha after v1beta is available.
             config={
                 'http_options': {'api_version': 'v1alpha'},
                 'lock_additional_fields': ['output_audio_transcription'],
-                'live_ephemeral_parameters': {},
+                'live_connect_constraints': {},
             },
         ),
         exception_if_vertex='only supported in the Gemini Developer client',

@@ -24,37 +24,37 @@ from ... import types
 
 def test_none():
   with pytest.raises(ValueError):
-    t.t_contents(None, None)
+    t.t_contents(None)
 
 
 def test_empty_list():
   with pytest.raises(ValueError):
-    t.t_contents(None, [])
+    t.t_contents([])
 
 
 def test_content():
   assert t.t_contents(
-      None, [types.Content(parts=[types.Part(text='test')])]
+      [types.Content(parts=[types.Part(text='test')])]
   ) == [types.Content(parts=[types.Part(text='test')])]
 
 
 def test_content_dict():
   assert t.t_contents(
-      None, [{'role': 'user', 'parts': [{'text': 'test'}]}]
+      [{'role': 'user', 'parts': [{'text': 'test'}]}]
   ) == [types.Content(parts=[types.Part(text='test')], role='user')]
 
 
 def test_empty_dict():
-  assert t.t_contents(None, {}) == [types.Content()]
+  assert t.t_contents({}) == [types.Content()]
 
 
 def test_invalid_dict():
   with pytest.raises(pydantic.ValidationError):
-    t.t_contents(None, {'invalid_key': 'test'})
+    t.t_contents({'invalid_key': 'test'})
 
 
 def test_text_part():
-  assert t.t_contents(None, [types.Part(text='test')]) == [
+  assert t.t_contents([types.Part(text='test')]) == [
       types.UserContent(parts=[types.Part(text='test')])
   ]
 
@@ -62,7 +62,7 @@ def test_text_part():
 def test_function_call_part():
   function_call = types.FunctionCall(name='test_func', args={'arg1': 'value1'})
   assert t.t_contents(
-      None, [types.Part(function_call=function_call)]
+      [types.Part(function_call=function_call)]
   ) == [
       types.ModelContent(
           parts=[
@@ -73,14 +73,13 @@ def test_function_call_part():
 
 
 def test_text_part_dict():
-  assert t.t_contents(None, [{'text': 'test'}]) == [
+  assert t.t_contents([{'text': 'test'}]) == [
       types.UserContent(parts=[types.Part(text='test')])
   ]
 
 
 def test_function_call_part_dict():
   assert t.t_contents(
-      None,
       [{'function_call': {'name': 'test_func', 'args': {'arg1': 'value1'}}}]
   ) == [
       types.ModelContent(
@@ -96,20 +95,20 @@ def test_function_call_part_dict():
 
 
 def test_empty_string():
-  assert t.t_contents(None, '') == [
+  assert t.t_contents('') == [
       types.UserContent(parts=[types.Part(text='')])
   ]
 
 
 def test_string():
-  assert t.t_contents(None, 'test') == [
+  assert t.t_contents('test') == [
       types.UserContent(parts=[types.Part(text='test')])
   ]
 
 
 def test_file():
   assert t.t_contents(
-      None, types.File(uri='gs://test', mime_type='image/png')
+      types.File(uri='gs://test', mime_type='image/png')
   ) == [
       types.UserContent(
           parts=[
@@ -125,16 +124,16 @@ def test_file():
 
 def test_file_no_uri():
   with pytest.raises(ValueError):
-    t.t_contents(None, types.File(mime_type='image/png'))
+    t.t_contents(types.File(mime_type='image/png'))
 
 
 def test_file_no_mime_type():
   with pytest.raises(ValueError):
-    t.t_contents(None, types.File(uri='gs://test'))
+    t.t_contents(types.File(uri='gs://test'))
 
 
 def test_string_list():
-  assert t.t_contents(None, ['test1', 'test2']) == [
+  assert t.t_contents(['test1', 'test2']) == [
       types.UserContent(parts=[
           types.Part(text='test1'),
           types.Part(text='test2'),
@@ -144,7 +143,6 @@ def test_string_list():
 
 def test_file_list():
   assert t.t_contents(
-      None,
       [
           types.File(uri='gs://test1', mime_type='image/png'),
           types.File(uri='gs://test2', mime_type='image/png'),
@@ -169,7 +167,6 @@ def test_file_list():
 
 def test_string_file_list():
   assert t.t_contents(
-      None,
       ['test1', types.File(uri='gs://test2', mime_type='image/png')],
   ) == [
       types.UserContent(
@@ -194,7 +191,6 @@ def test_function_call_list():
   )
 
   assert t.t_contents(
-      None,
       [
           types.Part(function_call=function_call1),
           types.Part(function_call=function_call2),
@@ -232,7 +228,6 @@ def test_function_call_function_response_list():
   )
 
   assert t.t_contents(
-      None,
       [
           question1,
           question2,
@@ -265,7 +260,6 @@ def test_function_call_function_response_list():
 
 def test_content_list():
   assert t.t_contents(
-      None,
       [
           types.Content(parts=[types.Part(text='test1')]),
           types.Content(parts=[types.Part(text='test2')]),
@@ -278,7 +272,6 @@ def test_content_list():
 
 def test_content_text_part_list():
   assert t.t_contents(
-      None,
       [
           types.Part(text='test1'),
           types.Part(text='test2'),
@@ -324,7 +317,7 @@ def test_list_of_text_part_list():
       },
   ]
 
-  assert t.t_contents(None, contents) == [
+  assert t.t_contents(contents) == [
       types.UserContent(parts='question1'),
       types.ModelContent(
           parts=[

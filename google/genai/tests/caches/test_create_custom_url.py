@@ -43,7 +43,7 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters
                 ],
             )
         ],
-        'system_instruction': t.t_content(None, 'What is the sum of the two pdfs?'),
+        'system_instruction': t.t_content('What is the sum of the two pdfs?'),
         'display_name': 'test cache',
         'ttl': '86400s',
         'http_options': constants.VERTEX_HTTP_OPTIONS,
@@ -66,7 +66,7 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE = types._CreateCachedContentPara
                 ],
             )
         ],
-        'system_instruction': t.t_content(None, 'What is the sum of the two pdfs?'),
+        'system_instruction': t.t_content('What is the sum of the two pdfs?'),
         'display_name': 'test cache',
         'ttl': '86400s',
         'http_options': constants.MLDEV_HTTP_OPTIONS,

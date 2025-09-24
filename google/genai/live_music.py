@@ -58,7 +58,7 @@ class AsyncMusicSession:
       raise NotImplementedError('Live music generation is not supported in Vertex AI.')
     else:
       client_content_dict = live_converters._LiveMusicClientContent_to_mldev(
-          api_client=self._api_client, from_object={'weighted_prompts': prompts}
+          from_object={'weighted_prompts': prompts}
       )
     await self._ws.send(json.dumps({'clientContent': client_content_dict}))
 
@@ -70,7 +70,7 @@ class AsyncMusicSession:
       raise NotImplementedError('Live music generation is not supported in Vertex AI.')
     else:
       config_dict = live_converters._LiveMusicGenerationConfig_to_mldev(
-          api_client=self._api_client, from_object=config
+          from_object=config
       )
     await self._ws.send(json.dumps({'musicGenerationConfig': config_dict}))
 
@@ -82,7 +82,7 @@ class AsyncMusicSession:
       raise NotImplementedError('Live music generation is not supported in Vertex AI.')
     else:
       playback_control_dict = live_converters._LiveMusicClientMessage_to_mldev(
-          api_client=self._api_client, from_object={'playback_control': playback_control}
+          from_object={'playback_control': playback_control}
       )
       await self._ws.send(json.dumps(playback_control_dict))
 
@@ -135,7 +135,7 @@ class AsyncMusicSession:
       raise NotImplementedError('Live music generation is not supported in Vertex AI.')
     else:
       response_dict = live_converters._LiveMusicServerMessage_from_mldev(
-          self._api_client, response
+          response
       )
 
     return types.LiveMusicServerMessage._from_response(
@@ -173,7 +173,6 @@ class AsyncLiveMusic(_api_module.BaseModule):
       # Only mldev supported
       request_dict = _common.convert_to_dict(
           live_converters._LiveMusicConnectParameters_to_mldev(
-              api_client=self._api_client,
               from_object=types.LiveMusicConnectParameters(
                 model=transformed_model,
               ).model_dump(exclude_none=True)

@@ -79,10 +79,10 @@ def test_nullable_conversion():
   json_schema = schema.json_schema
   not_none_field_names = _get_not_none_fields(json_schema)
 
-  assert json_schema.type == [
+  assert set(json_schema.type) == set([
       types.JSONSchemaType('null'),
       types.JSONSchemaType('string')
-  ]
+  ])
   assert not_none_field_names == ['type']
 
 

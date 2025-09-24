@@ -22,16 +22,16 @@ from . import constants
 
 _COMPUTE_TOKENS_PARAMS = types._ComputeTokensParameters(
     model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    contents=[t.t_content('Tell me a story in 300 words.')],
 )
 _COMPUTE_TOKENS_PARAMS_VERTEX_CUSTOM_URL = types._ComputeTokensParameters(
     model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    contents=[t.t_content('Tell me a story in 300 words.')],
     config={'http_options': constants.VERTEX_HTTP_OPTIONS},
 )
 _COMPUTE_TOKENS_PARAMS_MLDEV_CUSTOM_URL = types._ComputeTokensParameters(
     model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    contents=[t.t_content('Tell me a story in 300 words.')],
     config={'http_options': constants.MLDEV_HTTP_OPTIONS},
 )
 _UNICODE_STRING = '这是一条unicode测试🤪❤★'
@@ -42,7 +42,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='only supported in',
         parameters=types._ComputeTokensParameters(
             model='gemini-1.5-flash',
-            contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+            contents=[t.t_content('Tell me a story in 300 words.')],
         ),
     ),
     pytest_helper.TestTableItem(
@@ -60,7 +60,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_compute_tokens_unicode',
         exception_if_mldev='only supported in',
         parameters=types._ComputeTokensParameters(
-            model='gemini-1.5-flash', contents=[t.t_content(None, _UNICODE_STRING)]
+            model='gemini-1.5-flash', contents=[t.t_content(_UNICODE_STRING)]
         ),
     ),
 ]

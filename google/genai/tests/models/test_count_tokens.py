@@ -17,20 +17,21 @@
 import copy
 import pytest
 from ... import _transformers as t
+from ... import errors
 from ... import types
 from .. import pytest_helper
 from . import constants
 
 _COUNT_TOKENS_PARAMS = types._CountTokensParameters(
     model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    contents=[t.t_content('Tell me a story in 300 words.')],
 )
 
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION = copy.deepcopy(
     _COUNT_TOKENS_PARAMS
 )
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION.config = {
-    'system_instruction': t.t_content(None, 'you are a chatbot.')
+    'system_instruction': t.t_content('you are a chatbot.')
 }
 
 _COUNT_TOKENS_PARAMS_WITH_TOOLS = copy.deepcopy(_COUNT_TOKENS_PARAMS)
@@ -129,3 +130,30 @@ def test_different_model_names(client):
         model='models/gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response2
+
+
+def test_extra_body(client):
+  config = {
+      'http_options': {
+          'extra_body': {
+              'systemInstruction': {
+                  'parts': [{'text': 'you are a chatbot.'}],
+                  'role': 'user',
+              }
+          }
+      }
+  }
+  if client._api_client.vertexai:
+    response = client.models.count_tokens(
+        model=_COUNT_TOKENS_PARAMS.model,
+        contents=_COUNT_TOKENS_PARAMS.contents,
+        config=config,
+    )
+    assert response.total_tokens
+  else:
+    with pytest.raises(errors.ClientError):
+      client.models.count_tokens(
+          model=_COUNT_TOKENS_PARAMS.model,
+          contents=_COUNT_TOKENS_PARAMS.contents,
+          config=config,
+      )

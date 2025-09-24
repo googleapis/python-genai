@@ -29,7 +29,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_single_text',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -37,8 +37,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
             contents=[
-                t.t_content(None, 'What is your name?'),
-                t.t_content(None, 'I am a model.'),
+                t.t_content('What is your name?'),
+                t.t_content('I am a model.'),
             ],
             config={
                 'output_dimensionality': 10,
@@ -54,7 +54,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_single_text_with_mime_type_not_supported_in_mldev',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 10,
                 'mime_type': 'text/plain',
@@ -66,7 +66,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_single_text_with_auto_truncate_not_supported_in_mldev',
         parameters=types._EmbedContentParameters(
             model='text-embedding-004',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 10,
                 'auto_truncate': True,

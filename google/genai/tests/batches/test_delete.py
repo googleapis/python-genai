@@ -28,6 +28,7 @@ _BATCH_JOB_FULL_RESOURCE_NAME = (
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
+_MLDEV_BATCH_OPERATION_NAME = 'batches/70h2jo0ic2t1zejyl0p4jgi8mk1gj0wvjusv'
 
 
 # All tests will be run for both Vertex and MLDev.
@@ -37,7 +38,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._DeleteBatchJobParameters(
             name=_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
+        skip_in_api_mode=('Cannot cancel a batch job multiple times in Vertex'),
     ),
     pytest_helper.TestTableItem(
         name='test_delete_batch_job_full_resource_name',
@@ -45,14 +47,22 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._DeleteBatchJobParameters(
             name=_BATCH_JOB_FULL_RESOURCE_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
+        skip_in_api_mode=('Cannot cancel a batch job multiple times in Vertex'),
     ),
     pytest_helper.TestTableItem(
         name='test_delete_batch_job_with_invalid_name',
         parameters=types._DeleteBatchJobParameters(
             name=_INVALID_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
+        exception_if_vertex='Invalid batch job name',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_delete_batch_operation',
+        parameters=types._DeleteBatchJobParameters(
+            name=_MLDEV_BATCH_OPERATION_NAME,
+        ),
         exception_if_vertex='Invalid batch job name',
     ),
 ]
@@ -67,7 +77,10 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_delete(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    delete_job = await client.aio.batches.delete(name=_BATCH_JOB_NAME)
+  if client.vertexai:
+    name = _BATCH_JOB_NAME
+  else:
+    name = _MLDEV_BATCH_OPERATION_NAME
 
-    assert delete_job
+  delete_job = await client.aio.batches.delete(name=name)
+  assert delete_job

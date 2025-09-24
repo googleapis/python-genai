@@ -25,6 +25,7 @@ import pydantic
 
 from . import _common
 from . import _mcp_utils
+from . import _transformers as t
 from . import errors
 from . import types
 from ._adapters import McpToGenAiToolAdapter
@@ -62,15 +63,39 @@ def _create_generate_content_config_model(
     return config
 
 
+def _get_gcs_uri(
+    src: Union[str, types.BatchJobSourceOrDict]
+) -> Optional[str]:
+  """Extracts the first GCS URI from the source, if available."""
+  if isinstance(src, str) and src.startswith('gs://'):
+    return src
+  elif isinstance(src, dict) and src.get('gcs_uri'):
+    return src['gcs_uri'][0] if src['gcs_uri'] else None
+  elif isinstance(src, types.BatchJobSource) and src.gcs_uri:
+    return src.gcs_uri[0] if src.gcs_uri else None
+  return None
+
+
+def _get_bigquery_uri(
+    src: Union[str, types.BatchJobSourceOrDict]
+) -> Optional[str]:
+  """Extracts the BigQuery URI from the source, if available."""
+  if isinstance(src, str) and src.startswith('bq://'):
+    return src
+  elif isinstance(src, dict) and src.get('bigquery_uri'):
+    return src['bigquery_uri']
+  elif isinstance(src, types.BatchJobSource) and src.bigquery_uri:
+    return src.bigquery_uri
+  return None
+
+
 def format_destination(
-    src: str,
-    config: Optional[types.CreateBatchJobConfigOrDict] = None,
+    src: Union[str, types.BatchJobSource],
+    config: Optional[types.CreateBatchJobConfig] = None,
 ) -> types.CreateBatchJobConfig:
-  """Formats the destination uri based on the source uri."""
-  config = (
-      types._CreateBatchJobParameters(config=config).config
-      or types.CreateBatchJobConfig()
-  )
+  """Formats the destination uri based on the source uri for Vertex AI."""
+  if config is None:
+    config = types.CreateBatchJobConfig()
 
   unique_name = None
   if not config.display_name:
@@ -78,17 +103,15 @@ def format_destination(
     config.display_name = f'genai_batch_job_{unique_name}'
 
   if not config.dest:
-    if src.startswith('gs://') and src.endswith('.jsonl'):
-      # If source uri is "gs://bucket/path/to/src.jsonl", then the destination
-      # uri prefix will be "gs://bucket/path/to/src/dest".
-      config.dest = f'{src[:-6]}/dest'
-    elif src.startswith('bq://'):
-      # If source uri is "bq://project.dataset.src", then the destination
-      # uri will be "bq://project.dataset.src_dest_TIMESTAMP_UUID".
+    gcs_source_uri = _get_gcs_uri(src)
+    bigquery_source_uri = _get_bigquery_uri(src)
+
+    if gcs_source_uri and gcs_source_uri.endswith('.jsonl'):
+      config.dest = f'{gcs_source_uri[:-6]}/dest'
+    elif bigquery_source_uri:
       unique_name = unique_name or _common.timestamped_unique_name()
-      config.dest = f'{src}_dest_{unique_name}'
-    else:
-      raise ValueError(f'Unsupported source: {src}')
+      config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
+
   return config
 
 
@@ -129,8 +152,8 @@ def get_function_map(
 
 
 def convert_number_values_for_dict_function_call_args(
-    args: dict[str, Any],
-) -> dict[str, Any]:
+    args: _common.StringDict,
+) -> _common.StringDict:
   """Converts float values in dict with no decimal to integers."""
   return {
       key: convert_number_values_for_function_call_args(value)
@@ -231,8 +254,8 @@ def convert_if_exist_pydantic_model(
 
 
 def convert_argument_from_function(
-    args: dict[str, Any], function: Callable[..., Any]
-) -> dict[str, Any]:
+    args: _common.StringDict, function: Callable[..., Any]
+) -> _common.StringDict:
   signature = inspect.signature(function)
   func_name = function.__name__
   converted_args = {}
@@ -248,7 +271,7 @@ def convert_argument_from_function(
 
 
 def invoke_function_from_dict_args(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -262,7 +285,7 @@ def invoke_function_from_dict_args(
 
 
 async def invoke_function_from_dict_args_async(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -295,7 +318,7 @@ def get_function_response_parts(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
           if not isinstance(func, McpToGenAiToolAdapter):
             func_response = {
@@ -330,7 +353,7 @@ async def get_function_response_parts_async(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
           if isinstance(func, McpToGenAiToolAdapter):
             mcp_tool_response = await func.call_tool(
@@ -506,3 +529,15 @@ async def parse_config_for_mcp_sessions(
         parsed_config_copy.tools.append(tool)
 
   return parsed_config_copy, mcp_to_genai_tool_adapters
+
+
+def append_chunk_contents(
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+    chunk: types.GenerateContentResponse,
+) -> None:
+  """Appends the contents of the chunk to the contents list."""
+  if chunk is not None and chunk.candidates is not None:
+    chunk_content = chunk.candidates[0].content
+    contents = t.t_contents(contents)  # type: ignore[assignment]
+    if isinstance(contents, list) and chunk_content is not None:
+      contents.append(chunk_content)  # type: ignore[arg-type]

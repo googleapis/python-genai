@@ -28,7 +28,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='INVALID_ARGUMENT',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-pro-002',
-            contents=t.t_contents(None, 'What is in these docs?'),
+            contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': 'batchPredictionJobs/123',
             },
@@ -42,7 +42,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-pro-002',
-            contents=t.t_contents(None, 'What is in these docs?'),
+            contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': f'locations/us-central1/cachedContents/{VERTEX_CACHED_CONTENT_NAME}',
             },
@@ -56,7 +56,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-pro-002',
-            contents=t.t_contents(None, 'What is in these docs?'),
+            contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': (
                     f'cachedContents/{VERTEX_CACHED_CONTENT_NAME}'
@@ -72,7 +72,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-pro-002',
-            contents=t.t_contents(None, 'What is in these docs?'),
+            contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': VERTEX_CACHED_CONTENT_NAME,
             },
@@ -86,7 +86,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-pro-001',
-            contents=t.t_contents(None, 'What is in these docs?'),
+            contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': f'{MLDEV_CACHED_CONTENT_NAME}',
             },
@@ -100,7 +100,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-pro-002',
-            contents=t.t_contents(None, 'What is in these docs?'),
+            contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': f'projects/964831358985/locations/us-central1/cachedContents/{VERTEX_CACHED_CONTENT_NAME}',
             },
@@ -114,7 +114,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-pro-001',
-            contents=t.t_contents(None, 'Tell me a story in 300 words.'),
+            contents=t.t_contents('Tell me a story in 300 words.'),
             config={
                 'cached_content': f'cachedContents/{MLDEV_CACHED_CONTENT_NAME}',
             },

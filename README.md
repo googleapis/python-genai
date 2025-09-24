@@ -21,6 +21,12 @@ APIs.
 pip install google-genai
 ```
 
+<small>With `uv`:</small>
+
+```sh
+uv pip install google-genai
+```
+
 ## Imports
 
 ```python
@@ -55,10 +61,13 @@ You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you're using the Gemini
 Developer API or the Gemini API in Vertex AI.
 
-**Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
+**Gemini Developer API:** Set the `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
+It will automatically be picked up by the client. It's recommended that you
+set only one of those variables, but if both are set, `GOOGLE_API_KEY` takes
+precedence.
 
 ```bash
-export GOOGLE_API_KEY='your-api-key'
+export GEMINI_API_KEY='your-api-key'
 ```
 
 **Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
@@ -74,6 +83,87 @@ export GOOGLE_CLOUD_LOCATION='us-central1'
 from google import genai
 
 client = genai.Client()
+```
+
+## Close a client
+
+Explicitly close the sync client to ensure that resources, such as the
+ underlying HTTP connections, are properly cleaned up and closed.
+
+```python
+
+from google.genai import Client
+
+client = Client()
+response_1 = client.models.generate_content(
+    model=MODEL_ID,
+    contents='Hello',
+)
+response_2 = client.models.generate_content(
+    model=MODEL_ID,
+    contents='Ask a question',
+)
+# Close the sync client to release resources.
+client.close()
+```
+
+To explicitly close the async client:
+
+```python
+
+from google.genai import Client
+
+aclient = Client(
+    vertexai=True, project='my-project-id', location='us-central1'
+).aio
+response_1 = await aclient.models.generate_content(
+    model=MODEL_ID,
+    contents='Hello',
+)
+response_2 = await aclient.models.generate_content(
+    model=MODEL_ID,
+    contents='Ask a question',
+)
+# Close the async client to release resources.
+await aclient.aclose()
+```
+
+## Client context managers
+
+By using the sync client context manager, it will close the underlying
+ sync client when exiting the with block.
+
+```python
+from google.genai import Client
+
+with Client() as client:
+  response_1 = client.models.generate_content(
+      model=MODEL_ID,
+      contents='Hello',
+  )
+  response_2 = client.models.generate_content(
+      model=MODEL_ID,
+      contents='Ask a question',
+  )
+
+```
+
+By using the async client context manager, it will close the underlying
+ async client when exiting the with block.
+
+```python
+from google.genai import Client
+
+async with Client().aio as aclient:
+  response_1 = await aclient.models.generate_content(
+      model=MODEL_ID,
+      contents='Hello',
+  )
+  response_2 = await aclient.models.generate_content(
+      model=MODEL_ID,
+      contents='Ask a question',
+  )
+
 ```
 
 ### API Selection
@@ -109,6 +199,49 @@ client = genai.Client(
 )
 ```
 
+### Faster async client option: Aiohttp
+
+By default we use httpx for both sync and async client implementations. In order
+to have faster performance, you may install `google-genai[aiohttp]`. In Gen AI
+SDK we configure `trust_env=True` to match with the default behavior of httpx.
+Additional args of `aiohttp.ClientSession.request()` ([see _RequestOptions args](https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170)) can be passed
+through the following way:
+
+```python
+
+http_options = types.HttpOptions(
+    async_client_args={'cookies': ..., 'ssl': ...},
+)
+
+client=Client(..., http_options=http_options)
+```
+
+### Proxy
+
+Both httpx and aiohttp libraries use `urllib.request.getproxies` from
+environment variables. Before client initialization, you may set proxy (and
+optional SSL_CERT_FILE) by setting the environment variables:
+
+
+```bash
+export HTTPS_PROXY='http://username:password@proxy_uri:port'
+export SSL_CERT_FILE='client.pem'
+```
+
+If you need `socks5` proxy, httpx [supports](https://www.python-httpx.org/advanced/proxies/#socks) `socks5` proxy if you pass it via
+args to `httpx.Client()`. You may install `httpx[socks]` to use it.
+Then, you can pass it through the following way:
+
+```python
+
+http_options = types.HttpOptions(
+    client_args={'proxy': 'socks5://user:pass@host:port'},
+    async_client_args={'proxy': 'socks5://user:pass@host:port'},
+)
+
+client=Client(..., http_options=http_options)
+```
+
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
@@ -117,7 +250,7 @@ Pydantic model types are available in the `types` module.
 
 ## Models
 
-The `client.models` modules exposes model inferencing and model getters.
+The `client.models` module exposes model inferencing and model getters.
 See the 'Create a client' section above to initialize a client.
 
 ### Generate Content
@@ -308,7 +441,7 @@ The SDK converts all non function call parts into a content with a `user` role.
 [
   types.UserContent(parts=[
     types.Part.from_uri(
-     file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+      file_uri: 'gs://generativeai-downloads/images/scones.jpg',
       mime_type: 'image/jpeg',
     )
   ])
@@ -529,16 +662,16 @@ from google.genai import types
 function = types.FunctionDeclaration(
     name='get_current_weather',
     description='Get the current weather in a given location',
-    parameters=types.Schema(
-        type='OBJECT',
-        properties={
-            'location': types.Schema(
-                type='STRING',
-                description='The city and state, e.g. San Francisco, CA',
-            ),
+    parameters_json_schema={
+        'type': 'object',
+        'properties': {
+            'location': {
+                'type': 'string',
+                'description': 'The city and state, e.g. San Francisco, CA',
+            }
         },
-        required=['location'],
-    ),
+        'required': ['location'],
+    },
 )
 
 tool = types.Tool(function_declarations=[function])
@@ -666,11 +799,92 @@ response = client.models.generate_content(
     ),
 )
 ```
+
+#### Model Context Protocol (MCP) support (experimental)
+
+Built-in [MCP](https://modelcontextprotocol.io/introduction) support is an
+experimental feature. You can pass a local MCP server as a tool directly.
+
+```python
+import os
+import asyncio
+from datetime import datetime
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from google import genai
+
+client = genai.Client()
+
+# Create server parameters for stdio connection
+server_params = StdioServerParameters(
+    command="npx",  # Executable
+    args=["-y", "@philschmid/weather-mcp"],  # MCP Server
+    env=None,  # Optional environment variables
+)
+
+async def run():
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            # Prompt to get the weather for the current day in London.
+            prompt = f"What is the weather in London in {datetime.now().strftime('%Y-%m-%d')}?"
+
+            # Initialize the connection between client and server
+            await session.initialize()
+
+            # Send request to the model with MCP function declarations
+            response = await client.aio.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    temperature=0,
+                    tools=[session],  # uses the session, will automatically call the tool using automatic function calling
+                ),
+            )
+            print(response.text)
+
+# Start the asyncio event loop and run the main function
+asyncio.run(run())
+```
+
 ### JSON Response Schema
 
 However you define your schema, don't duplicate it in your input prompt,
 including by giving examples of expected JSON output. If you do, the generated
 output might be lower in quality.
+
+#### JSON Schema support
+Schemas can be provided as standard JSON schema.
+```python
+user_profile = {
+    'properties': {
+        'age': {
+            'anyOf': [
+                {'maximum': 20, 'minimum': 0, 'type': 'integer'},
+                {'type': 'null'},
+            ],
+            'title': 'Age',
+        },
+        'username': {
+            'description': "User's unique name",
+            'title': 'Username',
+            'type': 'string',
+        },
+    },
+    'required': ['username', 'age'],
+    'title': 'User Schema',
+    'type': 'object',
+}
+
+response = client.models.generate_content(
+    model='gemini-2.0-flash',
+    contents='Give me a random user profile.',
+    config={
+        'response_mime_type': 'application/json',
+        'response_json_schema': user_profile
+    },
+)
+print(response.parsed)
+```
 
 #### Pydantic Model Schema support
 
@@ -902,6 +1116,20 @@ response = await client.aio.models.count_tokens(
 print(response)
 ```
 
+#### Local Count Tokens
+
+```python
+tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+result = tokenizer.count_tokens("What is your name?")
+```
+
+#### Local Compute Tokens
+
+```python
+tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+result = tokenizer.compute_tokens("What is your name?")
+```
+
 ### Embed Content
 
 ```python
@@ -1008,9 +1236,9 @@ response3.generated_images[0].image.show()
 
 ### Veo
 
-#### Generate Videos
+Support for generating videos is considered public preview
 
-Support for generate videos in Vertex and Gemini Developer API is behind an allowlist
+#### Generate Videos (Text to Video)
 
 ```python
 from google.genai import types
@@ -1021,7 +1249,6 @@ operation = client.models.generate_videos(
     prompt='A neon hologram of a cat driving at top speed',
     config=types.GenerateVideosConfig(
         number_of_videos=1,
-        fps=24,
         duration_seconds=5,
         enhance_prompt=True,
     ),
@@ -1032,7 +1259,73 @@ while not operation.done:
     time.sleep(20)
     operation = client.operations.get(operation)
 
-video = operation.result.generated_videos[0].video
+video = operation.response.generated_videos[0].video
+video.show()
+```
+
+#### Generate Videos (Image to Video)
+
+```python
+from google.genai import types
+
+# Read local image (uses mimetypes.guess_type to infer mime type)
+image = types.Image.from_file("local/path/file.png")
+
+# Create operation
+operation = client.models.generate_videos(
+    model='veo-2.0-generate-001',
+    # Prompt is optional if image is provided
+    prompt='Night sky',
+    image=image,
+    config=types.GenerateVideosConfig(
+        number_of_videos=1,
+        duration_seconds=5,
+        enhance_prompt=True,
+        # Can also pass an Image into last_frame for frame interpolation
+    ),
+)
+
+# Poll operation
+while not operation.done:
+    time.sleep(20)
+    operation = client.operations.get(operation)
+
+video = operation.response.generated_videos[0].video
+video.show()
+```
+
+#### Generate Videos (Video to Video)
+
+Currently, only Vertex supports Video to Video generation (Video extension).
+
+```python
+from google.genai import types
+
+# Read local video (uses mimetypes.guess_type to infer mime type)
+video = types.Video.from_file("local/path/video.mp4")
+
+# Create operation
+operation = client.models.generate_videos(
+    model='veo-2.0-generate-001',
+    # Prompt is optional if Video is provided
+    prompt='Night sky',
+    # Input video must be in GCS
+    video=types.Video(
+        uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
+    ),
+    config=types.GenerateVideosConfig(
+        number_of_videos=1,
+        duration_seconds=5,
+        enhance_prompt=True,
+    ),
+)
+
+# Poll operation
+while not operation.done:
+    time.sleep(20)
+    operation = client.operations.get(operation)
+
+video = operation.response.generated_videos[0].video
 video.show()
 ```
 
@@ -1178,33 +1471,21 @@ print(response.text)
 ## Tunings
 
 `client.tunings` contains tuning job APIs and supports supervised fine
-tuning through `tune`. See the 'Create a client' section above to initialize a
-client.
+tuning through `tune`. Only supported in Vertex AI. See the 'Create a client'
+section above to initialize a client.
 
 ### Tune
 
--   Vertex AI supports tuning from GCS source
--   Gemini Developer API supports tuning from inline examples
+-   Vertex AI supports tuning from GCS source or from a Vertex Multimodal Dataset
 
 ```python
 from google.genai import types
 
-if client.vertexai:
-    model = 'gemini-2.0-flash-001'
-    training_dataset = types.TuningDataset(
-        gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
-    )
-else:
-    model = 'models/gemini-2.0-flash-001'
-    training_dataset = types.TuningDataset(
-        examples=[
-            types.TuningExample(
-                text_input=f'Input text {i}',
-                output=f'Output text {i}',
-            )
-            for i in range(5)
-        ],
-    )
+model = 'gemini-2.0-flash-001'
+training_dataset = types.TuningDataset(
+  # or gcs_uri=my_vertex_multimodal_dataset
+    gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
+)
 ```
 
 ```python
@@ -1230,14 +1511,15 @@ print(tuning_job)
 ```python
 import time
 
-running_states = set(
+completed_states = set(
     [
-        'JOB_STATE_PENDING',
-        'JOB_STATE_RUNNING',
+        'JOB_STATE_SUCCEEDED',
+        'JOB_STATE_FAILED',
+        'JOB_STATE_CANCELLED',
     ]
 )
 
-while tuning_job.state in running_states:
+while tuning_job.state not in completed_states:
     print(tuning_job.state)
     tuning_job = client.tunings.get(name=tuning_job.name)
     time.sleep(10)
@@ -1348,15 +1630,62 @@ initialize a client.
 
 ### Create
 
+Vertex AI:
+
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
     model='gemini-2.0-flash-001',
-    src='bq://my-project.my-dataset.my-table',
+    src='bq://my-project.my-dataset.my-table',  # or "gs://path/to/input/data"
 )
 
 job
 ```
+
+Gemini Developer API:
+
+```python
+# Create a batch job with inlined requests
+batch_job = client.batches.create(
+    model="gemini-2.0-flash",
+    src=[{
+      "contents": [{
+        "parts": [{
+          "text": "Hello!",
+        }],
+       "role": "user",
+     }],
+     "config": {"response_modalities": ["text"]},
+    }],
+)
+
+job
+```
+
+In order to create a batch job with file name. Need to upload a jsonl file.
+For example myrequests.json:
+
+```
+{"key":"request_1", "request": {"contents": [{"parts": [{"text":
+ "Explain how AI works in a few words"}]}], "generation_config": {"response_modalities": ["TEXT"]}}}
+{"key":"request_2", "request": {"contents": [{"parts": [{"text": "Explain how Crypto works in a few words"}]}]}}
+```
+Then upload the file.
+
+```python
+# Upload the file
+file = client.files.upload(
+    file='myrequest.json',
+    config=types.UploadFileConfig(display_name='test_json')
+)
+
+# Create a batch job with file name
+batch_job = client.batches.create(
+    model="gemini-2.0-flash",
+    src="files/file_name",
+)
+```
+
 
 ```python
 # Get a job by name
@@ -1441,4 +1770,25 @@ try:
 except errors.APIError as e:
   print(e.code) # 404
   print(e.message)
+```
+
+## Extra Request Body
+
+The `extra_body` field in `HttpOptions` accepts a dictionary of additional JSON
+properties to include in the request body. This can be used to access new or
+experimental backend features that are not yet formally supported in the SDK.
+The structure of the dictionary must match the backend API's request structure.
+
+- VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+- GeminiAPI backend API docs: https://ai.google.dev/api/rest
+
+```python
+response = client.models.generate_content(
+    model="gemini-2.5-pro",
+    contents="What is the weather in Boston? and how about Sunnyvale?",
+    config=types.GenerateContentConfig(
+        tools=[get_current_weather],
+        http_options=types.HttpOptions(extra_body={'tool_config': {'function_calling_config': {'mode': 'COMPOSITIONAL'}}}),
+    ),
+)
 ```

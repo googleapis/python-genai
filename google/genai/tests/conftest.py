@@ -20,7 +20,6 @@ import datetime
 import os
 from unittest import mock
 import uuid
-
 import pytest
 
 from .. import _common
@@ -41,6 +40,12 @@ def pytest_addoption(parser):
   * api: Always call the API and do not record.
   * tap: Always replay, fail if replay files do not exist. Also sets default values for the API key and replay directory.
 """,
+  )
+  parser.addoption(
+      '--private',
+      action='store_true',
+      default=False,
+      help='Run private tests.',
   )
 
 
@@ -108,12 +113,14 @@ def client(use_vertex, replays_prefix,http_options, request):
         )
     )
     os.environ['GOOGLE_GENAI_REPLAYS_DIRECTORY'] = replays_root_directory
-
+  # Get private arg.
+  private = request.config.getoption('--private')
   replay_client = _replay_api_client.ReplayApiClient(
       mode=mode,
       replay_id=replay_id,
       vertexai=use_vertex,
       http_options=http_options,
+      private=private,
   )
 
   with mock.patch.object(
@@ -137,3 +144,19 @@ def mock_timestamped_unique_name():
       return_value='20240101000000_bd656',
   ) as unique_name_mock:
     yield unique_name_mock
+
+
+@pytest.fixture
+def image_jpeg():
+  import PIL.Image
+  image_path = os.path.join(os.path.dirname(__file__), 'data', 'google.jpg')
+  with PIL.Image.open(image_path) as img:
+    yield img
+
+
+@pytest.fixture
+def image_png():
+  import PIL.Image
+  image_path = os.path.join(os.path.dirname(__file__), 'data', 'google.png')
+  with PIL.Image.open(image_path) as img:
+    yield img

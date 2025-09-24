@@ -26,7 +26,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_candidate_count_zero',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'candidate_count': 0,
             },
@@ -37,7 +37,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_max_output_tokens_zero',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'max_output_tokens': 0,
             },
@@ -49,7 +49,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_logprobs_zero',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'logprobs': 0,
             },
@@ -62,22 +62,18 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_logprobs_zero_with_response_logprobs_true',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'response_logprobs': True,
                 'logprobs': 0,
             },
         ),
-        # ML DEV discovery doc supports response_logprobs but the backend
-        # does not.
-        # TODO: update replay test json files when ML Dev backend is updated.
-        exception_if_mldev='INVALID_ARGUMENT',
     ),
     pytest_helper.TestTableItem(
         name='test_presence_penalty_zero',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'presence_penalty': 0,
             },
@@ -87,7 +83,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_frequency_penalty_zero',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
             config={
                 'frequency_penalty': 0,
             },
