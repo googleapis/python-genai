@@ -670,114 +670,6 @@ def _FunctionDeclaration_to_vertex(
   return to_object
 
 
-def _FunctionResponseBlob_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  return to_object
-
-
-def _FunctionResponseBlob_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  return to_object
-
-
-def _FunctionResponseFileData_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _FunctionResponseFileData_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _FunctionResponsePart_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _FunctionResponseBlob_to_mldev(
-            getv(from_object, ['inline_data']), to_object
-        ),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FunctionResponseFileData_to_mldev(
-            getv(from_object, ['file_data']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _FunctionResponsePart_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _FunctionResponseBlob_to_vertex(
-            getv(from_object, ['inline_data']), to_object
-        ),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FunctionResponseFileData_to_vertex(
-            getv(from_object, ['file_data']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _FunctionResponse_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -788,16 +680,6 @@ def _FunctionResponse_to_mldev(
 
   if getv(from_object, ['scheduling']) is not None:
     setv(to_object, ['scheduling'], getv(from_object, ['scheduling']))
-
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _FunctionResponsePart_to_mldev(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
 
   if getv(from_object, ['id']) is not None:
     setv(to_object, ['id'], getv(from_object, ['id']))
@@ -821,16 +703,6 @@ def _FunctionResponse_to_vertex(
 
   if getv(from_object, ['scheduling']) is not None:
     raise ValueError('scheduling parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _FunctionResponsePart_to_vertex(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
 
   if getv(from_object, ['id']) is not None:
     setv(to_object, ['id'], getv(from_object, ['id']))
@@ -3197,13 +3069,6 @@ def _ToolComputerUse_to_mldev(
   if getv(from_object, ['environment']) is not None:
     setv(to_object, ['environment'], getv(from_object, ['environment']))
 
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
   return to_object
 
 
@@ -3214,13 +3079,6 @@ def _ToolComputerUse_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['environment']) is not None:
     setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
 
   return to_object
 
