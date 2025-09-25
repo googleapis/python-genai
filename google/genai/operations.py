@@ -91,26 +91,6 @@ def _GetProjectOperationParameters_to_vertex(
   return to_object
 
 
-def _ProjectOperation_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  return to_object
-
-
 class Operations(_api_module.BaseModule):
 
   def _get_videos_operation(
@@ -158,7 +138,7 @@ class Operations(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
 
@@ -208,7 +188,7 @@ class Operations(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
 
@@ -252,10 +232,7 @@ class Operations(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _ProjectOperation_from_vertex(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.ProjectOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -366,7 +343,7 @@ class AsyncOperations(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
 
@@ -416,7 +393,7 @@ class AsyncOperations(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
 
@@ -462,10 +439,7 @@ class AsyncOperations(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if self._api_client.vertexai:
-      response_dict = _ProjectOperation_from_vertex(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.ProjectOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
