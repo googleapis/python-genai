@@ -37,6 +37,7 @@ import time
 from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
+import warnings
 
 import anyio
 import certifi
