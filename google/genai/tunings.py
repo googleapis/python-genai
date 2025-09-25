@@ -208,13 +208,6 @@ def _CreateTuningJobConfig_to_vertex(
         getv(from_object, ['export_last_checkpoint_only']),
     )
 
-  if getv(from_object, ['pre_tuned_model_checkpoint_id']) is not None:
-    setv(
-        to_object,
-        ['preTunedModel', 'checkpointId'],
-        getv(from_object, ['pre_tuned_model_checkpoint_id']),
-    )
-
   if getv(from_object, ['adapter_size']) is not None:
     setv(
         parent_object,
@@ -1298,7 +1291,12 @@ class Tunings(_api_module.BaseModule):
   ) -> types.TuningJob:
     if self._api_client.vertexai:
       if base_model.startswith('projects/'):  # Pre-tuned model
-        pre_tuned_model = types.PreTunedModel(tuned_model_name=base_model)
+        checkpoint_id = None
+        if config:
+          checkpoint_id = getattr(config, 'pre_tuned_model_checkpoint_id', None)
+        pre_tuned_model = types.PreTunedModel(
+            tuned_model_name=base_model, checkpoint_id=checkpoint_id
+        )
         tuning_job = self._tune(
             pre_tuned_model=pre_tuned_model,
             training_dataset=training_dataset,
@@ -1748,7 +1746,12 @@ class AsyncTunings(_api_module.BaseModule):
   ) -> types.TuningJob:
     if self._api_client.vertexai:
       if base_model.startswith('projects/'):  # Pre-tuned model
-        pre_tuned_model = types.PreTunedModel(tuned_model_name=base_model)
+        checkpoint_id = None
+        if config:
+          checkpoint_id = getattr(config, 'pre_tuned_model_checkpoint_id', None)
+        pre_tuned_model = types.PreTunedModel(
+            tuned_model_name=base_model, checkpoint_id=checkpoint_id
+        )
 
         tuning_job = await self._tune(
             pre_tuned_model=pre_tuned_model,
