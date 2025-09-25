@@ -6,12 +6,7 @@
 ### Features
 
 * Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([aa7e3c2](https://github.com/googleapis/python-genai/commit/aa7e3c20b4e4ca096de4bed002a21b9342a800d4))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([09980b4](https://github.com/googleapis/python-genai/commit/09980b4cd61b26c75aaf167737617da4be65e3e7))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([6dc65d9](https://github.com/googleapis/python-genai/commit/6dc65d985f194e93d8b8a7a2bd8bc26c735189c3))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([d395a17](https://github.com/googleapis/python-genai/commit/d395a17ecf45ccab531fb59e53d7d9fa96279d3a))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([4f20cf8](https://github.com/googleapis/python-genai/commit/4f20cf88808993abbb3cbdecdfd50d32b1d51a49))
 * Allow custom headers in file upload requests. ([1aad1e9](https://github.com/googleapis/python-genai/commit/1aad1e9c690aaf88ed07c295f6b84a8f1a046bd4))
-* Allow custom headers in file upload requests. ([65d3aa6](https://github.com/googleapis/python-genai/commit/65d3aa67d4f79381222f95c0b2334bc2e2810477))
 * Support explicitly closing the client and context manager ([f982dfb](https://github.com/googleapis/python-genai/commit/f982dfbda9dc63f38996be3a4f8f90c0d7f14154))
 * Support Imagen 4 Ingredients on Vertex ([1fe3bec](https://github.com/googleapis/python-genai/commit/1fe3becdff30ca0f18bdd67d64faf3dbfc52dba4))
 
