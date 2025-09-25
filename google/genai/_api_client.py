@@ -1797,5 +1797,3 @@ class BaseApiClient:
     await self._async_httpx_client.aclose()
     if self._aiohttp_session:
       await self._aiohttp_session.close()
-
-
