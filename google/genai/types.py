@@ -1021,6 +1021,112 @@ class ExecutableCodeDict(TypedDict, total=False):
 ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
 
 
+class FunctionResponseBlob(_common.BaseModel):
+  """Raw media bytes for function response.
+
+  Text should not be sent as raw bytes, use the FunctionResponse.response
+  field.
+  """
+
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+  data: Optional[bytes] = Field(
+      default=None, description="""Required. Inline media bytes."""
+  )
+
+
+class FunctionResponseBlobDict(TypedDict, total=False):
+  """Raw media bytes for function response.
+
+  Text should not be sent as raw bytes, use the FunctionResponse.response
+  field.
+  """
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+  data: Optional[bytes]
+  """Required. Inline media bytes."""
+
+
+FunctionResponseBlobOrDict = Union[
+    FunctionResponseBlob, FunctionResponseBlobDict
+]
+
+
+class FunctionResponseFileData(_common.BaseModel):
+  """URI based data for function response."""
+
+  file_uri: Optional[str] = Field(
+      default=None, description="""Required. URI."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class FunctionResponseFileDataDict(TypedDict, total=False):
+  """URI based data for function response."""
+
+  file_uri: Optional[str]
+  """Required. URI."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+FunctionResponseFileDataOrDict = Union[
+    FunctionResponseFileData, FunctionResponseFileDataDict
+]
+
+
+class FunctionResponsePart(_common.BaseModel):
+  """A datatype containing media that is part of a `FunctionResponse` message.
+
+  A `FunctionResponsePart` consists of data which has an associated datatype. A
+  `FunctionResponsePart` can only contain one of the accepted types in
+  `FunctionResponsePart.data`.
+
+  A `FunctionResponsePart` must have a fixed IANA MIME type identifying the
+  type and subtype of the media if the `inline_data` field is filled with raw
+  bytes.
+  """
+
+  inline_data: Optional[FunctionResponseBlob] = Field(
+      default=None, description="""Optional. Inline media bytes."""
+  )
+  file_data: Optional[FunctionResponseFileData] = Field(
+      default=None, description="""Optional. URI based data."""
+  )
+
+
+class FunctionResponsePartDict(TypedDict, total=False):
+  """A datatype containing media that is part of a `FunctionResponse` message.
+
+  A `FunctionResponsePart` consists of data which has an associated datatype. A
+  `FunctionResponsePart` can only contain one of the accepted types in
+  `FunctionResponsePart.data`.
+
+  A `FunctionResponsePart` must have a fixed IANA MIME type identifying the
+  type and subtype of the media if the `inline_data` field is filled with raw
+  bytes.
+  """
+
+  inline_data: Optional[FunctionResponseBlobDict]
+  """Optional. Inline media bytes."""
+
+  file_data: Optional[FunctionResponseFileDataDict]
+  """Optional. URI based data."""
+
+
+FunctionResponsePartOrDict = Union[
+    FunctionResponsePart, FunctionResponsePartDict
+]
+
+
 class FunctionResponse(_common.BaseModel):
   """A function response."""
 
@@ -1031,6 +1137,11 @@ class FunctionResponse(_common.BaseModel):
   scheduling: Optional[FunctionResponseScheduling] = Field(
       default=None,
       description="""Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.""",
+  )
+  parts: Optional[list[FunctionResponsePart]] = Field(
+      default=None,
+      description="""List of parts that constitute a function response. Each part may
+      have a different IANA MIME type.""",
   )
   id: Optional[str] = Field(
       default=None,
@@ -1069,6 +1180,10 @@ class FunctionResponseDict(TypedDict, total=False):
 
   scheduling: Optional[FunctionResponseScheduling]
   """Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE."""
+
+  parts: Optional[list[FunctionResponsePartDict]]
+  """List of parts that constitute a function response. Each part may
+      have a different IANA MIME type."""
 
   id: Optional[str]
   """Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`."""
@@ -2686,6 +2801,14 @@ class ToolComputerUse(_common.BaseModel):
   environment: Optional[Environment] = Field(
       default=None, description="""Required. The environment being operated."""
   )
+  excluded_predefined_functions: Optional[list[str]] = Field(
+      default=None,
+      description="""By default, predefined functions are included in the final model call.
+    Some of them can be explicitly excluded from being automatically included.
+    This can serve two purposes:
+      1. Using a more restricted / different action space.
+      2. Improving the definitions / instructions of predefined functions.""",
+  )
 
 
 class ToolComputerUseDict(TypedDict, total=False):
@@ -2693,6 +2816,13 @@ class ToolComputerUseDict(TypedDict, total=False):
 
   environment: Optional[Environment]
   """Required. The environment being operated."""
+
+  excluded_predefined_functions: Optional[list[str]]
+  """By default, predefined functions are included in the final model call.
+    Some of them can be explicitly excluded from being automatically included.
+    This can serve two purposes:
+      1. Using a more restricted / different action space.
+      2. Improving the definitions / instructions of predefined functions."""
 
 
 ToolComputerUseOrDict = Union[ToolComputerUse, ToolComputerUseDict]
