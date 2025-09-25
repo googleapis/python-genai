@@ -1114,12 +1114,16 @@ def t_job_state(state: str) -> str:
     return 'JOB_STATE_UNSPECIFIED'
   elif state == 'BATCH_STATE_PENDING':
     return 'JOB_STATE_PENDING'
+  elif state == 'BATCH_STATE_RUNNING':
+    return 'JOB_STATE_RUNNING'
   elif state == 'BATCH_STATE_SUCCEEDED':
     return 'JOB_STATE_SUCCEEDED'
   elif state == 'BATCH_STATE_FAILED':
     return 'JOB_STATE_FAILED'
   elif state == 'BATCH_STATE_CANCELLED':
     return 'JOB_STATE_CANCELLED'
+  elif state == 'BATCH_STATE_EXPIRED':
+    return 'JOB_STATE_EXPIRED'
   else:
     return state
 
