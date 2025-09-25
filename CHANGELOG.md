@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.39.0](https://github.com/googleapis/python-genai/compare/v1.38.0...v1.39.0) (2025-09-25)
+
+
+### Features
+
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([aa7e3c2](https://github.com/googleapis/python-genai/commit/aa7e3c20b4e4ca096de4bed002a21b9342a800d4))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([09980b4](https://github.com/googleapis/python-genai/commit/09980b4cd61b26c75aaf167737617da4be65e3e7))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([6dc65d9](https://github.com/googleapis/python-genai/commit/6dc65d985f194e93d8b8a7a2bd8bc26c735189c3))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([d395a17](https://github.com/googleapis/python-genai/commit/d395a17ecf45ccab531fb59e53d7d9fa96279d3a))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([4f20cf8](https://github.com/googleapis/python-genai/commit/4f20cf88808993abbb3cbdecdfd50d32b1d51a49))
+* Allow custom headers in file upload requests. ([1aad1e9](https://github.com/googleapis/python-genai/commit/1aad1e9c690aaf88ed07c295f6b84a8f1a046bd4))
+* Allow custom headers in file upload requests. ([65d3aa6](https://github.com/googleapis/python-genai/commit/65d3aa67d4f79381222f95c0b2334bc2e2810477))
+* Support explicitly closing the client and context manager ([f982dfb](https://github.com/googleapis/python-genai/commit/f982dfbda9dc63f38996be3a4f8f90c0d7f14154))
+* Support Imagen 4 Ingredients on Vertex ([1fe3bec](https://github.com/googleapis/python-genai/commit/1fe3becdff30ca0f18bdd67d64faf3dbfc52dba4))
+
+
+### Bug Fixes
+
+* Expose `JOB_STATE_RUNNING` and `JOB_STATE_EXPIRED` for Gemini Batches states ([739f72d](https://github.com/googleapis/python-genai/commit/739f72d51890174e7e17a641df42a7d7038fda4c))
+* Fix AFC logging ([249f1af](https://github.com/googleapis/python-genai/commit/249f1aff4840ae8e74d2ef6a4b71e5ca5d919f8b))
+* Fix Max Depth repr for containers (dict, list, ...) ([6ef3db8](https://github.com/googleapis/python-genai/commit/6ef3db86d8ab5d2f04d95dc22ddcd4f64f8ecda8))
+* Initialization of `pre_tuned_model_checkpoint_id` from tuning config. ([1d3d28a](https://github.com/googleapis/python-genai/commit/1d3d28aa6af5034f1d5d796a65939ae4a3f995e7))
+* Remove unclosed client session message when sharing aiohttp ClientSession ([8cee513](https://github.com/googleapis/python-genai/commit/8cee5136dfe82b646347510279472551c68d3b30))
+
 ## [1.38.0](https://github.com/googleapis/python-genai/compare/v1.37.0...v1.38.0) (2025-09-16)
 
 
