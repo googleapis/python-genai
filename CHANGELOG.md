@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.39.1](https://github.com/googleapis/python-genai/compare/v1.39.0...v1.39.1) (2025-09-26)
+
+
+### Bug Fixes
+
+* Unbreak client closed errors when using vertexai session service ([a0882bd](https://github.com/googleapis/python-genai/commit/a0882bd19d49e8dc50c2bb281e6d683a854864ef))
+
+
+### Documentation
+
+* Regenerate updated Python docs ([4343332](https://github.com/googleapis/python-genai/commit/43433326c1b5ea4aeefb0ab24fac8b551034c995))
+
 ## [1.39.0](https://github.com/googleapis/python-genai/compare/v1.38.0...v1.39.0) (2025-09-25)
 
 
