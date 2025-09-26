@@ -277,6 +277,8 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """Token generation stopped because the content contains forbidden terms."""
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
   """Token generation stopped for potentially containing prohibited content."""
+  IMAGE_PROHIBITED_CONTENT = 'IMAGE_PROHIBITED_CONTENT'
+  """Token generation stopped for potentially containing prohibited content."""
   SPII = 'SPII'
   """Token generation stopped because the content potentially contains Sensitive Personally Identifiable Information (SPII)."""
   MALFORMED_FUNCTION_CALL = 'MALFORMED_FUNCTION_CALL'
