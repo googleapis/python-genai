@@ -1775,3 +1775,20 @@ class BaseApiClient:
     await self._async_httpx_client.aclose()
     if self._aiohttp_session:
       await self._aiohttp_session.close()
+
+  def __del__(self) -> None:
+    """Closes the API client when the object is garbage collected.
+
+    ADK uses this client so cannot rely on the genai.[Async]Client.__del__
+    for cleanup.
+    """
+
+    try:
+      self.close()
+    except Exception:  # pylint: disable=broad-except
+      pass
+
+    try:
+      asyncio.get_running_loop().create_task(self.aclose())
+    except Exception:  # pylint: disable=broad-except
+      pass

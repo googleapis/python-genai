@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import asyncio
 import os
 from types import TracebackType
 from typing import Optional, Union
@@ -125,7 +126,6 @@ class AsyncClient:
     await self.aclose()
 
   def __del__(self) -> None:
-    import asyncio
     try:
       asyncio.get_running_loop().create_task(self.aclose())
     except Exception:
