@@ -82,9 +82,15 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 class AsyncSession:
   """[Preview] AsyncSession."""
 
-  def __init__(self, api_client: BaseApiClient, websocket: ClientConnection):
+  def __init__(
+      self,
+      api_client: BaseApiClient,
+      websocket: ClientConnection,
+      session_id: Optional[str] = None,
+  ):
     self._api_client = api_client
     self._ws = websocket
+    self.session_id = session_id
 
   async def send(
       self,
@@ -1054,11 +1060,34 @@ class AsyncLive(_api_module.BaseModule):
       await ws.send(request)
       try:
         # websockets 14.0+
-        logger.info(await ws.recv(decode=False))
+        raw_response = await ws.recv(decode=False)
       except TypeError:
-        logger.info(await ws.recv())
+        raw_response = await ws.recv()  # type: ignore[assignment]
+      if raw_response:
+        try:
+          response = json.loads(raw_response)
+        except json.decoder.JSONDecodeError:
+          raise ValueError(f'Failed to parse response: {raw_response!r}')
+      else:
+        response = {}
 
-      yield AsyncSession(api_client=self._api_client, websocket=ws)
+      if self._api_client.vertexai:
+        response_dict = live_converters._LiveServerMessage_from_vertex(response)
+      else:
+        response_dict = live_converters._LiveServerMessage_from_mldev(response)
+
+      setup_response = types.LiveServerMessage._from_response(
+          response=response_dict, kwargs=parameter_model.model_dump()
+      )
+      if setup_response.setup_complete:
+        session_id = setup_response.setup_complete.session_id
+      else:
+        session_id = None
+      yield AsyncSession(
+          api_client=self._api_client,
+          websocket=ws,
+          session_id=session_id,
+      )
 
 
 async def _t_live_connect_config(
