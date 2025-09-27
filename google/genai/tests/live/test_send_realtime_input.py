@@ -32,6 +32,7 @@ IMAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google.jpg')
 )
 
+
 def mock_api_client(vertexai=False):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
@@ -67,9 +68,9 @@ async def test_send_media_blob_dict(mock_websocket, vertexai):
   assert 'realtime_input' in sent_data
 
   assert sent_data['realtime_input']['mediaChunks'][0]['data'] == 'AAAAAAAA'
-  assert (
-      sent_data['realtime_input']['mediaChunks'][0]['mime_type'] == 'audio/pcm'
-  )
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['realtime_input']['mediaChunks'][0], 'mime_type'
+  ) == 'audio/pcm'
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -86,9 +87,10 @@ async def test_send_media_blob(mock_websocket, vertexai):
   assert 'realtime_input' in sent_data
 
   assert sent_data['realtime_input']['mediaChunks'][0]['data'] == 'AAAAAAAA'
-  assert (
-      sent_data['realtime_input']['mediaChunks'][0]['mime_type'] == 'audio/pcm'
-  )
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['realtime_input']['mediaChunks'][0], 'mime_type'
+  ) == 'audio/pcm'
+
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
@@ -102,9 +104,9 @@ async def test_send_media_image(mock_websocket, vertexai, image_jpeg):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
 
-  assert (
-      sent_data['realtime_input']['mediaChunks'][0]['mime_type'] == 'image/jpeg'
-  )
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['realtime_input']['mediaChunks'][0], 'mime_type'
+  ) == 'image/jpeg'
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -126,7 +128,9 @@ async def test_send_audio(mock_websocket, vertexai, content):
   assert 'realtime_input' in sent_data
 
   assert sent_data['realtime_input']['audio']['data'] == 'AAAAAAAA'
-  assert sent_data['realtime_input']['audio']['mime_type'] == 'audio/pcm'
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['realtime_input']['audio'], 'mime_type'
+  ) == 'audio/pcm'
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -185,7 +189,10 @@ async def test_send_video(mock_websocket, vertexai, content):
   assert 'realtime_input' in sent_data
 
   assert sent_data['realtime_input']['video']['data'] == 'AAAAAAAA'
-  assert sent_data['realtime_input']['video']['mime_type'] == 'image/png'
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['realtime_input']['video'], 'mime_type'
+  ) == 'image/png'
+
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
@@ -198,7 +205,9 @@ async def test_send_video_image(mock_websocket, vertexai, image_jpeg):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'realtime_input' in sent_data
 
-  assert sent_data['realtime_input']['video']['mime_type'] == 'image/jpeg'
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['realtime_input']['video'], 'mime_type'
+  ) == 'image/jpeg'
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
