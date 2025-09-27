@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import asyncio
 import os
 from types import TracebackType
 from typing import Optional, Union
@@ -123,6 +124,12 @@ class AsyncClient:
       traceback: Optional[TracebackType],
   ) -> None:
     await self.aclose()
+
+  def __del__(self) -> None:
+    try:
+      asyncio.get_running_loop().create_task(self.aclose())
+    except Exception:
+      pass
 
 
 class DebugConfig(pydantic.BaseModel):
@@ -387,4 +394,7 @@ class Client:
       exc_value: Optional[Exception],
       traceback: Optional[TracebackType],
   ) -> None:
+    self.close()
+
+  def __del__(self) -> None:
     self.close()

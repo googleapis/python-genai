@@ -314,8 +314,15 @@ def _pretty_repr(
   elif isinstance(obj, collections.abc.Mapping):
     if not obj:
       return '{}'
+
+    # Check if the next level of recursion for keys/values will exceed the depth limit.
+    if depth <= 0:
+      item_count_str = f"{len(obj)} item{'s' if len(obj) != 1 else ''}"
+      return f'{{<... {item_count_str} at Max depth ...>}}'
+
     if len(obj) > max_items:
       return f'<dict len={len(obj)}>'
+
     items = []
     try:
       sorted_keys = sorted(obj.keys(), key=str)
@@ -374,10 +381,12 @@ def _format_collection(
     """Formats a collection (list, tuple, set)."""
     if isinstance(obj, list):
         brackets = ('[', ']')
+        internal_obj = obj
     elif isinstance(obj, tuple):
         brackets = ('(', ')')
+        internal_obj = list(obj)
     elif isinstance(obj, set):
-        obj = list(obj)
+        internal_obj = list(obj)
         if obj:
           brackets = ('{', '}')
         else:
@@ -385,19 +394,21 @@ def _format_collection(
     else:
         raise ValueError(f"Unsupported collection type: {type(obj)}")
 
-    if not obj:
+    if not internal_obj:
         return brackets[0] + brackets[1]
+
+    # If the call to _pretty_repr for elements will have depth < 0
+    if depth <= 0:
+        item_count_str = f"{len(internal_obj)} item{'s'*(len(internal_obj)!=1)}"
+        return f'{brackets[0]}<... {item_count_str} at Max depth ...>{brackets[1]}'
 
     indent = ' ' * indent_level
     next_indent_str = ' ' * (indent_level + indent_delta)
     elements = []
-    for i, elem in enumerate(obj):
-        if i >= max_items:
-            elements.append(
-                f'{next_indent_str}<... {len(obj) - max_items} more items ...>'
-            )
-            break
-        # Each element starts on a new line, fully indented
+    num_to_show = min(len(internal_obj), max_items)
+
+    for i in range(num_to_show):
+        elem = internal_obj[i]
         elements.append(
             next_indent_str
             + _pretty_repr(
@@ -411,8 +422,12 @@ def _format_collection(
             )
         )
 
-    return f'{brackets[0]}\n' + ',\n'.join(elements) + "," + f'\n{indent}{brackets[1]}'
+    if len(internal_obj) > max_items:
+        elements.append(
+            f'{next_indent_str}<... {len(internal_obj) - max_items} more items ...>'
+        )
 
+    return f'{brackets[0]}\n' + ',\n'.join(elements) + f',\n{indent}{brackets[1]}'
 
 class BaseModel(pydantic.BaseModel):
 

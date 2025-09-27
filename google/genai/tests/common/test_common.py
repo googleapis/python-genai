@@ -457,9 +457,14 @@ def test_repr_max_len_bytes():
   assert repr(b_data) == _common._pretty_repr(b_data, max_len=200)
 
 
-def test_repr_max_depth():
-  nested = [[[[[["deep"]]]]]]
-  assert "<... Max depth ...>" in _common._pretty_repr(nested, depth=3)
+def test_repr_max_depth_dict():
+  nested = {'a': {'a': {'a': {'a': 'a', 'b': 'b'}}}}
+  assert "{<... 2 items at Max depth ...>}" in _common._pretty_repr(nested, depth=3)
+
+
+def test_repr_max_depth_list():
+  nested = [[[["d", "e", "e", "p"]]]]
+  assert "[<... 4 items at Max depth ...>]" in _common._pretty_repr(nested, depth=3)
 
 
 def test_repr_collections():

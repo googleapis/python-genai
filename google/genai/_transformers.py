@@ -317,13 +317,6 @@ def t_blobs(
 
 
 def t_blob(blob: types.BlobImageUnionDict) -> types.Blob:
-  try:
-    import PIL.Image
-
-    PIL_Image = PIL.Image.Image
-  except ImportError:
-    PIL_Image = None
-
   if not blob:
     raise ValueError('blob is required.')
 
@@ -333,8 +326,16 @@ def t_blob(blob: types.BlobImageUnionDict) -> types.Blob:
   if isinstance(blob, dict):
     return types.Blob.model_validate(blob)
 
-  if PIL_Image is not None and isinstance(blob, PIL_Image):
-    return pil_to_blob(blob)
+  if 'image' in blob.__class__.__name__.lower():
+    try:
+      import PIL.Image
+
+      PIL_Image = PIL.Image.Image
+    except ImportError:
+      PIL_Image = None
+
+    if PIL_Image is not None and isinstance(blob, PIL_Image):
+      return pil_to_blob(blob)
 
   raise TypeError(
       f'Could not parse input as Blob. Unsupported blob type: {type(blob)}'
@@ -356,19 +357,10 @@ def t_audio_blob(blob: types.BlobOrDict) -> types.Blob:
 
 
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
-  try:
-    import PIL.Image
-
-    PIL_Image = PIL.Image.Image
-  except ImportError:
-    PIL_Image = None
-
   if part is None:
     raise ValueError('content part is required.')
   if isinstance(part, str):
     return types.Part(text=part)
-  if PIL_Image is not None and isinstance(part, PIL_Image):
-    return types.Part(inline_data=pil_to_blob(part))
   if isinstance(part, types.File):
     if not part.uri or not part.mime_type:
       raise ValueError('file uri and mime_type are required.')
@@ -377,6 +369,17 @@ def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
     return types.Part.model_validate(part)
   if isinstance(part, types.Part):
     return part
+
+  if 'image' in part.__class__.__name__.lower():
+    try:
+      import PIL.Image
+
+      PIL_Image = PIL.Image.Image
+    except ImportError:
+      PIL_Image = None
+
+    if PIL_Image is not None and isinstance(part, PIL_Image):
+      return types.Part(inline_data=pil_to_blob(part))
   raise ValueError(f'Unsupported content part type: {type(part)}')
 
 
@@ -478,13 +481,6 @@ def t_contents(
   if not isinstance(contents, list):
     return [t_content(contents)]
 
-  try:
-    import PIL.Image
-
-    PIL_Image = PIL.Image.Image
-  except ImportError:
-    PIL_Image = None
-
   result: list[types.Content] = []
   accumulated_parts: list[types.Part] = []
 
@@ -494,7 +490,6 @@ def t_contents(
     if (
         isinstance(part, str)
         or isinstance(part, types.File)
-        or (PIL_Image is not None and isinstance(part, PIL_Image))
         or isinstance(part, types.Part)
     ):
       return True
@@ -505,6 +500,17 @@ def t_contents(
         return True
       except pydantic.ValidationError:
         return False
+
+    if 'image' in part.__class__.__name__.lower():
+      try:
+        import PIL.Image
+
+        PIL_Image = PIL.Image.Image
+      except ImportError:
+        PIL_Image = None
+
+      if PIL_Image is not None and isinstance(part, PIL_Image):
+        return True
 
     return False
 
@@ -1108,12 +1114,16 @@ def t_job_state(state: str) -> str:
     return 'JOB_STATE_UNSPECIFIED'
   elif state == 'BATCH_STATE_PENDING':
     return 'JOB_STATE_PENDING'
+  elif state == 'BATCH_STATE_RUNNING':
+    return 'JOB_STATE_RUNNING'
   elif state == 'BATCH_STATE_SUCCEEDED':
     return 'JOB_STATE_SUCCEEDED'
   elif state == 'BATCH_STATE_FAILED':
     return 'JOB_STATE_FAILED'
   elif state == 'BATCH_STATE_CANCELLED':
     return 'JOB_STATE_CANCELLED'
+  elif state == 'BATCH_STATE_EXPIRED':
+    return 'JOB_STATE_EXPIRED'
   else:
     return state
 

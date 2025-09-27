@@ -192,6 +192,10 @@ pytestmark = pytest_helper.setup(
 pytest_plugins = ("pytest_asyncio",)
 
 
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="Skipping in pre-public tests"
+)
 def test_eval_config(client):
   """Tests tuning with eval config."""
 
@@ -215,6 +219,10 @@ def test_eval_config(client):
     assert tuning_job.evaluation_config == evaluation_config
 
 
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="Skipping in pre-public tests"
+)
 def test_eval_config_with_metrics(client):
   """Tests tuning with eval config metrics."""
   if client._api_client.vertexai:
@@ -256,6 +264,10 @@ def test_eval_config_with_metrics(client):
     assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
 
 
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="Skipping in pre-public tests"
+)
 @pytest.mark.asyncio
 async def test_eval_config_async(client):
   """Tests tuning with eval config."""
