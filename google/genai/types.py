@@ -1021,6 +1021,112 @@ class ExecutableCodeDict(TypedDict, total=False):
 ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
 
 
+class FunctionResponseBlob(_common.BaseModel):
+  """Raw media bytes for function response.
+
+  Text should not be sent as raw bytes, use the FunctionResponse.response
+  field.
+  """
+
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+  data: Optional[bytes] = Field(
+      default=None, description="""Required. Inline media bytes."""
+  )
+
+
+class FunctionResponseBlobDict(TypedDict, total=False):
+  """Raw media bytes for function response.
+
+  Text should not be sent as raw bytes, use the FunctionResponse.response
+  field.
+  """
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+  data: Optional[bytes]
+  """Required. Inline media bytes."""
+
+
+FunctionResponseBlobOrDict = Union[
+    FunctionResponseBlob, FunctionResponseBlobDict
+]
+
+
+class FunctionResponseFileData(_common.BaseModel):
+  """URI based data for function response."""
+
+  file_uri: Optional[str] = Field(
+      default=None, description="""Required. URI."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class FunctionResponseFileDataDict(TypedDict, total=False):
+  """URI based data for function response."""
+
+  file_uri: Optional[str]
+  """Required. URI."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+FunctionResponseFileDataOrDict = Union[
+    FunctionResponseFileData, FunctionResponseFileDataDict
+]
+
+
+class FunctionResponsePart(_common.BaseModel):
+  """A datatype containing media that is part of a `FunctionResponse` message.
+
+  A `FunctionResponsePart` consists of data which has an associated datatype. A
+  `FunctionResponsePart` can only contain one of the accepted types in
+  `FunctionResponsePart.data`.
+
+  A `FunctionResponsePart` must have a fixed IANA MIME type identifying the
+  type and subtype of the media if the `inline_data` field is filled with raw
+  bytes.
+  """
+
+  inline_data: Optional[FunctionResponseBlob] = Field(
+      default=None, description="""Optional. Inline media bytes."""
+  )
+  file_data: Optional[FunctionResponseFileData] = Field(
+      default=None, description="""Optional. URI based data."""
+  )
+
+
+class FunctionResponsePartDict(TypedDict, total=False):
+  """A datatype containing media that is part of a `FunctionResponse` message.
+
+  A `FunctionResponsePart` consists of data which has an associated datatype. A
+  `FunctionResponsePart` can only contain one of the accepted types in
+  `FunctionResponsePart.data`.
+
+  A `FunctionResponsePart` must have a fixed IANA MIME type identifying the
+  type and subtype of the media if the `inline_data` field is filled with raw
+  bytes.
+  """
+
+  inline_data: Optional[FunctionResponseBlobDict]
+  """Optional. Inline media bytes."""
+
+  file_data: Optional[FunctionResponseFileDataDict]
+  """Optional. URI based data."""
+
+
+FunctionResponsePartOrDict = Union[
+    FunctionResponsePart, FunctionResponsePartDict
+]
+
+
 class FunctionResponse(_common.BaseModel):
   """A function response."""
 
@@ -1031,6 +1137,11 @@ class FunctionResponse(_common.BaseModel):
   scheduling: Optional[FunctionResponseScheduling] = Field(
       default=None,
       description="""Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.""",
+  )
+  parts: Optional[list[FunctionResponsePart]] = Field(
+      default=None,
+      description="""List of parts that constitute a function response. Each part may
+      have a different IANA MIME type.""",
   )
   id: Optional[str] = Field(
       default=None,
@@ -1069,6 +1180,10 @@ class FunctionResponseDict(TypedDict, total=False):
 
   scheduling: Optional[FunctionResponseScheduling]
   """Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE."""
+
+  parts: Optional[list[FunctionResponsePartDict]]
+  """List of parts that constitute a function response. Each part may
+      have a different IANA MIME type."""
 
   id: Optional[str]
   """Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`."""
@@ -1658,7 +1773,7 @@ class Schema(_common.BaseModel):
 
     def convert_schema(schema: Union['Schema', dict[str, Any]]) -> JSONSchema:
       if isinstance(schema, pydantic.BaseModel):
-        schema_dict = schema.model_dump()
+        schema_dict = schema.model_dump(exclude_none=True)
       else:
         schema_dict = schema
       json_schema = JSONSchema()
@@ -1666,7 +1781,13 @@ class Schema(_common.BaseModel):
         if field_value is None:
           continue
         elif field_name == 'nullable':
-          json_schema.type = JSONSchemaType.NULL
+          if json_schema.type is None:
+            json_schema.type = JSONSchemaType.NULL
+          elif isinstance(json_schema.type, JSONSchemaType):
+            current_type: JSONSchemaType = json_schema.type
+            json_schema.type = [current_type, JSONSchemaType.NULL]
+          elif isinstance(json_schema.type, list):
+            json_schema.type.append(JSONSchemaType.NULL)
         elif field_name not in json_schema_field_names:
           continue
         elif field_name == 'type':
@@ -2680,6 +2801,14 @@ class ToolComputerUse(_common.BaseModel):
   environment: Optional[Environment] = Field(
       default=None, description="""Required. The environment being operated."""
   )
+  excluded_predefined_functions: Optional[list[str]] = Field(
+      default=None,
+      description="""By default, predefined functions are included in the final model call.
+    Some of them can be explicitly excluded from being automatically included.
+    This can serve two purposes:
+      1. Using a more restricted / different action space.
+      2. Improving the definitions / instructions of predefined functions.""",
+  )
 
 
 class ToolComputerUseDict(TypedDict, total=False):
@@ -2687,6 +2816,13 @@ class ToolComputerUseDict(TypedDict, total=False):
 
   environment: Optional[Environment]
   """Required. The environment being operated."""
+
+  excluded_predefined_functions: Optional[list[str]]
+  """By default, predefined functions are included in the final model call.
+    Some of them can be explicitly excluded from being automatically included.
+    This can serve two purposes:
+      1. Using a more restricted / different action space.
+      2. Improving the definitions / instructions of predefined functions."""
 
 
 ToolComputerUseOrDict = Union[ToolComputerUse, ToolComputerUseDict]
@@ -6799,7 +6935,7 @@ class _EditImageParameters(_common.BaseModel):
       description="""A text description of the edit to apply to the image.""",
   )
   reference_images: Optional[list[_ReferenceImageAPI]] = Field(
-      default=None, description="""The reference images for Imagen 3 editing."""
+      default=None, description="""The reference images for editing."""
   )
   config: Optional[EditImageConfig] = Field(
       default=None, description="""Configuration for editing."""
@@ -6816,7 +6952,7 @@ class _EditImageParametersDict(TypedDict, total=False):
   """A text description of the edit to apply to the image."""
 
   reference_images: Optional[list[_ReferenceImageAPIDict]]
-  """The reference images for Imagen 3 editing."""
+  """The reference images for editing."""
 
   config: Optional[EditImageConfigDict]
   """Configuration for editing."""
@@ -13147,6 +13283,58 @@ class SubjectReferenceImageDict(TypedDict, total=False):
 
 SubjectReferenceImageOrDict = Union[
     SubjectReferenceImage, SubjectReferenceImageDict
+]
+
+
+class ContentReferenceImage(_common.BaseModel):
+  """A content reference image.
+
+  A content reference image represents a subject to reference (ex. person,
+  product, animal) provided by the user. It can optionally be provided in
+  addition to a style reference image (ex. background, style reference).
+  """
+
+  reference_image: Optional[Image] = Field(
+      default=None,
+      description="""The reference image for the editing operation.""",
+  )
+  reference_id: Optional[int] = Field(
+      default=None, description="""The id of the reference image."""
+  )
+  reference_type: Optional[str] = Field(
+      default=None,
+      description="""The type of the reference image. Only set by the SDK.""",
+  )
+
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _validate_mask_image_config(self, values: Any) -> Any:
+    if 'reference_type' in values:
+      raise ValueError('Cannot set internal reference_type field directly.')
+    values['reference_type'] = 'REFERENCE_TYPE_CONTENT'
+    return values
+
+
+class ContentReferenceImageDict(TypedDict, total=False):
+  """A content reference image.
+
+  A content reference image represents a subject to reference (ex. person,
+  product, animal) provided by the user. It can optionally be provided in
+  addition to a style reference image (ex. background, style reference).
+  """
+
+  reference_image: Optional[ImageDict]
+  """The reference image for the editing operation."""
+
+  reference_id: Optional[int]
+  """The id of the reference image."""
+
+  reference_type: Optional[str]
+  """The type of the reference image. Only set by the SDK."""
+
+
+ContentReferenceImageOrDict = Union[
+    ContentReferenceImage, ContentReferenceImageDict
 ]
 
 

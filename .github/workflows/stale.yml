@@ -22,6 +22,8 @@ jobs:
         stale-issue-label: "status:stale"
         close-issue-reason: not_planned
         any-of-labels: "status:awaiting user response"
+        remove-stale-when-updated: true
+        labels-to-remove-when-unstale: 'status:awaiting user response,status:stale'
         stale-issue-message: >
           This issue has been marked as stale because it has been open for 7 days with no activity. It will be closed in 2 days if no further activity occurs.
         close-issue-message: >

@@ -45,6 +45,7 @@ def base_test_function(
     replays_prefix: str,
     test_method: str,
     test_table_item: TestTableItem,
+    globals_for_file: dict[str, Any],
 ):
   replay_id = (
       test_table_item.override_replay_id
@@ -56,11 +57,15 @@ def base_test_function(
   client._api_client.initialize_replay_session(replay_id)
   # vars().copy() provides a shallow copy of the parameters.
   parameters_dict = vars(test_table_item.parameters).copy()
-  method_name_parts = test_method.split('.')
-  module = getattr(client, method_name_parts[0])
-  method = getattr(module, method_name_parts[1])
   try:
-    method(**parameters_dict)
+    if '.' in test_method:
+      method_name_parts = test_method.split('.')
+      module = getattr(client, method_name_parts[0])
+      method = getattr(module, method_name_parts[1])
+      method(**parameters_dict)
+    else:
+      custom_method = globals_for_file[test_method]
+      custom_method(client, test_table_item.parameters)
     # Should not reach here if expecting an exception.
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
       assert False, 'Should have raised exception in MLDev.'
@@ -83,10 +88,17 @@ def base_test_function(
 
 
 def create_test_for_table_item(
-    test_method: str, test_table_item: TestTableItem
+    globals_for_file: dict[str, Any],
+    test_method: str,
+    test_table_item: TestTableItem,
 ):
   return lambda client, use_vertex, replays_prefix: base_test_function(
-      client, use_vertex, replays_prefix, test_method, test_table_item
+      client,
+      use_vertex,
+      replays_prefix,
+      test_method,
+      test_table_item,
+      globals_for_file,
   )
 
 
@@ -107,7 +119,7 @@ def create_test_for_table(
       rename the test to start with 'test_union_'. E.g.
       test_union_contents_is_string()"""
     globals_for_file[test_table_item.name] = create_test_for_table_item(
-        test_method, test_table_item
+        globals_for_file, test_method, test_table_item
     )
 
 

@@ -85,6 +85,87 @@ from google import genai
 client = genai.Client()
 ```
 
+## Close a client
+
+Explicitly close the sync client to ensure that resources, such as the
+ underlying HTTP connections, are properly cleaned up and closed.
+
+```python
+
+from google.genai import Client
+
+client = Client()
+response_1 = client.models.generate_content(
+    model=MODEL_ID,
+    contents='Hello',
+)
+response_2 = client.models.generate_content(
+    model=MODEL_ID,
+    contents='Ask a question',
+)
+# Close the sync client to release resources.
+client.close()
+```
+
+To explicitly close the async client:
+
+```python
+
+from google.genai import Client
+
+aclient = Client(
+    vertexai=True, project='my-project-id', location='us-central1'
+).aio
+response_1 = await aclient.models.generate_content(
+    model=MODEL_ID,
+    contents='Hello',
+)
+response_2 = await aclient.models.generate_content(
+    model=MODEL_ID,
+    contents='Ask a question',
+)
+# Close the async client to release resources.
+await aclient.aclose()
+```
+
+## Client context managers
+
+By using the sync client context manager, it will close the underlying
+ sync client when exiting the with block.
+
+```python
+from google.genai import Client
+
+with Client() as client:
+  response_1 = client.models.generate_content(
+      model=MODEL_ID,
+      contents='Hello',
+  )
+  response_2 = client.models.generate_content(
+      model=MODEL_ID,
+      contents='Ask a question',
+  )
+
+```
+
+By using the async client context manager, it will close the underlying
+ async client when exiting the with block.
+
+```python
+from google.genai import Client
+
+async with Client().aio as aclient:
+  response_1 = await aclient.models.generate_content(
+      model=MODEL_ID,
+      contents='Hello',
+  )
+  response_2 = await aclient.models.generate_content(
+      model=MODEL_ID,
+      contents='Ask a question',
+  )
+
+```
+
 ### API Selection
 
 By default, the SDK uses the beta API endpoints provided by Google to support
