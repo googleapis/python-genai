@@ -145,10 +145,7 @@ async def test_function_response_scheduling(mock_websocket, vertexai):
   if not vertexai:
     input.id = 'some-id'
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    await session.send_tool_response(function_responses=input)
-  if vertexai:
-    return
+  await session.send_tool_response(function_responses=input)
 
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
