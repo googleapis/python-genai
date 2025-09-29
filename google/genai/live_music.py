@@ -22,13 +22,11 @@ from typing import AsyncIterator
 
 from . import _api_module
 from . import _common
+from . import _live_converters as live_converters
 from . import _transformers as t
 from . import types
 from ._api_client import BaseApiClient
 from ._common import set_value_by_path as setv
-from . import _live_converters as live_converters
-from .models import _Content_to_mldev
-from .models import _Content_to_vertex
 
 
 try:
@@ -44,46 +42,47 @@ logger = logging.getLogger('google_genai.live_music')
 class AsyncMusicSession:
   """[Experimental] AsyncMusicSession."""
 
-  def __init__(
-      self, api_client: BaseApiClient, websocket: ClientConnection
-  ):
+  def __init__(self, api_client: BaseApiClient, websocket: ClientConnection):
     self._api_client = api_client
     self._ws = websocket
 
   async def set_weighted_prompts(
-      self,
-  	  prompts: list[types.WeightedPrompt]
+      self, prompts: list[types.WeightedPrompt]
   ) -> None:
     if self._api_client.vertexai:
-      raise NotImplementedError('Live music generation is not supported in Vertex AI.')
-    else:
-      client_content_dict = live_converters._LiveMusicClientContent_to_mldev(
-          from_object={'weighted_prompts': prompts}
+      raise NotImplementedError(
+          'Live music generation is not supported in Vertex AI.'
       )
+    else:
+      client_content_dict = {
+          'weightedPrompts': [
+              _common.convert_to_dict(prompt, convert_keys=True)
+              for prompt in prompts
+          ]
+      }
+
     await self._ws.send(json.dumps({'clientContent': client_content_dict}))
 
   async def set_music_generation_config(
-      self,
-  	  config: types.LiveMusicGenerationConfig
+      self, config: types.LiveMusicGenerationConfig
   ) -> None:
     if self._api_client.vertexai:
-      raise NotImplementedError('Live music generation is not supported in Vertex AI.')
-    else:
-      config_dict = live_converters._LiveMusicGenerationConfig_to_mldev(
-          from_object=config
+      raise NotImplementedError(
+          'Live music generation is not supported in Vertex AI.'
       )
+    else:
+      config_dict = _common.convert_to_dict(config, convert_keys=True)
     await self._ws.send(json.dumps({'musicGenerationConfig': config_dict}))
 
   async def _send_control_signal(
-      self,
-      playback_control: types.LiveMusicPlaybackControl
+      self, playback_control: types.LiveMusicPlaybackControl
   ) -> None:
     if self._api_client.vertexai:
-      raise NotImplementedError('Live music generation is not supported in Vertex AI.')
-    else:
-      playback_control_dict = live_converters._LiveMusicClientMessage_to_mldev(
-          from_object={'playback_control': playback_control}
+      raise NotImplementedError(
+          'Live music generation is not supported in Vertex AI.'
       )
+    else:
+      playback_control_dict = {'playbackControl': playback_control.value}
       await self._ws.send(json.dumps(playback_control_dict))
 
   async def play(self) -> None:
@@ -134,9 +133,7 @@ class AsyncMusicSession:
     if self._api_client.vertexai:
       raise NotImplementedError('Live music generation is not supported in Vertex AI.')
     else:
-      response_dict = live_converters._LiveMusicServerMessage_from_mldev(
-          response
-      )
+      response_dict = response
 
     return types.LiveMusicServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
