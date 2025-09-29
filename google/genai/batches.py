@@ -1061,7 +1061,9 @@ def _InlinedRequest_to_mldev(
         to_object,
         ['request', 'generationConfig'],
         _GenerateContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
+            api_client,
+            getv(from_object, ['config']),
+            getv(to_object, ['request'], default_value={}),
         ),
     )
 
@@ -1794,36 +1796,11 @@ class Batches(_api_module.BaseModule):
         config=config,
     )
 
-    http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
-      http_options = parameter_model.config.http_options
-
     if self._api_client.vertexai:
       config = _extra_utils.format_destination(src, parameter_model.config)
       return self._create(model=model, src=src, config=config)
-    elif src.inlined_requests is None:
+    else:
       return self._create(model=model, src=src, config=config)
-
-    path, request_dict = _create_inlined_generate_content_request_dict(
-        self._api_client, parameter_model
-    )
-
-    response = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
-
-    response_dict = '' if not response.body else json.loads(response.body)
-    response_dict = _BatchJob_from_mldev(response_dict)
-
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
 
   def create_embeddings(
       self,
@@ -2393,36 +2370,11 @@ class AsyncBatches(_api_module.BaseModule):
         config=config,
     )
 
-    http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
-      http_options = parameter_model.config.http_options
-
     if self._api_client.vertexai:
       config = _extra_utils.format_destination(src, parameter_model.config)
       return await self._create(model=model, src=src, config=config)
-    elif src.inlined_requests is None:
+    else:
       return await self._create(model=model, src=src, config=config)
-
-    path, request_dict = _create_inlined_generate_content_request_dict(
-        self._api_client, parameter_model
-    )
-
-    response = await self._api_client.async_request(
-        'post', path, request_dict, http_options
-    )
-
-    response_dict = '' if not response.body else json.loads(response.body)
-    response_dict = _BatchJob_from_mldev(response_dict)
-
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
 
   async def create_embeddings(
       self,
