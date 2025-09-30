@@ -13,7 +13,6 @@
 # limitations under the License.
 #
 
-import asyncio
 import os
 from types import TracebackType
 from typing import Optional, Union
@@ -33,7 +32,7 @@ from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
 from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
-from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
+from .types import HttpOptions, HttpOptionsDict
 
 
 class AsyncClient:
@@ -125,12 +124,6 @@ class AsyncClient:
   ) -> None:
     await self.aclose()
 
-  def __del__(self) -> None:
-    try:
-      asyncio.get_running_loop().run_until_complete(self.aclose())
-    except Exception:
-      pass
-
 
 class DebugConfig(pydantic.BaseModel):
   """Configuration options that change client network behavior when testing."""
@@ -180,8 +173,9 @@ class Client:
     project: The `Google Cloud project ID
       <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to use
       for quota. Can be obtained from environment variables (for example,
-      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
-      Find your `Google Cloud project ID <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
+      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only. Find your
+      `Google Cloud project ID
+      <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
     location: The `location
       <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
       to send API requests to (for example, ``us-central1``). Can be obtained
@@ -398,4 +392,3 @@ class Client:
 
   def __del__(self) -> None:
     self.close()
-

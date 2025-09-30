@@ -34,10 +34,10 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
+from types import TracebackType
+from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple, Type, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
-import warnings
 
 import anyio
 import certifi
@@ -521,16 +521,18 @@ class AsyncHttpxClient(httpx.AsyncClient):
     kwargs.setdefault('follow_redirects', True)
     super().__init__(**kwargs)
 
-  def __del__(self) -> None:
-    try:
-      if self.is_closed:
-        return
-    except Exception:
-      pass
-    try:
-      asyncio.get_running_loop().run_until_complete(self.aclose())
-    except Exception:
-      pass
+  async def __aenter__(self) -> 'AsyncHttpxClient':
+    await super().__aenter__()
+    return self
+
+  async def __aexit__(
+      self,
+      exc_type: Optional[Type[BaseException]] = None,
+      exc_value: Optional[BaseException] = None,
+      traceback: Optional[TracebackType] = None,
+  ) -> None:
+    await self.aclose()
+    await super().__aexit__(exc_type, exc_value, traceback)
 
 
 class BaseApiClient:
@@ -696,6 +698,9 @@ class BaseApiClient:
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
+
+  def __aenter__(self) -> 'BaseApiClient':
+    return self
 
   async def _get_aiohttp_session(self) -> 'aiohttp.ClientSession':
     """Returns the aiohttp client session."""
@@ -1767,13 +1772,14 @@ class BaseApiClient:
 
   def close(self) -> None:
     """Closes the API client."""
-    self._httpx_client.close()
+    if hasattr(self, '_httpx_client') and self._httpx_client:
+      self._httpx_client.close()
 
   async def aclose(self) -> None:
     """Closes the API async client."""
-
-    await self._async_httpx_client.aclose()
-    if self._aiohttp_session:
+    if hasattr(self, '_async_httpx_client') and self._async_httpx_client:
+      await self._async_httpx_client.aclose()
+    if hasattr(self, '_aiohttp_session') and self._aiohttp_session:
       await self._aiohttp_session.close()
 
   def __del__(self) -> None:
@@ -1788,8 +1794,10 @@ class BaseApiClient:
     except Exception:  # pylint: disable=broad-except
       pass
 
-    try:
-      asyncio.get_running_loop().run_until_complete(self.aclose())
-    except Exception:  # pylint: disable=broad-except
-      pass
-
+  async def __aexit__(
+      self,
+      exc_type: Optional[Type[BaseException]] = None,
+      exc_value: Optional[BaseException] = None,
+      traceback: Optional[TracebackType] = None,
+  ) -> None:
+    await self.aclose()
