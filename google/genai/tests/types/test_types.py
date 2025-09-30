@@ -18,6 +18,7 @@ import copy
 import sys
 import typing
 from typing import Optional, assert_never
+import PIL.Image
 import pydantic
 import pytest
 from ... import types
@@ -299,6 +300,58 @@ def test_factory_method_from_mcp_call_tool_function_response_embedded_resource()
       ]
   }
   assert isinstance(my_function_response, types.FunctionResponse)
+
+
+def test_part_constructor_with_string_value():
+  part = types.Part('hello')
+  assert part.text == 'hello'
+  assert part.file_data is None
+  assert part.inline_data is None
+
+
+def test_part_constructor_with_part_value():
+  other_part = types.Part(text='hello from other part')
+  part = types.Part(other_part)
+  assert part.text == 'hello from other part'
+
+
+def test_part_constructor_with_part_dict_value():
+  part = types.Part({'text': 'hello from dict'})
+  assert part.text == 'hello from dict'
+
+
+def test_part_constructor_with_file_data_dict_value():
+  part = types.Part(
+      {'file_uri': 'gs://my-bucket/file-data', 'mime_type': 'text/plain'}
+  )
+  assert part.file_data.file_uri == 'gs://my-bucket/file-data'
+  assert part.file_data.mime_type == 'text/plain'
+
+
+def test_part_constructor_with_kwargs_and_value_fails():
+  with pytest.raises(
+      ValueError, match='Positional and keyword arguments can not be combined'
+  ):
+    types.Part('hello', text='world')
+
+
+def test_part_constructor_with_file_value():
+  f = types.File(
+      uri='gs://my-bucket/my-file',
+      mime_type='text/plain',
+      display_name='test file',
+  )
+  part = types.Part(f)
+  assert part.file_data.file_uri == 'gs://my-bucket/my-file'
+  assert part.file_data.mime_type == 'text/plain'
+  assert part.file_data.display_name == 'test file'
+
+
+def test_part_constructor_with_pil_image():
+  img = PIL.Image.new('RGB', (1, 1), color='red')
+  part = types.Part(img)
+  assert part.inline_data.mime_type == 'image/jpeg'
+  assert isinstance(part.inline_data.data, bytes)
 
 
 class FakeClient:
