@@ -21,7 +21,7 @@ import contextlib
 import json
 import logging
 import typing
-from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union, get_args
+from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
 import google.auth
@@ -40,7 +40,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
-from .models import _Content_to_vertex
 
 
 try:
@@ -223,8 +222,8 @@ class AsyncSession:
     )
 
     if self._api_client.vertexai:
-      client_content_dict = live_converters._LiveClientContent_to_vertex(
-          from_object=client_content
+      client_content_dict = _common.convert_to_dict(
+          client_content, convert_keys=True
       )
     else:
       client_content_dict = live_converters._LiveClientContent_to_mldev(
@@ -410,12 +409,12 @@ class AsyncSession:
     """
     tool_response = t.t_tool_response(function_responses)
     if self._api_client.vertexai:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_vertex(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
     else:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_mldev(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
       for response in tool_response_dict.get('functionResponses', []):
         if response.get('id') is None:
@@ -541,7 +540,7 @@ class AsyncSession:
     if self._api_client.vertexai:
       response_dict = live_converters._LiveServerMessage_from_vertex(response)
     else:
-      response_dict = live_converters._LiveServerMessage_from_mldev(response)
+      response_dict = response
 
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -655,7 +654,7 @@ class AsyncSession:
           content_input_parts.append(item)
       if self._api_client.vertexai:
         contents = [
-            _Content_to_vertex(item, to_object)
+            _common.convert_to_dict(item, convert_keys=True)
             for item in t.t_contents(content_input_parts)
         ]
       else:
