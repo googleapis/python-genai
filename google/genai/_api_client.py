@@ -1793,3 +1793,13 @@ class BaseApiClient:
     except Exception:  # pylint: disable=broad-except
       pass
 
+    session = getattr(self, '_aiohttp_session', None)
+
+    if session is not None or session.closed:
+      return
+    try:
+      loop = asyncio.get_running_loop()
+      loop.create_task(self.aclose())
+    except Exception:  # pylint: disable=broad-except
+      pass
+
