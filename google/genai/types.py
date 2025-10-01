@@ -13932,13 +13932,25 @@ ContextWindowCompressionConfigOrDict = Union[
 class AudioTranscriptionConfig(_common.BaseModel):
   """The audio transcription configuration in Setup."""
 
-  pass
+  enable_output: Optional[bool] = Field(
+      default=True,
+      description="Enable transcription of model's audio output.",
+  )
+
+  enable_input: Optional[bool] = Field(
+      default=True,
+      description="Enable transcription of client audio input.",
+  )
 
 
 class AudioTranscriptionConfigDict(TypedDict, total=False):
   """The audio transcription configuration in Setup."""
 
-  pass
+  enable_output: Optional[bool]
+  """Enable transcription of model's audio output."""
+
+  enable_input: Optional[bool]
+  """Enable transcription of client audio input."""
 
 
 AudioTranscriptionConfigOrDict = Union[
