@@ -106,6 +106,24 @@ def _Blob_to_mldev(
   return to_object
 
 
+def _ComputerUse_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  if getv(from_object, ['excluded_predefined_functions']) is not None:
+    setv(
+        to_object,
+        ['excludedPredefinedFunctions'],
+        getv(from_object, ['excluded_predefined_functions']),
+    )
+
+  return to_object
+
+
 def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -743,24 +761,6 @@ def _SpeechConfig_to_mldev(
   return to_object
 
 
-def _ToolComputerUse_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  return to_object
-
-
 def _Tool_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -814,9 +814,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['computerUse'],
-        _ToolComputerUse_to_mldev(
-            getv(from_object, ['computer_use']), to_object
-        ),
+        _ComputerUse_to_mldev(getv(from_object, ['computer_use']), to_object),
     )
 
   if getv(from_object, ['code_execution']) is not None:

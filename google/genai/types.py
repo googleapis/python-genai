@@ -2795,7 +2795,7 @@ class UrlContextDict(TypedDict, total=False):
 UrlContextOrDict = Union[UrlContext, UrlContextDict]
 
 
-class ToolComputerUse(_common.BaseModel):
+class ComputerUse(_common.BaseModel):
   """Tool to support computer use."""
 
   environment: Optional[Environment] = Field(
@@ -2811,7 +2811,7 @@ class ToolComputerUse(_common.BaseModel):
   )
 
 
-class ToolComputerUseDict(TypedDict, total=False):
+class ComputerUseDict(TypedDict, total=False):
   """Tool to support computer use."""
 
   environment: Optional[Environment]
@@ -2825,7 +2825,7 @@ class ToolComputerUseDict(TypedDict, total=False):
       2. Improving the definitions / instructions of predefined functions."""
 
 
-ToolComputerUseOrDict = Union[ToolComputerUse, ToolComputerUseDict]
+ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
 
 
 class ApiAuthApiKeyConfig(_common.BaseModel):
@@ -3422,7 +3422,7 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. Tool to support URL context retrieval.""",
   )
-  computer_use: Optional[ToolComputerUse] = Field(
+  computer_use: Optional[ComputerUse] = Field(
       default=None,
       description="""Optional. Tool to support the model interacting directly with the
       computer. If enabled, it automatically populates computer-use specific
@@ -3461,7 +3461,7 @@ class ToolDict(TypedDict, total=False):
   url_context: Optional[UrlContextDict]
   """Optional. Tool to support URL context retrieval."""
 
-  computer_use: Optional[ToolComputerUseDict]
+  computer_use: Optional[ComputerUseDict]
   """Optional. Tool to support the model interacting directly with the
       computer. If enabled, it automatically populates computer-use specific
       Function Declarations."""

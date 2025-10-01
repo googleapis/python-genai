@@ -122,7 +122,11 @@ async def get_connect_message(api_client, model, config=None):
     config = {}
   mock_ws = AsyncMock()
   mock_ws.send = AsyncMock()
-  mock_ws.recv = AsyncMock(return_value=b'some response')
+  mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+      )
+  )
 
   mock_google_auth_default = Mock(return_value=(None, None))
   mock_creds = Mock(token='test_token')
@@ -1893,7 +1897,11 @@ async def test_bidi_setup_to_api_with_auth_tokens(mock_websocket, vertexai):
 
     mock_ws = AsyncMock()
     mock_ws.send = AsyncMock()
-    mock_ws.recv = AsyncMock(return_value=b'some response')
+    mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+      )
+    )
     capture = {}
 
     @contextlib.asynccontextmanager
@@ -1928,7 +1936,11 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
 
     mock_ws = AsyncMock()
     mock_ws.send = AsyncMock()
-    mock_ws.recv = AsyncMock(return_value=b'some response')
+    mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+      )
+    )
     capture = {}
 
     @contextlib.asynccontextmanager
