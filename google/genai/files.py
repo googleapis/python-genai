@@ -18,13 +18,13 @@
 import io
 import json
 import logging
-import mimetypes
 import os
 from typing import Any, Optional, Union
 from urllib.parse import urlencode
 
 from . import _api_module
 from . import _common
+from . import _extra_utils
 from . import _transformers as t
 from . import types
 from ._common import get_value_by_path as getv
@@ -611,54 +611,13 @@ class Files(_api_module.BaseModule):
     if file_obj.name is not None and not file_obj.name.startswith('files/'):
       file_obj.name = f'files/{file_obj.name}'
 
-    if isinstance(file, io.IOBase):
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n please set the `mime_type` argument'
-        )
-      if hasattr(file, 'mode'):
-        if 'b' not in file.mode:
-          raise ValueError('The file must be opened in binary mode.')
-      offset = file.tell()
-      file.seek(0, os.SEEK_END)
-      file_obj.size_bytes = file.tell() - offset
-      file.seek(offset, os.SEEK_SET)
-    else:
-      fs_path = os.fspath(file)
-      if not fs_path or not os.path.isfile(fs_path):
-        raise FileNotFoundError(f'{file} is not a valid file path.')
-      file_obj.size_bytes = os.path.getsize(fs_path)
-      if file_obj.mime_type is None:
-        file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
-        )
-
-    http_options: types.HttpOptions
-    if config_model and config_model.http_options:
-      http_options = config_model.http_options
-      http_options.api_version = ''
-      http_options.headers = {
-          'Content-Type': 'application/json',
-          'X-Goog-Upload-Protocol': 'resumable',
-          'X-Goog-Upload-Command': 'start',
-          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-      }
-    else:
-      http_options = types.HttpOptions(
-          api_version='',
-          headers={
-              'Content-Type': 'application/json',
-              'X-Goog-Upload-Protocol': 'resumable',
-              'X-Goog-Upload-Command': 'start',
-              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-          },
-      )
+    http_options, size_bytes, mime_type = _extra_utils.prepare_resumable_upload(
+        file,
+        user_http_options=config_model.http_options,
+        user_mime_type=config_model.mime_type,
+    )
+    file_obj.size_bytes = size_bytes
+    file_obj.mime_type = mime_type
     response = self._create(
         file=file_obj,
         config=types.CreateFileConfig(
@@ -682,6 +641,7 @@ class Files(_api_module.BaseModule):
           file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
+      fs_path = os.fspath(file)
       return_file = self._api_client.upload_file(
           fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
@@ -1096,54 +1056,13 @@ class AsyncFiles(_api_module.BaseModule):
     if file_obj.name is not None and not file_obj.name.startswith('files/'):
       file_obj.name = f'files/{file_obj.name}'
 
-    if isinstance(file, io.IOBase):
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
-        )
-      if hasattr(file, 'mode'):
-        if 'b' not in file.mode:
-          raise ValueError('The file must be opened in binary mode.')
-      offset = file.tell()
-      file.seek(0, os.SEEK_END)
-      file_obj.size_bytes = file.tell() - offset
-      file.seek(offset, os.SEEK_SET)
-    else:
-      fs_path = os.fspath(file)
-      if not fs_path or not os.path.isfile(fs_path):
-        raise FileNotFoundError(f'{file} is not a valid file path.')
-      file_obj.size_bytes = os.path.getsize(fs_path)
-      if file_obj.mime_type is None:
-        file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
-        )
-
-    http_options: types.HttpOptions
-    if config_model and config_model.http_options:
-      http_options = config_model.http_options
-      http_options.api_version = ''
-      http_options.headers = {
-          'Content-Type': 'application/json',
-          'X-Goog-Upload-Protocol': 'resumable',
-          'X-Goog-Upload-Command': 'start',
-          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-      }
-    else:
-      http_options = types.HttpOptions(
-          api_version='',
-          headers={
-              'Content-Type': 'application/json',
-              'X-Goog-Upload-Protocol': 'resumable',
-              'X-Goog-Upload-Command': 'start',
-              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-          },
-      )
+    http_options, size_bytes, mime_type = _extra_utils.prepare_resumable_upload(
+        file,
+        user_http_options=config_model.http_options,
+        user_mime_type=config_model.mime_type,
+    )
+    file_obj.size_bytes = size_bytes
+    file_obj.mime_type = mime_type
     response = await self._create(
         file=file_obj,
         config=types.CreateFileConfig(
@@ -1172,6 +1091,7 @@ class AsyncFiles(_api_module.BaseModule):
           file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
+      fs_path = os.fspath(file)
       return_file = await self._api_client.async_upload_file(
           fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
