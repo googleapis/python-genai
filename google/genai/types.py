@@ -4320,8 +4320,10 @@ class GenerateContentConfig(_common.BaseModel):
   @pydantic.field_validator('image_config', mode='before')
   @classmethod
   def _check_image_config_type(cls, value: Any) -> Any:
-    if not isinstance(value, ImageConfig):
-      raise ValueError('image_config must be an instance of ImageConfig.')
+    if isinstance(value, GenerateImagesConfig):
+      raise ValueError(
+          'image_config must be an instance of ImageConfig or compatible dict.'
+      )
     return value
 
 

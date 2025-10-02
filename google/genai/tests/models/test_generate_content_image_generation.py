@@ -27,7 +27,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_image_generation_config',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash-image-preview',
+            model='gemini-2.5-flash-image',
             contents=t.t_contents('A photorealistic red apple on a table.'),
             config=types.GenerateContentConfig(
                 response_modalities=["IMAGE"],
@@ -40,13 +40,24 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_image_generation_filtered',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash-image-preview',
+            model='gemini-2.5-flash-image',
             contents=t.t_contents('Make a zombie anime style'),
             config=types.GenerateContentConfig(
-                response_modalities=["IMAGE"],
+                response_modalities=['IMAGE'],
                 image_config=types.ImageConfig(
                     aspect_ratio='16:9',
                 )
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_image_generation_config_validation_none',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-image',
+            contents=t.t_contents('A photorealistic red apple on a table.'),
+            config=types.GenerateContentConfig(
+                response_modalities=['IMAGE'],
+                image_config=None
             ),
         ),
     ),
@@ -64,7 +75,7 @@ pytestmark = pytest_helper.setup(
 def test_image_generation_wrong_config(client):
   with pytest.raises(pydantic.ValidationError):
     client.models.generate_content(
-        model='gemini-2.5-flash-image-preview',
+        model='gemini-2.5-flash-image',
         contents=t.t_contents('A photorealistic red apple on a table.'),
         config=types.GenerateContentConfig(
             response_modalities=["IMAGE"],
@@ -74,3 +85,16 @@ def test_image_generation_wrong_config(client):
             )
         ),
     )
+
+
+def test_image_generation_validation_model_dump(client):
+  config = types.GenerateContentConfig(
+      response_modalities=['IMAGE'],
+  )
+
+  class Foo(pydantic.BaseModel):
+    value: types.GenerateContentConfig
+
+  f = Foo(value=config)
+  in_memory = f.model_dump(mode='json')
+  Foo.model_validate(in_memory)
