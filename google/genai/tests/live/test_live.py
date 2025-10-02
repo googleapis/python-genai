@@ -1511,6 +1511,45 @@ def test_parse_client_message_str( mock_websocket, vertexai):
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_thinking_config(vertexai):
+  config_dict = {
+      'thinking_config': {
+          'include_thoughts': True,
+          'thinking_budget': 1024,
+      }
+  }
+
+  expected_gen_config = {
+      'thinkingConfig': {
+          'includeThoughts': True,
+          'thinkingBudget': 1024,
+      }
+  }
+
+  if vertexai:
+    expected_gen_config['responseModalities'] = ['AUDIO']
+
+  expected_result = {
+      'setup': {
+          'generationConfig': expected_gen_config,
+      }
+  }
+
+  if vertexai:
+    expected_result['setup'][
+        'model'
+    ] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+  )
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_blob( mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket

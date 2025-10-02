@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.40.0](https://github.com/googleapis/python-genai/compare/v1.39.1...v1.40.0) (2025-10-01)
+
+
+### Features
+
+* Add `ImageConfig` to `GenerateContentConfig` ([88088df](https://github.com/googleapis/python-genai/commit/88088dfee5de08e9743498748ba54c48b07f7332))
+* Expose session id in Live API ([1692f23](https://github.com/googleapis/python-genai/commit/1692f238fca59c3f5bf9d09e4899c919791a1cd5))
+* Rename ComputerUse tool (early access) ([aaac8d8](https://github.com/googleapis/python-genai/commit/aaac8d81a5cd98472d8c1be7ee871c430e5424e4))
+
+
+### Bug Fixes
+
+* Resolve potential mem leak on deletion of Client when using async ([538c755](https://github.com/googleapis/python-genai/commit/538c755e84777e6b76d5152aac18268e4d0c99c6))
+* Resolve unclosed client session warning. ([043a392](https://github.com/googleapis/python-genai/commit/043a3925ece30b4cdc530ed28a470baf83bf651b))
+
 ## [1.39.1](https://github.com/googleapis/python-genai/compare/v1.39.0...v1.39.1) (2025-09-26)
 
 
