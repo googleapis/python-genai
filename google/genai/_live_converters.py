@@ -1484,6 +1484,15 @@ def _LiveConnectConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'generationConfig', 'thinkingConfig'],
+        _ThinkingConfig_to_mldev(
+            getv(from_object, ['thinking_config']), to_object
+        ),
+    )
+
   if getv(from_object, ['enable_affective_dialog']) is not None:
     setv(
         parent_object,
@@ -1637,6 +1646,15 @@ def _LiveConnectConfig_to_vertex(
         _SpeechConfig_to_vertex(
             t.t_live_speech_config(getv(from_object, ['speech_config'])),
             to_object,
+        ),
+    )
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'generationConfig', 'thinkingConfig'],
+        _ThinkingConfig_to_vertex(
+            getv(from_object, ['thinking_config']), to_object
         ),
     )
 
@@ -3221,6 +3239,38 @@ def _SpeechConfig_to_vertex(
 
   if getv(from_object, ['language_code']) is not None:
     setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  return to_object
+
+
+def _ThinkingConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  if getv(from_object, ['thinking_budget']) is not None:
+    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
+
+  return to_object
+
+
+def _ThinkingConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  if getv(from_object, ['thinking_budget']) is not None:
+    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
 
   return to_object
 

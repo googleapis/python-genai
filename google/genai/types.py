@@ -14737,6 +14737,13 @@ class LiveConnectConfig(_common.BaseModel):
       description="""The speech generation configuration.
       """,
   )
+  thinking_config: Optional[ThinkingConfig] = Field(
+      default=None,
+      description="""Config for thinking features.
+      An error will be returned if this field is set for models that don't
+      support thinking.
+      """,
+  )
   enable_affective_dialog: Optional[bool] = Field(
       default=None,
       description="""If enabled, the model will detect emotions and adapt its responses accordingly.""",
@@ -14840,6 +14847,12 @@ class LiveConnectConfigDict(TypedDict, total=False):
 
   speech_config: Optional[SpeechConfigDict]
   """The speech generation configuration.
+      """
+
+  thinking_config: Optional[ThinkingConfigDict]
+  """Config for thinking features.
+      An error will be returned if this field is set for models that don't
+      support thinking.
       """
 
   enable_affective_dialog: Optional[bool]
