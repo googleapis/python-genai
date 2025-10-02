@@ -51,6 +51,19 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_image_generation_no_image',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-image',
+            contents=t.t_contents('What is your name?'),
+            config=types.GenerateContentConfig(
+                response_modalities=['IMAGE'],
+                image_config=types.ImageConfig(
+                    aspect_ratio='16:9',
+                )
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_image_generation_config_validation_none',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-image',
