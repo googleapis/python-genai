@@ -436,6 +436,17 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 32."""
 
 
+class TuningTask(_common.CaseInSensitiveEnum):
+  """Optional. The tuning task. Either I2V or T2V."""
+
+  TUNING_TASK_UNSPECIFIED = 'TUNING_TASK_UNSPECIFIED'
+  """Default value. This value is unused."""
+  TUNING_TASK_I2V = 'TUNING_TASK_I2V'
+  """Tuning task for image to video."""
+  TUNING_TASK_T2V = 'TUNING_TASK_T2V'
+  """Tuning task for text to video."""
+
+
 class JSONSchemaType(Enum):
   """The type of the data supported by JSON Schema.
 
@@ -10195,6 +10206,71 @@ PartnerModelTuningSpecOrDict = Union[
 ]
 
 
+class VeoHyperParameters(_common.BaseModel):
+  """Hyperparameters for Veo."""
+
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate.""",
+  )
+  tuning_task: Optional[TuningTask] = Field(
+      default=None,
+      description="""Optional. The tuning task. Either I2V or T2V.""",
+  )
+
+
+class VeoHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Veo."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate."""
+
+  tuning_task: Optional[TuningTask]
+  """Optional. The tuning task. Either I2V or T2V."""
+
+
+VeoHyperParametersOrDict = Union[VeoHyperParameters, VeoHyperParametersDict]
+
+
+class VeoTuningSpec(_common.BaseModel):
+  """Tuning Spec for Veo Model Tuning."""
+
+  hyper_parameters: Optional[VeoHyperParameters] = Field(
+      default=None, description="""Optional. Hyperparameters for Veo."""
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+
+
+class VeoTuningSpecDict(TypedDict, total=False):
+  """Tuning Spec for Veo Model Tuning."""
+
+  hyper_parameters: Optional[VeoHyperParametersDict]
+  """Optional. Hyperparameters for Veo."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+
+VeoTuningSpecOrDict = Union[VeoTuningSpec, VeoTuningSpecDict]
+
+
 class TuningJob(_common.BaseModel):
   """A tuning job."""
 
@@ -10290,6 +10366,9 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters.""",
   )
+  veo_tuning_spec: Optional[VeoTuningSpec] = Field(
+      default=None, description="""Tuning Spec for Veo Tuning."""
+  )
 
   @property
   def has_ended(self) -> bool:
@@ -10376,6 +10455,9 @@ class TuningJobDict(TypedDict, total=False):
 
   tuned_model_display_name: Optional[str]
   """Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
+
+  veo_tuning_spec: Optional[VeoTuningSpecDict]
+  """Tuning Spec for Veo Tuning."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]

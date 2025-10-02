@@ -753,6 +753,9 @@ def _TuningJob_from_mldev(
         getv(from_object, ['tunedModelDisplayName']),
     )
 
+  if getv(from_object, ['veoTuningSpec']) is not None:
+    setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
+
   return to_object
 
 
@@ -864,6 +867,9 @@ def _TuningJob_from_vertex(
         ['tuned_model_display_name'],
         getv(from_object, ['tunedModelDisplayName']),
     )
+
+  if getv(from_object, ['veoTuningSpec']) is not None:
+    setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
   return to_object
 
