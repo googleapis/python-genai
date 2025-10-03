@@ -127,6 +127,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_compression_quality=80,
                 base_steps=32,
                 add_watermark=False,
+                labels={'imagen_label_key': 'edit_image'}
             ),
         ),
     ),

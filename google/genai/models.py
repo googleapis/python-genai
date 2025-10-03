@@ -560,6 +560,9 @@ def _EditImageConfig_to_vertex(
         getv(from_object, ['add_watermark']),
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
   if getv(from_object, ['edit_mode']) is not None:
     setv(
         parent_object,
@@ -1436,6 +1439,9 @@ def _GenerateImagesConfig_to_mldev(
   if getv(from_object, ['add_watermark']) is not None:
     raise ValueError('add_watermark parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
   if getv(from_object, ['image_size']) is not None:
     setv(
         parent_object,
@@ -1548,6 +1554,9 @@ def _GenerateImagesConfig_to_vertex(
         ['parameters', 'addWatermark'],
         getv(from_object, ['add_watermark']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['image_size']) is not None:
     setv(
@@ -2904,6 +2913,9 @@ def _RecontextImageConfig_to_vertex(
         getv(from_object, ['enhance_prompt']),
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
   return to_object
 
 
@@ -3144,6 +3156,9 @@ def _SegmentImageConfig_to_vertex(
         ['parameters', 'binaryColorThreshold'],
         getv(from_object, ['binary_color_threshold']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   return to_object
 
@@ -3488,6 +3503,9 @@ def _UpscaleImageAPIConfig_to_vertex(
         ['parameters', 'upscaleConfig', 'imagePreservationFactor'],
         getv(from_object, ['image_preservation_factor']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['number_of_images']) is not None:
     setv(
@@ -5278,6 +5296,7 @@ class Models(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
@@ -7069,6 +7088,7 @@ class AsyncModels(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
