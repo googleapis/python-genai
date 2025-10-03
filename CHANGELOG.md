@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.41.0](https://github.com/googleapis/python-genai/compare/v1.40.0...v1.41.0) (2025-10-02)
+
+
+### Features
+
+* Add `NO_IMAGE` enum value to `FinishReason` ([3877044](https://github.com/googleapis/python-genai/commit/3877044d2e15ef455904320eeac769d664cffefe))
+* Add thinking_config for live ([0fa183c](https://github.com/googleapis/python-genai/commit/0fa183cad2d6877e05a33dfc0da62b43138cd891))
+
+
+### Bug Fixes
+
+* Fix validation for image_config ([efaa574](https://github.com/googleapis/python-genai/commit/efaa57426399c3c7c93615bd855ea214d15f5867))
+
+
+### Documentation
+
+* Regenerate updated Python docs ([53e7bd8](https://github.com/googleapis/python-genai/commit/53e7bd81e01b696f74e602359129535b55fa53f1))
+
 ## [1.40.0](https://github.com/googleapis/python-genai/compare/v1.39.1...v1.40.0) (2025-10-01)
 
 
