@@ -489,6 +489,7 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
       'retry': retry,
       'reraise': True,
       'wait': wait,
+      'before_sleep': tenacity.before_sleep_log(logger, logging.INFO),
   }
 
 
