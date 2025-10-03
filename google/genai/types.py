@@ -19,6 +19,7 @@ from abc import ABC, abstractmethod
 import datetime
 from enum import Enum, EnumMeta
 import inspect
+import io
 import json
 import logging
 import sys
@@ -1259,6 +1260,47 @@ class Part(_common.BaseModel):
   text: Optional[str] = Field(
       default=None, description="""Optional. Text part (can be code)."""
   )
+
+  @model_validator(mode='before')
+  @classmethod
+  def _infer_fields_by_type(cls, data: Any) -> Any:
+    if isinstance(data, str):
+      return {'text': data}
+    elif isinstance(data, File):
+      if not data.uri or not data.mime_type:
+        raise ValueError('file uri and mime_type are required.')
+      return {
+          'file_data': FileData(
+              file_uri=data.uri,
+              mime_type=data.mime_type,
+              display_name=data.display_name,
+          )
+      }
+    elif isinstance(data, Part):
+      return data.dict()
+    elif 'image' in data.__class__.__name__.lower():
+      # PIL.Image case.
+
+      suffix = data.format.lower() if data.format else 'jpeg'
+      bytes_io = io.BytesIO()
+      data.save(bytes_io, suffix.upper())
+
+      return {
+          'inline_data': Blob(
+              data=bytes_io.getvalue(), mime_type=f'image/{suffix}'
+          )
+      }
+    elif isinstance(data, dict):
+      if not data:
+        # Empty dict counts as part.
+        return data
+      try:
+        # Check if the dict is a FileData.
+        return {'file_data': FileData.model_validate(data)}
+      except pydantic.ValidationError:
+        return data
+    else:
+      raise ValueError(f'Unsupported content part type: {type(data)}')
 
   def as_image(self) -> Optional['Image']:
     """Returns the part as a PIL Image, or None if the part is not an image."""
