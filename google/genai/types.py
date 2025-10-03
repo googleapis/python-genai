@@ -9002,6 +9002,7 @@ class GenerateVideosOperation(_common.BaseModel, Operation):
       cls, api_response: Any, is_vertex_ai: bool = False
   ) -> Self:
     """Instantiates a GenerateVideosOperation from an API response."""
+
     if is_vertex_ai:
       response_dict = _GenerateVideosOperation_from_vertex(api_response)
     else:
