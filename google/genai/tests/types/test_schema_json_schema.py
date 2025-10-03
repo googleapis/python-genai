@@ -257,7 +257,7 @@ def test_property_ordering_conversion():
   json_schema = schema.json_schema
   not_none_field_names = _get_not_none_fields(json_schema)
 
-  assert not_none_field_names == []
+  assert not_none_field_names == ['property_ordering']
 
 
 def test_direct_conversion():

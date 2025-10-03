@@ -1664,6 +1664,10 @@ class JSONSchema(_common.BaseModel):
           ' keyword’s value.'
       ),
   )
+  property_ordering: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
+  )
 
 
 class Schema(_common.BaseModel):
