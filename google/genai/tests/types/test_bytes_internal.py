@@ -20,6 +20,8 @@ from unittest import mock
 
 import pytest
 
+from .. import pytest_helper
+
 from ... import _api_client as google_genai_api_client_module
 from ... import _common as common_module
 from ... import client as google_genai_client_module
@@ -103,9 +105,10 @@ def test_base64_pydantic_input_success(
   encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
-      mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
+      pytest_helper.get_value_ignore_key_case(
+          mock_request_method.call_args[0][2]['contents'][0]['parts'][0],
           'inlineData'
-      ]['data']
+      )['data']
       == _BASE64_URL_SAFE
   )
   assert response.candidates[0].content == types.Content(
@@ -146,9 +149,10 @@ def test_base64_dict_input_success(client, mock_request_method, encode_unseriali
   encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
-      mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
+      pytest_helper.get_value_ignore_key_case(
+          mock_request_method.call_args[0][2]['contents'][0]['parts'][0],
           'inlineData'
-      ]['data']
+      )['data']
       == _BASE64_URL_SAFE
   )
   assert response.candidates[0].content == types.Content(
