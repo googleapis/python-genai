@@ -366,7 +366,10 @@ def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
       raise ValueError('file uri and mime_type are required.')
     return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)
   if isinstance(part, dict):
-    return types.Part.model_validate(part)
+    try:
+      return types.Part.model_validate(part)
+    except pydantic.ValidationError:
+      return types.Part(file_data=types.FileData.model_validate(part))
   if isinstance(part, types.Part):
     return part
 
@@ -420,7 +423,7 @@ ContentType = Union[types.Content, types.ContentDict, types.PartUnionDict]
 
 
 def t_content(
-    content: Optional[ContentType],
+    content: Union[ContentType, types.ContentDict, None],
 ) -> types.Content:
   if content is None:
     raise ValueError('content is required.')
@@ -430,12 +433,14 @@ def t_content(
     try:
       return types.Content.model_validate(content)
     except pydantic.ValidationError:
-      possible_part = types.Part.model_validate(content)
+      possible_part = t_part(content)  # type: ignore[arg-type]
       return (
           types.ModelContent(parts=[possible_part])
           if possible_part.function_call
           else types.UserContent(parts=[possible_part])
       )
+  if isinstance(content, types.File):
+    return types.UserContent(parts=[t_part(content)])
   if isinstance(content, types.Part):
     return (
         types.ModelContent(parts=[content])
@@ -495,11 +500,18 @@ def t_contents(
       return True
 
     if isinstance(part, dict):
+      if not part:
+        # Empty dict should be considered as Content, not Part.
+        return False
       try:
         types.Part.model_validate(part)
         return True
       except pydantic.ValidationError:
-        return False
+        try:
+          types.FileData.model_validate(part)
+          return True
+        except pydantic.ValidationError:
+          return False
 
     if 'image' in part.__class__.__name__.lower():
       try:
