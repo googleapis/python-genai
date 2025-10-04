@@ -53,6 +53,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_compression_quality=80,
                 enhance_input_image=True,
                 image_preservation_factor=0.6,
+                labels={'imagen_label_key': 'upscale_image'}
             ),
         ),
     ),

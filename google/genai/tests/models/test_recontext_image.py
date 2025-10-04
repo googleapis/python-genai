@@ -93,6 +93,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 person_generation=types.PersonGeneration.ALLOW_ADULT,
                 output_compression_quality=75,
                 enhance_prompt=False,
+                labels={'imagen_label_key': 'recontext_image'}
             ),
         ),
     ),
