@@ -528,7 +528,7 @@ class AsyncHttpxClient(httpx.AsyncClient):
     except Exception:
       pass
     try:
-      asyncio.get_running_loop().run_until_complete(self.aclose())
+      asyncio.get_running_loop().create_task(self.aclose())
     except Exception:
       pass
 
@@ -1789,7 +1789,6 @@ class BaseApiClient:
       pass
 
     try:
-      asyncio.get_running_loop().run_until_complete(self.aclose())
+      asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
-

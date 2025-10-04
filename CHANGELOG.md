@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.41.0](https://github.com/googleapis/python-genai/compare/v1.40.0...v1.41.0) (2025-10-02)
+
+
+### Features
+
+* Add `NO_IMAGE` enum value to `FinishReason` ([3877044](https://github.com/googleapis/python-genai/commit/3877044d2e15ef455904320eeac769d664cffefe))
+* Add thinking_config for live ([0fa183c](https://github.com/googleapis/python-genai/commit/0fa183cad2d6877e05a33dfc0da62b43138cd891))
+
+
+### Bug Fixes
+
+* Fix validation for image_config ([efaa574](https://github.com/googleapis/python-genai/commit/efaa57426399c3c7c93615bd855ea214d15f5867))
+
+
+### Documentation
+
+* Regenerate updated Python docs ([53e7bd8](https://github.com/googleapis/python-genai/commit/53e7bd81e01b696f74e602359129535b55fa53f1))
+
+## [1.40.0](https://github.com/googleapis/python-genai/compare/v1.39.1...v1.40.0) (2025-10-01)
+
+
+### Features
+
+* Add `ImageConfig` to `GenerateContentConfig` ([88088df](https://github.com/googleapis/python-genai/commit/88088dfee5de08e9743498748ba54c48b07f7332))
+* Expose session id in Live API ([1692f23](https://github.com/googleapis/python-genai/commit/1692f238fca59c3f5bf9d09e4899c919791a1cd5))
+* Rename ComputerUse tool (early access) ([aaac8d8](https://github.com/googleapis/python-genai/commit/aaac8d81a5cd98472d8c1be7ee871c430e5424e4))
+
+
+### Bug Fixes
+
+* Resolve potential mem leak on deletion of Client when using async ([538c755](https://github.com/googleapis/python-genai/commit/538c755e84777e6b76d5152aac18268e4d0c99c6))
+* Resolve unclosed client session warning. ([043a392](https://github.com/googleapis/python-genai/commit/043a3925ece30b4cdc530ed28a470baf83bf651b))
+
 ## [1.39.1](https://github.com/googleapis/python-genai/compare/v1.39.0...v1.39.1) (2025-09-26)
 
 

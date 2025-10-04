@@ -23,72 +23,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 
-def _AudioTranscriptionConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _AuthToken_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _AuthToken_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _AutomaticActivityDetection_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['disabled']) is not None:
-    setv(to_object, ['disabled'], getv(from_object, ['disabled']))
-
-  if getv(from_object, ['start_of_speech_sensitivity']) is not None:
-    setv(
-        to_object,
-        ['startOfSpeechSensitivity'],
-        getv(from_object, ['start_of_speech_sensitivity']),
-    )
-
-  if getv(from_object, ['end_of_speech_sensitivity']) is not None:
-    setv(
-        to_object,
-        ['endOfSpeechSensitivity'],
-        getv(from_object, ['end_of_speech_sensitivity']),
-    )
-
-  if getv(from_object, ['prefix_padding_ms']) is not None:
-    setv(
-        to_object, ['prefixPaddingMs'], getv(from_object, ['prefix_padding_ms'])
-    )
-
-  if getv(from_object, ['silence_duration_ms']) is not None:
-    setv(
-        to_object,
-        ['silenceDurationMs'],
-        getv(from_object, ['silence_duration_ms']),
-    )
-
-  return to_object
-
-
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -102,24 +36,6 @@ def _Blob_to_mldev(
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _ComputerUse_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
 
   return to_object
 
@@ -141,26 +57,6 @@ def _Content_to_mldev(
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _ContextWindowCompressionConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['trigger_tokens']) is not None:
-    setv(to_object, ['triggerTokens'], getv(from_object, ['trigger_tokens']))
-
-  if getv(from_object, ['sliding_window']) is not None:
-    setv(
-        to_object,
-        ['slidingWindow'],
-        _SlidingWindow_to_mldev(
-            getv(from_object, ['sliding_window']), to_object
-        ),
-    )
 
   return to_object
 
@@ -235,24 +131,6 @@ def _CreateAuthTokenParameters_to_vertex(
   return to_object
 
 
-def _DynamicRetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
-
-  return to_object
-
-
 def _FileData_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -270,77 +148,6 @@ def _FileData_to_mldev(
   return to_object
 
 
-def _FunctionCall_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['id']) is not None:
-    setv(to_object, ['id'], getv(from_object, ['id']))
-
-  if getv(from_object, ['args']) is not None:
-    setv(to_object, ['args'], getv(from_object, ['args']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _FunctionDeclaration_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  if getv(from_object, ['parameters_json_schema']) is not None:
-    setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  return to_object
-
-
-def _GoogleSearchRetrieval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_mldev(
-            getv(from_object, ['dynamic_retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -348,29 +155,13 @@ def _GoogleSearch_to_mldev(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
-        to_object,
-        ['timeRangeFilter'],
-        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
+        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
     )
 
   if getv(from_object, ['exclude_domains']) is not None:
     raise ValueError(
         'exclude_domains parameter is not supported in Gemini API.'
     )
-
-  return to_object
-
-
-def _Interval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
-
-  if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
 
   return to_object
 
@@ -442,10 +233,14 @@ def _LiveConnectConfig_to_mldev(
     setv(
         parent_object,
         ['setup', 'generationConfig', 'speechConfig'],
-        _SpeechConfig_to_mldev(
-            t.t_live_speech_config(getv(from_object, ['speech_config'])),
-            to_object,
-        ),
+        t.t_live_speech_config(getv(from_object, ['speech_config'])),
+    )
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'generationConfig', 'thinkingConfig'],
+        getv(from_object, ['thinking_config']),
     )
 
   if getv(from_object, ['enable_affective_dialog']) is not None:
@@ -487,45 +282,35 @@ def _LiveConnectConfig_to_mldev(
     setv(
         parent_object,
         ['setup', 'inputAudioTranscription'],
-        _AudioTranscriptionConfig_to_mldev(
-            getv(from_object, ['input_audio_transcription']), to_object
-        ),
+        getv(from_object, ['input_audio_transcription']),
     )
 
   if getv(from_object, ['output_audio_transcription']) is not None:
     setv(
         parent_object,
         ['setup', 'outputAudioTranscription'],
-        _AudioTranscriptionConfig_to_mldev(
-            getv(from_object, ['output_audio_transcription']), to_object
-        ),
+        getv(from_object, ['output_audio_transcription']),
     )
 
   if getv(from_object, ['realtime_input_config']) is not None:
     setv(
         parent_object,
         ['setup', 'realtimeInputConfig'],
-        _RealtimeInputConfig_to_mldev(
-            getv(from_object, ['realtime_input_config']), to_object
-        ),
+        getv(from_object, ['realtime_input_config']),
     )
 
   if getv(from_object, ['context_window_compression']) is not None:
     setv(
         parent_object,
         ['setup', 'contextWindowCompression'],
-        _ContextWindowCompressionConfig_to_mldev(
-            getv(from_object, ['context_window_compression']), to_object
-        ),
+        getv(from_object, ['context_window_compression']),
     )
 
   if getv(from_object, ['proactivity']) is not None:
     setv(
         parent_object,
         ['setup', 'proactivity'],
-        _ProactivityConfig_to_mldev(
-            getv(from_object, ['proactivity']), to_object
-        ),
+        getv(from_object, ['proactivity']),
     )
 
   return to_object
@@ -556,37 +341,13 @@ def _LiveConnectConstraints_to_mldev(
   return to_object
 
 
-def _MultiSpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker_voice_configs']) is not None:
-    setv(
-        to_object,
-        ['speakerVoiceConfigs'],
-        [
-            _SpeakerVoiceConfig_to_mldev(item, to_object)
-            for item in getv(from_object, ['speaker_voice_configs'])
-        ],
-    )
-
-  return to_object
-
-
 def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video_metadata']) is not None:
-    setv(
-        to_object,
-        ['videoMetadata'],
-        _VideoMetadata_to_mldev(
-            getv(from_object, ['video_metadata']), to_object
-        ),
-    )
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   if getv(from_object, ['thought']) is not None:
     setv(to_object, ['thought'], getv(from_object, ['thought']))
@@ -613,11 +374,7 @@ def _Part_to_mldev(
     )
 
   if getv(from_object, ['function_call']) is not None:
-    setv(
-        to_object,
-        ['functionCall'],
-        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
-    )
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -642,55 +399,6 @@ def _Part_to_mldev(
   return to_object
 
 
-def _PrebuiltVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
-
-  return to_object
-
-
-def _ProactivityConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['proactive_audio']) is not None:
-    setv(to_object, ['proactiveAudio'], getv(from_object, ['proactive_audio']))
-
-  return to_object
-
-
-def _RealtimeInputConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['automatic_activity_detection']) is not None:
-    setv(
-        to_object,
-        ['automaticActivityDetection'],
-        _AutomaticActivityDetection_to_mldev(
-            getv(from_object, ['automatic_activity_detection']), to_object
-        ),
-    )
-
-  if getv(from_object, ['activity_handling']) is not None:
-    setv(
-        to_object,
-        ['activityHandling'],
-        getv(from_object, ['activity_handling']),
-    )
-
-  if getv(from_object, ['turn_coverage']) is not None:
-    setv(to_object, ['turnCoverage'], getv(from_object, ['turn_coverage']))
-
-  return to_object
-
-
 def _SessionResumptionConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -705,62 +413,6 @@ def _SessionResumptionConfig_to_mldev(
   return to_object
 
 
-def _SlidingWindow_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['target_tokens']) is not None:
-    setv(to_object, ['targetTokens'], getv(from_object, ['target_tokens']))
-
-  return to_object
-
-
-def _SpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker']) is not None:
-    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
-
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  return to_object
-
-
-def _SpeechConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    setv(
-        to_object,
-        ['multiSpeakerVoiceConfig'],
-        _MultiSpeakerVoiceConfig_to_mldev(
-            getv(from_object, ['multi_speaker_voice_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
 def _Tool_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -770,10 +422,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_mldev(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
+        [item for item in getv(from_object, ['function_declarations'])],
     )
 
   if getv(from_object, ['retrieval']) is not None:
@@ -790,9 +439,7 @@ def _Tool_to_mldev(
     setv(
         to_object,
         ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_mldev(
-            getv(from_object, ['google_search_retrieval']), to_object
-        ),
+        getv(from_object, ['google_search_retrieval']),
     )
 
   if getv(from_object, ['enterprise_web_search']) is not None:
@@ -804,63 +451,12 @@ def _Tool_to_mldev(
     raise ValueError('google_maps parameter is not supported in Gemini API.')
 
   if getv(from_object, ['url_context']) is not None:
-    setv(
-        to_object,
-        ['urlContext'],
-        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
-    )
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ComputerUse_to_mldev(getv(from_object, ['computer_use']), to_object),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  return to_object
-
-
-def _UrlContext_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _VideoMetadata_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
-
-  if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
-
-  return to_object
-
-
-def _VoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prebuilt_voice_config']) is not None:
-    setv(
-        to_object,
-        ['prebuiltVoiceConfig'],
-        _PrebuiltVoiceConfig_to_mldev(
-            getv(from_object, ['prebuilt_voice_config']), to_object
-        ),
-    )
 
   return to_object
