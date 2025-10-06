@@ -16,6 +16,7 @@
 
 """Tests for batches.create() with inlined requests."""
 import base64
+import copy
 import datetime
 import os
 
@@ -53,10 +54,15 @@ _INLINED_TEXT_REQUEST_UNION = {
         },
     },
 }
-_INLINED_TEXT_REQUEST = _INLINED_TEXT_REQUEST_UNION.copy()
+_INLINED_TEXT_REQUEST = copy.deepcopy(_INLINED_TEXT_REQUEST_UNION)
 _INLINED_TEXT_REQUEST['config']['system_instruction'] = t.t_content(
     'I say high, you say low'
 )
+_INLINED_TEXT_REQUEST['config']['tools'] = [{'google_search': {}}]
+_INLINED_TEXT_REQUEST['config']['tool_config'] = {
+    'retrieval_config': {'lat_lng': {'latitude': 37.422, 'longitude': -122.084}}
+}
+
 _INLINED_IMAGE_REQUEST = {
     'contents': [{
         'parts': [
@@ -150,7 +156,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='not supported',
     ),
     pytest_helper.TestTableItem(
-        name='test_with_inlined_request_system_instruction',
+        name='test_with_inlined_request_config',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
             src={'inlined_requests': [_INLINED_TEXT_REQUEST]},
