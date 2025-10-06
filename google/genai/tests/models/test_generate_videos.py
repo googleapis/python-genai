@@ -45,6 +45,18 @@ IMAGE_FILE_PATH = os.path.abspath(
 )
 LOCAL_IMAGE = types.Image.from_file(location=IMAGE_FILE_PATH)
 
+LOCAL_IMAGE_MAN = types.Image.from_file(
+    location=os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../data/man.jpg")
+    )
+)
+
+LOCAL_IMAGE_DOG = types.Image.from_file(
+    location=os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../data/dog.jpg")
+    )
+)
+
 GCS_OUTPAINT_MASK = types.Image(
     gcs_uri="gs://genai-sdk-tests/inputs/videos/video_outpaint_mask.png",
     mime_type="image/png",
@@ -345,17 +357,13 @@ def test_text_and_video_to_video_poll(client):
 
 
 def test_image_to_video_frame_interpolation_poll(client):
-  # Video extension is only supported in Vertex AI.
-  if not client.vertexai:
-    return
-
   operation = client.models.generate_videos(
-      model="veo-2.0-generate-exp",
+      model="veo-2.0-generate-exp" if client.vertexai else "veo-3-exp",
       prompt="Rain",
-      image=GCS_IMAGE,
+      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
       config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI,
-          last_frame=GCS_IMAGE2,
+          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+          last_frame=GCS_IMAGE2 if client.vertexai else LOCAL_IMAGE_DOG,
       ),
   )
   while not operation.done:
@@ -368,19 +376,15 @@ def test_image_to_video_frame_interpolation_poll(client):
 
 
 def test_reference_images_to_video_poll(client):
-  # Reference images to Video is only supported in Vertex AI.
-  if not client.vertexai:
-    return
-
   operation = client.models.generate_videos(
-      model="veo-2.0-generate-exp",
-      prompt="Rain",
+      model="veo-2.0-generate-exp" if client.vertexai else "veo-3-exp",
+      prompt="Chirping birds in a colorful forest",
       config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI,
+          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
           reference_images=[
               types.VideoGenerationReferenceImage(
-                  image=GCS_IMAGE,
-                  reference_type=types.VideoGenerationReferenceType.STYLE,
+                  image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
+                  reference_type=types.VideoGenerationReferenceType.ASSET,
               ),
           ],
       ),

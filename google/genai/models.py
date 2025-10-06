@@ -47,6 +47,13 @@ def _SafetyFilterLevel_to_mldev_enum_validate(enum_value: Any) -> None:
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
 
+def _VideoGenerationReferenceType_to_mldev_enum_validate(
+    enum_value: Any,
+) -> None:
+  if enum_value in set(['STYLE']):
+    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
+
+
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1745,11 +1752,20 @@ def _GenerateVideosConfig_to_mldev(
     raise ValueError('generate_audio parameter is not supported in Gemini API.')
 
   if getv(from_object, ['last_frame']) is not None:
-    raise ValueError('last_frame parameter is not supported in Gemini API.')
+    setv(
+        parent_object,
+        ['instances[0]', 'lastFrame'],
+        _Image_to_mldev(getv(from_object, ['last_frame']), to_object),
+    )
 
   if getv(from_object, ['reference_images']) is not None:
-    raise ValueError(
-        'reference_images parameter is not supported in Gemini API.'
+    setv(
+        parent_object,
+        ['instances[0]', 'referenceImages'],
+        [
+            _VideoGenerationReferenceImage_to_mldev(item, to_object)
+            for item in getv(from_object, ['reference_images'])
+        ],
     )
 
   if getv(from_object, ['mask']) is not None:
@@ -1979,7 +1995,11 @@ def _GenerateVideosParameters_to_mldev(
     )
 
   if getv(from_object, ['video']) is not None:
-    raise ValueError('video parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['instances[0]', 'video'],
+        _Video_to_mldev(getv(from_object, ['video']), to_object),
+    )
 
   if getv(from_object, ['source']) is not None:
     _GenerateVideosSource_to_mldev(getv(from_object, ['source']), to_object)
@@ -2111,7 +2131,11 @@ def _GenerateVideosSource_to_mldev(
     )
 
   if getv(from_object, ['video']) is not None:
-    raise ValueError('video parameter is not supported in Gemini API.')
+    setv(
+        parent_object,
+        ['instances[0]', 'video'],
+        _Video_to_mldev(getv(from_object, ['video']), to_object),
+    )
 
   return to_object
 
@@ -3576,6 +3600,27 @@ def _VideoGenerationMask_to_vertex(
   return to_object
 
 
+def _VideoGenerationReferenceImage_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_mldev(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['reference_type']) is not None:
+    _VideoGenerationReferenceType_to_mldev_enum_validate(
+        getv(from_object, ['reference_type'])
+    )
+    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
+
+  return to_object
+
+
 def _VideoGenerationReferenceImage_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3632,6 +3677,27 @@ def _Video_from_vertex(
 
   if getv(from_object, ['mimeType']) is not None:
     setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
+def _Video_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['video', 'uri'], getv(from_object, ['uri']))
+
+  if getv(from_object, ['video_bytes']) is not None:
+    setv(
+        to_object,
+        ['video', 'encodedVideo'],
+        base_t.t_bytes(getv(from_object, ['video_bytes'])),
+    )
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['encoding'], getv(from_object, ['mime_type']))
 
   return to_object
 

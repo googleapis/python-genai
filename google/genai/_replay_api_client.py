@@ -395,6 +395,8 @@ class ReplayApiClient(BaseApiClient):
       http_request: HttpRequest,
       interaction: ReplayInteraction,
   ) -> None:
+    print('http_request.url: ', http_request.url)
+    print('interaction.request.url: ', interaction.request.url)
     assert http_request.url == interaction.request.url
     assert http_request.headers == interaction.request.headers, (
         'Request headers mismatch:\n'
