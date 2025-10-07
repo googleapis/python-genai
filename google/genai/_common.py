@@ -108,7 +108,9 @@ def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: An
         data[keys[-1]] = value
 
 
-def get_value_by_path(data: Any, keys: list[str]) -> Any:
+def get_value_by_path(
+    data: Any, keys: list[str], *, default_value: Any = None
+) -> Any:
   """Examples:
 
   get_value_by_path({'a': {'b': v}}, ['a', 'b'])
@@ -120,26 +122,31 @@ def get_value_by_path(data: Any, keys: list[str]) -> Any:
     return data
   for i, key in enumerate(keys):
     if not data:
-      return None
+      return default_value
     if key.endswith('[]'):
       key_name = key[:-2]
       if key_name in data:
-        return [get_value_by_path(d, keys[i + 1 :]) for d in data[key_name]]
+        return [
+            get_value_by_path(d, keys[i + 1 :], default_value=default_value)
+            for d in data[key_name]
+        ]
       else:
-        return None
+        return default_value
     elif key.endswith('[0]'):
       key_name = key[:-3]
       if key_name in data and data[key_name]:
-        return get_value_by_path(data[key_name][0], keys[i + 1 :])
+        return get_value_by_path(
+            data[key_name][0], keys[i + 1 :], default_value=default_value
+        )
       else:
-        return None
+        return default_value
     else:
       if key in data:
         data = data[key]
       elif isinstance(data, BaseModel) and hasattr(data, key):
         data = getattr(data, key)
       else:
-        return None
+        return default_value
   return data
 
 

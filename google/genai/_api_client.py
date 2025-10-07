@@ -80,7 +80,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger('google_genai._api_client')
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB chunk size
-READ_BUFFER_SIZE = 2**20
+READ_BUFFER_SIZE = 2**22
 MAX_RETRY_COUNT = 3
 INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
@@ -489,6 +489,7 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
       'retry': retry,
       'reraise': True,
       'wait': wait,
+      'before_sleep': tenacity.before_sleep_log(logger, logging.INFO),
   }
 
 
