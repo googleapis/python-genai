@@ -58,6 +58,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 confidence_threshold=0.02,
                 mask_dilation=0.02,
                 binary_color_threshold=98,
+                labels={'imagen_label_key': 'segment_image'}
             ),
         ),
     ),

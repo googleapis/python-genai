@@ -6281,6 +6281,10 @@ class GenerateImagesConfig(_common.BaseModel):
       default=None,
       description="""Whether to add a watermark to the generated images.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   image_size: Optional[str] = Field(
       default=None,
       description="""The size of the largest dimension of the generated image.
@@ -6345,6 +6349,9 @@ class GenerateImagesConfigDict(TypedDict, total=False):
 
   add_watermark: Optional[bool]
   """Whether to add a watermark to the generated images."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   image_size: Optional[str]
   """The size of the largest dimension of the generated image.
@@ -6923,6 +6930,10 @@ class EditImageConfig(_common.BaseModel):
       default=None,
       description="""Whether to add a watermark to the generated images.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   edit_mode: Optional[EditMode] = Field(
       default=None,
       description="""Describes the editing mode for the request.""",
@@ -6988,6 +6999,9 @@ class EditImageConfigDict(TypedDict, total=False):
 
   add_watermark: Optional[bool]
   """Whether to add a watermark to the generated images."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   edit_mode: Optional[EditMode]
   """Describes the editing mode for the request."""
@@ -7104,6 +7118,10 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
       output image will have be more different from the input image, but
       with finer details and less noise.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   number_of_images: Optional[int] = Field(default=None, description="""""")
   mode: Optional[str] = Field(default=None, description="""""")
 
@@ -7142,6 +7160,9 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
       pixels are more respected. With a lower image preservation factor, the
       output image will have be more different from the input image, but
       with finer details and less noise."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   number_of_images: Optional[int]
   """"""
@@ -7319,6 +7340,10 @@ class RecontextImageConfig(_common.BaseModel):
   enhance_prompt: Optional[bool] = Field(
       default=None, description="""Whether to use the prompt rewriting logic."""
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class RecontextImageConfigDict(TypedDict, total=False):
@@ -7359,6 +7384,9 @@ class RecontextImageConfigDict(TypedDict, total=False):
 
   enhance_prompt: Optional[bool]
   """Whether to use the prompt rewriting logic."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 RecontextImageConfigOrDict = Union[
@@ -7510,6 +7538,10 @@ class SegmentImageConfig(_common.BaseModel):
       can be set to a decimal value between 0 and 255 non-inclusive.
       Set to -1 for no binary color thresholding.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class SegmentImageConfigDict(TypedDict, total=False):
@@ -7539,6 +7571,9 @@ class SegmentImageConfigDict(TypedDict, total=False):
   """The binary color threshold to apply to the masks. The threshold
       can be set to a decimal value between 0 and 255 non-inclusive.
       Set to -1 for no binary color thresholding."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 SegmentImageConfigOrDict = Union[SegmentImageConfig, SegmentImageConfigDict]
@@ -13023,6 +13058,10 @@ class UpscaleImageConfig(_common.BaseModel):
       output image will have be more different from the input image, but
       with finer details and less noise.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class UpscaleImageConfigDict(TypedDict, total=False):
@@ -13060,6 +13099,9 @@ class UpscaleImageConfigDict(TypedDict, total=False):
       pixels are more respected. With a lower image preservation factor, the
       output image will have be more different from the input image, but
       with finer details and less noise."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 UpscaleImageConfigOrDict = Union[UpscaleImageConfig, UpscaleImageConfigDict]
