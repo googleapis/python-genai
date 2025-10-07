@@ -452,18 +452,37 @@ def _format_collection(
 
 class BaseModel(pydantic.BaseModel):
 
-  model_config = pydantic.ConfigDict(
-      alias_generator=alias_generators.to_camel,
-      populate_by_name=True,
-      from_attributes=True,
-      protected_namespaces=(),
-      extra='forbid',
-      # This allows us to use arbitrary types in the model. E.g. PIL.Image.
-      arbitrary_types_allowed=True,
-      ser_json_bytes='base64',
-      val_json_bytes='base64',
-      ignored_types=(typing.TypeVar,)
-  )
+  # Check Pydantic version for compatibility
+  _pydantic_v2 = hasattr(pydantic, '__version__') and pydantic.__version__.startswith('2.')
+  
+  if _pydantic_v2:
+    # Pydantic v2: use validate_by_name and validate_by_alias instead of populate_by_name
+    model_config = pydantic.ConfigDict(
+        alias_generator=alias_generators.to_camel,
+        validate_by_name=True,
+        validate_by_alias=True,
+        from_attributes=True,
+        protected_namespaces=(),
+        extra='forbid',
+        # This allows us to use arbitrary types in the model. E.g. PIL.Image.
+        arbitrary_types_allowed=True,
+        ser_json_bytes='base64',
+        val_json_bytes='base64',
+    )
+  else:
+    # Pydantic v1: keep using populate_by_name
+    model_config = pydantic.ConfigDict(
+        alias_generator=alias_generators.to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+        protected_namespaces=(),
+        extra='forbid',
+        # This allows us to use arbitrary types in the model. E.g. PIL.Image.
+        arbitrary_types_allowed=True,
+        ser_json_bytes='base64',
+        val_json_bytes='base64',
+        ignored_types=(typing.TypeVar,)
+    )
 
   def __repr__(self) -> str:
     try:
