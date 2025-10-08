@@ -1056,11 +1056,16 @@ class BaseApiClient:
       _common.recursive_dict_update(
           request_dict, patched_http_options.extra_body
       )
-
-    url = join_url_path(
-        base_url,
-        versioned_path,
-    )
+    url = base_url
+    if (
+        not self.custom_base_url
+        or (self.project and self.location)
+        or self.api_key
+    ):
+      url = join_url_path(
+          base_url,
+          versioned_path,
+      )
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(
