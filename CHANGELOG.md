@@ -1,21 +1,5 @@
 # Changelog
 
-## [1.42.0](https://github.com/googleapis/python-genai/compare/v1.41.0...v1.42.0) (2025-10-08)
-
-
-### Features
-
-* Add labels field to Imagen configs ([cdba4c9](https://github.com/googleapis/python-genai/commit/cdba4c9a8b82e8158ea052f0d4790842e3bcac01))
-* Add utility methods for creating `FunctionResponsePart` and creating FunctionResponse `Part` with `FunctionResponseParts` ([72c92d8](https://github.com/googleapis/python-genai/commit/72c92d8352f2fa6526f6447dd0d65e96a47d54ec))
-* Enable Ingredients to Video and Advanced Controls for Veo on Gemini Developer API (Early Access Program) ([9c02a07](https://github.com/googleapis/python-genai/commit/9c02a070cd6b0f3f441c34ebf0d77ddd2ab1fcc0))
-
-
-### Bug Fixes
-
-* Avoid potential dual import for content type assertion ([83d7973](https://github.com/googleapis/python-genai/commit/83d79734c9cff35846ba0b2468d53a3032070888))
-* Increase `READ_BUFFER_SIZE` in `_api_client.py` for streaming large chunks in new model ([981bba7](https://github.com/googleapis/python-genai/commit/981bba7524b95ac3f5b1b12261d7e34013bbac82))
-* Make t_part and t_content conform to their type annotations: they now handle FileDict correctly and t_contents handles PartUnionDict correctly. ([0933632](https://github.com/googleapis/python-genai/commit/0933632103bba2900214b666d9df2bdb636f62aa))
-
 ## [1.41.0](https://github.com/googleapis/python-genai/compare/v1.40.0...v1.41.0) (2025-10-02)
 
 
