@@ -1121,6 +1121,73 @@ class BaseApiClient:
           response.headers, response if stream else [response.text]
       )
 
+  def _request_once_sandbox(
+      self,
+      http_request: HttpRequest,
+  ) -> HttpResponse:
+    # Only used by Orcas sandbox, which doesn't send request to vertex dataplane
+    # but directly to the sandbox endpoint provisioned in tenant project.
+    # It relays on different auth token and doesn't need to fetch ADC.
+    data: Optional[Union[str, bytes]] = None
+    if http_request.data:
+      if not isinstance(http_request.data, bytes):
+        data = json.dumps(http_request.data) if http_request.data else None
+      else:
+        data = http_request.data
+
+    response = self._httpx_client.request(
+        method=http_request.method,
+        url=http_request.url,
+        headers=http_request.headers,
+        content=data,
+        timeout=http_request.timeout,
+    )
+    errors.APIError.raise_for_response(response)
+    return HttpResponse(
+        response.headers, [response.text]
+    )
+
+  def _request_sandbox(
+      self,
+      http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ) -> HttpResponse:
+    if http_options:
+      parameter_model = (
+          HttpOptions(**http_options)
+          if isinstance(http_options, dict)
+          else http_options
+      )
+      # Support per request retry options.
+      if parameter_model.retry_options:
+        retry_kwargs = retry_args(parameter_model.retry_options)
+        retry = tenacity.Retrying(**retry_kwargs)
+        return retry(self._request_once_sandbox, http_request)  # type: ignore[no-any-return]
+
+    return self._retry(self._request_once_sandbox, http_request)  # type: ignore[no-any-return]
+
+  def request_sandbox(
+      self,
+      http_method: str,
+      url: str,
+      request_dict: dict[str, object],
+      http_options: HttpOptions,
+  ) -> SdkHttpResponse:
+    if not http_options.headers:
+      raise ValueError('Request headers must be set.')
+
+    http_request = HttpRequest(
+        method=http_method,
+        url=url,
+        headers=http_options.headers,
+        data=request_dict,
+    )
+    response = self._request_sandbox(http_request, http_options)
+    response_body = (
+        response.response_stream[0] if response.response_stream else ''
+    )
+    return SdkHttpResponse(headers=response.headers, body=response_body)
+
   def _request(
       self,
       http_request: HttpRequest,
