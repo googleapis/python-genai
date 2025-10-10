@@ -82,7 +82,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_mldev='One of',
+        exception_if_mldev='one of',
     ),
 ]
 

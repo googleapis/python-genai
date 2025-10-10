@@ -16,11 +16,13 @@
 """Extra utils depending on types that are shared between sync and async modules."""
 
 import inspect
+import io
 import logging
 import sys
 import typing
 from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
-
+import mimetypes
+import os
 import pydantic
 
 from . import _common
@@ -90,14 +92,12 @@ def _get_bigquery_uri(
 
 
 def format_destination(
-    src: Union[str, types.BatchJobSourceOrDict],
-    config: Optional[types.CreateBatchJobConfigOrDict] = None,
+    src: Union[str, types.BatchJobSource],
+    config: Optional[types.CreateBatchJobConfig] = None,
 ) -> types.CreateBatchJobConfig:
   """Formats the destination uri based on the source uri for Vertex AI."""
-  config = (
-      types._CreateBatchJobParameters(config=config).config
-      or types.CreateBatchJobConfig()
-  )
+  if config is None:
+    config = types.CreateBatchJobConfig()
 
   unique_name = None
   if not config.display_name:
@@ -113,8 +113,7 @@ def format_destination(
     elif bigquery_source_uri:
       unique_name = unique_name or _common.timestamped_unique_name()
       config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
-    else:
-      raise ValueError(f'The source {src} is not supported.')
+
   return config
 
 
@@ -155,8 +154,8 @@ def get_function_map(
 
 
 def convert_number_values_for_dict_function_call_args(
-    args: dict[str, Any],
-) -> dict[str, Any]:
+    args: _common.StringDict,
+) -> _common.StringDict:
   """Converts float values in dict with no decimal to integers."""
   return {
       key: convert_number_values_for_function_call_args(value)
@@ -257,8 +256,8 @@ def convert_if_exist_pydantic_model(
 
 
 def convert_argument_from_function(
-    args: dict[str, Any], function: Callable[..., Any]
-) -> dict[str, Any]:
+    args: _common.StringDict, function: Callable[..., Any]
+) -> _common.StringDict:
   signature = inspect.signature(function)
   func_name = function.__name__
   converted_args = {}
@@ -274,7 +273,7 @@ def convert_argument_from_function(
 
 
 def invoke_function_from_dict_args(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -288,7 +287,7 @@ def invoke_function_from_dict_args(
 
 
 async def invoke_function_from_dict_args_async(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -321,7 +320,7 @@ def get_function_response_parts(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
           if not isinstance(func, McpToGenAiToolAdapter):
             func_response = {
@@ -356,7 +355,7 @@ async def get_function_response_parts_async(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
           if isinstance(func, McpToGenAiToolAdapter):
             mcp_tool_response = await func.call_tool(
@@ -544,3 +543,72 @@ def append_chunk_contents(
     contents = t.t_contents(contents)  # type: ignore[assignment]
     if isinstance(contents, list) and chunk_content is not None:
       contents.append(chunk_content)  # type: ignore[arg-type]
+
+
+def prepare_resumable_upload(
+    file: Union[str, os.PathLike[str], io.IOBase],
+    user_http_options: Optional[types.HttpOptionsOrDict] = None,
+    user_mime_type: Optional[str] = None,
+) -> tuple[
+    types.HttpOptions,
+    int,
+    str,
+]:
+  """Prepares the HTTP options, file bytes size and mime type for a resumable upload.
+
+  This function inspects a file (from a path or an in-memory object) to
+  determine its size and MIME type. It then constructs the necessary HTTP
+  headers and options required to initiate a resumable upload session.
+  """
+  size_bytes = None
+  mime_type = user_mime_type
+  if isinstance(file, io.IOBase):
+    if mime_type is None:
+      raise ValueError(
+          'Unknown mime type: Could not determine the mimetype for your'
+          ' file\n please set the `mime_type` argument'
+      )
+    if hasattr(file, 'mode'):
+      if 'b' not in file.mode:
+        raise ValueError('The file must be opened in binary mode.')
+    offset = file.tell()
+    file.seek(0, os.SEEK_END)
+    size_bytes = file.tell() - offset
+    file.seek(offset, os.SEEK_SET)
+  else:
+    fs_path = os.fspath(file)
+    if not fs_path or not os.path.isfile(fs_path):
+      raise FileNotFoundError(f'{file} is not a valid file path.')
+    size_bytes = os.path.getsize(fs_path)
+    if mime_type is None:
+      mime_type, _ = mimetypes.guess_type(fs_path)
+    if mime_type is None:
+      raise ValueError(
+          'Unknown mime type: Could not determine the mimetype for your'
+          ' file\n    please set the `mime_type` argument'
+      )
+  http_options: types.HttpOptions
+  if user_http_options:
+    if isinstance(user_http_options, dict):
+      user_http_options = types.HttpOptions(**user_http_options)
+    http_options = user_http_options
+    http_options.api_version = ''
+    http_options.headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Upload-Protocol': 'resumable',
+        'X-Goog-Upload-Command': 'start',
+        'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
+        'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+    }
+  else:
+    http_options = types.HttpOptions(
+        api_version='',
+        headers={
+            'Content-Type': 'application/json',
+            'X-Goog-Upload-Protocol': 'resumable',
+            'X-Goog-Upload-Command': 'start',
+            'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
+            'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+        },
+    )
+  return http_options, size_bytes, mime_type

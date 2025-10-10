@@ -21,6 +21,7 @@ import pathlib
 from typing import Any, Optional
 from pydantic import BaseModel, Field, SerializeAsAny
 import pytest
+import re
 from .. import _common
 from .. import _replay_api_client
 from .. import types
@@ -45,6 +46,7 @@ def base_test_function(
     replays_prefix: str,
     test_method: str,
     test_table_item: TestTableItem,
+    globals_for_file: dict[str, Any],
 ):
   replay_id = (
       test_table_item.override_replay_id
@@ -56,11 +58,15 @@ def base_test_function(
   client._api_client.initialize_replay_session(replay_id)
   # vars().copy() provides a shallow copy of the parameters.
   parameters_dict = vars(test_table_item.parameters).copy()
-  method_name_parts = test_method.split('.')
-  module = getattr(client, method_name_parts[0])
-  method = getattr(module, method_name_parts[1])
   try:
-    method(**parameters_dict)
+    if '.' in test_method:
+      method_name_parts = test_method.split('.')
+      module = getattr(client, method_name_parts[0])
+      method = getattr(module, method_name_parts[1])
+      method(**parameters_dict)
+    else:
+      custom_method = globals_for_file[test_method]
+      custom_method(client, test_table_item.parameters)
     # Should not reach here if expecting an exception.
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
       assert False, 'Should have raised exception in MLDev.'
@@ -69,18 +75,31 @@ def base_test_function(
     client._api_client.close()
   except Exception as e:
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
-      assert test_table_item.exception_if_mldev in str(e), str(e)
+      if test_table_item.exception_if_mldev not in str(e):
+        raise AssertionError(
+            f"'{test_table_item.exception_if_mldev}' not in '{str(e)}'"
+        ) from e
     elif test_table_item.exception_if_vertex and client._api_client.vertexai:
-      assert test_table_item.exception_if_vertex in str(e), str(e)
+      if test_table_item.exception_if_vertex not in str(e):
+        raise AssertionError(
+            f"'{test_table_item.exception_if_vertex}' not in '{str(e)}'"
+        ) from e
     else:
       raise e
 
 
 def create_test_for_table_item(
-    test_method: str, test_table_item: TestTableItem
+    globals_for_file: dict[str, Any],
+    test_method: str,
+    test_table_item: TestTableItem,
 ):
   return lambda client, use_vertex, replays_prefix: base_test_function(
-      client, use_vertex, replays_prefix, test_method, test_table_item
+      client,
+      use_vertex,
+      replays_prefix,
+      test_method,
+      test_table_item,
+      globals_for_file,
   )
 
 
@@ -101,7 +120,7 @@ def create_test_for_table(
       rename the test to start with 'test_union_'. E.g.
       test_union_contents_is_string()"""
     globals_for_file[test_table_item.name] = create_test_for_table_item(
-        test_method, test_table_item
+        globals_for_file, test_method, test_table_item
     )
 
 
@@ -188,3 +207,18 @@ def exception_if_vertex(client, exception_type: type[Exception]):
     return pytest.raises(exception_type)
   else:
     return contextlib.nullcontext()
+
+
+def snake_to_camel(snake_str: str) -> str:
+  """Converts a snake_case string to CamelCase."""
+  return re.sub(r'_([a-zA-Z])', lambda match: match.group(1).upper(), snake_str)
+
+
+def camel_to_snake(camel_str: str) -> str:
+  """Converts a CamelCase string to snake_case."""
+  return re.sub(r'([A-Z])', r'_\1', camel_str).lower().lstrip('_')
+
+
+def get_value_ignore_key_case(obj, key):
+  """Returns the value of the key in the object, converting to camelCase or snake_case if necessary."""
+  return obj.get(snake_to_camel(key), obj.get(camel_to_snake(key), None))

@@ -122,7 +122,11 @@ async def get_connect_message(api_client, model, config=None):
     config = {}
   mock_ws = AsyncMock()
   mock_ws.send = AsyncMock()
-  mock_ws.recv = AsyncMock(return_value=b'some response')
+  mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+      )
+  )
 
   mock_google_auth_default = Mock(return_value=(None, None))
   mock_creds = Mock(token='test_token')
@@ -626,15 +630,10 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
           'model': 'models/test_model',
           'generationConfig': {
               'speechConfig': {
-                  # Note: the snake_casing is different from the usual camelCase
-                  # here. This is because speechConfig is an unmodified proto
-                  # defined in the discovery doc, so it doesn't need to/from
-                  # converters. The API is insensitive to the case format.
-                  # This looks wrong, but it is okay/correct.
-                  'voiceConfig': {
-                      'prebuiltVoiceConfig': {'voiceName': 'en-default'}
+                  'voice_config': {
+                      'prebuilt_voice_config': {'voice_name': 'en-default'}
                   },
-                  'languageCode': 'en-US',
+                  'language_code': 'en-US',
               },
               'enableAffectiveDialog': True,
               'temperature': 0.7,
@@ -644,7 +643,7 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
               'mediaResolution': 'MEDIA_RESOLUTION_MEDIUM',
               'seed': 13,
           },
-          'proactivity': {'proactiveAudio': True},
+          'proactivity': {'proactive_audio': True},
           'systemInstruction': {
               'parts': [
                   {
@@ -663,6 +662,12 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
     expected_result['setup']['generationConfig']['responseModalities'] = [
         'AUDIO'
     ]
+    expected_result['setup']['generationConfig']['speechConfig'] = {
+        'voiceConfig': {
+            'prebuilt_voice_config': {'voice_name': 'en-default'}
+        },
+        'languageCode': 'en-US',
+    }
   else:
     expected_result['setup']['model'] = 'models/test_model'
 
@@ -909,8 +914,8 @@ async def test_bidi_setup_to_api_with_context_window_compression(
               'role': 'user',
           },
            'contextWindowCompression': {
-              'triggerTokens': 1000,
-              'slidingWindow': {'targetTokens': 10},
+              'trigger_tokens': 1000,
+              'sliding_window': {'target_tokens': 10},
           }
       }
   }
@@ -1284,17 +1289,7 @@ async def test_bidi_setup_to_api_with_realtime_input_config(vertexai):
   expected_result = {
       'setup': {
           'model': 'test_model',
-          'realtimeInputConfig': {
-              'automaticActivityDetection': {
-                  'disabled': True,
-                  'startOfSpeechSensitivity': 'START_SENSITIVITY_HIGH',
-                  'endOfSpeechSensitivity': 'END_SENSITIVITY_HIGH',
-                  'prefixPaddingMs': 20,
-                  'silenceDurationMs': 100,
-              },
-              'activityHandling': 'NO_INTERRUPTION',
-              'turnCoverage': 'TURN_INCLUDES_ALL_INPUT',
-          },
+          'realtimeInputConfig': config_dict['realtime_input_config'],
       }
   }
 
@@ -1504,6 +1499,45 @@ def test_parse_client_message_str( mock_websocket, vertexai):
   # _parse_client_message returns a TypedDict, so we should be able to
   # construct a LiveClientMessage from it
   assert types.LiveClientMessage(**result)
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_thinking_config(vertexai):
+  config_dict = {
+      'thinking_config': {
+          'include_thoughts': True,
+          'thinking_budget': 1024,
+      }
+  }
+
+  expected_gen_config = {
+      'thinkingConfig': {
+          'include_thoughts': True,
+          'thinking_budget': 1024,
+      }
+  }
+
+  if vertexai:
+    expected_gen_config['responseModalities'] = ['AUDIO']
+
+  expected_result = {
+      'setup': {
+          'generationConfig': expected_gen_config,
+      }
+  }
+
+  if vertexai:
+    expected_result['setup'][
+        'model'
+    ] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+  )
+  assert result == expected_result
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -1893,7 +1927,11 @@ async def test_bidi_setup_to_api_with_auth_tokens(mock_websocket, vertexai):
 
     mock_ws = AsyncMock()
     mock_ws.send = AsyncMock()
-    mock_ws.recv = AsyncMock(return_value=b'some response')
+    mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+      )
+    )
     capture = {}
 
     @contextlib.asynccontextmanager
@@ -1928,7 +1966,11 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
 
     mock_ws = AsyncMock()
     mock_ws.send = AsyncMock()
-    mock_ws.recv = AsyncMock(return_value=b'some response')
+    mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+      )
+    )
     capture = {}
 
     @contextlib.asynccontextmanager

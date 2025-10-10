@@ -40,6 +40,10 @@ class SubPart(types.Part):
   pass
 
 
+class SubFunctionResponsePart(types.FunctionResponsePart):
+  pass
+
+
 def test_factory_method_from_uri_part():
 
   my_part = SubPart.from_uri(
@@ -94,6 +98,41 @@ def test_factory_method_from_function_response_part():
   assert my_part.function_response.name == 'func'
   assert my_part.function_response.response == {'response': 'value'}
   assert isinstance(my_part, SubPart)
+
+
+def test_factory_method_part_from_function_response_with_multi_modal_parts():
+  my_part = SubPart.from_function_response(
+      name='func',
+      response={'response': 'value'},
+      parts=[{'inline_data': {'data': b'123', 'mime_type': 'image/png'}}],
+  )
+  assert my_part.function_response.name == 'func'
+  assert my_part.function_response.response == {'response': 'value'}
+  assert my_part.function_response.parts[0].inline_data.data == b'123'
+  assert my_part.function_response.parts[0].inline_data.mime_type == 'image/png'
+  assert isinstance(my_part, SubPart)
+
+
+def test_factory_method_function_response_part_from_bytes():
+  my_part = SubFunctionResponsePart.from_bytes(
+      data=b'123', mime_type='image/png'
+  )
+  assert my_part.inline_data.data == b'123'
+  assert my_part.inline_data.mime_type == 'image/png'
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+def test_factory_method_function_response_part_from_uri():
+  my_part = SubFunctionResponsePart.from_uri(
+      file_uri='gs://generativeai-downloads/images/scones.jpg',
+      mime_type='image/jpeg',
+  )
+  assert (
+      my_part.file_data.file_uri
+      == 'gs://generativeai-downloads/images/scones.jpg'
+  )
+  assert my_part.file_data.mime_type == 'image/jpeg'
+  assert isinstance(my_part, SubFunctionResponsePart)
 
 
 def test_factory_method_from_executable_code_part():
@@ -335,19 +374,17 @@ def test_built_in_primitives_and_compounds():
   assert actual_schema_vertex == expected_schema
 
 
-def test_default_value_not_compatible_built_in_type():
+def test_default_value_built_in_type():
   def func_under_test(a: str, b: int = '1', c: list = []):
     """test default value not compatible built in type."""
     pass
 
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=vertex_client, callable=func_under_test
-    )
+  types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
 
 
 def test_default_value_built_in_type():
@@ -384,7 +421,7 @@ def test_default_value_built_in_type():
     sys.version_info < (3, 10),
     reason='| is only supported in Python 3.10 and above.',
 )
-def test_unsupported_built_in_primitives_compounds():
+def test_built_in_primitives_compounds():
   def func_under_test1(a: bytes):
     pass
 
@@ -428,14 +465,12 @@ def test_unsupported_built_in_primitives_compounds():
       func_under_test10,
   ]
   for func_under_test in all_func_under_test:
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=mldev_client, callable=func_under_test
-      )
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=vertex_client, callable=func_under_test
-      )
+    types.FunctionDeclaration.from_callable(
+        client=mldev_client, callable=func_under_test
+    )
+    types.FunctionDeclaration.from_callable(
+        client=vertex_client, callable=func_under_test
+    )
 
 
 @pytest.mark.skipif(
@@ -540,38 +575,34 @@ def test_built_in_union_type_all_py_versions():
     sys.version_info < (3, 10),
     reason='| is only supported in Python 3.10 and above.',
 )
-def test_default_value_not_compatible_built_in_union_type():
+def test_default_value_built_in_union_type():
   def func_under_test(
       a: int | str = 1.1,
   ):
     """test default value not compatible built in union type."""
     pass
 
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=vertex_client, callable=func_under_test
-    )
+  types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
 
 
-def test_default_value_not_compatible_built_in_union_type_all_py_versions():
+def test_default_value_built_in_union_type_all_py_versions():
   def func_under_test(
       a: typing.Union[int, str] = 1.1,
   ):
     """test default value not compatible built in union type."""
     pass
 
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=vertex_client, callable=func_under_test
-    )
+  types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
 
 
 @pytest.mark.skipif(
@@ -755,34 +786,30 @@ def test_default_value_generic_alias_literal():
   assert actual_schema_mldev == expected_schema
 
 
-def test_default_value_generic_alias_literal_not_compatible():
+def test_default_value_generic_alias_literal():
   def func_under_test(a: typing.Literal['1', '2', 3]):
     """test default value generic alias literal not compatible."""
     pass
 
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=vertex_client, callable=func_under_test
-    )
+  types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
 
 
-def test_default_value_not_compatible_generic_alias_literal():
+def test_default_value_generic_alias_literal_with_str_default():
   def func_under_test(a: typing.Literal['a', 'b', 'c'] = 'd'):
     """test default value not compatible generic alias literal."""
     pass
 
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=vertex_client, callable=func_under_test
-    )
+  types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
 
 
 def test_generic_alias_array():
@@ -1113,14 +1140,12 @@ def test_generic_alias_complex_array_with_default_value_not_compatible():
     pass
 
   for func_under_test in [func_under_test1, func_under_test2]:
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=mldev_client, callable=func_under_test
-      )
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=vertex_client, callable=func_under_test
-      )
+    types.FunctionDeclaration.from_callable(
+        client=mldev_client, callable=func_under_test
+    )
+    types.FunctionDeclaration.from_callable(
+        client=vertex_client, callable=func_under_test
+    )
 
 
 def test_generic_alias_complex_array_with_default_value_not_compatible_all_py_versions():
@@ -1144,14 +1169,12 @@ def test_generic_alias_complex_array_with_default_value_not_compatible_all_py_ve
     pass
 
   for func_under_test in [func_under_test1, func_under_test2]:
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=mldev_client, callable=func_under_test
-      )
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=vertex_client, callable=func_under_test
-      )
+    types.FunctionDeclaration.from_callable(
+        client=mldev_client, callable=func_under_test
+    )
+    types.FunctionDeclaration.from_callable(
+        client=vertex_client, callable=func_under_test
+    )
 
 
 def test_generic_alias_object():
@@ -1185,7 +1208,7 @@ def test_generic_alias_object():
   assert actual_schema_vertex == expected_schema
 
 
-def test_uncommon_generic_alias_object():
+def test_supported_uncommon_generic_alias_object():
   def func_under_test1(a: typing.OrderedDict[str, int]):
     """test uncommon generic alias object."""
     pass
@@ -1206,27 +1229,11 @@ def test_uncommon_generic_alias_object():
     """test uncommon generic alias object."""
     pass
 
-  def func_under_test6(a: typing.Collection[int]):
+  def func_under_test6(a: typing.Iterable[int]):
     """test uncommon generic alias object."""
     pass
 
-  def func_under_test7(a: typing.Iterable[int]):
-    """test uncommon generic alias object."""
-    pass
-
-  def func_under_test8(a: typing.Iterator[int]):
-    """test uncommon generic alias object."""
-    pass
-
-  def func_under_test9(a: typing.Container[int]):
-    """test uncommon generic alias object."""
-    pass
-
-  def func_under_test10(a: typing.ChainMap[int, int]):
-    """test uncommon generic alias object."""
-    pass
-
-  def func_under_test11(a: typing.DefaultDict[int, int]):
+  def func_under_test7(a: typing.DefaultDict[int, int]):
     """test uncommon generic alias object."""
     pass
 
@@ -1238,10 +1245,40 @@ def test_uncommon_generic_alias_object():
       func_under_test5,
       func_under_test6,
       func_under_test7,
-      func_under_test8,
-      func_under_test9,
-      func_under_test10,
-      func_under_test11,
+  ]
+
+  for func_under_test in all_func_under_test:
+    types.FunctionDeclaration.from_callable(
+        client=mldev_client, callable=func_under_test
+    )
+    types.FunctionDeclaration.from_callable(
+        client=vertex_client, callable=func_under_test
+    )
+
+
+def test_unsupported_uncommon_generic_alias_object():
+
+  def func_under_test1(a: typing.Collection[int]):
+    """test uncommon generic alias object."""
+    pass
+
+  def func_under_test2(a: typing.Iterator[int]):
+    """test uncommon generic alias object."""
+    pass
+
+  def func_under_test3(a: typing.Container[int]):
+    """test uncommon generic alias object."""
+    pass
+
+  def func_under_test4(a: typing.ChainMap[int, int]):
+    """test uncommon generic alias object."""
+    pass
+
+  all_func_under_test = [
+      func_under_test1,
+      func_under_test2,
+      func_under_test3,
+      func_under_test4,
   ]
 
   for func_under_test in all_func_under_test:
@@ -1291,14 +1328,12 @@ def test_generic_alias_object_with_default_value_not_compatible():
     """test generic alias object with default value not compatible."""
     pass
 
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=mldev_client, callable=func_under_test
-    )
-  with pytest.raises(ValueError):
-    types.FunctionDeclaration.from_callable(
-        client=vertex_client, callable=func_under_test
-    )
+  types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
 
 
 def test_pydantic_model():
@@ -1884,7 +1919,7 @@ def test_type_union_with_default_value_all_py_versions():
     sys.version_info < (3, 10),
     reason='| is only supported in Python 3.10 and above.',
 )
-def test_type_union_with_default_value_not_compatible():
+def test_type_union_with_default_value():
 
   def func_under_test1(
       a: typing.Union[typing.List[typing.Union[int, float]], dict] = 1,
@@ -1901,14 +1936,12 @@ def test_type_union_with_default_value_not_compatible():
   all_func_under_test = [func_under_test1, func_under_test2]
 
   for func_under_test in all_func_under_test:
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=mldev_client, callable=func_under_test
-      )
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=vertex_client, callable=func_under_test
-      )
+    types.FunctionDeclaration.from_callable(
+        client=mldev_client, callable=func_under_test
+    )
+    types.FunctionDeclaration.from_callable(
+        client=vertex_client, callable=func_under_test
+    )
 
 
 def test_type_union_with_default_value_not_compatible_all_py_versions():
@@ -1928,14 +1961,12 @@ def test_type_union_with_default_value_not_compatible_all_py_versions():
   all_func_under_test = [func_under_test1, func_under_test2]
 
   for func_under_test in all_func_under_test:
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=mldev_client, callable=func_under_test
-      )
-    with pytest.raises(ValueError):
-      types.FunctionDeclaration.from_callable(
-          client=vertex_client, callable=func_under_test
-      )
+    types.FunctionDeclaration.from_callable(
+        client=mldev_client, callable=func_under_test
+    )
+    types.FunctionDeclaration.from_callable(
+        client=vertex_client, callable=func_under_test
+    )
 
 
 @pytest.mark.skipif(
@@ -2117,7 +2148,7 @@ def test_builtin_union_return_type():
       description='test builtin union return type.',
   )
   expected_schema_vertex = copy.deepcopy(expected_schema_mldev)
-  expected_schema_vertex.response = types.Schema(
+  expected_schema_vertex.response_json_schema = types.Schema(
       type='OBJECT',
       any_of=[
           types.Schema(type='INTEGER'),
@@ -2154,7 +2185,7 @@ def test_builtin_union_return_type_all_py_versions():
       description='test builtin union return type.',
   )
   expected_schema_vertex = copy.deepcopy(expected_schema_mldev)
-  expected_schema_vertex.response = types.Schema(
+  expected_schema_vertex.response_json_schema = types.Schema(
       type='OBJECT',
       any_of=[
           types.Schema(type='INTEGER'),
@@ -2191,7 +2222,7 @@ def test_typing_union_return_type():
       description='test typing union return type.',
   )
   expected_schema_vertex = copy.deepcopy(expected_schema_mldev)
-  expected_schema_vertex.response = types.Schema(
+  expected_schema_vertex.response_json_schema = types.Schema(
       type='OBJECT',
       any_of=[
           types.Schema(type='INTEGER'),
@@ -2296,7 +2327,7 @@ def test_return_type_pydantic_model():
   assert actual_schema_vertex == expected_schema_vertex
 
 
-def test_function_with_return_type_not_supported():
+def test_function_with_return_type():
   def func_under_test1() -> set:
     pass
 
@@ -2309,41 +2340,25 @@ def test_function_with_return_type_not_supported():
   def func_under_test4() -> typing.FrozenSet[int]:
     pass
 
-  def func_under_test5() -> typing.Collection[int]:
+  def func_under_test5() -> typing.Iterable[int]:
     pass
 
-  def func_under_test6() -> typing.Iterable[int]:
+  def func_under_test6() -> bytes:
     pass
 
-  def func_under_test7() -> typing.Iterator[int]:
+  def func_under_test7() -> typing.OrderedDict[str, int]:
     pass
 
-  def func_under_test8() -> typing.Container[int]:
+  def func_under_test8() -> typing.MutableMapping[str, int]:
     pass
 
-  def func_under_test9() -> bytes:
+  def func_under_test9() -> typing.MutableSequence[int]:
     pass
 
-  def func_under_test10() -> typing.OrderedDict[str, int]:
+  def func_under_test10() -> typing.MutableSet[int]:
     pass
 
-  def func_under_test11() -> typing.MutableMapping[str, int]:
-    pass
-
-  def func_under_test12() -> typing.MutableSequence[int]:
-    pass
-
-  def func_under_test13() -> typing.MutableSet[int]:
-    pass
-
-  def func_under_test14() -> typing.Counter[int]:
-    pass
-
-  class MyClass:
-    a: int
-    b: str
-
-  def func_under_test15() -> MyClass:
+  def func_under_test11() -> typing.Counter[int]:
     pass
 
   all_func_under_test = [
@@ -2358,10 +2373,79 @@ def test_function_with_return_type_not_supported():
       func_under_test9,
       func_under_test10,
       func_under_test11,
-      func_under_test12,
-      func_under_test13,
-      func_under_test14,
-      func_under_test15,
+  ]
+  for i, func_under_test in enumerate(all_func_under_test):
+
+    expected_schema_mldev = types.FunctionDeclaration(
+        name=f'func_under_test{i+1}',
+        description=None,
+    )
+    actual_schema_mldev = types.FunctionDeclaration.from_callable(
+        client=mldev_client, callable=func_under_test
+    )
+    assert actual_schema_mldev == expected_schema_mldev
+
+    types.FunctionDeclaration.from_callable(
+        client=vertex_client, callable=func_under_test
+    )
+
+
+def test_function_with_tuple_return_type():
+  def func_under_test() -> tuple[int, str, str]:
+    pass
+
+  expected_schema_mldev = types.FunctionDeclaration(
+      name=f'func_under_test',
+      description=None,
+  )
+  actual_schema_mldev = types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+
+  expected_schema_vertex = types.FunctionDeclaration(
+      name=f'func_under_test',
+      description=None,
+      response_json_schema={
+          'maxItems': 3,
+          'minItems': 3,
+          'prefixItems': [
+              {'type': 'integer'},
+              {'type': 'string'},
+              {'type': 'string'},
+          ],
+          'type': 'array',
+          'unevaluatedItems': False,
+      },
+  )
+  actual_schema_vertex = types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
+  assert actual_schema_mldev == expected_schema_mldev
+  assert actual_schema_vertex == expected_schema_vertex
+
+
+def test_function_with_return_type_not_supported():
+  def func_under_test1() -> typing.Collection[int]:
+    pass
+
+  def func_under_test2() -> typing.Iterator[int]:
+    pass
+
+  def func_under_test3() -> typing.Container[int]:
+    pass
+
+  class MyClass:
+    a: int
+    b: str
+
+  def func_under_test4() -> MyClass:
+    pass
+
+  all_func_under_test = [
+      func_under_test1,
+      func_under_test2,
+      func_under_test3,
+      func_under_test4,
   ]
   for i, func_under_test in enumerate(all_func_under_test):
 
@@ -2378,32 +2462,30 @@ def test_function_with_return_type_not_supported():
           client=vertex_client, callable=func_under_test
       )
 
-
-def test_function_with_options_gemini_api(monkeypatch):
-  api_key = 'google_api_key'
-  monkeypatch.setenv('GOOGLE_API_KEY', api_key)
-
-  def func_under_test(a: int) -> str:
+def test_function_with_tuple_contains_unevaluated_items():
+  def func_under_test(a: tuple[int, int]) -> str:
     """test return type."""
     return ''
 
-  expected_schema_mldev = types.FunctionDeclaration(
-      name='func_under_test',
-      parameters=types.Schema(
-          type='OBJECT',
-          properties={
-              'a': types.Schema(type='INTEGER'),
-          },
-          required=['a'],
-      ),
-      description='test return type.',
-  )
+  expected_parameters_json_schema = {
+      'a': {
+          'maxItems': 2,
+          'minItems': 2,
+          'prefixItems': [{'type': 'integer'}, {'type': 'integer'}],
+          'type': 'array',
+          'unevaluatedItems': False,
+      }
+  }
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
       client=mldev_client, callable=func_under_test
   )
+  actual_schema_vertex = types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
 
-  assert actual_schema_mldev == expected_schema_mldev
+  assert actual_schema_mldev.parameters_json_schema == expected_parameters_json_schema
+  assert actual_schema_vertex.parameters_json_schema == expected_parameters_json_schema
 
 
 def test_function_gemini_api(monkeypatch):

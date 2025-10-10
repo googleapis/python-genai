@@ -457,9 +457,14 @@ def test_repr_max_len_bytes():
   assert repr(b_data) == _common._pretty_repr(b_data, max_len=200)
 
 
-def test_repr_max_depth():
-  nested = [[[[[["deep"]]]]]]
-  assert "<... Max depth ...>" in _common._pretty_repr(nested, depth=3)
+def test_repr_max_depth_dict():
+  nested = {'a': {'a': {'a': {'a': 'a', 'b': 'b'}}}}
+  assert "{<... 2 items at Max depth ...>}" in _common._pretty_repr(nested, depth=3)
+
+
+def test_repr_max_depth_list():
+  nested = [[[["d", "e", "e", "p"]]]]
+  assert "[<... 4 items at Max depth ...>]" in _common._pretty_repr(nested, depth=3)
 
 
 def test_repr_collections():
@@ -670,3 +675,93 @@ However, we can talk about the **leading contenders** and what they are generall
       )
   """).strip()
   assert repr(obj) == expected
+
+
+def test_move_value_by_path():
+  """Test move_value_by_path function with array wildcard notation."""
+  data = {
+      "requests": [
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "1"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "2"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "3"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          }
+      ]
+  }
+
+  paths = {'requests[].*': 'requests[].request.*'}
+  _common.move_value_by_path(data, paths)
+
+  expected = {
+      "requests": [
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "1"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "2"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "3"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          }
+      ]
+  }
+
+  assert data == expected

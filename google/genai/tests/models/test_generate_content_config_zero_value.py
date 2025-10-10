@@ -68,10 +68,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'logprobs': 0,
             },
         ),
-        # ML DEV discovery doc supports response_logprobs but the backend
-        # does not.
-        # TODO: update replay test json files when ML Dev backend is updated.
-        exception_if_mldev='INVALID_ARGUMENT',
     ),
     pytest_helper.TestTableItem(
         name='test_presence_penalty_zero',

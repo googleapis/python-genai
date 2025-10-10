@@ -16,11 +16,13 @@
 
 """Tests for batches.create() with inlined requests."""
 import base64
+import copy
 import datetime
 import os
 
 import pytest
 
+from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 
@@ -36,17 +38,31 @@ _INLINED_REQUEST = {
         'role': 'user',
     }],
 }
-_INLINED_TEXT_REQUEST = {
+_INLINED_TEXT_REQUEST_UNION = {
     'contents': [{
         'parts': [{
-            'text': 'What is the QQQ stock price?',
+            'text': 'high',
         }],
         'role': 'user',
     }],
     'config': {
         'response_modalities': ['TEXT'],
+        'system_instruction': 'I say high, you say low',
+        'thinking_config': {
+            'include_thoughts': True,
+            'thinking_budget': 4000,
+        },
     },
 }
+_INLINED_TEXT_REQUEST = copy.deepcopy(_INLINED_TEXT_REQUEST_UNION)
+_INLINED_TEXT_REQUEST['config']['system_instruction'] = t.t_content(
+    'I say high, you say low'
+)
+_INLINED_TEXT_REQUEST['config']['tools'] = [{'google_search': {}}]
+_INLINED_TEXT_REQUEST['config']['tool_config'] = {
+    'retrieval_config': {'lat_lng': {'latitude': 37.422, 'longitude': -122.084}}
+}
+
 _INLINED_IMAGE_REQUEST = {
     'contents': [{
         'parts': [
@@ -132,11 +148,34 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_with_inlined_request',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
+            src={'inlined_requests': [_INLINED_REQUEST]},
+            config={
+                'display_name': _DISPLAY_NAME,
+            },
+        ),
+        exception_if_vertex='not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_with_inlined_request_config',
+        parameters=types._CreateBatchJobParameters(
+            model=_MLDEV_GEMINI_MODEL,
             src={'inlined_requests': [_INLINED_TEXT_REQUEST]},
             config={
                 'display_name': _DISPLAY_NAME,
             },
         ),
+        exception_if_vertex='not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_union_with_inlined_request_system_instruction',
+        parameters=types._CreateBatchJobParameters(
+            model=_MLDEV_GEMINI_MODEL,
+            src={'inlined_requests': [_INLINED_TEXT_REQUEST_UNION]},
+            config={
+                'display_name': _DISPLAY_NAME,
+            },
+        ),
+        has_union=True,
         exception_if_vertex='not supported',
     ),
     pytest_helper.TestTableItem(

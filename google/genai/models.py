@@ -21,6 +21,7 @@ from typing import Any, AsyncIterator, Awaitable, Iterator, Optional, Union
 from urllib.parse import urlencode
 
 from . import _api_module
+from . import _base_transformers as base_t
 from . import _common
 from . import _extra_utils
 from . import _mcp_utils
@@ -32,24 +33,25 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
+
 logger = logging.getLogger('google_genai.models')
 
 
-def _VideoMetadata_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
+def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
+  if enum_value in set(['ALLOW_ALL']):
+    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
-  if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
 
-  if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+def _SafetyFilterLevel_to_mldev_enum_validate(enum_value: Any) -> None:
+  if enum_value in set(['BLOCK_NONE']):
+    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
-  return to_object
+
+def _VideoGenerationReferenceType_to_mldev_enum_validate(
+    enum_value: Any,
+) -> None:
+  if enum_value in set(['STYLE']):
+    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
 
 def _Blob_to_mldev(
@@ -69,83 +71,150 @@ def _Blob_to_mldev(
   return to_object
 
 
-def _FileData_to_mldev(
+def _Candidate_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
+  if getv(from_object, ['content']) is not None:
+    setv(to_object, ['content'], getv(from_object, ['content']))
 
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+  if getv(from_object, ['citationMetadata']) is not None:
+    setv(
+        to_object,
+        ['citation_metadata'],
+        _CitationMetadata_from_mldev(
+            getv(from_object, ['citationMetadata']), to_object
+        ),
+    )
 
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+  if getv(from_object, ['tokenCount']) is not None:
+    setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
+
+  if getv(from_object, ['finishReason']) is not None:
+    setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_context_metadata'],
+        getv(from_object, ['urlContextMetadata']),
+    )
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
+
+  if getv(from_object, ['groundingMetadata']) is not None:
+    setv(
+        to_object,
+        ['grounding_metadata'],
+        getv(from_object, ['groundingMetadata']),
+    )
+
+  if getv(from_object, ['index']) is not None:
+    setv(to_object, ['index'], getv(from_object, ['index']))
+
+  if getv(from_object, ['logprobsResult']) is not None:
+    setv(to_object, ['logprobs_result'], getv(from_object, ['logprobsResult']))
+
+  if getv(from_object, ['safetyRatings']) is not None:
+    setv(
+        to_object,
+        ['safety_ratings'],
+        [item for item in getv(from_object, ['safetyRatings'])],
+    )
 
   return to_object
 
 
-def _Part_to_mldev(
+def _CitationMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
+  if getv(from_object, ['citationSources']) is not None:
     setv(
         to_object,
-        ['videoMetadata'],
-        _VideoMetadata_to_mldev(
-            getv(from_object, ['video_metadata']), to_object
+        ['citations'],
+        [item for item in getv(from_object, ['citationSources'])],
+    )
+
+  return to_object
+
+
+def _ComputeTokensParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        to_object,
+        ['contents'],
+        [item for item in t.t_contents(getv(from_object, ['contents']))],
+    )
+
+  return to_object
+
+
+def _ComputeTokensResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['tokensInfo']) is not None:
+    setv(
+        to_object,
+        ['tokens_info'],
+        [item for item in getv(from_object, ['tokensInfo'])],
+    )
+
+  return to_object
+
+
+def _ContentEmbeddingStatistics_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['truncated']) is not None:
+    setv(to_object, ['truncated'], getv(from_object, ['truncated']))
+
+  if getv(from_object, ['token_count']) is not None:
+    setv(to_object, ['token_count'], getv(from_object, ['token_count']))
+
+  return to_object
+
+
+def _ContentEmbedding_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['values']) is not None:
+    setv(to_object, ['values'], getv(from_object, ['values']))
+
+  if getv(from_object, ['statistics']) is not None:
+    setv(
+        to_object,
+        ['statistics'],
+        _ContentEmbeddingStatistics_from_vertex(
+            getv(from_object, ['statistics']), to_object
         ),
     )
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
-    )
-
-  if getv(from_object, ['thought_signature']) is not None:
-    setv(
-        to_object,
-        ['thoughtSignature'],
-        getv(from_object, ['thought_signature']),
-    )
-
-  if getv(from_object, ['code_execution_result']) is not None:
-    setv(
-        to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
-    )
-
-  if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
-
-  if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
 
   return to_object
 
@@ -171,997 +240,20 @@ def _Content_to_mldev(
   return to_object
 
 
-def _Schema_to_mldev(
+def _ControlReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['additional_properties']) is not None:
-    raise ValueError(
-        'additional_properties parameter is not supported in Gemini API.'
-    )
+  if getv(from_object, ['control_type']) is not None:
+    setv(to_object, ['controlType'], getv(from_object, ['control_type']))
 
-  if getv(from_object, ['defs']) is not None:
-    raise ValueError('defs parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['ref']) is not None:
-    raise ValueError('ref parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['any_of']) is not None:
-    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
-
-  if getv(from_object, ['default']) is not None:
-    setv(to_object, ['default'], getv(from_object, ['default']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['enum']) is not None:
-    setv(to_object, ['enum'], getv(from_object, ['enum']))
-
-  if getv(from_object, ['example']) is not None:
-    setv(to_object, ['example'], getv(from_object, ['example']))
-
-  if getv(from_object, ['format']) is not None:
-    setv(to_object, ['format'], getv(from_object, ['format']))
-
-  if getv(from_object, ['items']) is not None:
-    setv(to_object, ['items'], getv(from_object, ['items']))
-
-  if getv(from_object, ['max_items']) is not None:
-    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
-
-  if getv(from_object, ['max_length']) is not None:
-    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
-
-  if getv(from_object, ['max_properties']) is not None:
-    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
-
-  if getv(from_object, ['maximum']) is not None:
-    setv(to_object, ['maximum'], getv(from_object, ['maximum']))
-
-  if getv(from_object, ['min_items']) is not None:
-    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
-
-  if getv(from_object, ['min_length']) is not None:
-    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
-
-  if getv(from_object, ['min_properties']) is not None:
-    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
-
-  if getv(from_object, ['minimum']) is not None:
-    setv(to_object, ['minimum'], getv(from_object, ['minimum']))
-
-  if getv(from_object, ['nullable']) is not None:
-    setv(to_object, ['nullable'], getv(from_object, ['nullable']))
-
-  if getv(from_object, ['pattern']) is not None:
-    setv(to_object, ['pattern'], getv(from_object, ['pattern']))
-
-  if getv(from_object, ['properties']) is not None:
-    setv(to_object, ['properties'], getv(from_object, ['properties']))
-
-  if getv(from_object, ['property_ordering']) is not None:
+  if getv(from_object, ['enable_control_image_computation']) is not None:
     setv(
         to_object,
-        ['propertyOrdering'],
-        getv(from_object, ['property_ordering']),
+        ['computeControl'],
+        getv(from_object, ['enable_control_image_computation']),
     )
-
-  if getv(from_object, ['required']) is not None:
-    setv(to_object, ['required'], getv(from_object, ['required']))
-
-  if getv(from_object, ['title']) is not None:
-    setv(to_object, ['title'], getv(from_object, ['title']))
-
-  if getv(from_object, ['type']) is not None:
-    setv(to_object, ['type'], getv(from_object, ['type']))
-
-  return to_object
-
-
-def _SafetySetting_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['method']) is not None:
-    raise ValueError('method parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['category']) is not None:
-    setv(to_object, ['category'], getv(from_object, ['category']))
-
-  if getv(from_object, ['threshold']) is not None:
-    setv(to_object, ['threshold'], getv(from_object, ['threshold']))
-
-  return to_object
-
-
-def _FunctionDeclaration_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  if getv(from_object, ['parameters_json_schema']) is not None:
-    setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  return to_object
-
-
-def _Interval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
-
-  if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
-
-  return to_object
-
-
-def _GoogleSearch_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object,
-        ['timeRangeFilter'],
-        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
-    )
-
-  return to_object
-
-
-def _DynamicRetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
-
-  return to_object
-
-
-def _GoogleSearchRetrieval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_mldev(
-            getv(from_object, ['dynamic_retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _UrlContext_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _Tool_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_mldev(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
-  if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
-    )
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_mldev(
-            getv(from_object, ['google_search_retrieval']), to_object
-        ),
-    )
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['google_maps']) is not None:
-    raise ValueError('google_maps parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['url_context']) is not None:
-    setv(
-        to_object,
-        ['urlContext'],
-        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
-    )
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
-  return to_object
-
-
-def _FunctionCallingConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['allowed_function_names']) is not None:
-    setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
-    )
-
-  return to_object
-
-
-def _LatLng_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['latitude']) is not None:
-    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
-
-  if getv(from_object, ['longitude']) is not None:
-    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
-
-  return to_object
-
-
-def _RetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['lat_lng']) is not None:
-    setv(
-        to_object,
-        ['latLng'],
-        _LatLng_to_mldev(getv(from_object, ['lat_lng']), to_object),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _ToolConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_mldev(
-            getv(from_object, ['function_calling_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['retrievalConfig'],
-        _RetrievalConfig_to_mldev(
-            getv(from_object, ['retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _PrebuiltVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
-
-  return to_object
-
-
-def _VoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prebuilt_voice_config']) is not None:
-    setv(
-        to_object,
-        ['prebuiltVoiceConfig'],
-        _PrebuiltVoiceConfig_to_mldev(
-            getv(from_object, ['prebuilt_voice_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _SpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker']) is not None:
-    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
-
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  return to_object
-
-
-def _MultiSpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker_voice_configs']) is not None:
-    setv(
-        to_object,
-        ['speakerVoiceConfigs'],
-        [
-            _SpeakerVoiceConfig_to_mldev(item, to_object)
-            for item in getv(from_object, ['speaker_voice_configs'])
-        ],
-    )
-
-  return to_object
-
-
-def _SpeechConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    setv(
-        to_object,
-        ['multiSpeakerVoiceConfig'],
-        _MultiSpeakerVoiceConfig_to_mldev(
-            getv(from_object, ['multi_speaker_voice_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _ThinkingConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['include_thoughts']) is not None:
-    setv(
-        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
-    )
-
-  if getv(from_object, ['thinking_budget']) is not None:
-    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
-
-  return to_object
-
-
-def _GenerateContentConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['system_instruction']) is not None:
-    setv(
-        parent_object,
-        ['systemInstruction'],
-        _Content_to_mldev(
-            t.t_content(getv(from_object, ['system_instruction'])), to_object
-        ),
-    )
-
-  if getv(from_object, ['temperature']) is not None:
-    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
-
-  if getv(from_object, ['top_p']) is not None:
-    setv(to_object, ['topP'], getv(from_object, ['top_p']))
-
-  if getv(from_object, ['top_k']) is not None:
-    setv(to_object, ['topK'], getv(from_object, ['top_k']))
-
-  if getv(from_object, ['candidate_count']) is not None:
-    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
-
-  if getv(from_object, ['max_output_tokens']) is not None:
-    setv(
-        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
-    )
-
-  if getv(from_object, ['stop_sequences']) is not None:
-    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
-
-  if getv(from_object, ['response_logprobs']) is not None:
-    setv(
-        to_object,
-        ['responseLogprobs'],
-        getv(from_object, ['response_logprobs']),
-    )
-
-  if getv(from_object, ['logprobs']) is not None:
-    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
-
-  if getv(from_object, ['presence_penalty']) is not None:
-    setv(
-        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
-    )
-
-  if getv(from_object, ['frequency_penalty']) is not None:
-    setv(
-        to_object,
-        ['frequencyPenalty'],
-        getv(from_object, ['frequency_penalty']),
-    )
-
-  if getv(from_object, ['seed']) is not None:
-    setv(to_object, ['seed'], getv(from_object, ['seed']))
-
-  if getv(from_object, ['response_mime_type']) is not None:
-    setv(
-        to_object,
-        ['responseMimeType'],
-        getv(from_object, ['response_mime_type']),
-    )
-
-  if getv(from_object, ['response_schema']) is not None:
-    setv(
-        to_object,
-        ['responseSchema'],
-        _Schema_to_mldev(
-            t.t_schema(api_client, getv(from_object, ['response_schema'])),
-            to_object,
-        ),
-    )
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  if getv(from_object, ['routing_config']) is not None:
-    raise ValueError('routing_config parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['model_selection_config']) is not None:
-    raise ValueError(
-        'model_selection_config parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['safety_settings']) is not None:
-    setv(
-        parent_object,
-        ['safetySettings'],
-        [
-            _SafetySetting_to_mldev(item, to_object)
-            for item in getv(from_object, ['safety_settings'])
-        ],
-    )
-
-  if getv(from_object, ['tools']) is not None:
-    setv(
-        parent_object,
-        ['tools'],
-        [
-            _Tool_to_mldev(t.t_tool(api_client, item), to_object)
-            for item in t.t_tools(api_client, getv(from_object, ['tools']))
-        ],
-    )
-
-  if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
-    )
-
-  if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['cached_content']) is not None:
-    setv(
-        parent_object,
-        ['cachedContent'],
-        t.t_cached_content_name(
-            api_client, getv(from_object, ['cached_content'])
-        ),
-    )
-
-  if getv(from_object, ['response_modalities']) is not None:
-    setv(
-        to_object,
-        ['responseModalities'],
-        getv(from_object, ['response_modalities']),
-    )
-
-  if getv(from_object, ['media_resolution']) is not None:
-    setv(
-        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
-    )
-
-  if getv(from_object, ['speech_config']) is not None:
-    setv(
-        to_object,
-        ['speechConfig'],
-        _SpeechConfig_to_mldev(
-            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
-        ),
-    )
-
-  if getv(from_object, ['audio_timestamp']) is not None:
-    raise ValueError(
-        'audio_timestamp parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['thinking_config']) is not None:
-    setv(
-        to_object,
-        ['thinkingConfig'],
-        _ThinkingConfig_to_mldev(
-            getv(from_object, ['thinking_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _GenerateContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['contents'],
-        [
-            _Content_to_mldev(item, to_object)
-            for item in t.t_contents(getv(from_object, ['contents']))
-        ],
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['generationConfig'],
-        _GenerateContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _EmbedContentConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['task_type']) is not None:
-    setv(
-        parent_object,
-        ['requests[]', 'taskType'],
-        getv(from_object, ['task_type']),
-    )
-
-  if getv(from_object, ['title']) is not None:
-    setv(parent_object, ['requests[]', 'title'], getv(from_object, ['title']))
-
-  if getv(from_object, ['output_dimensionality']) is not None:
-    setv(
-        parent_object,
-        ['requests[]', 'outputDimensionality'],
-        getv(from_object, ['output_dimensionality']),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    raise ValueError('mime_type parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['auto_truncate']) is not None:
-    raise ValueError('auto_truncate parameter is not supported in Gemini API.')
-
-  return to_object
-
-
-def _EmbedContentParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['requests[]', 'content'],
-        t.t_contents_for_embed(api_client, getv(from_object, ['contents'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
-
-  setv(
-      to_object,
-      ['requests[]', 'model'],
-      t.t_model(api_client, getv(from_object, ['model'])),
-  )
-  return to_object
-
-
-def _GenerateImagesConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['negative_prompt']) is not None:
-    raise ValueError(
-        'negative_prompt parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['number_of_images']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'sampleCount'],
-        getv(from_object, ['number_of_images']),
-    )
-
-  if getv(from_object, ['aspect_ratio']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'aspectRatio'],
-        getv(from_object, ['aspect_ratio']),
-    )
-
-  if getv(from_object, ['guidance_scale']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'guidanceScale'],
-        getv(from_object, ['guidance_scale']),
-    )
-
-  if getv(from_object, ['seed']) is not None:
-    raise ValueError('seed parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['safety_filter_level']) is not None:
-    _SafetyFilterLevel_to_mldev_enum_validate(
-        getv(from_object, ['safety_filter_level'])
-    )
-    setv(
-        parent_object,
-        ['parameters', 'safetySetting'],
-        getv(from_object, ['safety_filter_level']),
-    )
-
-  if getv(from_object, ['person_generation']) is not None:
-    _PersonGeneration_to_mldev_enum_validate(
-        getv(from_object, ['person_generation'])
-    )
-    setv(
-        parent_object,
-        ['parameters', 'personGeneration'],
-        getv(from_object, ['person_generation']),
-    )
-
-  if getv(from_object, ['include_safety_attributes']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'includeSafetyAttributes'],
-        getv(from_object, ['include_safety_attributes']),
-    )
-
-  if getv(from_object, ['include_rai_reason']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'includeRaiReason'],
-        getv(from_object, ['include_rai_reason']),
-    )
-
-  if getv(from_object, ['language']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'language'],
-        getv(from_object, ['language']),
-    )
-
-  if getv(from_object, ['output_mime_type']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'outputOptions', 'mimeType'],
-        getv(from_object, ['output_mime_type']),
-    )
-
-  if getv(from_object, ['output_compression_quality']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'outputOptions', 'compressionQuality'],
-        getv(from_object, ['output_compression_quality']),
-    )
-
-  if getv(from_object, ['add_watermark']) is not None:
-    raise ValueError('add_watermark parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['image_size']) is not None:
-    raise ValueError('image_size parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['enhance_prompt']) is not None:
-    raise ValueError('enhance_prompt parameter is not supported in Gemini API.')
-
-  return to_object
-
-
-def _GenerateImagesParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateImagesConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _GetModelParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _ListModelsConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  if getv(from_object, ['filter']) is not None:
-    setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
-
-  if getv(from_object, ['query_base']) is not None:
-    setv(
-        parent_object,
-        ['_url', 'models_url'],
-        t.t_models_url(api_client, getv(from_object, ['query_base'])),
-    )
-
-  return to_object
-
-
-def _ListModelsParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListModelsConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _UpdateModelConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(parent_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['default_checkpoint_id']) is not None:
-    setv(
-        parent_object,
-        ['defaultCheckpointId'],
-        getv(from_object, ['default_checkpoint_id']),
-    )
-
-  return to_object
-
-
-def _UpdateModelParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateModelConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
-
-  return to_object
-
-
-def _DeleteModelParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
 
   return to_object
 
@@ -1183,6 +275,41 @@ def _CountTokensConfig_to_mldev(
   if getv(from_object, ['generation_config']) is not None:
     raise ValueError(
         'generation_config parameter is not supported in Gemini API.'
+    )
+
+  return to_object
+
+
+def _CountTokensConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        parent_object,
+        ['systemInstruction'],
+        t.t_content(getv(from_object, ['system_instruction'])),
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        parent_object,
+        ['tools'],
+        [
+            _Tool_to_vertex(item, to_object)
+            for item in getv(from_object, ['tools'])
+        ],
+    )
+
+  if getv(from_object, ['generation_config']) is not None:
+    setv(
+        parent_object,
+        ['generationConfig'],
+        _GenerationConfig_to_vertex(
+            getv(from_object, ['generation_config']), to_object
+        ),
     )
 
   return to_object
@@ -1212,990 +339,12 @@ def _CountTokensParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CountTokensConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
+    _CountTokensConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
 
-def _Image_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['image_bytes']) is not None:
-    setv(
-        to_object,
-        ['bytesBase64Encoded'],
-        t.t_bytes(getv(from_object, ['image_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _GenerateVideosSource_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _GenerateVideosConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['number_of_videos']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'sampleCount'],
-        getv(from_object, ['number_of_videos']),
-    )
-
-  if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['fps']) is not None:
-    raise ValueError('fps parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['duration_seconds']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'durationSeconds'],
-        getv(from_object, ['duration_seconds']),
-    )
-
-  if getv(from_object, ['seed']) is not None:
-    raise ValueError('seed parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['aspect_ratio']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'aspectRatio'],
-        getv(from_object, ['aspect_ratio']),
-    )
-
-  if getv(from_object, ['resolution']) is not None:
-    raise ValueError('resolution parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['person_generation']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'personGeneration'],
-        getv(from_object, ['person_generation']),
-    )
-
-  if getv(from_object, ['pubsub_topic']) is not None:
-    raise ValueError('pubsub_topic parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['negative_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'negativePrompt'],
-        getv(from_object, ['negative_prompt']),
-    )
-
-  if getv(from_object, ['enhance_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'enhancePrompt'],
-        getv(from_object, ['enhance_prompt']),
-    )
-
-  if getv(from_object, ['generate_audio']) is not None:
-    raise ValueError('generate_audio parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['last_frame']) is not None:
-    raise ValueError('last_frame parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['compression_quality']) is not None:
-    raise ValueError(
-        'compression_quality parameter is not supported in Gemini API.'
-    )
-
-  return to_object
-
-
-def _GenerateVideosParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    raise ValueError('video parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateVideosConfig_to_mldev(
-            getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _VideoMetadata_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
-
-  if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
-
-  return to_object
-
-
-def _Blob_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _FileData_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _Part_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(
-        to_object,
-        ['videoMetadata'],
-        _VideoMetadata_to_vertex(
-            getv(from_object, ['video_metadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_vertex(getv(from_object, ['inline_data']), to_object),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_vertex(getv(from_object, ['file_data']), to_object),
-    )
-
-  if getv(from_object, ['thought_signature']) is not None:
-    setv(
-        to_object,
-        ['thoughtSignature'],
-        getv(from_object, ['thought_signature']),
-    )
-
-  if getv(from_object, ['code_execution_result']) is not None:
-    setv(
-        to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
-    )
-
-  if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
-
-  if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
-def _Content_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_to_vertex(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
-
-  if getv(from_object, ['role']) is not None:
-    setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _Schema_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['additional_properties']) is not None:
-    setv(
-        to_object,
-        ['additionalProperties'],
-        getv(from_object, ['additional_properties']),
-    )
-
-  if getv(from_object, ['defs']) is not None:
-    setv(to_object, ['defs'], getv(from_object, ['defs']))
-
-  if getv(from_object, ['ref']) is not None:
-    setv(to_object, ['ref'], getv(from_object, ['ref']))
-
-  if getv(from_object, ['any_of']) is not None:
-    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
-
-  if getv(from_object, ['default']) is not None:
-    setv(to_object, ['default'], getv(from_object, ['default']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['enum']) is not None:
-    setv(to_object, ['enum'], getv(from_object, ['enum']))
-
-  if getv(from_object, ['example']) is not None:
-    setv(to_object, ['example'], getv(from_object, ['example']))
-
-  if getv(from_object, ['format']) is not None:
-    setv(to_object, ['format'], getv(from_object, ['format']))
-
-  if getv(from_object, ['items']) is not None:
-    setv(to_object, ['items'], getv(from_object, ['items']))
-
-  if getv(from_object, ['max_items']) is not None:
-    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
-
-  if getv(from_object, ['max_length']) is not None:
-    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
-
-  if getv(from_object, ['max_properties']) is not None:
-    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
-
-  if getv(from_object, ['maximum']) is not None:
-    setv(to_object, ['maximum'], getv(from_object, ['maximum']))
-
-  if getv(from_object, ['min_items']) is not None:
-    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
-
-  if getv(from_object, ['min_length']) is not None:
-    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
-
-  if getv(from_object, ['min_properties']) is not None:
-    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
-
-  if getv(from_object, ['minimum']) is not None:
-    setv(to_object, ['minimum'], getv(from_object, ['minimum']))
-
-  if getv(from_object, ['nullable']) is not None:
-    setv(to_object, ['nullable'], getv(from_object, ['nullable']))
-
-  if getv(from_object, ['pattern']) is not None:
-    setv(to_object, ['pattern'], getv(from_object, ['pattern']))
-
-  if getv(from_object, ['properties']) is not None:
-    setv(to_object, ['properties'], getv(from_object, ['properties']))
-
-  if getv(from_object, ['property_ordering']) is not None:
-    setv(
-        to_object,
-        ['propertyOrdering'],
-        getv(from_object, ['property_ordering']),
-    )
-
-  if getv(from_object, ['required']) is not None:
-    setv(to_object, ['required'], getv(from_object, ['required']))
-
-  if getv(from_object, ['title']) is not None:
-    setv(to_object, ['title'], getv(from_object, ['title']))
-
-  if getv(from_object, ['type']) is not None:
-    setv(to_object, ['type'], getv(from_object, ['type']))
-
-  return to_object
-
-
-def _ModelSelectionConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['feature_selection_preference']) is not None:
-    setv(
-        to_object,
-        ['featureSelectionPreference'],
-        getv(from_object, ['feature_selection_preference']),
-    )
-
-  return to_object
-
-
-def _SafetySetting_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['method']) is not None:
-    setv(to_object, ['method'], getv(from_object, ['method']))
-
-  if getv(from_object, ['category']) is not None:
-    setv(to_object, ['category'], getv(from_object, ['category']))
-
-  if getv(from_object, ['threshold']) is not None:
-    setv(to_object, ['threshold'], getv(from_object, ['threshold']))
-
-  return to_object
-
-
-def _FunctionDeclaration_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  if getv(from_object, ['parameters_json_schema']) is not None:
-    setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  return to_object
-
-
-def _Interval_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
-
-  if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
-
-  return to_object
-
-
-def _GoogleSearch_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object,
-        ['timeRangeFilter'],
-        _Interval_to_vertex(
-            getv(from_object, ['time_range_filter']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _DynamicRetrievalConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
-
-  return to_object
-
-
-def _GoogleSearchRetrieval_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_vertex(
-            getv(from_object, ['dynamic_retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _EnterpriseWebSearch_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _ApiKeyConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['api_key_string']) is not None:
-    setv(to_object, ['apiKeyString'], getv(from_object, ['api_key_string']))
-
-  return to_object
-
-
-def _AuthConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['api_key_config']) is not None:
-    setv(
-        to_object,
-        ['apiKeyConfig'],
-        _ApiKeyConfig_to_vertex(
-            getv(from_object, ['api_key_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['auth_type']) is not None:
-    setv(to_object, ['authType'], getv(from_object, ['auth_type']))
-
-  if getv(from_object, ['google_service_account_config']) is not None:
-    setv(
-        to_object,
-        ['googleServiceAccountConfig'],
-        getv(from_object, ['google_service_account_config']),
-    )
-
-  if getv(from_object, ['http_basic_auth_config']) is not None:
-    setv(
-        to_object,
-        ['httpBasicAuthConfig'],
-        getv(from_object, ['http_basic_auth_config']),
-    )
-
-  if getv(from_object, ['oauth_config']) is not None:
-    setv(to_object, ['oauthConfig'], getv(from_object, ['oauth_config']))
-
-  if getv(from_object, ['oidc_config']) is not None:
-    setv(to_object, ['oidcConfig'], getv(from_object, ['oidc_config']))
-
-  return to_object
-
-
-def _GoogleMaps_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['auth_config']) is not None:
-    setv(
-        to_object,
-        ['authConfig'],
-        _AuthConfig_to_vertex(getv(from_object, ['auth_config']), to_object),
-    )
-
-  return to_object
-
-
-def _UrlContext_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _Tool_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
-  if getv(from_object, ['retrieval']) is not None:
-    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
-
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_vertex(
-            getv(from_object, ['google_search']), to_object
-        ),
-    )
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_vertex(
-            getv(from_object, ['google_search_retrieval']), to_object
-        ),
-    )
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    setv(
-        to_object,
-        ['enterpriseWebSearch'],
-        _EnterpriseWebSearch_to_vertex(
-            getv(from_object, ['enterprise_web_search']), to_object
-        ),
-    )
-
-  if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_vertex(getv(from_object, ['google_maps']), to_object),
-    )
-
-  if getv(from_object, ['url_context']) is not None:
-    setv(
-        to_object,
-        ['urlContext'],
-        _UrlContext_to_vertex(getv(from_object, ['url_context']), to_object),
-    )
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
-  return to_object
-
-
-def _FunctionCallingConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['allowed_function_names']) is not None:
-    setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
-    )
-
-  return to_object
-
-
-def _LatLng_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['latitude']) is not None:
-    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
-
-  if getv(from_object, ['longitude']) is not None:
-    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
-
-  return to_object
-
-
-def _RetrievalConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['lat_lng']) is not None:
-    setv(
-        to_object,
-        ['latLng'],
-        _LatLng_to_vertex(getv(from_object, ['lat_lng']), to_object),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _ToolConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_vertex(
-            getv(from_object, ['function_calling_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['retrievalConfig'],
-        _RetrievalConfig_to_vertex(
-            getv(from_object, ['retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _PrebuiltVoiceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
-
-  return to_object
-
-
-def _VoiceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prebuilt_voice_config']) is not None:
-    setv(
-        to_object,
-        ['prebuiltVoiceConfig'],
-        _PrebuiltVoiceConfig_to_vertex(
-            getv(from_object, ['prebuilt_voice_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _SpeechConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_vertex(getv(from_object, ['voice_config']), to_object),
-    )
-
-  if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    raise ValueError(
-        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _ThinkingConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['include_thoughts']) is not None:
-    setv(
-        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
-    )
-
-  if getv(from_object, ['thinking_budget']) is not None:
-    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
-
-  return to_object
-
-
-def _GenerateContentConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['system_instruction']) is not None:
-    setv(
-        parent_object,
-        ['systemInstruction'],
-        _Content_to_vertex(
-            t.t_content(getv(from_object, ['system_instruction'])), to_object
-        ),
-    )
-
-  if getv(from_object, ['temperature']) is not None:
-    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
-
-  if getv(from_object, ['top_p']) is not None:
-    setv(to_object, ['topP'], getv(from_object, ['top_p']))
-
-  if getv(from_object, ['top_k']) is not None:
-    setv(to_object, ['topK'], getv(from_object, ['top_k']))
-
-  if getv(from_object, ['candidate_count']) is not None:
-    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
-
-  if getv(from_object, ['max_output_tokens']) is not None:
-    setv(
-        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
-    )
-
-  if getv(from_object, ['stop_sequences']) is not None:
-    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
-
-  if getv(from_object, ['response_logprobs']) is not None:
-    setv(
-        to_object,
-        ['responseLogprobs'],
-        getv(from_object, ['response_logprobs']),
-    )
-
-  if getv(from_object, ['logprobs']) is not None:
-    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
-
-  if getv(from_object, ['presence_penalty']) is not None:
-    setv(
-        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
-    )
-
-  if getv(from_object, ['frequency_penalty']) is not None:
-    setv(
-        to_object,
-        ['frequencyPenalty'],
-        getv(from_object, ['frequency_penalty']),
-    )
-
-  if getv(from_object, ['seed']) is not None:
-    setv(to_object, ['seed'], getv(from_object, ['seed']))
-
-  if getv(from_object, ['response_mime_type']) is not None:
-    setv(
-        to_object,
-        ['responseMimeType'],
-        getv(from_object, ['response_mime_type']),
-    )
-
-  if getv(from_object, ['response_schema']) is not None:
-    setv(
-        to_object,
-        ['responseSchema'],
-        _Schema_to_vertex(
-            t.t_schema(api_client, getv(from_object, ['response_schema'])),
-            to_object,
-        ),
-    )
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  if getv(from_object, ['routing_config']) is not None:
-    setv(to_object, ['routingConfig'], getv(from_object, ['routing_config']))
-
-  if getv(from_object, ['model_selection_config']) is not None:
-    setv(
-        to_object,
-        ['modelConfig'],
-        _ModelSelectionConfig_to_vertex(
-            getv(from_object, ['model_selection_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['safety_settings']) is not None:
-    setv(
-        parent_object,
-        ['safetySettings'],
-        [
-            _SafetySetting_to_vertex(item, to_object)
-            for item in getv(from_object, ['safety_settings'])
-        ],
-    )
-
-  if getv(from_object, ['tools']) is not None:
-    setv(
-        parent_object,
-        ['tools'],
-        [
-            _Tool_to_vertex(t.t_tool(api_client, item), to_object)
-            for item in t.t_tools(api_client, getv(from_object, ['tools']))
-        ],
-    )
-
-  if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_vertex(getv(from_object, ['tool_config']), to_object),
-    )
-
-  if getv(from_object, ['labels']) is not None:
-    setv(parent_object, ['labels'], getv(from_object, ['labels']))
-
-  if getv(from_object, ['cached_content']) is not None:
-    setv(
-        parent_object,
-        ['cachedContent'],
-        t.t_cached_content_name(
-            api_client, getv(from_object, ['cached_content'])
-        ),
-    )
-
-  if getv(from_object, ['response_modalities']) is not None:
-    setv(
-        to_object,
-        ['responseModalities'],
-        getv(from_object, ['response_modalities']),
-    )
-
-  if getv(from_object, ['media_resolution']) is not None:
-    setv(
-        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
-    )
-
-  if getv(from_object, ['speech_config']) is not None:
-    setv(
-        to_object,
-        ['speechConfig'],
-        _SpeechConfig_to_vertex(
-            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
-        ),
-    )
-
-  if getv(from_object, ['audio_timestamp']) is not None:
-    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
-
-  if getv(from_object, ['thinking_config']) is not None:
-    setv(
-        to_object,
-        ['thinkingConfig'],
-        _ThinkingConfig_to_vertex(
-            getv(from_object, ['thinking_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _GenerateContentParameters_to_vertex(
+def _CountTokensParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2212,65 +361,55 @@ def _GenerateContentParameters_to_vertex(
     setv(
         to_object,
         ['contents'],
-        [
-            _Content_to_vertex(item, to_object)
-            for item in t.t_contents(getv(from_object, ['contents']))
-        ],
+        [item for item in t.t_contents(getv(from_object, ['contents']))],
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['generationConfig'],
-        _GenerateContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
+    _CountTokensConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
 
-def _EmbedContentConfig_to_vertex(
+def _CountTokensResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['task_type']) is not None:
+  if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
-        parent_object,
-        ['instances[]', 'task_type'],
-        getv(from_object, ['task_type']),
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
     )
 
-  if getv(from_object, ['title']) is not None:
-    setv(parent_object, ['instances[]', 'title'], getv(from_object, ['title']))
+  if getv(from_object, ['totalTokens']) is not None:
+    setv(to_object, ['total_tokens'], getv(from_object, ['totalTokens']))
 
-  if getv(from_object, ['output_dimensionality']) is not None:
+  if getv(from_object, ['cachedContentTokenCount']) is not None:
     setv(
-        parent_object,
-        ['parameters', 'outputDimensionality'],
-        getv(from_object, ['output_dimensionality']),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(
-        parent_object,
-        ['instances[]', 'mimeType'],
-        getv(from_object, ['mime_type']),
-    )
-
-  if getv(from_object, ['auto_truncate']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'autoTruncate'],
-        getv(from_object, ['auto_truncate']),
+        to_object,
+        ['cached_content_token_count'],
+        getv(from_object, ['cachedContentTokenCount']),
     )
 
   return to_object
 
 
-def _EmbedContentParameters_to_vertex(
+def _CountTokensResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['totalTokens']) is not None:
+    setv(to_object, ['total_tokens'], getv(from_object, ['totalTokens']))
+
+  return to_object
+
+
+def _DeleteModelParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2279,145 +418,14 @@ def _EmbedContentParameters_to_vertex(
   if getv(from_object, ['model']) is not None:
     setv(
         to_object,
-        ['_url', 'model'],
+        ['_url', 'name'],
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['instances[]', 'content'],
-        t.t_contents_for_embed(api_client, getv(from_object, ['contents'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _EmbedContentConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
-
   return to_object
 
 
-def _GenerateImagesConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['output_gcs_uri']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'storageUri'],
-        getv(from_object, ['output_gcs_uri']),
-    )
-
-  if getv(from_object, ['negative_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'negativePrompt'],
-        getv(from_object, ['negative_prompt']),
-    )
-
-  if getv(from_object, ['number_of_images']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'sampleCount'],
-        getv(from_object, ['number_of_images']),
-    )
-
-  if getv(from_object, ['aspect_ratio']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'aspectRatio'],
-        getv(from_object, ['aspect_ratio']),
-    )
-
-  if getv(from_object, ['guidance_scale']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'guidanceScale'],
-        getv(from_object, ['guidance_scale']),
-    )
-
-  if getv(from_object, ['seed']) is not None:
-    setv(parent_object, ['parameters', 'seed'], getv(from_object, ['seed']))
-
-  if getv(from_object, ['safety_filter_level']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'safetySetting'],
-        getv(from_object, ['safety_filter_level']),
-    )
-
-  if getv(from_object, ['person_generation']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'personGeneration'],
-        getv(from_object, ['person_generation']),
-    )
-
-  if getv(from_object, ['include_safety_attributes']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'includeSafetyAttributes'],
-        getv(from_object, ['include_safety_attributes']),
-    )
-
-  if getv(from_object, ['include_rai_reason']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'includeRaiReason'],
-        getv(from_object, ['include_rai_reason']),
-    )
-
-  if getv(from_object, ['language']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'language'],
-        getv(from_object, ['language']),
-    )
-
-  if getv(from_object, ['output_mime_type']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'outputOptions', 'mimeType'],
-        getv(from_object, ['output_mime_type']),
-    )
-
-  if getv(from_object, ['output_compression_quality']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'outputOptions', 'compressionQuality'],
-        getv(from_object, ['output_compression_quality']),
-    )
-
-  if getv(from_object, ['add_watermark']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'addWatermark'],
-        getv(from_object, ['add_watermark']),
-    )
-
-  if getv(from_object, ['image_size']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'sampleImageSize'],
-        getv(from_object, ['image_size']),
-    )
-
-  if getv(from_object, ['enhance_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'enhancePrompt'],
-        getv(from_object, ['enhance_prompt']),
-    )
-
-  return to_object
-
-
-def _GenerateImagesParameters_to_vertex(
+def _DeleteModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2426,168 +434,34 @@ def _GenerateImagesParameters_to_vertex(
   if getv(from_object, ['model']) is not None:
     setv(
         to_object,
-        ['_url', 'model'],
+        ['_url', 'name'],
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
+  return to_object
 
-  if getv(from_object, ['config']) is not None:
+
+def _DeleteModelResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
-        to_object,
-        ['config'],
-        _GenerateImagesConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
     )
 
   return to_object
 
 
-def _Image_to_vertex(
+def _DeleteModelResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    setv(to_object, ['gcsUri'], getv(from_object, ['gcs_uri']))
-
-  if getv(from_object, ['image_bytes']) is not None:
+  if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
-        to_object,
-        ['bytesBase64Encoded'],
-        t.t_bytes(getv(from_object, ['image_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _MaskReferenceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mask_mode']) is not None:
-    setv(to_object, ['maskMode'], getv(from_object, ['mask_mode']))
-
-  if getv(from_object, ['segmentation_classes']) is not None:
-    setv(
-        to_object, ['maskClasses'], getv(from_object, ['segmentation_classes'])
-    )
-
-  if getv(from_object, ['mask_dilation']) is not None:
-    setv(to_object, ['dilation'], getv(from_object, ['mask_dilation']))
-
-  return to_object
-
-
-def _ControlReferenceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['control_type']) is not None:
-    setv(to_object, ['controlType'], getv(from_object, ['control_type']))
-
-  if getv(from_object, ['enable_control_image_computation']) is not None:
-    setv(
-        to_object,
-        ['computeControl'],
-        getv(from_object, ['enable_control_image_computation']),
-    )
-
-  return to_object
-
-
-def _StyleReferenceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['style_description']) is not None:
-    setv(
-        to_object,
-        ['styleDescription'],
-        getv(from_object, ['style_description']),
-    )
-
-  return to_object
-
-
-def _SubjectReferenceConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['subject_type']) is not None:
-    setv(to_object, ['subjectType'], getv(from_object, ['subject_type']))
-
-  if getv(from_object, ['subject_description']) is not None:
-    setv(
-        to_object,
-        ['subjectDescription'],
-        getv(from_object, ['subject_description']),
-    )
-
-  return to_object
-
-
-def _ReferenceImageAPI_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['reference_image']) is not None:
-    setv(
-        to_object,
-        ['referenceImage'],
-        _Image_to_vertex(getv(from_object, ['reference_image']), to_object),
-    )
-
-  if getv(from_object, ['reference_id']) is not None:
-    setv(to_object, ['referenceId'], getv(from_object, ['reference_id']))
-
-  if getv(from_object, ['reference_type']) is not None:
-    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
-
-  if getv(from_object, ['mask_image_config']) is not None:
-    setv(
-        to_object,
-        ['maskImageConfig'],
-        _MaskReferenceConfig_to_vertex(
-            getv(from_object, ['mask_image_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['control_image_config']) is not None:
-    setv(
-        to_object,
-        ['controlImageConfig'],
-        _ControlReferenceConfig_to_vertex(
-            getv(from_object, ['control_image_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['style_image_config']) is not None:
-    setv(
-        to_object,
-        ['styleImageConfig'],
-        _StyleReferenceConfig_to_vertex(
-            getv(from_object, ['style_image_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['subject_image_config']) is not None:
-    setv(
-        to_object,
-        ['subjectImageConfig'],
-        _SubjectReferenceConfig_to_vertex(
-            getv(from_object, ['subject_image_config']), to_object
-        ),
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
     )
 
   return to_object
@@ -2693,6 +567,9 @@ def _EditImageConfig_to_vertex(
         getv(from_object, ['add_watermark']),
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
   if getv(from_object, ['edit_mode']) is not None:
     setv(
         parent_object,
@@ -2737,26 +614,819 @@ def _EditImageParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
+    _EditImageConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _EditImageResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['predictions']) is not None:
     setv(
         to_object,
-        ['config'],
-        _EditImageConfig_to_vertex(getv(from_object, ['config']), to_object),
+        ['generated_images'],
+        [
+            _GeneratedImage_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions'])
+        ],
     )
 
   return to_object
 
 
-def _UpscaleImageAPIConfig_to_vertex(
+def _EmbedContentConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['task_type']) is not None:
+    setv(
+        parent_object,
+        ['requests[]', 'taskType'],
+        getv(from_object, ['task_type']),
+    )
+
+  if getv(from_object, ['title']) is not None:
+    setv(parent_object, ['requests[]', 'title'], getv(from_object, ['title']))
+
+  if getv(from_object, ['output_dimensionality']) is not None:
+    setv(
+        parent_object,
+        ['requests[]', 'outputDimensionality'],
+        getv(from_object, ['output_dimensionality']),
+    )
+
+  if getv(from_object, ['mime_type']) is not None:
+    raise ValueError('mime_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auto_truncate']) is not None:
+    raise ValueError('auto_truncate parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _EmbedContentConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['task_type']) is not None:
+    setv(
+        parent_object,
+        ['instances[]', 'task_type'],
+        getv(from_object, ['task_type']),
+    )
+
+  if getv(from_object, ['title']) is not None:
+    setv(parent_object, ['instances[]', 'title'], getv(from_object, ['title']))
+
+  if getv(from_object, ['output_dimensionality']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputDimensionality'],
+        getv(from_object, ['output_dimensionality']),
+    )
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(
+        parent_object,
+        ['instances[]', 'mimeType'],
+        getv(from_object, ['mime_type']),
+    )
+
+  if getv(from_object, ['auto_truncate']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'autoTruncate'],
+        getv(from_object, ['auto_truncate']),
+    )
+
+  return to_object
+
+
+def _EmbedContentParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        to_object,
+        ['requests[]', 'content'],
+        [
+            item
+            for item in t.t_contents_for_embed(
+                api_client, getv(from_object, ['contents'])
+            )
+        ],
+    )
+
+  if getv(from_object, ['config']) is not None:
+    _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object)
+
+  setv(
+      to_object,
+      ['requests[]', 'model'],
+      t.t_model(api_client, getv(from_object, ['model'])),
+  )
+  return to_object
+
+
+def _EmbedContentParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        to_object,
+        ['instances[]', 'content'],
+        [
+            item
+            for item in t.t_contents_for_embed(
+                api_client, getv(from_object, ['contents'])
+            )
+        ],
+    )
+
+  if getv(from_object, ['config']) is not None:
+    _EmbedContentConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _EmbedContentResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['embeddings']) is not None:
+    setv(
+        to_object,
+        ['embeddings'],
+        [item for item in getv(from_object, ['embeddings'])],
+    )
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  return to_object
+
+
+def _EmbedContentResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['predictions[]', 'embeddings']) is not None:
+    setv(
+        to_object,
+        ['embeddings'],
+        [
+            _ContentEmbedding_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions[]', 'embeddings'])
+        ],
+    )
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  return to_object
+
+
+def _Endpoint_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['endpoint']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['endpoint']))
+
+  if getv(from_object, ['deployedModelId']) is not None:
+    setv(
+        to_object, ['deployed_model_id'], getv(from_object, ['deployedModelId'])
+    )
+
+  return to_object
+
+
+def _FileData_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _FunctionDeclaration_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['behavior']) is not None:
+    raise ValueError('behavior parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['parameters']) is not None:
+    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+
+  if getv(from_object, ['parameters_json_schema']) is not None:
+    setv(
+        to_object,
+        ['parametersJsonSchema'],
+        getv(from_object, ['parameters_json_schema']),
+    )
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
+  return to_object
+
+
+def _GenerateContentConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        parent_object,
+        ['systemInstruction'],
+        _Content_to_mldev(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
+    )
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['top_p']) is not None:
+    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+
+  if getv(from_object, ['top_k']) is not None:
+    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+
+  if getv(from_object, ['candidate_count']) is not None:
+    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    setv(
+        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
+    )
+
+  if getv(from_object, ['stop_sequences']) is not None:
+    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+
+  if getv(from_object, ['response_logprobs']) is not None:
+    setv(
+        to_object,
+        ['responseLogprobs'],
+        getv(from_object, ['response_logprobs']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['presence_penalty']) is not None:
+    setv(
+        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+    )
+
+  if getv(from_object, ['frequency_penalty']) is not None:
+    setv(
+        to_object,
+        ['frequencyPenalty'],
+        getv(from_object, ['frequency_penalty']),
+    )
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['response_mime_type']) is not None:
+    setv(
+        to_object,
+        ['responseMimeType'],
+        getv(from_object, ['response_mime_type']),
+    )
+
+  if getv(from_object, ['response_schema']) is not None:
+    setv(
+        to_object,
+        ['responseSchema'],
+        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+    )
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
+  if getv(from_object, ['routing_config']) is not None:
+    raise ValueError('routing_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['model_selection_config']) is not None:
+    raise ValueError(
+        'model_selection_config parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['safety_settings']) is not None:
+    setv(
+        parent_object,
+        ['safetySettings'],
+        [
+            _SafetySetting_to_mldev(item, to_object)
+            for item in getv(from_object, ['safety_settings'])
+        ],
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        parent_object,
+        ['tools'],
+        [
+            _Tool_to_mldev(t.t_tool(api_client, item), to_object)
+            for item in t.t_tools(api_client, getv(from_object, ['tools']))
+        ],
+    )
+
+  if getv(from_object, ['tool_config']) is not None:
+    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
+
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['cached_content']) is not None:
+    setv(
+        parent_object,
+        ['cachedContent'],
+        t.t_cached_content_name(
+            api_client, getv(from_object, ['cached_content'])
+        ),
+    )
+
+  if getv(from_object, ['response_modalities']) is not None:
+    setv(
+        to_object,
+        ['responseModalities'],
+        getv(from_object, ['response_modalities']),
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['speech_config']) is not None:
+    setv(
+        to_object,
+        ['speechConfig'],
+        t.t_speech_config(getv(from_object, ['speech_config'])),
+    )
+
+  if getv(from_object, ['audio_timestamp']) is not None:
+    raise ValueError(
+        'audio_timestamp parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+
+  if getv(from_object, ['image_config']) is not None:
+    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+
+  return to_object
+
+
+def _GenerateContentConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        parent_object,
+        ['systemInstruction'],
+        t.t_content(getv(from_object, ['system_instruction'])),
+    )
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['top_p']) is not None:
+    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+
+  if getv(from_object, ['top_k']) is not None:
+    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+
+  if getv(from_object, ['candidate_count']) is not None:
+    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    setv(
+        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
+    )
+
+  if getv(from_object, ['stop_sequences']) is not None:
+    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+
+  if getv(from_object, ['response_logprobs']) is not None:
+    setv(
+        to_object,
+        ['responseLogprobs'],
+        getv(from_object, ['response_logprobs']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['presence_penalty']) is not None:
+    setv(
+        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+    )
+
+  if getv(from_object, ['frequency_penalty']) is not None:
+    setv(
+        to_object,
+        ['frequencyPenalty'],
+        getv(from_object, ['frequency_penalty']),
+    )
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['response_mime_type']) is not None:
+    setv(
+        to_object,
+        ['responseMimeType'],
+        getv(from_object, ['response_mime_type']),
+    )
+
+  if getv(from_object, ['response_schema']) is not None:
+    setv(
+        to_object,
+        ['responseSchema'],
+        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+    )
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
+  if getv(from_object, ['routing_config']) is not None:
+    setv(to_object, ['routingConfig'], getv(from_object, ['routing_config']))
+
+  if getv(from_object, ['model_selection_config']) is not None:
+    setv(
+        to_object,
+        ['modelConfig'],
+        getv(from_object, ['model_selection_config']),
+    )
+
+  if getv(from_object, ['safety_settings']) is not None:
+    setv(
+        parent_object,
+        ['safetySettings'],
+        [item for item in getv(from_object, ['safety_settings'])],
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        parent_object,
+        ['tools'],
+        [
+            _Tool_to_vertex(t.t_tool(api_client, item), to_object)
+            for item in t.t_tools(api_client, getv(from_object, ['tools']))
+        ],
+    )
+
+  if getv(from_object, ['tool_config']) is not None:
+    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  if getv(from_object, ['cached_content']) is not None:
+    setv(
+        parent_object,
+        ['cachedContent'],
+        t.t_cached_content_name(
+            api_client, getv(from_object, ['cached_content'])
+        ),
+    )
+
+  if getv(from_object, ['response_modalities']) is not None:
+    setv(
+        to_object,
+        ['responseModalities'],
+        getv(from_object, ['response_modalities']),
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['speech_config']) is not None:
+    setv(
+        to_object,
+        ['speechConfig'],
+        _SpeechConfig_to_vertex(
+            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
+        ),
+    )
+
+  if getv(from_object, ['audio_timestamp']) is not None:
+    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+
+  if getv(from_object, ['image_config']) is not None:
+    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+
+  return to_object
+
+
+def _GenerateContentParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        to_object,
+        ['contents'],
+        [
+            _Content_to_mldev(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
+        ],
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['generationConfig'],
+        _GenerateContentConfig_to_mldev(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _GenerateContentParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        to_object,
+        ['contents'],
+        [item for item in t.t_contents(getv(from_object, ['contents']))],
+    )
+
+  if getv(from_object, ['config']) is not None:
+    setv(
+        to_object,
+        ['generationConfig'],
+        _GenerateContentConfig_to_vertex(
+            api_client, getv(from_object, ['config']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _GenerateContentResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['candidates']) is not None:
+    setv(
+        to_object,
+        ['candidates'],
+        [
+            _Candidate_from_mldev(item, to_object)
+            for item in getv(from_object, ['candidates'])
+        ],
+    )
+
+  if getv(from_object, ['modelVersion']) is not None:
+    setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
+
+  if getv(from_object, ['promptFeedback']) is not None:
+    setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
+
+  if getv(from_object, ['responseId']) is not None:
+    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
+
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
+  return to_object
+
+
+def _GenerateContentResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['candidates']) is not None:
+    setv(
+        to_object,
+        ['candidates'],
+        [item for item in getv(from_object, ['candidates'])],
+    )
+
+  if getv(from_object, ['createTime']) is not None:
+    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
+
+  if getv(from_object, ['modelVersion']) is not None:
+    setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
+
+  if getv(from_object, ['promptFeedback']) is not None:
+    setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
+
+  if getv(from_object, ['responseId']) is not None:
+    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
+
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
+  return to_object
+
+
+def _GenerateImagesConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['output_gcs_uri']) is not None:
+    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['negative_prompt']) is not None:
+    raise ValueError(
+        'negative_prompt parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['number_of_images']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'sampleCount'],
+        getv(from_object, ['number_of_images']),
+    )
+
+  if getv(from_object, ['aspect_ratio']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'aspectRatio'],
+        getv(from_object, ['aspect_ratio']),
+    )
+
+  if getv(from_object, ['guidance_scale']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'guidanceScale'],
+        getv(from_object, ['guidance_scale']),
+    )
+
+  if getv(from_object, ['seed']) is not None:
+    raise ValueError('seed parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['safety_filter_level']) is not None:
+    _SafetyFilterLevel_to_mldev_enum_validate(
+        getv(from_object, ['safety_filter_level'])
+    )
+    setv(
+        parent_object,
+        ['parameters', 'safetySetting'],
+        getv(from_object, ['safety_filter_level']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    _PersonGeneration_to_mldev_enum_validate(
+        getv(from_object, ['person_generation'])
+    )
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
+  if getv(from_object, ['include_safety_attributes']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'includeSafetyAttributes'],
+        getv(from_object, ['include_safety_attributes']),
+    )
 
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
         ['parameters', 'includeRaiReason'],
         getv(from_object, ['include_rai_reason']),
+    )
+
+  if getv(from_object, ['language']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'language'],
+        getv(from_object, ['language']),
     )
 
   if getv(from_object, ['output_mime_type']) is not None:
@@ -2773,18 +1443,43 @@ def _UpscaleImageAPIConfig_to_vertex(
         getv(from_object, ['output_compression_quality']),
     )
 
-  if getv(from_object, ['enhance_input_image']) is not None:
+  if getv(from_object, ['add_watermark']) is not None:
+    raise ValueError('add_watermark parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['image_size']) is not None:
     setv(
         parent_object,
-        ['parameters', 'upscaleConfig', 'enhanceInputImage'],
-        getv(from_object, ['enhance_input_image']),
+        ['parameters', 'sampleImageSize'],
+        getv(from_object, ['image_size']),
     )
 
-  if getv(from_object, ['image_preservation_factor']) is not None:
+  if getv(from_object, ['enhance_prompt']) is not None:
+    raise ValueError('enhance_prompt parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _GenerateImagesConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['output_gcs_uri']) is not None:
     setv(
         parent_object,
-        ['parameters', 'upscaleConfig', 'imagePreservationFactor'],
-        getv(from_object, ['image_preservation_factor']),
+        ['parameters', 'storageUri'],
+        getv(from_object, ['output_gcs_uri']),
+    )
+
+  if getv(from_object, ['negative_prompt']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'negativePrompt'],
+        getv(from_object, ['negative_prompt']),
     )
 
   if getv(from_object, ['number_of_images']) is not None:
@@ -2794,13 +1489,100 @@ def _UpscaleImageAPIConfig_to_vertex(
         getv(from_object, ['number_of_images']),
     )
 
-  if getv(from_object, ['mode']) is not None:
-    setv(parent_object, ['parameters', 'mode'], getv(from_object, ['mode']))
+  if getv(from_object, ['aspect_ratio']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'aspectRatio'],
+        getv(from_object, ['aspect_ratio']),
+    )
+
+  if getv(from_object, ['guidance_scale']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'guidanceScale'],
+        getv(from_object, ['guidance_scale']),
+    )
+
+  if getv(from_object, ['seed']) is not None:
+    setv(parent_object, ['parameters', 'seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['safety_filter_level']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'safetySetting'],
+        getv(from_object, ['safety_filter_level']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
+  if getv(from_object, ['include_safety_attributes']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'includeSafetyAttributes'],
+        getv(from_object, ['include_safety_attributes']),
+    )
+
+  if getv(from_object, ['include_rai_reason']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'includeRaiReason'],
+        getv(from_object, ['include_rai_reason']),
+    )
+
+  if getv(from_object, ['language']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'language'],
+        getv(from_object, ['language']),
+    )
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'mimeType'],
+        getv(from_object, ['output_mime_type']),
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'compressionQuality'],
+        getv(from_object, ['output_compression_quality']),
+    )
+
+  if getv(from_object, ['add_watermark']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'addWatermark'],
+        getv(from_object, ['add_watermark']),
+    )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  if getv(from_object, ['image_size']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'sampleImageSize'],
+        getv(from_object, ['image_size']),
+    )
+
+  if getv(from_object, ['enhance_prompt']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'enhancePrompt'],
+        getv(from_object, ['enhance_prompt']),
+    )
 
   return to_object
 
 
-def _UpscaleImageAPIParameters_to_vertex(
+def _GenerateImagesParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2813,288 +1595,195 @@ def _UpscaleImageAPIParameters_to_vertex(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
-    )
-
-  if getv(from_object, ['upscale_factor']) is not None:
-    setv(
-        to_object,
-        ['parameters', 'upscaleConfig', 'upscaleFactor'],
-        getv(from_object, ['upscale_factor']),
-    )
+  if getv(from_object, ['prompt']) is not None:
+    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
 
   if getv(from_object, ['config']) is not None:
+    _GenerateImagesConfig_to_mldev(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _GenerateImagesParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
     setv(
         to_object,
-        ['config'],
-        _UpscaleImageAPIConfig_to_vertex(
-            getv(from_object, ['config']), to_object
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['prompt']) is not None:
+    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
+
+  if getv(from_object, ['config']) is not None:
+    _GenerateImagesConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _GenerateImagesResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['predictions']) is not None:
+    setv(
+        to_object,
+        ['generated_images'],
+        [
+            _GeneratedImage_from_mldev(item, to_object)
+            for item in getv(from_object, ['predictions'])
+        ],
+    )
+
+  if getv(from_object, ['positivePromptSafetyAttributes']) is not None:
+    setv(
+        to_object,
+        ['positive_prompt_safety_attributes'],
+        _SafetyAttributes_from_mldev(
+            getv(from_object, ['positivePromptSafetyAttributes']), to_object
         ),
     )
 
   return to_object
 
 
-def _GetModelParameters_to_vertex(
-    api_client: BaseApiClient,
+def _GenerateImagesResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['predictions']) is not None:
     setv(
         to_object,
-        ['_url', 'name'],
-        t.t_model(api_client, getv(from_object, ['model'])),
+        ['generated_images'],
+        [
+            _GeneratedImage_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions'])
+        ],
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _ListModelsConfig_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  if getv(from_object, ['filter']) is not None:
-    setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
-
-  if getv(from_object, ['query_base']) is not None:
-    setv(
-        parent_object,
-        ['_url', 'models_url'],
-        t.t_models_url(api_client, getv(from_object, ['query_base'])),
-    )
-
-  return to_object
-
-
-def _ListModelsParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
+  if getv(from_object, ['positivePromptSafetyAttributes']) is not None:
     setv(
         to_object,
-        ['config'],
-        _ListModelsConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
+        ['positive_prompt_safety_attributes'],
+        _SafetyAttributes_from_vertex(
+            getv(from_object, ['positivePromptSafetyAttributes']), to_object
         ),
     )
 
   return to_object
 
 
-def _UpdateModelConfig_to_vertex(
+def _GenerateVideosConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
-  if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(parent_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['default_checkpoint_id']) is not None:
+  if getv(from_object, ['number_of_videos']) is not None:
     setv(
         parent_object,
-        ['defaultCheckpointId'],
-        getv(from_object, ['default_checkpoint_id']),
+        ['parameters', 'sampleCount'],
+        getv(from_object, ['number_of_videos']),
     )
 
-  return to_object
+  if getv(from_object, ['output_gcs_uri']) is not None:
+    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['fps']) is not None:
+    raise ValueError('fps parameter is not supported in Gemini API.')
 
-def _UpdateModelParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _UpdateModelConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
-
-  return to_object
-
-
-def _DeleteModelParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _CountTokensConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['system_instruction']) is not None:
+  if getv(from_object, ['duration_seconds']) is not None:
     setv(
         parent_object,
-        ['systemInstruction'],
-        _Content_to_vertex(
-            t.t_content(getv(from_object, ['system_instruction'])), to_object
-        ),
+        ['parameters', 'durationSeconds'],
+        getv(from_object, ['duration_seconds']),
     )
 
-  if getv(from_object, ['tools']) is not None:
+  if getv(from_object, ['seed']) is not None:
+    raise ValueError('seed parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['aspect_ratio']) is not None:
     setv(
         parent_object,
-        ['tools'],
+        ['parameters', 'aspectRatio'],
+        getv(from_object, ['aspect_ratio']),
+    )
+
+  if getv(from_object, ['resolution']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'resolution'],
+        getv(from_object, ['resolution']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
+  if getv(from_object, ['pubsub_topic']) is not None:
+    raise ValueError('pubsub_topic parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['negative_prompt']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'negativePrompt'],
+        getv(from_object, ['negative_prompt']),
+    )
+
+  if getv(from_object, ['enhance_prompt']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'enhancePrompt'],
+        getv(from_object, ['enhance_prompt']),
+    )
+
+  if getv(from_object, ['generate_audio']) is not None:
+    raise ValueError('generate_audio parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['last_frame']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'lastFrame'],
+        _Image_to_mldev(getv(from_object, ['last_frame']), to_object),
+    )
+
+  if getv(from_object, ['reference_images']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'referenceImages'],
         [
-            _Tool_to_vertex(item, to_object)
-            for item in getv(from_object, ['tools'])
+            _VideoGenerationReferenceImage_to_mldev(item, to_object)
+            for item in getv(from_object, ['reference_images'])
         ],
     )
 
-  if getv(from_object, ['generation_config']) is not None:
-    setv(
-        parent_object,
-        ['generationConfig'],
-        getv(from_object, ['generation_config']),
+  if getv(from_object, ['mask']) is not None:
+    raise ValueError('mask parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['compression_quality']) is not None:
+    raise ValueError(
+        'compression_quality parameter is not supported in Gemini API.'
     )
-
-  return to_object
-
-
-def _CountTokensParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['contents'],
-        [
-            _Content_to_vertex(item, to_object)
-            for item in t.t_contents(getv(from_object, ['contents']))
-        ],
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CountTokensConfig_to_vertex(getv(from_object, ['config']), to_object),
-    )
-
-  return to_object
-
-
-def _ComputeTokensParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['contents'],
-        [
-            _Content_to_vertex(item, to_object)
-            for item in t.t_contents(getv(from_object, ['contents']))
-        ],
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _Video_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['gcsUri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['video_bytes']) is not None:
-    setv(
-        to_object,
-        ['bytesBase64Encoded'],
-        t.t_bytes(getv(from_object, ['video_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
-def _GenerateVideosSource_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
 
   return to_object
 
@@ -3188,661 +1877,28 @@ def _GenerateVideosConfig_to_vertex(
         _Image_to_vertex(getv(from_object, ['last_frame']), to_object),
     )
 
+  if getv(from_object, ['reference_images']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'referenceImages'],
+        [
+            _VideoGenerationReferenceImage_to_vertex(item, to_object)
+            for item in getv(from_object, ['reference_images'])
+        ],
+    )
+
+  if getv(from_object, ['mask']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'mask'],
+        _VideoGenerationMask_to_vertex(getv(from_object, ['mask']), to_object),
+    )
+
   if getv(from_object, ['compression_quality']) is not None:
     setv(
         parent_object,
         ['parameters', 'compressionQuality'],
         getv(from_object, ['compression_quality']),
-    )
-
-  return to_object
-
-
-def _GenerateVideosParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'video'],
-        _Video_to_vertex(getv(from_object, ['video']), to_object),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _GenerateVideosConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _SafetyFilterLevel_to_mldev_enum_validate(enum_value: Any) -> None:
-  if enum_value in set(['BLOCK_NONE']):
-    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
-
-
-def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
-  if enum_value in set(['ALLOW_ALL']):
-    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
-
-
-def _Behavior_to_vertex_enum_validate(enum_value: Any) -> None:
-  if enum_value in set(['UNSPECIFIED', 'BLOCKING', 'NON_BLOCKING']):
-    raise ValueError(f'{enum_value} enum value is not supported in Vertex AI.')
-
-
-def _VideoMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['endOffset']) is not None:
-    setv(to_object, ['end_offset'], getv(from_object, ['endOffset']))
-
-  if getv(from_object, ['startOffset']) is not None:
-    setv(to_object, ['start_offset'], getv(from_object, ['startOffset']))
-
-  return to_object
-
-
-def _Blob_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _FileData_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['fileUri']) is not None:
-    setv(to_object, ['file_uri'], getv(from_object, ['fileUri']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _Part_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['videoMetadata']) is not None:
-    setv(
-        to_object,
-        ['video_metadata'],
-        _VideoMetadata_from_mldev(
-            getv(from_object, ['videoMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inlineData']) is not None:
-    setv(
-        to_object,
-        ['inline_data'],
-        _Blob_from_mldev(getv(from_object, ['inlineData']), to_object),
-    )
-
-  if getv(from_object, ['fileData']) is not None:
-    setv(
-        to_object,
-        ['file_data'],
-        _FileData_from_mldev(getv(from_object, ['fileData']), to_object),
-    )
-
-  if getv(from_object, ['thoughtSignature']) is not None:
-    setv(
-        to_object,
-        ['thought_signature'],
-        getv(from_object, ['thoughtSignature']),
-    )
-
-  if getv(from_object, ['codeExecutionResult']) is not None:
-    setv(
-        to_object,
-        ['code_execution_result'],
-        getv(from_object, ['codeExecutionResult']),
-    )
-
-  if getv(from_object, ['executableCode']) is not None:
-    setv(to_object, ['executable_code'], getv(from_object, ['executableCode']))
-
-  if getv(from_object, ['functionCall']) is not None:
-    setv(to_object, ['function_call'], getv(from_object, ['functionCall']))
-
-  if getv(from_object, ['functionResponse']) is not None:
-    setv(
-        to_object,
-        ['function_response'],
-        getv(from_object, ['functionResponse']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
-def _Content_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_from_mldev(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
-
-  if getv(from_object, ['role']) is not None:
-    setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _CitationMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['citationSources']) is not None:
-    setv(to_object, ['citations'], getv(from_object, ['citationSources']))
-
-  return to_object
-
-
-def _UrlMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['retrievedUrl']) is not None:
-    setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
-
-  if getv(from_object, ['urlRetrievalStatus']) is not None:
-    setv(
-        to_object,
-        ['url_retrieval_status'],
-        getv(from_object, ['urlRetrievalStatus']),
-    )
-
-  return to_object
-
-
-def _UrlContextMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['urlMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_metadata'],
-        [
-            _UrlMetadata_from_mldev(item, to_object)
-            for item in getv(from_object, ['urlMetadata'])
-        ],
-    )
-
-  return to_object
-
-
-def _Candidate_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['content']) is not None:
-    setv(
-        to_object,
-        ['content'],
-        _Content_from_mldev(getv(from_object, ['content']), to_object),
-    )
-
-  if getv(from_object, ['citationMetadata']) is not None:
-    setv(
-        to_object,
-        ['citation_metadata'],
-        _CitationMetadata_from_mldev(
-            getv(from_object, ['citationMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['tokenCount']) is not None:
-    setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
-
-  if getv(from_object, ['finishReason']) is not None:
-    setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
-
-  if getv(from_object, ['urlContextMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_context_metadata'],
-        _UrlContextMetadata_from_mldev(
-            getv(from_object, ['urlContextMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
-  if getv(from_object, ['groundingMetadata']) is not None:
-    setv(
-        to_object,
-        ['grounding_metadata'],
-        getv(from_object, ['groundingMetadata']),
-    )
-
-  if getv(from_object, ['index']) is not None:
-    setv(to_object, ['index'], getv(from_object, ['index']))
-
-  if getv(from_object, ['logprobsResult']) is not None:
-    setv(to_object, ['logprobs_result'], getv(from_object, ['logprobsResult']))
-
-  if getv(from_object, ['safetyRatings']) is not None:
-    setv(to_object, ['safety_ratings'], getv(from_object, ['safetyRatings']))
-
-  return to_object
-
-
-def _GenerateContentResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['candidates']) is not None:
-    setv(
-        to_object,
-        ['candidates'],
-        [
-            _Candidate_from_mldev(item, to_object)
-            for item in getv(from_object, ['candidates'])
-        ],
-    )
-
-  if getv(from_object, ['modelVersion']) is not None:
-    setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
-
-  if getv(from_object, ['promptFeedback']) is not None:
-    setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
-
-  if getv(from_object, ['usageMetadata']) is not None:
-    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
-
-  return to_object
-
-
-def _ContentEmbedding_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['values']) is not None:
-    setv(to_object, ['values'], getv(from_object, ['values']))
-
-  return to_object
-
-
-def _EmbedContentMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _EmbedContentResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['embeddings']) is not None:
-    setv(
-        to_object,
-        ['embeddings'],
-        [
-            _ContentEmbedding_from_mldev(item, to_object)
-            for item in getv(from_object, ['embeddings'])
-        ],
-    )
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(
-        to_object,
-        ['metadata'],
-        _EmbedContentMetadata_from_mldev(
-            getv(from_object, ['metadata']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _Image_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['bytesBase64Encoded']) is not None:
-    setv(
-        to_object,
-        ['image_bytes'],
-        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
-    )
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _SafetyAttributes_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['safetyAttributes', 'categories']) is not None:
-    setv(
-        to_object,
-        ['categories'],
-        getv(from_object, ['safetyAttributes', 'categories']),
-    )
-
-  if getv(from_object, ['safetyAttributes', 'scores']) is not None:
-    setv(
-        to_object, ['scores'], getv(from_object, ['safetyAttributes', 'scores'])
-    )
-
-  if getv(from_object, ['contentType']) is not None:
-    setv(to_object, ['content_type'], getv(from_object, ['contentType']))
-
-  return to_object
-
-
-def _GeneratedImage_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['image'],
-        _Image_from_mldev(getv(from_object, ['_self']), to_object),
-    )
-
-  if getv(from_object, ['raiFilteredReason']) is not None:
-    setv(
-        to_object,
-        ['rai_filtered_reason'],
-        getv(from_object, ['raiFilteredReason']),
-    )
-
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['safety_attributes'],
-        _SafetyAttributes_from_mldev(getv(from_object, ['_self']), to_object),
-    )
-
-  return to_object
-
-
-def _GenerateImagesResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['predictions']) is not None:
-    setv(
-        to_object,
-        ['generated_images'],
-        [
-            _GeneratedImage_from_mldev(item, to_object)
-            for item in getv(from_object, ['predictions'])
-        ],
-    )
-
-  if getv(from_object, ['positivePromptSafetyAttributes']) is not None:
-    setv(
-        to_object,
-        ['positive_prompt_safety_attributes'],
-        _SafetyAttributes_from_mldev(
-            getv(from_object, ['positivePromptSafetyAttributes']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _TunedModelInfo_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['baseModel']) is not None:
-    setv(to_object, ['base_model'], getv(from_object, ['baseModel']))
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  return to_object
-
-
-def _Model_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['version']) is not None:
-    setv(to_object, ['version'], getv(from_object, ['version']))
-
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['tuned_model_info'],
-        _TunedModelInfo_from_mldev(getv(from_object, ['_self']), to_object),
-    )
-
-  if getv(from_object, ['inputTokenLimit']) is not None:
-    setv(
-        to_object, ['input_token_limit'], getv(from_object, ['inputTokenLimit'])
-    )
-
-  if getv(from_object, ['outputTokenLimit']) is not None:
-    setv(
-        to_object,
-        ['output_token_limit'],
-        getv(from_object, ['outputTokenLimit']),
-    )
-
-  if getv(from_object, ['supportedGenerationMethods']) is not None:
-    setv(
-        to_object,
-        ['supported_actions'],
-        getv(from_object, ['supportedGenerationMethods']),
-    )
-
-  return to_object
-
-
-def _ListModelsResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['models'],
-        [
-            _Model_from_mldev(item, to_object)
-            for item in t.t_extract_models(getv(from_object, ['_self']))
-        ],
-    )
-
-  return to_object
-
-
-def _DeleteModelResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _CountTokensResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['totalTokens']) is not None:
-    setv(to_object, ['total_tokens'], getv(from_object, ['totalTokens']))
-
-  if getv(from_object, ['cachedContentTokenCount']) is not None:
-    setv(
-        to_object,
-        ['cached_content_token_count'],
-        getv(from_object, ['cachedContentTokenCount']),
-    )
-
-  return to_object
-
-
-def _Video_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video', 'uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
-
-  if getv(from_object, ['video', 'encodedVideo']) is not None:
-    setv(
-        to_object,
-        ['video_bytes'],
-        t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
-    )
-
-  if getv(from_object, ['encoding']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['encoding']))
-
-  return to_object
-
-
-def _GeneratedVideo_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Video_from_mldev(getv(from_object, ['_self']), to_object),
-    )
-
-  return to_object
-
-
-def _GenerateVideosResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['generatedSamples']) is not None:
-    setv(
-        to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_mldev(item, to_object)
-            for item in getv(from_object, ['generatedSamples'])
-        ],
-    )
-
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
     )
 
   return to_object
@@ -3886,401 +1942,285 @@ def _GenerateVideosOperation_from_mldev(
   return to_object
 
 
-def _VideoMetadata_from_vertex(
+def _GenerateVideosOperation_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['endOffset']) is not None:
-    setv(to_object, ['end_offset'], getv(from_object, ['endOffset']))
-
-  if getv(from_object, ['startOffset']) is not None:
-    setv(to_object, ['start_offset'], getv(from_object, ['startOffset']))
-
-  return to_object
-
-
-def _Blob_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _FileData_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['fileUri']) is not None:
-    setv(to_object, ['file_uri'], getv(from_object, ['fileUri']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _Part_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['videoMetadata']) is not None:
-    setv(
-        to_object,
-        ['video_metadata'],
-        _VideoMetadata_from_vertex(
-            getv(from_object, ['videoMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inlineData']) is not None:
-    setv(
-        to_object,
-        ['inline_data'],
-        _Blob_from_vertex(getv(from_object, ['inlineData']), to_object),
-    )
-
-  if getv(from_object, ['fileData']) is not None:
-    setv(
-        to_object,
-        ['file_data'],
-        _FileData_from_vertex(getv(from_object, ['fileData']), to_object),
-    )
-
-  if getv(from_object, ['thoughtSignature']) is not None:
-    setv(
-        to_object,
-        ['thought_signature'],
-        getv(from_object, ['thoughtSignature']),
-    )
-
-  if getv(from_object, ['codeExecutionResult']) is not None:
-    setv(
-        to_object,
-        ['code_execution_result'],
-        getv(from_object, ['codeExecutionResult']),
-    )
-
-  if getv(from_object, ['executableCode']) is not None:
-    setv(to_object, ['executable_code'], getv(from_object, ['executableCode']))
-
-  if getv(from_object, ['functionCall']) is not None:
-    setv(to_object, ['function_call'], getv(from_object, ['functionCall']))
-
-  if getv(from_object, ['functionResponse']) is not None:
-    setv(
-        to_object,
-        ['function_response'],
-        getv(from_object, ['functionResponse']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
-def _Content_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_from_vertex(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
-
-  if getv(from_object, ['role']) is not None:
-    setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _CitationMetadata_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['citations']) is not None:
-    setv(to_object, ['citations'], getv(from_object, ['citations']))
-
-  return to_object
-
-
-def _UrlMetadata_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['retrievedUrl']) is not None:
-    setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
-
-  if getv(from_object, ['urlRetrievalStatus']) is not None:
-    setv(
-        to_object,
-        ['url_retrieval_status'],
-        getv(from_object, ['urlRetrievalStatus']),
-    )
-
-  return to_object
-
-
-def _UrlContextMetadata_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['urlMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_metadata'],
-        [
-            _UrlMetadata_from_vertex(item, to_object)
-            for item in getv(from_object, ['urlMetadata'])
-        ],
-    )
-
-  return to_object
-
-
-def _Candidate_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['content']) is not None:
-    setv(
-        to_object,
-        ['content'],
-        _Content_from_vertex(getv(from_object, ['content']), to_object),
-    )
-
-  if getv(from_object, ['citationMetadata']) is not None:
-    setv(
-        to_object,
-        ['citation_metadata'],
-        _CitationMetadata_from_vertex(
-            getv(from_object, ['citationMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['finishMessage']) is not None:
-    setv(to_object, ['finish_message'], getv(from_object, ['finishMessage']))
-
-  if getv(from_object, ['finishReason']) is not None:
-    setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
-
-  if getv(from_object, ['urlContextMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_context_metadata'],
-        _UrlContextMetadata_from_vertex(
-            getv(from_object, ['urlContextMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
-  if getv(from_object, ['groundingMetadata']) is not None:
-    setv(
-        to_object,
-        ['grounding_metadata'],
-        getv(from_object, ['groundingMetadata']),
-    )
-
-  if getv(from_object, ['index']) is not None:
-    setv(to_object, ['index'], getv(from_object, ['index']))
-
-  if getv(from_object, ['logprobsResult']) is not None:
-    setv(to_object, ['logprobs_result'], getv(from_object, ['logprobsResult']))
-
-  if getv(from_object, ['safetyRatings']) is not None:
-    setv(to_object, ['safety_ratings'], getv(from_object, ['safetyRatings']))
-
-  return to_object
-
-
-def _GenerateContentResponse_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['candidates']) is not None:
-    setv(
-        to_object,
-        ['candidates'],
-        [
-            _Candidate_from_vertex(item, to_object)
-            for item in getv(from_object, ['candidates'])
-        ],
-    )
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['responseId']) is not None:
-    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
-
-  if getv(from_object, ['modelVersion']) is not None:
-    setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
-
-  if getv(from_object, ['promptFeedback']) is not None:
-    setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
-
-  if getv(from_object, ['usageMetadata']) is not None:
-    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
-
-  return to_object
-
-
-def _ContentEmbeddingStatistics_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['truncated']) is not None:
-    setv(to_object, ['truncated'], getv(from_object, ['truncated']))
-
-  if getv(from_object, ['token_count']) is not None:
-    setv(to_object, ['token_count'], getv(from_object, ['token_count']))
-
-  return to_object
-
-
-def _ContentEmbedding_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['values']) is not None:
-    setv(to_object, ['values'], getv(from_object, ['values']))
-
-  if getv(from_object, ['statistics']) is not None:
-    setv(
-        to_object,
-        ['statistics'],
-        _ContentEmbeddingStatistics_from_vertex(
-            getv(from_object, ['statistics']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _EmbedContentMetadata_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['billableCharacterCount']) is not None:
-    setv(
-        to_object,
-        ['billable_character_count'],
-        getv(from_object, ['billableCharacterCount']),
-    )
-
-  return to_object
-
-
-def _EmbedContentResponse_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['predictions[]', 'embeddings']) is not None:
-    setv(
-        to_object,
-        ['embeddings'],
-        [
-            _ContentEmbedding_from_vertex(item, to_object)
-            for item in getv(from_object, ['predictions[]', 'embeddings'])
-        ],
-    )
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
 
   if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(from_object, ['done']) is not None:
+    setv(to_object, ['done'], getv(from_object, ['done']))
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
+  if getv(from_object, ['response']) is not None:
     setv(
         to_object,
-        ['metadata'],
-        _EmbedContentMetadata_from_vertex(
-            getv(from_object, ['metadata']), to_object
+        ['response'],
+        _GenerateVideosResponse_from_vertex(
+            getv(from_object, ['response']), to_object
+        ),
+    )
+
+  if getv(from_object, ['response']) is not None:
+    setv(
+        to_object,
+        ['result'],
+        _GenerateVideosResponse_from_vertex(
+            getv(from_object, ['response']), to_object
         ),
     )
 
   return to_object
 
 
-def _Image_from_vertex(
+def _GenerateVideosParameters_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcsUri']) is not None:
-    setv(to_object, ['gcs_uri'], getv(from_object, ['gcsUri']))
-
-  if getv(from_object, ['bytesBase64Encoded']) is not None:
+  if getv(from_object, ['model']) is not None:
     setv(
         to_object,
-        ['image_bytes'],
-        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+  if getv(from_object, ['prompt']) is not None:
+    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['instances[0]', 'image'],
+        _Image_to_mldev(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['video']) is not None:
+    setv(
+        to_object,
+        ['instances[0]', 'video'],
+        _Video_to_mldev(getv(from_object, ['video']), to_object),
+    )
+
+  if getv(from_object, ['source']) is not None:
+    _GenerateVideosSource_to_mldev(getv(from_object, ['source']), to_object)
+
+  if getv(from_object, ['config']) is not None:
+    _GenerateVideosConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
 
-def _SafetyAttributes_from_vertex(
+def _GenerateVideosParameters_to_vertex(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['safetyAttributes', 'categories']) is not None:
+  if getv(from_object, ['model']) is not None:
     setv(
         to_object,
-        ['categories'],
-        getv(from_object, ['safetyAttributes', 'categories']),
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['safetyAttributes', 'scores']) is not None:
+  if getv(from_object, ['prompt']) is not None:
+    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
+
+  if getv(from_object, ['image']) is not None:
     setv(
-        to_object, ['scores'], getv(from_object, ['safetyAttributes', 'scores'])
+        to_object,
+        ['instances[0]', 'image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
     )
 
-  if getv(from_object, ['contentType']) is not None:
-    setv(to_object, ['content_type'], getv(from_object, ['contentType']))
+  if getv(from_object, ['video']) is not None:
+    setv(
+        to_object,
+        ['instances[0]', 'video'],
+        _Video_to_vertex(getv(from_object, ['video']), to_object),
+    )
+
+  if getv(from_object, ['source']) is not None:
+    _GenerateVideosSource_to_vertex(getv(from_object, ['source']), to_object)
+
+  if getv(from_object, ['config']) is not None:
+    _GenerateVideosConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _GenerateVideosResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['generatedSamples']) is not None:
+    setv(
+        to_object,
+        ['generated_videos'],
+        [
+            _GeneratedVideo_from_mldev(item, to_object)
+            for item in getv(from_object, ['generatedSamples'])
+        ],
+    )
+
+  if getv(from_object, ['raiMediaFilteredCount']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_count'],
+        getv(from_object, ['raiMediaFilteredCount']),
+    )
+
+  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_reasons'],
+        getv(from_object, ['raiMediaFilteredReasons']),
+    )
+
+  return to_object
+
+
+def _GenerateVideosResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['videos']) is not None:
+    setv(
+        to_object,
+        ['generated_videos'],
+        [
+            _GeneratedVideo_from_vertex(item, to_object)
+            for item in getv(from_object, ['videos'])
+        ],
+    )
+
+  if getv(from_object, ['raiMediaFilteredCount']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_count'],
+        getv(from_object, ['raiMediaFilteredCount']),
+    )
+
+  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_reasons'],
+        getv(from_object, ['raiMediaFilteredReasons']),
+    )
+
+  return to_object
+
+
+def _GenerateVideosSource_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'image'],
+        _Image_to_mldev(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['video']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'video'],
+        _Video_to_mldev(getv(from_object, ['video']), to_object),
+    )
+
+  return to_object
+
+
+def _GenerateVideosSource_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['video']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'video'],
+        _Video_to_vertex(getv(from_object, ['video']), to_object),
+    )
+
+  return to_object
+
+
+def _GeneratedImageMask_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['_self']) is not None:
+    setv(
+        to_object,
+        ['mask'],
+        _Image_from_vertex(getv(from_object, ['_self']), to_object),
+    )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(
+        to_object, ['labels'], [item for item in getv(from_object, ['labels'])]
+    )
+
+  return to_object
+
+
+def _GeneratedImage_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['_self']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_from_mldev(getv(from_object, ['_self']), to_object),
+    )
+
+  if getv(from_object, ['raiFilteredReason']) is not None:
+    setv(
+        to_object,
+        ['rai_filtered_reason'],
+        getv(from_object, ['raiFilteredReason']),
+    )
+
+  if getv(from_object, ['_self']) is not None:
+    setv(
+        to_object,
+        ['safety_attributes'],
+        _SafetyAttributes_from_mldev(getv(from_object, ['_self']), to_object),
+    )
 
   return to_object
 
@@ -4317,122 +2257,483 @@ def _GeneratedImage_from_vertex(
   return to_object
 
 
-def _GenerateImagesResponse_from_vertex(
+def _GeneratedVideo_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['predictions']) is not None:
+  if getv(from_object, ['_self']) is not None:
     setv(
         to_object,
-        ['generated_images'],
-        [
-            _GeneratedImage_from_vertex(item, to_object)
-            for item in getv(from_object, ['predictions'])
-        ],
+        ['video'],
+        _Video_from_mldev(getv(from_object, ['_self']), to_object),
     )
 
-  if getv(from_object, ['positivePromptSafetyAttributes']) is not None:
+  return to_object
+
+
+def _GeneratedVideo_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['_self']) is not None:
     setv(
         to_object,
-        ['positive_prompt_safety_attributes'],
-        _SafetyAttributes_from_vertex(
-            getv(from_object, ['positivePromptSafetyAttributes']), to_object
+        ['video'],
+        _Video_from_vertex(getv(from_object, ['_self']), to_object),
+    )
+
+  return to_object
+
+
+def _GenerationConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model_selection_config']) is not None:
+    setv(
+        to_object,
+        ['modelConfig'],
+        getv(from_object, ['model_selection_config']),
+    )
+
+  if getv(from_object, ['audio_timestamp']) is not None:
+    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
+
+  if getv(from_object, ['candidate_count']) is not None:
+    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
+
+  if getv(from_object, ['enable_affective_dialog']) is not None:
+    setv(
+        to_object,
+        ['enableAffectiveDialog'],
+        getv(from_object, ['enable_affective_dialog']),
+    )
+
+  if getv(from_object, ['frequency_penalty']) is not None:
+    setv(
+        to_object,
+        ['frequencyPenalty'],
+        getv(from_object, ['frequency_penalty']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    setv(
+        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['presence_penalty']) is not None:
+    setv(
+        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+    )
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
+  if getv(from_object, ['response_logprobs']) is not None:
+    setv(
+        to_object,
+        ['responseLogprobs'],
+        getv(from_object, ['response_logprobs']),
+    )
+
+  if getv(from_object, ['response_mime_type']) is not None:
+    setv(
+        to_object,
+        ['responseMimeType'],
+        getv(from_object, ['response_mime_type']),
+    )
+
+  if getv(from_object, ['response_modalities']) is not None:
+    setv(
+        to_object,
+        ['responseModalities'],
+        getv(from_object, ['response_modalities']),
+    )
+
+  if getv(from_object, ['response_schema']) is not None:
+    setv(to_object, ['responseSchema'], getv(from_object, ['response_schema']))
+
+  if getv(from_object, ['routing_config']) is not None:
+    setv(to_object, ['routingConfig'], getv(from_object, ['routing_config']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['speech_config']) is not None:
+    setv(
+        to_object,
+        ['speechConfig'],
+        _SpeechConfig_to_vertex(
+            getv(from_object, ['speech_config']), to_object
         ),
     )
 
+  if getv(from_object, ['stop_sequences']) is not None:
+    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+
+  if getv(from_object, ['top_k']) is not None:
+    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+
+  if getv(from_object, ['top_p']) is not None:
+    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+
   return to_object
 
 
-def _EditImageResponse_from_vertex(
+def _GetModelParameters_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['predictions']) is not None:
+  if getv(from_object, ['model']) is not None:
     setv(
         to_object,
-        ['generated_images'],
+        ['_url', 'name'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  return to_object
+
+
+def _GetModelParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  return to_object
+
+
+def _GoogleSearch_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
+    )
+
+  return to_object
+
+
+def _Image_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['bytesBase64Encoded']) is not None:
+    setv(
+        to_object,
+        ['image_bytes'],
+        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+    )
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
+def _Image_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['gcsUri']) is not None:
+    setv(to_object, ['gcs_uri'], getv(from_object, ['gcsUri']))
+
+  if getv(from_object, ['bytesBase64Encoded']) is not None:
+    setv(
+        to_object,
+        ['image_bytes'],
+        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+    )
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
+def _Image_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['gcs_uri']) is not None:
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['image_bytes']) is not None:
+    setv(
+        to_object,
+        ['bytesBase64Encoded'],
+        base_t.t_bytes(getv(from_object, ['image_bytes'])),
+    )
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _Image_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['gcs_uri']) is not None:
+    setv(to_object, ['gcsUri'], getv(from_object, ['gcs_uri']))
+
+  if getv(from_object, ['image_bytes']) is not None:
+    setv(
+        to_object,
+        ['bytesBase64Encoded'],
+        base_t.t_bytes(getv(from_object, ['image_bytes'])),
+    )
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _ListModelsConfig_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['page_size']) is not None:
+    setv(
+        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+    )
+
+  if getv(from_object, ['page_token']) is not None:
+    setv(
+        parent_object,
+        ['_query', 'pageToken'],
+        getv(from_object, ['page_token']),
+    )
+
+  if getv(from_object, ['filter']) is not None:
+    setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
+
+  if getv(from_object, ['query_base']) is not None:
+    setv(
+        parent_object,
+        ['_url', 'models_url'],
+        t.t_models_url(api_client, getv(from_object, ['query_base'])),
+    )
+
+  return to_object
+
+
+def _ListModelsConfig_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['page_size']) is not None:
+    setv(
+        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
+    )
+
+  if getv(from_object, ['page_token']) is not None:
+    setv(
+        parent_object,
+        ['_query', 'pageToken'],
+        getv(from_object, ['page_token']),
+    )
+
+  if getv(from_object, ['filter']) is not None:
+    setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
+
+  if getv(from_object, ['query_base']) is not None:
+    setv(
+        parent_object,
+        ['_url', 'models_url'],
+        t.t_models_url(api_client, getv(from_object, ['query_base'])),
+    )
+
+  return to_object
+
+
+def _ListModelsParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['config']) is not None:
+    _ListModelsConfig_to_mldev(
+        api_client, getv(from_object, ['config']), to_object
+    )
+
+  return to_object
+
+
+def _ListModelsParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['config']) is not None:
+    _ListModelsConfig_to_vertex(
+        api_client, getv(from_object, ['config']), to_object
+    )
+
+  return to_object
+
+
+def _ListModelsResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['nextPageToken']) is not None:
+    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
+
+  if getv(from_object, ['_self']) is not None:
+    setv(
+        to_object,
+        ['models'],
         [
-            _GeneratedImage_from_vertex(item, to_object)
-            for item in getv(from_object, ['predictions'])
+            _Model_from_mldev(item, to_object)
+            for item in t.t_extract_models(getv(from_object, ['_self']))
         ],
     )
 
   return to_object
 
 
-def _UpscaleImageResponse_from_vertex(
+def _ListModelsResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['predictions']) is not None:
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['nextPageToken']) is not None:
+    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
+
+  if getv(from_object, ['_self']) is not None:
     setv(
         to_object,
-        ['generated_images'],
+        ['models'],
         [
-            _GeneratedImage_from_vertex(item, to_object)
-            for item in getv(from_object, ['predictions'])
+            _Model_from_vertex(item, to_object)
+            for item in t.t_extract_models(getv(from_object, ['_self']))
         ],
     )
 
   return to_object
 
 
-def _Endpoint_from_vertex(
+def _MaskReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['endpoint']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['endpoint']))
+  if getv(from_object, ['mask_mode']) is not None:
+    setv(to_object, ['maskMode'], getv(from_object, ['mask_mode']))
 
-  if getv(from_object, ['deployedModelId']) is not None:
+  if getv(from_object, ['segmentation_classes']) is not None:
     setv(
-        to_object, ['deployed_model_id'], getv(from_object, ['deployedModelId'])
+        to_object, ['maskClasses'], getv(from_object, ['segmentation_classes'])
     )
+
+  if getv(from_object, ['mask_dilation']) is not None:
+    setv(to_object, ['dilation'], getv(from_object, ['mask_dilation']))
 
   return to_object
 
 
-def _TunedModelInfo_from_vertex(
+def _Model_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if (
-      getv(from_object, ['labels', 'google-vertex-llm-tuning-base-model-id'])
-      is not None
-  ):
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['displayName']) is not None:
+    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(to_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['version']) is not None:
+    setv(to_object, ['version'], getv(from_object, ['version']))
+
+  if getv(from_object, ['_self']) is not None:
+    setv(to_object, ['tuned_model_info'], getv(from_object, ['_self']))
+
+  if getv(from_object, ['inputTokenLimit']) is not None:
+    setv(
+        to_object, ['input_token_limit'], getv(from_object, ['inputTokenLimit'])
+    )
+
+  if getv(from_object, ['outputTokenLimit']) is not None:
     setv(
         to_object,
-        ['base_model'],
-        getv(from_object, ['labels', 'google-vertex-llm-tuning-base-model-id']),
+        ['output_token_limit'],
+        getv(from_object, ['outputTokenLimit']),
     )
 
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  return to_object
-
-
-def _Checkpoint_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['checkpointId']) is not None:
-    setv(to_object, ['checkpoint_id'], getv(from_object, ['checkpointId']))
-
-  if getv(from_object, ['epoch']) is not None:
-    setv(to_object, ['epoch'], getv(from_object, ['epoch']))
-
-  if getv(from_object, ['step']) is not None:
-    setv(to_object, ['step'], getv(from_object, ['step']))
+  if getv(from_object, ['supportedGenerationMethods']) is not None:
+    setv(
+        to_object,
+        ['supported_actions'],
+        getv(from_object, ['supportedGenerationMethods']),
+    )
 
   return to_object
 
@@ -4485,63 +2786,894 @@ def _Model_from_vertex(
     setv(
         to_object,
         ['checkpoints'],
-        [
-            _Checkpoint_from_vertex(item, to_object)
-            for item in getv(from_object, ['checkpoints'])
-        ],
+        [item for item in getv(from_object, ['checkpoints'])],
     )
 
   return to_object
 
 
-def _ListModelsResponse_from_vertex(
+def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
-  if getv(from_object, ['_self']) is not None:
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['inline_data']) is not None:
     setv(
         to_object,
-        ['models'],
+        ['inlineData'],
+        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
+    )
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  return to_object
+
+
+def _ProductImage_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['product_image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_vertex(getv(from_object, ['product_image']), to_object),
+    )
+
+  return to_object
+
+
+def _RecontextImageConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['number_of_images']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'sampleCount'],
+        getv(from_object, ['number_of_images']),
+    )
+
+  if getv(from_object, ['base_steps']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'editConfig', 'baseSteps'],
+        getv(from_object, ['base_steps']),
+    )
+
+  if getv(from_object, ['output_gcs_uri']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'storageUri'],
+        getv(from_object, ['output_gcs_uri']),
+    )
+
+  if getv(from_object, ['seed']) is not None:
+    setv(parent_object, ['parameters', 'seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['safety_filter_level']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'safetySetting'],
+        getv(from_object, ['safety_filter_level']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
+  if getv(from_object, ['add_watermark']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'addWatermark'],
+        getv(from_object, ['add_watermark']),
+    )
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'mimeType'],
+        getv(from_object, ['output_mime_type']),
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'compressionQuality'],
+        getv(from_object, ['output_compression_quality']),
+    )
+
+  if getv(from_object, ['enhance_prompt']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'enhancePrompt'],
+        getv(from_object, ['enhance_prompt']),
+    )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  return to_object
+
+
+def _RecontextImageParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['source']) is not None:
+    _RecontextImageSource_to_vertex(getv(from_object, ['source']), to_object)
+
+  if getv(from_object, ['config']) is not None:
+    _RecontextImageConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _RecontextImageResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['predictions']) is not None:
+    setv(
+        to_object,
+        ['generated_images'],
         [
-            _Model_from_vertex(item, to_object)
-            for item in t.t_extract_models(getv(from_object, ['_self']))
+            _GeneratedImage_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions'])
         ],
     )
 
   return to_object
 
 
-def _DeleteModelResponse_from_vertex(
+def _RecontextImageSource_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['person_image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'personImage', 'image'],
+        _Image_to_vertex(getv(from_object, ['person_image']), to_object),
+    )
+
+  if getv(from_object, ['product_images']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'productImages'],
+        [
+            _ProductImage_to_vertex(item, to_object)
+            for item in getv(from_object, ['product_images'])
+        ],
+    )
 
   return to_object
 
 
-def _CountTokensResponse_from_vertex(
+def _ReferenceImageAPI_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['totalTokens']) is not None:
-    setv(to_object, ['total_tokens'], getv(from_object, ['totalTokens']))
+  if getv(from_object, ['reference_image']) is not None:
+    setv(
+        to_object,
+        ['referenceImage'],
+        _Image_to_vertex(getv(from_object, ['reference_image']), to_object),
+    )
+
+  if getv(from_object, ['reference_id']) is not None:
+    setv(to_object, ['referenceId'], getv(from_object, ['reference_id']))
+
+  if getv(from_object, ['reference_type']) is not None:
+    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
+
+  if getv(from_object, ['mask_image_config']) is not None:
+    setv(
+        to_object,
+        ['maskImageConfig'],
+        _MaskReferenceConfig_to_vertex(
+            getv(from_object, ['mask_image_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['control_image_config']) is not None:
+    setv(
+        to_object,
+        ['controlImageConfig'],
+        _ControlReferenceConfig_to_vertex(
+            getv(from_object, ['control_image_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['style_image_config']) is not None:
+    setv(
+        to_object,
+        ['styleImageConfig'],
+        getv(from_object, ['style_image_config']),
+    )
+
+  if getv(from_object, ['subject_image_config']) is not None:
+    setv(
+        to_object,
+        ['subjectImageConfig'],
+        getv(from_object, ['subject_image_config']),
+    )
 
   return to_object
 
 
-def _ComputeTokensResponse_from_vertex(
+def _SafetyAttributes_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['tokensInfo']) is not None:
-    setv(to_object, ['tokens_info'], getv(from_object, ['tokensInfo']))
+  if getv(from_object, ['safetyAttributes', 'categories']) is not None:
+    setv(
+        to_object,
+        ['categories'],
+        getv(from_object, ['safetyAttributes', 'categories']),
+    )
+
+  if getv(from_object, ['safetyAttributes', 'scores']) is not None:
+    setv(
+        to_object, ['scores'], getv(from_object, ['safetyAttributes', 'scores'])
+    )
+
+  if getv(from_object, ['contentType']) is not None:
+    setv(to_object, ['content_type'], getv(from_object, ['contentType']))
+
+  return to_object
+
+
+def _SafetyAttributes_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['safetyAttributes', 'categories']) is not None:
+    setv(
+        to_object,
+        ['categories'],
+        getv(from_object, ['safetyAttributes', 'categories']),
+    )
+
+  if getv(from_object, ['safetyAttributes', 'scores']) is not None:
+    setv(
+        to_object, ['scores'], getv(from_object, ['safetyAttributes', 'scores'])
+    )
+
+  if getv(from_object, ['contentType']) is not None:
+    setv(to_object, ['content_type'], getv(from_object, ['contentType']))
+
+  return to_object
+
+
+def _SafetySetting_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['method']) is not None:
+    raise ValueError('method parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['category']) is not None:
+    setv(to_object, ['category'], getv(from_object, ['category']))
+
+  if getv(from_object, ['threshold']) is not None:
+    setv(to_object, ['threshold'], getv(from_object, ['threshold']))
+
+  return to_object
+
+
+def _ScribbleImage_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  return to_object
+
+
+def _SegmentImageConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['mode']) is not None:
+    setv(parent_object, ['parameters', 'mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['max_predictions']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'maxPredictions'],
+        getv(from_object, ['max_predictions']),
+    )
+
+  if getv(from_object, ['confidence_threshold']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'confidenceThreshold'],
+        getv(from_object, ['confidence_threshold']),
+    )
+
+  if getv(from_object, ['mask_dilation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'maskDilation'],
+        getv(from_object, ['mask_dilation']),
+    )
+
+  if getv(from_object, ['binary_color_threshold']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'binaryColorThreshold'],
+        getv(from_object, ['binary_color_threshold']),
+    )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  return to_object
+
+
+def _SegmentImageParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['source']) is not None:
+    _SegmentImageSource_to_vertex(getv(from_object, ['source']), to_object)
+
+  if getv(from_object, ['config']) is not None:
+    _SegmentImageConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _SegmentImageResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['predictions']) is not None:
+    setv(
+        to_object,
+        ['generated_masks'],
+        [
+            _GeneratedImageMask_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions'])
+        ],
+    )
+
+  return to_object
+
+
+def _SegmentImageSource_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prompt']) is not None:
+    setv(
+        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
+    )
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['scribble_image']) is not None:
+    setv(
+        parent_object,
+        ['instances[0]', 'scribble'],
+        _ScribbleImage_to_vertex(
+            getv(from_object, ['scribble_image']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_config']) is not None:
+    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    raise ValueError(
+        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  return to_object
+
+
+def _Tool_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
+
+  if getv(from_object, ['retrieval']) is not None:
+    raise ValueError('retrieval parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['google_maps']) is not None:
+    raise ValueError('google_maps parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['url_context']) is not None:
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  return to_object
+
+
+def _Tool_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_vertex(item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
+  if getv(from_object, ['retrieval']) is not None:
+    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(
+        to_object,
+        ['enterpriseWebSearch'],
+        getv(from_object, ['enterprise_web_search']),
+    )
+
+  if getv(from_object, ['google_maps']) is not None:
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
+
+  if getv(from_object, ['url_context']) is not None:
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  return to_object
+
+
+def _TunedModelInfo_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if (
+      getv(from_object, ['labels', 'google-vertex-llm-tuning-base-model-id'])
+      is not None
+  ):
+    setv(
+        to_object,
+        ['base_model'],
+        getv(from_object, ['labels', 'google-vertex-llm-tuning-base-model-id']),
+    )
+
+  if getv(from_object, ['createTime']) is not None:
+    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
+
+  if getv(from_object, ['updateTime']) is not None:
+    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
+
+  return to_object
+
+
+def _UpdateModelConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(parent_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['default_checkpoint_id']) is not None:
+    setv(
+        parent_object,
+        ['defaultCheckpointId'],
+        getv(from_object, ['default_checkpoint_id']),
+    )
+
+  return to_object
+
+
+def _UpdateModelConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['description']) is not None:
+    setv(parent_object, ['description'], getv(from_object, ['description']))
+
+  if getv(from_object, ['default_checkpoint_id']) is not None:
+    setv(
+        parent_object,
+        ['defaultCheckpointId'],
+        getv(from_object, ['default_checkpoint_id']),
+    )
+
+  return to_object
+
+
+def _UpdateModelParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    _UpdateModelConfig_to_mldev(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _UpdateModelParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    _UpdateModelConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _UpscaleImageAPIConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['output_gcs_uri']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'storageUri'],
+        getv(from_object, ['output_gcs_uri']),
+    )
+
+  if getv(from_object, ['include_rai_reason']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'includeRaiReason'],
+        getv(from_object, ['include_rai_reason']),
+    )
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'mimeType'],
+        getv(from_object, ['output_mime_type']),
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'outputOptions', 'compressionQuality'],
+        getv(from_object, ['output_compression_quality']),
+    )
+
+  if getv(from_object, ['enhance_input_image']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'upscaleConfig', 'enhanceInputImage'],
+        getv(from_object, ['enhance_input_image']),
+    )
+
+  if getv(from_object, ['image_preservation_factor']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'upscaleConfig', 'imagePreservationFactor'],
+        getv(from_object, ['image_preservation_factor']),
+    )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  if getv(from_object, ['number_of_images']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'sampleCount'],
+        getv(from_object, ['number_of_images']),
+    )
+
+  if getv(from_object, ['mode']) is not None:
+    setv(parent_object, ['parameters', 'mode'], getv(from_object, ['mode']))
+
+  return to_object
+
+
+def _UpscaleImageAPIParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['instances[0]', 'image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['upscale_factor']) is not None:
+    setv(
+        to_object,
+        ['parameters', 'upscaleConfig', 'upscaleFactor'],
+        getv(from_object, ['upscale_factor']),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    _UpscaleImageAPIConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _UpscaleImageResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['predictions']) is not None:
+    setv(
+        to_object,
+        ['generated_images'],
+        [
+            _GeneratedImage_from_vertex(item, to_object)
+            for item in getv(from_object, ['predictions'])
+        ],
+    )
+
+  return to_object
+
+
+def _VideoGenerationMask_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['_self'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['mask_mode']) is not None:
+    setv(to_object, ['maskMode'], getv(from_object, ['mask_mode']))
+
+  return to_object
+
+
+def _VideoGenerationReferenceImage_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_mldev(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['reference_type']) is not None:
+    _VideoGenerationReferenceType_to_mldev_enum_validate(
+        getv(from_object, ['reference_type'])
+    )
+    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
+
+  return to_object
+
+
+def _VideoGenerationReferenceImage_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_vertex(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['reference_type']) is not None:
+    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
+
+  return to_object
+
+
+def _Video_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['video', 'uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
+
+  if getv(from_object, ['video', 'encodedVideo']) is not None:
+    setv(
+        to_object,
+        ['video_bytes'],
+        base_t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
+    )
+
+  if getv(from_object, ['encoding']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['encoding']))
 
   return to_object
 
@@ -4558,7 +3690,7 @@ def _Video_from_vertex(
     setv(
         to_object,
         ['video_bytes'],
-        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
     )
 
   if getv(from_object, ['mimeType']) is not None:
@@ -4567,87 +3699,44 @@ def _Video_from_vertex(
   return to_object
 
 
-def _GeneratedVideo_from_vertex(
+def _Video_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['video', 'uri'], getv(from_object, ['uri']))
+
+  if getv(from_object, ['video_bytes']) is not None:
     setv(
         to_object,
-        ['video'],
-        _Video_from_vertex(getv(from_object, ['_self']), to_object),
+        ['video', 'encodedVideo'],
+        base_t.t_bytes(getv(from_object, ['video_bytes'])),
     )
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['encoding'], getv(from_object, ['mime_type']))
 
   return to_object
 
 
-def _GenerateVideosResponse_from_vertex(
+def _Video_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['videos']) is not None:
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['gcsUri'], getv(from_object, ['uri']))
+
+  if getv(from_object, ['video_bytes']) is not None:
     setv(
         to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_vertex(item, to_object)
-            for item in getv(from_object, ['videos'])
-        ],
+        ['bytesBase64Encoded'],
+        base_t.t_bytes(getv(from_object, ['video_bytes'])),
     )
 
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
-    )
-
-  return to_object
-
-
-def _GenerateVideosOperation_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _GenerateVideosResponse_from_vertex(
-            getv(from_object, ['response']), to_object
-        ),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['result'],
-        _GenerateVideosResponse_from_vertex(
-            getv(from_object, ['response']), to_object
-        ),
-    )
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -4707,12 +3796,19 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    if config is not None and getattr(
+        config, 'should_return_http_response', None
+    ):
+      return_value = types.GenerateContentResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
+      return return_value
+
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _GenerateContentResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _GenerateContentResponse_from_mldev(response_dict)
 
     return_value = types.GenerateContentResponse._from_response(
@@ -4789,12 +3885,12 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     ):
 
-      response_dict = '' if not response.body else json.loads(response.body)
+      response_dict = {} if not response.body else json.loads(response.body)
 
       if self._api_client.vertexai:
         response_dict = _GenerateContentResponse_from_vertex(response_dict)
 
-      else:
+      if not self._api_client.vertexai:
         response_dict = _GenerateContentResponse_from_mldev(response_dict)
 
       return_value = types.GenerateContentResponse._from_response(
@@ -4882,18 +3978,20 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _EmbedContentResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _EmbedContentResponse_from_mldev(response_dict)
 
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -4904,13 +4002,7 @@ class Models(_api_module.BaseModule):
       prompt: str,
       config: Optional[types.GenerateImagesConfigOrDict] = None,
   ) -> types.GenerateImagesResponse:
-    """Generates images based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the images to generate.
-      config (GenerateImagesConfig): Configuration for generation.
-    """
+    """Private method for generating images."""
 
     parameter_model = types._GenerateImagesParameters(
         model=model,
@@ -4958,18 +4050,20 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _GenerateImagesResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _GenerateImagesResponse_from_mldev(response_dict)
 
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -4981,47 +4075,7 @@ class Models(_api_module.BaseModule):
       reference_images: list[types._ReferenceImageAPIOrDict],
       config: Optional[types.EditImageConfigOrDict] = None,
   ) -> types.EditImageResponse:
-    """Edits an image based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
-        ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
-        reference images for editing.
-      config (EditImageConfig): Configuration for editing.
-
-    Usage:
-
-    .. code-block:: python
-
-      from google.genai.types import RawReferenceImage, MaskReferenceImage
-
-      raw_ref_image = RawReferenceImage(
-        reference_id=1,
-        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
-      )
-
-      mask_ref_image = MaskReferenceImage(
-        reference_id=2,
-        config=types.MaskReferenceConfig(
-            mask_mode='MASK_MODE_FOREGROUND',
-            mask_dilation=0.06,
-        ),
-      )
-      response = client.models.edit_image(
-        model='imagen-3.0-capability-001',
-        prompt='man with dog',
-        reference_images=[raw_ref_image, mask_ref_image],
-        config=types.EditImageConfig(
-            edit_mode= "EDIT_MODE_INPAINT_INSERTION",
-            number_of_images= 1,
-            include_rai_reason= True,
-        )
-      )
-      response.generated_images[0].image.show()
-      # Shows a man with a dog instead of a cat.
-    """
+    """Private method for editing an image."""
 
     parameter_model = types._EditImageParameters(
         model=model,
@@ -5063,7 +4117,7 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _EditImageResponse_from_vertex(response_dict)
@@ -5071,7 +4125,9 @@ class Models(_api_module.BaseModule):
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5083,14 +4139,7 @@ class Models(_api_module.BaseModule):
       upscale_factor: str,
       config: Optional[types._UpscaleImageAPIConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
-    """Upscales an image.
-
-    Args:
-      model (str): The model to use.
-      image (Image): The input image for upscaling.
-      upscale_factor (str): The factor to upscale the image (x2 or x4).
-      config (_UpscaleImageAPIConfig): Configuration for upscaling.
-    """
+    """Private method for upscaling an image."""
 
     parameter_model = types._UpscaleImageAPIParameters(
         model=model,
@@ -5132,12 +4181,203 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _UpscaleImageResponse_from_vertex(response_dict)
 
     return_value = types.UpscaleImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  def recontext_image(
+      self,
+      *,
+      model: str,
+      source: types.RecontextImageSourceOrDict,
+      config: Optional[types.RecontextImageConfigOrDict] = None,
+  ) -> types.RecontextImageResponse:
+    """Recontextualizes an image.
+
+    There are two types of recontextualization currently supported:
+    1) Imagen Product Recontext - Generate images of products in new scenes
+       and contexts.
+    2) Virtual Try-On: Generate images of persons modeling fashion products.
+
+    Args:
+      model (str): The model to use.
+      source (RecontextImageSource): An object containing the source inputs
+        (prompt, person_image, product_images) for image recontext. prompt is
+        optional for product recontext and disallowed for virtual try-on.
+        person_image is required for virtual try-on, disallowed for product
+        recontext. product_images is required for both product recontext and
+        virtual try-on. Only one product image is supported for virtual try-on,
+        and up to 3 product images (different angles of the same product) are
+        supported for product recontext.
+      config (RecontextImageConfig): Configuration for recontextualization.
+
+    Usage:
+
+      ```
+      product_recontext_response = client.models.recontext_image(
+          model="imagen-product-recontext-preview-06-30",
+          source=types.RecontextImageSource(
+              prompt="In a modern kitchen setting.",
+              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = product_recontext_response.generated_images[0].image
+
+      virtual_try_on_response = client.models.recontext_image(
+          model="virtual-try-on-preview-08-04",
+          source=types.RecontextImageSource(
+              person_image=types.Image.from_file(IMAGE1_FILE_PATH),
+              product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = virtual_try_on_response.generated_images[0].image
+      ```
+    """
+
+    parameter_model = types._RecontextImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _RecontextImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _RecontextImageResponse_from_vertex(response_dict)
+
+    return_value = types.RecontextImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  def segment_image(
+      self,
+      *,
+      model: str,
+      source: types.SegmentImageSourceOrDict,
+      config: Optional[types.SegmentImageConfigOrDict] = None,
+  ) -> types.SegmentImageResponse:
+    """Segments an image, creating a mask of a specified area.
+
+    Args:
+      model (str): The model to use.
+      source (SegmentImageSource): An object containing the source inputs
+        (prompt, image, scribble_image) for image segmentation. The prompt is
+        required for prompt mode and semantic mode, disallowed for other modes.
+        scribble_image is required for the interactive mode, disallowed for
+        other modes.
+      config (SegmentImageConfig): Configuration for segmentation.
+
+    Usage:
+
+      ```
+      response = client.models.segment_image(
+          model="image-segmentation-001",
+          source=types.SegmentImageSource(
+              image=types.Image.from_file(IMAGE_FILE_PATH),
+          ),
+      )
+
+      mask_image = response.generated_masks[0].mask
+      ```
+    """
+
+    parameter_model = types._SegmentImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _SegmentImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _SegmentImageResponse_from_vertex(response_dict)
+
+    return_value = types.SegmentImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
 
@@ -5190,12 +4430,12 @@ class Models(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _Model_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _Model_from_mldev(response_dict)
 
     return_value = types.Model._from_response(
@@ -5250,18 +4490,20 @@ class Models(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ListModelsResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _ListModelsResponse_from_mldev(response_dict)
 
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5316,12 +4558,12 @@ class Models(_api_module.BaseModule):
         'patch', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _Model_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _Model_from_mldev(response_dict)
 
     return_value = types.Model._from_response(
@@ -5382,18 +4624,20 @@ class Models(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _DeleteModelResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _DeleteModelResponse_from_mldev(response_dict)
 
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5471,18 +4715,20 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _CountTokensResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _CountTokensResponse_from_mldev(response_dict)
 
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5555,7 +4801,7 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ComputeTokensResponse_from_vertex(response_dict)
@@ -5563,7 +4809,9 @@ class Models(_api_module.BaseModule):
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -5574,47 +4822,17 @@ class Models(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
-    """Generates videos based on an input (text, image, or video) and configuration.
-
-    The following use cases are supported:
-    1. Text to video generation.
-    2a. Image to video generation (additional text prompt is optional).
-    2b. Image to video generation with frame interpolation (specify last_frame
-    in config).
-    3. Video extension (additional text prompt is optional)
-
-    Args:
-      model: The model to use.
-      prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
-      image: The input image for generating the videos. Optional if prompt is
-        provided.
-      video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
-      config: Configuration for generation.
-
-    Usage:
-
-      ```
-      operation = client.models.generate_videos(
-          model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
-      )
-      while not operation.done:
-          time.sleep(10)
-          operation = client.operations.get(operation)
-
-      operation.result.generated_videos[0].video.uri
-      ```
-    """
+    """Private method for generating videos."""
 
     parameter_model = types._GenerateVideosParameters(
         model=model,
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )
 
@@ -5658,12 +4876,12 @@ class Models(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_mldev(response_dict)
 
     return_value = types.GenerateVideosOperation._from_response(
@@ -5677,7 +4895,7 @@ class Models(_api_module.BaseModule):
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: types.ContentListUnionDict,
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> types.GenerateContentResponse:
     """Makes an API request to generate content using a model.
@@ -5688,9 +4906,8 @@ class Models(_api_module.BaseModule):
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
     - The partial resource name with 'publishers/', for example:
       'publishers/google/models/gemini-2.0-flash' or
-      'publishers/meta/models/llama-3.1-405b-instruct-maas'
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash' or 'meta/llama-3.1-405b-instruct-maas'
+      'google/gemini-2.0-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
@@ -5766,10 +4983,6 @@ class Models(_api_module.BaseModule):
       response = self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
-      logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(parsed_config)
       if not function_map:
@@ -5787,6 +5000,11 @@ class Models(_api_module.BaseModule):
       )
       if not func_response_parts:
         break
+      logger.info(f'AFC remote call {i} is done.')
+      remaining_remote_calls_afc -= 1
+      if remaining_remote_calls_afc == 0:
+        logger.info('Reached max remote calls for automatic function calling.')
+
       func_call_content = response.candidates[0].content
       func_response_content = types.Content(
           role='user',
@@ -5813,7 +5031,7 @@ class Models(_api_module.BaseModule):
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: types.ContentListUnionDict,
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Iterator[types.GenerateContentResponse]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
@@ -5824,9 +5042,8 @@ class Models(_api_module.BaseModule):
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
     - The partial resource name with 'publishers/', for example:
       'publishers/google/models/gemini-2.0-flash' or
-      'publishers/meta/models/llama-3.1-405b-instruct-maas'
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash' or 'meta/llama-3.1-405b-instruct-maas'
+      'google/gemini-2.0-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
@@ -5905,10 +5122,6 @@ class Models(_api_module.BaseModule):
       response = self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
-      logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
 
       function_map = _extra_utils.get_function_map(parsed_config)
 
@@ -5958,6 +5171,10 @@ class Models(_api_module.BaseModule):
         break
       if not func_response_parts:
         break
+      logger.info(f'AFC remote call {i} is done.')
+      remaining_remote_calls_afc -= 1
+      if remaining_remote_calls_afc == 0:
+        logger.info('Reached max remote calls for automatic function calling.')
 
       # Append function response parts to contents for the next request.
       if chunk is not None and chunk.candidates is not None:
@@ -6135,6 +5352,7 @@ class Models(_api_module.BaseModule):
       config_dct = dict(config)
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
+        output_gcs_uri=config_dct.get('output_gcs_uri', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
@@ -6144,6 +5362,7 @@ class Models(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
@@ -6164,6 +5383,7 @@ class Models(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -6178,11 +5398,15 @@ class Models(_api_module.BaseModule):
     Args:
       model: The model to use.
       prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
+        video and video extension use cases. This argument is deprecated, please
+        use source instead.
       image: The input image for generating the videos. Optional if prompt is
-        provided.
+        provided. This argument is deprecated, please use source instead.
       video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
+        or image is provided. This argument is deprecated, please use source
+        instead.
+      source: The input source for generating the videos (prompt, image, and/or
+        video)
       config: Configuration for generation.
 
     Usage:
@@ -6190,7 +5414,9 @@ class Models(_api_module.BaseModule):
       ```
       operation = client.models.generate_videos(
           model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
       )
       while not operation.done:
           time.sleep(10)
@@ -6199,11 +5425,17 @@ class Models(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
+    if (prompt or image or video) and source:
+      raise ValueError(
+          'Source and prompt/image/video are mutually exclusive.'
+          + ' Please only use source.'
+      )
     return self._generate_videos(
         model=model,
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )
 
@@ -6313,12 +5545,19 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    if config is not None and getattr(
+        config, 'should_return_http_response', None
+    ):
+      return_value = types.GenerateContentResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
+      return return_value
+
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _GenerateContentResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _GenerateContentResponse_from_mldev(response_dict)
 
     return_value = types.GenerateContentResponse._from_response(
@@ -6398,12 +5637,12 @@ class AsyncModels(_api_module.BaseModule):
     async def async_generator():  # type: ignore[no-untyped-def]
       async for response in response_stream:
 
-        response_dict = '' if not response.body else json.loads(response.body)
+        response_dict = {} if not response.body else json.loads(response.body)
 
         if self._api_client.vertexai:
           response_dict = _GenerateContentResponse_from_vertex(response_dict)
 
-        else:
+        if not self._api_client.vertexai:
           response_dict = _GenerateContentResponse_from_mldev(response_dict)
 
         return_value = types.GenerateContentResponse._from_response(
@@ -6493,18 +5732,20 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _EmbedContentResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _EmbedContentResponse_from_mldev(response_dict)
 
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -6515,13 +5756,7 @@ class AsyncModels(_api_module.BaseModule):
       prompt: str,
       config: Optional[types.GenerateImagesConfigOrDict] = None,
   ) -> types.GenerateImagesResponse:
-    """Generates images based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the images to generate.
-      config (GenerateImagesConfig): Configuration for generation.
-    """
+    """Private method for generating images asynchronously."""
 
     parameter_model = types._GenerateImagesParameters(
         model=model,
@@ -6569,18 +5804,20 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _GenerateImagesResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _GenerateImagesResponse_from_mldev(response_dict)
 
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -6592,47 +5829,7 @@ class AsyncModels(_api_module.BaseModule):
       reference_images: list[types._ReferenceImageAPIOrDict],
       config: Optional[types.EditImageConfigOrDict] = None,
   ) -> types.EditImageResponse:
-    """Edits an image based on a text description and configuration.
-
-    Args:
-      model (str): The model to use.
-      prompt (str): A text description of the edit to apply to the image.
-        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
-        ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
-        reference images for editing.
-      config (EditImageConfig): Configuration for editing.
-
-    Usage:
-
-    .. code-block:: python
-
-      from google.genai.types import RawReferenceImage, MaskReferenceImage
-
-      raw_ref_image = RawReferenceImage(
-        reference_id=1,
-        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
-      )
-
-      mask_ref_image = MaskReferenceImage(
-        reference_id=2,
-        config=types.MaskReferenceConfig(
-            mask_mode='MASK_MODE_FOREGROUND',
-            mask_dilation=0.06,
-        ),
-      )
-      response = await client.aio.models.edit_image(
-        model='imagen-3.0-capability-001',
-        prompt='man with dog',
-        reference_images=[raw_ref_image, mask_ref_image],
-        config=types.EditImageConfig(
-            edit_mode= "EDIT_MODE_INPAINT_INSERTION",
-            number_of_images= 1,
-            include_rai_reason= True,
-        )
-      )
-      response.generated_images[0].image.show()
-      # Shows a man with a dog instead of a cat.
-    """
+    """Private method for editing an image asynchronously."""
 
     parameter_model = types._EditImageParameters(
         model=model,
@@ -6674,7 +5871,7 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _EditImageResponse_from_vertex(response_dict)
@@ -6682,7 +5879,9 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -6694,14 +5893,7 @@ class AsyncModels(_api_module.BaseModule):
       upscale_factor: str,
       config: Optional[types._UpscaleImageAPIConfigOrDict] = None,
   ) -> types.UpscaleImageResponse:
-    """Upscales an image.
-
-    Args:
-      model (str): The model to use.
-      image (Image): The input image for upscaling.
-      upscale_factor (str): The factor to upscale the image (x2 or x4).
-      config (_UpscaleImageAPIConfig): Configuration for upscaling.
-    """
+    """Private method for upscaling an image asynchronously."""
 
     parameter_model = types._UpscaleImageAPIParameters(
         model=model,
@@ -6743,12 +5935,206 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _UpscaleImageResponse_from_vertex(response_dict)
 
     return_value = types.UpscaleImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  async def recontext_image(
+      self,
+      *,
+      model: str,
+      source: types.RecontextImageSourceOrDict,
+      config: Optional[types.RecontextImageConfigOrDict] = None,
+  ) -> types.RecontextImageResponse:
+    """Recontextualizes an image.
+
+    There are two types of recontextualization currently supported:
+    1) Imagen Product Recontext - Generate images of products in new scenes
+       and contexts.
+    2) Virtual Try-On: Generate images of persons modeling fashion products.
+
+    Args:
+      model (str): The model to use.
+      source (RecontextImageSource): An object containing the source inputs
+        (prompt, person_image, product_images) for image recontext. prompt is
+        optional for product recontext and disallowed for virtual try-on.
+        person_image is required for virtual try-on, disallowed for product
+        recontext. product_images is required for both product recontext and
+        virtual try-on. Only one product image is supported for virtual try-on,
+        and up to 3 product images (different angles of the same product) are
+        supported for product recontext.
+      config (RecontextImageConfig): Configuration for recontextualization.
+
+    Usage:
+
+      ```
+      product_recontext_response = client.models.recontext_image(
+          model="imagen-product-recontext-preview-06-30",
+          source=types.RecontextImageSource(
+              prompt="In a modern kitchen setting.",
+              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = product_recontext_response.generated_images[0].image
+
+      virtual_try_on_response = client.models.recontext_image(
+          model="virtual-try-on-preview-08-04",
+          source=types.RecontextImageSource(
+              person_image=types.Image.from_file(IMAGE1_FILE_PATH),
+              product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
+          ),
+          config=types.RecontextImageConfig(
+              number_of_images=1,
+          ),
+      )
+      image = virtual_try_on_response.generated_images[0].image
+      ```
+    """
+
+    parameter_model = types._RecontextImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _RecontextImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _RecontextImageResponse_from_vertex(response_dict)
+
+    return_value = types.RecontextImageResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  async def segment_image(
+      self,
+      *,
+      model: str,
+      source: types.SegmentImageSourceOrDict,
+      config: Optional[types.SegmentImageConfigOrDict] = None,
+  ) -> types.SegmentImageResponse:
+    """Segments an image, creating a mask of a specified area.
+
+    Args:
+      model (str): The model to use.
+      source (SegmentImageSource): An object containing the source inputs
+        (prompt, image, scribble_image) for image segmentation. The prompt is
+        required for prompt mode and semantic mode, disallowed for other modes.
+        scribble_image is required for the interactive mode, disallowed for
+        other modes.
+      config (SegmentImageConfig): Configuration for segmentation.
+
+    Usage:
+
+      ```
+      response = client.models.segment_image(
+          model="image-segmentation-001",
+          source=types.SegmentImageSource(
+              image=types.Image.from_file(IMAGE_FILE_PATH),
+          ),
+          config=types.SegmentImageConfig(
+              mode=types.SegmentMode.foreground,
+          ),
+      )
+
+      mask_image = response.generated_masks[0].mask
+      ```
+    """
+
+    parameter_model = types._SegmentImageParameters(
+        model=model,
+        source=source,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _SegmentImageParameters_to_vertex(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:predict'.format_map(request_url_dict)
+      else:
+        path = '{model}:predict'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _SegmentImageResponse_from_vertex(response_dict)
+
+    return_value = types.SegmentImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
 
@@ -6803,12 +6189,12 @@ class AsyncModels(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _Model_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _Model_from_mldev(response_dict)
 
     return_value = types.Model._from_response(
@@ -6865,18 +6251,20 @@ class AsyncModels(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ListModelsResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _ListModelsResponse_from_mldev(response_dict)
 
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -6931,12 +6319,12 @@ class AsyncModels(_api_module.BaseModule):
         'patch', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _Model_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _Model_from_mldev(response_dict)
 
     return_value = types.Model._from_response(
@@ -6997,18 +6385,20 @@ class AsyncModels(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _DeleteModelResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _DeleteModelResponse_from_mldev(response_dict)
 
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -7086,18 +6476,20 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _CountTokensResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _CountTokensResponse_from_mldev(response_dict)
 
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -7169,7 +6561,7 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ComputeTokensResponse_from_vertex(response_dict)
@@ -7177,7 +6569,9 @@ class AsyncModels(_api_module.BaseModule):
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -7188,47 +6582,17 @@ class AsyncModels(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
-    """Generates videos based on an input (text, image, or video) and configuration.
-
-    The following use cases are supported:
-    1. Text to video generation.
-    2a. Image to video generation (additional text prompt is optional).
-    2b. Image to video generation with frame interpolation (specify last_frame
-    in config).
-    3. Video extension (additional text prompt is optional)
-
-    Args:
-      model: The model to use.
-      prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
-      image: The input image for generating the videos. Optional if prompt is
-        provided.
-      video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
-      config: Configuration for generation.
-
-    Usage:
-
-      ```
-      operation = client.models.generate_videos(
-          model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
-      )
-      while not operation.done:
-          time.sleep(10)
-          operation = client.operations.get(operation)
-
-      operation.result.generated_videos[0].video.uri
-      ```
-    """
+    """Private method for generating videos asynchronously."""
 
     parameter_model = types._GenerateVideosParameters(
         model=model,
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )
 
@@ -7272,12 +6636,12 @@ class AsyncModels(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_mldev(response_dict)
 
     return_value = types.GenerateVideosOperation._from_response(
@@ -7407,9 +6771,8 @@ class AsyncModels(_api_module.BaseModule):
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
     - The partial resource name with 'publishers/', for example:
       'publishers/google/models/gemini-2.0-flash' or
-      'publishers/meta/models/llama-3.1-405b-instruct-maas'
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash' or 'meta/llama-3.1-405b-instruct-maas'
+      'google/gemini-2.0-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
@@ -7781,6 +7144,7 @@ class AsyncModels(_api_module.BaseModule):
       config_dct = dict(config)
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
+        output_gcs_uri=config_dct.get('output_gcs_uri', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
@@ -7790,6 +7154,7 @@ class AsyncModels(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
@@ -7810,6 +7175,7 @@ class AsyncModels(_api_module.BaseModule):
       prompt: Optional[str] = None,
       image: Optional[types.ImageOrDict] = None,
       video: Optional[types.VideoOrDict] = None,
+      source: Optional[types.GenerateVideosSourceOrDict] = None,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -7824,11 +7190,15 @@ class AsyncModels(_api_module.BaseModule):
     Args:
       model: The model to use.
       prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases.
+        video and video extension use cases. This argument is deprecated, please
+        use source instead.
       image: The input image for generating the videos. Optional if prompt is
-        provided.
+        provided. This argument is deprecated, please use source instead.
       video: The input video for video extension use cases. Optional if prompt
-        or image is provided.
+        or image is provided. This argument is deprecated, please use source
+        instead.
+      source: The input source for generating the videos (prompt, image, and/or
+        video)
       config: Configuration for generation.
 
     Usage:
@@ -7836,7 +7206,9 @@ class AsyncModels(_api_module.BaseModule):
       ```
       operation = client.models.generate_videos(
           model="veo-2.0-generate-001",
-          prompt="A neon hologram of a cat driving at top speed",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
       )
       while not operation.done:
           time.sleep(10)
@@ -7845,10 +7217,16 @@ class AsyncModels(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
+    if (prompt or image or video) and source:
+      raise ValueError(
+          'Source and prompt/image/video are mutually exclusive.'
+          + ' Please only use source.'
+      )
     return await self._generate_videos(
         model=model,
         prompt=prompt,
         image=image,
         video=video,
+        source=source,
         config=config,
     )

@@ -77,7 +77,10 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_delete(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    delete_job = await client.aio.batches.delete(name=_BATCH_JOB_NAME)
+  if client.vertexai:
+    name = _BATCH_JOB_NAME
+  else:
+    name = _MLDEV_BATCH_OPERATION_NAME
 
-    assert delete_job
+  delete_job = await client.aio.batches.delete(name=name)
+  assert delete_job

@@ -13,7 +13,9 @@
 # limitations under the License.
 #
 
+import collections
 import logging
+import os
 import sys
 import typing
 
@@ -24,6 +26,12 @@ from ... import _transformers as t
 from ... import errors
 from ... import types
 from .. import pytest_helper
+
+GOOGLE_HOMEPAGE_FILE_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '../data/google_homepage.png')
+)
+with open(GOOGLE_HOMEPAGE_FILE_PATH, 'rb') as image_file:
+  google_homepage_screenshot_bytes = image_file.read()
 
 function_declarations = [{
     'name': 'get_current_weather',
@@ -38,6 +46,31 @@ function_declarations = [{
             'unit': {
                 'type': 'STRING',
                 'enum': ['C', 'F'],
+            },
+        },
+    },
+}]
+computer_use_override_function_declarations = [{
+    'name': 'type_text_at',
+    'description': 'Types text at a certain coordinate.',
+    'parameters': {
+        'type': 'OBJECT',
+        'properties': {
+            'y': {
+                'type': 'INTEGER',
+                'description': 'The y-coordinate, normalized from 0 to 1000.',
+            },
+            'x': {
+                'type': 'INTEGER',
+                'description': 'The x-coordinate, normalized from 0 to 1000.',
+            },
+            'press_enter': {
+                'type': 'BOOLEAN',
+                'description': 'Whether to press enter after typing the text.'
+            },
+            'text': {
+                'type': 'STRING',
+                'description': 'The text to type.',
             },
         },
     },
@@ -65,6 +98,33 @@ manual_function_calling_contents = [
         }],
     },
     {'role': 'user', 'parts': function_response_parts},
+]
+computer_use_multi_turn_contents = [
+    {
+        'role': 'user',
+        'parts': [{'text': 'Go to google and search nano banana'}],
+    },
+    {
+        'role': 'model',
+        'parts': [{'function_call': {'name': 'open_web_browser', 'args': {}}}],
+    },
+    {
+        'role': 'user',
+        'parts': [{
+            'function_response': {
+                'name': 'open_web_browser',
+                'response': {
+                    'url': 'http://www.google.com',
+                },
+                'parts': [{
+                    'inline_data': {
+                        'data': google_homepage_screenshot_bytes,
+                        'mime_type': 'image/png',
+                    }
+                }],
+            }
+        }],
+    },
 ]
 
 
@@ -286,14 +346,111 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_url_context',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash-preview-04-17',
+            model='gemini-2.5-flash',
             contents=t.t_contents(
                 'what are the top headlines on https://news.google.com'
             ),
             config={'tools': [{'url_context': {}}]},
         ),
     ),
-    pytest_helper.TestTableItem( 
+    pytest_helper.TestTableItem(
+        name='test_url_context_paywall_status',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'Read the content of this URL:'
+                ' https://unsplash.com/photos/portrait-of-an-adorable-golden-retriever-puppy-studio-shot-isolated-on-black-yRYCnnQASnc'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_url_context_unsafe_status',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents(
+                'Fetch the content of http://0k9.me/test.html'
+            ),
+            config={'tools': [{'url_context': {}}]},
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=t.t_contents('Go to google and search nano banana'),
+            config={'tools': [{'computer_use': {}}]},
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_with_browser_environment',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=t.t_contents('Go to google and search nano banana'),
+            config={
+                'tools': [
+                    {'computer_use': {'environment': 'ENVIRONMENT_BROWSER'}}
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_multi_turn',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=computer_use_multi_turn_contents,
+            config={
+                'tools': [
+                    {'computer_use': {'environment': 'ENVIRONMENT_BROWSER'}}
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_exclude_predefined_functions',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents='cheapest flight to NYC on Mar 18 2025 on Google Flights',
+            config={
+                'tools': [
+                    {
+                        'computer_use': {
+                            'environment': 'ENVIRONMENT_BROWSER',
+                            'excluded_predefined_functions': ['click_at'],
+                        },
+                    },
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_override_default_function',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=computer_use_multi_turn_contents,
+            config={
+                'tools': [
+                    {
+                        'computer_use': {
+                            'environment': 'ENVIRONMENT_BROWSER',
+                            'excluded_predefined_functions': ['type_text_at'],
+                        },
+                    },
+                    {
+                        'function_declarations': (
+                            computer_use_override_function_declarations
+                        )
+                    },
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
         # https://github.com/googleapis/python-genai/issues/830
         # - models started returning empty thought in response to queries
         #   containing tools.
@@ -303,11 +460,13 @@ test_table: list[pytest_helper.TestTableItem] = [
         #   them?
         # - This is also important to configm forward compatibility.
         #   when the models start returning thought_signature, those will get
-        #   dropped by the SDK leaving a `{'thought: True}` part. 
+        #   dropped by the SDK leaving a `{'thought: True}` part.
         name='test_chat_tools_empty_thoughts',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-05-20',
-            contents=[types.Content.model_validate(item) for item in [
+            contents=[
+                types.Content.model_validate(item)
+                for item in [
                     {
                         'parts': [{'text': 'Who won the 1955 world cup?'}],
                         'role': 'user',
@@ -332,9 +491,23 @@ test_table: list[pytest_helper.TestTableItem] = [
                         }],
                         'role': 'user',
                     },
-                ]],
+                ]
+            ],
             config={
                 'tools': [{'function_declarations': function_declarations}],
+            },
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_function_calling_config_validated_mode',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('How is the weather in Kirkland?'),
+            config={
+                'tools': [{'function_declarations': function_declarations}],
+                'tool_config': {
+                    'function_calling_config': {'mode': 'VALIDATED'}
+                },
             },
         ),
     ),
@@ -444,7 +617,7 @@ def test_automatic_function_calling_with_customized_math_rule(client):
     return numerator // denominator + 1
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash-preview-04-17',
+      model='gemini-2.5-flash',
       contents='what is the result of 1000/2?',
       config={
           'tools': [customized_divide_integers],
@@ -506,9 +679,9 @@ def test_disable_automatic_function_calling_stream(client):
       },
   )
   chunks = 0
-  for part in response:
+  for chunk in response:
     chunks += 1
-    assert part.candidates[0].content.parts[0].function_call is not None
+    assert chunk.parts[0].function_call is not None
 
 
 def test_automatic_function_calling_no_function_response_stream(client):
@@ -538,9 +711,9 @@ async def test_disable_automatic_function_calling_stream_async(client):
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.candidates[0].content.parts[0].function_call is not None
+    assert chunk.parts[0].function_call is not None
 
 
 @pytest.mark.asyncio
@@ -556,9 +729,9 @@ async def test_automatic_function_calling_no_function_response_stream_async(
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
+    assert chunk.text is not None or chunk.candidates[0].finish_reason
 
 
 @pytest.mark.asyncio
@@ -572,9 +745,9 @@ async def test_automatic_function_calling_stream_async(client):
       },
   )
   chunks = 0
-  async for part in response:
+  async for chunk in response:
     chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
+    assert chunk.text is not None or chunk.candidates[0].finish_reason
 
 
 def test_callable_tools_user_disable_afc(client):
@@ -826,6 +999,89 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
     assert 'cat' in response.text
 
 
+def test_automatic_function_calling_with_union_operator(client):
+  class AnimalObject(pydantic.BaseModel):
+    name: str
+    age: int
+    species: str
+
+  def get_information(
+      object_of_interest: str | AnimalObject,
+  ) -> str:
+    if isinstance(object_of_interest, AnimalObject):
+      return (
+          f'The animal is of {object_of_interest.species} species and is named'
+          f' {object_of_interest.name} is {object_of_interest.age} years old'
+      )
+    else:
+      return f'The object of interest is {object_of_interest}'
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'I have a one year old cat named Sundae, can you get the'
+          ' information of the cat for me?'
+      ),
+      config={
+          'tools': [get_information],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
+
+
+def test_automatic_function_calling_with_tuple_param(client):
+  def output_latlng(
+      latlng: tuple[float, float],
+  ) -> str:
+    return f'The latitude is {latlng[0]} and the longitude is {latlng[1]}'
+
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents=(
+          'The coordinates are (51.509, -0.118). What is the latitude and longitude?'
+      ),
+      config={
+          'tools': [output_latlng],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert response.text
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason='| is only supported in Python 3.10 and above.',
+)
+def test_automatic_function_calling_with_union_operator_return_type(client):
+  def get_cheese_age(cheese: int) -> int | float:
+    """
+    Retrieves data about the age of the cheese given its ID.
+
+    Args:
+        cheese_id: The ID of the cheese.
+
+    Returns:
+        An int or float of the age of the cheese.
+    """
+    if cheese == 1:
+      return 2.5
+    elif cheese == 2:
+      return 3
+    else:
+      return 0.0
+
+  response = client.models.generate_content(
+      model='gemini-2.5-flash',
+      contents='How old is the cheese with id 2?',
+      config={
+          'tools': [get_cheese_age],
+          'automatic_function_calling': {'ignore_call_history': True},
+      },
+  )
+  assert '3' in response.text
+
+
 def test_automatic_function_calling_with_parameterized_generic_union_type(
     client,
 ):
@@ -843,7 +1099,7 @@ def test_automatic_function_calling_with_parameterized_generic_union_type(
 
   response = client.models.generate_content(
       model='gemini-1.5-flash',
-      contents='Can you describe the city of San Francisco?',
+      contents='Can you describe the city of San Francisco, USA?',
       config={
           'tools': [describe_cities],
           'automatic_function_calling': {'ignore_call_history': True},
@@ -1086,15 +1342,9 @@ async def test_automatic_function_calling_async_with_async_function_stream(
 
   chunk = None
   async for chunk in response:
-    if chunk.candidates[0].content.parts[0].function_call:
-      assert (
-          chunk.candidates[0].content.parts[0].function_call.name
-          == 'get_current_weather_async'
-      )
-      assert (
-          chunk.candidates[0].content.parts[0].function_call.args['city']
-          == 'San Francisco'
-      )
+    if chunk.parts[0].function_call:
+      assert chunk.parts[0].function_call.name == 'get_current_weather_async'
+      assert chunk.parts[0].function_call.args['city'] == 'San Francisco'
 
 
 def test_2_function_with_history(client):
@@ -1294,7 +1544,7 @@ def test_afc_logs_to_logger_instance(client, caplog):
           'tools': [divide_integers],
           'automatic_function_calling': {
               'disable': False,
-              'maximum_remote_calls': 2,
+              'maximum_remote_calls': 1,
               'ignore_call_history': True,
           },
       },
@@ -1303,9 +1553,8 @@ def test_afc_logs_to_logger_instance(client, caplog):
     assert log.levelname == 'INFO'
     assert log.name == 'google_genai.models'
 
-  assert 'AFC is enabled with max remote calls: 2' in caplog.text
+  assert 'AFC is enabled with max remote calls: 1' in caplog.text
   assert 'remote call 1 is done' in caplog.text
-  assert 'remote call 2 is done' in caplog.text
   assert 'Reached max remote calls' in caplog.text
 
 
@@ -1333,7 +1582,7 @@ def test_tools_chat_curation(client, caplog):
   sdk_logger = logging.getLogger('google_genai.models')
   sdk_logger.setLevel(logging.ERROR)
 
-  config={
+  config = {
       'tools': [{'function_declarations': function_declarations}],
   }
 
@@ -1343,11 +1592,11 @@ def test_tools_chat_curation(client, caplog):
   )
 
   response = chat.send_message(
-    message='Who won the 1955 world cup?',
+      message='Who won the 1955 world cup?',
   )
 
   response = chat.send_message(
-    message='What was the population of canada in 1955?',
+      message='What was the population of canada in 1955?',
   )
 
   history = chat.get_history(curated=True)

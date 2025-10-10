@@ -21,7 +21,7 @@ import contextlib
 import json
 import logging
 import typing
-from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union, get_args
+from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
 import google.auth
@@ -33,7 +33,6 @@ from . import _common
 from . import _live_converters as live_converters
 from . import _mcp_utils
 from . import _transformers as t
-from . import client
 from . import errors
 from . import types
 from ._api_client import BaseApiClient
@@ -41,7 +40,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
-from .models import _Content_to_vertex
 
 
 try:
@@ -83,9 +81,15 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 class AsyncSession:
   """[Preview] AsyncSession."""
 
-  def __init__(self, api_client: BaseApiClient, websocket: ClientConnection):
+  def __init__(
+      self,
+      api_client: BaseApiClient,
+      websocket: ClientConnection,
+      session_id: Optional[str] = None,
+  ):
     self._api_client = api_client
     self._ws = websocket
+    self.session_id = session_id
 
   async def send(
       self,
@@ -188,37 +192,38 @@ class AsyncSession:
         and will not return until you send `turn_complete=True`.
 
     Example:
-    ```
-    import google.genai
-    from google.genai import types
-    import os
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-live-2.5-flash-preview';
+    .. code-block:: python
 
-    client = genai.Client()
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]}
-    ) as session:
-      await session.send_client_content(
-          turns=types.Content(
-              role='user',
-              parts=[types.Part(text="Hello world!")]))
-      async for msg in session.receive():
-        if msg.text:
-          print(msg.text)
-    ```
+      import google.genai
+      from google.genai import types
+      import os
+
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
+
+      client = genai.Client()
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]}
+      ) as session:
+        await session.send_client_content(
+            turns=types.Content(
+                role='user',
+                parts=[types.Part(text="Hello world!")]))
+        async for msg in session.receive():
+          if msg.text:
+            print(msg.text)
     """
     client_content = t.t_client_content(turns, turn_complete).model_dump(
         mode='json', exclude_none=True
     )
 
     if self._api_client.vertexai:
-      client_content_dict = live_converters._LiveClientContent_to_vertex(
-          from_object=client_content
+      client_content_dict = _common.convert_to_dict(
+          client_content, convert_keys=True
       )
     else:
       client_content_dict = live_converters._LiveClientContent_to_mldev(
@@ -254,41 +259,42 @@ class AsyncSession:
       media: A `Blob`-like object, the realtime media to send.
 
     Example:
-    ```
-    from pathlib import Path
 
-    from google import genai
-    from google.genai import types
+    .. code-block:: python
 
-    import PIL.Image
+      from pathlib import Path
 
-    import os
+      from google import genai
+      from google.genai import types
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-live-2.5-flash-preview';
+      import PIL.Image
+
+      import os
+
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
 
-    client = genai.Client()
+      client = genai.Client()
 
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]},
-    ) as session:
-      await session.send_realtime_input(
-          media=PIL.Image.open('image.jpg'))
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]},
+      ) as session:
+        await session.send_realtime_input(
+            media=PIL.Image.open('image.jpg'))
 
-      audio_bytes = Path('audio.pcm').read_bytes()
-      await session.send_realtime_input(
-          media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
+        audio_bytes = Path('audio.pcm').read_bytes()
+        await session.send_realtime_input(
+            media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
 
-      async for msg in session.receive():
-        if msg.text is not None:
-          print(f'{msg.text}')
-    ```
+        async for msg in session.receive():
+          if msg.text is not None:
+            print(f'{msg.text}')
     """
-    kwargs: dict[str, Any] = {}
+    kwargs: _common.StringDict = {}
     if media is not None:
       kwargs['media'] = media
     if audio is not None:
@@ -352,61 +358,63 @@ class AsyncSession:
         `FunctionResponse`-like objects.
 
     Example:
-    ```
-    from google import genai
-    from google.genai import types
 
-    import os
+    .. code-block:: python
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-live-2.5-flash-preview';
+      from google import genai
+      from google.genai import types
 
-    client = genai.Client()
+      import os
 
-    tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
-    config = {
-        "tools": tools,
-        "response_modalities": ['TEXT']
-    }
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
-    async with client.aio.live.connect(
-        model='models/gemini-live-2.5-flash-preview',
-        config=config
-    ) as session:
-      prompt = "Turn on the lights please"
-      await session.send_client_content(
-          turns={"parts": [{'text': prompt}]}
-      )
+      client = genai.Client()
 
-      async for chunk in session.receive():
-          if chunk.server_content:
-            if chunk.text is not None:
-              print(chunk.text)
-          elif chunk.tool_call:
-            print(chunk.tool_call)
-            print('_'*80)
-            function_response=types.FunctionResponse(
-                    name='turn_on_the_lights',
-                    response={'result': 'ok'},
-                    id=chunk.tool_call.function_calls[0].id,
-                )
-            print(function_response)
-            await session.send_tool_response(
-                function_responses=function_response
-            )
+      tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
+      config = {
+          "tools": tools,
+          "response_modalities": ['TEXT']
+      }
 
-            print('_'*80)
+      async with client.aio.live.connect(
+          model='models/gemini-live-2.5-flash-preview',
+          config=config
+      ) as session:
+        prompt = "Turn on the lights please"
+        await session.send_client_content(
+            turns={"parts": [{'text': prompt}]}
+        )
+
+        async for chunk in session.receive():
+            if chunk.server_content:
+              if chunk.text is not None:
+                print(chunk.text)
+            elif chunk.tool_call:
+              print(chunk.tool_call)
+              print('_'*80)
+              function_response=types.FunctionResponse(
+                      name='turn_on_the_lights',
+                      response={'result': 'ok'},
+                      id=chunk.tool_call.function_calls[0].id,
+                  )
+              print(function_response)
+              await session.send_tool_response(
+                  function_responses=function_response
+              )
+
+              print('_'*80)
     """
     tool_response = t.t_tool_response(function_responses)
     if self._api_client.vertexai:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_vertex(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
     else:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_mldev(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
       for response in tool_response_dict.get('functionResponses', []):
         if response.get('id') is None:
@@ -532,7 +540,7 @@ class AsyncSession:
     if self._api_client.vertexai:
       response_dict = live_converters._LiveServerMessage_from_vertex(response)
     else:
-      response_dict = live_converters._LiveServerMessage_from_mldev(response)
+      response_dict = response
 
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -639,14 +647,14 @@ class AsyncSession:
     elif isinstance(formatted_input, Sequence) and any(
         isinstance(c, str) for c in formatted_input
     ):
-      to_object: dict[str, Any] = {}
+      to_object: _common.StringDict = {}
       content_input_parts: list[types.PartUnion] = []
       for item in formatted_input:
         if isinstance(item, get_args(types.PartUnion)):
           content_input_parts.append(item)
       if self._api_client.vertexai:
         contents = [
-            _Content_to_vertex(item, to_object)
+            _common.convert_to_dict(item, convert_keys=True)
             for item in t.t_contents(content_input_parts)
         ]
       else:
@@ -1051,11 +1059,34 @@ class AsyncLive(_api_module.BaseModule):
       await ws.send(request)
       try:
         # websockets 14.0+
-        logger.info(await ws.recv(decode=False))
+        raw_response = await ws.recv(decode=False)
       except TypeError:
-        logger.info(await ws.recv())
+        raw_response = await ws.recv()  # type: ignore[assignment]
+      if raw_response:
+        try:
+          response = json.loads(raw_response)
+        except json.decoder.JSONDecodeError:
+          raise ValueError(f'Failed to parse response: {raw_response!r}')
+      else:
+        response = {}
 
-      yield AsyncSession(api_client=self._api_client, websocket=ws)
+      if self._api_client.vertexai:
+        response_dict = live_converters._LiveServerMessage_from_vertex(response)
+      else:
+        response_dict = response
+
+      setup_response = types.LiveServerMessage._from_response(
+          response=response_dict, kwargs=parameter_model.model_dump()
+      )
+      if setup_response.setup_complete:
+        session_id = setup_response.setup_complete.session_id
+      else:
+        session_id = None
+      yield AsyncSession(
+          api_client=self._api_client,
+          websocket=ws,
+          session_id=session_id,
+      )
 
 
 async def _t_live_connect_config(

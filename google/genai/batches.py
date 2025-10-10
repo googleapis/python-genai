@@ -27,25 +27,306 @@ from . import _transformers as t
 from . import types
 from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
+from ._common import move_value_by_path as movev
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
+
 
 logger = logging.getLogger('google_genai.batches')
 
 
-def _VideoMetadata_to_mldev(
+def _BatchJobDestination_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
 
-  if getv(from_object, ['end_offset']) is not None:
-    setv(to_object, ['endOffset'], getv(from_object, ['end_offset']))
+  if getv(from_object, ['responsesFile']) is not None:
+    setv(to_object, ['file_name'], getv(from_object, ['responsesFile']))
 
-  if getv(from_object, ['start_offset']) is not None:
-    setv(to_object, ['startOffset'], getv(from_object, ['start_offset']))
+  if getv(from_object, ['inlinedResponses', 'inlinedResponses']) is not None:
+    setv(
+        to_object,
+        ['inlined_responses'],
+        [
+            _InlinedResponse_from_mldev(item, to_object)
+            for item in getv(
+                from_object, ['inlinedResponses', 'inlinedResponses']
+            )
+        ],
+    )
+
+  if (
+      getv(from_object, ['inlinedEmbedContentResponses', 'inlinedResponses'])
+      is not None
+  ):
+    setv(
+        to_object,
+        ['inlined_embed_content_responses'],
+        [
+            item
+            for item in getv(
+                from_object,
+                ['inlinedEmbedContentResponses', 'inlinedResponses'],
+            )
+        ],
+    )
+
+  return to_object
+
+
+def _BatchJobDestination_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['predictionsFormat']) is not None:
+    setv(to_object, ['format'], getv(from_object, ['predictionsFormat']))
+
+  if getv(from_object, ['gcsDestination', 'outputUriPrefix']) is not None:
+    setv(
+        to_object,
+        ['gcs_uri'],
+        getv(from_object, ['gcsDestination', 'outputUriPrefix']),
+    )
+
+  if getv(from_object, ['bigqueryDestination', 'outputUri']) is not None:
+    setv(
+        to_object,
+        ['bigquery_uri'],
+        getv(from_object, ['bigqueryDestination', 'outputUri']),
+    )
+
+  return to_object
+
+
+def _BatchJobDestination_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['format']) is not None:
+    setv(to_object, ['predictionsFormat'], getv(from_object, ['format']))
+
+  if getv(from_object, ['gcs_uri']) is not None:
+    setv(
+        to_object,
+        ['gcsDestination', 'outputUriPrefix'],
+        getv(from_object, ['gcs_uri']),
+    )
+
+  if getv(from_object, ['bigquery_uri']) is not None:
+    setv(
+        to_object,
+        ['bigqueryDestination', 'outputUri'],
+        getv(from_object, ['bigquery_uri']),
+    )
+
+  if getv(from_object, ['file_name']) is not None:
+    raise ValueError('file_name parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['inlined_responses']) is not None:
+    raise ValueError(
+        'inlined_responses parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['inlined_embed_content_responses']) is not None:
+    raise ValueError(
+        'inlined_embed_content_responses parameter is not supported in'
+        ' Vertex AI.'
+    )
+
+  return to_object
+
+
+def _BatchJobSource_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['instancesFormat']) is not None:
+    setv(to_object, ['format'], getv(from_object, ['instancesFormat']))
+
+  if getv(from_object, ['gcsSource', 'uris']) is not None:
+    setv(to_object, ['gcs_uri'], getv(from_object, ['gcsSource', 'uris']))
+
+  if getv(from_object, ['bigquerySource', 'inputUri']) is not None:
+    setv(
+        to_object,
+        ['bigquery_uri'],
+        getv(from_object, ['bigquerySource', 'inputUri']),
+    )
+
+  return to_object
+
+
+def _BatchJobSource_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['format']) is not None:
+    raise ValueError('format parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['gcs_uri']) is not None:
+    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['bigquery_uri']) is not None:
+    raise ValueError('bigquery_uri parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['file_name']) is not None:
+    setv(to_object, ['fileName'], getv(from_object, ['file_name']))
+
+  if getv(from_object, ['inlined_requests']) is not None:
+    setv(
+        to_object,
+        ['requests', 'requests'],
+        [
+            _InlinedRequest_to_mldev(api_client, item, to_object)
+            for item in getv(from_object, ['inlined_requests'])
+        ],
+    )
+
+  return to_object
+
+
+def _BatchJobSource_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['format']) is not None:
+    setv(to_object, ['instancesFormat'], getv(from_object, ['format']))
+
+  if getv(from_object, ['gcs_uri']) is not None:
+    setv(to_object, ['gcsSource', 'uris'], getv(from_object, ['gcs_uri']))
+
+  if getv(from_object, ['bigquery_uri']) is not None:
+    setv(
+        to_object,
+        ['bigquerySource', 'inputUri'],
+        getv(from_object, ['bigquery_uri']),
+    )
+
+  if getv(from_object, ['file_name']) is not None:
+    raise ValueError('file_name parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['inlined_requests']) is not None:
+    raise ValueError(
+        'inlined_requests parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
+def _BatchJob_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['metadata', 'displayName']) is not None:
+    setv(
+        to_object,
+        ['display_name'],
+        getv(from_object, ['metadata', 'displayName']),
+    )
+
+  if getv(from_object, ['metadata', 'state']) is not None:
+    setv(
+        to_object,
+        ['state'],
+        t.t_job_state(getv(from_object, ['metadata', 'state'])),
+    )
+
+  if getv(from_object, ['metadata', 'createTime']) is not None:
+    setv(
+        to_object,
+        ['create_time'],
+        getv(from_object, ['metadata', 'createTime']),
+    )
+
+  if getv(from_object, ['metadata', 'endTime']) is not None:
+    setv(to_object, ['end_time'], getv(from_object, ['metadata', 'endTime']))
+
+  if getv(from_object, ['metadata', 'updateTime']) is not None:
+    setv(
+        to_object,
+        ['update_time'],
+        getv(from_object, ['metadata', 'updateTime']),
+    )
+
+  if getv(from_object, ['metadata', 'model']) is not None:
+    setv(to_object, ['model'], getv(from_object, ['metadata', 'model']))
+
+  if getv(from_object, ['metadata', 'output']) is not None:
+    setv(
+        to_object,
+        ['dest'],
+        _BatchJobDestination_from_mldev(
+            t.t_recv_batch_job_destination(
+                getv(from_object, ['metadata', 'output'])
+            ),
+            to_object,
+        ),
+    )
+
+  return to_object
+
+
+def _BatchJob_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['displayName']) is not None:
+    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
+
+  if getv(from_object, ['state']) is not None:
+    setv(to_object, ['state'], t.t_job_state(getv(from_object, ['state'])))
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
+  if getv(from_object, ['createTime']) is not None:
+    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
+
+  if getv(from_object, ['startTime']) is not None:
+    setv(to_object, ['start_time'], getv(from_object, ['startTime']))
+
+  if getv(from_object, ['endTime']) is not None:
+    setv(to_object, ['end_time'], getv(from_object, ['endTime']))
+
+  if getv(from_object, ['updateTime']) is not None:
+    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
+
+  if getv(from_object, ['model']) is not None:
+    setv(to_object, ['model'], getv(from_object, ['model']))
+
+  if getv(from_object, ['inputConfig']) is not None:
+    setv(
+        to_object,
+        ['src'],
+        _BatchJobSource_from_vertex(
+            getv(from_object, ['inputConfig']), to_object
+        ),
+    )
+
+  if getv(from_object, ['outputConfig']) is not None:
+    setv(
+        to_object,
+        ['dest'],
+        _BatchJobDestination_from_vertex(
+            t.t_recv_batch_job_destination(getv(from_object, ['outputConfig'])),
+            to_object,
+        ),
+    )
 
   return to_object
 
@@ -67,83 +348,105 @@ def _Blob_to_mldev(
   return to_object
 
 
-def _FileData_to_mldev(
+def _CancelBatchJobParameters_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
+    )
 
   return to_object
 
 
-def _Part_to_mldev(
+def _CancelBatchJobParameters_to_vertex(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
+  if getv(from_object, ['name']) is not None:
     setv(
         to_object,
-        ['videoMetadata'],
-        _VideoMetadata_to_mldev(
-            getv(from_object, ['video_metadata']), to_object
+        ['_url', 'name'],
+        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
+    )
+
+  return to_object
+
+
+def _Candidate_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['content']) is not None:
+    setv(to_object, ['content'], getv(from_object, ['content']))
+
+  if getv(from_object, ['citationMetadata']) is not None:
+    setv(
+        to_object,
+        ['citation_metadata'],
+        _CitationMetadata_from_mldev(
+            getv(from_object, ['citationMetadata']), to_object
         ),
     )
 
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
+  if getv(from_object, ['tokenCount']) is not None:
+    setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
 
-  if getv(from_object, ['inline_data']) is not None:
+  if getv(from_object, ['finishReason']) is not None:
+    setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
     setv(
         to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
+        ['url_context_metadata'],
+        getv(from_object, ['urlContextMetadata']),
     )
 
-  if getv(from_object, ['file_data']) is not None:
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
+
+  if getv(from_object, ['groundingMetadata']) is not None:
     setv(
         to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+        ['grounding_metadata'],
+        getv(from_object, ['groundingMetadata']),
     )
 
-  if getv(from_object, ['thought_signature']) is not None:
+  if getv(from_object, ['index']) is not None:
+    setv(to_object, ['index'], getv(from_object, ['index']))
+
+  if getv(from_object, ['logprobsResult']) is not None:
+    setv(to_object, ['logprobs_result'], getv(from_object, ['logprobsResult']))
+
+  if getv(from_object, ['safetyRatings']) is not None:
     setv(
         to_object,
-        ['thoughtSignature'],
-        getv(from_object, ['thought_signature']),
+        ['safety_ratings'],
+        [item for item in getv(from_object, ['safetyRatings'])],
     )
 
-  if getv(from_object, ['code_execution_result']) is not None:
+  return to_object
+
+
+def _CitationMetadata_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['citationSources']) is not None:
     setv(
         to_object,
-        ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
+        ['citations'],
+        [item for item in getv(from_object, ['citationSources'])],
     )
-
-  if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
-
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
-
-  if getv(from_object, ['function_response']) is not None:
-    setv(
-        to_object,
-        ['functionResponse'],
-        getv(from_object, ['function_response']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
 
   return to_object
 
@@ -169,459 +472,321 @@ def _Content_to_mldev(
   return to_object
 
 
-def _Schema_to_mldev(
+def _CreateBatchJobConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['additional_properties']) is not None:
-    raise ValueError(
-        'additional_properties parameter is not supported in Gemini API.'
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(
+        parent_object,
+        ['batch', 'displayName'],
+        getv(from_object, ['display_name']),
     )
 
-  if getv(from_object, ['defs']) is not None:
-    raise ValueError('defs parameter is not supported in Gemini API.')
+  if getv(from_object, ['dest']) is not None:
+    raise ValueError('dest parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['ref']) is not None:
-    raise ValueError('ref parameter is not supported in Gemini API.')
+  return to_object
 
-  if getv(from_object, ['any_of']) is not None:
-    setv(to_object, ['anyOf'], getv(from_object, ['any_of']))
 
-  if getv(from_object, ['default']) is not None:
-    setv(to_object, ['default'], getv(from_object, ['default']))
+def _CreateBatchJobConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
 
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
+  if getv(from_object, ['display_name']) is not None:
+    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
-  if getv(from_object, ['enum']) is not None:
-    setv(to_object, ['enum'], getv(from_object, ['enum']))
+  if getv(from_object, ['dest']) is not None:
+    setv(
+        parent_object,
+        ['outputConfig'],
+        _BatchJobDestination_to_vertex(
+            t.t_batch_job_destination(getv(from_object, ['dest'])), to_object
+        ),
+    )
 
-  if getv(from_object, ['example']) is not None:
-    setv(to_object, ['example'], getv(from_object, ['example']))
+  return to_object
 
-  if getv(from_object, ['format']) is not None:
-    setv(to_object, ['format'], getv(from_object, ['format']))
 
-  if getv(from_object, ['items']) is not None:
-    setv(to_object, ['items'], getv(from_object, ['items']))
-
-  if getv(from_object, ['max_items']) is not None:
-    setv(to_object, ['maxItems'], getv(from_object, ['max_items']))
-
-  if getv(from_object, ['max_length']) is not None:
-    setv(to_object, ['maxLength'], getv(from_object, ['max_length']))
-
-  if getv(from_object, ['max_properties']) is not None:
-    setv(to_object, ['maxProperties'], getv(from_object, ['max_properties']))
-
-  if getv(from_object, ['maximum']) is not None:
-    setv(to_object, ['maximum'], getv(from_object, ['maximum']))
-
-  if getv(from_object, ['min_items']) is not None:
-    setv(to_object, ['minItems'], getv(from_object, ['min_items']))
-
-  if getv(from_object, ['min_length']) is not None:
-    setv(to_object, ['minLength'], getv(from_object, ['min_length']))
-
-  if getv(from_object, ['min_properties']) is not None:
-    setv(to_object, ['minProperties'], getv(from_object, ['min_properties']))
-
-  if getv(from_object, ['minimum']) is not None:
-    setv(to_object, ['minimum'], getv(from_object, ['minimum']))
-
-  if getv(from_object, ['nullable']) is not None:
-    setv(to_object, ['nullable'], getv(from_object, ['nullable']))
-
-  if getv(from_object, ['pattern']) is not None:
-    setv(to_object, ['pattern'], getv(from_object, ['pattern']))
-
-  if getv(from_object, ['properties']) is not None:
-    setv(to_object, ['properties'], getv(from_object, ['properties']))
-
-  if getv(from_object, ['property_ordering']) is not None:
+def _CreateBatchJobParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
     setv(
         to_object,
-        ['propertyOrdering'],
-        getv(from_object, ['property_ordering']),
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['required']) is not None:
-    setv(to_object, ['required'], getv(from_object, ['required']))
+  if getv(from_object, ['src']) is not None:
+    setv(
+        to_object,
+        ['batch', 'inputConfig'],
+        _BatchJobSource_to_mldev(
+            api_client,
+            t.t_batch_job_source(api_client, getv(from_object, ['src'])),
+            to_object,
+        ),
+    )
 
-  if getv(from_object, ['title']) is not None:
-    setv(to_object, ['title'], getv(from_object, ['title']))
-
-  if getv(from_object, ['type']) is not None:
-    setv(to_object, ['type'], getv(from_object, ['type']))
-
-  return to_object
-
-
-def _SafetySetting_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['method']) is not None:
-    raise ValueError('method parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['category']) is not None:
-    setv(to_object, ['category'], getv(from_object, ['category']))
-
-  if getv(from_object, ['threshold']) is not None:
-    setv(to_object, ['threshold'], getv(from_object, ['threshold']))
+  if getv(from_object, ['config']) is not None:
+    _CreateBatchJobConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
 
-def _FunctionDeclaration_to_mldev(
+def _CreateBatchJobParameters_to_vertex(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    setv(to_object, ['behavior'], getv(from_object, ['behavior']))
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
 
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
+  if getv(from_object, ['src']) is not None:
+    setv(
+        to_object,
+        ['inputConfig'],
+        _BatchJobSource_to_vertex(
+            t.t_batch_job_source(api_client, getv(from_object, ['src'])),
+            to_object,
+        ),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    _CreateBatchJobConfig_to_vertex(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
+def _CreateEmbeddingsBatchJobConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(
+        parent_object,
+        ['batch', 'displayName'],
+        getv(from_object, ['display_name']),
+    )
+
+  return to_object
+
+
+def _CreateEmbeddingsBatchJobParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model']) is not None:
+    setv(
+        to_object,
+        ['_url', 'model'],
+        t.t_model(api_client, getv(from_object, ['model'])),
+    )
+
+  if getv(from_object, ['src']) is not None:
+    setv(
+        to_object,
+        ['batch', 'inputConfig'],
+        _EmbeddingsBatchJobSource_to_mldev(
+            api_client, getv(from_object, ['src']), to_object
+        ),
+    )
+
+  if getv(from_object, ['config']) is not None:
+    _CreateEmbeddingsBatchJobConfig_to_mldev(
+        getv(from_object, ['config']), to_object
+    )
+
+  return to_object
+
+
+def _DeleteBatchJobParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
+    )
+
+  return to_object
+
+
+def _DeleteBatchJobParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
+    )
+
+  return to_object
+
+
+def _DeleteResourceJob_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
 
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
 
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
+  if getv(from_object, ['done']) is not None:
+    setv(to_object, ['done'], getv(from_object, ['done']))
 
-  if getv(from_object, ['parameters_json_schema']) is not None:
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
+  return to_object
+
+
+def _DeleteResourceJob_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
     )
 
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
 
-  if getv(from_object, ['response_json_schema']) is not None:
+  if getv(from_object, ['done']) is not None:
+    setv(to_object, ['done'], getv(from_object, ['done']))
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
+  return to_object
+
+
+def _EmbedContentBatch_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['contents']) is not None:
     setv(
         to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  return to_object
-
-
-def _Interval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['start_time']) is not None:
-    setv(to_object, ['startTime'], getv(from_object, ['start_time']))
-
-  if getv(from_object, ['end_time']) is not None:
-    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
-
-  return to_object
-
-
-def _GoogleSearch_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object,
-        ['timeRangeFilter'],
-        _Interval_to_mldev(getv(from_object, ['time_range_filter']), to_object),
-    )
-
-  return to_object
-
-
-def _DynamicRetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
-  if getv(from_object, ['dynamic_threshold']) is not None:
-    setv(
-        to_object,
-        ['dynamicThreshold'],
-        getv(from_object, ['dynamic_threshold']),
-    )
-
-  return to_object
-
-
-def _GoogleSearchRetrieval_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['dynamic_retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['dynamicRetrievalConfig'],
-        _DynamicRetrievalConfig_to_mldev(
-            getv(from_object, ['dynamic_retrieval_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _UrlContext_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  return to_object
-
-
-def _Tool_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
+        ['requests[]', 'request', 'content'],
         [
-            _FunctionDeclaration_to_mldev(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
+            item
+            for item in t.t_contents_for_embed(
+                api_client, getv(from_object, ['contents'])
+            )
         ],
     )
 
-  if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search']) is not None:
+  if getv(from_object, ['config']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+        ['_self'],
+        _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object),
     )
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        _GoogleSearchRetrieval_to_mldev(
-            getv(from_object, ['google_search_retrieval']), to_object
-        ),
-    )
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['google_maps']) is not None:
-    raise ValueError('google_maps parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['url_context']) is not None:
-    setv(
-        to_object,
-        ['urlContext'],
-        _UrlContext_to_mldev(getv(from_object, ['url_context']), to_object),
-    )
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
+    movev(to_object, {'requests[].*': 'requests[].request.*'})
   return to_object
 
 
-def _FunctionCallingConfig_to_mldev(
+def _EmbedContentConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
 
-  if getv(from_object, ['allowed_function_names']) is not None:
+  if getv(from_object, ['task_type']) is not None:
     setv(
-        to_object,
-        ['allowedFunctionNames'],
-        getv(from_object, ['allowed_function_names']),
+        parent_object,
+        ['requests[]', 'taskType'],
+        getv(from_object, ['task_type']),
     )
+
+  if getv(from_object, ['title']) is not None:
+    setv(parent_object, ['requests[]', 'title'], getv(from_object, ['title']))
+
+  if getv(from_object, ['output_dimensionality']) is not None:
+    setv(
+        parent_object,
+        ['requests[]', 'outputDimensionality'],
+        getv(from_object, ['output_dimensionality']),
+    )
+
+  if getv(from_object, ['mime_type']) is not None:
+    raise ValueError('mime_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auto_truncate']) is not None:
+    raise ValueError('auto_truncate parameter is not supported in Gemini API.')
 
   return to_object
 
 
-def _LatLng_to_mldev(
+def _EmbeddingsBatchJobSource_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['latitude']) is not None:
-    setv(to_object, ['latitude'], getv(from_object, ['latitude']))
+  if getv(from_object, ['file_name']) is not None:
+    setv(to_object, ['file_name'], getv(from_object, ['file_name']))
 
-  if getv(from_object, ['longitude']) is not None:
-    setv(to_object, ['longitude'], getv(from_object, ['longitude']))
-
-  return to_object
-
-
-def _RetrievalConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['lat_lng']) is not None:
+  if getv(from_object, ['inlined_requests']) is not None:
     setv(
         to_object,
-        ['latLng'],
-        _LatLng_to_mldev(getv(from_object, ['lat_lng']), to_object),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _ToolConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_calling_config']) is not None:
-    setv(
-        to_object,
-        ['functionCallingConfig'],
-        _FunctionCallingConfig_to_mldev(
-            getv(from_object, ['function_calling_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object,
-        ['retrievalConfig'],
-        _RetrievalConfig_to_mldev(
-            getv(from_object, ['retrieval_config']), to_object
+        ['requests'],
+        _EmbedContentBatch_to_mldev(
+            api_client, getv(from_object, ['inlined_requests']), to_object
         ),
     )
 
   return to_object
 
 
-def _PrebuiltVoiceConfig_to_mldev(
+def _FileData_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_name']) is not None:
-    setv(to_object, ['voiceName'], getv(from_object, ['voice_name']))
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
 
-  return to_object
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
 
-
-def _VoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prebuilt_voice_config']) is not None:
-    setv(
-        to_object,
-        ['prebuiltVoiceConfig'],
-        _PrebuiltVoiceConfig_to_mldev(
-            getv(from_object, ['prebuilt_voice_config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _SpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker']) is not None:
-    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
-
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  return to_object
-
-
-def _MultiSpeakerVoiceConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['speaker_voice_configs']) is not None:
-    setv(
-        to_object,
-        ['speakerVoiceConfigs'],
-        [
-            _SpeakerVoiceConfig_to_mldev(item, to_object)
-            for item in getv(from_object, ['speaker_voice_configs'])
-        ],
-    )
-
-  return to_object
-
-
-def _SpeechConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(
-        to_object,
-        ['voiceConfig'],
-        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
-    )
-
-  if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    setv(
-        to_object,
-        ['multiSpeakerVoiceConfig'],
-        _MultiSpeakerVoiceConfig_to_mldev(
-            getv(from_object, ['multi_speaker_voice_config']), to_object
-        ),
-    )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  return to_object
-
-
-def _ThinkingConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['include_thoughts']) is not None:
-    setv(
-        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
-    )
-
-  if getv(from_object, ['thinking_budget']) is not None:
-    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -698,10 +863,7 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['responseSchema'],
-        _Schema_to_mldev(
-            t.t_schema(api_client, getv(from_object, ['response_schema'])),
-            to_object,
-        ),
+        t.t_schema(api_client, getv(from_object, ['response_schema'])),
     )
 
   if getv(from_object, ['response_json_schema']) is not None:
@@ -740,11 +902,7 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(
-        parent_object,
-        ['toolConfig'],
-        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
-    )
+    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
 
   if getv(from_object, ['labels']) is not None:
     raise ValueError('labels parameter is not supported in Gemini API.')
@@ -774,9 +932,7 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['speechConfig'],
-        _SpeechConfig_to_mldev(
-            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
-        ),
+        t.t_speech_config(getv(from_object, ['speech_config'])),
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
@@ -785,12 +941,94 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['thinking_config']) is not None:
+    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+
+  if getv(from_object, ['image_config']) is not None:
+    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+
+  return to_object
+
+
+def _GenerateContentResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['candidates']) is not None:
     setv(
         to_object,
-        ['thinkingConfig'],
-        _ThinkingConfig_to_mldev(
-            getv(from_object, ['thinking_config']), to_object
-        ),
+        ['candidates'],
+        [
+            _Candidate_from_mldev(item, to_object)
+            for item in getv(from_object, ['candidates'])
+        ],
+    )
+
+  if getv(from_object, ['modelVersion']) is not None:
+    setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
+
+  if getv(from_object, ['promptFeedback']) is not None:
+    setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
+
+  if getv(from_object, ['responseId']) is not None:
+    setv(to_object, ['response_id'], getv(from_object, ['responseId']))
+
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
+  return to_object
+
+
+def _GetBatchJobParameters_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
+    )
+
+  return to_object
+
+
+def _GetBatchJobParameters_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'name'],
+        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
+    )
+
+  return to_object
+
+
+def _GoogleSearch_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -824,133 +1062,31 @@ def _InlinedRequest_to_mldev(
         to_object,
         ['request', 'generationConfig'],
         _GenerateContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _BatchJobSource_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['format']) is not None:
-    raise ValueError('format parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['bigquery_uri']) is not None:
-    raise ValueError('bigquery_uri parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['file_name']) is not None:
-    setv(to_object, ['fileName'], getv(from_object, ['file_name']))
-
-  if getv(from_object, ['inlined_requests']) is not None:
-    setv(
-        to_object,
-        ['requests', 'requests'],
-        [
-            _InlinedRequest_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['inlined_requests'])
-        ],
-    )
-
-  return to_object
-
-
-def _CreateBatchJobConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(
-        parent_object,
-        ['batch', 'displayName'],
-        getv(from_object, ['display_name']),
-    )
-
-  if getv(from_object, ['dest']) is not None:
-    raise ValueError('dest parameter is not supported in Gemini API.')
-
-  return to_object
-
-
-def _CreateBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['src']) is not None:
-    setv(
-        to_object,
-        ['batch', 'inputConfig'],
-        _BatchJobSource_to_mldev(
             api_client,
-            t.t_batch_job_source(api_client, getv(from_object, ['src'])),
-            to_object,
-        ),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateBatchJobConfig_to_mldev(
-            getv(from_object, ['config']), to_object
+            getv(from_object, ['config']),
+            getv(to_object, ['request'], default_value={}),
         ),
     )
 
   return to_object
 
 
-def _GetBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
+def _InlinedResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
+  if getv(from_object, ['response']) is not None:
     setv(
         to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
+        ['response'],
+        _GenerateContentResponse_from_mldev(
+            getv(from_object, ['response']), to_object
+        ),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _CancelBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
 
   return to_object
 
@@ -979,196 +1115,6 @@ def _ListBatchJobsConfig_to_mldev(
   return to_object
 
 
-def _ListBatchJobsParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListBatchJobsConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
-
-  return to_object
-
-
-def _DeleteBatchJobParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _BatchJobSource_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['format']) is not None:
-    setv(to_object, ['instancesFormat'], getv(from_object, ['format']))
-
-  if getv(from_object, ['gcs_uri']) is not None:
-    setv(to_object, ['gcsSource', 'uris'], getv(from_object, ['gcs_uri']))
-
-  if getv(from_object, ['bigquery_uri']) is not None:
-    setv(
-        to_object,
-        ['bigquerySource', 'inputUri'],
-        getv(from_object, ['bigquery_uri']),
-    )
-
-  if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['inlined_requests']) is not None:
-    raise ValueError(
-        'inlined_requests parameter is not supported in Vertex AI.'
-    )
-
-  return to_object
-
-
-def _BatchJobDestination_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['format']) is not None:
-    setv(to_object, ['predictionsFormat'], getv(from_object, ['format']))
-
-  if getv(from_object, ['gcs_uri']) is not None:
-    setv(
-        to_object,
-        ['gcsDestination', 'outputUriPrefix'],
-        getv(from_object, ['gcs_uri']),
-    )
-
-  if getv(from_object, ['bigquery_uri']) is not None:
-    setv(
-        to_object,
-        ['bigqueryDestination', 'outputUri'],
-        getv(from_object, ['bigquery_uri']),
-    )
-
-  if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['inlined_responses']) is not None:
-    raise ValueError(
-        'inlined_responses parameter is not supported in Vertex AI.'
-    )
-
-  return to_object
-
-
-def _CreateBatchJobConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['dest']) is not None:
-    setv(
-        parent_object,
-        ['outputConfig'],
-        _BatchJobDestination_to_vertex(
-            t.t_batch_job_destination(getv(from_object, ['dest'])), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _CreateBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['src']) is not None:
-    setv(
-        to_object,
-        ['inputConfig'],
-        _BatchJobSource_to_vertex(
-            t.t_batch_job_source(api_client, getv(from_object, ['src'])),
-            to_object,
-        ),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _CreateBatchJobConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _GetBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _CancelBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
 def _ListBatchJobsConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1193,426 +1139,24 @@ def _ListBatchJobsConfig_to_vertex(
   return to_object
 
 
+def _ListBatchJobsParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['config']) is not None:
+    _ListBatchJobsConfig_to_mldev(getv(from_object, ['config']), to_object)
+
+  return to_object
+
+
 def _ListBatchJobsParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListBatchJobsConfig_to_vertex(
-            getv(from_object, ['config']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _DeleteBatchJobParameters_to_vertex(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'name'],
-        t.t_batch_job_name(api_client, getv(from_object, ['name'])),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _VideoMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['fps']) is not None:
-    setv(to_object, ['fps'], getv(from_object, ['fps']))
-
-  if getv(from_object, ['endOffset']) is not None:
-    setv(to_object, ['end_offset'], getv(from_object, ['endOffset']))
-
-  if getv(from_object, ['startOffset']) is not None:
-    setv(to_object, ['start_offset'], getv(from_object, ['startOffset']))
-
-  return to_object
-
-
-def _Blob_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _FileData_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['fileUri']) is not None:
-    setv(to_object, ['file_uri'], getv(from_object, ['fileUri']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _Part_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['videoMetadata']) is not None:
-    setv(
-        to_object,
-        ['video_metadata'],
-        _VideoMetadata_from_mldev(
-            getv(from_object, ['videoMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inlineData']) is not None:
-    setv(
-        to_object,
-        ['inline_data'],
-        _Blob_from_mldev(getv(from_object, ['inlineData']), to_object),
-    )
-
-  if getv(from_object, ['fileData']) is not None:
-    setv(
-        to_object,
-        ['file_data'],
-        _FileData_from_mldev(getv(from_object, ['fileData']), to_object),
-    )
-
-  if getv(from_object, ['thoughtSignature']) is not None:
-    setv(
-        to_object,
-        ['thought_signature'],
-        getv(from_object, ['thoughtSignature']),
-    )
-
-  if getv(from_object, ['codeExecutionResult']) is not None:
-    setv(
-        to_object,
-        ['code_execution_result'],
-        getv(from_object, ['codeExecutionResult']),
-    )
-
-  if getv(from_object, ['executableCode']) is not None:
-    setv(to_object, ['executable_code'], getv(from_object, ['executableCode']))
-
-  if getv(from_object, ['functionCall']) is not None:
-    setv(to_object, ['function_call'], getv(from_object, ['functionCall']))
-
-  if getv(from_object, ['functionResponse']) is not None:
-    setv(
-        to_object,
-        ['function_response'],
-        getv(from_object, ['functionResponse']),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  return to_object
-
-
-def _Content_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parts']) is not None:
-    setv(
-        to_object,
-        ['parts'],
-        [
-            _Part_from_mldev(item, to_object)
-            for item in getv(from_object, ['parts'])
-        ],
-    )
-
-  if getv(from_object, ['role']) is not None:
-    setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _CitationMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['citationSources']) is not None:
-    setv(to_object, ['citations'], getv(from_object, ['citationSources']))
-
-  return to_object
-
-
-def _UrlMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['retrievedUrl']) is not None:
-    setv(to_object, ['retrieved_url'], getv(from_object, ['retrievedUrl']))
-
-  if getv(from_object, ['urlRetrievalStatus']) is not None:
-    setv(
-        to_object,
-        ['url_retrieval_status'],
-        getv(from_object, ['urlRetrievalStatus']),
-    )
-
-  return to_object
-
-
-def _UrlContextMetadata_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['urlMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_metadata'],
-        [
-            _UrlMetadata_from_mldev(item, to_object)
-            for item in getv(from_object, ['urlMetadata'])
-        ],
-    )
-
-  return to_object
-
-
-def _Candidate_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['content']) is not None:
-    setv(
-        to_object,
-        ['content'],
-        _Content_from_mldev(getv(from_object, ['content']), to_object),
-    )
-
-  if getv(from_object, ['citationMetadata']) is not None:
-    setv(
-        to_object,
-        ['citation_metadata'],
-        _CitationMetadata_from_mldev(
-            getv(from_object, ['citationMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['tokenCount']) is not None:
-    setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
-
-  if getv(from_object, ['finishReason']) is not None:
-    setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
-
-  if getv(from_object, ['urlContextMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_context_metadata'],
-        _UrlContextMetadata_from_mldev(
-            getv(from_object, ['urlContextMetadata']), to_object
-        ),
-    )
-
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
-  if getv(from_object, ['groundingMetadata']) is not None:
-    setv(
-        to_object,
-        ['grounding_metadata'],
-        getv(from_object, ['groundingMetadata']),
-    )
-
-  if getv(from_object, ['index']) is not None:
-    setv(to_object, ['index'], getv(from_object, ['index']))
-
-  if getv(from_object, ['logprobsResult']) is not None:
-    setv(to_object, ['logprobs_result'], getv(from_object, ['logprobsResult']))
-
-  if getv(from_object, ['safetyRatings']) is not None:
-    setv(to_object, ['safety_ratings'], getv(from_object, ['safetyRatings']))
-
-  return to_object
-
-
-def _GenerateContentResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['candidates']) is not None:
-    setv(
-        to_object,
-        ['candidates'],
-        [
-            _Candidate_from_mldev(item, to_object)
-            for item in getv(from_object, ['candidates'])
-        ],
-    )
-
-  if getv(from_object, ['modelVersion']) is not None:
-    setv(to_object, ['model_version'], getv(from_object, ['modelVersion']))
-
-  if getv(from_object, ['promptFeedback']) is not None:
-    setv(to_object, ['prompt_feedback'], getv(from_object, ['promptFeedback']))
-
-  if getv(from_object, ['usageMetadata']) is not None:
-    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
-
-  return to_object
-
-
-def _JobError_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['details']) is not None:
-    setv(to_object, ['details'], getv(from_object, ['details']))
-
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  if getv(from_object, ['message']) is not None:
-    setv(to_object, ['message'], getv(from_object, ['message']))
-
-  return to_object
-
-
-def _InlinedResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _GenerateContentResponse_from_mldev(
-            getv(from_object, ['response']), to_object
-        ),
-    )
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _JobError_from_mldev(getv(from_object, ['error']), to_object),
-    )
-
-  return to_object
-
-
-def _BatchJobDestination_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['responsesFile']) is not None:
-    setv(to_object, ['file_name'], getv(from_object, ['responsesFile']))
-
-  if getv(from_object, ['inlinedResponses', 'inlinedResponses']) is not None:
-    setv(
-        to_object,
-        ['inlined_responses'],
-        [
-            _InlinedResponse_from_mldev(item, to_object)
-            for item in getv(
-                from_object, ['inlinedResponses', 'inlinedResponses']
-            )
-        ],
-    )
-
-  return to_object
-
-
-def _BatchJob_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata', 'displayName']) is not None:
-    setv(
-        to_object,
-        ['display_name'],
-        getv(from_object, ['metadata', 'displayName']),
-    )
-
-  if getv(from_object, ['metadata', 'state']) is not None:
-    setv(
-        to_object,
-        ['state'],
-        t.t_job_state(getv(from_object, ['metadata', 'state'])),
-    )
-
-  if getv(from_object, ['metadata', 'createTime']) is not None:
-    setv(
-        to_object,
-        ['create_time'],
-        getv(from_object, ['metadata', 'createTime']),
-    )
-
-  if getv(from_object, ['metadata', 'endTime']) is not None:
-    setv(to_object, ['end_time'], getv(from_object, ['metadata', 'endTime']))
-
-  if getv(from_object, ['metadata', 'updateTime']) is not None:
-    setv(
-        to_object,
-        ['update_time'],
-        getv(from_object, ['metadata', 'updateTime']),
-    )
-
-  if getv(from_object, ['metadata', 'model']) is not None:
-    setv(to_object, ['model'], getv(from_object, ['metadata', 'model']))
-
-  if getv(from_object, ['metadata', 'output']) is not None:
-    setv(
-        to_object,
-        ['dest'],
-        _BatchJobDestination_from_mldev(
-            getv(from_object, ['metadata', 'output']), to_object
-        ),
-    )
+    _ListBatchJobsConfig_to_vertex(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -1622,6 +1166,11 @@ def _ListBatchJobsResponse_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
@@ -1638,152 +1187,16 @@ def _ListBatchJobsResponse_from_mldev(
   return to_object
 
 
-def _DeleteResourceJob_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _JobError_from_mldev(getv(from_object, ['error']), to_object),
-    )
-
-  return to_object
-
-
-def _JobError_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['details']) is not None:
-    setv(to_object, ['details'], getv(from_object, ['details']))
-
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  if getv(from_object, ['message']) is not None:
-    setv(to_object, ['message'], getv(from_object, ['message']))
-
-  return to_object
-
-
-def _BatchJobSource_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['instancesFormat']) is not None:
-    setv(to_object, ['format'], getv(from_object, ['instancesFormat']))
-
-  if getv(from_object, ['gcsSource', 'uris']) is not None:
-    setv(to_object, ['gcs_uri'], getv(from_object, ['gcsSource', 'uris']))
-
-  if getv(from_object, ['bigquerySource', 'inputUri']) is not None:
-    setv(
-        to_object,
-        ['bigquery_uri'],
-        getv(from_object, ['bigquerySource', 'inputUri']),
-    )
-
-  return to_object
-
-
-def _BatchJobDestination_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['predictionsFormat']) is not None:
-    setv(to_object, ['format'], getv(from_object, ['predictionsFormat']))
-
-  if getv(from_object, ['gcsDestination', 'outputUriPrefix']) is not None:
-    setv(
-        to_object,
-        ['gcs_uri'],
-        getv(from_object, ['gcsDestination', 'outputUriPrefix']),
-    )
-
-  if getv(from_object, ['bigqueryDestination', 'outputUri']) is not None:
-    setv(
-        to_object,
-        ['bigquery_uri'],
-        getv(from_object, ['bigqueryDestination', 'outputUri']),
-    )
-
-  return to_object
-
-
-def _BatchJob_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], t.t_job_state(getv(from_object, ['state'])))
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _JobError_from_vertex(getv(from_object, ['error']), to_object),
-    )
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['startTime']) is not None:
-    setv(to_object, ['start_time'], getv(from_object, ['startTime']))
-
-  if getv(from_object, ['endTime']) is not None:
-    setv(to_object, ['end_time'], getv(from_object, ['endTime']))
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  if getv(from_object, ['model']) is not None:
-    setv(to_object, ['model'], getv(from_object, ['model']))
-
-  if getv(from_object, ['inputConfig']) is not None:
-    setv(
-        to_object,
-        ['src'],
-        _BatchJobSource_from_vertex(
-            getv(from_object, ['inputConfig']), to_object
-        ),
-    )
-
-  if getv(from_object, ['outputConfig']) is not None:
-    setv(
-        to_object,
-        ['dest'],
-        _BatchJobDestination_from_vertex(
-            getv(from_object, ['outputConfig']), to_object
-        ),
-    )
-
-  return to_object
-
-
 def _ListBatchJobsResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
@@ -1800,23 +1213,126 @@ def _ListBatchJobsResponse_from_vertex(
   return to_object
 
 
-def _DeleteResourceJob_from_vertex(
+def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
 
-  if getv(from_object, ['error']) is not None:
+  if getv(from_object, ['inline_data']) is not None:
     setv(
         to_object,
-        ['error'],
-        _JobError_from_vertex(getv(from_object, ['error']), to_object),
+        ['inlineData'],
+        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
     )
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  return to_object
+
+
+def _SafetySetting_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['method']) is not None:
+    raise ValueError('method parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['category']) is not None:
+    setv(to_object, ['category'], getv(from_object, ['category']))
+
+  if getv(from_object, ['threshold']) is not None:
+    setv(to_object, ['threshold'], getv(from_object, ['threshold']))
+
+  return to_object
+
+
+def _Tool_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
+
+  if getv(from_object, ['retrieval']) is not None:
+    raise ValueError('retrieval parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['google_maps']) is not None:
+    raise ValueError('google_maps parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['url_context']) is not None:
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -1876,12 +1392,72 @@ class Batches(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(response_dict)
 
+    if not self._api_client.vertexai:
+      response_dict = _BatchJob_from_mldev(response_dict)
+
+    return_value = types.BatchJob._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  def _create_embeddings(
+      self,
+      *,
+      model: Optional[str] = None,
+      src: types.EmbeddingsBatchJobSourceOrDict,
+      config: Optional[types.CreateEmbeddingsBatchJobConfigOrDict] = None,
+  ) -> types.BatchJob:
+    parameter_model = types._CreateEmbeddingsBatchJobParameters(
+        model=model,
+        src=src,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
     else:
+      request_dict = _CreateEmbeddingsBatchJobParameters_to_mldev(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:asyncBatchEmbedContent'.format_map(request_url_dict)
+      else:
+        path = '{model}:asyncBatchEmbedContent'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if not self._api_client.vertexai:
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
@@ -1956,12 +1532,12 @@ class Batches(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
@@ -2080,18 +1656,20 @@ class Batches(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ListBatchJobsResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _ListBatchJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -2163,18 +1741,20 @@ class Batches(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _DeleteResourceJob_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _DeleteResourceJob_from_mldev(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -2182,7 +1762,7 @@ class Batches(_api_module.BaseModule):
       self,
       *,
       model: str,
-      src: Union[types.BatchJobSourceUnion, types.BatchJobSourceUnionDict],
+      src: types.BatchJobSourceUnionDict,
       config: Optional[types.CreateBatchJobConfigOrDict] = None,
   ) -> types.BatchJob:
     """Creates a batch job.
@@ -2208,15 +1788,70 @@ class Batches(_api_module.BaseModule):
       )
       print(batch_job.state)
     """
-    if self._api_client.vertexai:
-      if isinstance(src, list):
-        raise ValueError(
-            'inlined_requests is not supported in Vertex AI. Please use'
-            ' Google Cloud Storage URI or BigQuery URI instead.'
-        )
+    src = t.t_batch_job_source(self._api_client, src)
 
-      config = _extra_utils.format_destination(src, config)
-    return self._create(model=model, src=src, config=config)
+    # Convert all dicts to Pydantic objects.
+    parameter_model = types._CreateBatchJobParameters(
+        model=model,
+        src=src,
+        config=config,
+    )
+
+    if self._api_client.vertexai:
+      config = _extra_utils.format_destination(src, parameter_model.config)
+      return self._create(model=model, src=src, config=config)
+    else:
+      return self._create(model=model, src=src, config=config)
+
+  def create_embeddings(
+      self,
+      *,
+      model: str,
+      src: types.EmbeddingsBatchJobSourceOrDict,
+      config: Optional[types.CreateEmbeddingsBatchJobConfigOrDict] = None,
+  ) -> types.BatchJob:
+    """**Experimental** Creates an embedding batch job.
+
+    Args:
+      model (str): The model to use for the batch job.
+      src: Gemini Developer API supports List of inlined_request, or file name.
+        Example: "files/file_name".
+      config (CreateBatchJobConfig): Optional configuration for the batch job.
+
+    Returns:
+      A BatchJob object that contains details about the batch job.
+
+    Usage:
+
+    .. code-block:: python
+
+      batch_job = client.batches.create_embeddings(
+          model="text-embedding-004",
+          src="files/my_embedding_input",
+      )
+      print(batch_job.state)
+    """
+    import warnings
+
+    warnings.warn(
+        'batches.create_embeddings() is experimental and may change without'
+        ' notice.',
+        category=_common.ExperimentalWarning,
+        stacklevel=2,  # This is crucial!
+    )
+    src = t.t_embedding_batch_job_source(self._api_client, src)
+
+    # Convert all dicts to Pydantic objects.
+    parameter_model = types._CreateEmbeddingsBatchJobParameters(
+        model=model,
+        src=src,
+        config=config,
+    )
+
+    if self._api_client.vertexai:
+      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+    else:
+      return self._create_embeddings(model=model, src=src, config=config)
 
   def list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
@@ -2303,12 +1938,72 @@ class AsyncBatches(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(response_dict)
 
+    if not self._api_client.vertexai:
+      response_dict = _BatchJob_from_mldev(response_dict)
+
+    return_value = types.BatchJob._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  async def _create_embeddings(
+      self,
+      *,
+      model: Optional[str] = None,
+      src: types.EmbeddingsBatchJobSourceOrDict,
+      config: Optional[types.CreateEmbeddingsBatchJobConfigOrDict] = None,
+  ) -> types.BatchJob:
+    parameter_model = types._CreateEmbeddingsBatchJobParameters(
+        model=model,
+        src=src,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
     else:
+      request_dict = _CreateEmbeddingsBatchJobParameters_to_mldev(
+          self._api_client, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = '{model}:asyncBatchEmbedContent'.format_map(request_url_dict)
+      else:
+        path = '{model}:asyncBatchEmbedContent'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if not self._api_client.vertexai:
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
@@ -2385,12 +2080,12 @@ class AsyncBatches(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _BatchJob_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
@@ -2511,18 +2206,20 @@ class AsyncBatches(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _ListBatchJobsResponse_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _ListBatchJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -2594,18 +2291,20 @@ class AsyncBatches(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
       response_dict = _DeleteResourceJob_from_vertex(response_dict)
 
-    else:
+    if not self._api_client.vertexai:
       response_dict = _DeleteResourceJob_from_mldev(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -2613,7 +2312,7 @@ class AsyncBatches(_api_module.BaseModule):
       self,
       *,
       model: str,
-      src: Union[types.BatchJobSourceUnion, types.BatchJobSourceUnionDict],
+      src: types.BatchJobSourceUnionDict,
       config: Optional[types.CreateBatchJobConfigOrDict] = None,
   ) -> types.BatchJob:
     """Creates a batch job asynchronously.
@@ -2638,15 +2337,77 @@ class AsyncBatches(_api_module.BaseModule):
           src="gs://path/to/input/data",
       )
     """
-    if self._api_client.vertexai:
-      if isinstance(src, list):
-        raise ValueError(
-            'inlined_requests is not supported in Vertex AI. Please use'
-            ' Google Cloud Storage URI or BigQuery URI instead.'
-        )
+    src = t.t_batch_job_source(self._api_client, src)
 
-      config = _extra_utils.format_destination(src, config)
-    return await self._create(model=model, src=src, config=config)
+    # Convert all dicts to Pydantic objects.
+    parameter_model = types._CreateBatchJobParameters(
+        model=model,
+        src=src,
+        config=config,
+    )
+
+    if self._api_client.vertexai:
+      config = _extra_utils.format_destination(src, parameter_model.config)
+      return await self._create(model=model, src=src, config=config)
+    else:
+      return await self._create(model=model, src=src, config=config)
+
+  async def create_embeddings(
+      self,
+      *,
+      model: str,
+      src: types.EmbeddingsBatchJobSourceOrDict,
+      config: Optional[types.CreateEmbeddingsBatchJobConfigOrDict] = None,
+  ) -> types.BatchJob:
+    """**Experimental** Creates an asynchronously embedding batch job.
+
+    Args:
+      model (str): The model to use for the batch job.
+      src: Gemini Developer API supports inlined_requests, or file name.
+        Example: "files/file_name".
+      config (CreateBatchJobConfig): Optional configuration for the batch job.
+
+    Returns:
+      A BatchJob object that contains details about the batch job.
+
+    Usage:
+
+    .. code-block:: python
+
+      batch_job = await client.aio.batches.create_embeddings(
+          model="text-embedding-004",
+          src="files/my_embedding_input",
+      )
+      print(batch_job.state)
+    """
+    import warnings
+
+    warnings.warn(
+        'batches.create_embeddings() is experimental and may change without'
+        ' notice.',
+        category=_common.ExperimentalWarning,
+        stacklevel=2,  # This is crucial!
+    )
+    src = t.t_embedding_batch_job_source(self._api_client, src)
+
+    # Convert all dicts to Pydantic objects.
+    parameter_model = types._CreateEmbeddingsBatchJobParameters(
+        model=model,
+        src=src,
+        config=config,
+    )
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    if self._api_client.vertexai:
+      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+    else:
+      return await self._create_embeddings(model=model, src=src, config=config)
 
   async def list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None

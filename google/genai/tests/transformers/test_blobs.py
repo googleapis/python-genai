@@ -19,15 +19,10 @@
 import os
 
 import PIL.Image
+import pytest
 
 from ... import _transformers as t
 from ... import types
-
-IMAGE_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.jpg')
-)
-image = PIL.Image.open(IMAGE_FILE_PATH)
-
 
 
 def test_blob_dict():
@@ -44,8 +39,33 @@ def test_blob():
   assert blob.mime_type == 'audio/pcm'
 
 
-def test_image():
-  blob = t.t_blob(image)
+def test_image(image_jpeg):
+  blob = t.t_blob(image_jpeg)
   assert blob.data[6:10] == b'JFIF'
   assert blob.mime_type == 'image/jpeg'
 
+  round_trip_image = blob.as_image()._pil_image
+  assert round_trip_image is not None
+  assert round_trip_image.size == image_jpeg.size
+  assert round_trip_image.mode == image_jpeg.mode
+  assert round_trip_image.format == image_jpeg.format
+
+def test_not_image():
+  blob = types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='audio/pcm')
+  assert blob.as_image() is None
+
+def test_part_image(image_jpeg):
+  part = t.t_part(image_jpeg)
+  assert part.inline_data.data[6:10] == b'JFIF'
+  assert part.inline_data.mime_type == 'image/jpeg'
+
+  round_trip_image = part.as_image()._pil_image
+  assert round_trip_image is not None
+  assert round_trip_image.size == image_jpeg.size
+  assert round_trip_image.mode == image_jpeg.mode
+  assert round_trip_image.format == image_jpeg.format
+
+
+def test_part_not_image():
+  part = t.t_part('hello world')
+  assert part.as_image() is None

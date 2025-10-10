@@ -33,7 +33,7 @@ def test_patch_http_options_with_copies_all_fields():
       retry_options=types.HttpRetryOptions(attempts=10),
   )
   options = types.HttpOptions()
-  patched = _api_client._patch_http_options(options, patch_options)
+  patched = _api_client.patch_http_options(options, patch_options)
   http_options_keys = types.HttpOptions.model_fields.keys()
 
   for key in http_options_keys:
@@ -60,7 +60,7 @@ def test_patch_http_options_merges_headers():
       headers={'X-Custom-Header': 'custom_value'},
       timeout=10000,
   )
-  patched = _api_client._patch_http_options(original_options, patch_options)
+  patched = _api_client.patch_http_options(original_options, patch_options)
   # If the header is present in both the original and patch options, the patch
   # options value should be used
   assert patched.headers['X-Custom-Header'] == 'custom_value'
@@ -81,7 +81,7 @@ def test_patch_http_options_appends_version_headers():
       headers={'X-Custom-Header': 'custom_value'},
       timeout=10000,
   )
-  patched = _api_client._patch_http_options(original_options, patch_options)
+  patched = _api_client.patch_http_options(original_options, patch_options)
   assert 'user-agent' in patched.headers
   assert 'x-goog-api-client' in patched.headers
 

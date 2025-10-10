@@ -18,20 +18,84 @@
 import io
 import json
 import logging
-import mimetypes
 import os
 from typing import Any, Optional, Union
 from urllib.parse import urlencode
 
 from . import _api_module
 from . import _common
+from . import _extra_utils
 from . import _transformers as t
 from . import types
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
+
 logger = logging.getLogger('google_genai.files')
+
+
+def _CreateFileParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['file']) is not None:
+    setv(to_object, ['file'], getv(from_object, ['file']))
+
+  return to_object
+
+
+def _CreateFileResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
+def _DeleteFileParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
+    )
+
+  return to_object
+
+
+def _DeleteFileResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
+def _GetFileParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(
+        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
+    )
+
+  return to_object
 
 
 def _ListFilesConfig_to_mldev(
@@ -61,203 +125,7 @@ def _ListFilesParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    setv(
-        to_object,
-        ['config'],
-        _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object),
-    )
-
-  return to_object
-
-
-def _FileStatus_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['details']) is not None:
-    setv(to_object, ['details'], getv(from_object, ['details']))
-
-  if getv(from_object, ['message']) is not None:
-    setv(to_object, ['message'], getv(from_object, ['message']))
-
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  return to_object
-
-
-def _File_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  if getv(from_object, ['size_bytes']) is not None:
-    setv(to_object, ['sizeBytes'], getv(from_object, ['size_bytes']))
-
-  if getv(from_object, ['create_time']) is not None:
-    setv(to_object, ['createTime'], getv(from_object, ['create_time']))
-
-  if getv(from_object, ['expiration_time']) is not None:
-    setv(to_object, ['expirationTime'], getv(from_object, ['expiration_time']))
-
-  if getv(from_object, ['update_time']) is not None:
-    setv(to_object, ['updateTime'], getv(from_object, ['update_time']))
-
-  if getv(from_object, ['sha256_hash']) is not None:
-    setv(to_object, ['sha256Hash'], getv(from_object, ['sha256_hash']))
-
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['download_uri']) is not None:
-    setv(to_object, ['downloadUri'], getv(from_object, ['download_uri']))
-
-  if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
-
-  if getv(from_object, ['source']) is not None:
-    setv(to_object, ['source'], getv(from_object, ['source']))
-
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _FileStatus_to_mldev(getv(from_object, ['error']), to_object),
-    )
-
-  return to_object
-
-
-def _CreateFileParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['file']) is not None:
-    setv(
-        to_object,
-        ['file'],
-        _File_to_mldev(getv(from_object, ['file']), to_object),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _GetFileParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _DeleteFileParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _FileStatus_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['details']) is not None:
-    setv(to_object, ['details'], getv(from_object, ['details']))
-
-  if getv(from_object, ['message']) is not None:
-    setv(to_object, ['message'], getv(from_object, ['message']))
-
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  return to_object
-
-
-def _File_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['displayName']) is not None:
-    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  if getv(from_object, ['sizeBytes']) is not None:
-    setv(to_object, ['size_bytes'], getv(from_object, ['sizeBytes']))
-
-  if getv(from_object, ['createTime']) is not None:
-    setv(to_object, ['create_time'], getv(from_object, ['createTime']))
-
-  if getv(from_object, ['expirationTime']) is not None:
-    setv(to_object, ['expiration_time'], getv(from_object, ['expirationTime']))
-
-  if getv(from_object, ['updateTime']) is not None:
-    setv(to_object, ['update_time'], getv(from_object, ['updateTime']))
-
-  if getv(from_object, ['sha256Hash']) is not None:
-    setv(to_object, ['sha256_hash'], getv(from_object, ['sha256Hash']))
-
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['downloadUri']) is not None:
-    setv(to_object, ['download_uri'], getv(from_object, ['downloadUri']))
-
-  if getv(from_object, ['state']) is not None:
-    setv(to_object, ['state'], getv(from_object, ['state']))
-
-  if getv(from_object, ['source']) is not None:
-    setv(to_object, ['source'], getv(from_object, ['source']))
-
-  if getv(from_object, ['videoMetadata']) is not None:
-    setv(to_object, ['video_metadata'], getv(from_object, ['videoMetadata']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(
-        to_object,
-        ['error'],
-        _FileStatus_from_mldev(getv(from_object, ['error']), to_object),
-    )
+    _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object)
 
   return to_object
 
@@ -267,40 +135,16 @@ def _ListFilesResponse_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['files']) is not None:
-    setv(
-        to_object,
-        ['files'],
-        [
-            _File_from_mldev(item, to_object)
-            for item in getv(from_object, ['files'])
-        ],
-    )
-
-  return to_object
-
-
-def _CreateFileResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
     setv(
         to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
     )
 
-  return to_object
+  if getv(from_object, ['nextPageToken']) is not None:
+    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
 
-
-def _DeleteFileResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
+  if getv(from_object, ['files']) is not None:
+    setv(to_object, ['files'], [item for item in getv(from_object, ['files'])])
 
   return to_object
 
@@ -362,7 +206,7 @@ class Files(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _ListFilesResponse_from_mldev(response_dict)
@@ -370,7 +214,9 @@ class Files(_api_module.BaseModule):
     return_value = types.ListFilesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -422,9 +268,10 @@ class Files(_api_module.BaseModule):
         config, 'should_return_http_response', None
     ):
       return_value = types.CreateFileResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
       return return_value
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _CreateFileResponse_from_mldev(response_dict)
@@ -492,10 +339,7 @@ class Files(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = _File_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.File._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -561,7 +405,7 @@ class Files(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _DeleteFileResponse_from_mldev(response_dict)
@@ -569,7 +413,9 @@ class Files(_api_module.BaseModule):
     return_value = types.DeleteFileResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -609,54 +455,13 @@ class Files(_api_module.BaseModule):
     if file_obj.name is not None and not file_obj.name.startswith('files/'):
       file_obj.name = f'files/{file_obj.name}'
 
-    if isinstance(file, io.IOBase):
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n please set the `mime_type` argument'
-        )
-      if hasattr(file, 'mode'):
-        if 'b' not in file.mode:
-          raise ValueError('The file must be opened in binary mode.')
-      offset = file.tell()
-      file.seek(0, os.SEEK_END)
-      file_obj.size_bytes = file.tell() - offset
-      file.seek(offset, os.SEEK_SET)
-    else:
-      fs_path = os.fspath(file)
-      if not fs_path or not os.path.isfile(fs_path):
-        raise FileNotFoundError(f'{file} is not a valid file path.')
-      file_obj.size_bytes = os.path.getsize(fs_path)
-      if file_obj.mime_type is None:
-        file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
-        )
-
-    http_options: types.HttpOptions
-    if config_model and config_model.http_options:
-      http_options = config_model.http_options
-      http_options.api_version = ''
-      http_options.headers = {
-          'Content-Type': 'application/json',
-          'X-Goog-Upload-Protocol': 'resumable',
-          'X-Goog-Upload-Command': 'start',
-          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-      }
-    else:
-      http_options = types.HttpOptions(
-          api_version='',
-          headers={
-              'Content-Type': 'application/json',
-              'X-Goog-Upload-Protocol': 'resumable',
-              'X-Goog-Upload-Command': 'start',
-              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-          },
-      )
+    http_options, size_bytes, mime_type = _extra_utils.prepare_resumable_upload(
+        file,
+        user_http_options=config_model.http_options,
+        user_mime_type=config_model.mime_type,
+    )
+    file_obj.size_bytes = size_bytes
+    file_obj.mime_type = mime_type
     response = self._create(
         file=file_obj,
         config=types.CreateFileConfig(
@@ -680,12 +485,13 @@ class Files(_api_module.BaseModule):
           file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
+      fs_path = os.fspath(file)
       return_file = self._api_client.upload_file(
           fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(return_file.json['file']),
+        response=return_file.json['file'],
         kwargs=config_model.model_dump() if config else {},
     )
 
@@ -840,7 +646,7 @@ class AsyncFiles(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _ListFilesResponse_from_mldev(response_dict)
@@ -848,7 +654,9 @@ class AsyncFiles(_api_module.BaseModule):
     return_value = types.ListFilesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -900,9 +708,10 @@ class AsyncFiles(_api_module.BaseModule):
         config, 'should_return_http_response', None
     ):
       return_value = types.CreateFileResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
       return return_value
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _CreateFileResponse_from_mldev(response_dict)
@@ -972,10 +781,7 @@ class AsyncFiles(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = _File_from_mldev(response_dict)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.File._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1041,7 +847,7 @@ class AsyncFiles(_api_module.BaseModule):
         'delete', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
       response_dict = _DeleteFileResponse_from_mldev(response_dict)
@@ -1049,7 +855,9 @@ class AsyncFiles(_api_module.BaseModule):
     return_value = types.DeleteFileResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -1089,54 +897,13 @@ class AsyncFiles(_api_module.BaseModule):
     if file_obj.name is not None and not file_obj.name.startswith('files/'):
       file_obj.name = f'files/{file_obj.name}'
 
-    if isinstance(file, io.IOBase):
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
-        )
-      if hasattr(file, 'mode'):
-        if 'b' not in file.mode:
-          raise ValueError('The file must be opened in binary mode.')
-      offset = file.tell()
-      file.seek(0, os.SEEK_END)
-      file_obj.size_bytes = file.tell() - offset
-      file.seek(offset, os.SEEK_SET)
-    else:
-      fs_path = os.fspath(file)
-      if not fs_path or not os.path.isfile(fs_path):
-        raise FileNotFoundError(f'{file} is not a valid file path.')
-      file_obj.size_bytes = os.path.getsize(fs_path)
-      if file_obj.mime_type is None:
-        file_obj.mime_type, _ = mimetypes.guess_type(fs_path)
-      if file_obj.mime_type is None:
-        raise ValueError(
-            'Unknown mime type: Could not determine the mimetype for your'
-            ' file\n    please set the `mime_type` argument'
-        )
-
-    http_options: types.HttpOptions
-    if config_model and config_model.http_options:
-      http_options = config_model.http_options
-      http_options.api_version = ''
-      http_options.headers = {
-          'Content-Type': 'application/json',
-          'X-Goog-Upload-Protocol': 'resumable',
-          'X-Goog-Upload-Command': 'start',
-          'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-          'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-      }
-    else:
-      http_options = types.HttpOptions(
-          api_version='',
-          headers={
-              'Content-Type': 'application/json',
-              'X-Goog-Upload-Protocol': 'resumable',
-              'X-Goog-Upload-Command': 'start',
-              'X-Goog-Upload-Header-Content-Length': f'{file_obj.size_bytes}',
-              'X-Goog-Upload-Header-Content-Type': f'{file_obj.mime_type}',
-          },
-      )
+    http_options, size_bytes, mime_type = _extra_utils.prepare_resumable_upload(
+        file,
+        user_http_options=config_model.http_options,
+        user_mime_type=config_model.mime_type,
+    )
+    file_obj.size_bytes = size_bytes
+    file_obj.mime_type = mime_type
     response = await self._create(
         file=file_obj,
         config=types.CreateFileConfig(
@@ -1165,12 +932,13 @@ class AsyncFiles(_api_module.BaseModule):
           file, upload_url, file_obj.size_bytes, http_options=http_options
       )
     else:
+      fs_path = os.fspath(file)
       return_file = await self._api_client.async_upload_file(
           fs_path, upload_url, file_obj.size_bytes, http_options=http_options
       )
 
     return types.File._from_response(
-        response=_File_from_mldev(return_file.json['file']),
+        response=return_file.json['file'],
         kwargs=config_model.model_dump() if config else {},
     )
 

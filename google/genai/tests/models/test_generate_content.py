@@ -17,7 +17,6 @@ import base64
 import enum
 import os
 
-import PIL.Image
 from pydantic import BaseModel, ValidationError, Field, ConfigDict
 from typing import Literal, List, Optional, Union, Set
 from datetime import datetime
@@ -34,7 +33,6 @@ from enum import Enum
 IMAGE_PNG_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google.png')
 )
-image_png = PIL.Image.open(IMAGE_PNG_FILE_PATH)
 
 with open(IMAGE_PNG_FILE_PATH, 'rb') as image_file:
   image_bytes = image_file.read()
@@ -252,6 +250,55 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch()
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
@@ -422,6 +469,23 @@ def test_sync_with_headers(client):
   assert response.sdk_http_response.headers is not None
   assert response.sdk_http_response.body is None
 
+
+def test_sync_with_full_response(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  print(response.sdk_http_response.body)
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.generate_content(
@@ -442,6 +506,23 @@ async def test_async_with_headers(client):
   )
   assert response.sdk_http_response.headers is not None
   assert response.sdk_http_response.body is None
+
+
+@pytest.mark.asyncio
+async def test_async_with_full_response(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
 
 
 def test_sync_stream(client):
@@ -476,6 +557,28 @@ def test_sync_stream_with_should_return_http_headers(client):
   assert chunks > 2
 
 
+def test_sync_stream_with_non_text_modality(client):
+  response = client.models.generate_content_stream(
+      model='gemini-2.0-flash-preview-image-generation',
+      contents=(
+          'Generate an image of the Eiffel tower with fireworks in the'
+          ' background.'
+      ),
+      config={
+          'response_modalities': ['IMAGE', 'TEXT'],
+      },
+  )
+  chunks = 0
+  for chunk in response:
+    chunks += 1
+    if chunk.candidates[0].finish_reason is not None:
+      continue
+    for part in chunk.parts:
+      assert part.text is not None or part.inline_data is not None
+
+  assert chunks > 2
+
+
 @pytest.mark.asyncio
 async def test_async_stream(client):
   chunks = 0
@@ -503,6 +606,28 @@ async def test_async_stream_with_headers(client):
     chunks += 1
     assert part.text is not None or part.candidates[0].finish_reason
     assert part.sdk_http_response.headers is not None
+
+  assert chunks > 2
+
+
+@pytest.mark.asyncio
+async def test_async_stream_with_non_text_modality(client):
+  chunks = 0
+  async for chunk in await client.aio.models.generate_content_stream(
+      model='gemini-2.0-flash-preview-image-generation',
+      contents=(
+          'Generate an image of the Eiffel tower with fireworks in the'
+          ' background.'
+      ),
+      config={
+          'response_modalities': ['IMAGE', 'TEXT'],
+      },
+  ):
+    chunks += 1
+    if chunk.candidates[0].finish_reason is not None:
+      continue
+    for part in chunk.parts:
+      assert part.text is not None or part.inline_data is not None
 
   assert chunks > 2
 
@@ -568,10 +693,6 @@ async def test_simple_shared_generation_config_stream_async(client):
 
 
 def test_log_probs(client):
-  # ML DEV discovery doc supports response_logprobs but the backend
-  # does not.
-  # TODO: update replay test json files when ML Dev backend is updated.
-  with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
         model='gemini-1.5-flash',
         contents='What is your name?',
@@ -1769,7 +1890,7 @@ def test_json_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1795,7 +1916,7 @@ def test_pydantic_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1886,7 +2007,6 @@ def test_function(client):
       },
   )
   assert '100' in response.text
-
 
 def test_invalid_input_without_transformer(client):
   with pytest.raises(ValidationError) as e:
@@ -2272,8 +2392,4 @@ async def test_error_handling_stream_async(client):
       continue
 
   except errors.ClientError as e:
-    assert (
-        e.message
-        == 'Developer instruction is not enabled for'
-        ' models/gemini-2.0-flash-exp-image-generation'
-    )
+    assert ('Developer instruction is not enabled' in e.message)
