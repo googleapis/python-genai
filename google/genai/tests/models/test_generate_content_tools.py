@@ -511,6 +511,20 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
     ),
+    pytest_helper.TestTableItem(
+        name='test_google_maps_with_enable_widget',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('What is the nearest airport to Seattle?'),
+            config={
+                'tools': [
+                    {'google_maps': {'enable_widget': True}}
+                ]
+            },
+        ),
+        # TODO(b/450916996): Remove this once the feature is launched in Gemini.
+        exception_if_mldev='400',
+    ),
 ]
 
 

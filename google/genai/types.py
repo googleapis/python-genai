@@ -2823,6 +2823,10 @@ class GoogleMaps(_common.BaseModel):
       default=None,
       description="""Optional. Auth config for the Google Maps tool.""",
   )
+  enable_widget: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If true, include the widget context token in the response.""",
+  )
 
 
 class GoogleMapsDict(TypedDict, total=False):
@@ -2830,6 +2834,9 @@ class GoogleMapsDict(TypedDict, total=False):
 
   auth_config: Optional[AuthConfigDict]
   """Optional. Auth config for the Google Maps tool."""
+
+  enable_widget: Optional[bool]
+  """Optional. If true, include the widget context token in the response."""
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
@@ -4850,6 +4857,12 @@ class GroundingChunkMapsPlaceAnswerSourcesReviewSnippet(_common.BaseModel):
       default=None,
       description="""A reference representing this place review which may be used to look up this place review again.""",
   )
+  review_id: Optional[str] = Field(
+      default=None, description="""Id of the review referencing the place."""
+  )
+  title: Optional[str] = Field(
+      default=None, description="""Title of the review."""
+  )
 
 
 class GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict(
@@ -4873,6 +4886,12 @@ class GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict(
 
   review: Optional[str]
   """A reference representing this place review which may be used to look up this place review again."""
+
+  review_id: Optional[str]
+  """Id of the review referencing the place."""
+
+  title: Optional[str]
+  """Title of the review."""
 
 
 GroundingChunkMapsPlaceAnswerSourcesReviewSnippetOrDict = Union[
@@ -5234,6 +5253,39 @@ class SearchEntryPointDict(TypedDict, total=False):
 SearchEntryPointOrDict = Union[SearchEntryPoint, SearchEntryPointDict]
 
 
+class GroundingMetadataSourceFlaggingUri(_common.BaseModel):
+  """Source content flagging uri for a place or review.
+
+  This is currently populated only for Google Maps grounding.
+  """
+
+  flag_content_uri: Optional[str] = Field(
+      default=None,
+      description="""A link where users can flag a problem with the source (place or review).""",
+  )
+  source_id: Optional[str] = Field(
+      default=None, description="""Id of the place or review."""
+  )
+
+
+class GroundingMetadataSourceFlaggingUriDict(TypedDict, total=False):
+  """Source content flagging uri for a place or review.
+
+  This is currently populated only for Google Maps grounding.
+  """
+
+  flag_content_uri: Optional[str]
+  """A link where users can flag a problem with the source (place or review)."""
+
+  source_id: Optional[str]
+  """Id of the place or review."""
+
+
+GroundingMetadataSourceFlaggingUriOrDict = Union[
+    GroundingMetadataSourceFlaggingUri, GroundingMetadataSourceFlaggingUriDict
+]
+
+
 class GroundingMetadata(_common.BaseModel):
   """Metadata returned to client when grounding is enabled."""
 
@@ -5258,6 +5310,12 @@ class GroundingMetadata(_common.BaseModel):
   search_entry_point: Optional[SearchEntryPoint] = Field(
       default=None,
       description="""Optional. Google search entry for the following-up web searches.""",
+  )
+  source_flagging_uris: Optional[list[GroundingMetadataSourceFlaggingUri]] = (
+      Field(
+          default=None,
+          description="""Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding.""",
+      )
   )
   web_search_queries: Optional[list[str]] = Field(
       default=None,
@@ -5285,6 +5343,9 @@ class GroundingMetadataDict(TypedDict, total=False):
 
   search_entry_point: Optional[SearchEntryPointDict]
   """Optional. Google search entry for the following-up web searches."""
+
+  source_flagging_uris: Optional[list[GroundingMetadataSourceFlaggingUriDict]]
+  """Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding."""
 
   web_search_queries: Optional[list[str]]
   """Optional. Web search queries for the following-up web search."""

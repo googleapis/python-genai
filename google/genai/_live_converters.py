@@ -237,6 +237,9 @@ def _GoogleMaps_to_mldev(
   if getv(from_object, ['auth_config']) is not None:
     raise ValueError('auth_config parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['enable_widget']) is not None:
+    setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
   return to_object
 
 
