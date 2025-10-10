@@ -56,8 +56,13 @@ def _normalize_json_case(obj: Any) -> Any:
     return [_normalize_json_case(item) for item in obj]
   elif isinstance(obj, enum.Enum):
     return obj.value
-  else:
-    return obj
+  elif isinstance(obj, str):
+    # Python >= 3.14 has a new division by zero error message.
+    if 'division by zero' in obj:
+      return obj.replace(
+          'division by zero', 'integer division or modulo by zero'
+      )
+  return obj
 
 
 def _equals_ignore_key_case(obj1: Any, obj2: Any) -> bool:
@@ -88,7 +93,7 @@ def _equals_ignore_key_case(obj1: Any, obj2: Any) -> bool:
 
 def _redact_version_numbers(version_string: str) -> str:
   """Redacts version numbers in the form x.y.z from a string."""
-  return re.sub(r'\d+\.\d+\.\d+', '{VERSION_NUMBER}', version_string)
+  return re.sub(r'\d+\.\d+\.\d+[a-zA-Z0-9]*', '{VERSION_NUMBER}', version_string)
 
 
 def _redact_language_label(language_label: str) -> str:
