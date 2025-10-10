@@ -138,7 +138,7 @@ def _redact_request_url(url: str) -> str:
       result,
   )
   result = re.sub(
-      r'https://generativelanguage.googleapis.com/[^/]+',
+      r'.*generativelanguage.*.googleapis.com/[^/]+',
       '{MLDEV_URL_PREFIX}',
       result,
   )
