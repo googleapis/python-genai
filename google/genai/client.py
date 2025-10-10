@@ -127,7 +127,7 @@ class AsyncClient:
 
   def __del__(self) -> None:
     try:
-      asyncio.get_running_loop().create_task(self.aclose())
+      asyncio.get_running_loop().run_until_complete(self.aclose())
     except Exception:
       pass
 
