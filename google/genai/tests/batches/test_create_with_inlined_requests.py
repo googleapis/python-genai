@@ -26,10 +26,22 @@ from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 
-_GEMINI_MODEL = 'gemini-1.5-flash-002'
+_GEMINI_MODEL = 'gemini-2.5-flash-lite'
 _DISPLAY_NAME = 'test_batch'
 
-_MLDEV_GEMINI_MODEL = 'gemini-2.0-flash'
+_MLDEV_GEMINI_MODEL = 'gemini-2.5-flash'
+
+_SAFETY_SETTINGS = [
+    {
+        'category': 'HARM_CATEGORY_HATE_SPEECH',
+        'threshold': 'BLOCK_ONLY_HIGH',
+    },
+    {
+        'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        'threshold': 'BLOCK_LOW_AND_ABOVE',
+    },
+]
+
 _INLINED_REQUEST = {
     'contents': [{
         'parts': [{
@@ -37,6 +49,12 @@ _INLINED_REQUEST = {
         }],
         'role': 'user',
     }],
+    'metadata': {
+        'key': 'request-1',
+    },
+    'config': {
+        'safety_settings': _SAFETY_SETTINGS,
+    },
 }
 _INLINED_TEXT_REQUEST_UNION = {
     'contents': [{

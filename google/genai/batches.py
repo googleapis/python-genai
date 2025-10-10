@@ -1071,6 +1071,9 @@ def _InlinedRequest_to_mldev(
         ],
     )
 
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
   if getv(from_object, ['config']) is not None:
     setv(
         to_object,
