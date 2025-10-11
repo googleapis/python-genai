@@ -146,6 +146,10 @@ def get_value_by_path(
       else:
         return default_value
     else:
+      print(f'key: {key}')
+      print(f'data: {data}')
+      if key =='httpHeaders':
+        print(f'httpHeaders: {data["httpHeaders"]}')
       if key in data:
         data = data[key]
       elif isinstance(data, BaseModel) and hasattr(data, key):
