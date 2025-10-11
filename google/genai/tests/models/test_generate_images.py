@@ -83,6 +83,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 seed=1337,
                 language='en',
                 enhance_prompt=True,
+                labels={'imagen_label_key': 'generate_images'}
             ),
         ),
     ),

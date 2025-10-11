@@ -138,7 +138,7 @@ def _redact_request_url(url: str) -> str:
       result,
   )
   result = re.sub(
-      r'https://generativelanguage.googleapis.com/[^/]+',
+      r'.*generativelanguage.*.googleapis.com/[^/]+',
       '{MLDEV_URL_PREFIX}',
       result,
   )
@@ -395,8 +395,8 @@ class ReplayApiClient(BaseApiClient):
       http_request: HttpRequest,
       interaction: ReplayInteraction,
   ) -> None:
-    print('http_request.url: ', http_request.url)
-    print('interaction.request.url: ', interaction.request.url)
+    _debug_print(f'http_request.url: {http_request.url}')
+    _debug_print(f'interaction.request.url: {interaction.request.url}')
     assert http_request.url == interaction.request.url
     assert http_request.headers == interaction.request.headers, (
         'Request headers mismatch:\n'
@@ -469,7 +469,9 @@ class ReplayApiClient(BaseApiClient):
 
     if isinstance(response_model, list):
       response_model = response_model[0]
-    print('response_model: ', response_model.model_dump(exclude_none=True))
+    _debug_print(
+        f'response_model: {response_model.model_dump(exclude_none=True)}'
+    )
     actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
@@ -482,8 +484,8 @@ class ReplayApiClient(BaseApiClient):
       ):
         if 'body' in expected['sdk_http_response']:
           raw_body = expected['sdk_http_response']['body']
-          print('raw_body length: ', len(raw_body))
-          print('raw_body: ', raw_body)
+          _debug_print(f'raw_body length: {len(raw_body)}')
+          _debug_print(f'raw_body: {raw_body}')
           if isinstance(raw_body, str) and raw_body != '':
             raw_body = json.loads(raw_body)
             raw_body = json.dumps(raw_body)
@@ -493,7 +495,7 @@ class ReplayApiClient(BaseApiClient):
           actual == expected
       ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
     else:
-      print('Expected SDK response mismatch:\nActual: {actual}\nExpected: {expected}')
+      _debug_print(f'Expected SDK response mismatch:\nActual: {actual}\nExpected: {expected}')
     self._sdk_response_index += 1
 
   def _request(

@@ -567,6 +567,9 @@ def _EditImageConfig_to_vertex(
         getv(from_object, ['add_watermark']),
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
   if getv(from_object, ['edit_mode']) is not None:
     setv(
         parent_object,
@@ -1443,6 +1446,9 @@ def _GenerateImagesConfig_to_mldev(
   if getv(from_object, ['add_watermark']) is not None:
     raise ValueError('add_watermark parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
   if getv(from_object, ['image_size']) is not None:
     setv(
         parent_object,
@@ -1555,6 +1561,9 @@ def _GenerateImagesConfig_to_vertex(
         ['parameters', 'addWatermark'],
         getv(from_object, ['add_watermark']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['image_size']) is not None:
     setv(
@@ -2424,6 +2433,20 @@ def _GetModelParameters_to_vertex(
   return to_object
 
 
+def _GoogleMaps_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['auth_config']) is not None:
+    raise ValueError('auth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['enable_widget']) is not None:
+    setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  return to_object
+
+
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2928,6 +2951,9 @@ def _RecontextImageConfig_to_vertex(
         getv(from_object, ['enhance_prompt']),
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
   return to_object
 
 
@@ -3169,6 +3195,9 @@ def _SegmentImageConfig_to_vertex(
         getv(from_object, ['binary_color_threshold']),
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
   return to_object
 
 
@@ -3295,7 +3324,11 @@ def _Tool_to_mldev(
     )
 
   if getv(from_object, ['google_maps']) is not None:
-    raise ValueError('google_maps parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['googleMaps'],
+        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
+    )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
@@ -3512,6 +3545,9 @@ def _UpscaleImageAPIConfig_to_vertex(
         ['parameters', 'upscaleConfig', 'imagePreservationFactor'],
         getv(from_object, ['image_preservation_factor']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['number_of_images']) is not None:
     setv(
@@ -5344,6 +5380,7 @@ class Models(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
@@ -7135,6 +7172,7 @@ class AsyncModels(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
