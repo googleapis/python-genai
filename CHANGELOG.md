@@ -1,19 +1,5 @@
 # Changelog
 
-## [1.43.0](https://github.com/googleapis/python-genai/compare/v1.42.0...v1.43.0) (2025-10-10)
-
-
-### Features
-
-* Enable Google Maps tool for Genai. ([dc77a1d](https://github.com/googleapis/python-genai/commit/dc77a1d606161e11944bce745cf1f817aeed4e12))
-* Support enableWidget feature in GoogleMaps ([1737f72](https://github.com/googleapis/python-genai/commit/1737f72c2457d2325b7578f92b481ef1256e5de5))
-* Support Gemini batch inline request's metadata and add test coverage to safety setting ([7dcc969](https://github.com/googleapis/python-genai/commit/7dcc969e29936197a7f6b483bba9cacaf0bbddb1))
-
-
-### Documentation
-
-* Regenerate updated Python docs ([e6989a3](https://github.com/googleapis/python-genai/commit/e6989a35ac0c54d075d044b5c13694b7ad9388af))
-
 ## [1.42.0](https://github.com/googleapis/python-genai/compare/v1.41.0...v1.42.0) (2025-10-08)
 
 
