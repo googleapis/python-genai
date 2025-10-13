@@ -91,20 +91,6 @@ async def test_async_httpx_client_context_manager():
 
 
 @requires_aiohttp
-@pytest.mark.asyncio
-async def test_aclose_aiohttp_session():
-  """Tests that the aiohttp session is closed when the client is closed."""
-  api_client.has_aiohttp = True
-  async_client = Client(
-      vertexai=True,
-      project='test_project',
-      location='global',
-  ).aio
-  await async_client.aclose()
-  assert async_client._api_client._aiohttp_session is None
-
-
-@requires_aiohttp
 @pytest.fixture
 def mock_request():
   mock_aiohttp_response = mock.Mock(spec=aiohttp.ClientSession.request)
@@ -128,6 +114,47 @@ async def _aiohttp_async_response(status: int):
   response.json.return_value = {}
   response.text.return_value = 'test'
   return response
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aclose_aiohttp_session(mock_request):
+  """Tests that the aiohttp session is closed when the client is closed."""
+  api_client.has_aiohttp = True
+  async def run():
+    mock_request.side_effect = (
+        aiohttp.ClientConnectorError(
+            connection_key=aiohttp.client_reqrep.ConnectionKey(
+                'localhost', 80, False, True, None, None, None
+            ),
+            os_error=OSError,
+        ),
+        _aiohttp_async_response(200),
+    )
+    with _patch_auth_default():
+      async_client = Client(
+          vertexai=True,
+          project='test_project',
+          location='global',
+      ).aio
+      # aiohttp session is created in the first request instead of client
+      # initialization.
+      _ = await async_client._api_client._async_request_once(
+          api_client.HttpRequest(
+              method='GET',
+              url='https://example.com',
+              headers={},
+              data=None,
+              timeout=None,
+          )
+      )
+      assert async_client._api_client._aiohttp_session is not None
+      assert not async_client._api_client._aiohttp_session.closed
+      # Close the client and check that the session is closed.
+      await async_client.aclose()
+      assert async_client._api_client._aiohttp_session.closed
+
+  asyncio.run(run())
 
 
 @requires_aiohttp

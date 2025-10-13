@@ -37,7 +37,9 @@ def test_patch_http_options_with_copies_all_fields():
   http_options_keys = types.HttpOptions.model_fields.keys()
 
   for key in http_options_keys:
-    assert hasattr(patched, key) and getattr(patched, key) is not None
+    assert hasattr(patched, key)
+    if key not in ['httpx_client', 'httpx_async_client', 'aiohttp_client_session']:
+      assert getattr(patched, key) is not None
   assert patched.base_url == 'https://fake-url.com/'
   assert patched.api_version == 'v1'
   assert patched.headers['X-Custom-Header'] == 'custom_value'
