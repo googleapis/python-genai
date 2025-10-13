@@ -24,7 +24,7 @@ from ... import types
 from .. import pytest_helper
 
 
-test_table: list[pytest_helper.TestTableItem] = [
+text_embedding_test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_single_text',
         parameters=types._EmbedContentParameters(
@@ -76,11 +76,42 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
 ]
 
+new_api_test_table: list[pytest_helper.TestTableItem] = [
+    pytest_helper.TestTableItem(
+        name='test_vertex_new_api_text_only',
+        parameters=types._EmbedContentParameters(
+            model='gemini-embedding-2.0-exp-11-25',
+            contents=t.t_contents('What is your name?'),
+        ),
+        # Model not exposed on MLDev.
+        exception_if_mldev='not found',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_vertex_new_api_text_only_with_config',
+        parameters=types._EmbedContentParameters(
+            model='gemini-embedding-2.0-exp-11-25',
+            contents=t.t_contents('What is your name?'),
+            config={
+                'output_dimensionality': 10,
+                'title': 'test_title',
+                'task_type': 'RETRIEVAL_DOCUMENT',
+                'http_options': {
+                    'headers': {'test': 'headers'},
+                },
+                'auto_truncate': True,
+            },
+        ),
+        # auto_truncate not supported on MLDev.
+        exception_if_mldev='parameter is not supported',
+    ),
+]
+
+
 pytestmark = pytest_helper.setup(
     file=__file__,
     globals_for_file=globals(),
     test_method='models.embed_content',
-    test_table=test_table,
+    test_table=[*text_embedding_test_table, *new_api_test_table],
 )
 
 
