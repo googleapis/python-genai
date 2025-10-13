@@ -548,6 +548,28 @@ def _format_collection(
   return f'{brackets[0]}\n' + ',\n'.join(elements) + f',\n{indent}{brackets[1]}'
 
 
+def _camel_to_snake(camel_case_string: str) -> str:
+  """Converts a camelCase string to snake_case."""
+  snake_case_string = re.sub(r'(?<!^)([A-Z])', r'_\1', camel_case_string)
+  return snake_case_string.lower()
+
+
+def _camel_key_to_snake(message: Any) -> Any:
+  """Converts all camelCase keys to snake_case in a dict or list."""
+  if isinstance(message, dict):
+    return {
+        # Several xxxMetadata fields have already released with camelCase
+        # values, we need to keep them as is.
+        _camel_to_snake(key) if 'metadata' not in key.lower() else key:
+        _camel_key_to_snake(value) if 'metadata' not in key.lower() else value
+        for key, value in message.items()
+    }
+  elif isinstance(message, list):
+    return [_camel_key_to_snake(value) for value in message]
+  else:
+    return message
+
+
 class BaseModel(pydantic.BaseModel):
 
   model_config = pydantic.ConfigDict(
@@ -576,6 +598,9 @@ class BaseModel(pydantic.BaseModel):
       response: dict[str, object],
       kwargs: dict[str, object],
   ) -> T:
+    # Convert all camelCase keys to snake_case before loading the response.
+    response = _camel_key_to_snake(response)
+
     # To maintain forward compatibility, we need to remove extra fields from
     # the response.
     # We will provide another mechanism to allow users to access these fields.
