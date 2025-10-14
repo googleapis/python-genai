@@ -980,7 +980,8 @@ class AsyncLive(_api_module.BaseModule):
       api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      headers = self._api_client._http_options.headers or {}
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_vertex(
@@ -1012,12 +1013,24 @@ class AsyncLive(_api_module.BaseModule):
       bearer_token = creds.token
       original_headers = self._api_client._http_options.headers
       headers = original_headers.copy() if original_headers is not None else {}
-      headers['Authorization'] = f'Bearer {bearer_token}'
+      if not headers.get('Authorization'):
+        headers['Authorization'] = f'Bearer {bearer_token}'
       version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+
+      has_sufficient_auth = (
+          self._api_client.project and self._api_client.location
+      )
+      if self._api_client.custom_base_url and not has_sufficient_auth:
+        # API gateway proxy can use the auth in custom headers, not url.
+        # Enable custom url if auth is not sufficient.
+        uri = self._api_client.custom_base_url
+        # Keep the model as is.
+        transformed_model = model
+      else:
+        uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
       location = self._api_client.location
       project = self._api_client.project
-      if transformed_model.startswith('publishers/'):
+      if transformed_model.startswith('publishers/') and project and location:
         transformed_model = (
             f'projects/{project}/locations/{location}/' + transformed_model
         )

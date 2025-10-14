@@ -547,6 +547,7 @@ class BaseApiClient:
       http_options: Optional[HttpOptionsOrDict] = None,
   ):
     self.vertexai = vertexai
+    self.custom_base_url = None
     if self.vertexai is None:
       if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI', '0').lower() in [
           'true',
@@ -628,11 +629,17 @@ class BaseApiClient:
         )
         self.api_key = None
 
+      self.custom_base_url = (
+          validated_http_options.base_url
+          if validated_http_options.base_url
+          else None
+      )
+
       # Skip fetching project from ADC if base url is provided in http options.
       if (
           not self.project
           and not self.api_key
-          and not validated_http_options.base_url
+          and not self.custom_base_url
       ):
         credentials, self.project = load_auth(project=None)
         if not self._credentials:
@@ -640,7 +647,7 @@ class BaseApiClient:
 
       has_sufficient_auth = (self.project and self.location) or self.api_key
 
-      if not has_sufficient_auth and not validated_http_options.base_url:
+      if not has_sufficient_auth and not self.custom_base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
             'Project and location or API key must be set when using the Vertex '
@@ -648,9 +655,11 @@ class BaseApiClient:
         )
       if self.api_key or self.location == 'global':
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif validated_http_options.base_url and not has_sufficient_auth:
+      elif self.custom_base_url and not has_sufficient_auth:
         # Avoid setting default base url and api version if base_url provided.
-        self._http_options.base_url = validated_http_options.base_url
+        # API gateway proxy can use the auth in custom headers, not url.
+        # Enable custom url if auth is not sufficient.
+        self._http_options.base_url = self.custom_base_url
       else:
         self._http_options.base_url = (
             f'https://{self.location}-aiplatform.googleapis.com/'
@@ -897,6 +906,11 @@ class BaseApiClient:
     )
 
   def _websocket_base_url(self) -> str:
+    has_sufficient_auth = (self.project and self.location) or self.api_key
+    if self.custom_base_url and not has_sufficient_auth:
+      # API gateway proxy can use the auth in custom headers, not url.
+      # Enable custom url if auth is not sufficient.
+      return self.custom_base_url
     url_parts = urlparse(self._http_options.base_url)
     return url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type, return-value]
 
