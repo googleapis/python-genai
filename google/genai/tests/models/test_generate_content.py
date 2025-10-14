@@ -227,6 +227,24 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_maps_tool',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents('Find restaurants near me.'),
+            config=types.GenerateContentConfig(
+                tools=[{'google_maps': {}}],
+                tool_config={
+                    "retrieval_config": {
+                        "lat_lng": {
+                            "latitude": 37.421993,
+                            "longitude": -122.079725,
+                        }
+                    }
+                }
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_google_search_tool_with_time_range_filter',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',

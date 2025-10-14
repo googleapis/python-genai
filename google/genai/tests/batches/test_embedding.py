@@ -15,9 +15,6 @@
 
 
 """Tests for batches._create_embeddings()"""
-import base64
-import datetime
-import os
 
 import pytest
 
@@ -55,14 +52,26 @@ _INLINED_EMBED_CONTENT_REQUESTS = {
     ],
 }
 
-test_table: list[pytest_helper.TestTableItem] = []
+test_table: list[pytest_helper.TestTableItem] = [
+    pytest_helper.TestTableItem(
+        name='test_from_inlined',
+        parameters=types._CreateEmbeddingsBatchJobParameters(
+            model=_MLDEV_EMBEDDING_MODEL,
+            src={'inlined_requests': _INLINED_EMBED_CONTENT_REQUESTS},
+            config={
+                'display_name': _DISPLAY_NAME,
+            },
+        ),
+        exception_if_vertex='Vertex AI does not support',
+    ),
+]
 
 pytestmark = [
     pytest.mark.usefixtures('mock_timestamped_unique_name'),
     pytest_helper.setup(
         file=__file__,
         globals_for_file=globals(),
-        test_method='batches.create',
+        test_method='batches.create_embeddings',
         test_table=test_table,
         http_options={
             'api_version': 'v1alpha',
@@ -72,19 +81,6 @@ pytestmark = [
         },
     ),
 ]
-
-
-def test_from_inlined(client):
-  """Tests creating a batch job with inlined embedding requests."""
-  with pytest_helper.exception_if_vertex(client, ValueError):
-    batch_job = client.batches.create_embeddings(
-        model=_MLDEV_EMBEDDING_MODEL,
-        src={'inlined_requests': _INLINED_EMBED_CONTENT_REQUESTS},
-        config={
-            'display_name': _DISPLAY_NAME,
-        },
-    )
-    assert batch_job.name.startswith('batches/')
 
 
 @pytest.mark.asyncio

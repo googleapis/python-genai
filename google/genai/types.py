@@ -1117,6 +1117,40 @@ class FunctionResponsePart(_common.BaseModel):
       default=None, description="""Optional. URI based data."""
   )
 
+  @classmethod
+  def from_bytes(cls, *, data: bytes, mime_type: str) -> 'FunctionResponsePart':
+    """Creates a FunctionResponsePart from bytes and mime type.
+
+    Args:
+      data (bytes): The bytes of the data
+      mime_type (str): mime_type: The MIME type of the data.
+    """
+    inline_data = FunctionResponseBlob(
+        data=data,
+        mime_type=mime_type,
+    )
+    return cls(inline_data=inline_data)
+
+  @classmethod
+  def from_uri(
+      cls, *, file_uri: str, mime_type: Optional[str] = None
+  ) -> 'FunctionResponsePart':
+    """Creates a FunctionResponsePart from a file uri.
+
+    Args:
+      file_uri (str): The uri of the file
+      mime_type (str): mime_type: The MIME type of the file. If not provided,
+        the MIME type will be automatically determined.
+    """
+    if mime_type is None:
+      import mimetypes
+
+      mime_type, _ = mimetypes.guess_type(file_uri)
+      if not mime_type:
+        raise ValueError(f'Failed to determine mime type for file: {file_uri}')
+    file_data = FunctionResponseFileData(file_uri=file_uri, mime_type=mime_type)
+    return cls(file_data=file_data)
+
 
 class FunctionResponsePartDict(TypedDict, total=False):
   """A datatype containing media that is part of a `FunctionResponse` message.
@@ -1274,7 +1308,7 @@ class Part(_common.BaseModel):
 
     Args:
       file_uri (str): The uri of the file
-      mime_type (str): mime_type: The MIME type of the image. If not provided,
+      mime_type (str): mime_type: The MIME type of the file. If not provided,
         the MIME type will be automatically determined.
     """
     if mime_type is None:
@@ -1305,9 +1339,15 @@ class Part(_common.BaseModel):
 
   @classmethod
   def from_function_response(
-      cls, *, name: str, response: dict[str, Any]
+      cls,
+      *,
+      name: str,
+      response: dict[str, Any],
+      parts: Optional[list[FunctionResponsePart]] = None,
   ) -> 'Part':
-    function_response = FunctionResponse(name=name, response=response)
+    function_response = FunctionResponse(
+        name=name, response=response, parts=parts
+    )
     return cls(function_response=function_response)
 
   @classmethod
@@ -2783,6 +2823,10 @@ class GoogleMaps(_common.BaseModel):
       default=None,
       description="""Optional. Auth config for the Google Maps tool.""",
   )
+  enable_widget: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If true, include the widget context token in the response.""",
+  )
 
 
 class GoogleMapsDict(TypedDict, total=False):
@@ -2790,6 +2834,9 @@ class GoogleMapsDict(TypedDict, total=False):
 
   auth_config: Optional[AuthConfigDict]
   """Optional. Auth config for the Google Maps tool."""
+
+  enable_widget: Optional[bool]
+  """Optional. If true, include the widget context token in the response."""
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
@@ -4810,6 +4857,12 @@ class GroundingChunkMapsPlaceAnswerSourcesReviewSnippet(_common.BaseModel):
       default=None,
       description="""A reference representing this place review which may be used to look up this place review again.""",
   )
+  review_id: Optional[str] = Field(
+      default=None, description="""Id of the review referencing the place."""
+  )
+  title: Optional[str] = Field(
+      default=None, description="""Title of the review."""
+  )
 
 
 class GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict(
@@ -4833,6 +4886,12 @@ class GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict(
 
   review: Optional[str]
   """A reference representing this place review which may be used to look up this place review again."""
+
+  review_id: Optional[str]
+  """Id of the review referencing the place."""
+
+  title: Optional[str]
+  """Title of the review."""
 
 
 GroundingChunkMapsPlaceAnswerSourcesReviewSnippetOrDict = Union[
@@ -5194,6 +5253,39 @@ class SearchEntryPointDict(TypedDict, total=False):
 SearchEntryPointOrDict = Union[SearchEntryPoint, SearchEntryPointDict]
 
 
+class GroundingMetadataSourceFlaggingUri(_common.BaseModel):
+  """Source content flagging uri for a place or review.
+
+  This is currently populated only for Google Maps grounding.
+  """
+
+  flag_content_uri: Optional[str] = Field(
+      default=None,
+      description="""A link where users can flag a problem with the source (place or review).""",
+  )
+  source_id: Optional[str] = Field(
+      default=None, description="""Id of the place or review."""
+  )
+
+
+class GroundingMetadataSourceFlaggingUriDict(TypedDict, total=False):
+  """Source content flagging uri for a place or review.
+
+  This is currently populated only for Google Maps grounding.
+  """
+
+  flag_content_uri: Optional[str]
+  """A link where users can flag a problem with the source (place or review)."""
+
+  source_id: Optional[str]
+  """Id of the place or review."""
+
+
+GroundingMetadataSourceFlaggingUriOrDict = Union[
+    GroundingMetadataSourceFlaggingUri, GroundingMetadataSourceFlaggingUriDict
+]
+
+
 class GroundingMetadata(_common.BaseModel):
   """Metadata returned to client when grounding is enabled."""
 
@@ -5218,6 +5310,12 @@ class GroundingMetadata(_common.BaseModel):
   search_entry_point: Optional[SearchEntryPoint] = Field(
       default=None,
       description="""Optional. Google search entry for the following-up web searches.""",
+  )
+  source_flagging_uris: Optional[list[GroundingMetadataSourceFlaggingUri]] = (
+      Field(
+          default=None,
+          description="""Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding.""",
+      )
   )
   web_search_queries: Optional[list[str]] = Field(
       default=None,
@@ -5245,6 +5343,9 @@ class GroundingMetadataDict(TypedDict, total=False):
 
   search_entry_point: Optional[SearchEntryPointDict]
   """Optional. Google search entry for the following-up web searches."""
+
+  source_flagging_uris: Optional[list[GroundingMetadataSourceFlaggingUriDict]]
+  """Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding."""
 
   web_search_queries: Optional[list[str]]
   """Optional. Web search queries for the following-up web search."""
@@ -6259,6 +6360,10 @@ class GenerateImagesConfig(_common.BaseModel):
       default=None,
       description="""Whether to add a watermark to the generated images.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   image_size: Optional[str] = Field(
       default=None,
       description="""The size of the largest dimension of the generated image.
@@ -6323,6 +6428,9 @@ class GenerateImagesConfigDict(TypedDict, total=False):
 
   add_watermark: Optional[bool]
   """Whether to add a watermark to the generated images."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   image_size: Optional[str]
   """The size of the largest dimension of the generated image.
@@ -6901,6 +7009,10 @@ class EditImageConfig(_common.BaseModel):
       default=None,
       description="""Whether to add a watermark to the generated images.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   edit_mode: Optional[EditMode] = Field(
       default=None,
       description="""Describes the editing mode for the request.""",
@@ -6966,6 +7078,9 @@ class EditImageConfigDict(TypedDict, total=False):
 
   add_watermark: Optional[bool]
   """Whether to add a watermark to the generated images."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   edit_mode: Optional[EditMode]
   """Describes the editing mode for the request."""
@@ -7082,6 +7197,10 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
       output image will have be more different from the input image, but
       with finer details and less noise.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   number_of_images: Optional[int] = Field(default=None, description="""""")
   mode: Optional[str] = Field(default=None, description="""""")
 
@@ -7120,6 +7239,9 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
       pixels are more respected. With a lower image preservation factor, the
       output image will have be more different from the input image, but
       with finer details and less noise."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   number_of_images: Optional[int]
   """"""
@@ -7297,6 +7419,10 @@ class RecontextImageConfig(_common.BaseModel):
   enhance_prompt: Optional[bool] = Field(
       default=None, description="""Whether to use the prompt rewriting logic."""
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class RecontextImageConfigDict(TypedDict, total=False):
@@ -7337,6 +7463,9 @@ class RecontextImageConfigDict(TypedDict, total=False):
 
   enhance_prompt: Optional[bool]
   """Whether to use the prompt rewriting logic."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 RecontextImageConfigOrDict = Union[
@@ -7488,6 +7617,10 @@ class SegmentImageConfig(_common.BaseModel):
       can be set to a decimal value between 0 and 255 non-inclusive.
       Set to -1 for no binary color thresholding.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class SegmentImageConfigDict(TypedDict, total=False):
@@ -7517,6 +7650,9 @@ class SegmentImageConfigDict(TypedDict, total=False):
   """The binary color threshold to apply to the masks. The threshold
       can be set to a decimal value between 0 and 255 non-inclusive.
       Set to -1 for no binary color thresholding."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 SegmentImageConfigOrDict = Union[SegmentImageConfig, SegmentImageConfigDict]
@@ -11630,6 +11766,10 @@ class InlinedRequest(_common.BaseModel):
       description="""Content of the request.
       """,
   )
+  metadata: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""The metadata to be associated with the request.""",
+  )
   config: Optional[GenerateContentConfig] = Field(
       default=None,
       description="""Configuration that contains optional model parameters.
@@ -11647,6 +11787,9 @@ class InlinedRequestDict(TypedDict, total=False):
   contents: Optional[ContentListUnionDict]
   """Content of the request.
       """
+
+  metadata: Optional[dict[str, str]]
+  """The metadata to be associated with the request."""
 
   config: Optional[GenerateContentConfigDict]
   """Configuration that contains optional model parameters.
@@ -13001,6 +13144,10 @@ class UpscaleImageConfig(_common.BaseModel):
       output image will have be more different from the input image, but
       with finer details and less noise.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class UpscaleImageConfigDict(TypedDict, total=False):
@@ -13038,6 +13185,9 @@ class UpscaleImageConfigDict(TypedDict, total=False):
       pixels are more respected. With a lower image preservation factor, the
       output image will have be more different from the input image, but
       with finer details and less noise."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 UpscaleImageConfigOrDict = Union[UpscaleImageConfig, UpscaleImageConfigDict]

@@ -72,6 +72,28 @@ metric_name_sdk_api_map = {
 metric_name_api_sdk_map = {v: k for k, v in metric_name_sdk_api_map.items()}
 
 
+def _is_duck_type_of(obj: Any, cls: type[pydantic.BaseModel]) -> bool:
+  """Checks if an object has all of the fields of a Pydantic model.
+
+  This is a duck-typing alternative to `isinstance` to solve dual-import
+  problems. It returns False for dictionaries, which should be handled by
+  `isinstance(obj, dict)`.
+
+  Args:
+    obj: The object to check.
+    cls: The Pydantic model class to duck-type against.
+
+  Returns:
+    True if the object has all the fields defined in the Pydantic model, False
+    otherwise.
+  """
+  if isinstance(obj, dict) or not hasattr(cls, 'model_fields'):
+    return False
+
+  # Check if the object has all of the Pydantic model's defined fields.
+  return all(hasattr(obj, field) for field in cls.model_fields)
+
+
 def _resource_name(
     client: _api_client.BaseApiClient,
     resource_name: str,
@@ -284,7 +306,7 @@ def t_function_response(
     raise ValueError('function_response is required.')
   if isinstance(function_response, dict):
     return types.FunctionResponse.model_validate(function_response)
-  elif isinstance(function_response, types.FunctionResponse):
+  elif _is_duck_type_of(function_response, types.FunctionResponse):
     return function_response
   else:
     raise TypeError(
@@ -320,8 +342,8 @@ def t_blob(blob: types.BlobImageUnionDict) -> types.Blob:
   if not blob:
     raise ValueError('blob is required.')
 
-  if isinstance(blob, types.Blob):
-    return blob
+  if _is_duck_type_of(blob, types.Blob):
+    return blob  # type: ignore[return-value]
 
   if isinstance(blob, dict):
     return types.Blob.model_validate(blob)
@@ -361,17 +383,17 @@ def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
     raise ValueError('content part is required.')
   if isinstance(part, str):
     return types.Part(text=part)
-  if isinstance(part, types.File):
-    if not part.uri or not part.mime_type:
+  if _is_duck_type_of(part, types.File):
+    if not part.uri or not part.mime_type:  # type: ignore[union-attr]
       raise ValueError('file uri and mime_type are required.')
-    return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)
+    return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)  # type: ignore[union-attr]
   if isinstance(part, dict):
     try:
       return types.Part.model_validate(part)
     except pydantic.ValidationError:
       return types.Part(file_data=types.FileData.model_validate(part))
-  if isinstance(part, types.Part):
-    return part
+  if _is_duck_type_of(part, types.Part):
+    return part  # type: ignore[return-value]
 
   if 'image' in part.__class__.__name__.lower():
     try:
@@ -427,8 +449,8 @@ def t_content(
 ) -> types.Content:
   if content is None:
     raise ValueError('content is required.')
-  if isinstance(content, types.Content):
-    return content
+  if _is_duck_type_of(content, types.Content):
+    return content  # type: ignore[return-value]
   if isinstance(content, dict):
     try:
       return types.Content.model_validate(content)
@@ -439,15 +461,15 @@ def t_content(
           if possible_part.function_call
           else types.UserContent(parts=[possible_part])
       )
-  if isinstance(content, types.File):
-    return types.UserContent(parts=[t_part(content)])
-  if isinstance(content, types.Part):
+  if _is_duck_type_of(content, types.File):
+    return types.UserContent(parts=[t_part(content)])  # type: ignore[arg-type]
+  if _is_duck_type_of(content, types.Part):
     return (
-        types.ModelContent(parts=[content])
-        if content.function_call
-        else types.UserContent(parts=[content])
+        types.ModelContent(parts=[content])  # type: ignore[arg-type]
+        if content.function_call  # type: ignore[union-attr]
+        else types.UserContent(parts=[content])  # type: ignore[arg-type]
     )
-  return types.UserContent(parts=content)
+  return types.UserContent(parts=content)  # type: ignore[arg-type]
 
 
 def t_contents_for_embed(
@@ -494,8 +516,8 @@ def t_contents(
   ) -> TypeGuard[types.PartUnionDict]:
     if (
         isinstance(part, str)
-        or isinstance(part, types.File)
-        or isinstance(part, types.Part)
+        or _is_duck_type_of(part, types.File)
+        or _is_duck_type_of(part, types.Part)
     ):
       return True
 
@@ -565,16 +587,12 @@ def t_contents(
   #   append to result
   # if list, we only accept a list of types.PartUnion
   for content in contents:
-    if (
-        isinstance(content, types.Content)
-        # only allowed inner list is a list of types.PartUnion
-        or isinstance(content, list)
-    ):
+    if _is_duck_type_of(content, types.Content) or isinstance(content, list):
       _append_accumulated_parts_as_content(result, accumulated_parts)
       if isinstance(content, list):
         result.append(types.UserContent(parts=content))  # type: ignore[arg-type]
       else:
-        result.append(content)
+        result.append(content)  # type: ignore[arg-type]
     elif _is_part(content):
       _handle_current_part(result, accumulated_parts, content)
     elif isinstance(content, dict):
@@ -866,12 +884,12 @@ def t_schema(
     return types.Schema.model_validate(origin)
   if isinstance(origin, EnumMeta):
     return _process_enum(origin, client)
-  if isinstance(origin, types.Schema):
-    if dict(origin) == dict(types.Schema()):
+  if _is_duck_type_of(origin, types.Schema):
+    if dict(origin) == dict(types.Schema()):  # type: ignore [arg-type]
       # response_schema value was coerced to an empty Schema instance because
       # it did not adhere to the Schema field annotation
       _raise_for_unsupported_schema_type(origin)
-    schema = origin.model_dump(exclude_unset=True)
+    schema = origin.model_dump(exclude_unset=True)  # type: ignore[union-attr]
     process_schema(schema, client)
     return types.Schema.model_validate(schema)
 
@@ -908,8 +926,8 @@ def t_speech_config(
 ) -> Optional[types.SpeechConfig]:
   if not origin:
     return None
-  if isinstance(origin, types.SpeechConfig):
-    return origin
+  if _is_duck_type_of(origin, types.SpeechConfig):
+    return origin  # type: ignore[return-value]
   if isinstance(origin, str):
     return types.SpeechConfig(
         voice_config=types.VoiceConfig(
@@ -925,17 +943,17 @@ def t_speech_config(
 def t_live_speech_config(
     origin: types.SpeechConfigOrDict,
 ) -> Optional[types.SpeechConfig]:
-  if isinstance(origin, types.SpeechConfig):
+  if _is_duck_type_of(origin, types.SpeechConfig):
     speech_config = origin
   if isinstance(origin, dict):
     speech_config = types.SpeechConfig.model_validate(origin)
 
-  if speech_config.multi_speaker_voice_config is not None:
+  if speech_config.multi_speaker_voice_config is not None:  # type: ignore[union-attr]
     raise ValueError(
         'multi_speaker_voice_config is not supported in the live API.'
     )
 
-  return speech_config
+  return speech_config  # type: ignore[return-value]
 
 
 def t_tool(
@@ -951,7 +969,7 @@ def t_tool(
             )
         ]
     )
-  elif McpTool is not None and isinstance(origin, McpTool):
+  elif McpTool is not None and _is_duck_type_of(origin, McpTool):
     return mcp_to_gemini_tool(origin)
   elif isinstance(origin, dict):
     return types.Tool.model_validate(origin)
@@ -994,13 +1012,13 @@ def t_batch_job_source(
 ) -> types.BatchJobSource:
   if isinstance(src, dict):
     src = types.BatchJobSource(**src)
-  if isinstance(src, types.BatchJobSource):
+  if _is_duck_type_of(src, types.BatchJobSource):
     vertex_sources = sum(
-        [src.gcs_uri is not None, src.bigquery_uri is not None]
+        [src.gcs_uri is not None, src.bigquery_uri is not None]  # type: ignore[union-attr]
     )
     mldev_sources = sum([
-        src.inlined_requests is not None,
-        src.file_name is not None,
+        src.inlined_requests is not None,  # type: ignore[union-attr]
+        src.file_name is not None,  # type: ignore[union-attr]
     ])
     if client.vertexai:
       if mldev_sources or vertex_sources != 1:
@@ -1015,7 +1033,7 @@ def t_batch_job_source(
             '`inlined_embed_content_requests`, or `embed_content_file_name` '
             'must be set, other sources are not supported in Gemini API.'
         )
-    return src
+    return src  # type: ignore[return-value]
 
   elif isinstance(src, list):
     return types.BatchJobSource(inlined_requests=src)
@@ -1045,7 +1063,7 @@ def t_embedding_batch_job_source(
   if isinstance(src, dict):
     src = types.EmbeddingsBatchJobSource(**src)
 
-  if isinstance(src, types.EmbeddingsBatchJobSource):
+  if _is_duck_type_of(src, types.EmbeddingsBatchJobSource):
     mldev_sources = sum([
         src.inlined_requests is not None,
         src.file_name is not None,
@@ -1080,7 +1098,7 @@ def t_batch_job_destination(
       )
     else:
       raise ValueError(f'Unsupported destination: {dest}')
-  elif isinstance(dest, types.BatchJobDestination):
+  elif _is_duck_type_of(dest, types.BatchJobDestination):
     return dest
   else:
     raise ValueError(f'Unsupported destination: {dest}')
@@ -1180,13 +1198,13 @@ def t_file_name(
     name: Optional[Union[str, types.File, types.Video, types.GeneratedVideo]],
 ) -> str:
   # Remove the files/ prefix since it's added to the url path.
-  if isinstance(name, types.File):
-    name = name.name
-  elif isinstance(name, types.Video):
-    name = name.uri
-  elif isinstance(name, types.GeneratedVideo):
-    if name.video is not None:
-      name = name.video.uri
+  if _is_duck_type_of(name, types.File):
+    name = name.name  # type: ignore[union-attr]
+  elif _is_duck_type_of(name, types.Video):
+    name = name.uri  # type: ignore[union-attr]
+  elif _is_duck_type_of(name, types.GeneratedVideo):
+    if name.video is not None:  # type: ignore[union-attr]
+      name = name.video.uri  # type: ignore[union-attr]
     else:
       name = None
 
@@ -1229,7 +1247,7 @@ def t_tuning_job_status(status: str) -> Union[types.JobState, str]:
 def t_content_strict(content: types.ContentOrDict) -> types.Content:
   if isinstance(content, dict):
     return types.Content.model_validate(content)
-  elif isinstance(content, types.Content):
+  elif _is_duck_type_of(content, types.Content):
     return content
   else:
     raise ValueError(

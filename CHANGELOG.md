@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.43.0](https://github.com/googleapis/python-genai/compare/v1.42.0...v1.43.0) (2025-10-10)
+
+
+### Features
+
+* Enable Google Maps tool for Genai. ([dc77a1d](https://github.com/googleapis/python-genai/commit/dc77a1d606161e11944bce745cf1f817aeed4e12))
+* Support enableWidget feature in GoogleMaps ([1737f72](https://github.com/googleapis/python-genai/commit/1737f72c2457d2325b7578f92b481ef1256e5de5))
+* Support Gemini batch inline request's metadata and add test coverage to safety setting ([7dcc969](https://github.com/googleapis/python-genai/commit/7dcc969e29936197a7f6b483bba9cacaf0bbddb1))
+
+
+### Documentation
+
+* Regenerate updated Python docs ([e6989a3](https://github.com/googleapis/python-genai/commit/e6989a35ac0c54d075d044b5c13694b7ad9388af))
+
+## [1.42.0](https://github.com/googleapis/python-genai/compare/v1.41.0...v1.42.0) (2025-10-08)
+
+
+### Features
+
+* Add labels field to Imagen configs ([cdba4c9](https://github.com/googleapis/python-genai/commit/cdba4c9a8b82e8158ea052f0d4790842e3bcac01))
+* Add utility methods for creating `FunctionResponsePart` and creating FunctionResponse `Part` with `FunctionResponseParts` ([72c92d8](https://github.com/googleapis/python-genai/commit/72c92d8352f2fa6526f6447dd0d65e96a47d54ec))
+* Enable Ingredients to Video and Advanced Controls for Veo on Gemini Developer API (Early Access Program) ([9c02a07](https://github.com/googleapis/python-genai/commit/9c02a070cd6b0f3f441c34ebf0d77ddd2ab1fcc0))
+
+
+### Bug Fixes
+
+* Avoid potential dual import for content type assertion ([83d7973](https://github.com/googleapis/python-genai/commit/83d79734c9cff35846ba0b2468d53a3032070888))
+* Increase `READ_BUFFER_SIZE` in `_api_client.py` for streaming large chunks in new model ([981bba7](https://github.com/googleapis/python-genai/commit/981bba7524b95ac3f5b1b12261d7e34013bbac82))
+* Make t_part and t_content conform to their type annotations: they now handle FileDict correctly and t_contents handles PartUnionDict correctly. ([0933632](https://github.com/googleapis/python-genai/commit/0933632103bba2900214b666d9df2bdb636f62aa))
+
 ## [1.41.0](https://github.com/googleapis/python-genai/compare/v1.40.0...v1.41.0) (2025-10-02)
 
 

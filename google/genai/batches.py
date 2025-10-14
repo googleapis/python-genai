@@ -27,6 +27,7 @@ from . import _transformers as t
 from . import types
 from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
+from ._common import move_value_by_path as movev
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
@@ -713,10 +714,10 @@ def _EmbedContentBatch_to_mldev(
   if getv(from_object, ['config']) is not None:
     setv(
         to_object,
-        ['config'],
+        ['_self'],
         _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object),
     )
-
+    movev(to_object, {'requests[].*': 'requests[].request.*'})
   return to_object
 
 
@@ -1015,6 +1016,20 @@ def _GetBatchJobParameters_to_vertex(
   return to_object
 
 
+def _GoogleMaps_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['auth_config']) is not None:
+    raise ValueError('auth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['enable_widget']) is not None:
+    setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  return to_object
+
+
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1055,6 +1070,9 @@ def _InlinedRequest_to_mldev(
             for item in t.t_contents(getv(from_object, ['contents']))
         ],
     )
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
   if getv(from_object, ['config']) is not None:
     setv(
@@ -1322,7 +1340,11 @@ def _Tool_to_mldev(
     )
 
   if getv(from_object, ['google_maps']) is not None:
-    raise ValueError('google_maps parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['googleMaps'],
+        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
+    )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
@@ -1847,35 +1869,10 @@ class Batches(_api_module.BaseModule):
         config=config,
     )
 
-    http_options: Optional[types.HttpOptions] = None
-    if (
-        parameter_model.config is not None
-        and parameter_model.config.http_options is not None
-    ):
-      http_options = parameter_model.config.http_options
-
     if self._api_client.vertexai:
       raise ValueError('Vertex AI does not support batches.create_embeddings.')
-    elif src.inlined_requests is None:
+    else:
       return self._create_embeddings(model=model, src=src, config=config)
-
-    path, request_dict = _create_inlined_embedding_request_dict(
-        self._api_client, parameter_model
-    )
-
-    response = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
-
-    response_dict = '' if not response.body else json.loads(response.body)
-    response_dict = _BatchJob_from_mldev(response_dict)
-
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
 
   def list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
@@ -2430,26 +2427,8 @@ class AsyncBatches(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       raise ValueError('Vertex AI does not support batches.create_embeddings.')
-    elif src.inlined_requests is None:
+    else:
       return await self._create_embeddings(model=model, src=src, config=config)
-
-    path, request_dict = _create_inlined_embedding_request_dict(
-        self._api_client, parameter_model
-    )
-
-    response = await self._api_client.async_request(
-        'post', path, request_dict, http_options
-    )
-
-    response_dict = '' if not response.body else json.loads(response.body)
-    response_dict = _BatchJob_from_mldev(response_dict)
-
-    return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
 
   async def list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
@@ -2480,100 +2459,3 @@ class AsyncBatches(_api_module.BaseModule):
         await self._list(config=config),
         config,
     )
-
-
-def _create_inlined_generate_content_request_dict(
-    client: BaseApiClient, parameter_model: types._CreateBatchJobParameters
-) -> tuple[str, dict[str, Any]]:
-  request_url_dict: Optional[dict[str, str]]
-
-  request_dict: dict[str, Any] = _CreateBatchJobParameters_to_mldev(
-      client, parameter_model
-  )
-
-  request_url_dict = request_dict.get('_url')
-  if request_url_dict:
-    path = '{model}:batchGenerateContent'.format_map(request_url_dict)
-  else:
-    path = '{model}:batchGenerateContent'
-  query_params = request_dict.get('_query')
-  if query_params:
-    path = f'{path}?{urlencode(query_params)}'
-  request_dict.pop('config', None)
-
-  request_dict = _common.convert_to_dict(request_dict)
-  request_dict = _common.encode_unserializable_types(request_dict)
-  # Move system instruction to 'request':
-  # {'systemInstruction': system_instruction}
-  requests = []
-  batch_dict = request_dict.get('batch')
-  if batch_dict and isinstance(batch_dict, dict):
-    input_config_dict = batch_dict.get('inputConfig')
-    if input_config_dict and isinstance(input_config_dict, dict):
-      requests_dict = input_config_dict.get('requests')
-      if requests_dict and isinstance(requests_dict, dict):
-        requests = requests_dict.get('requests')
-  new_requests = []
-  if requests:
-    for req in requests:
-      if req.get('systemInstruction'):
-        value = req.pop('systemInstruction')
-        req['request'].update({'systemInstruction': value})
-      new_requests.append(req)
-  request_dict['batch']['inputConfig']['requests'][  # type: ignore
-      'requests'
-  ] = new_requests
-  return path, request_dict
-
-
-def _create_inlined_embedding_request_dict(
-    client: BaseApiClient,
-    parameter_model: types._CreateEmbeddingsBatchJobParameters,
-) -> tuple[str, dict[str, Any]]:
-  src = parameter_model.src
-  if not isinstance(src, types.EmbeddingsBatchJobSource):
-    raise ValueError(f'Invalid batch job source: {src}.')
-
-  request_url_dict: Optional[dict[str, str]]
-
-  request_dict: dict[str, Any] = _CreateEmbeddingsBatchJobParameters_to_mldev(
-      client, parameter_model
-  )
-
-  request_url_dict = request_dict.get('_url')
-  if request_url_dict:
-    path = '{model}:asyncBatchEmbedContent'.format_map(request_url_dict)
-  else:
-    path = '{model}:asyncBatchEmbedContent'
-  query_params = request_dict.get('_query')
-  if query_params:
-    path = f'{path}?{urlencode(query_params)}'
-
-  request_dict.pop('config', None)
-  request_dict.get('batch', {}).get('inputConfig', {}).get('requests', {}).pop(
-      'config', None
-  )
-
-  request_dict = _common.convert_to_dict(request_dict)
-  request_dict = _common.encode_unserializable_types(request_dict)
-
-  requests = []
-  batch_dict = request_dict.get('batch')
-  if batch_dict and isinstance(batch_dict, dict):
-    input_config_dict = batch_dict.get('inputConfig')
-    if input_config_dict and isinstance(input_config_dict, dict):
-      requests_dict = input_config_dict.get('requests')
-      if requests_dict and isinstance(requests_dict, dict):
-        requests = requests_dict.get('requests')
-  new_requests = []
-  if requests:
-    for req in requests:
-      for k in list(req.keys()):
-        if k != 'request':
-          req['request'][k] = req.pop(k)
-      new_requests.append(req)
-  request_dict['batch']['inputConfig']['requests'][  # type: ignore
-      'requests'
-  ] = new_requests
-
-  return path, request_dict
