@@ -201,11 +201,11 @@ def _GeneratedVideo_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
+  if getv(from_object, ['video']) is not None:
     setv(
         to_object,
         ['video'],
-        _Video_from_mldev(getv(from_object, ['_self']), to_object),
+        _Video_from_mldev(getv(from_object, ['video']), to_object),
     )
 
   return to_object
@@ -261,14 +261,14 @@ def _Video_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video', 'uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
 
-  if getv(from_object, ['video', 'encodedVideo']) is not None:
+  if getv(from_object, ['encodedVideo']) is not None:
     setv(
         to_object,
         ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
+        base_t.t_bytes(getv(from_object, ['encodedVideo'])),
     )
 
   if getv(from_object, ['encoding']) is not None:

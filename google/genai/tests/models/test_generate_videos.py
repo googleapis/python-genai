@@ -310,7 +310,7 @@ def test_text_and_image_to_video_poll(client):
 
 
 def test_video_to_video_poll(client):
-  # Video extension is only supported in Vertex AI.
+  # GCS URI video input is only supported in Vertex AI.
   if not client.vertexai:
     return
 
@@ -333,7 +333,7 @@ def test_video_to_video_poll(client):
 
 
 def test_text_and_video_to_video_poll(client):
-  # Video extension is only supported in Vertex AI.
+  # GCS URI video input is only supported in Vertex AI.
   if not client.vertexai:
     return
 
@@ -354,6 +354,139 @@ def test_text_and_video_to_video_poll(client):
     operation = client.operations.get(operation=operation)
 
   assert operation.result.generated_videos[0].video.uri
+
+
+def test_generated_video_extension_poll(client):
+  # Gemini API only supports video extension on generated videos.
+  if client.vertexai:
+    return
+
+  operation1 = client.models.generate_videos(
+      model="veo-3-exp",
+      prompt="Rain",
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation1.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation1 = client.operations.get(operation=operation1)
+
+  video1 = operation1.result.generated_videos[0].video
+  assert video1.uri
+  client.files.download(file=video1)
+  assert video1.video_bytes
+
+  operation2 = client.models.generate_videos(
+      model="veo-3-exp",
+      prompt="Sun",
+      video=video1,
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation2.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation2 = client.operations.get(operation=operation2)
+
+  video2 = operation2.result.generated_videos[0].video
+  assert video2.uri
+  client.files.download(file=video2)
+  assert video2.video_bytes
+
+
+def test_generated_video_extension_from_source_poll(client):
+  # Gemini API only supports video extension on generated videos.
+  if client.vertexai:
+    return
+
+  operation1 = client.models.generate_videos(
+      model="veo-3-exp",
+      prompt="Rain",
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation1.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation1 = client.operations.get(operation=operation1)
+
+  video1 = operation1.result.generated_videos[0].video
+  assert video1.uri
+  client.files.download(file=video1)
+  assert video1.video_bytes
+
+  operation2 = client.models.generate_videos(
+      model="veo-3-exp",
+      source=types.GenerateVideosSource(
+          prompt="Sun",
+          video=video1
+      ),
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation2.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation2 = client.operations.get(operation=operation2)
+
+  video2 = operation2.result.generated_videos[0].video
+  assert video2.uri
+  client.files.download(file=video2)
+  assert video2.video_bytes
+
+
+def test_generated_video_extension_from_source_dict_poll(client):
+  # Gemini API only supports video extension on generated videos.
+  if client.vertexai:
+    return
+
+  operation1 = client.models.generate_videos(
+      model="veo-3-exp",
+      prompt="Rain",
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation1.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation1 = client.operations.get(operation=operation1)
+
+  video1 = operation1.result.generated_videos[0].video
+  assert video1.uri
+  client.files.download(file=video1)
+  assert video1.video_bytes
+
+  operation2 = client.models.generate_videos(
+      model="veo-3-exp",
+      source={
+          "prompt": "Sun",
+          "video": video1,
+      },
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation2.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation2 = client.operations.get(operation=operation2)
+
+  video2 = operation2.result.generated_videos[0].video
+  assert video2.uri
+  client.files.download(file=video2)
+  assert video2.video_bytes
 
 
 def test_image_to_video_frame_interpolation_poll(client):
