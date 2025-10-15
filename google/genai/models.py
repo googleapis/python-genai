@@ -2262,11 +2262,11 @@ def _GeneratedVideo_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
+  if getv(from_object, ['video']) is not None:
     setv(
         to_object,
         ['video'],
-        _Video_from_mldev(getv(from_object, ['_self']), to_object),
+        _Video_from_mldev(getv(from_object, ['video']), to_object),
     )
 
   return to_object
@@ -3680,14 +3680,14 @@ def _Video_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video', 'uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
 
-  if getv(from_object, ['video', 'encodedVideo']) is not None:
+  if getv(from_object, ['encodedVideo']) is not None:
     setv(
         to_object,
         ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
+        base_t.t_bytes(getv(from_object, ['encodedVideo'])),
     )
 
   if getv(from_object, ['encoding']) is not None:
@@ -3723,12 +3723,12 @@ def _Video_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['video', 'uri'], getv(from_object, ['uri']))
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
 
   if getv(from_object, ['video_bytes']) is not None:
     setv(
         to_object,
-        ['video', 'encodedVideo'],
+        ['encodedVideo'],
         base_t.t_bytes(getv(from_object, ['video_bytes'])),
     )
 
@@ -5448,6 +5448,36 @@ class Models(_api_module.BaseModule):
           'Source and prompt/image/video are mutually exclusive.'
           + ' Please only use source.'
       )
+    # Gemini Developer API does not support video bytes.
+    video_dct: dict[str, Any] = {}
+    if not self._api_client.vertexai and video:
+      if isinstance(video, types.Video):
+        video_dct = video.model_dump()
+      else:
+        video_dct = dict(video)
+
+      if video_dct.get('uri') and video_dct.get('video_bytes'):
+        video = types.Video(
+            uri=video_dct.get('uri'), mime_type=video_dct.get('mime_type')
+        )
+    elif not self._api_client.vertexai and source:
+      if isinstance(source, types.GenerateVideosSource):
+        source_dct = source.model_dump()
+        video_dct = source_dct.get('video', {})
+      else:
+        source_dct = dict(source)
+        if isinstance(source_dct.get('video'), types.Video):
+          video_obj: types.Video = source_dct.get('video', types.Video())
+          video_dct = video_obj.model_dump()
+      if video_dct and video_dct.get('uri') and video_dct.get('video_bytes'):
+        source = types.GenerateVideosSource(
+            prompt=source_dct.get('prompt'),
+            image=source_dct.get('image'),
+            video=types.Video(
+                uri=video_dct.get('uri'),
+                mime_type=video_dct.get('mime_type'),
+            ),
+        )
     return self._generate_videos(
         model=model,
         prompt=prompt,

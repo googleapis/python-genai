@@ -183,7 +183,7 @@ with text content
 .. code:: python
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001', contents='Why is the sky blue?'
+        model='gemini-2.5-flash', contents='Why is the sky blue?'
     )
     print(response.text)
 
@@ -202,7 +202,7 @@ python code.
 
     file = client.files.upload(file='a11.txt')
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents=['Could you summarize this file?', file]
     )
     print(response.text)
@@ -521,7 +521,7 @@ Safety Settings
     from google.genai import types
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='Say something bad.',
         config=types.GenerateContentConfig(
             safety_settings=[
@@ -556,7 +556,7 @@ called and responded.
 
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='What is the weather like in Boston?',
         config=types.GenerateContentConfig(
             tools=[get_current_weather],
@@ -577,7 +577,7 @@ as follows:
     from google.genai import types
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='What is the weather like in Boston?',
         config=types.GenerateContentConfig(
             tools=[get_current_weather],
@@ -625,7 +625,7 @@ Then you will receive a function call part in the response.
     tool = types.Tool(function_declarations=[function])
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='What is the weather like in Boston?',
         config=types.GenerateContentConfig(
             tools=[tool],
@@ -670,7 +670,7 @@ The following example shows how to do it for a simple function invocation.
     )
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents=[
             user_prompt_content,
             function_call_content,
@@ -707,7 +707,7 @@ If you'd like to disable automatic function calling in `ANY` mode:
         return "sunny"
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
+        model="gemini-2.5-flash",
         contents="What is the weather like in Boston?",
         config=types.GenerateContentConfig(
             tools=[get_current_weather],
@@ -737,7 +737,7 @@ Assuming you prefer ``1`` turn for automatic function calling:
         return "sunny"
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
+        model="gemini-2.5-flash",
         contents="What is the weather like in Boston?",
         config=types.GenerateContentConfig(
             tools=[get_current_weather],
@@ -775,7 +775,7 @@ Schemas can be provided as Pydantic Models.
 
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='Give me information for the United States.',
         config=types.GenerateContentConfig(
             response_mime_type='application/json',
@@ -789,7 +789,7 @@ Schemas can be provided as Pydantic Models.
     from google.genai import types
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='Give me information for the United States.',
         config=types.GenerateContentConfig(
             response_mime_type='application/json',
@@ -839,7 +839,7 @@ values as the response.
         KEYBOARD = 'Keyboard'
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='What instrument plays multiple notes at once?',
         config={
             'response_mime_type': 'text/x.enum',
@@ -864,7 +864,7 @@ identical but in quotes.
         KEYBOARD = 'Keyboard'
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='What instrument plays multiple notes at once?',
         config={
             'response_mime_type': 'application/json',
@@ -885,7 +885,7 @@ Streaming for text content
 .. code:: python
 
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
+        model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
     ):
         print(chunk.text, end='')
 
@@ -899,7 +899,7 @@ If your image is stored in `Google Cloud Storage <https://cloud.google.com/stora
     from google.genai import types
 
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents=[
             'What is this image about?',
             types.Part.from_uri(
@@ -924,7 +924,7 @@ data and use the ``from_bytes`` class method to create a ``Part`` object.
         image_bytes = f.read()
 
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents=[
             'What is this image about?',
             types.Part.from_bytes(data=image_bytes, mime_type=YOUR_IMAGE_MIME_TYPE),
@@ -943,7 +943,7 @@ For example, ``client.aio.models.generate_content`` is the ``async`` version of 
 .. code:: python
 
     response = await client.aio.models.generate_content(
-        model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
+        model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
     )
 
     print(response.text)
@@ -954,7 +954,7 @@ Generate Content (Asynchronous Streaming)
 .. code:: python
 
     async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
+        model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
     ):
         print(chunk.text, end='')
 
@@ -964,7 +964,7 @@ Count Tokens and Compute Tokens
 .. code:: python
 
     response = client.models.count_tokens(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='why is the sky blue?',
     )
     print(response)
@@ -977,7 +977,7 @@ Compute tokens is only supported in Vertex AI.
 .. code:: python
 
     response = client.models.compute_tokens(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='why is the sky blue?',
     )
     print(response)
@@ -988,7 +988,7 @@ Count Tokens (Asynchronous)
 .. code:: python
 
     response = await client.aio.models.count_tokens(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='why is the sky blue?',
     )
     print(response)
@@ -1147,7 +1147,7 @@ Send Message (Synchronous Non-Streaming)
 
 .. code:: python
 
-    chat = client.chats.create(model='gemini-2.0-flash-001')
+    chat = client.chats.create(model='gemini-2.5-flash')
     response = chat.send_message('tell me a story')
     print(response.text)
     response = chat.send_message('summarize the story you told me in 1 sentence')
@@ -1158,7 +1158,7 @@ Send Message (Synchronous Streaming)
 
 .. code:: python
 
-    chat = client.chats.create(model='gemini-2.0-flash-001')
+    chat = client.chats.create(model='gemini-2.5-flash')
     for chunk in chat.send_message_stream('tell me a story'):
         print(chunk.text, end='')  # end='' is optional, for demo purposes.
 
@@ -1167,7 +1167,7 @@ Send Message (Asynchronous Non-Streaming)
 
 .. code:: python
 
-    chat = client.aio.chats.create(model='gemini-2.0-flash-001')
+    chat = client.aio.chats.create(model='gemini-2.5-flash')
     response = await chat.send_message('tell me a story')
     print(response.text)
 
@@ -1176,7 +1176,7 @@ Send Message (Asynchronous Streaming)
 
 .. code:: python
 
-    chat = client.aio.chats.create(model='gemini-2.0-flash-001')
+    chat = client.aio.chats.create(model='gemini-2.5-flash')
     async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text, end='') # end='' is optional, for demo purposes.
 
@@ -1242,7 +1242,7 @@ Create
         file_uris = [file1.uri, file2.uri]
 
     cached_content = client.caches.create(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         config=types.CreateCachedContentConfig(
             contents=[
                 types.Content(
@@ -1279,7 +1279,7 @@ Generate Content with Caches
     from google.genai import types
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         contents='Summarize the pdfs',
         config=types.GenerateContentConfig(
             cached_content=cached_content.name,
@@ -1303,7 +1303,7 @@ Tune
 
     from google.genai import types
 
-    model = 'gemini-2.0-flash-001'
+    model = 'gemini-2.5-flash'
     training_dataset = types.TuningDataset(
         gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
     )
@@ -1478,7 +1478,7 @@ Vertex AI client support using a BigQuery table or a GCS file as the source.
 
     # Specify model and source file only, destination and job display name will be auto-populated
     job = client.batches.create(
-        model='gemini-2.0-flash-001',
+        model='gemini-2.5-flash',
         src='bq://my-project.my-dataset.my-table',  # or gcs://my-bucket/my-file.jsonl
     )
 
@@ -1513,13 +1513,13 @@ For example myrequests.json:
 .. code:: python
     # Upload a file to Gemini Developer API
     file_name = client.files.upload(
-        file='myrequest.json',
-        config=types.UploadFileConfig(display_name='test_json'),
+        file='myrequests.json',
+        config=types.UploadFileConfig(display_name='test-json'),
     )
     # Create a batch job with file name
     batch_job = client.batches.create(
         model="gemini-2.0-flash",
-        src="files/file_name",
+        src="files/test-json",
     )
 
 
