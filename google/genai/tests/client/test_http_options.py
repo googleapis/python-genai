@@ -64,8 +64,10 @@ def test_patch_http_options_merges_headers():
   # If the header is present in both the original and patch options, the patch
   # options value should be used
   assert patched.headers['X-Custom-Header'] == 'custom_value'
-
   assert patched.headers['X-different-header'] == 'different_value'
+  assert patched.base_url == 'https://fake-url.com/'
+  assert patched.api_version == 'v1'
+  assert patched.timeout == 10000
 
 
 def test_patch_http_options_appends_version_headers():

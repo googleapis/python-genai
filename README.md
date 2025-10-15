@@ -242,6 +242,25 @@ http_options = types.HttpOptions(
 client=Client(..., http_options=http_options)
 ```
 
+### Custom base url
+
+In some cases you might need a custom base url (for example, API gateway proxy
+ server) and bypass some authentication checks for project, location, or API key.
+You may pass the custom base url like this:
+
+```python
+
+base_url = 'https://test-api-gateway-proxy.com'
+client = Client(
+  vertexai=True,
+  http_options={
+      'base_url': base_url,
+      'headers': {'Authorization': 'Bearer test_token'},
+  },
+)
+
+```
+
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
