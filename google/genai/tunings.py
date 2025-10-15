@@ -551,36 +551,6 @@ def _TuningJob_from_mldev(
         _TunedModel_from_mldev(getv(from_object, ['_self']), to_object),
     )
 
-  if getv(from_object, ['customBaseModel']) is not None:
-    setv(
-        to_object, ['custom_base_model'], getv(from_object, ['customBaseModel'])
-    )
-
-  if getv(from_object, ['experiment']) is not None:
-    setv(to_object, ['experiment'], getv(from_object, ['experiment']))
-
-  if getv(from_object, ['labels']) is not None:
-    setv(to_object, ['labels'], getv(from_object, ['labels']))
-
-  if getv(from_object, ['outputUri']) is not None:
-    setv(to_object, ['output_uri'], getv(from_object, ['outputUri']))
-
-  if getv(from_object, ['pipelineJob']) is not None:
-    setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
-
-  if getv(from_object, ['serviceAccount']) is not None:
-    setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
-
-  if getv(from_object, ['tunedModelDisplayName']) is not None:
-    setv(
-        to_object,
-        ['tuned_model_display_name'],
-        getv(from_object, ['tunedModelDisplayName']),
-    )
-
-  if getv(from_object, ['veoTuningSpec']) is not None:
-    setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
-
   return to_object
 
 
