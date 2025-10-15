@@ -5,7 +5,6 @@
 
 ### Features
 
-* Add Imagen EditImage support in Dotnet SDK ([db478f1](https://github.com/googleapis/python-genai/commit/db478f1c3dd194847ba56d725007419c31b93796))
 * Support fully override base_url and raw model name when none of the project, locations, api_key are configured ([160997e](https://github.com/googleapis/python-genai/commit/160997e7c06d81ef0d9116bdf8043f340e84b141))
 * Support video extension for Veo on Gemini Developer API ([341ea77](https://github.com/googleapis/python-genai/commit/341ea77f97c6eab50b75c96505141cc10df14880))
 
