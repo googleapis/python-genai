@@ -692,6 +692,7 @@ class BaseApiClient:
     client_args, async_client_args = self._ensure_httpx_ssl_ctx(
         self._http_options
     )
+    self._async_httpx_client_args = async_client_args
     self._httpx_client = SyncHttpxClient(**client_args)
     self._async_httpx_client = AsyncHttpxClient(**async_client_args)
     if self._use_aiohttp():

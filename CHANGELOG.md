@@ -1,23 +1,5 @@
 # Changelog
 
-## [1.44.0](https://github.com/googleapis/python-genai/compare/v1.43.0...v1.44.0) (2025-10-15)
-
-
-### Features
-
-* Support fully override base_url and raw model name when none of the project, locations, api_key are configured ([160997e](https://github.com/googleapis/python-genai/commit/160997e7c06d81ef0d9116bdf8043f340e84b141))
-* Support video extension for Veo on Gemini Developer API ([341ea77](https://github.com/googleapis/python-genai/commit/341ea77f97c6eab50b75c96505141cc10df14880))
-
-
-### Bug Fixes
-
-* Avoid potential dual import confusion in type assert ([9cc4a72](https://github.com/googleapis/python-genai/commit/9cc4a724053031eeab0e9dcd7ee1f2322045d0e3))
-
-
-### Documentation
-
-* Refresh docs. ([9c8147b](https://github.com/googleapis/python-genai/commit/9c8147bfd29af8c409589eefdf75a3134f56e5f7))
-
 ## [1.43.0](https://github.com/googleapis/python-genai/compare/v1.42.0...v1.43.0) (2025-10-10)
 
 
