@@ -227,6 +227,24 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_maps_tool',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents('Find restaurants near me.'),
+            config=types.GenerateContentConfig(
+                tools=[{'google_maps': {}}],
+                tool_config={
+                    "retrieval_config": {
+                        "lat_lng": {
+                            "latitude": 37.421993,
+                            "longitude": -122.079725,
+                        }
+                    }
+                }
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_google_search_tool_with_time_range_filter',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
@@ -248,6 +266,55 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch()
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_config',
@@ -420,6 +487,23 @@ def test_sync_with_headers(client):
   assert response.sdk_http_response.headers is not None
   assert response.sdk_http_response.body is None
 
+
+def test_sync_with_full_response(client):
+  response = client.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  print(response.sdk_http_response.body)
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.generate_content(
@@ -440,6 +524,23 @@ async def test_async_with_headers(client):
   )
   assert response.sdk_http_response.headers is not None
   assert response.sdk_http_response.body is None
+
+
+@pytest.mark.asyncio
+async def test_async_with_full_response(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-1.5-flash',
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
 
 
 def test_sync_stream(client):
@@ -490,7 +591,7 @@ def test_sync_stream_with_non_text_modality(client):
     chunks += 1
     if chunk.candidates[0].finish_reason is not None:
       continue
-    for part in chunk.candidates[0].content.parts:
+    for part in chunk.parts:
       assert part.text is not None or part.inline_data is not None
 
   assert chunks > 2
@@ -543,7 +644,7 @@ async def test_async_stream_with_non_text_modality(client):
     chunks += 1
     if chunk.candidates[0].finish_reason is not None:
       continue
-    for part in chunk.candidates[0].content.parts:
+    for part in chunk.parts:
       assert part.text is not None or part.inline_data is not None
 
   assert chunks > 2
@@ -1807,7 +1908,7 @@ def test_json_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1833,7 +1934,7 @@ def test_pydantic_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1924,7 +2025,6 @@ def test_function(client):
       },
   )
   assert '100' in response.text
-
 
 def test_invalid_input_without_transformer(client):
   with pytest.raises(ValidationError) as e:

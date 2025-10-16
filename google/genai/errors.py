@@ -42,6 +42,9 @@ class APIError(Exception):
           Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
       ] = None,
   ):
+    if isinstance(response_json, list) and len(response_json) == 1:
+      response_json = response_json[0]
+
     self.response = response
     self.details = response_json
     self.message = self._get_message(response_json)
@@ -131,6 +134,13 @@ class APIError(Exception):
             'status': response.reason_phrase,
         }
       status_code = response.status_code
+    elif hasattr(response, 'body_segments') and hasattr(
+        response, 'status_code'
+    ):
+      if response.status_code == 200:
+        return
+      response_json = response.body_segments[0].get('error', {})
+      status_code = response.status_code
     else:
       try:
         import aiohttp  # pylint: disable=g-import-not-at-top
@@ -148,9 +158,9 @@ class APIError(Exception):
             }
           status_code = response.status
         else:
-          response_json = response.body_segments[0].get('error', {})
+          raise ValueError(f'Unsupported response type: {type(response)}')
       except ImportError:
-        response_json = response.body_segments[0].get('error', {})
+        raise ValueError(f'Unsupported response type: {type(response)}')
 
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)

@@ -40,6 +40,10 @@ class SubPart(types.Part):
   pass
 
 
+class SubFunctionResponsePart(types.FunctionResponsePart):
+  pass
+
+
 def test_factory_method_from_uri_part():
 
   my_part = SubPart.from_uri(
@@ -94,6 +98,41 @@ def test_factory_method_from_function_response_part():
   assert my_part.function_response.name == 'func'
   assert my_part.function_response.response == {'response': 'value'}
   assert isinstance(my_part, SubPart)
+
+
+def test_factory_method_part_from_function_response_with_multi_modal_parts():
+  my_part = SubPart.from_function_response(
+      name='func',
+      response={'response': 'value'},
+      parts=[{'inline_data': {'data': b'123', 'mime_type': 'image/png'}}],
+  )
+  assert my_part.function_response.name == 'func'
+  assert my_part.function_response.response == {'response': 'value'}
+  assert my_part.function_response.parts[0].inline_data.data == b'123'
+  assert my_part.function_response.parts[0].inline_data.mime_type == 'image/png'
+  assert isinstance(my_part, SubPart)
+
+
+def test_factory_method_function_response_part_from_bytes():
+  my_part = SubFunctionResponsePart.from_bytes(
+      data=b'123', mime_type='image/png'
+  )
+  assert my_part.inline_data.data == b'123'
+  assert my_part.inline_data.mime_type == 'image/png'
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+def test_factory_method_function_response_part_from_uri():
+  my_part = SubFunctionResponsePart.from_uri(
+      file_uri='gs://generativeai-downloads/images/scones.jpg',
+      mime_type='image/jpeg',
+  )
+  assert (
+      my_part.file_data.file_uri
+      == 'gs://generativeai-downloads/images/scones.jpg'
+  )
+  assert my_part.file_data.mime_type == 'image/jpeg'
+  assert isinstance(my_part, SubFunctionResponsePart)
 
 
 def test_factory_method_from_executable_code_part():

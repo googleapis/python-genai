@@ -16,8 +16,6 @@
 
 """Tests for recontext_image."""
 
-import os
-
 import pytest
 
 from ... import types
@@ -25,7 +23,7 @@ from .. import pytest_helper
 
 PRODUCT_RECONTEXT_MODEL_LATEST = 'imagen-product-recontext-preview-06-30'
 
-VIRTUAL_TRY_ON_IMAGE_MODEL_LATEST = 'virtual-try-on-exp-05-31'
+VIRTUAL_TRY_ON_IMAGE_MODEL_LATEST = 'virtual-try-on-preview-08-04'
 
 BACKPACK1 = types.Image(
     gcs_uri='gs://genai-sdk-tests/inputs/images/backpack1.png',
@@ -61,6 +59,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
             config=types.RecontextImageConfig(
                 number_of_images=1,
+                add_watermark=True,
                 output_mime_type='image/jpeg',
             ),
         ),
@@ -89,10 +88,12 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_mime_type='image/jpeg',
                 base_steps=32,
                 seed=1337,
+                add_watermark=False,
                 safety_filter_level=types.SafetyFilterLevel.BLOCK_MEDIUM_AND_ABOVE,
                 person_generation=types.PersonGeneration.ALLOW_ADULT,
                 output_compression_quality=75,
                 enhance_prompt=False,
+                labels={'imagen_label_key': 'recontext_image'}
             ),
         ),
     ),
@@ -131,6 +132,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_mime_type='image/jpeg',
                 base_steps=32,
                 seed=1337,
+                add_watermark=False,
                 safety_filter_level=types.SafetyFilterLevel.BLOCK_MEDIUM_AND_ABOVE,
                 person_generation=types.PersonGeneration.ALLOW_ADULT,
                 output_compression_quality=75,

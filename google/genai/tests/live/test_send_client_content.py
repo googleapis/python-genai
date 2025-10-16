@@ -17,12 +17,12 @@
 """Tests for live.py."""
 import base64
 import json
-import os
 from unittest import mock
 
 import pytest
 from websockets import client
 
+from .. import pytest_helper
 from ... import client as gl_client
 from ... import live
 from ... import types
@@ -109,10 +109,10 @@ async def test_send_content_with_blob(mock_websocket, vertexai):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'client_content' in sent_data
 
-  assert (
-      sent_data['client_content']['turns'][0]['parts'][0]['inlineData']['data']
-      == base64.b64encode(b'test').decode()
-  )
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['client_content']['turns'][0]['parts'][0], 'inline_data') == {
+          'data': base64.b64encode(b'test').decode()
+      }
 
 
 @pytest.mark.parametrize('vertexai', [True, False])

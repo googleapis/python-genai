@@ -91,10 +91,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'dest': {
                     'gcs_uri': _GENERATE_CONTENT_GCS_OUTPUT_PREFIX,
                     'format': 'jsonl',
-                }
+                },
             },
         ),
-        exception_if_mldev='One of',
+        exception_if_mldev='one of',
     ),
 ]
 
