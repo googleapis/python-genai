@@ -1796,7 +1796,7 @@ def test_parse_client_message_tool_response(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_function_response(
-     mock_websocket, vertexai
+    mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -1804,7 +1804,11 @@ def test_parse_client_message_function_response(
   input = types.FunctionResponse(
     id='test_id',
     name='test_name',
-    response={'result': 'test_response'},
+    response={
+        'result': 'test_response',
+        'user_name': 'test_user_name',
+        'userEmail': 'test_user_email',
+    },
   )
   result = session._parse_client_message(input)
   assert 'tool_response' in result
@@ -1816,6 +1820,8 @@ def test_parse_client_message_function_response(
                   'name': 'test_name',
                   'response': {
                       'result': 'test_response',
+                      'user_name': 'test_user_name',
+                      'userEmail': 'test_user_email',
                   },
               },
           ],

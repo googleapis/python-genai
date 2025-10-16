@@ -272,9 +272,7 @@ def convert_to_dict(obj: object, convert_keys: bool = False) -> Any:
     return convert_to_dict(obj.model_dump(exclude_none=True), convert_keys)
   elif isinstance(obj, dict):
     return {
-        maybe_snake_to_camel(key, convert_keys): convert_to_dict(
-            value, convert_keys
-        )
+        maybe_snake_to_camel(key, convert_keys): convert_to_dict(value)
         for key, value in obj.items()
     }
   elif isinstance(obj, list):

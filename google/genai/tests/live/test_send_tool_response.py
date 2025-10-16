@@ -15,6 +15,7 @@
 
 
 """Tests for live.py."""
+
 import contextlib
 import json
 from unittest import mock
@@ -23,7 +24,6 @@ import pytest
 from websockets import client
 
 from .. import pytest_helper
-
 from ... import client as gl_client
 from ... import live
 from ... import types
@@ -104,7 +104,12 @@ async def test_function_response(mock_websocket, vertexai):
 
   input = types.FunctionResponse(
       name='get_current_weather',
-      response={'temperature': 14.5, 'unit': 'C'},
+      response={
+          'temperature': 14.5,
+          'unit': 'C',
+          'user_name': 'test_user_name',
+          'userEmail': 'test_user_email',
+      },
   )
   if not vertexai:
     input.id = 'some-id'
@@ -119,14 +124,8 @@ async def test_function_response(mock_websocket, vertexai):
       == 'get_current_weather'
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response'][
-          'temperature'
-      ]
-      == 14.5
-  )
-  assert (
-      sent_data['tool_response']['functionResponses'][0]['response']['unit']
-      == 'C'
+      sent_data['tool_response']['functionResponses'][0]['response']
+      == input.response
   )
 
 
@@ -151,8 +150,8 @@ async def test_function_response_scheduling(mock_websocket, vertexai):
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'tool_response' in sent_data
 
-  assert (
-      sent_data['tool_response']['functionResponses'][0]['willContinue'] == True
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['tool_response']['functionResponses'][0], 'will_continue'
   )
   assert (
       sent_data['tool_response']['functionResponses'][0]['scheduling']
