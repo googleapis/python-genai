@@ -118,6 +118,19 @@ class Language(_common.CaseInSensitiveEnum):
   """Python >= 3.10, with numpy and simpy available."""
 
 
+class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
+  """Specifies how the response should be scheduled in the conversation."""
+
+  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
+  """This value is unused."""
+  SILENT = 'SILENT'
+  """Only add the result to the conversation context, do not interrupt or trigger generation."""
+  WHEN_IDLE = 'WHEN_IDLE'
+  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
+  INTERRUPT = 'INTERRUPT'
+  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
+
+
 class Type(_common.CaseInSensitiveEnum):
   """Optional. The type of the data."""
 
@@ -144,14 +157,14 @@ class HarmCategory(_common.CaseInSensitiveEnum):
 
   HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
   """The harm category is unspecified."""
-  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
-  """The harm category is hate speech."""
-  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
-  """The harm category is dangerous content."""
   HARM_CATEGORY_HARASSMENT = 'HARM_CATEGORY_HARASSMENT'
   """The harm category is harassment."""
+  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
+  """The harm category is hate speech."""
   HARM_CATEGORY_SEXUALLY_EXPLICIT = 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
   """The harm category is sexually explicit content."""
+  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
+  """The harm category is dangerous content."""
   HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
   """Deprecated: Election filter is not longer supported. The harm category is civic integrity."""
   HARM_CATEGORY_IMAGE_HATE = 'HARM_CATEGORY_IMAGE_HATE'
@@ -700,19 +713,6 @@ class MediaModality(_common.CaseInSensitiveEnum):
   """Audio."""
   DOCUMENT = 'DOCUMENT'
   """Document, e.g. PDF."""
-
-
-class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
-  """Specifies how the response should be scheduled in the conversation."""
-
-  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
-  """This value is unused."""
-  SILENT = 'SILENT'
-  """Only add the result to the conversation context, do not interrupt or trigger generation."""
-  WHEN_IDLE = 'WHEN_IDLE'
-  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
-  INTERRUPT = 'INTERRUPT'
-  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
 
 
 class StartSensitivity(_common.CaseInSensitiveEnum):
@@ -2672,8 +2672,7 @@ class GoogleSearch(_common.BaseModel):
   )
   exclude_domains: Optional[list[str]] = Field(
       default=None,
-      description="""Optional. List of domains to be excluded from the search results.
-      The default limit is 2000 domains.""",
+      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"].""",
   )
 
 
@@ -2686,8 +2685,7 @@ class GoogleSearchDict(TypedDict, total=False):
       """
 
   exclude_domains: Optional[list[str]]
-  """Optional. List of domains to be excluded from the search results.
-      The default limit is 2000 domains."""
+  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]."""
 
 
 GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
@@ -8326,34 +8324,6 @@ class DeleteModelResponseDict(TypedDict, total=False):
 DeleteModelResponseOrDict = Union[DeleteModelResponse, DeleteModelResponseDict]
 
 
-class GenerationConfigThinkingConfig(_common.BaseModel):
-  """Config for thinking features."""
-
-  include_thoughts: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Indicates whether to include thoughts in the response. If true, thoughts are returned only when available.""",
-  )
-  thinking_budget: Optional[int] = Field(
-      default=None,
-      description="""Optional. Indicates the thinking budget in tokens.""",
-  )
-
-
-class GenerationConfigThinkingConfigDict(TypedDict, total=False):
-  """Config for thinking features."""
-
-  include_thoughts: Optional[bool]
-  """Optional. Indicates whether to include thoughts in the response. If true, thoughts are returned only when available."""
-
-  thinking_budget: Optional[int]
-  """Optional. Indicates the thinking budget in tokens."""
-
-
-GenerationConfigThinkingConfigOrDict = Union[
-    GenerationConfigThinkingConfig, GenerationConfigThinkingConfigDict
-]
-
-
 class GenerationConfig(_common.BaseModel):
   """Generation config."""
 
@@ -8422,7 +8392,7 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. Controls the randomness of predictions.""",
   )
-  thinking_config: Optional[GenerationConfigThinkingConfig] = Field(
+  thinking_config: Optional[ThinkingConfig] = Field(
       default=None,
       description="""Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking.""",
   )
@@ -8433,6 +8403,10 @@ class GenerationConfig(_common.BaseModel):
   top_p: Optional[float] = Field(
       default=None,
       description="""Optional. If specified, nucleus sampling will be used.""",
+  )
+  enable_enhanced_civic_answers: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Enables enhanced civic answers. It may not be available for all models.""",
   )
 
 
@@ -8496,7 +8470,7 @@ class GenerationConfigDict(TypedDict, total=False):
   temperature: Optional[float]
   """Optional. Controls the randomness of predictions."""
 
-  thinking_config: Optional[GenerationConfigThinkingConfigDict]
+  thinking_config: Optional[ThinkingConfigDict]
   """Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking."""
 
   top_k: Optional[float]
@@ -8504,6 +8478,9 @@ class GenerationConfigDict(TypedDict, total=False):
 
   top_p: Optional[float]
   """Optional. If specified, nucleus sampling will be used."""
+
+  enable_enhanced_civic_answers: Optional[bool]
+  """Optional. Enables enhanced civic answers. It may not be available for all models."""
 
 
 GenerationConfigOrDict = Union[GenerationConfig, GenerationConfigDict]
@@ -9357,14 +9334,22 @@ TunedModelCheckpointOrDict = Union[
 
 
 class TunedModel(_common.BaseModel):
+  """TunedModel for the Tuned Model of a Tuning Job."""
 
   model: Optional[str] = Field(
       default=None,
-      description="""Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}` When tuning from a base model, the version_id will be 1. For continuous tuning, the version id will be incremented by 1 from the last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`""",
+      description="""Output only. The resource name of the TunedModel.
+      Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+      When tuning from a base model, the version_id will be 1.
+      For continuous tuning, the version id will be incremented by 1 from the
+      last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`
+      """,
   )
   endpoint: Optional[str] = Field(
       default=None,
-      description="""Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.""",
+      description="""Output only. A resource name of an Endpoint.
+      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+      """,
   )
   checkpoints: Optional[list[TunedModelCheckpoint]] = Field(
       default=None,
@@ -9375,12 +9360,20 @@ class TunedModel(_common.BaseModel):
 
 
 class TunedModelDict(TypedDict, total=False):
+  """TunedModel for the Tuned Model of a Tuning Job."""
 
   model: Optional[str]
-  """Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}` When tuning from a base model, the version_id will be 1. For continuous tuning, the version id will be incremented by 1 from the last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`"""
+  """Output only. The resource name of the TunedModel.
+      Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+      When tuning from a base model, the version_id will be 1.
+      For continuous tuning, the version id will be incremented by 1 from the
+      last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`
+      """
 
   endpoint: Optional[str]
-  """Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`."""
+  """Output only. A resource name of an Endpoint.
+      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+      """
 
   checkpoints: Optional[list[TunedModelCheckpointDict]]
   """The checkpoints associated with this TunedModel.
@@ -10851,22 +10844,24 @@ _CancelTuningJobParametersOrDict = Union[
 
 
 class TuningExample(_common.BaseModel):
+  """A single example for tuning."""
 
-  text_input: Optional[str] = Field(
-      default=None, description="""Text model input."""
-  )
   output: Optional[str] = Field(
-      default=None, description="""The expected model output."""
+      default=None, description="""Required. The expected model output."""
+  )
+  text_input: Optional[str] = Field(
+      default=None, description="""Optional. Text model input."""
   )
 
 
 class TuningExampleDict(TypedDict, total=False):
-
-  text_input: Optional[str]
-  """Text model input."""
+  """A single example for tuning."""
 
   output: Optional[str]
-  """The expected model output."""
+  """Required. The expected model output."""
+
+  text_input: Optional[str]
+  """Optional. Text model input."""
 
 
 TuningExampleOrDict = Union[TuningExample, TuningExampleDict]
@@ -11678,10 +11673,11 @@ class ListFilesResponse(_common.BaseModel):
       default=None, description="""Used to retain the full HTTP response."""
   )
   next_page_token: Optional[str] = Field(
-      default=None, description="""A token to retrieve next page of results."""
+      default=None,
+      description="""A token that can be sent as a `page_token` into a subsequent `ListFiles` call.""",
   )
   files: Optional[list[File]] = Field(
-      default=None, description="""The list of files."""
+      default=None, description="""The list of `File`s."""
   )
 
 
@@ -11692,10 +11688,10 @@ class ListFilesResponseDict(TypedDict, total=False):
   """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
-  """A token to retrieve next page of results."""
+  """A token that can be sent as a `page_token` into a subsequent `ListFiles` call."""
 
   files: Optional[list[FileDict]]
-  """The list of files."""
+  """The list of `File`s."""
 
 
 ListFilesResponseOrDict = Union[ListFilesResponse, ListFilesResponseDict]
@@ -12371,6 +12367,25 @@ class BatchJob(_common.BaseModel):
     if self.state is None:
       return False
     return self.state.name in JOB_STATES_ENDED
+
+
+class GenerationConfigThinkingConfig(ThinkingConfig):
+  """Config for thinking feature.
+
+  This class will be deprecated. Please use `ThinkingConfig` instead.
+  """
+
+
+class GenerationConfigThinkingConfigDict(ThinkingConfigDict):
+  """Config for thinking feature.
+
+  This class will be deprecated. Please use `ThinkingConfig` instead.
+  """
+
+
+GenerationConfigThinkingConfigOrDict = Union[
+    GenerationConfigThinkingConfig, GenerationConfigThinkingConfigDict
+]
 
 
 class BatchJobDict(TypedDict, total=False):
