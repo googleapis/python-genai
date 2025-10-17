@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=
 
 [project]
 name = "google-genai"
-version = "1.44.0"
+version = "1.45.0"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -53,3 +53,12 @@ include-package-data = true
 
 [tools.setuptools.package_data]
 "google.genai" = ["py.typed"]
+
+[tool.mypy]
+exclude = ["tests/", "_test_api_client\\.py"]
+plugins = ["pydantic.mypy"]
+# we are ignoring 'unused-ignore' because we run mypy on Python 3.9 - 3.13 and
+# some errors in _automatic_function_calling_util.py only apply in 3.10+
+# 'import-not-found' and 'import-untyped' are environment specific
+disable_error_code = ["import-not-found", "import-untyped", "unused-ignore"]
+strict = true

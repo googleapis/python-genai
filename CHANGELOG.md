@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.45.0](https://github.com/googleapis/python-genai/compare/v1.44.0...v1.45.0) (2025-10-15)
+
+
+### Features
+
+* Add support for Python 3.14. ([f0083a2](https://github.com/googleapis/python-genai/commit/f0083a2ee31ba99c63117b5c02982d2648f6f5cc))
+
+
+### Bug Fixes
+
+* Keys in Live API tool responses are incorrectly re-cased ([57a4765](https://github.com/googleapis/python-genai/commit/57a4765b6690c246345ef33e49c1f05a3e2f73e4))
+
 ## [1.44.0](https://github.com/googleapis/python-genai/compare/v1.43.0...v1.44.0) (2025-10-15)
 
 
