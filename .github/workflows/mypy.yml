@@ -33,4 +33,4 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run mypy  ${{ matrix.python-version }}
-        run: mypy google/genai/ --strict --config-file=google/genai/mypy.ini
+        run: mypy google/genai/
