@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.46.0](https://github.com/googleapis/python-genai/compare/v1.45.0...v1.46.0) (2025-10-17)
+
+
+### Features
+
+* Add enable_enhanced_civic_answers in GenerationConfig ([6c1dae7](https://github.com/googleapis/python-genai/commit/6c1dae79846f293bed19315402351fdf2db8a5a9))
+
+
+### Documentation
+
+* Regenerate docs for 1.45.0 ([9b7632d](https://github.com/googleapis/python-genai/commit/9b7632d95c02720f2ed5551d2605a715c08ebe8a))
+
 ## [1.45.0](https://github.com/googleapis/python-genai/compare/v1.44.0...v1.45.0) (2025-10-15)
 
 
