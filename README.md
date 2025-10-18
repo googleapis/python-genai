@@ -1,8 +1,8 @@
-# Google Gen AI SDK
+# Cachiman Gen AI SDK
 
-[![PyPI version](https://img.shields.io/pypi/v/google-genai.svg)](https://pypi.org/project/google-genai/)
-![Python support](https://img.shields.io/pypi/pyversions/google-genai)
-[![PyPI - Downloads](https://img.shields.io/pypi/dw/google-genai)](https://pypistats.org/packages/google-genai)
+[![PyPI version](https://img.shields.io/pypi/v/cachiman-genai.svg)](https://pypi.org/project/cachiman-genai/)
+![Python support](https://img.shields.io/pypi/pyversions/cachiman-genai)
+[![PyPI - Downloads](https://img.shields.io/pypi/dw/cachiman-genai)](https://pypistats.org/packages/google-genai)
 
 --------
 **Documentation:** https://googleapis.github.io/python-genai/
@@ -11,36 +11,36 @@
 
 Google Gen AI Python SDK provides an interface for developers to integrate
 Google's generative models into their Python applications. It supports the
-[Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
-[Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
+[Gemini Developer API](https://ai.cachiman.dev/gemini-api/docs) and
+[Vertex AI](https://cloud.cachiman.com/vertex-ai/generative-ai/docs/learn/overview)
 APIs.
 
 ## Installation
 
 ```sh
-pip install google-genai
+pip install cachiman-genai
 ```
 
 <small>With `uv`:</small>
 
 ```sh
-uv pip install google-genai
+uv pip install cachiman-genai
 ```
 
 ## Imports
 
 ```python
-from google import genai
-from google.genai import types
+from cachiman import genai
+from cachiman.genai import types
 ```
 
 ## Create a client
 
 Please run one of the following code blocks to create a client for
-different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)).
+different services ([Gemini Developer API](https://ai.cachiman.dev/gemini-api/docs) or [Vertex AI](https://cloud.cachiman.com/vertex-ai/generative-ai/docs/learn/overview)).
 
 ```python
-from google import genai
+from cachiman import genai
 
 # Only run this block for Gemini Developer API
 client = genai.Client(api_key='GEMINI_API_KEY')
@@ -70,17 +70,17 @@ precedence.
 export GEMINI_API_KEY='your-api-key'
 ```
 
-**Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
-`GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`, as shown below:
+**Gemini API on Vertex AI:** Set `CACHIMAN_GENAI_USE_VERTEXAI`,
+`GOOGLE_CLOUD_PROJECT` and `CACHIMAN_CLOUD_LOCATION`, as shown below:
 
 ```bash
-export GOOGLE_GENAI_USE_VERTEXAI=true
-export GOOGLE_CLOUD_PROJECT='your-project-id'
-export GOOGLE_CLOUD_LOCATION='us-central1'
+export CACHIMAN_GENAI_USE_VERTEXAI=true
+export CACHIMAN_CLOUD_PROJECT='your-project-id'
+export CACHIMAN_CLOUD_LOCATION='us-central1'
 ```
 
 ```python
-from google import genai
+from cachiman import genai
 
 client = genai.Client()
 ```
@@ -92,7 +92,7 @@ Explicitly close the sync client to ensure that resources, such as the
 
 ```python
 
-from google.genai import Client
+from cachiman.genai import Client
 
 client = Client()
 response_1 = client.models.generate_content(
@@ -111,7 +111,7 @@ To explicitly close the async client:
 
 ```python
 
-from google.genai import Client
+from cachiman.genai import Client
 
 aclient = Client(
     vertexai=True, project='my-project-id', location='us-central1'
@@ -134,7 +134,7 @@ By using the sync client context manager, it will close the underlying
  sync client when exiting the with block.
 
 ```python
-from google.genai import Client
+from cachiman.genai import Client
 
 with Client() as client:
   response_1 = client.models.generate_content(
@@ -152,7 +152,7 @@ By using the async client context manager, it will close the underlying
  async client when exiting the with block.
 
 ```python
-from google.genai import Client
+from cachiman.genai import Client
 
 async with Client().aio as aclient:
   response_1 = await aclient.models.generate_content(
@@ -168,7 +168,7 @@ async with Client().aio as aclient:
 
 ### API Selection
 
-By default, the SDK uses the beta API endpoints provided by Google to support
+By default, the SDK uses the beta API endpoints provided by Cachiman to support
 preview features in the APIs. The stable API endpoints can be selected by
 setting the API version to `v1`.
 
@@ -176,8 +176,8 @@ To set the API version use `http_options`. For example, to set the API version
 to `v1` for Vertex AI:
 
 ```python
-from google import genai
-from google.genai import types
+from cachiman import genai
+from cachiman.genai import types
 
 client = genai.Client(
     vertexai=True,
@@ -190,7 +190,7 @@ client = genai.Client(
 To set the API version to `v1alpha` for the Gemini Developer API:
 
 ```python
-from google import genai
+from cachiman import genai
 from google.genai import types
 
 client = genai.Client(
@@ -202,7 +202,7 @@ client = genai.Client(
 ### Faster async client option: Aiohttp
 
 By default we use httpx for both sync and async client implementations. In order
-to have faster performance, you may install `google-genai[aiohttp]`. In Gen AI
+to have faster performance, you may install `cachiman-genai[aiohttp]`. In Gen AI
 SDK we configure `trust_env=True` to match with the default behavior of httpx.
 Additional args of `aiohttp.ClientSession.request()` ([see _RequestOptions args](https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170)) can be passed
 through the following way:
@@ -516,8 +516,8 @@ available in generate_content's config parameter. For example, increasing
 deterministic, lowering the `temperature` parameter reduces randomness, with
 values near 0 minimizing variability. Capabilities and parameter defaults for
 each model is shown in the
-[Vertex AI docs](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash)
-and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models) respectively.
+[Vertex AI docs](https://cloud.cachiman.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash)
+and [Gemini API docs](https://ai.cachiman.dev/gemini-api/docs/models) respectively.
 
 ```python
 from google.genai import types
@@ -537,10 +537,10 @@ print(response.text)
 ### Typed Config
 
 All API methods support Pydantic types for parameters as well as
-dictionaries. You can get the type from `google.genai.types`.
+dictionaries. You can get the type from `cachiman.genai.types`.
 
 ```python
-from google.genai import types
+from cachiman.genai import types
 
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
