@@ -34,7 +34,9 @@ from ._api_client import BaseApiClient
 from ._api_client import HttpRequest
 from ._api_client import HttpResponse
 from ._common import BaseModel
-from .types import HttpOptions, HttpOptionsOrDict
+from .types import HttpOptions
+from .types import HttpOptionsOrDict
+from .types import HttpResponse as SdkHttpResponse
 
 
 def to_snake_case(name: str) -> str:
@@ -684,3 +686,25 @@ class ReplayApiClient(BaseApiClient):
       return result
     else:
       return self._build_response_from_replay(request).byte_stream[0]
+
+  def _request_sandbox(
+      self,
+      http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
+  ) -> HttpResponse:
+    self._initialize_replay_session_if_not_loaded()
+    if self._should_call_api():
+      _debug_print('api mode request: %s' % http_request)
+      try:
+        result = super()._request_sandbox(
+            http_request, http_options
+        )
+      except errors.APIError as e:
+        self._record_interaction(http_request, e)
+        raise e
+      if result:
+        self._record_interaction(http_request, result)
+      _debug_print('api mode result: %s' % result)
+      return result
+    else:
+      return self._build_response_from_replay(http_request)

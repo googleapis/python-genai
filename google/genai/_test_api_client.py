@@ -17,7 +17,7 @@ import asyncio
 import time
 from unittest.mock import MagicMock, patch
 import pytest
-from .api_client import BaseApiClient
+from .api_client import BaseApiClient, HttpResponse
 
 
 @patch('genai.api_client.BaseApiClient._build_request')
@@ -105,7 +105,7 @@ async def test_async_request(mock_async_request, mock_build_request):
 async def test_async_request_streamed_non_blocking(
     mock_async_request, mock_build_request
 ):
-  api_client = ApiClient(api_key='test_api_key')
+  api_client = BaseApiClient(api_key='test_api_key')
   http_method = 'GET'
   path = 'test/path'
   request_dict = {'key': 'value'}
@@ -147,3 +147,28 @@ async def test_async_request_streamed_non_blocking(
   )
   assert chunks == ['{"chunk": 1}', '{"chunk": 2}', '{"chunk": 3}']
   assert end_time - start_time > 0.3
+
+
+@patch('google.genai._api_client.BaseApiClient._request_sandbox')
+def test_request_sandbox(mock_request_sandbox):
+  api_client = ApiClient(api_key='test_api_key')
+  http_method = 'POST'
+  url = 'http://test/url'
+  request_dict = {'key': 'value'}
+
+  mock_request_sandbox.return_value = HttpResponse(
+      headers={'Content-Type': 'application/json'},
+      response_stream=['{"response_key": "response_value"}']
+  )
+
+  response = api_client.request_sandbox(http_method, url, request_dict)
+
+  mock_request_sandbox.assert_called_once()
+  assert response['headers'] == {'Content-Type': 'application/json'}
+  assert response['body'] == '{"response_key": "response_value"}'
+
+  called_with_http_request = mock_request_sandbox.call_args[0][0]
+  assert called_with_http_request.method == http_method
+  assert called_with_http_request.url == url
+  assert called_with_http_request.data == request_dict
+
