@@ -89,6 +89,27 @@ else:
   except ImportError:
     yaml = None
 
+_is_httpx_imported = False
+if typing.TYPE_CHECKING:
+  import httpx
+
+  HttpxClient = httpx.Client
+  HttpxAsyncClient = httpx.AsyncClient
+  _is_httpx_imported = True
+else:
+  HttpxClient: typing.Type = Any
+  HttpxAsyncClient: typing.Type = Any
+
+  try:
+    import httpx
+
+    HttpxClient = httpx.Client
+    HttpxAsyncClient = httpx.AsyncClient
+    _is_httpx_imported = True
+  except ImportError:
+    HttpxClient = None
+    HttpxAsyncClient = None
+
 logger = logging.getLogger('google_genai.types')
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
@@ -1528,6 +1549,15 @@ class HttpOptions(_common.BaseModel):
   )
   retry_options: Optional[HttpRetryOptions] = Field(
       default=None, description="""HTTP retry options for the request."""
+  )
+
+  httpx_client: Optional['HttpxClient'] = Field(
+      default=None,
+      description="""A custom httpx client to be used for the request.""",
+  )
+  httpx_async_client: Optional['HttpxAsyncClient'] = Field(
+      default=None,
+      description="""A custom httpx async client to be used for the request.""",
   )
 
 
