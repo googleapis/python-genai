@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.46.0](https://github.com/googleapis/python-genai/compare/v1.45.0...v1.46.0) (2025-10-21)
+
+
+### Features
+
+* Add enable_enhanced_civic_answers in GenerationConfig ([6c1dae7](https://github.com/googleapis/python-genai/commit/6c1dae79846f293bed19315402351fdf2db8a5a9))
+* Support custom httpx clients ([694a6bd](https://github.com/googleapis/python-genai/commit/694a6bdc290f7fc089eb86266c24ad256a7c147d))
+* Support jailbreak in HarmCategory and BlockedReason ([011e218](https://github.com/googleapis/python-genai/commit/011e218b8d06444c848fbc8ba11c01608ff2d613))
+
+
+### Bug Fixes
+
+* Remove bytes for Gemini Developer API before sending a video for Veo Video Extension async ([9ccc6ce](https://github.com/googleapis/python-genai/commit/9ccc6cea798d3a43f5a29f288accf823c4400884))
+
+
+### Documentation
+
+* Regenerate docs for 1.45.0 ([9b7632d](https://github.com/googleapis/python-genai/commit/9b7632d95c02720f2ed5551d2605a715c08ebe8a))
+* Update README with Gempix example (nano-banana) ([ac2bc42](https://github.com/googleapis/python-genai/commit/ac2bc4205a66d13a3f4bc2bcf41f3e315224ffc1))
+
 ## [1.45.0](https://github.com/googleapis/python-genai/compare/v1.44.0...v1.45.0) (2025-10-15)
 
 
