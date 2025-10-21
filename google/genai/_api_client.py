@@ -693,8 +693,15 @@ class BaseApiClient:
         self._http_options
     )
     self._async_httpx_client_args = async_client_args
-    self._httpx_client = SyncHttpxClient(**client_args)
-    self._async_httpx_client = AsyncHttpxClient(**async_client_args)
+
+    if self._http_options.httpx_client:
+      self._httpx_client = self._http_options.httpx_client
+    else:
+      self._httpx_client = SyncHttpxClient(**client_args)
+    if self._http_options.httpx_async_client:
+      self._async_httpx_client = self._http_options.httpx_async_client
+    else:
+      self._async_httpx_client = AsyncHttpxClient(**async_client_args)
     if self._use_aiohttp():
       # Do it once at the genai.Client level. Share among all requests.
       self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(

@@ -6,14 +6,13 @@ name = "google-genai"
 version = "1.45.0"
 description = "GenAI Python SDK"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 requires-python = ">=3.9"
 authors = [
     { name = "Google LLC", email = "googleapis-packages@google.com" },
 ]
 classifiers = [
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -44,14 +43,9 @@ local-tokenizer = ["sentencepiece>=0.2.0", "protobuf"]
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
 
-[tool.setuptools]
-packages = [
-    "google",
-    "google.genai",
-]
-include-package-data = true
+# [tool.setuptools] settings are in setup.cfg
 
-[tools.setuptools.package_data]
+[tool.setuptools.package-data]
 "google.genai" = ["py.typed"]
 
 [tool.mypy]

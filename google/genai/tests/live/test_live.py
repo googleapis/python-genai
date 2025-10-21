@@ -720,7 +720,11 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
   )
-  assert result == expected_result
+  assert types.LiveClientMessage._from_response(
+      response=result, kwargs=None
+  ) == types.LiveClientMessage._from_response(
+      response=expected_result, kwargs=None
+  )
   # Config is a LiveConnectConfig
   config = types.LiveConnectConfig(
       speech_config=types.SpeechConfig(
@@ -745,7 +749,11 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
-  assert result == expected_result
+  assert types.LiveClientMessage._from_response(
+      response=result, kwargs=None
+  ) == types.LiveClientMessage._from_response(
+      response=expected_result, kwargs=None
+  )
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
