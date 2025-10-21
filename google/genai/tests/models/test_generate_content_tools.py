@@ -522,8 +522,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             },
         ),
-        # TODO(b/450916996): Remove this once the feature is launched in Gemini.
-        exception_if_mldev='400',
     ),
 ]
 
