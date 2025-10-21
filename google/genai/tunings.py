@@ -240,13 +240,7 @@ def _CreateTuningJobParametersPrivate_to_vertex(
     setv(to_object, ['preTunedModel'], getv(from_object, ['pre_tuned_model']))
 
   if getv(from_object, ['training_dataset']) is not None:
-    setv(
-        to_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
-        _TuningDataset_to_vertex(
-            getv(from_object, ['training_dataset']), to_object
-        ),
-    )
+    _TuningDataset_to_vertex(getv(from_object, ['training_dataset']), to_object)
 
   if getv(from_object, ['config']) is not None:
     _CreateTuningJobConfig_to_vertex(getv(from_object, ['config']), to_object)
