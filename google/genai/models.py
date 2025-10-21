@@ -6903,9 +6903,11 @@ class AsyncModels(_api_module.BaseModule):
         response = await self._generate_content_stream(
             model=model, contents=contents, config=config
         )
-        logger.info(f'AFC remote call {i} is done.')
+        # TODO: b/453739108 - make AFC logic more robust like the other 3 methods.
+        if i > 1:
+          logger.info(f'AFC remote call {i} is done.')
         remaining_remote_calls_afc -= 1
-        if remaining_remote_calls_afc == 0:
+        if i > 1 and remaining_remote_calls_afc == 0:
           logger.info(
               'Reached max remote calls for automatic function calling.'
           )
