@@ -708,7 +708,7 @@ class BaseApiClient:
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
 
-  def convert_uri_to_string(self, obj):
+  def convert_uri_to_string(self, obj: Union[dict[str, object], bytes, object]) -> Any:
       if isinstance(obj, dict):
           return {k: self.convert_uri_to_string(v) for k, v in obj.items()}
       elif isinstance(obj, list):
