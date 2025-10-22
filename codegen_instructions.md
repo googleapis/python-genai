@@ -583,4 +583,4 @@ ai.google.dev/gemini-api/docs.
 -   API Keys and Authentication: ai.google.dev/gemini-api/docs/api-key
 -   Models: ai.google.dev/models
 -   API Pricing: ai.google.dev/pricing
--   Rate Limits: ai.google.dev/rate-limits
+-   Rate Limits: ai.google.dev/gemini-api/docs/rate-limits
