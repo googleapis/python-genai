@@ -417,6 +417,25 @@ def test_invalid_vertexai_constructor3(monkeypatch):
       Client(vertexai=True, project=project_id)
 
 
+def test_vertexai_explicit_credentials(monkeypatch):
+  creds = credentials.AnonymousCredentials()
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "fake_project_id")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "fake-location")
+  monkeypatch.setenv("GOOGLE_API_KEY", "env_api_key")
+
+  client = Client(
+      vertexai=True,
+      credentials=creds
+  )
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.project
+  assert client.models._api_client.location
+  assert not client.models._api_client.api_key
+  assert client.models._api_client._credentials is creds
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
+
+
 def test_vertexai_explicit_arg_precedence1(monkeypatch):
   project_id = "constructor_project_id"
   location = "constructor-location"
