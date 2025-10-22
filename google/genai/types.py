@@ -9559,13 +9559,12 @@ class Metric(_common.BaseModel):
   _version: Optional[str] = PrivateAttr(default=None)
   """An optional string indicating the version of the metric."""
 
-  @model_validator(mode='after')  # type: ignore[arg-type]
-  @classmethod
-  def validate_name(cls, model: 'Metric') -> 'Metric':
-    if not model.name:
+  @model_validator(mode='after')
+  def validate_name(self) -> Self:
+    if not self.name:
       raise ValueError('Metric name cannot be empty.')
-    model.name = model.name.lower()
-    return model
+    self.name = self.name.lower()
+    return self
 
   def to_yaml_file(self, file_path: str, version: Optional[str] = None) -> None:
     """Dumps the metric object to a YAML file.
