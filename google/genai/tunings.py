@@ -700,8 +700,8 @@ def _TuningValidationDataset_to_vertex(
 
   if getv(from_object, ['vertex_dataset_resource']) is not None:
     setv(
-        parent_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
+        to_object,
+        ['validationDatasetUri'],
         getv(from_object, ['vertex_dataset_resource']),
     )
 

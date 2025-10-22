@@ -10954,7 +10954,7 @@ class TuningValidationDataset(_common.BaseModel):
   )
   vertex_dataset_resource: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+      description="""The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
 
 
@@ -10964,7 +10964,7 @@ class TuningValidationDatasetDict(TypedDict, total=False):
   """GCS URI of the file containing validation dataset in JSONL format."""
 
   vertex_dataset_resource: Optional[str]
-  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
+  """The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
 
 TuningValidationDatasetOrDict = Union[
@@ -10980,7 +10980,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
-      description="""Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+      description="""Validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
   )
   tuned_model_display_name: Optional[str] = Field(
       default=None,
@@ -11032,7 +11032,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
-  """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+  """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
 
   tuned_model_display_name: Optional[str]
   """The display name of the tuned Model. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
