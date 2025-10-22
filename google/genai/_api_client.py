@@ -599,7 +599,9 @@ class BaseApiClient:
     # Handle when to use Vertex AI in express mode (api key).
     # Explicit initializer arguments are already validated above.
     if self.vertexai:
-      if credentials:
+      if not self._credentials and os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'):
+        self._credentials = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])[0]
+      if self._credentials:
         # Explicit credentials take precedence over implicit api_key.
         logger.info(
             'The user provided Google Cloud credentials will take precedence'
