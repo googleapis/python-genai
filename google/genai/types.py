@@ -200,6 +200,8 @@ class HarmCategory(_common.CaseInSensitiveEnum):
       'HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT'
   )
   """The harm category is image sexually explicit content."""
+  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
+  """The harm category is for jailbreak prompts."""
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
@@ -356,20 +358,24 @@ class HarmSeverity(_common.CaseInSensitiveEnum):
 
 
 class BlockedReason(_common.CaseInSensitiveEnum):
-  """Output only. Blocked reason."""
+  """Output only. The reason why the prompt was blocked."""
 
   BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
-  """Unspecified blocked reason."""
+  """The blocked reason is unspecified."""
   SAFETY = 'SAFETY'
-  """Candidates blocked due to safety."""
+  """The prompt was blocked for safety reasons."""
   OTHER = 'OTHER'
-  """Candidates blocked due to other reason."""
+  """The prompt was blocked for other reasons. For example, it may be due to the prompt's language, or because it contains other harmful content."""
   BLOCKLIST = 'BLOCKLIST'
-  """Candidates blocked due to the terms which are included from the terminology blocklist."""
+  """The prompt was blocked because it contains a term from the terminology blocklist."""
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
-  """Candidates blocked due to prohibited content."""
+  """The prompt was blocked because it contains prohibited content."""
   IMAGE_SAFETY = 'IMAGE_SAFETY'
-  """Candidates blocked due to unsafe image generation content."""
+  """The prompt was blocked because it contains content that is unsafe for image generation."""
+  MODEL_ARMOR = 'MODEL_ARMOR'
+  """The prompt was blocked by Model Armor."""
+  JAILBREAK = 'JAILBREAK'
+  """The prompt was blocked as a jailbreak attempt."""
 
 
 class TrafficType(_common.CaseInSensitiveEnum):
@@ -5734,31 +5740,41 @@ CandidateOrDict = Union[Candidate, CandidateDict]
 
 
 class GenerateContentResponsePromptFeedback(_common.BaseModel):
-  """Content filter results for a prompt sent in the request."""
+  """Content filter results for a prompt sent in the request.
+
+  Note: This is sent only in the first stream chunk and only if no candidates
+  were generated due to content violations.
+  """
 
   block_reason: Optional[BlockedReason] = Field(
-      default=None, description="""Output only. Blocked reason."""
+      default=None,
+      description="""Output only. The reason why the prompt was blocked.""",
   )
   block_reason_message: Optional[str] = Field(
       default=None,
-      description="""Output only. A readable block reason message.""",
+      description="""Output only. A readable message that explains the reason why the prompt was blocked.""",
   )
   safety_ratings: Optional[list[SafetyRating]] = Field(
-      default=None, description="""Output only. Safety ratings."""
+      default=None,
+      description="""Output only. A list of safety ratings for the prompt. There is one rating per category.""",
   )
 
 
 class GenerateContentResponsePromptFeedbackDict(TypedDict, total=False):
-  """Content filter results for a prompt sent in the request."""
+  """Content filter results for a prompt sent in the request.
+
+  Note: This is sent only in the first stream chunk and only if no candidates
+  were generated due to content violations.
+  """
 
   block_reason: Optional[BlockedReason]
-  """Output only. Blocked reason."""
+  """Output only. The reason why the prompt was blocked."""
 
   block_reason_message: Optional[str]
-  """Output only. A readable block reason message."""
+  """Output only. A readable message that explains the reason why the prompt was blocked."""
 
   safety_ratings: Optional[list[SafetyRatingDict]]
-  """Output only. Safety ratings."""
+  """Output only. A list of safety ratings for the prompt. There is one rating per category."""
 
 
 GenerateContentResponsePromptFeedbackOrDict = Union[
@@ -10916,7 +10932,7 @@ class TuningValidationDataset(_common.BaseModel):
   )
   vertex_dataset_resource: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+      description="""The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
 
 
@@ -10926,7 +10942,7 @@ class TuningValidationDatasetDict(TypedDict, total=False):
   """GCS URI of the file containing validation dataset in JSONL format."""
 
   vertex_dataset_resource: Optional[str]
-  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
+  """The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
 
 TuningValidationDatasetOrDict = Union[
@@ -10942,7 +10958,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
-      description="""Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+      description="""Validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
   )
   tuned_model_display_name: Optional[str] = Field(
       default=None,
@@ -10994,7 +11010,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
-  """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+  """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
 
   tuned_model_display_name: Optional[str]
   """The display name of the tuned Model. The name can be up to 128 characters long and can consist of any UTF-8 characters."""

@@ -700,3 +700,48 @@ async def test_text_to_video_poll_async(client):
     operation = await client.aio.operations.get(operation=operation)
 
   assert operation.result.generated_videos[0].video.uri
+
+
+@pytest.mark.asyncio
+async def test_generated_video_extension_from_source_poll_async(client):
+  # Gemini API only supports video extension on generated videos.
+  if client.vertexai:
+    return
+
+  operation1 = await client.aio.models.generate_videos(
+      model="veo-3.1-generate-preview",
+      prompt="Rain",
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation1.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation1 = await client.aio.operations.get(operation=operation1)
+
+  video1 = operation1.result.generated_videos[0].video
+  assert video1.uri
+  assert await client.aio.files.download(file=video1)
+
+  operation2 = await client.aio.models.generate_videos(
+      model="veo-3.1-generate-preview",
+      source=types.GenerateVideosSource(
+          prompt="Sun",
+          video=video1
+      ),
+      config=types.GenerateVideosConfig(
+          number_of_videos=1,
+      ),
+  )
+  while not operation2.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation2 = await client.aio.operations.get(operation=operation2)
+
+  video2 = operation2.result.generated_videos[0].video
+  assert video2.uri
+  assert await client.aio.files.download(file=video2)
+
