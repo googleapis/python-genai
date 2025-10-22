@@ -167,14 +167,14 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
-    )
-
   if getv(from_object, ['exclude_domains']) is not None:
     raise ValueError(
         'exclude_domains parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
     )
 
   return to_object
@@ -442,23 +442,11 @@ def _Tool_to_mldev(
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
-    )
-
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
         ['googleSearchRetrieval'],
         getv(from_object, ['google_search_retrieval']),
-    )
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['google_maps']) is not None:
@@ -468,13 +456,25 @@ def _Tool_to_mldev(
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
-  if getv(from_object, ['url_context']) is not None:
-    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
-
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
+
+  if getv(from_object, ['url_context']) is not None:
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   return to_object
