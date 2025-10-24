@@ -80,7 +80,7 @@ libraries and SDKs.
 -   **Incorrect:** `import google.generativeai as genai` -> **Correct:** `from
     google import genai`
 -   **Incorrect:** `genai.configure(api_key=...)` -> **Correct:** `client =
-    genai.Client(api_key="...")`
+    genai.Client(api_key='...')`
 -   **Incorrect:** `model = genai.GenerativeModel(...)`
 -   **Incorrect:** `model.generate_content(...)` -> **Correct:**
     `client.models.generate_content(...)`
@@ -107,15 +107,18 @@ The `google-genai` library requires creating a client object for all API calls.
 -   By default, use the following models when using `google-genai`:
     -   **General Text & Multimodal Tasks:** `gemini-2.5-flash`
     -   **Coding and Complex Reasoning Tasks:** `gemini-2.5-pro`
-    -   **Image Generation Tasks:** `imagen-4.0-fast-generate-001`,
-        `imagen-4.0-generate-001` or `imagen-4.0-ultra-generate-001`
-    -   **Image Editing Tasks:** `gemini-2.5-flash-image-preview`
-    -   **Video Generation Tasks:** `veo-3.0-fast-generate-preview` or
-        `veo-3.0-generate-preview`.
+    -   **Low Latency & High Volume Tasks:** `gemini-2.5-flash-lite`
+    -   **Image Editing and Manipulation:** `gemini-2.5-flash-image`
+    -   **High-Quality Image Generation:** `imagen-4.0-generate-001`
+    -   **Rapid Image Generation:** `imagen-4.0-fast-generate-001`
+    -   **Advanced Image Generation:** `imagen-4.0-ultra-generate-001`
+    -   **High-Fidelity Video Generation:** `veo-3.0-generate-001` or `veo-3.1-generate-preview`
+    -   **Fast Video Generation:** `veo-3.0-fast-generate-001` or `veo-3.1-fast-generate-preview`
+    -   **Advanced Video Editing Tasks:** `veo-3.1-generate-preview`
 
 -   It is also acceptable to use following models if explicitly requested by the
     user:
-    -   **Gemini 2.0 Series**: `gemini-2.0-flash`, `gemini-2.0-pro`
+    -   **Gemini 2.0 Series**: `gemini-2.0-flash`, `gemini-2.0-flash-lite`
 
 -   Do not use the following deprecated models (or their variants like
     `gemini-1.5-flash-latest`):
@@ -133,14 +136,14 @@ from google import genai
 client = genai.Client()
 
 response = client.models.generate_content(
-  model='gemini-2.5-flash',
-  contents='why is the sky blue?',
+    model='gemini-2.5-flash',
+    contents='why is the sky blue?',
 )
 
 print(response.text) # output is often markdown
 ```
 
-Multimodal inputs are supported by passing a PIL-Image in the `contents` list:
+Multimodal inputs are supported by passing a PIL Image in the `contents` list:
 
 ```python
 from google import genai
@@ -151,8 +154,8 @@ client = genai.Client()
 image = Image.open(img_path)
 
 response = client.models.generate_content(
-  model='gemini-2.5-flash',
-  contents=[image, "explain that image"],
+    model='gemini-2.5-flash',
+    contents=[image, 'explain that image'],
 )
 
 print(response.text) # The output often is markdown
@@ -164,21 +167,21 @@ audio, video, pdf).
 ```python
 from google.genai import types
 
-  with open('path/to/small-sample.jpg', 'rb') as f:
+with open('path/to/small-sample.jpg', 'rb') as f:
     image_bytes = f.read()
 
-  response = client.models.generate_content(
+response = client.models.generate_content(
     model='gemini-2.5-flash',
     contents=[
-      types.Part.from_bytes(
-        data=image_bytes,
-        mime_type='image/jpeg',
-      ),
-      'Caption this image.'
+        types.Part.from_bytes(
+            data=image_bytes,
+            mime_type='image/jpeg',
+        ),
+        'Caption this image.'
     ]
-  )
+)
 
-  print(response.text)
+print(response.text)
 ```
 
 For larger files, use `client.files.upload`:
@@ -188,7 +191,7 @@ f = client.files.upload(file=img_path)
 
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    contents=[f, "can you describe this image?"]
+    contents=[f, 'can you describe this image?']
 )
 ```
 
@@ -216,13 +219,13 @@ from google.genai import types
 client = genai.Client()
 
 client.models.generate_content(
-  model='gemini-2.5-flash',
-  contents="What is AI?",
-  config=types.GenerateContentConfig(
-    thinking_config=types.ThinkingConfig(
-      thinking_budget=0
+    model='gemini-2.5-flash',
+    contents='What is AI?',
+    config=types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(
+            thinking_budget=0
+        )
     )
-  )
 )
 ```
 
@@ -246,7 +249,7 @@ from google.genai import types
 client = genai.Client()
 
 config = types.GenerateContentConfig(
-    system_instruction="You are a pirate",
+    system_instruction='You are a pirate',
 )
 
 response = client.models.generate_content(
@@ -272,20 +275,21 @@ explicitly asked for by the user, here is a sample API:
 ```python
 from google import genai
 from google.genai import types
+from PIL import Image
 
 client = genai.Client()
 
-img = Image.open("/path/to/img")
+img = Image.open('/path/to/img')
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model='gemini-2.0-flash',
     contents=['Do these look store-bought or homemade?', img],
     config=types.GenerateContentConfig(
-      safety_settings=[
-        types.SafetySetting(
-            category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-        ),
-      ]
+        safety_settings=[
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+            ),
+        ]
     )
 )
 
@@ -302,11 +306,11 @@ from google import genai
 client = genai.Client()
 
 response = client.models.generate_content_stream(
-    model="gemini-2.5-flash",
-    contents=["Explain how AI works"]
+    model='gemini-2.5-flash',
+    contents=['Explain how AI works']
 )
 for chunk in response:
-    print(chunk.text, end="")
+    print(chunk.text, end='')
 ```
 
 ### Chat
@@ -318,16 +322,16 @@ history.
 from google import genai
 
 client = genai.Client()
-chat = client.chats.create(model="gemini-2.5-flash")
+chat = client.chats.create(model='gemini-2.5-flash')
 
-response = chat.send_message("I have 2 dogs in my house.")
+response = chat.send_message('I have 2 dogs in my house.')
 print(response.text)
 
-response = chat.send_message("How many paws are in my house?")
+response = chat.send_message('How many paws are in my house?')
 print(response.text)
 
 for message in chat.get_history():
-    print(f'role - {message.role}',end=": ")
+    print(f'role - {message.role}', end=': ')
     print(message.parts[0].text)
 ```
 
@@ -353,9 +357,9 @@ class Recipe(BaseModel):
 # Request the model to populate the schema
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    contents="Provide a classic recipe for chocolate chip cookies.",
+    contents='Provide a classic recipe for chocolate chip cookies.',
     config=types.GenerateContentConfig(
-        response_mime_type="application/json",
+        response_mime_type='application/json',
         response_schema=Recipe,
     ),
 )
@@ -378,27 +382,27 @@ client = genai.Client()
 # Define a function that the model can call (to access external information)
 def get_current_weather(city: str) -> str:
     """Returns the current weather in a given city. For this example, it's hardcoded."""
-    if "boston" in city.lower():
-        return "The weather in Boston is 15°C and sunny."
+    if 'boston' in city.lower():
+        return 'The weather in Boston is 15°C and sunny.'
     else:
-        return f"Weather data for {city} is not available."
+        return f'Weather data for {city} is not available.'
 
 # Make the function available to the model as a tool
 response = client.models.generate_content(
-  model='gemini-2.5-flash',
-  contents="What is the weather like in Boston?",
-  config=types.GenerateContentConfig(
-      tools=[get_current_weather]
-  ),
+    model='gemini-2.5-flash',
+    contents='What is the weather like in Boston?',
+    config=types.GenerateContentConfig(
+        tools=[get_current_weather]
+    ),
 )
 # The model may respond with a request to call the function
 if response.function_calls:
-    print("Function calls requested by the model:")
+    print('Function calls requested by the model:')
     for function_call in response.function_calls:
-        print(f"- Function: {function_call.name}")
-        print(f"- Args: {dict(function_call.args)}")
+        print(f'- Function: {function_call.name}')
+        print(f'- Args: {dict(function_call.args)}')
 else:
-    print("The model responded directly:")
+    print('The model responded directly:')
     print(response.text)
 ```
 
@@ -410,6 +414,7 @@ models for advanced use-cases.
 
 ```python
 from google import genai
+from google.genai import types
 from PIL import Image
 from io import BytesIO
 
@@ -417,17 +422,17 @@ client = genai.Client()
 
 result = client.models.generate_images(
     model='imagen-4.0-fast-generate-001',
-    prompt="Image of a cat",
-    config=dict(
+    prompt='Image of a cat',
+    config=types.GenerateImagesConfig(
         number_of_images=1, # 1 to 4 (always 1 for the ultra model)
-        output_mime_type="image/jpeg",
-        person_generation="ALLOW_ADULT" # 'ALLOW_ALL' (but not in Europe/Mena), 'DONT_ALLOW' or 'ALLOW_ADULT'
-        aspect_ratio="1:1" # "1:1", "3:4", "4:3", "9:16", or "16:9"
+        output_mime_type='image/jpeg',
+        person_generation='ALLOW_ADULT', # 'ALLOW_ALL' (but not in Europe/Mena), 'DONT_ALLOW' or 'ALLOW_ADULT'
+        aspect_ratio='1:1' # '1:1', '3:4', '4:3', '9:16', or '16:9'
     )
 )
 
 for generated_image in result.generated_images:
-   image = Image.open(BytesIO(generated_image.image.image_bytes))
+    image = Image.open(BytesIO(generated_image.image.image_bytes))
 ```
 
 ### Edit images
@@ -444,25 +449,25 @@ from io import BytesIO
 client = genai.Client()
 
 prompt = """
-  Create a picture of my cat eating a nano-banana in a fancy restaurant under the gemini constellation
+Create a picture of my cat eating a nano-banana in a fancy restaurant under the gemini constellation
 """
-image = PIL.Image.open('/path/to/image.png')
+image = Image.open('/path/to/image.png')
 
 # Create the chat
-chat = client.chats.create(model="gemini-2.5-flash-image-preview
+chat = client.chats.create(model='gemini-2.5-flash-image')
 # Send the image and ask for it to be edited
 response = chat.send_message([prompt, image])
 
 # Get the text and the image generated
 for i, part in enumerate(response.candidates[0].content.parts):
-  if part.text is not None:
-    print(part.text)
-  elif part.inline_data is not None:
-    image = Image.open(BytesIO(part.inline_data.data))
-    image.save(f"generated_image_{i}.png") # Multiple images can be generated
+    if part.text is not None:
+        print(part.text)
+    elif part.inline_data is not None:
+        image = Image.open(BytesIO(part.inline_data.data))
+        image.save(f'generated_image_{i}.png') # Multiple images can be generated
 
 # Continue iterating
-chat.send_message("Can you make it a bananas foster?")
+chat.send_message('Can you make it a bananas foster?')
 ```
 
 ### Generate Videos
@@ -480,15 +485,15 @@ from PIL import Image
 
 client = genai.Client()
 
-PIL_image = Image.open("path/to/image.png") # Optional
+image = Image.open('path/to/image.png') # Optional
 
 operation = client.models.generate_videos(
-    model="veo-3.0-fast-generate-preview",
-    prompt="Panning wide shot of a calico kitten sleeping in the sunshine",
-    image = PIL_image,
+    model='veo-3.0-fast-generate-001',
+    prompt='Panning wide shot of a calico kitten sleeping in the sunshine',
+    image=image,
     config=types.GenerateVideosConfig(
-        person_generation="dont_allow",  # "dont_allow" or "allow_adult"
-        aspect_ratio="16:9",  # "16:9" or "9:16"
+        person_generation='dont_allow',  # 'dont_allow' or 'allow_adult'
+        aspect_ratio='16:9',  # '16:9' or '9:16'
         number_of_videos=1, # supported value is 1-4, use 1 by default
         duration_seconds=8, # supported value is 5-8
     ),
@@ -500,8 +505,7 @@ while not operation.done:
 
 for n, generated_video in enumerate(operation.response.generated_videos):
     client.files.download(file=generated_video.video) # just file=, no need for path= as it doesn't save yet
-    generated_video.video.save(f"video{n}.mp4")  # saves the video
-
+    generated_video.video.save(f'video{n}.mp4')  # saves the video
 ```
 
 ### Search Grounding
@@ -513,19 +517,24 @@ information from the web.
 
 ```python
 from google import genai
+from google.genai import types
 
 client = genai.Client()
 
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    contents='What was the score of the latest Olympique Lyonais' game?',
-    config={"tools": [{"google_search": {}}]},
+    contents='What was the score of the latest Olympique Lyonais game?',
+    config=types.GenerateContentConfig(
+        tools=[
+            types.Tool(google_search=types.GoogleSearch())
+        ]
+    ),
 )
 
 # Response
-print(f"Response:\n {response.text}")
+print(f'Response:\n {response.text}')
 # Search details
-print(f"Search Query: {response.candidates[0].grounding_metadata.web_search_queries}")
+print(f'Search Query: {response.candidates[0].grounding_metadata.web_search_queries}')
 # Urls used for grounding
 print(f"Search Pages: {', '.join([site.web.title for site in response.candidates[0].grounding_metadata.grounding_chunks])}")
 ```
@@ -548,8 +557,8 @@ from google import genai
 client = genai.Client()
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents="How does AI work?"
+    model='gemini-2.5-flash',
+    contents='How does AI work?'
 )
 print(response.text)
 ```
@@ -563,9 +572,9 @@ from google.genai import types
 client = genai.Client()
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model='gemini-2.5-flash',
     contents=[
-      types.Content(role="user", parts=[types.Part.from_text(text="How does AI work?")]),
+        types.Content(role='user', parts=[types.Part.from_text(text='How does AI work?')]),
     ]
 )
 print(response.text)

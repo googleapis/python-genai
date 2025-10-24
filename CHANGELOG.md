@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.46.0](https://github.com/googleapis/python-genai/compare/v1.45.0...v1.46.0) (2025-10-21)
+
+
+### Features
+
+* Add enable_enhanced_civic_answers in GenerationConfig ([6c1dae7](https://github.com/googleapis/python-genai/commit/6c1dae79846f293bed19315402351fdf2db8a5a9))
+* Support custom httpx clients ([694a6bd](https://github.com/googleapis/python-genai/commit/694a6bdc290f7fc089eb86266c24ad256a7c147d))
+* Support jailbreak in HarmCategory and BlockedReason ([011e218](https://github.com/googleapis/python-genai/commit/011e218b8d06444c848fbc8ba11c01608ff2d613))
+
+
+### Bug Fixes
+
+* Remove bytes for Gemini Developer API before sending a video for Veo Video Extension async ([9ccc6ce](https://github.com/googleapis/python-genai/commit/9ccc6cea798d3a43f5a29f288accf823c4400884))
+
+
+### Documentation
+
+* Regenerate docs for 1.45.0 ([9b7632d](https://github.com/googleapis/python-genai/commit/9b7632d95c02720f2ed5551d2605a715c08ebe8a))
+* Update README with Gempix example (nano-banana) ([ac2bc42](https://github.com/googleapis/python-genai/commit/ac2bc4205a66d13a3f4bc2bcf41f3e315224ffc1))
+
+## [1.45.0](https://github.com/googleapis/python-genai/compare/v1.44.0...v1.45.0) (2025-10-15)
+
+
+### Features
+
+* Add support for Python 3.14. ([f0083a2](https://github.com/googleapis/python-genai/commit/f0083a2ee31ba99c63117b5c02982d2648f6f5cc))
+
+
+### Bug Fixes
+
+* Keys in Live API tool responses are incorrectly re-cased ([57a4765](https://github.com/googleapis/python-genai/commit/57a4765b6690c246345ef33e49c1f05a3e2f73e4))
+
+## [1.44.0](https://github.com/googleapis/python-genai/compare/v1.43.0...v1.44.0) (2025-10-15)
+
+
+### Features
+
+* Support fully override base_url and raw model name when none of the project, locations, api_key are configured ([160997e](https://github.com/googleapis/python-genai/commit/160997e7c06d81ef0d9116bdf8043f340e84b141))
+* Support video extension for Veo on Gemini Developer API ([341ea77](https://github.com/googleapis/python-genai/commit/341ea77f97c6eab50b75c96505141cc10df14880))
+
+
+### Bug Fixes
+
+* Avoid potential dual import confusion in type assert ([9cc4a72](https://github.com/googleapis/python-genai/commit/9cc4a724053031eeab0e9dcd7ee1f2322045d0e3))
+
+
+### Documentation
+
+* Refresh docs. ([9c8147b](https://github.com/googleapis/python-genai/commit/9c8147bfd29af8c409589eefdf75a3134f56e5f7))
+
 ## [1.43.0](https://github.com/googleapis/python-genai/compare/v1.42.0...v1.43.0) (2025-10-10)
 
 

@@ -2262,11 +2262,11 @@ def _GeneratedVideo_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
+  if getv(from_object, ['video']) is not None:
     setv(
         to_object,
         ['video'],
-        _Video_from_mldev(getv(from_object, ['_self']), to_object),
+        _Video_from_mldev(getv(from_object, ['video']), to_object),
     )
 
   return to_object
@@ -2397,6 +2397,11 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['top_p']) is not None:
     setv(to_object, ['topP'], getv(from_object, ['top_p']))
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    raise ValueError(
+        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+    )
 
   return to_object
 
@@ -3680,14 +3685,14 @@ def _Video_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video', 'uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
 
-  if getv(from_object, ['video', 'encodedVideo']) is not None:
+  if getv(from_object, ['encodedVideo']) is not None:
     setv(
         to_object,
         ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
+        base_t.t_bytes(getv(from_object, ['encodedVideo'])),
     )
 
   if getv(from_object, ['encoding']) is not None:
@@ -3723,12 +3728,12 @@ def _Video_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['video', 'uri'], getv(from_object, ['uri']))
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
 
   if getv(from_object, ['video_bytes']) is not None:
     setv(
         to_object,
-        ['video', 'encodedVideo'],
+        ['encodedVideo'],
         base_t.t_bytes(getv(from_object, ['video_bytes'])),
     )
 
@@ -5448,6 +5453,36 @@ class Models(_api_module.BaseModule):
           'Source and prompt/image/video are mutually exclusive.'
           + ' Please only use source.'
       )
+    # Gemini Developer API does not support video bytes.
+    video_dct: dict[str, Any] = {}
+    if not self._api_client.vertexai and video:
+      if isinstance(video, types.Video):
+        video_dct = video.model_dump()
+      else:
+        video_dct = dict(video)
+
+      if video_dct.get('uri') and video_dct.get('video_bytes'):
+        video = types.Video(
+            uri=video_dct.get('uri'), mime_type=video_dct.get('mime_type')
+        )
+    elif not self._api_client.vertexai and source:
+      if isinstance(source, types.GenerateVideosSource):
+        source_dct = source.model_dump()
+        video_dct = source_dct.get('video', {})
+      else:
+        source_dct = dict(source)
+        if isinstance(source_dct.get('video'), types.Video):
+          video_obj: types.Video = source_dct.get('video', types.Video())
+          video_dct = video_obj.model_dump()
+      if video_dct and video_dct.get('uri') and video_dct.get('video_bytes'):
+        source = types.GenerateVideosSource(
+            prompt=source_dct.get('prompt'),
+            image=source_dct.get('image'),
+            video=types.Video(
+                uri=video_dct.get('uri'),
+                mime_type=video_dct.get('mime_type'),
+            ),
+        )
     return self._generate_videos(
         model=model,
         prompt=prompt,
@@ -6826,7 +6861,7 @@ class AsyncModels(_api_module.BaseModule):
       # * Everlasting Florals
       # * Timeless Petals
 
-      async for chunk in awiat client.aio.models.generate_content_stream(
+      async for chunk in await client.aio.models.generate_content_stream(
         model='gemini-2.0-flash',
         contents=[
           types.Part.from_text('What is shown in this image?'),
@@ -6868,9 +6903,11 @@ class AsyncModels(_api_module.BaseModule):
         response = await self._generate_content_stream(
             model=model, contents=contents, config=config
         )
-        logger.info(f'AFC remote call {i} is done.')
+        # TODO: b/453739108 - make AFC logic more robust like the other 3 methods.
+        if i > 1:
+          logger.info(f'AFC remote call {i} is done.')
         remaining_remote_calls_afc -= 1
-        if remaining_remote_calls_afc == 0:
+        if i > 1 and remaining_remote_calls_afc == 0:
           logger.info(
               'Reached max remote calls for automatic function calling.'
           )
@@ -7240,6 +7277,36 @@ class AsyncModels(_api_module.BaseModule):
           'Source and prompt/image/video are mutually exclusive.'
           + ' Please only use source.'
       )
+    # Gemini Developer API does not support video bytes.
+    video_dct: dict[str, Any] = {}
+    if not self._api_client.vertexai and video:
+      if isinstance(video, types.Video):
+        video_dct = video.model_dump()
+      else:
+        video_dct = dict(video)
+
+      if video_dct.get('uri') and video_dct.get('video_bytes'):
+        video = types.Video(
+            uri=video_dct.get('uri'), mime_type=video_dct.get('mime_type')
+        )
+    elif not self._api_client.vertexai and source:
+      if isinstance(source, types.GenerateVideosSource):
+        source_dct = source.model_dump()
+        video_dct = source_dct.get('video', {})
+      else:
+        source_dct = dict(source)
+        if isinstance(source_dct.get('video'), types.Video):
+          video_obj: types.Video = source_dct.get('video', types.Video())
+          video_dct = video_obj.model_dump()
+      if video_dct and video_dct.get('uri') and video_dct.get('video_bytes'):
+        source = types.GenerateVideosSource(
+            prompt=source_dct.get('prompt'),
+            image=source_dct.get('image'),
+            video=types.Video(
+                uri=video_dct.get('uri'),
+                mime_type=video_dct.get('mime_type'),
+            ),
+        )
     return await self._generate_videos(
         model=model,
         prompt=prompt,

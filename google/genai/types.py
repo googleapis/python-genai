@@ -89,6 +89,27 @@ else:
   except ImportError:
     yaml = None
 
+_is_httpx_imported = False
+if typing.TYPE_CHECKING:
+  import httpx
+
+  HttpxClient = httpx.Client
+  HttpxAsyncClient = httpx.AsyncClient
+  _is_httpx_imported = True
+else:
+  HttpxClient: typing.Type = Any
+  HttpxAsyncClient: typing.Type = Any
+
+  try:
+    import httpx
+
+    HttpxClient = httpx.Client
+    HttpxAsyncClient = httpx.AsyncClient
+    _is_httpx_imported = True
+  except ImportError:
+    HttpxClient = None
+    HttpxAsyncClient = None
+
 logger = logging.getLogger('google_genai.types')
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
@@ -118,6 +139,19 @@ class Language(_common.CaseInSensitiveEnum):
   """Python >= 3.10, with numpy and simpy available."""
 
 
+class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
+  """Specifies how the response should be scheduled in the conversation."""
+
+  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
+  """This value is unused."""
+  SILENT = 'SILENT'
+  """Only add the result to the conversation context, do not interrupt or trigger generation."""
+  WHEN_IDLE = 'WHEN_IDLE'
+  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
+  INTERRUPT = 'INTERRUPT'
+  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
+
+
 class Type(_common.CaseInSensitiveEnum):
   """Optional. The type of the data."""
 
@@ -144,28 +178,30 @@ class HarmCategory(_common.CaseInSensitiveEnum):
 
   HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
   """The harm category is unspecified."""
-  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
-  """The harm category is hate speech."""
-  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
-  """The harm category is dangerous content."""
   HARM_CATEGORY_HARASSMENT = 'HARM_CATEGORY_HARASSMENT'
   """The harm category is harassment."""
+  HARM_CATEGORY_HATE_SPEECH = 'HARM_CATEGORY_HATE_SPEECH'
+  """The harm category is hate speech."""
   HARM_CATEGORY_SEXUALLY_EXPLICIT = 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
   """The harm category is sexually explicit content."""
+  HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT'
+  """The harm category is dangerous content."""
   HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
   """Deprecated: Election filter is not longer supported. The harm category is civic integrity."""
   HARM_CATEGORY_IMAGE_HATE = 'HARM_CATEGORY_IMAGE_HATE'
-  """The harm category is image hate."""
+  """The harm category is image hate. This enum value is not supported in Gemini API."""
   HARM_CATEGORY_IMAGE_DANGEROUS_CONTENT = (
       'HARM_CATEGORY_IMAGE_DANGEROUS_CONTENT'
   )
-  """The harm category is image dangerous content."""
+  """The harm category is image dangerous content. This enum value is not supported in Gemini API."""
   HARM_CATEGORY_IMAGE_HARASSMENT = 'HARM_CATEGORY_IMAGE_HARASSMENT'
-  """The harm category is image harassment."""
+  """The harm category is image harassment. This enum value is not supported in Gemini API."""
   HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT = (
       'HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT'
   )
-  """The harm category is image sexually explicit content."""
+  """The harm category is image sexually explicit content. This enum value is not supported in Gemini API."""
+  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
+  """The harm category is for jailbreak prompts. This enum value is not supported in Gemini API."""
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
@@ -322,20 +358,24 @@ class HarmSeverity(_common.CaseInSensitiveEnum):
 
 
 class BlockedReason(_common.CaseInSensitiveEnum):
-  """Output only. Blocked reason."""
+  """Output only. The reason why the prompt was blocked."""
 
   BLOCKED_REASON_UNSPECIFIED = 'BLOCKED_REASON_UNSPECIFIED'
-  """Unspecified blocked reason."""
+  """The blocked reason is unspecified."""
   SAFETY = 'SAFETY'
-  """Candidates blocked due to safety."""
+  """The prompt was blocked for safety reasons."""
   OTHER = 'OTHER'
-  """Candidates blocked due to other reason."""
+  """The prompt was blocked for other reasons. For example, it may be due to the prompt's language, or because it contains other harmful content."""
   BLOCKLIST = 'BLOCKLIST'
-  """Candidates blocked due to the terms which are included from the terminology blocklist."""
+  """The prompt was blocked because it contains a term from the terminology blocklist."""
   PROHIBITED_CONTENT = 'PROHIBITED_CONTENT'
-  """Candidates blocked due to prohibited content."""
+  """The prompt was blocked because it contains prohibited content."""
   IMAGE_SAFETY = 'IMAGE_SAFETY'
-  """Candidates blocked due to unsafe image generation content."""
+  """The prompt was blocked because it contains content that is unsafe for image generation."""
+  MODEL_ARMOR = 'MODEL_ARMOR'
+  """The prompt was blocked by Model Armor. This enum value is not supported in Gemini API."""
+  JAILBREAK = 'JAILBREAK'
+  """The prompt was blocked as a jailbreak attempt. This enum value is not supported in Gemini API."""
 
 
 class TrafficType(_common.CaseInSensitiveEnum):
@@ -700,19 +740,6 @@ class MediaModality(_common.CaseInSensitiveEnum):
   """Audio."""
   DOCUMENT = 'DOCUMENT'
   """Document, e.g. PDF."""
-
-
-class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
-  """Specifies how the response should be scheduled in the conversation."""
-
-  SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
-  """This value is unused."""
-  SILENT = 'SILENT'
-  """Only add the result to the conversation context, do not interrupt or trigger generation."""
-  WHEN_IDLE = 'WHEN_IDLE'
-  """Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation."""
-  INTERRUPT = 'INTERRUPT'
-  """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
 
 
 class StartSensitivity(_common.CaseInSensitiveEnum):
@@ -1530,6 +1557,15 @@ class HttpOptions(_common.BaseModel):
       default=None, description="""HTTP retry options for the request."""
   )
 
+  httpx_client: Optional['HttpxClient'] = Field(
+      default=None,
+      description="""A custom httpx client to be used for the request.""",
+  )
+  httpx_async_client: Optional['HttpxAsyncClient'] = Field(
+      default=None,
+      description="""A custom httpx async client to be used for the request.""",
+  )
+
 
 class HttpOptionsDict(TypedDict, total=False):
   """HTTP options to be used in each of the requests."""
@@ -1696,6 +1732,10 @@ class JSONSchema(_common.BaseModel):
           ' matches the instance successfully.'
       ),
   )
+  additional_properties: Optional[Any] = Field(
+      default=None,
+      description="""Can either be a boolean or an object; controls the presence of additional properties.""",
+  )
   any_of: Optional[list['JSONSchema']] = Field(
       default=None,
       description=(
@@ -1703,6 +1743,20 @@ class JSONSchema(_common.BaseModel):
           ' validates successfully against at least one schema defined by this'
           ' keyword’s value.'
       ),
+  )
+  unique_items: Optional[bool] = Field(
+      default=None,
+      description="""Boolean value that indicates whether the items in an array are unique.""",
+  )
+  ref: Optional[str] = Field(
+      default=None,
+      alias='$ref',
+      description="""Allows indirect references between schema nodes.""",
+  )
+  defs: Optional[dict[str, 'JSONSchema']] = Field(
+      default=None,
+      alias='$defs',
+      description="""Schema definitions to be used with $ref.""",
   )
 
 
@@ -1915,7 +1969,7 @@ class Schema(_common.BaseModel):
     list_schema_field_names: tuple[str, ...] = (
         'any_of',  # 'one_of', 'all_of', 'not' to come
     )
-    dict_schema_field_names: tuple[str, ...] = ('properties',)  # 'defs' to come
+    dict_schema_field_names: tuple[str, ...] = ('properties',)
 
     related_field_names_by_type: dict[str, tuple[str, ...]] = {
         JSONSchemaType.NUMBER.value: (
@@ -1964,6 +2018,23 @@ class Schema(_common.BaseModel):
     # placeholder for potential gemini api unsupported fields
     gemini_api_unsupported_field_names: tuple[str, ...] = ()
 
+    def _resolve_ref(
+        ref_path: str, root_schema_dict: dict[str, Any]
+    ) -> dict[str, Any]:
+      """Helper to resolve a $ref path."""
+      current = root_schema_dict
+      for part in ref_path.lstrip('#/').split('/'):
+        if part == '$defs':
+          part = 'defs'
+        current = current[part]
+      current.pop('title', None)
+      if 'properties' in current and current['properties'] is not None:
+        for prop_schema in current['properties'].values():
+          if isinstance(prop_schema, dict):
+            prop_schema.pop('title', None)
+
+      return current
+
     def normalize_json_schema_type(
         json_schema_type: Optional[
             Union[JSONSchemaType, Sequence[JSONSchemaType], str, Sequence[str]]
@@ -1972,11 +2043,16 @@ class Schema(_common.BaseModel):
       """Returns (non_null_types, nullable)"""
       if json_schema_type is None:
         return [], False
-      if not isinstance(json_schema_type, Sequence):
-        json_schema_type = [json_schema_type]
+      type_sequence: Sequence[Union[JSONSchemaType, str]]
+      if isinstance(json_schema_type, str) or not isinstance(
+          json_schema_type, Sequence
+      ):
+        type_sequence = [json_schema_type]
+      else:
+        type_sequence = json_schema_type
       non_null_types = []
       nullable = False
-      for type_value in json_schema_type:
+      for type_value in type_sequence:
         if isinstance(type_value, JSONSchemaType):
           type_value = type_value.value
         if type_value == JSONSchemaType.NULL.value:
@@ -1996,7 +2072,10 @@ class Schema(_common.BaseModel):
       for field_name, field_value in json_schema_dict.items():
         if field_value is None:
           continue
-        if field_name not in google_schema_field_names:
+        if field_name not in google_schema_field_names and field_name not in [
+            'ref',
+            'defs',
+        ]:
           raise ValueError(
               f'JSONSchema field "{field_name}" is not supported by the '
               'Schema object. And the "raise_error_on_unsupported_field" '
@@ -2026,12 +2105,19 @@ class Schema(_common.BaseModel):
         )
 
     def convert_json_schema(
-        json_schema: JSONSchema,
+        current_json_schema: JSONSchema,
+        root_json_schema_dict: dict[str, Any],
         api_option: Literal['VERTEX_AI', 'GEMINI_API'],
         raise_error_on_unsupported_field: bool,
     ) -> 'Schema':
       schema = Schema()
-      json_schema_dict = json_schema.model_dump()
+      json_schema_dict = current_json_schema.model_dump()
+
+      if json_schema_dict.get('ref'):
+        json_schema_dict = _resolve_ref(
+            json_schema_dict['ref'], root_json_schema_dict
+        )
+
       raise_error_if_cannot_convert(
           json_schema_dict=json_schema_dict,
           api_option=api_option,
@@ -2057,6 +2143,7 @@ class Schema(_common.BaseModel):
       non_null_types, nullable = normalize_json_schema_type(
           json_schema_dict.get('type', None)
       )
+      is_union_like_type = len(non_null_types) > 1
       if len(non_null_types) > 1:
         logger.warning(
             'JSONSchema type is union-like, e.g. ["null", "string", "array"]. '
@@ -2086,11 +2173,14 @@ class Schema(_common.BaseModel):
       # Pass 2: the JSONSchema.type is not union-like,
       # e.g. 'string', ['string'], ['null', 'string'].
       for field_name, field_value in json_schema_dict.items():
-        if field_value is None:
+        if field_value is None or field_name == 'defs':
           continue
         if field_name in schema_field_names:
+          if field_name == 'items' and not field_value:
+            continue
           schema_field_value: 'Schema' = convert_json_schema(
-              json_schema=JSONSchema(**field_value),
+              current_json_schema=JSONSchema(**field_value),
+              root_json_schema_dict=root_json_schema_dict,
               api_option=api_option,
               raise_error_on_unsupported_field=raise_error_on_unsupported_field,
           )
@@ -2098,17 +2188,21 @@ class Schema(_common.BaseModel):
         elif field_name in list_schema_field_names:
           list_schema_field_value: list['Schema'] = [
               convert_json_schema(
-                  json_schema=JSONSchema(**this_field_value),
+                  current_json_schema=JSONSchema(**this_field_value),
+                  root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
               )
               for this_field_value in field_value
           ]
           setattr(schema, field_name, list_schema_field_value)
+          if not schema.type and not is_union_like_type:
+            schema.type = Type('OBJECT')
         elif field_name in dict_schema_field_names:
           dict_schema_field_value: dict[str, 'Schema'] = {
               key: convert_json_schema(
-                  json_schema=JSONSchema(**value),
+                  current_json_schema=JSONSchema(**value),
+                  root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
               )
@@ -2116,20 +2210,52 @@ class Schema(_common.BaseModel):
           }
           setattr(schema, field_name, dict_schema_field_value)
         elif field_name == 'type':
-          # non_null_types can only be empty or have one element.
-          # because already handled union-like case above.
           non_null_types, nullable = normalize_json_schema_type(field_value)
           if nullable:
             schema.nullable = True
           if non_null_types:
             schema.type = Type(non_null_types[0])
         else:
-          setattr(schema, field_name, field_value)
+          if (
+              hasattr(schema, field_name)
+              and field_name != 'additional_properties'
+          ):
+            setattr(schema, field_name, field_value)
+
+      if (
+          schema.type == 'ARRAY'
+          and schema.items
+          and not schema.items.model_dump(exclude_unset=True)
+      ):
+        schema.items = None
+
+      if schema.any_of and len(schema.any_of) == 2:
+        nullable_part = None
+        type_part = None
+        for part in schema.any_of:
+          # A schema representing `None` will either be of type NULL or just be nullable.
+          part_dict = part.model_dump(exclude_unset=True)
+          if part_dict == {'nullable': True} or part_dict == {'type': 'NULL'}:
+            nullable_part = part
+          else:
+            type_part = part
+
+        # If we found both parts, unwrap them into a single schema.
+        if nullable_part and type_part:
+          default_value = schema.default
+          schema = type_part
+          schema.nullable = True
+          # Carry the default value over to the unwrapped schema
+          if default_value is not None:
+            schema.default = default_value
 
       return schema
 
+    # This is the initial call to the recursive function.
+    root_schema_dict = json_schema.model_dump()
     return convert_json_schema(
-        json_schema=json_schema,
+        current_json_schema=json_schema,
+        root_json_schema_dict=root_schema_dict,
         api_option=api_option,
         raise_error_on_unsupported_field=raise_error_on_unsupported_field,
     )
@@ -2371,7 +2497,32 @@ class FunctionDeclaration(_common.BaseModel):
             json_schema_dict = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
                 json_schema_dict
             )
-            parameters_json_schema[name] = json_schema_dict
+            if 'prefixItems' in json_schema_dict:
+              parameters_json_schema[name] = json_schema_dict
+              continue
+
+            union_args = typing.get_args(param.annotation)
+            has_primitive = any(
+                _automatic_function_calling_util._is_builtin_primitive_or_compound(
+                    arg
+                )
+                for arg in union_args
+            )
+            if (
+                '$ref' in json_schema_dict or '$defs' in json_schema_dict
+            ) and has_primitive:
+              # This is a complex schema with a primitive (e.g., str | MyModel)
+              # that is better represented by raw JSON schema.
+              parameters_json_schema[name] = json_schema_dict
+              continue
+
+            schema = Schema.from_json_schema(
+                json_schema=JSONSchema(**json_schema_dict),
+                api_option=api_option,
+            )
+            if param.default is not inspect.Parameter.empty:
+              schema.default = param.default
+            parameters_properties[name] = schema
           except Exception as e:
             _automatic_function_calling_util._raise_for_unsupported_param(
                 param, callable.__name__, e
@@ -2557,8 +2708,7 @@ class GoogleSearch(_common.BaseModel):
   )
   exclude_domains: Optional[list[str]] = Field(
       default=None,
-      description="""Optional. List of domains to be excluded from the search results.
-      The default limit is 2000 domains.""",
+      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API.""",
   )
 
 
@@ -2571,8 +2721,7 @@ class GoogleSearchDict(TypedDict, total=False):
       """
 
   exclude_domains: Optional[list[str]]
-  """Optional. List of domains to be excluded from the search results.
-      The default limit is 2000 domains."""
+  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API."""
 
 
 GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
@@ -2666,7 +2815,10 @@ ApiKeyConfigOrDict = Union[ApiKeyConfig, ApiKeyConfigDict]
 
 
 class AuthConfigGoogleServiceAccountConfig(_common.BaseModel):
-  """Config for Google Service Account Authentication."""
+  """Config for Google Service Account Authentication.
+
+  This data type is not supported in Gemini API.
+  """
 
   service_account: Optional[str] = Field(
       default=None,
@@ -2675,7 +2827,10 @@ class AuthConfigGoogleServiceAccountConfig(_common.BaseModel):
 
 
 class AuthConfigGoogleServiceAccountConfigDict(TypedDict, total=False):
-  """Config for Google Service Account Authentication."""
+  """Config for Google Service Account Authentication.
+
+  This data type is not supported in Gemini API.
+  """
 
   service_account: Optional[str]
   """Optional. The service account that the extension execution service runs as. - If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified service account. - If not specified, the Vertex AI Extension Service Agent will be used to execute the Extension."""
@@ -2688,7 +2843,10 @@ AuthConfigGoogleServiceAccountConfigOrDict = Union[
 
 
 class AuthConfigHttpBasicAuthConfig(_common.BaseModel):
-  """Config for HTTP Basic Authentication."""
+  """Config for HTTP Basic Authentication.
+
+  This data type is not supported in Gemini API.
+  """
 
   credential_secret: Optional[str] = Field(
       default=None,
@@ -2697,7 +2855,10 @@ class AuthConfigHttpBasicAuthConfig(_common.BaseModel):
 
 
 class AuthConfigHttpBasicAuthConfigDict(TypedDict, total=False):
-  """Config for HTTP Basic Authentication."""
+  """Config for HTTP Basic Authentication.
+
+  This data type is not supported in Gemini API.
+  """
 
   credential_secret: Optional[str]
   """Required. The name of the SecretManager secret version resource storing the base64 encoded credentials. Format: `projects/{project}/secrets/{secrete}/versions/{version}` - If specified, the `secretmanager.versions.access` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified resource."""
@@ -2709,7 +2870,7 @@ AuthConfigHttpBasicAuthConfigOrDict = Union[
 
 
 class AuthConfigOauthConfig(_common.BaseModel):
-  """Config for user oauth."""
+  """Config for user oauth. This data type is not supported in Gemini API."""
 
   access_token: Optional[str] = Field(
       default=None,
@@ -2722,7 +2883,7 @@ class AuthConfigOauthConfig(_common.BaseModel):
 
 
 class AuthConfigOauthConfigDict(TypedDict, total=False):
-  """Config for user oauth."""
+  """Config for user oauth. This data type is not supported in Gemini API."""
 
   access_token: Optional[str]
   """Access token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time."""
@@ -2737,7 +2898,10 @@ AuthConfigOauthConfigOrDict = Union[
 
 
 class AuthConfigOidcConfig(_common.BaseModel):
-  """Config for user OIDC auth."""
+  """Config for user OIDC auth.
+
+  This data type is not supported in Gemini API.
+  """
 
   id_token: Optional[str] = Field(
       default=None,
@@ -2750,7 +2914,10 @@ class AuthConfigOidcConfig(_common.BaseModel):
 
 
 class AuthConfigOidcConfigDict(TypedDict, total=False):
-  """Config for user OIDC auth."""
+  """Config for user OIDC auth.
+
+  This data type is not supported in Gemini API.
+  """
 
   id_token: Optional[str]
   """OpenID Connect formatted ID token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time."""
@@ -2891,7 +3058,7 @@ ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
 
 
 class ApiAuthApiKeyConfig(_common.BaseModel):
-  """The API secret."""
+  """The API secret. This data type is not supported in Gemini API."""
 
   api_key_secret_version: Optional[str] = Field(
       default=None,
@@ -2904,7 +3071,7 @@ class ApiAuthApiKeyConfig(_common.BaseModel):
 
 
 class ApiAuthApiKeyConfigDict(TypedDict, total=False):
-  """The API secret."""
+  """The API secret. This data type is not supported in Gemini API."""
 
   api_key_secret_version: Optional[str]
   """Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}"""
@@ -2920,7 +3087,7 @@ class ApiAuth(_common.BaseModel):
   """The generic reusable api auth config.
 
   Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
-  instead.
+  instead. This data type is not supported in Gemini API.
   """
 
   api_key_config: Optional[ApiAuthApiKeyConfig] = Field(
@@ -2932,7 +3099,7 @@ class ApiAuthDict(TypedDict, total=False):
   """The generic reusable api auth config.
 
   Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
-  instead.
+  instead. This data type is not supported in Gemini API.
   """
 
   api_key_config: Optional[ApiAuthApiKeyConfigDict]
@@ -2943,7 +3110,10 @@ ApiAuthOrDict = Union[ApiAuth, ApiAuthDict]
 
 
 class ExternalApiElasticSearchParams(_common.BaseModel):
-  """The search parameters to use for the ELASTIC_SEARCH spec."""
+  """The search parameters to use for the ELASTIC_SEARCH spec.
+
+  This data type is not supported in Gemini API.
+  """
 
   index: Optional[str] = Field(
       default=None, description="""The ElasticSearch index to use."""
@@ -2958,7 +3128,10 @@ class ExternalApiElasticSearchParams(_common.BaseModel):
 
 
 class ExternalApiElasticSearchParamsDict(TypedDict, total=False):
-  """The search parameters to use for the ELASTIC_SEARCH spec."""
+  """The search parameters to use for the ELASTIC_SEARCH spec.
+
+  This data type is not supported in Gemini API.
+  """
 
   index: Optional[str]
   """The ElasticSearch index to use."""
@@ -2976,13 +3149,19 @@ ExternalApiElasticSearchParamsOrDict = Union[
 
 
 class ExternalApiSimpleSearchParams(_common.BaseModel):
-  """The search parameters to use for SIMPLE_SEARCH spec."""
+  """The search parameters to use for SIMPLE_SEARCH spec.
+
+  This data type is not supported in Gemini API.
+  """
 
   pass
 
 
 class ExternalApiSimpleSearchParamsDict(TypedDict, total=False):
-  """The search parameters to use for SIMPLE_SEARCH spec."""
+  """The search parameters to use for SIMPLE_SEARCH spec.
+
+  This data type is not supported in Gemini API.
+  """
 
   pass
 
@@ -2996,7 +3175,7 @@ class ExternalApi(_common.BaseModel):
   """Retrieve from data source powered by external API for grounding.
 
   The external API is not owned by Google, but need to follow the pre-defined
-  API spec.
+  API spec. This data type is not supported in Gemini API.
   """
 
   api_auth: Optional[ApiAuth] = Field(
@@ -3027,7 +3206,7 @@ class ExternalApiDict(TypedDict, total=False):
   """Retrieve from data source powered by external API for grounding.
 
   The external API is not owned by Google, but need to follow the pre-defined
-  API spec.
+  API spec. This data type is not supported in Gemini API.
   """
 
   api_auth: Optional[ApiAuthDict]
@@ -3056,7 +3235,8 @@ class VertexAISearchDataStoreSpec(_common.BaseModel):
   """Define data stores within engine to filter on in a search call and configurations for those data stores.
 
   For more information, see
-  https://cloud.google.com/generative-ai-app-builder/docs/reference/rpc/google.cloud.discoveryengine.v1#datastorespec
+  https://cloud.google.com/generative-ai-app-builder/docs/reference/rpc/google.cloud.discoveryengine.v1#datastorespec.
+  This data type is not supported in Gemini API.
   """
 
   data_store: Optional[str] = Field(
@@ -3073,7 +3253,8 @@ class VertexAISearchDataStoreSpecDict(TypedDict, total=False):
   """Define data stores within engine to filter on in a search call and configurations for those data stores.
 
   For more information, see
-  https://cloud.google.com/generative-ai-app-builder/docs/reference/rpc/google.cloud.discoveryengine.v1#datastorespec
+  https://cloud.google.com/generative-ai-app-builder/docs/reference/rpc/google.cloud.discoveryengine.v1#datastorespec.
+  This data type is not supported in Gemini API.
   """
 
   data_store: Optional[str]
@@ -3092,7 +3273,8 @@ class VertexAISearch(_common.BaseModel):
   """Retrieve from Vertex AI Search datastore or engine for grounding.
 
   datastore and engine are mutually exclusive. See
-  https://cloud.google.com/products/agent-builder
+  https://cloud.google.com/products/agent-builder. This data type is not
+  supported in Gemini API.
   """
 
   data_store_specs: Optional[list[VertexAISearchDataStoreSpec]] = Field(
@@ -3121,7 +3303,8 @@ class VertexAISearchDict(TypedDict, total=False):
   """Retrieve from Vertex AI Search datastore or engine for grounding.
 
   datastore and engine are mutually exclusive. See
-  https://cloud.google.com/products/agent-builder
+  https://cloud.google.com/products/agent-builder. This data type is not
+  supported in Gemini API.
   """
 
   data_store_specs: Optional[list[VertexAISearchDataStoreSpecDict]]
@@ -3144,7 +3327,10 @@ VertexAISearchOrDict = Union[VertexAISearch, VertexAISearchDict]
 
 
 class VertexRagStoreRagResource(_common.BaseModel):
-  """The definition of the Rag resource."""
+  """The definition of the Rag resource.
+
+  This data type is not supported in Gemini API.
+  """
 
   rag_corpus: Optional[str] = Field(
       default=None,
@@ -3157,7 +3343,10 @@ class VertexRagStoreRagResource(_common.BaseModel):
 
 
 class VertexRagStoreRagResourceDict(TypedDict, total=False):
-  """The definition of the Rag resource."""
+  """The definition of the Rag resource.
+
+  This data type is not supported in Gemini API.
+  """
 
   rag_corpus: Optional[str]
   """Optional. RagCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`"""
@@ -3172,7 +3361,7 @@ VertexRagStoreRagResourceOrDict = Union[
 
 
 class RagRetrievalConfigFilter(_common.BaseModel):
-  """Config for filters."""
+  """Config for filters. This data type is not supported in Gemini API."""
 
   metadata_filter: Optional[str] = Field(
       default=None, description="""Optional. String for metadata filtering."""
@@ -3188,7 +3377,7 @@ class RagRetrievalConfigFilter(_common.BaseModel):
 
 
 class RagRetrievalConfigFilterDict(TypedDict, total=False):
-  """Config for filters."""
+  """Config for filters. This data type is not supported in Gemini API."""
 
   metadata_filter: Optional[str]
   """Optional. String for metadata filtering."""
@@ -3206,7 +3395,7 @@ RagRetrievalConfigFilterOrDict = Union[
 
 
 class RagRetrievalConfigHybridSearch(_common.BaseModel):
-  """Config for Hybrid Search."""
+  """Config for Hybrid Search. This data type is not supported in Gemini API."""
 
   alpha: Optional[float] = Field(
       default=None,
@@ -3215,7 +3404,7 @@ class RagRetrievalConfigHybridSearch(_common.BaseModel):
 
 
 class RagRetrievalConfigHybridSearchDict(TypedDict, total=False):
-  """Config for Hybrid Search."""
+  """Config for Hybrid Search. This data type is not supported in Gemini API."""
 
   alpha: Optional[float]
   """Optional. Alpha value controls the weight between dense and sparse vector search results. The range is [0, 1], while 0 means sparse vector search only and 1 means dense vector search only. The default value is 0.5 which balances sparse and dense vector search equally."""
@@ -3227,7 +3416,7 @@ RagRetrievalConfigHybridSearchOrDict = Union[
 
 
 class RagRetrievalConfigRankingLlmRanker(_common.BaseModel):
-  """Config for LlmRanker."""
+  """Config for LlmRanker. This data type is not supported in Gemini API."""
 
   model_name: Optional[str] = Field(
       default=None,
@@ -3236,7 +3425,7 @@ class RagRetrievalConfigRankingLlmRanker(_common.BaseModel):
 
 
 class RagRetrievalConfigRankingLlmRankerDict(TypedDict, total=False):
-  """Config for LlmRanker."""
+  """Config for LlmRanker. This data type is not supported in Gemini API."""
 
   model_name: Optional[str]
   """Optional. The model name used for ranking. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models)."""
@@ -3248,7 +3437,7 @@ RagRetrievalConfigRankingLlmRankerOrDict = Union[
 
 
 class RagRetrievalConfigRankingRankService(_common.BaseModel):
-  """Config for Rank Service."""
+  """Config for Rank Service. This data type is not supported in Gemini API."""
 
   model_name: Optional[str] = Field(
       default=None,
@@ -3257,7 +3446,7 @@ class RagRetrievalConfigRankingRankService(_common.BaseModel):
 
 
 class RagRetrievalConfigRankingRankServiceDict(TypedDict, total=False):
-  """Config for Rank Service."""
+  """Config for Rank Service. This data type is not supported in Gemini API."""
 
   model_name: Optional[str]
   """Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`"""
@@ -3270,7 +3459,10 @@ RagRetrievalConfigRankingRankServiceOrDict = Union[
 
 
 class RagRetrievalConfigRanking(_common.BaseModel):
-  """Config for ranking and reranking."""
+  """Config for ranking and reranking.
+
+  This data type is not supported in Gemini API.
+  """
 
   llm_ranker: Optional[RagRetrievalConfigRankingLlmRanker] = Field(
       default=None, description="""Optional. Config for LlmRanker."""
@@ -3281,7 +3473,10 @@ class RagRetrievalConfigRanking(_common.BaseModel):
 
 
 class RagRetrievalConfigRankingDict(TypedDict, total=False):
-  """Config for ranking and reranking."""
+  """Config for ranking and reranking.
+
+  This data type is not supported in Gemini API.
+  """
 
   llm_ranker: Optional[RagRetrievalConfigRankingLlmRankerDict]
   """Optional. Config for LlmRanker."""
@@ -3296,7 +3491,10 @@ RagRetrievalConfigRankingOrDict = Union[
 
 
 class RagRetrievalConfig(_common.BaseModel):
-  """Specifies the context retrieval config."""
+  """Specifies the context retrieval config.
+
+  This data type is not supported in Gemini API.
+  """
 
   filter: Optional[RagRetrievalConfigFilter] = Field(
       default=None, description="""Optional. Config for filters."""
@@ -3315,7 +3513,10 @@ class RagRetrievalConfig(_common.BaseModel):
 
 
 class RagRetrievalConfigDict(TypedDict, total=False):
-  """Specifies the context retrieval config."""
+  """Specifies the context retrieval config.
+
+  This data type is not supported in Gemini API.
+  """
 
   filter: Optional[RagRetrievalConfigFilterDict]
   """Optional. Config for filters."""
@@ -3334,7 +3535,10 @@ RagRetrievalConfigOrDict = Union[RagRetrievalConfig, RagRetrievalConfigDict]
 
 
 class VertexRagStore(_common.BaseModel):
-  """Retrieve from Vertex RAG Store for grounding."""
+  """Retrieve from Vertex RAG Store for grounding.
+
+  This data type is not supported in Gemini API.
+  """
 
   rag_corpora: Optional[list[str]] = Field(
       default=None,
@@ -3363,7 +3567,10 @@ class VertexRagStore(_common.BaseModel):
 
 
 class VertexRagStoreDict(TypedDict, total=False):
-  """Retrieve from Vertex RAG Store for grounding."""
+  """Retrieve from Vertex RAG Store for grounding.
+
+  This data type is not supported in Gemini API.
+  """
 
   rag_corpora: Optional[list[str]]
   """Optional. Deprecated. Please use rag_resources instead."""
@@ -3388,7 +3595,10 @@ VertexRagStoreOrDict = Union[VertexRagStore, VertexRagStoreDict]
 
 
 class Retrieval(_common.BaseModel):
-  """Defines a retrieval tool that model can call to access external knowledge."""
+  """Defines a retrieval tool that model can call to access external knowledge.
+
+  This data type is not supported in Gemini API.
+  """
 
   disable_attribution: Optional[bool] = Field(
       default=None,
@@ -3409,7 +3619,10 @@ class Retrieval(_common.BaseModel):
 
 
 class RetrievalDict(TypedDict, total=False):
-  """Defines a retrieval tool that model can call to access external knowledge."""
+  """Defines a retrieval tool that model can call to access external knowledge.
+
+  This data type is not supported in Gemini API.
+  """
 
   disable_attribution: Optional[bool]
   """Optional. Deprecated. This option is no longer supported."""
@@ -3431,7 +3644,7 @@ class ToolCodeExecution(_common.BaseModel):
   """Tool that executes code generated by the model, and automatically returns the result to the model.
 
   See also [ExecutableCode]and [CodeExecutionResult] which are input and output
-  to this tool.
+  to this tool. This data type is not supported in Gemini API.
   """
 
   pass
@@ -3441,7 +3654,7 @@ class ToolCodeExecutionDict(TypedDict, total=False):
   """Tool that executes code generated by the model, and automatically returns the result to the model.
 
   See also [ExecutableCode]and [CodeExecutionResult] which are input and output
-  to this tool.
+  to this tool. This data type is not supported in Gemini API.
   """
 
   pass
@@ -3459,7 +3672,7 @@ class Tool(_common.BaseModel):
   )
   retrieval: Optional[Retrieval] = Field(
       default=None,
-      description="""Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation.""",
+      description="""Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API.""",
   )
   google_search: Optional[GoogleSearch] = Field(
       default=None,
@@ -3503,7 +3716,7 @@ class ToolDict(TypedDict, total=False):
   """List of function declarations that the tool supports."""
 
   retrieval: Optional[RetrievalDict]
-  """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation."""
+  """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API."""
 
   google_search: Optional[GoogleSearchDict]
   """Optional. Google Search tool type. Specialized retrieval tool
@@ -4066,7 +4279,10 @@ ContentUnionDict = Union[
 
 
 class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
-  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
+  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference.
+
+  This data type is not supported in Gemini API.
+  """
 
   model_routing_preference: Optional[
       Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
@@ -4074,7 +4290,10 @@ class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
 
 
 class GenerationConfigRoutingConfigAutoRoutingModeDict(TypedDict, total=False):
-  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference."""
+  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference.
+
+  This data type is not supported in Gemini API.
+  """
 
   model_routing_preference: Optional[
       Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
@@ -4089,7 +4308,10 @@ GenerationConfigRoutingConfigAutoRoutingModeOrDict = Union[
 
 
 class GenerationConfigRoutingConfigManualRoutingMode(_common.BaseModel):
-  """When manual routing is set, the specified model will be used directly."""
+  """When manual routing is set, the specified model will be used directly.
+
+  This data type is not supported in Gemini API.
+  """
 
   model_name: Optional[str] = Field(
       default=None,
@@ -4100,7 +4322,10 @@ class GenerationConfigRoutingConfigManualRoutingMode(_common.BaseModel):
 class GenerationConfigRoutingConfigManualRoutingModeDict(
     TypedDict, total=False
 ):
-  """When manual routing is set, the specified model will be used directly."""
+  """When manual routing is set, the specified model will be used directly.
+
+  This data type is not supported in Gemini API.
+  """
 
   model_name: Optional[str]
   """The model name to use. Only the public LLM models are accepted. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models)."""
@@ -4113,7 +4338,10 @@ GenerationConfigRoutingConfigManualRoutingModeOrDict = Union[
 
 
 class GenerationConfigRoutingConfig(_common.BaseModel):
-  """The configuration for routing the request to a specific model."""
+  """The configuration for routing the request to a specific model.
+
+  This data type is not supported in Gemini API.
+  """
 
   auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingMode] = Field(
       default=None, description="""Automated routing."""
@@ -4124,7 +4352,10 @@ class GenerationConfigRoutingConfig(_common.BaseModel):
 
 
 class GenerationConfigRoutingConfigDict(TypedDict, total=False):
-  """The configuration for routing the request to a specific model."""
+  """The configuration for routing the request to a specific model.
+
+  This data type is not supported in Gemini API.
+  """
 
   auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingModeDict]
   """Automated routing."""
@@ -4641,7 +4872,8 @@ class GoogleTypeDate(_common.BaseModel):
   day values. * A month and day, with a zero year (for example, an anniversary).
   * A year on its own, with a zero month and a zero day. * A year and month,
   with a zero day (for example, a credit card expiration date). Related types: *
-  google.type.TimeOfDay * google.type.DateTime * google.protobuf.Timestamp
+  google.type.TimeOfDay * google.type.DateTime * google.protobuf.Timestamp. This
+  data type is not supported in Gemini API.
   """
 
   day: Optional[int] = Field(
@@ -4667,7 +4899,8 @@ class GoogleTypeDateDict(TypedDict, total=False):
   day values. * A month and day, with a zero year (for example, an anniversary).
   * A year on its own, with a zero month and a zero day. * A year and month,
   with a zero day (for example, a credit card expiration date). Related types: *
-  google.type.TimeOfDay * google.type.DateTime * google.protobuf.Timestamp
+  google.type.TimeOfDay * google.type.DateTime * google.protobuf.Timestamp. This
+  data type is not supported in Gemini API.
   """
 
   day: Optional[int]
@@ -4684,7 +4917,10 @@ GoogleTypeDateOrDict = Union[GoogleTypeDate, GoogleTypeDateDict]
 
 
 class Citation(_common.BaseModel):
-  """Source attributions for content."""
+  """Source attributions for content.
+
+  This data type is not supported in Gemini API.
+  """
 
   end_index: Optional[int] = Field(
       default=None, description="""Output only. End index into the content."""
@@ -4709,7 +4945,10 @@ class Citation(_common.BaseModel):
 
 
 class CitationDict(TypedDict, total=False):
-  """Source attributions for content."""
+  """Source attributions for content.
+
+  This data type is not supported in Gemini API.
+  """
 
   end_index: Optional[int]
   """Output only. End index into the content."""
@@ -4801,7 +5040,10 @@ UrlContextMetadataOrDict = Union[UrlContextMetadata, UrlContextMetadataDict]
 
 
 class GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution(_common.BaseModel):
-  """Author attribution for a photo or review."""
+  """Author attribution for a photo or review.
+
+  This data type is not supported in Gemini API.
+  """
 
   display_name: Optional[str] = Field(
       default=None, description="""Name of the author of the Photo or Review."""
@@ -4818,7 +5060,10 @@ class GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution(_common.BaseModel):
 class GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionDict(
     TypedDict, total=False
 ):
-  """Author attribution for a photo or review."""
+  """Author attribution for a photo or review.
+
+  This data type is not supported in Gemini API.
+  """
 
   display_name: Optional[str]
   """Name of the author of the Photo or Review."""
@@ -4837,7 +5082,10 @@ GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionOrDict = Union[
 
 
 class GroundingChunkMapsPlaceAnswerSourcesReviewSnippet(_common.BaseModel):
-  """Encapsulates a review snippet."""
+  """Encapsulates a review snippet.
+
+  This data type is not supported in Gemini API.
+  """
 
   author_attribution: Optional[
       GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution
@@ -4868,7 +5116,10 @@ class GroundingChunkMapsPlaceAnswerSourcesReviewSnippet(_common.BaseModel):
 class GroundingChunkMapsPlaceAnswerSourcesReviewSnippetDict(
     TypedDict, total=False
 ):
-  """Encapsulates a review snippet."""
+  """Encapsulates a review snippet.
+
+  This data type is not supported in Gemini API.
+  """
 
   author_attribution: Optional[
       GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionDict
@@ -4901,7 +5152,10 @@ GroundingChunkMapsPlaceAnswerSourcesReviewSnippetOrDict = Union[
 
 
 class GroundingChunkMapsPlaceAnswerSources(_common.BaseModel):
-  """Sources used to generate the place answer."""
+  """Sources used to generate the place answer.
+
+  This data type is not supported in Gemini API.
+  """
 
   flag_content_uri: Optional[str] = Field(
       default=None,
@@ -4916,7 +5170,10 @@ class GroundingChunkMapsPlaceAnswerSources(_common.BaseModel):
 
 
 class GroundingChunkMapsPlaceAnswerSourcesDict(TypedDict, total=False):
-  """Sources used to generate the place answer."""
+  """Sources used to generate the place answer.
+
+  This data type is not supported in Gemini API.
+  """
 
   flag_content_uri: Optional[str]
   """A link where users can flag a problem with the generated answer."""
@@ -4934,7 +5191,7 @@ GroundingChunkMapsPlaceAnswerSourcesOrDict = Union[
 
 
 class GroundingChunkMaps(_common.BaseModel):
-  """Chunk from Google Maps."""
+  """Chunk from Google Maps. This data type is not supported in Gemini API."""
 
   place_answer_sources: Optional[GroundingChunkMapsPlaceAnswerSources] = Field(
       default=None,
@@ -4956,7 +5213,7 @@ class GroundingChunkMaps(_common.BaseModel):
 
 
 class GroundingChunkMapsDict(TypedDict, total=False):
-  """Chunk from Google Maps."""
+  """Chunk from Google Maps. This data type is not supported in Gemini API."""
 
   place_answer_sources: Optional[GroundingChunkMapsPlaceAnswerSourcesDict]
   """Sources used to generate the place answer. This includes review snippets and photos that were used to generate the answer, as well as uris to flag content."""
@@ -4978,7 +5235,10 @@ GroundingChunkMapsOrDict = Union[GroundingChunkMaps, GroundingChunkMapsDict]
 
 
 class RagChunkPageSpan(_common.BaseModel):
-  """Represents where the chunk starts and ends in the document."""
+  """Represents where the chunk starts and ends in the document.
+
+  This data type is not supported in Gemini API.
+  """
 
   first_page: Optional[int] = Field(
       default=None,
@@ -4991,7 +5251,10 @@ class RagChunkPageSpan(_common.BaseModel):
 
 
 class RagChunkPageSpanDict(TypedDict, total=False):
-  """Represents where the chunk starts and ends in the document."""
+  """Represents where the chunk starts and ends in the document.
+
+  This data type is not supported in Gemini API.
+  """
 
   first_page: Optional[int]
   """Page where chunk starts in the document. Inclusive. 1-indexed."""
@@ -5004,7 +5267,10 @@ RagChunkPageSpanOrDict = Union[RagChunkPageSpan, RagChunkPageSpanDict]
 
 
 class RagChunk(_common.BaseModel):
-  """A RagChunk includes the content of a chunk of a RagFile, and associated metadata."""
+  """A RagChunk includes the content of a chunk of a RagFile, and associated metadata.
+
+  This data type is not supported in Gemini API.
+  """
 
   page_span: Optional[RagChunkPageSpan] = Field(
       default=None,
@@ -5016,7 +5282,10 @@ class RagChunk(_common.BaseModel):
 
 
 class RagChunkDict(TypedDict, total=False):
-  """A RagChunk includes the content of a chunk of a RagFile, and associated metadata."""
+  """A RagChunk includes the content of a chunk of a RagFile, and associated metadata.
+
+  This data type is not supported in Gemini API.
+  """
 
   page_span: Optional[RagChunkPageSpanDict]
   """If populated, represents where the chunk starts and ends in the document."""
@@ -5029,7 +5298,10 @@ RagChunkOrDict = Union[RagChunk, RagChunkDict]
 
 
 class GroundingChunkRetrievedContext(_common.BaseModel):
-  """Chunk from context retrieved by the retrieval tools."""
+  """Chunk from context retrieved by the retrieval tools.
+
+  This data type is not supported in Gemini API.
+  """
 
   document_name: Optional[str] = Field(
       default=None,
@@ -5051,7 +5323,10 @@ class GroundingChunkRetrievedContext(_common.BaseModel):
 
 
 class GroundingChunkRetrievedContextDict(TypedDict, total=False):
-  """Chunk from context retrieved by the retrieval tools."""
+  """Chunk from context retrieved by the retrieval tools.
+
+  This data type is not supported in Gemini API.
+  """
 
   document_name: Optional[str]
   """Output only. The full document name for the referenced Vertex AI Search document."""
@@ -5078,7 +5353,8 @@ class GroundingChunkWeb(_common.BaseModel):
   """Chunk from the web."""
 
   domain: Optional[str] = Field(
-      default=None, description="""Domain of the (original) URI."""
+      default=None,
+      description="""Domain of the (original) URI. This field is not supported in Gemini API.""",
   )
   title: Optional[str] = Field(
       default=None, description="""Title of the chunk."""
@@ -5092,7 +5368,7 @@ class GroundingChunkWebDict(TypedDict, total=False):
   """Chunk from the web."""
 
   domain: Optional[str]
-  """Domain of the (original) URI."""
+  """Domain of the (original) URI. This field is not supported in Gemini API."""
 
   title: Optional[str]
   """Title of the chunk."""
@@ -5108,11 +5384,12 @@ class GroundingChunk(_common.BaseModel):
   """Grounding chunk."""
 
   maps: Optional[GroundingChunkMaps] = Field(
-      default=None, description="""Grounding chunk from Google Maps."""
+      default=None,
+      description="""Grounding chunk from Google Maps. This field is not supported in Gemini API.""",
   )
   retrieved_context: Optional[GroundingChunkRetrievedContext] = Field(
       default=None,
-      description="""Grounding chunk from context retrieved by the retrieval tools.""",
+      description="""Grounding chunk from context retrieved by the retrieval tools. This field is not supported in Gemini API.""",
   )
   web: Optional[GroundingChunkWeb] = Field(
       default=None, description="""Grounding chunk from the web."""
@@ -5123,10 +5400,10 @@ class GroundingChunkDict(TypedDict, total=False):
   """Grounding chunk."""
 
   maps: Optional[GroundingChunkMapsDict]
-  """Grounding chunk from Google Maps."""
+  """Grounding chunk from Google Maps. This field is not supported in Gemini API."""
 
   retrieved_context: Optional[GroundingChunkRetrievedContextDict]
-  """Grounding chunk from context retrieved by the retrieval tools."""
+  """Grounding chunk from context retrieved by the retrieval tools. This field is not supported in Gemini API."""
 
   web: Optional[GroundingChunkWebDict]
   """Grounding chunk from the web."""
@@ -5256,7 +5533,8 @@ SearchEntryPointOrDict = Union[SearchEntryPoint, SearchEntryPointDict]
 class GroundingMetadataSourceFlaggingUri(_common.BaseModel):
   """Source content flagging uri for a place or review.
 
-  This is currently populated only for Google Maps grounding.
+  This is currently populated only for Google Maps grounding. This data type is
+  not supported in Gemini API.
   """
 
   flag_content_uri: Optional[str] = Field(
@@ -5271,7 +5549,8 @@ class GroundingMetadataSourceFlaggingUri(_common.BaseModel):
 class GroundingMetadataSourceFlaggingUriDict(TypedDict, total=False):
   """Source content flagging uri for a place or review.
 
-  This is currently populated only for Google Maps grounding.
+  This is currently populated only for Google Maps grounding. This data type is
+  not supported in Gemini API.
   """
 
   flag_content_uri: Optional[str]
@@ -5291,7 +5570,7 @@ class GroundingMetadata(_common.BaseModel):
 
   google_maps_widget_context_token: Optional[str] = Field(
       default=None,
-      description="""Optional. Output only. Resource name of the Google Maps widget context token to be used with the PlacesContextElement widget to render contextual data. This is populated only for Google Maps grounding.""",
+      description="""Optional. Output only. Resource name of the Google Maps widget context token to be used with the PlacesContextElement widget to render contextual data. This is populated only for Google Maps grounding. This field is not supported in Gemini API.""",
   )
   grounding_chunks: Optional[list[GroundingChunk]] = Field(
       default=None,
@@ -5305,7 +5584,7 @@ class GroundingMetadata(_common.BaseModel):
   )
   retrieval_queries: Optional[list[str]] = Field(
       default=None,
-      description="""Optional. Queries executed by the retrieval tools.""",
+      description="""Optional. Queries executed by the retrieval tools. This field is not supported in Gemini API.""",
   )
   search_entry_point: Optional[SearchEntryPoint] = Field(
       default=None,
@@ -5314,7 +5593,7 @@ class GroundingMetadata(_common.BaseModel):
   source_flagging_uris: Optional[list[GroundingMetadataSourceFlaggingUri]] = (
       Field(
           default=None,
-          description="""Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding.""",
+          description="""Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding. This field is not supported in Gemini API.""",
       )
   )
   web_search_queries: Optional[list[str]] = Field(
@@ -5327,7 +5606,7 @@ class GroundingMetadataDict(TypedDict, total=False):
   """Metadata returned to client when grounding is enabled."""
 
   google_maps_widget_context_token: Optional[str]
-  """Optional. Output only. Resource name of the Google Maps widget context token to be used with the PlacesContextElement widget to render contextual data. This is populated only for Google Maps grounding."""
+  """Optional. Output only. Resource name of the Google Maps widget context token to be used with the PlacesContextElement widget to render contextual data. This is populated only for Google Maps grounding. This field is not supported in Gemini API."""
 
   grounding_chunks: Optional[list[GroundingChunkDict]]
   """List of supporting references retrieved from specified grounding source."""
@@ -5339,13 +5618,13 @@ class GroundingMetadataDict(TypedDict, total=False):
   """Optional. Output only. Retrieval metadata."""
 
   retrieval_queries: Optional[list[str]]
-  """Optional. Queries executed by the retrieval tools."""
+  """Optional. Queries executed by the retrieval tools. This field is not supported in Gemini API."""
 
   search_entry_point: Optional[SearchEntryPointDict]
   """Optional. Google search entry for the following-up web searches."""
 
   source_flagging_uris: Optional[list[GroundingMetadataSourceFlaggingUriDict]]
-  """Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding."""
+  """Optional. Output only. List of source flagging uris. This is currently populated only for Google Maps grounding. This field is not supported in Gemini API."""
 
   web_search_queries: Optional[list[str]]
   """Optional. Web search queries for the following-up web search."""
@@ -5451,14 +5730,16 @@ class SafetyRating(_common.BaseModel):
       description="""Output only. Harm probability levels in the content.""",
   )
   probability_score: Optional[float] = Field(
-      default=None, description="""Output only. Harm probability score."""
+      default=None,
+      description="""Output only. Harm probability score. This field is not supported in Gemini API.""",
   )
   severity: Optional[HarmSeverity] = Field(
       default=None,
       description="""Output only. Harm severity levels in the content.""",
   )
   severity_score: Optional[float] = Field(
-      default=None, description="""Output only. Harm severity score."""
+      default=None,
+      description="""Output only. Harm severity score. This field is not supported in Gemini API.""",
   )
 
 
@@ -5478,13 +5759,13 @@ class SafetyRatingDict(TypedDict, total=False):
   """Output only. Harm probability levels in the content."""
 
   probability_score: Optional[float]
-  """Output only. Harm probability score."""
+  """Output only. Harm probability score. This field is not supported in Gemini API."""
 
   severity: Optional[HarmSeverity]
   """Output only. Harm severity levels in the content."""
 
   severity_score: Optional[float]
-  """Output only. Harm severity score."""
+  """Output only. Harm severity score. This field is not supported in Gemini API."""
 
 
 SafetyRatingOrDict = Union[SafetyRating, SafetyRatingDict]
@@ -5591,31 +5872,41 @@ CandidateOrDict = Union[Candidate, CandidateDict]
 
 
 class GenerateContentResponsePromptFeedback(_common.BaseModel):
-  """Content filter results for a prompt sent in the request."""
+  """Content filter results for a prompt sent in the request.
+
+  Note: This is sent only in the first stream chunk and only if no candidates
+  were generated due to content violations.
+  """
 
   block_reason: Optional[BlockedReason] = Field(
-      default=None, description="""Output only. Blocked reason."""
+      default=None,
+      description="""Output only. The reason why the prompt was blocked.""",
   )
   block_reason_message: Optional[str] = Field(
       default=None,
-      description="""Output only. A readable block reason message.""",
+      description="""Output only. A readable message that explains the reason why the prompt was blocked. This field is not supported in Gemini API.""",
   )
   safety_ratings: Optional[list[SafetyRating]] = Field(
-      default=None, description="""Output only. Safety ratings."""
+      default=None,
+      description="""Output only. A list of safety ratings for the prompt. There is one rating per category.""",
   )
 
 
 class GenerateContentResponsePromptFeedbackDict(TypedDict, total=False):
-  """Content filter results for a prompt sent in the request."""
+  """Content filter results for a prompt sent in the request.
+
+  Note: This is sent only in the first stream chunk and only if no candidates
+  were generated due to content violations.
+  """
 
   block_reason: Optional[BlockedReason]
-  """Output only. Blocked reason."""
+  """Output only. The reason why the prompt was blocked."""
 
   block_reason_message: Optional[str]
-  """Output only. A readable block reason message."""
+  """Output only. A readable message that explains the reason why the prompt was blocked. This field is not supported in Gemini API."""
 
   safety_ratings: Optional[list[SafetyRatingDict]]
-  """Output only. Safety ratings."""
+  """Output only. A list of safety ratings for the prompt. There is one rating per category."""
 
 
 GenerateContentResponsePromptFeedbackOrDict = Union[
@@ -5650,7 +5941,10 @@ ModalityTokenCountOrDict = Union[ModalityTokenCount, ModalityTokenCountDict]
 
 
 class GenerateContentResponseUsageMetadata(_common.BaseModel):
-  """Usage metadata about response(s)."""
+  """Usage metadata about response(s).
+
+  This data type is not supported in Gemini API.
+  """
 
   cache_tokens_details: Optional[list[ModalityTokenCount]] = Field(
       default=None,
@@ -5698,7 +5992,10 @@ class GenerateContentResponseUsageMetadata(_common.BaseModel):
 
 
 class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
-  """Usage metadata about response(s)."""
+  """Usage metadata about response(s).
+
+  This data type is not supported in Gemini API.
+  """
 
   cache_tokens_details: Optional[list[ModalityTokenCountDict]]
   """Output only. List of modalities of the cached content in the request input."""
@@ -8189,34 +8486,6 @@ class DeleteModelResponseDict(TypedDict, total=False):
 DeleteModelResponseOrDict = Union[DeleteModelResponse, DeleteModelResponseDict]
 
 
-class GenerationConfigThinkingConfig(_common.BaseModel):
-  """Config for thinking features."""
-
-  include_thoughts: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Indicates whether to include thoughts in the response. If true, thoughts are returned only when available.""",
-  )
-  thinking_budget: Optional[int] = Field(
-      default=None,
-      description="""Optional. Indicates the thinking budget in tokens.""",
-  )
-
-
-class GenerationConfigThinkingConfigDict(TypedDict, total=False):
-  """Config for thinking features."""
-
-  include_thoughts: Optional[bool]
-  """Optional. Indicates whether to include thoughts in the response. If true, thoughts are returned only when available."""
-
-  thinking_budget: Optional[int]
-  """Optional. Indicates the thinking budget in tokens."""
-
-
-GenerationConfigThinkingConfigOrDict = Union[
-    GenerationConfigThinkingConfig, GenerationConfigThinkingConfigDict
-]
-
-
 class GenerationConfig(_common.BaseModel):
   """Generation config."""
 
@@ -8225,7 +8494,7 @@ class GenerationConfig(_common.BaseModel):
   )
   audio_timestamp: Optional[bool] = Field(
       default=None,
-      description="""Optional. If enabled, audio timestamp will be included in the request to the model.""",
+      description="""Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API.""",
   )
   candidate_count: Optional[int] = Field(
       default=None,
@@ -8233,7 +8502,7 @@ class GenerationConfig(_common.BaseModel):
   )
   enable_affective_dialog: Optional[bool] = Field(
       default=None,
-      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly.""",
+      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API.""",
   )
   frequency_penalty: Optional[float] = Field(
       default=None, description="""Optional. Frequency penalties."""
@@ -8272,7 +8541,8 @@ class GenerationConfig(_common.BaseModel):
       description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
   )
   routing_config: Optional[GenerationConfigRoutingConfig] = Field(
-      default=None, description="""Optional. Routing configuration."""
+      default=None,
+      description="""Optional. Routing configuration. This field is not supported in Gemini API.""",
   )
   seed: Optional[int] = Field(default=None, description="""Optional. Seed.""")
   speech_config: Optional[SpeechConfig] = Field(
@@ -8285,7 +8555,7 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. Controls the randomness of predictions.""",
   )
-  thinking_config: Optional[GenerationConfigThinkingConfig] = Field(
+  thinking_config: Optional[ThinkingConfig] = Field(
       default=None,
       description="""Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking.""",
   )
@@ -8297,6 +8567,10 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. If specified, nucleus sampling will be used.""",
   )
+  enable_enhanced_civic_answers: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI.""",
+  )
 
 
 class GenerationConfigDict(TypedDict, total=False):
@@ -8306,13 +8580,13 @@ class GenerationConfigDict(TypedDict, total=False):
   """Optional. Config for model selection."""
 
   audio_timestamp: Optional[bool]
-  """Optional. If enabled, audio timestamp will be included in the request to the model."""
+  """Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API."""
 
   candidate_count: Optional[int]
   """Optional. Number of candidates to generate."""
 
   enable_affective_dialog: Optional[bool]
-  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly."""
+  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API."""
 
   frequency_penalty: Optional[float]
   """Optional. Frequency penalties."""
@@ -8345,7 +8619,7 @@ class GenerationConfigDict(TypedDict, total=False):
   """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
 
   routing_config: Optional[GenerationConfigRoutingConfigDict]
-  """Optional. Routing configuration."""
+  """Optional. Routing configuration. This field is not supported in Gemini API."""
 
   seed: Optional[int]
   """Optional. Seed."""
@@ -8359,7 +8633,7 @@ class GenerationConfigDict(TypedDict, total=False):
   temperature: Optional[float]
   """Optional. Controls the randomness of predictions."""
 
-  thinking_config: Optional[GenerationConfigThinkingConfigDict]
+  thinking_config: Optional[ThinkingConfigDict]
   """Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking."""
 
   top_k: Optional[float]
@@ -8367,6 +8641,9 @@ class GenerationConfigDict(TypedDict, total=False):
 
   top_p: Optional[float]
   """Optional. If specified, nucleus sampling will be used."""
+
+  enable_enhanced_civic_answers: Optional[bool]
+  """Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI."""
 
 
 GenerationConfigOrDict = Union[GenerationConfig, GenerationConfigDict]
@@ -9220,14 +9497,22 @@ TunedModelCheckpointOrDict = Union[
 
 
 class TunedModel(_common.BaseModel):
+  """TunedModel for the Tuned Model of a Tuning Job."""
 
   model: Optional[str] = Field(
       default=None,
-      description="""Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}` When tuning from a base model, the version_id will be 1. For continuous tuning, the version id will be incremented by 1 from the last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`""",
+      description="""Output only. The resource name of the TunedModel.
+      Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+      When tuning from a base model, the version_id will be 1.
+      For continuous tuning, the version id will be incremented by 1 from the
+      last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`
+      """,
   )
   endpoint: Optional[str] = Field(
       default=None,
-      description="""Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.""",
+      description="""Output only. A resource name of an Endpoint.
+      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+      """,
   )
   checkpoints: Optional[list[TunedModelCheckpoint]] = Field(
       default=None,
@@ -9238,12 +9523,20 @@ class TunedModel(_common.BaseModel):
 
 
 class TunedModelDict(TypedDict, total=False):
+  """TunedModel for the Tuned Model of a Tuning Job."""
 
   model: Optional[str]
-  """Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}` When tuning from a base model, the version_id will be 1. For continuous tuning, the version id will be incremented by 1 from the last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`"""
+  """Output only. The resource name of the TunedModel.
+      Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+      When tuning from a base model, the version_id will be 1.
+      For continuous tuning, the version id will be incremented by 1 from the
+      last version id in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id + 1}`
+      """
 
   endpoint: Optional[str]
-  """Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`."""
+  """Output only. A resource name of an Endpoint.
+      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+      """
 
   checkpoints: Optional[list[TunedModelCheckpointDict]]
   """The checkpoints associated with this TunedModel.
@@ -9528,7 +9821,8 @@ class GoogleRpcStatus(_common.BaseModel):
   It is used by [gRPC](https://github.com/grpc). Each `Status` message contains
   three pieces of data: error code, error message, and error details. You can
   find out more about this error model and how to work with it in the [API
-  Design Guide](https://cloud.google.com/apis/design/errors).
+  Design Guide](https://cloud.google.com/apis/design/errors). This data type is
+  not supported in Gemini API.
   """
 
   code: Optional[int] = Field(
@@ -9551,7 +9845,8 @@ class GoogleRpcStatusDict(TypedDict, total=False):
   It is used by [gRPC](https://github.com/grpc). Each `Status` message contains
   three pieces of data: error code, error message, and error details. You can
   find out more about this error model and how to work with it in the [API
-  Design Guide](https://cloud.google.com/apis/design/errors).
+  Design Guide](https://cloud.google.com/apis/design/errors). This data type is
+  not supported in Gemini API.
   """
 
   code: Optional[int]
@@ -9568,7 +9863,10 @@ GoogleRpcStatusOrDict = Union[GoogleRpcStatus, GoogleRpcStatusDict]
 
 
 class PreTunedModel(_common.BaseModel):
-  """A pre-tuned model for continuous tuning."""
+  """A pre-tuned model for continuous tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   base_model: Optional[str] = Field(
       default=None,
@@ -9585,7 +9883,10 @@ class PreTunedModel(_common.BaseModel):
 
 
 class PreTunedModelDict(TypedDict, total=False):
-  """A pre-tuned model for continuous tuning."""
+  """A pre-tuned model for continuous tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   base_model: Optional[str]
   """Output only. The name of the base model this PreTunedModel was tuned from."""
@@ -9601,7 +9902,7 @@ PreTunedModelOrDict = Union[PreTunedModel, PreTunedModelDict]
 
 
 class SupervisedHyperParameters(_common.BaseModel):
-  """Hyperparameters for SFT."""
+  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
 
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Optional. Adapter size for tuning."""
@@ -9625,7 +9926,7 @@ class SupervisedHyperParameters(_common.BaseModel):
 
 
 class SupervisedHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for SFT."""
+  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
 
   adapter_size: Optional[AdapterSize]
   """Optional. Adapter size for tuning."""
@@ -9649,7 +9950,10 @@ SupervisedHyperParametersOrDict = Union[
 
 
 class SupervisedTuningSpec(_common.BaseModel):
-  """Tuning Spec for Supervised Tuning for first party models."""
+  """Tuning Spec for Supervised Tuning for first party models.
+
+  This data type is not supported in Gemini API.
+  """
 
   export_last_checkpoint_only: Optional[bool] = Field(
       default=None,
@@ -9672,7 +9976,10 @@ class SupervisedTuningSpec(_common.BaseModel):
 
 
 class SupervisedTuningSpecDict(TypedDict, total=False):
-  """Tuning Spec for Supervised Tuning for first party models."""
+  """Tuning Spec for Supervised Tuning for first party models.
+
+  This data type is not supported in Gemini API.
+  """
 
   export_last_checkpoint_only: Optional[bool]
   """Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false."""
@@ -9696,7 +10003,10 @@ SupervisedTuningSpecOrDict = Union[
 
 
 class DatasetDistributionDistributionBucket(_common.BaseModel):
-  """Dataset bucket used to create a histogram for the distribution given a population of values."""
+  """Dataset bucket used to create a histogram for the distribution given a population of values.
+
+  This data type is not supported in Gemini API.
+  """
 
   count: Optional[int] = Field(
       default=None,
@@ -9711,7 +10021,10 @@ class DatasetDistributionDistributionBucket(_common.BaseModel):
 
 
 class DatasetDistributionDistributionBucketDict(TypedDict, total=False):
-  """Dataset bucket used to create a histogram for the distribution given a population of values."""
+  """Dataset bucket used to create a histogram for the distribution given a population of values.
+
+  This data type is not supported in Gemini API.
+  """
 
   count: Optional[int]
   """Output only. Number of values in the bucket."""
@@ -9730,7 +10043,10 @@ DatasetDistributionDistributionBucketOrDict = Union[
 
 
 class DatasetDistribution(_common.BaseModel):
-  """Distribution computed over a tuning dataset."""
+  """Distribution computed over a tuning dataset.
+
+  This data type is not supported in Gemini API.
+  """
 
   buckets: Optional[list[DatasetDistributionDistributionBucket]] = Field(
       default=None, description="""Output only. Defines the histogram bucket."""
@@ -9766,7 +10082,10 @@ class DatasetDistribution(_common.BaseModel):
 
 
 class DatasetDistributionDict(TypedDict, total=False):
-  """Distribution computed over a tuning dataset."""
+  """Distribution computed over a tuning dataset.
+
+  This data type is not supported in Gemini API.
+  """
 
   buckets: Optional[list[DatasetDistributionDistributionBucketDict]]
   """Output only. Defines the histogram bucket."""
@@ -9797,7 +10116,10 @@ DatasetDistributionOrDict = Union[DatasetDistribution, DatasetDistributionDict]
 
 
 class DatasetStats(_common.BaseModel):
-  """Statistics computed over a tuning dataset."""
+  """Statistics computed over a tuning dataset.
+
+  This data type is not supported in Gemini API.
+  """
 
   total_billable_character_count: Optional[int] = Field(
       default=None,
@@ -9834,7 +10156,10 @@ class DatasetStats(_common.BaseModel):
 
 
 class DatasetStatsDict(TypedDict, total=False):
-  """Statistics computed over a tuning dataset."""
+  """Statistics computed over a tuning dataset.
+
+  This data type is not supported in Gemini API.
+  """
 
   total_billable_character_count: Optional[int]
   """Output only. Number of billable characters in the tuning dataset."""
@@ -9865,7 +10190,10 @@ DatasetStatsOrDict = Union[DatasetStats, DatasetStatsDict]
 
 
 class DistillationDataStats(_common.BaseModel):
-  """Statistics computed for datasets used for distillation."""
+  """Statistics computed for datasets used for distillation.
+
+  This data type is not supported in Gemini API.
+  """
 
   training_dataset_stats: Optional[DatasetStats] = Field(
       default=None,
@@ -9874,7 +10202,10 @@ class DistillationDataStats(_common.BaseModel):
 
 
 class DistillationDataStatsDict(TypedDict, total=False):
-  """Statistics computed for datasets used for distillation."""
+  """Statistics computed for datasets used for distillation.
+
+  This data type is not supported in Gemini API.
+  """
 
   training_dataset_stats: Optional[DatasetStatsDict]
   """Output only. Statistics computed for the training dataset."""
@@ -9886,7 +10217,10 @@ DistillationDataStatsOrDict = Union[
 
 
 class GeminiPreferenceExampleCompletion(_common.BaseModel):
-  """Completion and its preference score."""
+  """Completion and its preference score.
+
+  This data type is not supported in Gemini API.
+  """
 
   completion: Optional[Content] = Field(
       default=None,
@@ -9898,7 +10232,10 @@ class GeminiPreferenceExampleCompletion(_common.BaseModel):
 
 
 class GeminiPreferenceExampleCompletionDict(TypedDict, total=False):
-  """Completion and its preference score."""
+  """Completion and its preference score.
+
+  This data type is not supported in Gemini API.
+  """
 
   completion: Optional[ContentDict]
   """Single turn completion for the given prompt."""
@@ -9913,7 +10250,10 @@ GeminiPreferenceExampleCompletionOrDict = Union[
 
 
 class GeminiPreferenceExample(_common.BaseModel):
-  """Input example for preference optimization."""
+  """Input example for preference optimization.
+
+  This data type is not supported in Gemini API.
+  """
 
   completions: Optional[list[GeminiPreferenceExampleCompletion]] = Field(
       default=None, description="""List of completions for a given prompt."""
@@ -9925,7 +10265,10 @@ class GeminiPreferenceExample(_common.BaseModel):
 
 
 class GeminiPreferenceExampleDict(TypedDict, total=False):
-  """Input example for preference optimization."""
+  """Input example for preference optimization.
+
+  This data type is not supported in Gemini API.
+  """
 
   completions: Optional[list[GeminiPreferenceExampleCompletionDict]]
   """List of completions for a given prompt."""
@@ -9940,7 +10283,10 @@ GeminiPreferenceExampleOrDict = Union[
 
 
 class PreferenceOptimizationDataStats(_common.BaseModel):
-  """Statistics computed for datasets used for preference optimization."""
+  """Statistics computed for datasets used for preference optimization.
+
+  This data type is not supported in Gemini API.
+  """
 
   score_variance_per_example_distribution: Optional[DatasetDistribution] = (
       Field(
@@ -9979,7 +10325,10 @@ class PreferenceOptimizationDataStats(_common.BaseModel):
 
 
 class PreferenceOptimizationDataStatsDict(TypedDict, total=False):
-  """Statistics computed for datasets used for preference optimization."""
+  """Statistics computed for datasets used for preference optimization.
+
+  This data type is not supported in Gemini API.
+  """
 
   score_variance_per_example_distribution: Optional[DatasetDistributionDict]
   """Output only. Dataset distributions for scores variance per example."""
@@ -10012,7 +10361,10 @@ PreferenceOptimizationDataStatsOrDict = Union[
 
 
 class SupervisedTuningDatasetDistributionDatasetBucket(_common.BaseModel):
-  """Dataset bucket used to create a histogram for the distribution given a population of values."""
+  """Dataset bucket used to create a histogram for the distribution given a population of values.
+
+  This data type is not supported in Gemini API.
+  """
 
   count: Optional[float] = Field(
       default=None,
@@ -10029,7 +10381,10 @@ class SupervisedTuningDatasetDistributionDatasetBucket(_common.BaseModel):
 class SupervisedTuningDatasetDistributionDatasetBucketDict(
     TypedDict, total=False
 ):
-  """Dataset bucket used to create a histogram for the distribution given a population of values."""
+  """Dataset bucket used to create a histogram for the distribution given a population of values.
+
+  This data type is not supported in Gemini API.
+  """
 
   count: Optional[float]
   """Output only. Number of values in the bucket."""
@@ -10048,7 +10403,10 @@ SupervisedTuningDatasetDistributionDatasetBucketOrDict = Union[
 
 
 class SupervisedTuningDatasetDistribution(_common.BaseModel):
-  """Dataset distribution for Supervised Tuning."""
+  """Dataset distribution for Supervised Tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   billable_sum: Optional[int] = Field(
       default=None,
@@ -10091,7 +10449,10 @@ class SupervisedTuningDatasetDistribution(_common.BaseModel):
 
 
 class SupervisedTuningDatasetDistributionDict(TypedDict, total=False):
-  """Dataset distribution for Supervised Tuning."""
+  """Dataset distribution for Supervised Tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   billable_sum: Optional[int]
   """Output only. Sum of a given population of values that are billable."""
@@ -10127,7 +10488,10 @@ SupervisedTuningDatasetDistributionOrDict = Union[
 
 
 class SupervisedTuningDataStats(_common.BaseModel):
-  """Tuning data statistics for Supervised Tuning."""
+  """Tuning data statistics for Supervised Tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   dropped_example_reasons: Optional[list[str]] = Field(
       default=None,
@@ -10186,7 +10550,10 @@ class SupervisedTuningDataStats(_common.BaseModel):
 
 
 class SupervisedTuningDataStatsDict(TypedDict, total=False):
-  """Tuning data statistics for Supervised Tuning."""
+  """Tuning data statistics for Supervised Tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   dropped_example_reasons: Optional[list[str]]
   """Output only. For each index in `truncated_example_indices`, the user-facing reason why the example was dropped."""
@@ -10237,7 +10604,10 @@ SupervisedTuningDataStatsOrDict = Union[
 
 
 class TuningDataStats(_common.BaseModel):
-  """The tuning data statistic values for TuningJob."""
+  """The tuning data statistic values for TuningJob.
+
+  This data type is not supported in Gemini API.
+  """
 
   distillation_data_stats: Optional[DistillationDataStats] = Field(
       default=None, description="""Output only. Statistics for distillation."""
@@ -10254,7 +10624,10 @@ class TuningDataStats(_common.BaseModel):
 
 
 class TuningDataStatsDict(TypedDict, total=False):
-  """The tuning data statistic values for TuningJob."""
+  """The tuning data statistic values for TuningJob.
+
+  This data type is not supported in Gemini API.
+  """
 
   distillation_data_stats: Optional[DistillationDataStatsDict]
   """Output only. Statistics for distillation."""
@@ -10272,7 +10645,10 @@ TuningDataStatsOrDict = Union[TuningDataStats, TuningDataStatsDict]
 
 
 class EncryptionSpec(_common.BaseModel):
-  """Represents a customer-managed encryption key spec that can be applied to a top-level resource."""
+  """Represents a customer-managed encryption key spec that can be applied to a top-level resource.
+
+  This data type is not supported in Gemini API.
+  """
 
   kms_key_name: Optional[str] = Field(
       default=None,
@@ -10281,7 +10657,10 @@ class EncryptionSpec(_common.BaseModel):
 
 
 class EncryptionSpecDict(TypedDict, total=False):
-  """Represents a customer-managed encryption key spec that can be applied to a top-level resource."""
+  """Represents a customer-managed encryption key spec that can be applied to a top-level resource.
+
+  This data type is not supported in Gemini API.
+  """
 
   kms_key_name: Optional[str]
   """Required. The Cloud KMS resource identifier of the customer managed encryption key used to protect a resource. Has the form: `projects/my-project/locations/my-region/keyRings/my-kr/cryptoKeys/my-key`. The key needs to be in the same region as where the compute resource is created."""
@@ -10291,7 +10670,10 @@ EncryptionSpecOrDict = Union[EncryptionSpec, EncryptionSpecDict]
 
 
 class PartnerModelTuningSpec(_common.BaseModel):
-  """Tuning spec for Partner models."""
+  """Tuning spec for Partner models.
+
+  This data type is not supported in Gemini API.
+  """
 
   hyper_parameters: Optional[dict[str, Any]] = Field(
       default=None,
@@ -10308,7 +10690,10 @@ class PartnerModelTuningSpec(_common.BaseModel):
 
 
 class PartnerModelTuningSpecDict(TypedDict, total=False):
-  """Tuning spec for Partner models."""
+  """Tuning spec for Partner models.
+
+  This data type is not supported in Gemini API.
+  """
 
   hyper_parameters: Optional[dict[str, Any]]
   """Hyperparameters for tuning. The accepted hyper_parameters and their valid range of values will differ depending on the base model."""
@@ -10326,7 +10711,7 @@ PartnerModelTuningSpecOrDict = Union[
 
 
 class VeoHyperParameters(_common.BaseModel):
-  """Hyperparameters for Veo."""
+  """Hyperparameters for Veo. This data type is not supported in Gemini API."""
 
   epoch_count: Optional[int] = Field(
       default=None,
@@ -10343,7 +10728,7 @@ class VeoHyperParameters(_common.BaseModel):
 
 
 class VeoHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Veo."""
+  """Hyperparameters for Veo. This data type is not supported in Gemini API."""
 
   epoch_count: Optional[int]
   """Optional. Number of complete passes the model makes over the entire training dataset during training."""
@@ -10359,7 +10744,10 @@ VeoHyperParametersOrDict = Union[VeoHyperParameters, VeoHyperParametersDict]
 
 
 class VeoTuningSpec(_common.BaseModel):
-  """Tuning Spec for Veo Model Tuning."""
+  """Tuning Spec for Veo Model Tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   hyper_parameters: Optional[VeoHyperParameters] = Field(
       default=None, description="""Optional. Hyperparameters for Veo."""
@@ -10375,7 +10763,10 @@ class VeoTuningSpec(_common.BaseModel):
 
 
 class VeoTuningSpecDict(TypedDict, total=False):
-  """Tuning Spec for Veo Model Tuning."""
+  """Tuning Spec for Veo Model Tuning.
+
+  This data type is not supported in Gemini API.
+  """
 
   hyper_parameters: Optional[VeoHyperParametersDict]
   """Optional. Hyperparameters for Veo."""
@@ -10714,22 +11105,30 @@ _CancelTuningJobParametersOrDict = Union[
 
 
 class TuningExample(_common.BaseModel):
+  """A single example for tuning.
 
-  text_input: Optional[str] = Field(
-      default=None, description="""Text model input."""
-  )
+  This data type is not supported in Vertex AI.
+  """
+
   output: Optional[str] = Field(
-      default=None, description="""The expected model output."""
+      default=None, description="""Required. The expected model output."""
+  )
+  text_input: Optional[str] = Field(
+      default=None, description="""Optional. Text model input."""
   )
 
 
 class TuningExampleDict(TypedDict, total=False):
+  """A single example for tuning.
 
-  text_input: Optional[str]
-  """Text model input."""
+  This data type is not supported in Vertex AI.
+  """
 
   output: Optional[str]
-  """The expected model output."""
+  """Required. The expected model output."""
+
+  text_input: Optional[str]
+  """Optional. Text model input."""
 
 
 TuningExampleOrDict = Union[TuningExample, TuningExampleDict]
@@ -10776,7 +11175,7 @@ class TuningValidationDataset(_common.BaseModel):
   )
   vertex_dataset_resource: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+      description="""The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
 
 
@@ -10786,7 +11185,7 @@ class TuningValidationDatasetDict(TypedDict, total=False):
   """GCS URI of the file containing validation dataset in JSONL format."""
 
   vertex_dataset_resource: Optional[str]
-  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
+  """The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
 
 TuningValidationDatasetOrDict = Union[
@@ -10802,7 +11201,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
-      description="""Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+      description="""Validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
   )
   tuned_model_display_name: Optional[str] = Field(
       default=None,
@@ -10854,7 +11253,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
-  """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+  """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
 
   tuned_model_display_name: Optional[str]
   """The display name of the tuned Model. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
@@ -11117,20 +11516,24 @@ class CachedContentUsageMetadata(_common.BaseModel):
   """Metadata on the usage of the cached content."""
 
   audio_duration_seconds: Optional[int] = Field(
-      default=None, description="""Duration of audio in seconds."""
+      default=None,
+      description="""Duration of audio in seconds. This field is not supported in Gemini API.""",
   )
   image_count: Optional[int] = Field(
-      default=None, description="""Number of images."""
+      default=None,
+      description="""Number of images. This field is not supported in Gemini API.""",
   )
   text_count: Optional[int] = Field(
-      default=None, description="""Number of text characters."""
+      default=None,
+      description="""Number of text characters. This field is not supported in Gemini API.""",
   )
   total_token_count: Optional[int] = Field(
       default=None,
       description="""Total number of tokens that the cached content consumes.""",
   )
   video_duration_seconds: Optional[int] = Field(
-      default=None, description="""Duration of video in seconds."""
+      default=None,
+      description="""Duration of video in seconds. This field is not supported in Gemini API.""",
   )
 
 
@@ -11138,19 +11541,19 @@ class CachedContentUsageMetadataDict(TypedDict, total=False):
   """Metadata on the usage of the cached content."""
 
   audio_duration_seconds: Optional[int]
-  """Duration of audio in seconds."""
+  """Duration of audio in seconds. This field is not supported in Gemini API."""
 
   image_count: Optional[int]
-  """Number of images."""
+  """Number of images. This field is not supported in Gemini API."""
 
   text_count: Optional[int]
-  """Number of text characters."""
+  """Number of text characters. This field is not supported in Gemini API."""
 
   total_token_count: Optional[int]
   """Total number of tokens that the cached content consumes."""
 
   video_duration_seconds: Optional[int]
-  """Duration of video in seconds."""
+  """Duration of video in seconds. This field is not supported in Gemini API."""
 
 
 CachedContentUsageMetadataOrDict = Union[
@@ -11541,10 +11944,11 @@ class ListFilesResponse(_common.BaseModel):
       default=None, description="""Used to retain the full HTTP response."""
   )
   next_page_token: Optional[str] = Field(
-      default=None, description="""A token to retrieve next page of results."""
+      default=None,
+      description="""A token that can be sent as a `page_token` into a subsequent `ListFiles` call.""",
   )
   files: Optional[list[File]] = Field(
-      default=None, description="""The list of files."""
+      default=None, description="""The list of `File`s."""
   )
 
 
@@ -11555,10 +11959,10 @@ class ListFilesResponseDict(TypedDict, total=False):
   """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
-  """A token to retrieve next page of results."""
+  """A token that can be sent as a `page_token` into a subsequent `ListFiles` call."""
 
   files: Optional[list[FileDict]]
-  """The list of files."""
+  """The list of `File`s."""
 
 
 ListFilesResponseOrDict = Union[ListFilesResponse, ListFilesResponseDict]
@@ -12234,6 +12638,25 @@ class BatchJob(_common.BaseModel):
     if self.state is None:
       return False
     return self.state.name in JOB_STATES_ENDED
+
+
+class GenerationConfigThinkingConfig(ThinkingConfig):
+  """Config for thinking feature.
+
+  This class will be deprecated. Please use `ThinkingConfig` instead.
+  """
+
+
+class GenerationConfigThinkingConfigDict(ThinkingConfigDict):
+  """Config for thinking feature.
+
+  This class will be deprecated. Please use `ThinkingConfig` instead.
+  """
+
+
+GenerationConfigThinkingConfigOrDict = Union[
+    GenerationConfigThinkingConfig, GenerationConfigThinkingConfigDict
+]
 
 
 class BatchJobDict(TypedDict, total=False):

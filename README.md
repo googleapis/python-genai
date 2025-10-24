@@ -242,6 +242,25 @@ http_options = types.HttpOptions(
 client=Client(..., http_options=http_options)
 ```
 
+### Custom base url
+
+In some cases you might need a custom base url (for example, API gateway proxy
+ server) and bypass some authentication checks for project, location, or API key.
+You may pass the custom base url like this:
+
+```python
+
+base_url = 'https://test-api-gateway-proxy.com'
+client = Client(
+  vertexai=True,
+  http_options={
+      'base_url': base_url,
+      'headers': {'Authorization': 'Bearer test_token'},
+  },
+)
+
+```
+
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
@@ -255,13 +274,35 @@ See the 'Create a client' section above to initialize a client.
 
 ### Generate Content
 
-#### with text content
+#### with text content input (text output)
 
 ```python
 response = client.models.generate_content(
     model='gemini-2.5-flash', contents='Why is the sky blue?'
 )
 print(response.text)
+```
+
+#### with text content input (image output)
+
+```python
+from google.genai import types
+
+response = client.models.generate_content(
+    model='gemini-2.5-flash-image',
+    contents='A cartoon infographic for flying sneakers',
+    config=types.GenerateContentConfig(
+    response_modalities=["IMAGE"],
+      image_config=types.ImageConfig(
+          aspect_ratio="9:16",
+      ),
+    ),
+)
+
+for part in response.parts:
+  if part.inline_data:
+    generated_image = part.as_image()
+    generated_image.show()
 ```
 
 #### with uploaded file (Gemini Developer API only)

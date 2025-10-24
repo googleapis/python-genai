@@ -3,17 +3,16 @@ requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=
 
 [project]
 name = "google-genai"
-version = "1.43.0"
+version = "1.46.0"
 description = "GenAI Python SDK"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 requires-python = ">=3.9"
 authors = [
     { name = "Google LLC", email = "googleapis-packages@google.com" },
 ]
 classifiers = [
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -22,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Internet",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -43,12 +43,16 @@ local-tokenizer = ["sentencepiece>=0.2.0", "protobuf"]
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
 
-[tool.setuptools]
-packages = [
-    "google",
-    "google.genai",
-]
-include-package-data = true
+# [tool.setuptools] settings are in setup.cfg
 
-[tools.setuptools.package_data]
+[tool.setuptools.package-data]
 "google.genai" = ["py.typed"]
+
+[tool.mypy]
+exclude = ["tests/", "_test_api_client\\.py"]
+plugins = ["pydantic.mypy"]
+# we are ignoring 'unused-ignore' because we run mypy on Python 3.9 - 3.13 and
+# some errors in _automatic_function_calling_util.py only apply in 3.10+
+# 'import-not-found' and 'import-untyped' are environment specific
+disable_error_code = ["import-not-found", "import-untyped", "unused-ignore"]
+strict = true
