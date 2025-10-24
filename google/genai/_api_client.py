@@ -44,6 +44,7 @@ import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
+from google.auth.exceptions import DefaultCredentialsError
 from google.auth.transport.requests import Request
 import httpx
 from pydantic import BaseModel
@@ -181,9 +182,15 @@ def join_url_path(base_url: str, path: str) -> str:
 
 def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   """Loads google auth credentials and project id."""
-  credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
-      scopes=['https://www.googleapis.com/auth/cloud-platform'],
-  )
+  try:
+    credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
+        scopes=['https://www.googleapis.com/auth/cloud-platform'],
+    )
+  except DefaultCredentialsError:
+    time.sleep(0.5)
+    credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
+        scopes=['https://www.googleapis.com/auth/cloud-platform'],
+    )
 
   if not project:
     project = loaded_project_id
