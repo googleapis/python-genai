@@ -658,11 +658,14 @@ class BaseApiClient:
         )
       if self.api_key or self.location == 'global':
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif self.custom_base_url and not has_sufficient_auth:
+      elif self.custom_base_url and not ((project and location) or api_key):
         # Avoid setting default base url and api version if base_url provided.
         # API gateway proxy can use the auth in custom headers, not url.
         # Enable custom url if auth is not sufficient.
         self._http_options.base_url = self.custom_base_url
+        # Clear project and location if base_url is provided.
+        self.project = None
+        self.location = None
       else:
         self._http_options.base_url = (
             f'https://{self.location}-aiplatform.googleapis.com/'
@@ -706,10 +709,15 @@ class BaseApiClient:
     else:
       self._async_httpx_client = AsyncHttpxClient(**async_client_args)
     if self._use_aiohttp():
-      # Do it once at the genai.Client level. Share among all requests.
-      self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
-          self._http_options
-      )
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
+        # Do it once at the genai.Client level. Share among all requests.
+        self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
+            self._http_options
+        )
+      except ImportError:
+        pass
+
     # Initialize the aiohttp client session.
     self._aiohttp_session: Optional[aiohttp.ClientSession] = None
 
@@ -914,6 +922,7 @@ class BaseApiClient:
         has_aiohttp
         and (self._http_options.async_client_args or {}).get('transport')
         is None
+        and (self._http_options.httpx_async_client is None)
     )
 
   def _websocket_base_url(self) -> str:
@@ -1059,11 +1068,16 @@ class BaseApiClient:
       _common.recursive_dict_update(
           request_dict, patched_http_options.extra_body
       )
-
-    url = join_url_path(
-        base_url,
-        versioned_path,
-    )
+    url = base_url
+    if (
+        not self.custom_base_url
+        or (self.project and self.location)
+        or self.api_key
+    ):
+      url = join_url_path(
+          base_url,
+          versioned_path,
+      )
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(

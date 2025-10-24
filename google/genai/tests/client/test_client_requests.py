@@ -144,3 +144,28 @@ def test_build_request_keeps_sdk_version_headers(monkeypatch):
   assert 'gl-python/' in request.headers['x-goog-api-client']
   assert 'google-genai-sdk/' in request.headers['x-goog-api-client']
   assert 'gl-python/' in request.headers['x-goog-api-client']
+
+
+def build_test_client_no_env_vars(monkeypatch):
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  return Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+    )
+
+
+def test_build_request_with_custom_base_url_no_env_vars(monkeypatch):
+  request_client = (
+      build_test_client_no_env_vars(monkeypatch).models._api_client
+  )
+  request = request_client._build_request(
+      'GET',
+      'test/path',
+      {'key': 'value'},
+  )
+  assert request.url == 'https://custom-base-url.com'
