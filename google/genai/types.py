@@ -1485,23 +1485,24 @@ class HttpRetryOptions(_common.BaseModel):
   )
   initial_delay: Optional[float] = Field(
       default=None,
-      description="""Initial delay before the first retry, in fractions of a second.""",
+      description="""Initial delay before the first retry, in fractions of a second. If not specified, default to 1.0 second.""",
   )
   max_delay: Optional[float] = Field(
       default=None,
-      description="""Maximum delay between retries, in fractions of a second.""",
+      description="""Maximum delay between retries, in fractions of a second. If not specified, default to 60.0 seconds.""",
   )
   exp_base: Optional[float] = Field(
       default=None,
-      description="""Multiplier by which the delay increases after each attempt.""",
+      description="""Multiplier by which the delay increases after each attempt. If not specified, default to 2.0.""",
   )
   jitter: Optional[float] = Field(
-      default=None, description="""Randomness factor for the delay."""
+      default=None,
+      description="""Randomness factor for the delay. If not specified, default to 1.0.""",
   )
   http_status_codes: Optional[list[int]] = Field(
       default=None,
       description="""List of HTTP status codes that should trigger a retry.
-      If not specified, a default set of retryable codes may be used.""",
+      If not specified, a default set of retryable codes (408, 429, and 5xx) may be used.""",
   )
 
 
@@ -1513,20 +1514,20 @@ class HttpRetryOptionsDict(TypedDict, total=False):
       If 0 or 1, it means no retries."""
 
   initial_delay: Optional[float]
-  """Initial delay before the first retry, in fractions of a second."""
+  """Initial delay before the first retry, in fractions of a second. If not specified, default to 1.0 second."""
 
   max_delay: Optional[float]
-  """Maximum delay between retries, in fractions of a second."""
+  """Maximum delay between retries, in fractions of a second. If not specified, default to 60.0 seconds."""
 
   exp_base: Optional[float]
-  """Multiplier by which the delay increases after each attempt."""
+  """Multiplier by which the delay increases after each attempt. If not specified, default to 2.0."""
 
   jitter: Optional[float]
-  """Randomness factor for the delay."""
+  """Randomness factor for the delay. If not specified, default to 1.0."""
 
   http_status_codes: Optional[list[int]]
   """List of HTTP status codes that should trigger a retry.
-      If not specified, a default set of retryable codes may be used."""
+      If not specified, a default set of retryable codes (408, 429, and 5xx) may be used."""
 
 
 HttpRetryOptionsOrDict = Union[HttpRetryOptions, HttpRetryOptionsDict]
