@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.47.0](https://github.com/googleapis/python-genai/compare/v1.46.0...v1.47.0) (2025-10-24)
+
+
+### Features
+
+* Support default global location when not using api key with vertexai backend ([6340ce0](https://github.com/googleapis/python-genai/commit/6340ce0cf04985c259ba6f85305ad29ec74b5c47))
+
+
+### Bug Fixes
+
+* Check environment Vertex AI api key for credential precedence ([9bd758c](https://github.com/googleapis/python-genai/commit/9bd758c50c0dfee463ec722975ff19e7d58436fd))
+* Setting custom httpx async client will ensure using httpx client even if aiohttp is installed ([7bd1bde](https://github.com/googleapis/python-genai/commit/7bd1bdef36179d404f671926df624afc5be5682d))
+* Support custom_base_url for Live and other APIs when project/location are unset and even when project/location are set in the environment, and avoid Automatic Default Credentials ([7bd1bde](https://github.com/googleapis/python-genai/commit/7bd1bdef36179d404f671926df624afc5be5682d))
+
+
+### Documentation
+
+* Add docstring for classes and fields that are not supported in Gemini or Vertex API ([4a6c6af](https://github.com/googleapis/python-genai/commit/4a6c6af19063bc2ae0dd54f98fa345c0666b7f58))
+* Add docstring for enum classes that are not supported in Gemini or Vertex API ([909f26b](https://github.com/googleapis/python-genai/commit/909f26b926267b690c8a02dd97ee7681a43f3d7b))
+* Update Codegen Instructions to include newer models and use consistent formatting. ([f0b0a94](https://github.com/googleapis/python-genai/commit/f0b0a94aa174e9e31dd56542cb3f9683fb065176))
+
 ## [1.46.0](https://github.com/googleapis/python-genai/compare/v1.45.0...v1.46.0) (2025-10-21)
 
 
