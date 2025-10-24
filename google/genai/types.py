@@ -2670,72 +2670,6 @@ class FunctionDeclarationDict(TypedDict, total=False):
 FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
 
 
-class Interval(_common.BaseModel):
-  """Represents a time interval, encoded as a start time (inclusive) and an end time (exclusive).
-
-  The start time must be less than or equal to the end time.
-  When the start equals the end time, the interval is an empty interval.
-  (matches no time)
-  When both start and end are unspecified, the interval matches any time.
-  """
-
-  start_time: Optional[datetime.datetime] = Field(
-      default=None, description="""The start time of the interval."""
-  )
-  end_time: Optional[datetime.datetime] = Field(
-      default=None, description="""The end time of the interval."""
-  )
-
-
-class IntervalDict(TypedDict, total=False):
-  """Represents a time interval, encoded as a start time (inclusive) and an end time (exclusive).
-
-  The start time must be less than or equal to the end time.
-  When the start equals the end time, the interval is an empty interval.
-  (matches no time)
-  When both start and end are unspecified, the interval matches any time.
-  """
-
-  start_time: Optional[datetime.datetime]
-  """The start time of the interval."""
-
-  end_time: Optional[datetime.datetime]
-  """The end time of the interval."""
-
-
-IntervalOrDict = Union[Interval, IntervalDict]
-
-
-class GoogleSearch(_common.BaseModel):
-  """Tool to support Google Search in Model. Powered by Google."""
-
-  time_range_filter: Optional[Interval] = Field(
-      default=None,
-      description="""Optional. Filter search results to a specific time range.
-      If customers set a start time, they must set an end time (and vice versa).
-      """,
-  )
-  exclude_domains: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API.""",
-  )
-
-
-class GoogleSearchDict(TypedDict, total=False):
-  """Tool to support Google Search in Model. Powered by Google."""
-
-  time_range_filter: Optional[IntervalDict]
-  """Optional. Filter search results to a specific time range.
-      If customers set a start time, they must set an end time (and vice versa).
-      """
-
-  exclude_domains: Optional[list[str]]
-  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API."""
-
-
-GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
-
-
 class DynamicRetrievalConfig(_common.BaseModel):
   """Describes the options to customize dynamic retrieval."""
 
@@ -2783,25 +2717,6 @@ class GoogleSearchRetrievalDict(TypedDict, total=False):
 GoogleSearchRetrievalOrDict = Union[
     GoogleSearchRetrieval, GoogleSearchRetrievalDict
 ]
-
-
-class EnterpriseWebSearch(_common.BaseModel):
-  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
-
-  exclude_domains: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains.""",
-  )
-
-
-class EnterpriseWebSearchDict(TypedDict, total=False):
-  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance."""
-
-  exclude_domains: Optional[list[str]]
-  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains."""
-
-
-EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
 
 
 class ApiKeyConfig(_common.BaseModel):
@@ -3016,21 +2931,6 @@ class GoogleMapsDict(TypedDict, total=False):
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
-
-
-class UrlContext(_common.BaseModel):
-  """Tool to support URL context retrieval."""
-
-  pass
-
-
-class UrlContextDict(TypedDict, total=False):
-  """Tool to support URL context retrieval."""
-
-  pass
-
-
-UrlContextOrDict = Union[UrlContext, UrlContextDict]
 
 
 class ComputerUse(_common.BaseModel):
@@ -3672,6 +3572,114 @@ class ToolCodeExecutionDict(TypedDict, total=False):
 ToolCodeExecutionOrDict = Union[ToolCodeExecution, ToolCodeExecutionDict]
 
 
+class EnterpriseWebSearch(_common.BaseModel):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance.
+
+  This data type is not supported in Gemini API.
+  """
+
+  exclude_domains: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains.""",
+  )
+
+
+class EnterpriseWebSearchDict(TypedDict, total=False):
+  """Tool to search public web data, powered by Vertex AI Search and Sec4 compliance.
+
+  This data type is not supported in Gemini API.
+  """
+
+  exclude_domains: Optional[list[str]]
+  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains."""
+
+
+EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
+
+
+class Interval(_common.BaseModel):
+  """Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
+
+  The start must be less than or equal to the end. When the start equals the
+  end, the interval is empty (matches no time). When both start and end are
+  unspecified, the interval matches any time.
+  """
+
+  end_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Exclusive end of the interval. If specified, a Timestamp matching this interval will have to be before the end.""",
+  )
+  start_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Inclusive start of the interval. If specified, a Timestamp matching this interval will have to be the same or after the start.""",
+  )
+
+
+class IntervalDict(TypedDict, total=False):
+  """Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
+
+  The start must be less than or equal to the end. When the start equals the
+  end, the interval is empty (matches no time). When both start and end are
+  unspecified, the interval matches any time.
+  """
+
+  end_time: Optional[datetime.datetime]
+  """Optional. Exclusive end of the interval. If specified, a Timestamp matching this interval will have to be before the end."""
+
+  start_time: Optional[datetime.datetime]
+  """Optional. Inclusive start of the interval. If specified, a Timestamp matching this interval will have to be the same or after the start."""
+
+
+IntervalOrDict = Union[Interval, IntervalDict]
+
+
+class GoogleSearch(_common.BaseModel):
+  """GoogleSearch tool type.
+
+  Tool to support Google Search in Model. Powered by Google.
+  """
+
+  exclude_domains: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API.""",
+  )
+  time_range_filter: Optional[Interval] = Field(
+      default=None,
+      description="""Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI.""",
+  )
+
+
+class GoogleSearchDict(TypedDict, total=False):
+  """GoogleSearch tool type.
+
+  Tool to support Google Search in Model. Powered by Google.
+  """
+
+  exclude_domains: Optional[list[str]]
+  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API."""
+
+  time_range_filter: Optional[IntervalDict]
+  """Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI."""
+
+
+GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
+
+
+class UrlContext(_common.BaseModel):
+  """Tool to support URL context."""
+
+  pass
+
+
+class UrlContextDict(TypedDict, total=False):
+  """Tool to support URL context."""
+
+  pass
+
+
+UrlContextOrDict = Union[UrlContext, UrlContextDict]
+
+
 class Tool(_common.BaseModel):
   """Tool details of a tool that the model may use to generate a response."""
 
@@ -3683,28 +3691,14 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API.""",
   )
-  google_search: Optional[GoogleSearch] = Field(
-      default=None,
-      description="""Optional. Google Search tool type. Specialized retrieval tool
-      that is powered by Google Search.""",
-  )
   google_search_retrieval: Optional[GoogleSearchRetrieval] = Field(
       default=None,
       description="""Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search.""",
-  )
-  enterprise_web_search: Optional[EnterpriseWebSearch] = Field(
-      default=None,
-      description="""Optional. Enterprise web search tool type. Specialized retrieval
-      tool that is powered by Vertex AI Search and Sec4 compliance.""",
   )
   google_maps: Optional[GoogleMaps] = Field(
       default=None,
       description="""Optional. Google Maps tool type. Specialized retrieval tool
       that is powered by Google Maps.""",
-  )
-  url_context: Optional[UrlContext] = Field(
-      default=None,
-      description="""Optional. Tool to support URL context retrieval.""",
   )
   computer_use: Optional[ComputerUse] = Field(
       default=None,
@@ -3715,6 +3709,18 @@ class Tool(_common.BaseModel):
   code_execution: Optional[ToolCodeExecution] = Field(
       default=None,
       description="""Optional. CodeExecution tool type. Enables the model to execute code as part of generation.""",
+  )
+  enterprise_web_search: Optional[EnterpriseWebSearch] = Field(
+      default=None,
+      description="""Optional. Tool to support searching public web data, powered by Vertex AI Search and Sec4 compliance. This field is not supported in Gemini API.""",
+  )
+  google_search: Optional[GoogleSearch] = Field(
+      default=None,
+      description="""Optional. GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google.""",
+  )
+  url_context: Optional[UrlContext] = Field(
+      default=None,
+      description="""Optional. Tool to support URL context retrieval.""",
   )
 
 
@@ -3727,23 +3733,12 @@ class ToolDict(TypedDict, total=False):
   retrieval: Optional[RetrievalDict]
   """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API."""
 
-  google_search: Optional[GoogleSearchDict]
-  """Optional. Google Search tool type. Specialized retrieval tool
-      that is powered by Google Search."""
-
   google_search_retrieval: Optional[GoogleSearchRetrievalDict]
   """Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search."""
-
-  enterprise_web_search: Optional[EnterpriseWebSearchDict]
-  """Optional. Enterprise web search tool type. Specialized retrieval
-      tool that is powered by Vertex AI Search and Sec4 compliance."""
 
   google_maps: Optional[GoogleMapsDict]
   """Optional. Google Maps tool type. Specialized retrieval tool
       that is powered by Google Maps."""
-
-  url_context: Optional[UrlContextDict]
-  """Optional. Tool to support URL context retrieval."""
 
   computer_use: Optional[ComputerUseDict]
   """Optional. Tool to support the model interacting directly with the
@@ -3752,6 +3747,15 @@ class ToolDict(TypedDict, total=False):
 
   code_execution: Optional[ToolCodeExecutionDict]
   """Optional. CodeExecution tool type. Enables the model to execute code as part of generation."""
+
+  enterprise_web_search: Optional[EnterpriseWebSearchDict]
+  """Optional. Tool to support searching public web data, powered by Vertex AI Search and Sec4 compliance. This field is not supported in Gemini API."""
+
+  google_search: Optional[GoogleSearchDict]
+  """Optional. GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google."""
+
+  url_context: Optional[UrlContextDict]
+  """Optional. Tool to support URL context retrieval."""
 
 
 ToolOrDict = Union[Tool, ToolDict]
