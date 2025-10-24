@@ -629,6 +629,9 @@ class BaseApiClient:
         )
         self.api_key = None
 
+      if not self.location and not self.api_key:
+          self.location = 'global'
+
       self.custom_base_url = (
           validated_http_options.base_url
           if validated_http_options.base_url
@@ -650,7 +653,7 @@ class BaseApiClient:
       if not has_sufficient_auth and not self.custom_base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
-            'Project and location or API key must be set when using the Vertex '
+            'Project or API key must be set when using the Vertex '
             'AI API.'
         )
       if self.api_key or self.location == 'global':
