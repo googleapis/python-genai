@@ -49,11 +49,18 @@ def test_constructor_with_httpx_clients():
       'httpx_async_client': httpx.AsyncClient(trust_env=False),
   }
 
+  # Even if aiohttp is installed, expect it to be disabled when httpx clients
+  # are provided.
+  api_client.has_aiohttp = True
+
   mldev_client = Client(
       api_key='google_api_key', http_options=mldev_http_options
   )
   assert not mldev_client.models._api_client._httpx_client.trust_env
   assert not mldev_client.models._api_client._async_httpx_client.trust_env
+  # Expect aiohttp to be disabled when httpx clients are provided, regardless of
+  # whether aiohttp is installed.
+  assert not mldev_client.models._api_client._use_aiohttp()
 
   vertexai_client = Client(
       vertexai=True,
@@ -63,4 +70,8 @@ def test_constructor_with_httpx_clients():
   )
   assert not vertexai_client.models._api_client._httpx_client.trust_env
   assert not vertexai_client.models._api_client._async_httpx_client.trust_env
+  # Expect aiohttp to be disabled when httpx clients are provided, regardless of
+  # whether aiohttp is installed.
+  assert not mldev_client.models._api_client._use_aiohttp()
+
 

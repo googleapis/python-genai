@@ -998,25 +998,7 @@ class AsyncLive(_api_module.BaseModule):
 
       request = json.dumps(request_dict)
     else:
-      if not self._api_client._credentials:
-        # Get bearer token through Application Default Credentials.
-        creds, _ = google.auth.default(  # type: ignore
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
-        )
-      else:
-        creds = self._api_client._credentials
-      # creds.valid is False, and creds.token is None
-      # Need to refresh credentials to populate those
-      if not (creds.token and creds.valid):
-        auth_req = google.auth.transport.requests.Request()  # type: ignore
-        creds.refresh(auth_req)
-      bearer_token = creds.token
-      original_headers = self._api_client._http_options.headers
-      headers = original_headers.copy() if original_headers is not None else {}
-      if not headers.get('Authorization'):
-        headers['Authorization'] = f'Bearer {bearer_token}'
       version = self._api_client._http_options.api_version
-
       has_sufficient_auth = (
           self._api_client.project and self._api_client.location
       )
@@ -1026,8 +1008,36 @@ class AsyncLive(_api_module.BaseModule):
         uri = self._api_client.custom_base_url
         # Keep the model as is.
         transformed_model = model
+        # Do not get credentials for custom url.
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+
       else:
         uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+
+        if not self._api_client._credentials:
+          # Get bearer token through Application Default Credentials.
+          creds, _ = google.auth.default(  # type: ignore
+              scopes=['https://www.googleapis.com/auth/cloud-platform']
+          )
+        else:
+          creds = self._api_client._credentials
+        # creds.valid is False, and creds.token is None
+        # Need to refresh credentials to populate those
+        if not (creds.token and creds.valid):
+          auth_req = google.auth.transport.requests.Request()  # type: ignore
+          creds.refresh(auth_req)
+        bearer_token = creds.token
+
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+        if not headers.get('Authorization'):
+          headers['Authorization'] = f'Bearer {bearer_token}'
+
       location = self._api_client.location
       project = self._api_client.project
       if transformed_model.startswith('publishers/') and project and location:
