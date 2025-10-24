@@ -611,4 +611,9 @@ def prepare_resumable_upload(
             'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
         },
     )
+  if isinstance(file, (str, os.PathLike)):
+    file_name = os.path.basename(file)
+    if http_options.headers is None:
+        http_options.headers = {}
+    http_options.headers['X-Goog-Upload-File-Name'] = file_name
   return http_options, size_bytes, mime_type
