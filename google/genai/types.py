@@ -118,7 +118,7 @@ MetricSubclass = typing.TypeVar('MetricSubclass', bound='Metric')
 
 
 class Outcome(_common.CaseInSensitiveEnum):
-  """Required. Outcome of the code execution."""
+  """Outcome of the code execution."""
 
   OUTCOME_UNSPECIFIED = 'OUTCOME_UNSPECIFIED'
   """Unspecified status. This value should not be used."""
@@ -131,7 +131,7 @@ class Outcome(_common.CaseInSensitiveEnum):
 
 
 class Language(_common.CaseInSensitiveEnum):
-  """Required. Programming language of the `code`."""
+  """Programming language of the `code`."""
 
   LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
   """Unspecified language. This value should not be used."""
@@ -153,7 +153,7 @@ class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
 
 
 class Type(_common.CaseInSensitiveEnum):
-  """Optional. The type of the data."""
+  """The type of the data."""
 
   TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
   """Not specified, should not be used."""
@@ -174,7 +174,7 @@ class Type(_common.CaseInSensitiveEnum):
 
 
 class HarmCategory(_common.CaseInSensitiveEnum):
-  """Required. Harm category."""
+  """Harm category."""
 
   HARM_CATEGORY_UNSPECIFIED = 'HARM_CATEGORY_UNSPECIFIED'
   """The harm category is unspecified."""
@@ -205,10 +205,10 @@ class HarmCategory(_common.CaseInSensitiveEnum):
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
-  """Optional.
+  """Specify if the threshold is used for probability or severity score.
 
-  Specify if the threshold is used for probability or severity score. If not
-  specified, the threshold is used for probability score.
+  If not specified, the threshold is used for probability score. This enum is
+  not supported in Gemini API.
   """
 
   HARM_BLOCK_METHOD_UNSPECIFIED = 'HARM_BLOCK_METHOD_UNSPECIFIED'
@@ -220,7 +220,7 @@ class HarmBlockMethod(_common.CaseInSensitiveEnum):
 
 
 class HarmBlockThreshold(_common.CaseInSensitiveEnum):
-  """Required. The harm block threshold."""
+  """The harm block threshold."""
 
   HARM_BLOCK_THRESHOLD_UNSPECIFIED = 'HARM_BLOCK_THRESHOLD_UNSPECIFIED'
   """Unspecified harm block threshold."""
@@ -246,7 +246,7 @@ class Mode(_common.CaseInSensitiveEnum):
 
 
 class AuthType(_common.CaseInSensitiveEnum):
-  """Type of auth scheme."""
+  """Type of auth scheme. This enum is not supported in Gemini API."""
 
   AUTH_TYPE_UNSPECIFIED = 'AUTH_TYPE_UNSPECIFIED'
   NO_AUTH = 'NO_AUTH'
@@ -264,7 +264,10 @@ class AuthType(_common.CaseInSensitiveEnum):
 
 
 class ApiSpec(_common.CaseInSensitiveEnum):
-  """The API spec that the external API implements."""
+  """The API spec that the external API implements.
+
+  This enum is not supported in Gemini API.
+  """
 
   API_SPEC_UNSPECIFIED = 'API_SPEC_UNSPECIFIED'
   """Unspecified API spec. This value should not be used."""
@@ -343,7 +346,10 @@ class HarmProbability(_common.CaseInSensitiveEnum):
 
 
 class HarmSeverity(_common.CaseInSensitiveEnum):
-  """Output only. Harm severity levels in the content."""
+  """Output only.
+
+  Harm severity levels in the content. This enum is not supported in Gemini API.
+  """
 
   HARM_SEVERITY_UNSPECIFIED = 'HARM_SEVERITY_UNSPECIFIED'
   """Harm severity unspecified."""
@@ -382,7 +388,7 @@ class TrafficType(_common.CaseInSensitiveEnum):
   """Output only.
 
   Traffic type. This shows whether a request consumes Pay-As-You-Go or
-  Provisioned Throughput quota.
+  Provisioned Throughput quota. This enum is not supported in Gemini API.
   """
 
   TRAFFIC_TYPE_UNSPECIFIED = 'TRAFFIC_TYPE_UNSPECIFIED'
@@ -449,7 +455,7 @@ class JobState(_common.CaseInSensitiveEnum):
 
 
 class TuningMode(_common.CaseInSensitiveEnum):
-  """Tuning mode."""
+  """Tuning mode. This enum is not supported in Gemini API."""
 
   TUNING_MODE_UNSPECIFIED = 'TUNING_MODE_UNSPECIFIED'
   """Tuning mode is unspecified."""
@@ -460,7 +466,7 @@ class TuningMode(_common.CaseInSensitiveEnum):
 
 
 class AdapterSize(_common.CaseInSensitiveEnum):
-  """Optional. Adapter size for tuning."""
+  """Adapter size for tuning. This enum is not supported in Gemini API."""
 
   ADAPTER_SIZE_UNSPECIFIED = 'ADAPTER_SIZE_UNSPECIFIED'
   """Adapter size is unspecified."""
@@ -479,7 +485,10 @@ class AdapterSize(_common.CaseInSensitiveEnum):
 
 
 class TuningTask(_common.CaseInSensitiveEnum):
-  """Optional. The tuning task. Either I2V or T2V."""
+  """The tuning task.
+
+  Either I2V or T2V. This enum is not supported in Gemini API.
+  """
 
   TUNING_TASK_UNSPECIFIED = 'TUNING_TASK_UNSPECIFIED'
   """Default value. This value is unused."""
@@ -5723,7 +5732,7 @@ class SafetyRating(_common.BaseModel):
   )
   overwritten_threshold: Optional[HarmBlockThreshold] = Field(
       default=None,
-      description="""Output only. The overwritten threshold for the safety category of Gemini 2.0 image out. If minors are detected in the output image, the threshold of each safety category will be overwritten if user sets a lower threshold.""",
+      description="""Output only. The overwritten threshold for the safety category of Gemini 2.0 image out. If minors are detected in the output image, the threshold of each safety category will be overwritten if user sets a lower threshold. This field is not supported in Gemini API.""",
   )
   probability: Optional[HarmProbability] = Field(
       default=None,
@@ -5735,7 +5744,7 @@ class SafetyRating(_common.BaseModel):
   )
   severity: Optional[HarmSeverity] = Field(
       default=None,
-      description="""Output only. Harm severity levels in the content.""",
+      description="""Output only. Harm severity levels in the content. This field is not supported in Gemini API.""",
   )
   severity_score: Optional[float] = Field(
       default=None,
@@ -5753,7 +5762,7 @@ class SafetyRatingDict(TypedDict, total=False):
   """Output only. Harm category."""
 
   overwritten_threshold: Optional[HarmBlockThreshold]
-  """Output only. The overwritten threshold for the safety category of Gemini 2.0 image out. If minors are detected in the output image, the threshold of each safety category will be overwritten if user sets a lower threshold."""
+  """Output only. The overwritten threshold for the safety category of Gemini 2.0 image out. If minors are detected in the output image, the threshold of each safety category will be overwritten if user sets a lower threshold. This field is not supported in Gemini API."""
 
   probability: Optional[HarmProbability]
   """Output only. Harm probability levels in the content."""
@@ -5762,7 +5771,7 @@ class SafetyRatingDict(TypedDict, total=False):
   """Output only. Harm probability score. This field is not supported in Gemini API."""
 
   severity: Optional[HarmSeverity]
-  """Output only. Harm severity levels in the content."""
+  """Output only. Harm severity levels in the content. This field is not supported in Gemini API."""
 
   severity_score: Optional[float]
   """Output only. Harm severity score. This field is not supported in Gemini API."""
