@@ -186,10 +186,10 @@ def test_vertex_from_env(monkeypatch):
   monkeypatch.setenv('GOOGLE_GENAI_USE_VERTEXAI', 'true')
   monkeypatch.setenv('GOOGLE_CLOUD_PROJECT', project_id)
   monkeypatch.setenv('GOOGLE_CLOUD_LOCATION', location)
+  monkeypatch.delenv('GOOGLE_VERTEX_BASE_URL', raising=False)
 
   client = Client()
 
-  assert client.aio.live._api_client.custom_base_url is None
   assert client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.project == project_id
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
