@@ -252,7 +252,7 @@ You may pass the custom base url like this:
 
 base_url = 'https://test-api-gateway-proxy.com'
 client = Client(
-  vertexai=True,
+  vertexai=True,  # Currently only vertexai=True is supported
   http_options={
       'base_url': base_url,
       'headers': {'Authorization': 'Bearer test_token'},
