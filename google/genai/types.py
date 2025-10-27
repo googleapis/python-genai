@@ -1481,7 +1481,7 @@ class HttpRetryOptions(_common.BaseModel):
   attempts: Optional[int] = Field(
       default=None,
       description="""Maximum number of attempts, including the original request.
-      If 0 or 1, it means no retries.""",
+      If 0 or 1, it means no retries. If not specified, default to 5.""",
   )
   initial_delay: Optional[float] = Field(
       default=None,
@@ -1511,7 +1511,7 @@ class HttpRetryOptionsDict(TypedDict, total=False):
 
   attempts: Optional[int]
   """Maximum number of attempts, including the original request.
-      If 0 or 1, it means no retries."""
+      If 0 or 1, it means no retries. If not specified, default to 5."""
 
   initial_delay: Optional[float]
   """Initial delay before the first retry, in fractions of a second. If not specified, default to 1.0 second."""
