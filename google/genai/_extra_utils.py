@@ -117,6 +117,33 @@ def format_destination(
   return config
 
 
+def find_afc_incompatible_tool_indexes(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> list[int]:
+  """Checks if the config contains any AFC incompatible tools.
+
+  A `types.Tool` object that contains `function_declarations` is considered a
+  non-AFC tool for this execution path.
+
+  Returns:
+    True if any tool is a `types.Tool` with function declarations,
+    False otherwise.
+  """
+  if not config:
+    return []
+  config_model = _create_generate_content_config_model(config)
+  incompatible_tools_indexes: list[int] = []
+
+  if not config_model or not config_model.tools:
+    return incompatible_tools_indexes
+
+  for index, tool in enumerate(config_model.tools):
+    if isinstance(tool, types.Tool) and tool.function_declarations:
+      incompatible_tools_indexes.append(index)
+
+  return incompatible_tools_indexes
+
+
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
     mcp_to_genai_tool_adapters: Optional[
