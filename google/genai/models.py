@@ -3516,6 +3516,20 @@ def _UpscaleImageAPIConfig_to_vertex(
         getv(from_object, ['output_gcs_uri']),
     )
 
+  if getv(from_object, ['safety_filter_level']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'safetySetting'],
+        getv(from_object, ['safety_filter_level']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
@@ -5376,6 +5390,8 @@ class Models(_api_module.BaseModule):
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
         output_gcs_uri=config_dct.get('output_gcs_uri', None),
+        safety_filter_level=config_dct.get('safety_filter_level', None),
+        person_generation=config_dct.get('person_generation', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
@@ -7200,6 +7216,8 @@ class AsyncModels(_api_module.BaseModule):
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
         output_gcs_uri=config_dct.get('output_gcs_uri', None),
+        safety_filter_level=config_dct.get('safety_filter_level', None),
+        person_generation=config_dct.get('person_generation', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
