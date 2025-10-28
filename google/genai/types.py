@@ -7384,6 +7384,12 @@ class _UpscaleImageAPIConfig(_common.BaseModel):
       default=None,
       description="""Cloud Storage URI used to store the generated images.""",
   )
+  safety_filter_level: Optional[SafetyFilterLevel] = Field(
+      default=None, description="""Filter level for safety filtering."""
+  )
+  person_generation: Optional[PersonGeneration] = Field(
+      default=None, description="""Allows generation of people by the model."""
+  )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include a reason for filtered-out images in the
@@ -7431,6 +7437,12 @@ class _UpscaleImageAPIConfigDict(TypedDict, total=False):
 
   output_gcs_uri: Optional[str]
   """Cloud Storage URI used to store the generated images."""
+
+  safety_filter_level: Optional[SafetyFilterLevel]
+  """Filter level for safety filtering."""
+
+  person_generation: Optional[PersonGeneration]
+  """Allows generation of people by the model."""
 
   include_rai_reason: Optional[bool]
   """Whether to include a reason for filtered-out images in the
@@ -13546,6 +13558,12 @@ class UpscaleImageConfig(_common.BaseModel):
       default=None,
       description="""Cloud Storage URI used to store the generated images.""",
   )
+  safety_filter_level: Optional[SafetyFilterLevel] = Field(
+      default=None, description="""Filter level for safety filtering."""
+  )
+  person_generation: Optional[PersonGeneration] = Field(
+      default=None, description="""Allows generation of people by the model."""
+  )
   include_rai_reason: Optional[bool] = Field(
       default=None,
       description="""Whether to include a reason for filtered-out images in the
@@ -13592,6 +13610,12 @@ class UpscaleImageConfigDict(TypedDict, total=False):
 
   output_gcs_uri: Optional[str]
   """Cloud Storage URI used to store the generated images."""
+
+  safety_filter_level: Optional[SafetyFilterLevel]
+  """Filter level for safety filtering."""
+
+  person_generation: Optional[PersonGeneration]
+  """Allows generation of people by the model."""
 
   include_rai_reason: Optional[bool]
   """Whether to include a reason for filtered-out images in the
