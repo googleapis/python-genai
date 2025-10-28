@@ -425,35 +425,6 @@ class MediaResolution(_common.CaseInSensitiveEnum):
   """Media resolution set to high (zoomed reframing with 256 tokens)."""
 
 
-class JobState(_common.CaseInSensitiveEnum):
-  """Job state."""
-
-  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
-  """The job state is unspecified."""
-  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
-  """The job has been just created or resumed and processing has not yet begun."""
-  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
-  """The service is preparing to run the job."""
-  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
-  """The job is in progress."""
-  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
-  """The job completed successfully."""
-  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
-  """The job failed."""
-  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
-  """The job is being cancelled. From this state the job may only go to either `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`."""
-  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
-  """The job has been cancelled."""
-  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
-  """The job has been stopped, and can be resumed."""
-  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
-  """The job has expired."""
-  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
-  """The job is being updated. Only jobs in the `JOB_STATE_RUNNING` state can be updated. After updating, the job goes back to the `JOB_STATE_RUNNING` state."""
-  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
-  """The job is partially succeeded, some results may be missing due to errors."""
-
-
 class TuningMode(_common.CaseInSensitiveEnum):
   """Tuning mode. This enum is not supported in Gemini API."""
 
@@ -482,6 +453,35 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 16."""
   ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
   """Adapter size 32."""
+
+
+class JobState(_common.CaseInSensitiveEnum):
+  """Job state."""
+
+  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
+  """The job state is unspecified."""
+  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
+  """The job has been just created or resumed and processing has not yet begun."""
+  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
+  """The service is preparing to run the job."""
+  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
+  """The job is in progress."""
+  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
+  """The job completed successfully."""
+  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
+  """The job failed."""
+  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
+  """The job is being cancelled. From this state the job may only go to either `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`."""
+  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
+  """The job has been cancelled."""
+  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
+  """The job has been stopped, and can be resumed."""
+  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
+  """The job has expired."""
+  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
+  """The job is being updated. Only jobs in the `JOB_STATE_RUNNING` state can be updated. After updating, the job goes back to the `JOB_STATE_RUNNING` state."""
+  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
+  """The job is partially succeeded, some results may be missing due to errors."""
 
 
 class TuningTask(_common.CaseInSensitiveEnum):
@@ -1481,27 +1481,28 @@ class HttpRetryOptions(_common.BaseModel):
   attempts: Optional[int] = Field(
       default=None,
       description="""Maximum number of attempts, including the original request.
-      If 0 or 1, it means no retries.""",
+      If 0 or 1, it means no retries. If not specified, default to 5.""",
   )
   initial_delay: Optional[float] = Field(
       default=None,
-      description="""Initial delay before the first retry, in fractions of a second.""",
+      description="""Initial delay before the first retry, in fractions of a second. If not specified, default to 1.0 second.""",
   )
   max_delay: Optional[float] = Field(
       default=None,
-      description="""Maximum delay between retries, in fractions of a second.""",
+      description="""Maximum delay between retries, in fractions of a second. If not specified, default to 60.0 seconds.""",
   )
   exp_base: Optional[float] = Field(
       default=None,
-      description="""Multiplier by which the delay increases after each attempt.""",
+      description="""Multiplier by which the delay increases after each attempt. If not specified, default to 2.0.""",
   )
   jitter: Optional[float] = Field(
-      default=None, description="""Randomness factor for the delay."""
+      default=None,
+      description="""Randomness factor for the delay. If not specified, default to 1.0.""",
   )
   http_status_codes: Optional[list[int]] = Field(
       default=None,
       description="""List of HTTP status codes that should trigger a retry.
-      If not specified, a default set of retryable codes may be used.""",
+      If not specified, a default set of retryable codes (408, 429, and 5xx) may be used.""",
   )
 
 
@@ -1510,23 +1511,23 @@ class HttpRetryOptionsDict(TypedDict, total=False):
 
   attempts: Optional[int]
   """Maximum number of attempts, including the original request.
-      If 0 or 1, it means no retries."""
+      If 0 or 1, it means no retries. If not specified, default to 5."""
 
   initial_delay: Optional[float]
-  """Initial delay before the first retry, in fractions of a second."""
+  """Initial delay before the first retry, in fractions of a second. If not specified, default to 1.0 second."""
 
   max_delay: Optional[float]
-  """Maximum delay between retries, in fractions of a second."""
+  """Maximum delay between retries, in fractions of a second. If not specified, default to 60.0 seconds."""
 
   exp_base: Optional[float]
-  """Multiplier by which the delay increases after each attempt."""
+  """Multiplier by which the delay increases after each attempt. If not specified, default to 2.0."""
 
   jitter: Optional[float]
-  """Randomness factor for the delay."""
+  """Randomness factor for the delay. If not specified, default to 1.0."""
 
   http_status_codes: Optional[list[int]]
   """List of HTTP status codes that should trigger a retry.
-      If not specified, a default set of retryable codes may be used."""
+      If not specified, a default set of retryable codes (408, 429, and 5xx) may be used."""
 
 
 HttpRetryOptionsOrDict = Union[HttpRetryOptions, HttpRetryOptionsDict]
@@ -3896,135 +3897,6 @@ class ToolConfigDict(TypedDict, total=False):
 ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
 
 
-class PrebuiltVoiceConfig(_common.BaseModel):
-  """The configuration for the prebuilt speaker to use."""
-
-  voice_name: Optional[str] = Field(
-      default=None, description="""The name of the prebuilt voice to use."""
-  )
-
-
-class PrebuiltVoiceConfigDict(TypedDict, total=False):
-  """The configuration for the prebuilt speaker to use."""
-
-  voice_name: Optional[str]
-  """The name of the prebuilt voice to use."""
-
-
-PrebuiltVoiceConfigOrDict = Union[PrebuiltVoiceConfig, PrebuiltVoiceConfigDict]
-
-
-class VoiceConfig(_common.BaseModel):
-  """The configuration for the voice to use."""
-
-  prebuilt_voice_config: Optional[PrebuiltVoiceConfig] = Field(
-      default=None,
-      description="""The configuration for the speaker to use.
-      """,
-  )
-
-
-class VoiceConfigDict(TypedDict, total=False):
-  """The configuration for the voice to use."""
-
-  prebuilt_voice_config: Optional[PrebuiltVoiceConfigDict]
-  """The configuration for the speaker to use.
-      """
-
-
-VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
-
-
-class SpeakerVoiceConfig(_common.BaseModel):
-  """The configuration for the speaker to use."""
-
-  speaker: Optional[str] = Field(
-      default=None,
-      description="""The name of the speaker to use. Should be the same as in the
-          prompt.""",
-  )
-  voice_config: Optional[VoiceConfig] = Field(
-      default=None, description="""The configuration for the voice to use."""
-  )
-
-
-class SpeakerVoiceConfigDict(TypedDict, total=False):
-  """The configuration for the speaker to use."""
-
-  speaker: Optional[str]
-  """The name of the speaker to use. Should be the same as in the
-          prompt."""
-
-  voice_config: Optional[VoiceConfigDict]
-  """The configuration for the voice to use."""
-
-
-SpeakerVoiceConfigOrDict = Union[SpeakerVoiceConfig, SpeakerVoiceConfigDict]
-
-
-class MultiSpeakerVoiceConfig(_common.BaseModel):
-  """The configuration for the multi-speaker setup."""
-
-  speaker_voice_configs: Optional[list[SpeakerVoiceConfig]] = Field(
-      default=None, description="""The configuration for the speaker to use."""
-  )
-
-
-class MultiSpeakerVoiceConfigDict(TypedDict, total=False):
-  """The configuration for the multi-speaker setup."""
-
-  speaker_voice_configs: Optional[list[SpeakerVoiceConfigDict]]
-  """The configuration for the speaker to use."""
-
-
-MultiSpeakerVoiceConfigOrDict = Union[
-    MultiSpeakerVoiceConfig, MultiSpeakerVoiceConfigDict
-]
-
-
-class SpeechConfig(_common.BaseModel):
-  """The speech generation configuration."""
-
-  voice_config: Optional[VoiceConfig] = Field(
-      default=None,
-      description="""The configuration for the speaker to use.
-      """,
-  )
-  multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfig] = Field(
-      default=None,
-      description="""The configuration for the multi-speaker setup.
-          It is mutually exclusive with the voice_config field.
-          """,
-  )
-  language_code: Optional[str] = Field(
-      default=None,
-      description="""Language code (ISO 639. e.g. en-US) for the speech synthesization.
-      Only available for Live API.
-      """,
-  )
-
-
-class SpeechConfigDict(TypedDict, total=False):
-  """The speech generation configuration."""
-
-  voice_config: Optional[VoiceConfigDict]
-  """The configuration for the speaker to use.
-      """
-
-  multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfigDict]
-  """The configuration for the multi-speaker setup.
-          It is mutually exclusive with the voice_config field.
-          """
-
-  language_code: Optional[str]
-  """Language code (ISO 639. e.g. en-US) for the speech synthesization.
-      Only available for Live API.
-      """
-
-
-SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
-
-
 class AutomaticFunctionCallingConfig(_common.BaseModel):
   """The configuration for automatic function calling."""
 
@@ -4380,6 +4252,38 @@ class GenerationConfigRoutingConfigDict(TypedDict, total=False):
 GenerationConfigRoutingConfigOrDict = Union[
     GenerationConfigRoutingConfig, GenerationConfigRoutingConfigDict
 ]
+
+
+class SpeechConfig(_common.BaseModel):
+  """The speech generation config."""
+
+  language_code: Optional[str] = Field(
+      default=None,
+      description="""Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.""",
+  )
+  voice_config: Optional['VoiceConfig'] = Field(
+      default=None, description="""The configuration for the speaker to use."""
+  )
+  multi_speaker_voice_config: Optional['MultiSpeakerVoiceConfig'] = Field(
+      default=None,
+      description="""Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI.""",
+  )
+
+
+class SpeechConfigDict(TypedDict, total=False):
+  """The speech generation config."""
+
+  language_code: Optional[str]
+  """Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization."""
+
+  voice_config: Optional['VoiceConfigDict']
+  """The configuration for the speaker to use."""
+
+  multi_speaker_voice_config: Optional['MultiSpeakerVoiceConfigDict']
+  """Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI."""
+
+
+SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
 
 
 SpeechConfigUnion = Union[str, SpeechConfig]
@@ -8499,6 +8403,101 @@ class DeleteModelResponseDict(TypedDict, total=False):
 DeleteModelResponseOrDict = Union[DeleteModelResponse, DeleteModelResponseDict]
 
 
+class PrebuiltVoiceConfig(_common.BaseModel):
+  """The configuration for the prebuilt speaker to use."""
+
+  voice_name: Optional[str] = Field(
+      default=None, description="""The name of the preset voice to use."""
+  )
+
+
+class PrebuiltVoiceConfigDict(TypedDict, total=False):
+  """The configuration for the prebuilt speaker to use."""
+
+  voice_name: Optional[str]
+  """The name of the preset voice to use."""
+
+
+PrebuiltVoiceConfigOrDict = Union[PrebuiltVoiceConfig, PrebuiltVoiceConfigDict]
+
+
+class VoiceConfig(_common.BaseModel):
+  """The configuration for the voice to use."""
+
+  prebuilt_voice_config: Optional[PrebuiltVoiceConfig] = Field(
+      default=None,
+      description="""The configuration for the prebuilt voice to use.""",
+  )
+
+
+class VoiceConfigDict(TypedDict, total=False):
+  """The configuration for the voice to use."""
+
+  prebuilt_voice_config: Optional[PrebuiltVoiceConfigDict]
+  """The configuration for the prebuilt voice to use."""
+
+
+VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
+
+
+class SpeakerVoiceConfig(_common.BaseModel):
+  """The configuration for a single speaker in a multi speaker setup.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  speaker: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the speaker to use. Should be the same as in the prompt.""",
+  )
+  voice_config: Optional[VoiceConfig] = Field(
+      default=None,
+      description="""Required. The configuration for the voice to use.""",
+  )
+
+
+class SpeakerVoiceConfigDict(TypedDict, total=False):
+  """The configuration for a single speaker in a multi speaker setup.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  speaker: Optional[str]
+  """Required. The name of the speaker to use. Should be the same as in the prompt."""
+
+  voice_config: Optional[VoiceConfigDict]
+  """Required. The configuration for the voice to use."""
+
+
+SpeakerVoiceConfigOrDict = Union[SpeakerVoiceConfig, SpeakerVoiceConfigDict]
+
+
+class MultiSpeakerVoiceConfig(_common.BaseModel):
+  """The configuration for the multi-speaker setup.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  speaker_voice_configs: Optional[list[SpeakerVoiceConfig]] = Field(
+      default=None, description="""Required. All the enabled speaker voices."""
+  )
+
+
+class MultiSpeakerVoiceConfigDict(TypedDict, total=False):
+  """The configuration for the multi-speaker setup.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  speaker_voice_configs: Optional[list[SpeakerVoiceConfigDict]]
+  """Required. All the enabled speaker voices."""
+
+
+MultiSpeakerVoiceConfigOrDict = Union[
+    MultiSpeakerVoiceConfig, MultiSpeakerVoiceConfigDict
+]
+
+
 class GenerationConfig(_common.BaseModel):
   """Generation config."""
 
@@ -9560,6 +9559,101 @@ class TunedModelDict(TypedDict, total=False):
 TunedModelOrDict = Union[TunedModel, TunedModelDict]
 
 
+class SupervisedHyperParameters(_common.BaseModel):
+  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
+
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None, description="""Optional. Adapter size for tuning."""
+  )
+  batch_size: Optional[int] = Field(
+      default=None,
+      description="""Optional. Batch size for tuning. This feature is only available for open source models.""",
+  )
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate: Optional[float] = Field(
+      default=None,
+      description="""Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models.""",
+  )
+
+
+class SupervisedHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
+
+  adapter_size: Optional[AdapterSize]
+  """Optional. Adapter size for tuning."""
+
+  batch_size: Optional[int]
+  """Optional. Batch size for tuning. This feature is only available for open source models."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate: Optional[float]
+  """Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models."""
+
+
+SupervisedHyperParametersOrDict = Union[
+    SupervisedHyperParameters, SupervisedHyperParametersDict
+]
+
+
+class SupervisedTuningSpec(_common.BaseModel):
+  """Supervised tuning spec for tuning."""
+
+  export_last_checkpoint_only: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false.""",
+  )
+  hyper_parameters: Optional[SupervisedHyperParameters] = Field(
+      default=None, description="""Optional. Hyperparameters for SFT."""
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode."""
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+
+
+class SupervisedTuningSpecDict(TypedDict, total=False):
+  """Supervised tuning spec for tuning."""
+
+  export_last_checkpoint_only: Optional[bool]
+  """Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false."""
+
+  hyper_parameters: Optional[SupervisedHyperParametersDict]
+  """Optional. Hyperparameters for SFT."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+
+SupervisedTuningSpecOrDict = Union[
+    SupervisedTuningSpec, SupervisedTuningSpecDict
+]
+
+
 class GcsDestination(_common.BaseModel):
   """The Google Cloud Storage location where the output is to be written to."""
 
@@ -9912,107 +10006,6 @@ class PreTunedModelDict(TypedDict, total=False):
 
 
 PreTunedModelOrDict = Union[PreTunedModel, PreTunedModelDict]
-
-
-class SupervisedHyperParameters(_common.BaseModel):
-  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
-
-  adapter_size: Optional[AdapterSize] = Field(
-      default=None, description="""Optional. Adapter size for tuning."""
-  )
-  batch_size: Optional[int] = Field(
-      default=None,
-      description="""Optional. Batch size for tuning. This feature is only available for open source models.""",
-  )
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate: Optional[float] = Field(
-      default=None,
-      description="""Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models.""",
-  )
-
-
-class SupervisedHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
-
-  adapter_size: Optional[AdapterSize]
-  """Optional. Adapter size for tuning."""
-
-  batch_size: Optional[int]
-  """Optional. Batch size for tuning. This feature is only available for open source models."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate: Optional[float]
-  """Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models."""
-
-
-SupervisedHyperParametersOrDict = Union[
-    SupervisedHyperParameters, SupervisedHyperParametersDict
-]
-
-
-class SupervisedTuningSpec(_common.BaseModel):
-  """Tuning Spec for Supervised Tuning for first party models.
-
-  This data type is not supported in Gemini API.
-  """
-
-  export_last_checkpoint_only: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false.""",
-  )
-  hyper_parameters: Optional[SupervisedHyperParameters] = Field(
-      default=None, description="""Optional. Hyperparameters for SFT."""
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-  tuning_mode: Optional[TuningMode] = Field(
-      default=None, description="""Tuning mode."""
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-
-
-class SupervisedTuningSpecDict(TypedDict, total=False):
-  """Tuning Spec for Supervised Tuning for first party models.
-
-  This data type is not supported in Gemini API.
-  """
-
-  export_last_checkpoint_only: Optional[bool]
-  """Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false."""
-
-  hyper_parameters: Optional[SupervisedHyperParametersDict]
-  """Optional. Hyperparameters for SFT."""
-
-  training_dataset_uri: Optional[str]
-  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-  tuning_mode: Optional[TuningMode]
-  """Tuning mode."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-
-SupervisedTuningSpecOrDict = Union[
-    SupervisedTuningSpec, SupervisedTuningSpecDict
-]
 
 
 class DatasetDistributionDistributionBucket(_common.BaseModel):

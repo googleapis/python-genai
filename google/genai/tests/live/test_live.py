@@ -40,6 +40,12 @@ from ... import Client
 from ... import client as gl_client
 from ... import live
 from ... import types
+try:
+    import aiohttp
+    AIOHTTP_NOT_INSTALLED = False
+except ImportError:
+    AIOHTTP_NOT_INSTALLED = True
+    aiohttp = mock.MagicMock()
 
 
 if typing.TYPE_CHECKING:
@@ -55,6 +61,10 @@ else:
     mcp_types = None
     McpClientSession = None
 
+
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
 
 function_declarations = [{
     'name': 'get_current_weather',
@@ -180,6 +190,7 @@ def test_mldev_from_env(monkeypatch):
   assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
+@requires_aiohttp
 def test_vertex_from_env(monkeypatch):
   project_id = 'fake_project_id'
   location = 'fake-location'
