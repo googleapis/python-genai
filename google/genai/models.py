@@ -94,13 +94,6 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['urlContextMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_context_metadata'],
-        getv(from_object, ['urlContextMetadata']),
-    )
-
   if getv(from_object, ['avgLogprobs']) is not None:
     setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
@@ -122,6 +115,13 @@ def _Candidate_from_mldev(
         to_object,
         ['safety_ratings'],
         [item for item in getv(from_object, ['safetyRatings'])],
+    )
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_context_metadata'],
+        getv(from_object, ['urlContextMetadata']),
     )
 
   return to_object
