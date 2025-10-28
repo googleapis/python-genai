@@ -277,21 +277,6 @@ class ApiSpec(_common.CaseInSensitiveEnum):
   """Elastic search API spec."""
 
 
-class UrlRetrievalStatus(_common.CaseInSensitiveEnum):
-  """Status of the url retrieval."""
-
-  URL_RETRIEVAL_STATUS_UNSPECIFIED = 'URL_RETRIEVAL_STATUS_UNSPECIFIED'
-  """Default value. This value is unused"""
-  URL_RETRIEVAL_STATUS_SUCCESS = 'URL_RETRIEVAL_STATUS_SUCCESS'
-  """Url retrieval is successful."""
-  URL_RETRIEVAL_STATUS_ERROR = 'URL_RETRIEVAL_STATUS_ERROR'
-  """Url retrieval is failed due to error."""
-  URL_RETRIEVAL_STATUS_PAYWALL = 'URL_RETRIEVAL_STATUS_PAYWALL'
-  """Url retrieval is failed because the content is behind paywall."""
-  URL_RETRIEVAL_STATUS_UNSAFE = 'URL_RETRIEVAL_STATUS_UNSAFE'
-  """Url retrieval is failed because the content is unsafe."""
-
-
 class FinishReason(_common.CaseInSensitiveEnum):
   """Output only. The reason why the model stopped generating tokens.
 
@@ -361,6 +346,21 @@ class HarmSeverity(_common.CaseInSensitiveEnum):
   """Medium level of harm severity."""
   HARM_SEVERITY_HIGH = 'HARM_SEVERITY_HIGH'
   """High level of harm severity."""
+
+
+class UrlRetrievalStatus(_common.CaseInSensitiveEnum):
+  """Status of the url retrieval."""
+
+  URL_RETRIEVAL_STATUS_UNSPECIFIED = 'URL_RETRIEVAL_STATUS_UNSPECIFIED'
+  """Default value. This value is unused."""
+  URL_RETRIEVAL_STATUS_SUCCESS = 'URL_RETRIEVAL_STATUS_SUCCESS'
+  """Url retrieval is successful."""
+  URL_RETRIEVAL_STATUS_ERROR = 'URL_RETRIEVAL_STATUS_ERROR'
+  """Url retrieval is failed due to error."""
+  URL_RETRIEVAL_STATUS_PAYWALL = 'URL_RETRIEVAL_STATUS_PAYWALL'
+  """Url retrieval is failed because the content is behind paywall. This enum value is not supported in Vertex AI."""
+  URL_RETRIEVAL_STATUS_UNSAFE = 'URL_RETRIEVAL_STATUS_UNSAFE'
+  """Url retrieval is failed because the content is unsafe. This enum value is not supported in Vertex AI."""
 
 
 class BlockedReason(_common.CaseInSensitiveEnum):
@@ -4914,48 +4914,6 @@ class CitationMetadataDict(TypedDict, total=False):
 CitationMetadataOrDict = Union[CitationMetadata, CitationMetadataDict]
 
 
-class UrlMetadata(_common.BaseModel):
-  """Context for a single url retrieval."""
-
-  retrieved_url: Optional[str] = Field(
-      default=None, description="""The URL retrieved by the tool."""
-  )
-  url_retrieval_status: Optional[UrlRetrievalStatus] = Field(
-      default=None, description="""Status of the url retrieval."""
-  )
-
-
-class UrlMetadataDict(TypedDict, total=False):
-  """Context for a single url retrieval."""
-
-  retrieved_url: Optional[str]
-  """The URL retrieved by the tool."""
-
-  url_retrieval_status: Optional[UrlRetrievalStatus]
-  """Status of the url retrieval."""
-
-
-UrlMetadataOrDict = Union[UrlMetadata, UrlMetadataDict]
-
-
-class UrlContextMetadata(_common.BaseModel):
-  """Metadata related to url context retrieval tool."""
-
-  url_metadata: Optional[list[UrlMetadata]] = Field(
-      default=None, description="""List of url context."""
-  )
-
-
-class UrlContextMetadataDict(TypedDict, total=False):
-  """Metadata related to url context retrieval tool."""
-
-  url_metadata: Optional[list[UrlMetadataDict]]
-  """List of url context."""
-
-
-UrlContextMetadataOrDict = Union[UrlContextMetadata, UrlContextMetadataDict]
-
-
 class GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution(_common.BaseModel):
   """Author attribution for a photo or review.
 
@@ -5688,6 +5646,48 @@ class SafetyRatingDict(TypedDict, total=False):
 SafetyRatingOrDict = Union[SafetyRating, SafetyRatingDict]
 
 
+class UrlMetadata(_common.BaseModel):
+  """Context of the a single url retrieval."""
+
+  retrieved_url: Optional[str] = Field(
+      default=None, description="""Retrieved url by the tool."""
+  )
+  url_retrieval_status: Optional[UrlRetrievalStatus] = Field(
+      default=None, description="""Status of the url retrieval."""
+  )
+
+
+class UrlMetadataDict(TypedDict, total=False):
+  """Context of the a single url retrieval."""
+
+  retrieved_url: Optional[str]
+  """Retrieved url by the tool."""
+
+  url_retrieval_status: Optional[UrlRetrievalStatus]
+  """Status of the url retrieval."""
+
+
+UrlMetadataOrDict = Union[UrlMetadata, UrlMetadataDict]
+
+
+class UrlContextMetadata(_common.BaseModel):
+  """Metadata related to url context retrieval tool."""
+
+  url_metadata: Optional[list[UrlMetadata]] = Field(
+      default=None, description="""Output only. List of url context."""
+  )
+
+
+class UrlContextMetadataDict(TypedDict, total=False):
+  """Metadata related to url context retrieval tool."""
+
+  url_metadata: Optional[list[UrlMetadataDict]]
+  """Output only. List of url context."""
+
+
+UrlContextMetadataOrDict = Union[UrlContextMetadata, UrlContextMetadataDict]
+
+
 class Candidate(_common.BaseModel):
   """A response candidate generated from the model."""
 
@@ -5717,10 +5717,6 @@ class Candidate(_common.BaseModel):
       If empty, the model has not stopped generating the tokens.
       """,
   )
-  url_context_metadata: Optional[UrlContextMetadata] = Field(
-      default=None,
-      description="""Metadata related to url context retrieval tool.""",
-  )
   avg_logprobs: Optional[float] = Field(
       default=None,
       description="""Output only. Average log probability score of the candidate.""",
@@ -5739,6 +5735,10 @@ class Candidate(_common.BaseModel):
   safety_ratings: Optional[list[SafetyRating]] = Field(
       default=None,
       description="""Output only. List of ratings for the safety of a response candidate. There is at most one rating per category.""",
+  )
+  url_context_metadata: Optional[UrlContextMetadata] = Field(
+      default=None,
+      description="""Output only. Metadata related to url context retrieval tool.""",
   )
 
 
@@ -5766,9 +5766,6 @@ class CandidateDict(TypedDict, total=False):
       If empty, the model has not stopped generating the tokens.
       """
 
-  url_context_metadata: Optional[UrlContextMetadataDict]
-  """Metadata related to url context retrieval tool."""
-
   avg_logprobs: Optional[float]
   """Output only. Average log probability score of the candidate."""
 
@@ -5783,6 +5780,9 @@ class CandidateDict(TypedDict, total=False):
 
   safety_ratings: Optional[list[SafetyRatingDict]]
   """Output only. List of ratings for the safety of a response candidate. There is at most one rating per category."""
+
+  url_context_metadata: Optional[UrlContextMetadataDict]
+  """Output only. Metadata related to url context retrieval tool."""
 
 
 CandidateOrDict = Union[Candidate, CandidateDict]
