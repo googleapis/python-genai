@@ -536,6 +536,9 @@ class AsyncHttpxClient(httpx.AsyncClient):
 
 class BaseApiClient:
   """Client for calling HTTP APIs sending and receiving JSON."""
+  def __del__(self):
+    if self._aiohttp_session:
+      asyncio.run(self._aiohttp_session.close())
 
   def __init__(
       self,
