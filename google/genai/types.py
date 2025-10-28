@@ -425,35 +425,6 @@ class MediaResolution(_common.CaseInSensitiveEnum):
   """Media resolution set to high (zoomed reframing with 256 tokens)."""
 
 
-class JobState(_common.CaseInSensitiveEnum):
-  """Job state."""
-
-  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
-  """The job state is unspecified."""
-  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
-  """The job has been just created or resumed and processing has not yet begun."""
-  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
-  """The service is preparing to run the job."""
-  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
-  """The job is in progress."""
-  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
-  """The job completed successfully."""
-  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
-  """The job failed."""
-  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
-  """The job is being cancelled. From this state the job may only go to either `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`."""
-  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
-  """The job has been cancelled."""
-  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
-  """The job has been stopped, and can be resumed."""
-  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
-  """The job has expired."""
-  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
-  """The job is being updated. Only jobs in the `JOB_STATE_RUNNING` state can be updated. After updating, the job goes back to the `JOB_STATE_RUNNING` state."""
-  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
-  """The job is partially succeeded, some results may be missing due to errors."""
-
-
 class TuningMode(_common.CaseInSensitiveEnum):
   """Tuning mode. This enum is not supported in Gemini API."""
 
@@ -482,6 +453,35 @@ class AdapterSize(_common.CaseInSensitiveEnum):
   """Adapter size 16."""
   ADAPTER_SIZE_THIRTY_TWO = 'ADAPTER_SIZE_THIRTY_TWO'
   """Adapter size 32."""
+
+
+class JobState(_common.CaseInSensitiveEnum):
+  """Job state."""
+
+  JOB_STATE_UNSPECIFIED = 'JOB_STATE_UNSPECIFIED'
+  """The job state is unspecified."""
+  JOB_STATE_QUEUED = 'JOB_STATE_QUEUED'
+  """The job has been just created or resumed and processing has not yet begun."""
+  JOB_STATE_PENDING = 'JOB_STATE_PENDING'
+  """The service is preparing to run the job."""
+  JOB_STATE_RUNNING = 'JOB_STATE_RUNNING'
+  """The job is in progress."""
+  JOB_STATE_SUCCEEDED = 'JOB_STATE_SUCCEEDED'
+  """The job completed successfully."""
+  JOB_STATE_FAILED = 'JOB_STATE_FAILED'
+  """The job failed."""
+  JOB_STATE_CANCELLING = 'JOB_STATE_CANCELLING'
+  """The job is being cancelled. From this state the job may only go to either `JOB_STATE_SUCCEEDED`, `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`."""
+  JOB_STATE_CANCELLED = 'JOB_STATE_CANCELLED'
+  """The job has been cancelled."""
+  JOB_STATE_PAUSED = 'JOB_STATE_PAUSED'
+  """The job has been stopped, and can be resumed."""
+  JOB_STATE_EXPIRED = 'JOB_STATE_EXPIRED'
+  """The job has expired."""
+  JOB_STATE_UPDATING = 'JOB_STATE_UPDATING'
+  """The job is being updated. Only jobs in the `JOB_STATE_RUNNING` state can be updated. After updating, the job goes back to the `JOB_STATE_RUNNING` state."""
+  JOB_STATE_PARTIALLY_SUCCEEDED = 'JOB_STATE_PARTIALLY_SUCCEEDED'
+  """The job is partially succeeded, some results may be missing due to errors."""
 
 
 class TuningTask(_common.CaseInSensitiveEnum):
@@ -9559,6 +9559,101 @@ class TunedModelDict(TypedDict, total=False):
 TunedModelOrDict = Union[TunedModel, TunedModelDict]
 
 
+class SupervisedHyperParameters(_common.BaseModel):
+  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
+
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None, description="""Optional. Adapter size for tuning."""
+  )
+  batch_size: Optional[int] = Field(
+      default=None,
+      description="""Optional. Batch size for tuning. This feature is only available for open source models.""",
+  )
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate: Optional[float] = Field(
+      default=None,
+      description="""Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models.""",
+  )
+
+
+class SupervisedHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
+
+  adapter_size: Optional[AdapterSize]
+  """Optional. Adapter size for tuning."""
+
+  batch_size: Optional[int]
+  """Optional. Batch size for tuning. This feature is only available for open source models."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate: Optional[float]
+  """Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models."""
+
+
+SupervisedHyperParametersOrDict = Union[
+    SupervisedHyperParameters, SupervisedHyperParametersDict
+]
+
+
+class SupervisedTuningSpec(_common.BaseModel):
+  """Supervised tuning spec for tuning."""
+
+  export_last_checkpoint_only: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false.""",
+  )
+  hyper_parameters: Optional[SupervisedHyperParameters] = Field(
+      default=None, description="""Optional. Hyperparameters for SFT."""
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode."""
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
+  )
+
+
+class SupervisedTuningSpecDict(TypedDict, total=False):
+  """Supervised tuning spec for tuning."""
+
+  export_last_checkpoint_only: Optional[bool]
+  """Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false."""
+
+  hyper_parameters: Optional[SupervisedHyperParametersDict]
+  """Optional. Hyperparameters for SFT."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
+
+
+SupervisedTuningSpecOrDict = Union[
+    SupervisedTuningSpec, SupervisedTuningSpecDict
+]
+
+
 class GcsDestination(_common.BaseModel):
   """The Google Cloud Storage location where the output is to be written to."""
 
@@ -9911,107 +10006,6 @@ class PreTunedModelDict(TypedDict, total=False):
 
 
 PreTunedModelOrDict = Union[PreTunedModel, PreTunedModelDict]
-
-
-class SupervisedHyperParameters(_common.BaseModel):
-  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
-
-  adapter_size: Optional[AdapterSize] = Field(
-      default=None, description="""Optional. Adapter size for tuning."""
-  )
-  batch_size: Optional[int] = Field(
-      default=None,
-      description="""Optional. Batch size for tuning. This feature is only available for open source models.""",
-  )
-  epoch_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
-  )
-  learning_rate: Optional[float] = Field(
-      default=None,
-      description="""Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models.""",
-  )
-  learning_rate_multiplier: Optional[float] = Field(
-      default=None,
-      description="""Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models.""",
-  )
-
-
-class SupervisedHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for SFT. This data type is not supported in Gemini API."""
-
-  adapter_size: Optional[AdapterSize]
-  """Optional. Adapter size for tuning."""
-
-  batch_size: Optional[int]
-  """Optional. Batch size for tuning. This feature is only available for open source models."""
-
-  epoch_count: Optional[int]
-  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
-
-  learning_rate: Optional[float]
-  """Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`. This feature is only available for open source models."""
-
-  learning_rate_multiplier: Optional[float]
-  """Optional. Multiplier for adjusting the default learning rate. Mutually exclusive with `learning_rate`. This feature is only available for 1P models."""
-
-
-SupervisedHyperParametersOrDict = Union[
-    SupervisedHyperParameters, SupervisedHyperParametersDict
-]
-
-
-class SupervisedTuningSpec(_common.BaseModel):
-  """Tuning Spec for Supervised Tuning for first party models.
-
-  This data type is not supported in Gemini API.
-  """
-
-  export_last_checkpoint_only: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false.""",
-  )
-  hyper_parameters: Optional[SupervisedHyperParameters] = Field(
-      default=None, description="""Optional. Hyperparameters for SFT."""
-  )
-  training_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-  tuning_mode: Optional[TuningMode] = Field(
-      default=None, description="""Tuning mode."""
-  )
-  validation_dataset_uri: Optional[str] = Field(
-      default=None,
-      description="""Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset.""",
-  )
-
-
-class SupervisedTuningSpecDict(TypedDict, total=False):
-  """Tuning Spec for Supervised Tuning for first party models.
-
-  This data type is not supported in Gemini API.
-  """
-
-  export_last_checkpoint_only: Optional[bool]
-  """Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. Default is false."""
-
-  hyper_parameters: Optional[SupervisedHyperParametersDict]
-  """Optional. Hyperparameters for SFT."""
-
-  training_dataset_uri: Optional[str]
-  """Required. Training dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-  tuning_mode: Optional[TuningMode]
-  """Tuning mode."""
-
-  validation_dataset_uri: Optional[str]
-  """Optional. Validation dataset used for tuning. The dataset can be specified as either a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal Dataset."""
-
-
-SupervisedTuningSpecOrDict = Union[
-    SupervisedTuningSpec, SupervisedTuningSpecDict
-]
 
 
 class DatasetDistributionDistributionBucket(_common.BaseModel):
