@@ -704,6 +704,15 @@ class VideoCompressionQuality(_common.CaseInSensitiveEnum):
       with a larger file size."""
 
 
+class TuningMethod(_common.CaseInSensitiveEnum):
+  """Enum representing the tuning method."""
+
+  SUPERVISED_FINE_TUNING = 'SUPERVISED_FINE_TUNING'
+  """Supervised fine tuning."""
+  PREFERENCE_TUNING = 'PREFERENCE_TUNING'
+  """Preference optimization tuning."""
+
+
 class FileState(_common.CaseInSensitiveEnum):
   """State for the lifecycle of a File."""
 
@@ -9681,6 +9690,90 @@ SupervisedTuningSpecOrDict = Union[
 ]
 
 
+class PreferenceOptimizationHyperParameters(_common.BaseModel):
+  """Hyperparameters for Preference Optimization.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None,
+      description="""Optional. Adapter size for preference optimization.""",
+  )
+  beta: Optional[float] = Field(
+      default=None,
+      description="""Optional. Weight for KL Divergence regularization.""",
+  )
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate.""",
+  )
+
+
+class PreferenceOptimizationHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Preference Optimization.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize]
+  """Optional. Adapter size for preference optimization."""
+
+  beta: Optional[float]
+  """Optional. Weight for KL Divergence regularization."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate."""
+
+
+PreferenceOptimizationHyperParametersOrDict = Union[
+    PreferenceOptimizationHyperParameters,
+    PreferenceOptimizationHyperParametersDict,
+]
+
+
+class PreferenceOptimizationSpec(_common.BaseModel):
+  """Preference optimization tuning spec for tuning."""
+
+  hyper_parameters: Optional[PreferenceOptimizationHyperParameters] = Field(
+      default=None,
+      description="""Optional. Hyperparameters for Preference Optimization.""",
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+class PreferenceOptimizationSpecDict(TypedDict, total=False):
+  """Preference optimization tuning spec for tuning."""
+
+  hyper_parameters: Optional[PreferenceOptimizationHyperParametersDict]
+  """Optional. Hyperparameters for Preference Optimization."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Cloud Storage path to file containing training dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Cloud Storage path to file containing validation dataset for preference optimization tuning. The dataset must be formatted as a JSONL file."""
+
+
+PreferenceOptimizationSpecOrDict = Union[
+    PreferenceOptimizationSpec, PreferenceOptimizationSpecDict
+]
+
+
 class GcsDestination(_common.BaseModel):
   """The Google Cloud Storage location where the output is to be written to."""
 
@@ -10866,6 +10959,9 @@ class TuningJob(_common.BaseModel):
   supervised_tuning_spec: Optional[SupervisedTuningSpec] = Field(
       default=None, description="""Tuning Spec for Supervised Fine Tuning."""
   )
+  preference_optimization_spec: Optional[PreferenceOptimizationSpec] = Field(
+      default=None, description="""Tuning Spec for Preference Optimization."""
+  )
   tuning_data_stats: Optional[TuningDataStats] = Field(
       default=None,
       description="""Output only. The tuning data statistics associated with this TuningJob.""",
@@ -10965,6 +11061,9 @@ class TuningJobDict(TypedDict, total=False):
 
   supervised_tuning_spec: Optional[SupervisedTuningSpecDict]
   """Tuning Spec for Supervised Fine Tuning."""
+
+  preference_optimization_spec: Optional[PreferenceOptimizationSpecDict]
+  """Tuning Spec for Preference Optimization."""
 
   tuning_data_stats: Optional[TuningDataStatsDict]
   """Output only. The tuning data statistics associated with this TuningJob."""
@@ -11227,10 +11326,14 @@ TuningValidationDatasetOrDict = Union[
 
 
 class CreateTuningJobConfig(_common.BaseModel):
-  """Supervised fine-tuning job creation request - optional fields."""
+  """Fine-tuning job creation request - optional fields."""
 
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
+  )
+  method: Optional[TuningMethod] = Field(
+      default=None,
+      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING). If not set, the default method (SFT) will be used.""",
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
@@ -11253,7 +11356,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   export_last_checkpoint_only: Optional[bool] = Field(
       default=None,
-      description="""If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.""",
+      description="""If set to true, disable intermediate checkpoints and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints.""",
   )
   pre_tuned_model_checkpoint_id: Optional[str] = Field(
       default=None,
@@ -11277,13 +11380,20 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""Optional. The labels with user-defined metadata to organize TuningJob and generated resources such as Model and Endpoint. Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf for more information and examples of labels.""",
   )
+  beta: Optional[float] = Field(
+      default=None,
+      description="""Weight for KL Divergence regularization, Preference Optimization tuning only.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
-  """Supervised fine-tuning job creation request - optional fields."""
+  """Fine-tuning job creation request - optional fields."""
 
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
+
+  method: Optional[TuningMethod]
+  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING). If not set, the default method (SFT) will be used."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
   """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -11301,7 +11411,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Multiplier for adjusting the default learning rate."""
 
   export_last_checkpoint_only: Optional[bool]
-  """If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT."""
+  """If set to true, disable intermediate checkpoints and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints."""
 
   pre_tuned_model_checkpoint_id: Optional[str]
   """The optional checkpoint id of the pre-tuned model to use for tuning, if applicable."""
@@ -11321,6 +11431,9 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   labels: Optional[dict[str, str]]
   """Optional. The labels with user-defined metadata to organize TuningJob and generated resources such as Model and Endpoint. Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf for more information and examples of labels."""
 
+  beta: Optional[float]
+  """Weight for KL Divergence regularization, Preference Optimization tuning only."""
+
 
 CreateTuningJobConfigOrDict = Union[
     CreateTuningJobConfig, CreateTuningJobConfigDict
@@ -11328,7 +11441,7 @@ CreateTuningJobConfigOrDict = Union[
 
 
 class _CreateTuningJobParametersPrivate(_common.BaseModel):
-  """Supervised fine-tuning job creation parameters - optional fields."""
+  """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str] = Field(
       default=None,
@@ -11347,7 +11460,7 @@ class _CreateTuningJobParametersPrivate(_common.BaseModel):
 
 
 class _CreateTuningJobParametersPrivateDict(TypedDict, total=False):
-  """Supervised fine-tuning job creation parameters - optional fields."""
+  """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
   """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
@@ -16170,7 +16283,7 @@ ComputeTokensResultOrDict = Union[ComputeTokensResult, ComputeTokensResultDict]
 
 
 class CreateTuningJobParameters(_common.BaseModel):
-  """Supervised fine-tuning job creation parameters - optional fields."""
+  """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str] = Field(
       default=None,
@@ -16186,7 +16299,7 @@ class CreateTuningJobParameters(_common.BaseModel):
 
 
 class CreateTuningJobParametersDict(TypedDict, total=False):
-  """Supervised fine-tuning job creation parameters - optional fields."""
+  """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
   """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
