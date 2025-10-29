@@ -173,6 +173,47 @@ class Type(_common.CaseInSensitiveEnum):
   """Null type"""
 
 
+class Mode(_common.CaseInSensitiveEnum):
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Always trigger retrieval."""
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
+  """Run retrieval only when system decides it is necessary."""
+
+
+class AuthType(_common.CaseInSensitiveEnum):
+  """Type of auth scheme. This enum is not supported in Gemini API."""
+
+  AUTH_TYPE_UNSPECIFIED = 'AUTH_TYPE_UNSPECIFIED'
+  NO_AUTH = 'NO_AUTH'
+  """No Auth."""
+  API_KEY_AUTH = 'API_KEY_AUTH'
+  """API Key Auth."""
+  HTTP_BASIC_AUTH = 'HTTP_BASIC_AUTH'
+  """HTTP Basic Auth."""
+  GOOGLE_SERVICE_ACCOUNT_AUTH = 'GOOGLE_SERVICE_ACCOUNT_AUTH'
+  """Google Service Account Auth."""
+  OAUTH = 'OAUTH'
+  """OAuth auth."""
+  OIDC_AUTH = 'OIDC_AUTH'
+  """OpenID Connect (OIDC) Auth."""
+
+
+class ApiSpec(_common.CaseInSensitiveEnum):
+  """The API spec that the external API implements.
+
+  This enum is not supported in Gemini API.
+  """
+
+  API_SPEC_UNSPECIFIED = 'API_SPEC_UNSPECIFIED'
+  """Unspecified API spec. This value should not be used."""
+  SIMPLE_SEARCH = 'SIMPLE_SEARCH'
+  """Simple search API spec."""
+  ELASTIC_SEARCH = 'ELASTIC_SEARCH'
+  """Elastic search API spec."""
+
+
 class HarmCategory(_common.CaseInSensitiveEnum):
   """Harm category."""
 
@@ -234,47 +275,6 @@ class HarmBlockThreshold(_common.CaseInSensitiveEnum):
   """Block none."""
   OFF = 'OFF'
   """Turn off the safety filter."""
-
-
-class Mode(_common.CaseInSensitiveEnum):
-  """The mode of the predictor to be used in dynamic retrieval."""
-
-  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
-  """Always trigger retrieval."""
-  MODE_DYNAMIC = 'MODE_DYNAMIC'
-  """Run retrieval only when system decides it is necessary."""
-
-
-class AuthType(_common.CaseInSensitiveEnum):
-  """Type of auth scheme. This enum is not supported in Gemini API."""
-
-  AUTH_TYPE_UNSPECIFIED = 'AUTH_TYPE_UNSPECIFIED'
-  NO_AUTH = 'NO_AUTH'
-  """No Auth."""
-  API_KEY_AUTH = 'API_KEY_AUTH'
-  """API Key Auth."""
-  HTTP_BASIC_AUTH = 'HTTP_BASIC_AUTH'
-  """HTTP Basic Auth."""
-  GOOGLE_SERVICE_ACCOUNT_AUTH = 'GOOGLE_SERVICE_ACCOUNT_AUTH'
-  """Google Service Account Auth."""
-  OAUTH = 'OAUTH'
-  """OAuth auth."""
-  OIDC_AUTH = 'OIDC_AUTH'
-  """OpenID Connect (OIDC) Auth."""
-
-
-class ApiSpec(_common.CaseInSensitiveEnum):
-  """The API spec that the external API implements.
-
-  This enum is not supported in Gemini API.
-  """
-
-  API_SPEC_UNSPECIFIED = 'API_SPEC_UNSPECIFIED'
-  """Unspecified API spec. This value should not be used."""
-  SIMPLE_SEARCH = 'SIMPLE_SEARCH'
-  """Simple search API spec."""
-  ELASTIC_SEARCH = 'ELASTIC_SEARCH'
-  """Elastic search API spec."""
 
 
 class FinishReason(_common.CaseInSensitiveEnum):
@@ -859,116 +859,6 @@ class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
       Retains the current prompts and config."""
 
 
-class VideoMetadata(_common.BaseModel):
-  """Describes how the video in the Part should be used by the model."""
-
-  fps: Optional[float] = Field(
-      default=None,
-      description="""The frame rate of the video sent to the model. If not specified, the
-        default value will be 1.0. The fps range is (0.0, 24.0].""",
-  )
-  end_offset: Optional[str] = Field(
-      default=None, description="""Optional. The end offset of the video."""
-  )
-  start_offset: Optional[str] = Field(
-      default=None, description="""Optional. The start offset of the video."""
-  )
-
-
-class VideoMetadataDict(TypedDict, total=False):
-  """Describes how the video in the Part should be used by the model."""
-
-  fps: Optional[float]
-  """The frame rate of the video sent to the model. If not specified, the
-        default value will be 1.0. The fps range is (0.0, 24.0]."""
-
-  end_offset: Optional[str]
-  """Optional. The end offset of the video."""
-
-  start_offset: Optional[str]
-  """Optional. The start offset of the video."""
-
-
-VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
-
-
-class Blob(_common.BaseModel):
-  """Content blob."""
-
-  display_name: Optional[str] = Field(
-      default=None,
-      description="""Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.""",
-  )
-  data: Optional[bytes] = Field(
-      default=None, description="""Required. Raw bytes."""
-  )
-  mime_type: Optional[str] = Field(
-      default=None,
-      description="""Required. The IANA standard MIME type of the source data.""",
-  )
-
-  def as_image(self) -> Optional['Image']:
-    """Returns the Blob as a Image, or None if the Blob is not an image."""
-    if (
-        not self.data
-        or not self.mime_type
-        or not self.mime_type.startswith('image/')
-    ):
-      return None
-    return Image(
-        image_bytes=self.data,
-        mime_type=self.mime_type,
-    )
-
-
-class BlobDict(TypedDict, total=False):
-  """Content blob."""
-
-  display_name: Optional[str]
-  """Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls."""
-
-  data: Optional[bytes]
-  """Required. Raw bytes."""
-
-  mime_type: Optional[str]
-  """Required. The IANA standard MIME type of the source data."""
-
-
-BlobOrDict = Union[Blob, BlobDict]
-
-
-class FileData(_common.BaseModel):
-  """URI based data."""
-
-  display_name: Optional[str] = Field(
-      default=None,
-      description="""Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. It is not currently used in the Gemini GenerateContent calls.""",
-  )
-  file_uri: Optional[str] = Field(
-      default=None, description="""Required. URI."""
-  )
-  mime_type: Optional[str] = Field(
-      default=None,
-      description="""Required. The IANA standard MIME type of the source data.""",
-  )
-
-
-class FileDataDict(TypedDict, total=False):
-  """URI based data."""
-
-  display_name: Optional[str]
-  """Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. It is not currently used in the Gemini GenerateContent calls."""
-
-  file_uri: Optional[str]
-  """Required. URI."""
-
-  mime_type: Optional[str]
-  """Required. The IANA standard MIME type of the source data."""
-
-
-FileDataOrDict = Union[FileData, FileDataDict]
-
-
 class FunctionCall(_common.BaseModel):
   """A function call."""
 
@@ -1070,6 +960,38 @@ class ExecutableCodeDict(TypedDict, total=False):
 
 
 ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
+
+
+class FileData(_common.BaseModel):
+  """URI based data."""
+
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API.""",
+  )
+  file_uri: Optional[str] = Field(
+      default=None, description="""Required. URI."""
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+
+class FileDataDict(TypedDict, total=False):
+  """URI based data."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API."""
+
+  file_uri: Optional[str]
+  """Required. URI."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+FileDataOrDict = Union[FileData, FileDataDict]
 
 
 class FunctionResponseBlob(_common.BaseModel):
@@ -1283,6 +1205,82 @@ class FunctionResponseDict(TypedDict, total=False):
 FunctionResponseOrDict = Union[FunctionResponse, FunctionResponseDict]
 
 
+class Blob(_common.BaseModel):
+  """Content blob."""
+
+  data: Optional[bytes] = Field(
+      default=None, description="""Required. Raw bytes."""
+  )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API.""",
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Required. The IANA standard MIME type of the source data.""",
+  )
+
+  def as_image(self) -> Optional['Image']:
+    """Returns the Blob as a Image, or None if the Blob is not an image."""
+    if (
+        not self.data
+        or not self.mime_type
+        or not self.mime_type.startswith('image/')
+    ):
+      return None
+    return Image(
+        image_bytes=self.data,
+        mime_type=self.mime_type,
+    )
+
+
+class BlobDict(TypedDict, total=False):
+  """Content blob."""
+
+  data: Optional[bytes]
+  """Required. Raw bytes."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API."""
+
+  mime_type: Optional[str]
+  """Required. The IANA standard MIME type of the source data."""
+
+
+BlobOrDict = Union[Blob, BlobDict]
+
+
+class VideoMetadata(_common.BaseModel):
+  """Metadata describes the input video content."""
+
+  end_offset: Optional[str] = Field(
+      default=None, description="""Optional. The end offset of the video."""
+  )
+  fps: Optional[float] = Field(
+      default=None,
+      description="""Optional. The frame rate of the video sent to the model. If not specified, the default value will be 1.0. The fps range is (0.0, 24.0].""",
+  )
+  start_offset: Optional[str] = Field(
+      default=None, description="""Optional. The start offset of the video."""
+  )
+
+
+class VideoMetadataDict(TypedDict, total=False):
+  """Metadata describes the input video content."""
+
+  end_offset: Optional[str]
+  """Optional. The end offset of the video."""
+
+  fps: Optional[float]
+  """Optional. The frame rate of the video sent to the model. If not specified, the default value will be 1.0. The fps range is (0.0, 24.0]."""
+
+  start_offset: Optional[str]
+  """Optional. The start offset of the video."""
+
+
+VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
+
+
 class Part(_common.BaseModel):
   """A datatype containing media content.
 
@@ -1291,23 +1289,6 @@ class Part(_common.BaseModel):
   instance is considered invalid.
   """
 
-  video_metadata: Optional[VideoMetadata] = Field(
-      default=None, description="""Metadata for a given video."""
-  )
-  thought: Optional[bool] = Field(
-      default=None,
-      description="""Indicates if the part is thought from the model.""",
-  )
-  inline_data: Optional[Blob] = Field(
-      default=None, description="""Optional. Inlined bytes data."""
-  )
-  file_data: Optional[FileData] = Field(
-      default=None, description="""Optional. URI based data."""
-  )
-  thought_signature: Optional[bytes] = Field(
-      default=None,
-      description="""An opaque signature for the thought so it can be reused in subsequent requests.""",
-  )
   function_call: Optional[FunctionCall] = Field(
       default=None,
       description="""A predicted [FunctionCall] returned from the model that contains a string
@@ -1322,12 +1303,30 @@ class Part(_common.BaseModel):
       default=None,
       description="""Optional. Code generated by the model that is meant to be executed.""",
   )
+  file_data: Optional[FileData] = Field(
+      default=None, description="""Optional. URI based data."""
+  )
   function_response: Optional[FunctionResponse] = Field(
       default=None,
       description="""Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model.""",
   )
+  inline_data: Optional[Blob] = Field(
+      default=None, description="""Optional. Inlined bytes data."""
+  )
   text: Optional[str] = Field(
       default=None, description="""Optional. Text part (can be code)."""
+  )
+  thought: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Indicates if the part is thought from the model.""",
+  )
+  thought_signature: Optional[bytes] = Field(
+      default=None,
+      description="""Optional. An opaque signature for the thought so it can be reused in subsequent requests.""",
+  )
+  video_metadata: Optional[VideoMetadata] = Field(
+      default=None,
+      description="""Optional. Video metadata. The metadata should only be specified while the video data is presented in inline_data or file_data.""",
   )
 
   def as_image(self) -> Optional['Image']:
@@ -1407,21 +1406,6 @@ class PartDict(TypedDict, total=False):
   instance is considered invalid.
   """
 
-  video_metadata: Optional[VideoMetadataDict]
-  """Metadata for a given video."""
-
-  thought: Optional[bool]
-  """Indicates if the part is thought from the model."""
-
-  inline_data: Optional[BlobDict]
-  """Optional. Inlined bytes data."""
-
-  file_data: Optional[FileDataDict]
-  """Optional. URI based data."""
-
-  thought_signature: Optional[bytes]
-  """An opaque signature for the thought so it can be reused in subsequent requests."""
-
   function_call: Optional[FunctionCallDict]
   """A predicted [FunctionCall] returned from the model that contains a string
       representing the [FunctionDeclaration.name] and a structured JSON object
@@ -1433,11 +1417,26 @@ class PartDict(TypedDict, total=False):
   executable_code: Optional[ExecutableCodeDict]
   """Optional. Code generated by the model that is meant to be executed."""
 
+  file_data: Optional[FileDataDict]
+  """Optional. URI based data."""
+
   function_response: Optional[FunctionResponseDict]
   """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
 
+  inline_data: Optional[BlobDict]
+  """Optional. Inlined bytes data."""
+
   text: Optional[str]
   """Optional. Text part (can be code)."""
+
+  thought: Optional[bool]
+  """Optional. Indicates if the part is thought from the model."""
+
+  thought_signature: Optional[bytes]
+  """Optional. An opaque signature for the thought so it can be reused in subsequent requests."""
+
+  video_metadata: Optional[VideoMetadataDict]
+  """Optional. Video metadata. The metadata should only be specified while the video data is presented in inline_data or file_data."""
 
 
 PartOrDict = Union[Part, PartDict]
@@ -1453,9 +1452,7 @@ class Content(_common.BaseModel):
   )
   role: Optional[str] = Field(
       default=None,
-      description="""Optional. The producer of the content. Must be either 'user' or
-      'model'. Useful to set for multi-turn conversations, otherwise can be
-      empty. If role is not specified, SDK will determine the role.""",
+      description="""Optional. The producer of the content. Must be either 'user' or 'model'. Useful to set for multi-turn conversations, otherwise can be left blank or unset.""",
   )
 
 
@@ -1467,9 +1464,7 @@ class ContentDict(TypedDict, total=False):
       a different IANA MIME type."""
 
   role: Optional[str]
-  """Optional. The producer of the content. Must be either 'user' or
-      'model'. Useful to set for multi-turn conversations, otherwise can be
-      empty. If role is not specified, SDK will determine the role."""
+  """Optional. The producer of the content. Must be either 'user' or 'model'. Useful to set for multi-turn conversations, otherwise can be left blank or unset."""
 
 
 ContentOrDict = Union[Content, ContentDict]
@@ -2376,39 +2371,6 @@ class ModelSelectionConfigDict(TypedDict, total=False):
 ModelSelectionConfigOrDict = Union[
     ModelSelectionConfig, ModelSelectionConfigDict
 ]
-
-
-class SafetySetting(_common.BaseModel):
-  """Safety settings."""
-
-  method: Optional[HarmBlockMethod] = Field(
-      default=None,
-      description="""Determines if the harm block method uses probability or probability
-      and severity scores.""",
-  )
-  category: Optional[HarmCategory] = Field(
-      default=None, description="""Required. Harm category."""
-  )
-  threshold: Optional[HarmBlockThreshold] = Field(
-      default=None, description="""Required. The harm block threshold."""
-  )
-
-
-class SafetySettingDict(TypedDict, total=False):
-  """Safety settings."""
-
-  method: Optional[HarmBlockMethod]
-  """Determines if the harm block method uses probability or probability
-      and severity scores."""
-
-  category: Optional[HarmCategory]
-  """Required. Harm category."""
-
-  threshold: Optional[HarmBlockThreshold]
-  """Required. The harm block threshold."""
-
-
-SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
 
 
 class FunctionDeclaration(_common.BaseModel):
@@ -4252,6 +4214,37 @@ class GenerationConfigRoutingConfigDict(TypedDict, total=False):
 GenerationConfigRoutingConfigOrDict = Union[
     GenerationConfigRoutingConfig, GenerationConfigRoutingConfigDict
 ]
+
+
+class SafetySetting(_common.BaseModel):
+  """Safety settings."""
+
+  category: Optional[HarmCategory] = Field(
+      default=None, description="""Required. Harm category."""
+  )
+  method: Optional[HarmBlockMethod] = Field(
+      default=None,
+      description="""Optional. Specify if the threshold is used for probability or severity score. If not specified, the threshold is used for probability score. This field is not supported in Gemini API.""",
+  )
+  threshold: Optional[HarmBlockThreshold] = Field(
+      default=None, description="""Required. The harm block threshold."""
+  )
+
+
+class SafetySettingDict(TypedDict, total=False):
+  """Safety settings."""
+
+  category: Optional[HarmCategory]
+  """Required. Harm category."""
+
+  method: Optional[HarmBlockMethod]
+  """Optional. Specify if the threshold is used for probability or severity score. If not specified, the threshold is used for probability score. This field is not supported in Gemini API."""
+
+  threshold: Optional[HarmBlockThreshold]
+  """Required. The harm block threshold."""
+
+
+SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
 
 
 class SpeechConfig(_common.BaseModel):
