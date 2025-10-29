@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.47.0](https://github.com/googleapis/python-genai/compare/v1.46.0...v1.47.0) (2025-10-29)
+
+
+### Features
+
+* Add safety_filter_level and person_generation for Imagen upscaling ([6196b1b](https://github.com/googleapis/python-genai/commit/6196b1b4251007e33661bb5d7dc27bafee3feefe))
+* Add support for preference optimization tuning in the SDK. ([4540f9d](https://github.com/googleapis/python-genai/commit/4540f9d25ffb31d9b3838ed34fa767af956cc69b))
+* Pass file name to the backend when uploading with a file path ([4fa2edd](https://github.com/googleapis/python-genai/commit/4fa2edd9276dadee0f8100b2e5ed8787f8937e8d))
+* Support default global location when not using api key with vertexai backend ([6340ce0](https://github.com/googleapis/python-genai/commit/6340ce0cf04985c259ba6f85305ad29ec74b5c47))
+* Support retries in API requests ([ac70ecd](https://github.com/googleapis/python-genai/commit/ac70ecdb02677535fb2a4590a1702d961d2b942b))
+
+
+### Bug Fixes
+
+* Check environment Vertex AI api key for credential precedence ([9bd758c](https://github.com/googleapis/python-genai/commit/9bd758c50c0dfee463ec722975ff19e7d58436fd))
+* Correct pydantic version range (bytes fields are broken with pydantic&lt;=2.8). ([d24cb56](https://github.com/googleapis/python-genai/commit/d24cb5634e15d6071af17f6ee79c8b864b82d377))
+* Make `__del__` methods more robust in `_api_client` and `client`. ([64cab58](https://github.com/googleapis/python-genai/commit/64cab58b381b7a27e02c8fe0dc14d6513c01456a))
+* Setting custom httpx async client will ensure using httpx client even if aiohttp is installed ([7bd1bde](https://github.com/googleapis/python-genai/commit/7bd1bdef36179d404f671926df624afc5be5682d))
+* Support custom_base_url for Live and other APIs when project/location are unset and even when project/location are set in the environment, and avoid Automatic Default Credentials ([7bd1bde](https://github.com/googleapis/python-genai/commit/7bd1bdef36179d404f671926df624afc5be5682d))
+
+
+### Documentation
+
+* Add docstring for classes and fields that are not supported in Gemini or Vertex API ([4a6c6af](https://github.com/googleapis/python-genai/commit/4a6c6af19063bc2ae0dd54f98fa345c0666b7f58))
+* Add docstring for enum classes that are not supported in Gemini or Vertex API ([909f26b](https://github.com/googleapis/python-genai/commit/909f26b926267b690c8a02dd97ee7681a43f3d7b))
+* Add documentation for the retry behavior ([ff12b46](https://github.com/googleapis/python-genai/commit/ff12b462947bff3cfcd9bc4c1e4a61c6a90b5591))
+* Update Codegen Instructions to include newer models and use consistent formatting. ([f0b0a94](https://github.com/googleapis/python-genai/commit/f0b0a94aa174e9e31dd56542cb3f9683fb065176))
+* Update README.md and index.rst to use consistent spacing for Python Samples ([2e5aa1f](https://github.com/googleapis/python-genai/commit/2e5aa1f9332b0a858f3b783a52d8007485cbe33f))
+
 ## [1.46.0](https://github.com/googleapis/python-genai/compare/v1.45.0...v1.46.0) (2025-10-21)
 
 
