@@ -2201,7 +2201,7 @@ class Schema(_common.BaseModel):
               for this_field_value in field_value
           ]
           setattr(schema, field_name, list_schema_field_value)
-          if not schema.type and not is_union_like_type:
+          if not schema.type and not is_union_like_type and not schema.any_of:
             schema.type = Type('OBJECT')
         elif field_name in dict_schema_field_names:
           dict_schema_field_value: dict[str, 'Schema'] = {
