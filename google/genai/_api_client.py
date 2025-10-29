@@ -1824,11 +1824,17 @@ class BaseApiClient:
     """
 
     try:
-      self.close()
+      # Let users close the custom client explicitly by themselves. Otherwise,
+      # close the client when the object is garbage collected.
+      if not self._http_options.httpx_client:
+        self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 
     try:
-      asyncio.get_running_loop().create_task(self.aclose())
+      # Let users close the custom client explicitly by themselves. Otherwise,
+      # close the client when the object is garbage collected.
+      if not self._http_options.httpx_async_client:
+        asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
