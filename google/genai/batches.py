@@ -824,15 +824,15 @@ def _FunctionCallingConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
         ['allowedFunctionNames'],
         getv(from_object, ['allowed_function_names']),
     )
+
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
 
   if getv(from_object, ['stream_function_call_arguments']) is not None:
     raise ValueError(
@@ -1408,6 +1408,11 @@ def _ToolConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
@@ -1415,11 +1420,6 @@ def _ToolConfig_to_mldev(
         _FunctionCallingConfig_to_mldev(
             getv(from_object, ['function_calling_config']), to_object
         ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -1430,22 +1430,8 @@ def _Tool_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [item for item in getv(from_object, ['function_declarations'])],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
-    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
@@ -1461,6 +1447,13 @@ def _Tool_to_mldev(
         'enterprise_web_search parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
+
   if getv(from_object, ['google_maps']) is not None:
     setv(
         to_object,
@@ -1473,6 +1466,13 @@ def _Tool_to_mldev(
         to_object,
         ['googleSearch'],
         _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
     )
 
   if getv(from_object, ['url_context']) is not None:
@@ -1902,6 +1902,34 @@ class Batches(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  def list(
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
+  ) -> Pager[types.BatchJob]:
+    """Lists batch jobs.
+
+    Args:
+      config (ListBatchJobsConfig): Optional configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of batch jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      config = {'page_size': 10}
+      for batch_job in client.batches.list(config):
+        print(batch_job.name)
+    """
+
+    list_request = self._list
+    return Pager(
+        'batch_jobs',
+        list_request,
+        self._list(config=config),
+        config,
+    )
+
   def create(
       self,
       *,
@@ -1996,35 +2024,6 @@ class Batches(_api_module.BaseModule):
       raise ValueError('Vertex AI does not support batches.create_embeddings.')
     else:
       return self._create_embeddings(model=model, src=src, config=config)
-
-  def list(
-      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
-  ) -> Pager[types.BatchJob]:
-    """Lists batch jobs.
-
-    Args:
-      config (ListBatchJobsConfig): Optional configuration for the list request.
-
-    Returns:
-      A Pager object that contains one page of batch jobs. When iterating over
-      the pager, it automatically fetches the next page if there are more.
-
-    Usage:
-
-    .. code-block:: python
-
-      batch_jobs = client.batches.list(config={"page_size": 10})
-      for batch_job in batch_jobs:
-        print(f"Batch job: {batch_job.name}, state {batch_job.state}")
-    """
-    if config is None:
-      config = types.ListBatchJobsConfig()
-    return Pager(
-        'batch_jobs',
-        self._list,
-        self._list(config=config),
-        config,
-    )
 
 
 class AsyncBatches(_api_module.BaseModule):
@@ -2452,6 +2451,33 @@ class AsyncBatches(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  async def list(
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
+  ) -> AsyncPager[types.BatchJob]:
+    """Lists batch jobs asynchronously.
+
+    Args:
+      config (ListBatchJobsConfig): Optional configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of batch jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      async for batch_job in await client.aio.batches.list():
+        print(batch_job.name)
+    """
+
+    list_request = self._list
+    return AsyncPager(
+        'batch_jobs',
+        list_request,
+        await self._list(config=config),
+        config,
+    )
+
   async def create(
       self,
       *,
@@ -2552,33 +2578,3 @@ class AsyncBatches(_api_module.BaseModule):
       raise ValueError('Vertex AI does not support batches.create_embeddings.')
     else:
       return await self._create_embeddings(model=model, src=src, config=config)
-
-  async def list(
-      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
-  ) -> AsyncPager[types.BatchJob]:
-    """Lists batch jobs asynchronously.
-
-    Args:
-      config (ListBatchJobsConfig): Optional configuration for the list request.
-
-    Returns:
-      A Pager object that contains one page of batch jobs. When iterating over
-      the pager, it automatically fetches the next page if there are more.
-
-    Usage:
-
-    .. code-block:: python
-
-      batch_jobs = await client.aio.batches.list(config={'page_size': 5})
-      print(f"current page: {batch_jobs.page}")
-      await batch_jobs_pager.next_page()
-      print(f"next page: {batch_jobs_pager.page}")
-    """
-    if config is None:
-      config = types.ListBatchJobsConfig()
-    return AsyncPager(
-        'batch_jobs',
-        self._list,
-        await self._list(config=config),
-        config,
-    )

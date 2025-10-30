@@ -47,15 +47,19 @@ Homepage = "https://github.com/googleapis/python-genai"
 [tool.setuptools.package-data]
 "google.genai" = ["py.typed"]
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
 [tool.mypy]
 exclude = ["tests/", "_test_api_client\\.py"]
 plugins = ["pydantic.mypy"]
 # we are ignoring 'unused-ignore' because we run mypy on Python 3.9 - 3.13 and
 # some errors in _automatic_function_calling_util.py only apply in 3.10+
 # 'import-not-found' and 'import-untyped' are environment specific
-disable_error_code = ["import-not-found", "import-untyped", "unused-ignore"]
+disable_error_code = [
+  "import-not-found",
+  "import-untyped",
+  "unused-ignore",
+]
 strict = true
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
