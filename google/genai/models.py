@@ -5168,7 +5168,7 @@ class Models(_api_module.BaseModule):
         # Yield chunks only if there's no function response parts.
         for chunk in response:
           if not function_map:
-            _extra_utils.append_chunk_contents(contents, chunk)
+            contents = _extra_utils.append_chunk_contents(contents, chunk)
             yield chunk
           else:
             if (
@@ -5181,7 +5181,7 @@ class Models(_api_module.BaseModule):
                 chunk, function_map
             )
             if not func_response_parts:
-              _extra_utils.append_chunk_contents(contents, chunk)
+              contents = _extra_utils.append_chunk_contents(contents, chunk)
               yield chunk
 
       else:
@@ -5191,7 +5191,7 @@ class Models(_api_module.BaseModule):
             chunk.automatic_function_calling_history = (
                 automatic_function_calling_history
             )
-          _extra_utils.append_chunk_contents(contents, chunk)
+          contents = _extra_utils.append_chunk_contents(contents, chunk)
           yield chunk
         if (
             chunk is None
@@ -6938,7 +6938,7 @@ class AsyncModels(_api_module.BaseModule):
           # Yield chunks only if there's no function response parts.
           async for chunk in response:  # type: ignore[attr-defined]
             if not function_map:
-              _extra_utils.append_chunk_contents(contents, chunk)
+              contents = _extra_utils.append_chunk_contents(contents, chunk)
               yield chunk
             else:
               if (
@@ -6953,7 +6953,7 @@ class AsyncModels(_api_module.BaseModule):
                   )
               )
               if not func_response_parts:
-                _extra_utils.append_chunk_contents(contents, chunk)
+                contents = _extra_utils.append_chunk_contents(contents, chunk)
                 yield chunk
 
         else:
@@ -6964,7 +6964,7 @@ class AsyncModels(_api_module.BaseModule):
               chunk.automatic_function_calling_history = (
                   automatic_function_calling_history
               )
-            _extra_utils.append_chunk_contents(contents, chunk)
+            contents = _extra_utils.append_chunk_contents(contents, chunk)
             yield chunk
           if (
               chunk is None

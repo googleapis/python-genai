@@ -536,13 +536,14 @@ async def parse_config_for_mcp_sessions(
 def append_chunk_contents(
     contents: Union[types.ContentListUnion, types.ContentListUnionDict],
     chunk: types.GenerateContentResponse,
-) -> None:
-  """Appends the contents of the chunk to the contents list."""
+) -> Union[types.ContentListUnion, types.ContentListUnionDict]:
+  """Appends the contents of the chunk to the contents list and returns it."""
   if chunk is not None and chunk.candidates is not None:
     chunk_content = chunk.candidates[0].content
     contents = t.t_contents(contents)  # type: ignore[assignment]
     if isinstance(contents, list) and chunk_content is not None:
       contents.append(chunk_content)  # type: ignore[arg-type]
+  return contents
 
 
 def prepare_resumable_upload(
