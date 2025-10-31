@@ -148,6 +148,7 @@ def test_build_request_keeps_sdk_version_headers(monkeypatch):
 
 def build_test_client_no_env_vars(monkeypatch):
   monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
   monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
   monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
   return Client(
