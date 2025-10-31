@@ -18,6 +18,7 @@
 
 from enum import Enum
 import inspect
+import json
 import logging
 import textwrap
 import typing
@@ -765,3 +766,52 @@ def test_move_value_by_path():
   }
 
   assert data == expected
+
+
+def test_convert_uri_to_string():
+  url = pydantic.AnyUrl("http://example.com")
+  data = {
+      "name": "test",
+      "url": url,
+      "nested_list": [1, {"url_in_list": url}],
+      "nested_dict": {
+          "url_in_dict": url,
+      },
+  }
+  expected = {
+      "name": "test",
+      "url": "http://example.com/",
+      "nested_list": [1, {"url_in_list": "http://example.com/"}],
+      "nested_dict": {
+          "url_in_dict": "http://example.com/",
+      },
+  }
+  result = _common.convert_uri_to_string(data)
+  assert result == expected
+
+
+def test_convert_uri_to_string_no_anyurl():
+  data = {"name": "test", "value": 1}
+  result = _common.convert_uri_to_string(data)
+  assert result == data
+
+
+def test_convert_uri_to_string_list_of_anyurl():
+  url = pydantic.AnyUrl("http://example.com")
+  data = [url, {"url": url}]
+  expected = ["http://example.com/", {"url": "http://example.com/"}]
+  result = _common.convert_uri_to_string(data)
+  assert result == expected
+
+
+def test_convert_uri_to_string_anyurl_direct():
+  url = pydantic.AnyUrl("http://example.com")
+  result = _common.convert_uri_to_string(url)
+  assert result == "http://example.com/"
+
+
+def test_json_dumps_fails_with_anyurl():
+  url = pydantic.AnyUrl("http://example.com")
+  data = {"url": url}
+  with pytest.raises(TypeError):
+    json.dumps(data)
