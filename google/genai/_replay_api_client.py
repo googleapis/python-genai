@@ -591,11 +591,12 @@ class ReplayApiClient(BaseApiClient):
         result = super().upload_file(
             file_path, upload_url, upload_size, http_options=http_options
         )
-      except HTTPError as e:
+      except errors.APIError as e:
         result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [e.response.text]
         )
         result.status_code = e.response.status_code
+        self._record_interaction(request, result)
         raise e
       self._record_interaction(request, result)
       return result
@@ -630,11 +631,12 @@ class ReplayApiClient(BaseApiClient):
         result = await super().async_upload_file(
             file_path, upload_url, upload_size, http_options=http_options
         )
-      except HTTPError as e:
+      except errors.APIError as e:
         result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [await e.response.text()]
         )
-        result.status_code = e.response.status_code
+        result.status_code = e.response.status
+        self._record_interaction(request, result)
         raise e
       self._record_interaction(request, result)
       return result
@@ -651,11 +653,12 @@ class ReplayApiClient(BaseApiClient):
     if self._should_call_api():
       try:
         result = super().download_file(path, http_options=http_options)
-      except HTTPError as e:
+      except errors.APIError as e:
         result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [e.response.text]
         )
         result.status_code = e.response.status_code
+        self._record_interaction(request, result)
         raise e
       self._record_interaction(request, result)
       return result
@@ -674,11 +677,12 @@ class ReplayApiClient(BaseApiClient):
         result = await super().async_download_file(
             path, http_options=http_options
         )
-      except HTTPError as e:
+      except errors.APIError as e:
         result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
+            dict(e.response.headers), [await e.response.text()]
         )
-        result.status_code = e.response.status_code
+        result.status_code = e.response.status
+        self._record_interaction(request, result)
         raise e
       self._record_interaction(request, result)
       return result
