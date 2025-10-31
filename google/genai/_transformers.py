@@ -390,31 +390,7 @@ def t_audio_blob(blob: types.BlobOrDict) -> types.Blob:
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
   if part is None:
     raise ValueError('content part is required.')
-  if isinstance(part, str):
-    return types.Part(text=part)
-  if _is_duck_type_of(part, types.File):
-    if not part.uri or not part.mime_type:  # type: ignore[union-attr]
-      raise ValueError('file uri and mime_type are required.')
-    return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)  # type: ignore[union-attr]
-  if isinstance(part, dict):
-    try:
-      return types.Part.model_validate(part)
-    except pydantic.ValidationError:
-      return types.Part(file_data=types.FileData.model_validate(part))
-  if _is_duck_type_of(part, types.Part):
-    return part  # type: ignore[return-value]
-
-  if 'image' in part.__class__.__name__.lower():
-    try:
-      import PIL.Image
-
-      PIL_Image = PIL.Image.Image
-    except ImportError:
-      PIL_Image = None
-
-    if PIL_Image is not None and isinstance(part, PIL_Image):
-      return types.Part(inline_data=pil_to_blob(part))
-  raise ValueError(f'Unsupported content part type: {type(part)}')
+  return types.Part(part)
 
 
 def t_parts(
