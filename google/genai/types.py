@@ -214,6 +214,28 @@ class ApiSpec(_common.CaseInSensitiveEnum):
   """Elastic search API spec."""
 
 
+class PhishBlockThreshold(_common.CaseInSensitiveEnum):
+  """Sites with confidence level chosen & above this value will be blocked from the search results.
+
+  This enum is not supported in Gemini API.
+  """
+
+  PHISH_BLOCK_THRESHOLD_UNSPECIFIED = 'PHISH_BLOCK_THRESHOLD_UNSPECIFIED'
+  """Defaults to unspecified."""
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  """Blocks Low and above confidence URL that is risky."""
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  """Blocks Medium and above confidence URL that is risky."""
+  BLOCK_HIGH_AND_ABOVE = 'BLOCK_HIGH_AND_ABOVE'
+  """Blocks High and above confidence URL that is risky."""
+  BLOCK_HIGHER_AND_ABOVE = 'BLOCK_HIGHER_AND_ABOVE'
+  """Blocks Higher and above confidence URL that is risky."""
+  BLOCK_VERY_HIGH_AND_ABOVE = 'BLOCK_VERY_HIGH_AND_ABOVE'
+  """Blocks Very high and above confidence URL that is risky."""
+  BLOCK_ONLY_EXTREMELY_HIGH = 'BLOCK_ONLY_EXTREMELY_HIGH'
+  """Blocks Extremely high confidence URL that is risky."""
+
+
 class HarmCategory(_common.CaseInSensitiveEnum):
   """Harm category."""
 
@@ -3554,6 +3576,10 @@ class EnterpriseWebSearch(_common.BaseModel):
       default=None,
       description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains.""",
   )
+  blocking_confidence: Optional[PhishBlockThreshold] = Field(
+      default=None,
+      description="""Optional. Sites with confidence level chosen & above this value will be blocked from the search results.""",
+  )
 
 
 class EnterpriseWebSearchDict(TypedDict, total=False):
@@ -3564,6 +3590,9 @@ class EnterpriseWebSearchDict(TypedDict, total=False):
 
   exclude_domains: Optional[list[str]]
   """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains."""
+
+  blocking_confidence: Optional[PhishBlockThreshold]
+  """Optional. Sites with confidence level chosen & above this value will be blocked from the search results."""
 
 
 EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
@@ -3615,6 +3644,10 @@ class GoogleSearch(_common.BaseModel):
       default=None,
       description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API.""",
   )
+  blocking_confidence: Optional[PhishBlockThreshold] = Field(
+      default=None,
+      description="""Optional. Sites with confidence level chosen & above this value will be blocked from the search results. This field is not supported in Gemini API.""",
+  )
   time_range_filter: Optional[Interval] = Field(
       default=None,
       description="""Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI.""",
@@ -3629,6 +3662,9 @@ class GoogleSearchDict(TypedDict, total=False):
 
   exclude_domains: Optional[list[str]]
   """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API."""
+
+  blocking_confidence: Optional[PhishBlockThreshold]
+  """Optional. Sites with confidence level chosen & above this value will be blocked from the search results. This field is not supported in Gemini API."""
 
   time_range_filter: Optional[IntervalDict]
   """Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI."""
