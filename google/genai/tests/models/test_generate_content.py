@@ -285,6 +285,23 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='not supported in',
     ),
     pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_blocking_confidence',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            blocking_confidence=types.PhishBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash',
@@ -309,6 +326,23 @@ test_table: list[pytest_helper.TestTableItem] = [
                     types.Tool(
                         enterprise_web_search=types.EnterpriseWebSearch(
                             exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool_with_blocking_confidence',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch(
+                            blocking_confidence=types.PhishBlockThreshold.BLOCK_LOW_AND_ABOVE,
                         )
                     )
                 ]

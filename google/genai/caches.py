@@ -386,6 +386,11 @@ def _GoogleSearch_to_mldev(
         'exclude_domains parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['blocking_confidence']) is not None:
+    raise ValueError(
+        'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
