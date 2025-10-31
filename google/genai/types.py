@@ -1905,8 +1905,37 @@ class Schema(_common.BaseModel):
   def json_schema(self) -> JSONSchema:
     """Converts the Schema object to a JSONSchema object, that is compatible with 2020-12 JSON Schema draft.
 
-    If a Schema field is not supported by JSONSchema, it will be ignored.
+     Warning: This method will be deprecated because the Json Schema
+     is now supported natively by both Vertex AI and Gemini API.
+     For example:
+     1. the counter part of GenerateContentConfig.response_schema is
+        GenerateContentConfig.response_json_schema, which accepts [JSON
+       Schema](https://json-schema.org/)
+     2. the counter part of FunctionDeclaration.parameters is
+        FunctionDeclaration.parameters_json_schema, which accepts [JSON
+        Schema](https://json-schema.org/)
+     3. the counter part of FunctionDeclaration.response is
+        FunctionDeclaration.response_json_schema, which accepts [JSON
+    Schema](https://json-schema.org/)
+
+     If a Schema field is not supported by JSONSchema, it will be ignored.
     """
+
+    deprecation_warning_message = """
+Warning: This method will be deprecated because the Json Schema
+is now supported natively by both Vertex AI and Gemini API.
+For example:
+1. the counter part of GenerateContentConfig.response_schema is
+   GenerateContentConfig.response_json_schema, which accepts [JSON
+  Schema](https://json-schema.org/)
+2. the counter part of FunctionDeclaration.parameters is
+   FunctionDeclaration.parameters_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+3. the counter part of FunctionDeclaration.response is
+   FunctionDeclaration.response_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+"""
+    logger.warning(deprecation_warning_message)
     json_schema_field_names: set[str] = set(JSONSchema.model_fields.keys())
     schema_field_names: tuple[str] = (
         'items',
@@ -1977,27 +2006,55 @@ class Schema(_common.BaseModel):
   ) -> 'Schema':
     """Converts a JSONSchema object to a Schema object.
 
-    The JSONSchema is compatible with 2020-12 JSON Schema draft, specified by
-    OpenAPI 3.1.
+     Warning: This method will be deprecated because the Json Schema
+     is now supported natively by both Vertex AI and Gemini API.
+     For example:
+     1. the counter part of GenerateContentConfig.response_schema is
+        GenerateContentConfig.response_json_schema, which accepts [JSON
+       Schema](https://json-schema.org/)
+     2. the counter part of FunctionDeclaration.parameters is
+        FunctionDeclaration.parameters_json_schema, which accepts [JSON
+        Schema](https://json-schema.org/)
+     3. the counter part of FunctionDeclaration.response is
+        FunctionDeclaration.response_json_schema, which accepts [JSON
+    Schema](https://json-schema.org/)
 
-    Args:
-        json_schema: JSONSchema object to be converted.
-        api_option: API option to be used. If set to 'VERTEX_AI', the JSONSchema
-          will be converted to a Schema object that is compatible with Vertex AI
-          API. If set to 'GEMINI_API', the JSONSchema will be converted to a
-          Schema object that is compatible with Gemini API. Default is
-          'GEMINI_API'.
-        raise_error_on_unsupported_field: If set to True, an error will be
-          raised if the JSONSchema contains any unsupported fields. Default is
-          False.
+     The JSONSchema is compatible with 2020-12 JSON Schema draft, specified by
+     OpenAPI 3.1.
 
-    Returns:
-        Schema object that is compatible with the specified API option.
-    Raises:
-        ValueError: If the JSONSchema contains any unsupported fields and
-          raise_error_on_unsupported_field is set to True. Or if the JSONSchema
-          is not compatible with the specified API option.
+     Args:
+         json_schema: JSONSchema object to be converted.
+         api_option: API option to be used. If set to 'VERTEX_AI', the
+           JSONSchema will be converted to a Schema object that is compatible
+           with Vertex AI API. If set to 'GEMINI_API', the JSONSchema will be
+           converted to a Schema object that is compatible with Gemini API.
+           Default is 'GEMINI_API'.
+         raise_error_on_unsupported_field: If set to True, an error will be
+           raised if the JSONSchema contains any unsupported fields. Default is
+           False.
+
+     Returns:
+         Schema object that is compatible with the specified API option.
+     Raises:
+         ValueError: If the JSONSchema contains any unsupported fields and
+           raise_error_on_unsupported_field is set to True. Or if the JSONSchema
+           is not compatible with the specified API option.
     """
+    deprecation_warning_message = """
+Warning: This method will be deprecated because the Json Schema
+is now supported natively by both Vertex AI and Gemini API.
+For example:
+1. the counter part of GenerateContentConfig.response_schema is
+   GenerateContentConfig.response_json_schema, which accepts [JSON
+  Schema](https://json-schema.org/)
+2. the counter part of FunctionDeclaration.parameters is
+   FunctionDeclaration.parameters_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+3. the counter part of FunctionDeclaration.response is
+   FunctionDeclaration.response_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+"""
+    logger.warning(deprecation_warning_message)
     google_schema_field_names: set[str] = set(cls.model_fields.keys())
     schema_field_names: tuple[str, ...] = (
         'items',
