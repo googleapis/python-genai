@@ -15,6 +15,7 @@
 
 """Extra utils depending on types that are shared between sync and async modules."""
 
+import asyncio
 import inspect
 import io
 import logging
@@ -400,7 +401,9 @@ async def get_function_response_parts_async(
             }
           else:
             func_response = {
-                'result': invoke_function_from_dict_args(args, func)
+                'result': await asyncio.to_thread(
+                    invoke_function_from_dict_args, args, func
+                )
             }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}
