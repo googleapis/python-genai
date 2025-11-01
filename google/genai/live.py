@@ -21,7 +21,7 @@ import contextlib
 import json
 import logging
 import typing
-from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union, get_args
+from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
 import google.auth
@@ -40,7 +40,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
-from .models import _Content_to_vertex
 
 
 try:
@@ -82,9 +81,15 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 class AsyncSession:
   """[Preview] AsyncSession."""
 
-  def __init__(self, api_client: BaseApiClient, websocket: ClientConnection):
+  def __init__(
+      self,
+      api_client: BaseApiClient,
+      websocket: ClientConnection,
+      session_id: Optional[str] = None,
+  ):
     self._api_client = api_client
     self._ws = websocket
+    self.session_id = session_id
 
   async def send(
       self,
@@ -217,8 +222,8 @@ class AsyncSession:
     )
 
     if self._api_client.vertexai:
-      client_content_dict = live_converters._LiveClientContent_to_vertex(
-          from_object=client_content
+      client_content_dict = _common.convert_to_dict(
+          client_content, convert_keys=True
       )
     else:
       client_content_dict = live_converters._LiveClientContent_to_mldev(
@@ -404,12 +409,12 @@ class AsyncSession:
     """
     tool_response = t.t_tool_response(function_responses)
     if self._api_client.vertexai:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_vertex(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
     else:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_mldev(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
       for response in tool_response_dict.get('functionResponses', []):
         if response.get('id') is None:
@@ -535,7 +540,7 @@ class AsyncSession:
     if self._api_client.vertexai:
       response_dict = live_converters._LiveServerMessage_from_vertex(response)
     else:
-      response_dict = live_converters._LiveServerMessage_from_mldev(response)
+      response_dict = response
 
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -649,7 +654,7 @@ class AsyncSession:
           content_input_parts.append(item)
       if self._api_client.vertexai:
         contents = [
-            _Content_to_vertex(item, to_object)
+            _common.convert_to_dict(item, convert_keys=True)
             for item in t.t_contents(content_input_parts)
         ]
       else:
@@ -975,7 +980,8 @@ class AsyncLive(_api_module.BaseModule):
       api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      headers = self._api_client._http_options.headers or {}
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_vertex(
@@ -992,27 +998,49 @@ class AsyncLive(_api_module.BaseModule):
 
       request = json.dumps(request_dict)
     else:
-      if not self._api_client._credentials:
-        # Get bearer token through Application Default Credentials.
-        creds, _ = google.auth.default(  # type: ignore
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
-        )
-      else:
-        creds = self._api_client._credentials
-      # creds.valid is False, and creds.token is None
-      # Need to refresh credentials to populate those
-      if not (creds.token and creds.valid):
-        auth_req = google.auth.transport.requests.Request()  # type: ignore
-        creds.refresh(auth_req)
-      bearer_token = creds.token
-      original_headers = self._api_client._http_options.headers
-      headers = original_headers.copy() if original_headers is not None else {}
-      headers['Authorization'] = f'Bearer {bearer_token}'
       version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+      has_sufficient_auth = (
+          self._api_client.project and self._api_client.location
+      )
+      if self._api_client.custom_base_url and not has_sufficient_auth:
+        # API gateway proxy can use the auth in custom headers, not url.
+        # Enable custom url if auth is not sufficient.
+        uri = self._api_client.custom_base_url
+        # Keep the model as is.
+        transformed_model = model
+        # Do not get credentials for custom url.
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+
+      else:
+        uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+
+        if not self._api_client._credentials:
+          # Get bearer token through Application Default Credentials.
+          creds, _ = google.auth.default(  # type: ignore
+              scopes=['https://www.googleapis.com/auth/cloud-platform']
+          )
+        else:
+          creds = self._api_client._credentials
+        # creds.valid is False, and creds.token is None
+        # Need to refresh credentials to populate those
+        if not (creds.token and creds.valid):
+          auth_req = google.auth.transport.requests.Request()  # type: ignore
+          creds.refresh(auth_req)
+        bearer_token = creds.token
+
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+        if not headers.get('Authorization'):
+          headers['Authorization'] = f'Bearer {bearer_token}'
+
       location = self._api_client.location
       project = self._api_client.project
-      if transformed_model.startswith('publishers/'):
+      if transformed_model.startswith('publishers/') and project and location:
         transformed_model = (
             f'projects/{project}/locations/{location}/' + transformed_model
         )
@@ -1054,11 +1082,34 @@ class AsyncLive(_api_module.BaseModule):
       await ws.send(request)
       try:
         # websockets 14.0+
-        logger.info(await ws.recv(decode=False))
+        raw_response = await ws.recv(decode=False)
       except TypeError:
-        logger.info(await ws.recv())
+        raw_response = await ws.recv()  # type: ignore[assignment]
+      if raw_response:
+        try:
+          response = json.loads(raw_response)
+        except json.decoder.JSONDecodeError:
+          raise ValueError(f'Failed to parse response: {raw_response!r}')
+      else:
+        response = {}
 
-      yield AsyncSession(api_client=self._api_client, websocket=ws)
+      if self._api_client.vertexai:
+        response_dict = live_converters._LiveServerMessage_from_vertex(response)
+      else:
+        response_dict = response
+
+      setup_response = types.LiveServerMessage._from_response(
+          response=response_dict, kwargs=parameter_model.model_dump()
+      )
+      if setup_response.setup_complete:
+        session_id = setup_response.setup_complete.session_id
+      else:
+        session_id = None
+      yield AsyncSession(
+          api_client=self._api_client,
+          websocket=ws,
+          session_id=session_id,
+      )
 
 
 async def _t_live_connect_config(

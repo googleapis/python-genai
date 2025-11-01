@@ -127,6 +127,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_compression_quality=80,
                 base_steps=32,
                 add_watermark=False,
+                labels={'imagen_label_key': 'edit_image'}
             ),
         ),
     ),
@@ -200,8 +201,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='imagen-4.0-ingredients-preview',
             prompt=(
                 'Dog in [1] sleeping on the ground at the bottom of the image'
-                ' with the cyberpunk city landscape in [2] in the background'
-                ' visible on the side of the mug.'
+                ' with the cyberpunk city landscape in [2] in the background.'
             ),
             reference_images=[dog_content_ref_image, cyberpunk_style_ref_image],
             config=types.EditImageConfig(

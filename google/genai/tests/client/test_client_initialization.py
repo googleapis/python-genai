@@ -408,13 +408,120 @@ def test_invalid_vertexai_constructor2():
     )
 
 
-def test_invalid_vertexai_constructor3(monkeypatch):
+def test_vertexai_default_location_to_global(monkeypatch):
 
   with monkeypatch.context() as m:
     m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
     project_id = "fake_project_id"
-    with pytest.raises(ValueError):
-      Client(vertexai=True, project=project_id)
+    client = Client(vertexai=True, project=project_id)
+    assert client.models._api_client.location == "global"
+
+
+def test_vertexai_default_location_to_global_with_credentials(monkeypatch):
+  # Test case 1: When credentials are provided with project but no location
+  creds = credentials.AnonymousCredentials()
+  project_id = "fake_project_id"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.setenv("GOOGLE_API_KEY", "")
+    client = Client(vertexai=True, credentials=creds, project=project_id)
+    assert client.models._api_client.location == "global"
+    assert client.models._api_client.project == project_id
+
+
+def test_vertexai_default_location_to_global_with_explicit_project_and_env_apikey(
+    monkeypatch,
+):
+  # Test case 2: When explicit project is provided and env api_key exists
+  project_id = "explicit_project_id"
+  api_key = "env_api_key"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+    m.setenv("GOOGLE_API_KEY", api_key)
+    client = Client(vertexai=True, project=project_id)
+    # Explicit project takes precedence over implicit api_key
+    assert client.models._api_client.location == "global"
+    assert client.models._api_client.project == project_id
+    assert not client.models._api_client.api_key
+
+
+def test_vertexai_default_location_to_global_with_env_project_and_env_apikey(
+    monkeypatch,
+):
+  # Test case 3: When env project and env api_key both exist
+  project_id = "env_project_id"
+  api_key = "env_api_key"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+    m.setenv("GOOGLE_API_KEY", api_key)
+    client = Client(vertexai=True)
+    # Implicit project takes precedence over implicit api_key
+    assert client.models._api_client.location == "global"
+    assert client.models._api_client.project == project_id
+    assert not client.models._api_client.api_key
+
+
+def test_vertexai_no_default_location_when_location_explicitly_set(monkeypatch):
+  # Verify that location is NOT defaulted to global when explicitly set
+  project_id = "fake_project_id"
+  location = "us-central1"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+
+
+def test_vertexai_no_default_location_when_env_location_set(monkeypatch):
+  # Verify that location is NOT defaulted to global when set via environment
+  project_id = "fake_project_id"
+  location = "us-west1"
+
+  with monkeypatch.context() as m:
+    m.setenv("GOOGLE_CLOUD_LOCATION", location)
+    m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+    client = Client(vertexai=True)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+
+
+def test_vertexai_no_default_location_with_apikey_only(monkeypatch):
+  # Verify that location is NOT set when using API key mode (no project)
+  api_key = "vertexai_api_key"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+    m.setenv("GOOGLE_API_KEY", "")
+    client = Client(vertexai=True, api_key=api_key)
+    assert not client.models._api_client.location
+    assert not client.models._api_client.project
+    assert client.models._api_client.api_key == api_key
+
+
+def test_vertexai_explicit_credentials(monkeypatch):
+  creds = credentials.AnonymousCredentials()
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "fake_project_id")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "fake-location")
+  monkeypatch.setenv("GOOGLE_API_KEY", "env_api_key")
+
+  client = Client(
+      vertexai=True,
+      credentials=creds
+  )
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.project
+  assert client.models._api_client.location
+  assert not client.models._api_client.api_key
+  assert client.models._api_client._credentials is creds
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_explicit_arg_precedence1(monkeypatch):

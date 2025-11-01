@@ -15,6 +15,7 @@
 
 import collections
 import logging
+import os
 import sys
 import typing
 
@@ -25,6 +26,12 @@ from ... import _transformers as t
 from ... import errors
 from ... import types
 from .. import pytest_helper
+
+GOOGLE_HOMEPAGE_FILE_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '../data/google_homepage.png')
+)
+with open(GOOGLE_HOMEPAGE_FILE_PATH, 'rb') as image_file:
+  google_homepage_screenshot_bytes = image_file.read()
 
 function_declarations = [{
     'name': 'get_current_weather',
@@ -39,6 +46,31 @@ function_declarations = [{
             'unit': {
                 'type': 'STRING',
                 'enum': ['C', 'F'],
+            },
+        },
+    },
+}]
+computer_use_override_function_declarations = [{
+    'name': 'type_text_at',
+    'description': 'Types text at a certain coordinate.',
+    'parameters': {
+        'type': 'OBJECT',
+        'properties': {
+            'y': {
+                'type': 'INTEGER',
+                'description': 'The y-coordinate, normalized from 0 to 1000.',
+            },
+            'x': {
+                'type': 'INTEGER',
+                'description': 'The x-coordinate, normalized from 0 to 1000.',
+            },
+            'press_enter': {
+                'type': 'BOOLEAN',
+                'description': 'Whether to press enter after typing the text.'
+            },
+            'text': {
+                'type': 'STRING',
+                'description': 'The text to type.',
             },
         },
     },
@@ -66,6 +98,33 @@ manual_function_calling_contents = [
         }],
     },
     {'role': 'user', 'parts': function_response_parts},
+]
+computer_use_multi_turn_contents = [
+    {
+        'role': 'user',
+        'parts': [{'text': 'Go to google and search nano banana'}],
+    },
+    {
+        'role': 'model',
+        'parts': [{'function_call': {'name': 'open_web_browser', 'args': {}}}],
+    },
+    {
+        'role': 'user',
+        'parts': [{
+            'function_response': {
+                'name': 'open_web_browser',
+                'response': {
+                    'url': 'http://www.google.com',
+                },
+                'parts': [{
+                    'inline_data': {
+                        'data': google_homepage_screenshot_bytes,
+                        'mime_type': 'image/png',
+                    }
+                }],
+            }
+        }],
+    },
 ]
 
 
@@ -316,6 +375,82 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_computer_use',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=t.t_contents('Go to google and search nano banana'),
+            config={'tools': [{'computer_use': {}}]},
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_with_browser_environment',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=t.t_contents('Go to google and search nano banana'),
+            config={
+                'tools': [
+                    {'computer_use': {'environment': 'ENVIRONMENT_BROWSER'}}
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_multi_turn',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=computer_use_multi_turn_contents,
+            config={
+                'tools': [
+                    {'computer_use': {'environment': 'ENVIRONMENT_BROWSER'}}
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_exclude_predefined_functions',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents='cheapest flight to NYC on Mar 18 2025 on Google Flights',
+            config={
+                'tools': [
+                    {
+                        'computer_use': {
+                            'environment': 'ENVIRONMENT_BROWSER',
+                            'excluded_predefined_functions': ['click_at'],
+                        },
+                    },
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_override_default_function',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=computer_use_multi_turn_contents,
+            config={
+                'tools': [
+                    {
+                        'computer_use': {
+                            'environment': 'ENVIRONMENT_BROWSER',
+                            'excluded_predefined_functions': ['type_text_at'],
+                        },
+                    },
+                    {
+                        'function_declarations': (
+                            computer_use_override_function_declarations
+                        )
+                    },
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
         # https://github.com/googleapis/python-genai/issues/830
         # - models started returning empty thought in response to queries
         #   containing tools.
@@ -367,14 +502,24 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_function_calling_config_validated_mode',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash',
-            contents=t.t_contents(
-                'How is the weather in Kirkland?'
-            ),
+            contents=t.t_contents('How is the weather in Kirkland?'),
             config={
                 'tools': [{'function_declarations': function_declarations}],
                 'tool_config': {
                     'function_calling_config': {'mode': 'VALIDATED'}
                 },
+            },
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_google_maps_with_enable_widget',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('What is the nearest airport to Seattle?'),
+            config={
+                'tools': [
+                    {'google_maps': {'enable_widget': True}}
+                ]
             },
         ),
     ),
@@ -1468,3 +1613,65 @@ def test_tools_chat_curation(client, caplog):
 
   history = chat.get_history(curated=True)
   assert len(history) == 4
+
+
+def test_function_declaration_with_callable(client):
+  response = client.models.generate_content(
+      model='gemini-2.5-pro',
+      contents=(
+          'Divide 1000 by 2. And tell'
+          ' me the weather in London.'
+      ),
+      config={
+          'tools': [
+              divide_integers,
+              {'function_declarations': function_declarations},
+          ],
+      },
+  )
+  assert response.function_calls is not None
+
+def test_function_declaration_with_callable_stream_now(client):
+  for chunk in client.models.generate_content_stream(
+      model='gemini-2.5-pro',
+      contents='Divide 1000 by 2. And tell me the weather in London.',
+      config={
+          'tools': [
+              divide_integers,
+              {'function_declarations': function_declarations},
+          ],
+      },
+  ):
+    pass
+
+@pytest.mark.asyncio
+async def test_function_declaration_with_callable_async(client):
+  response = await client.aio.models.generate_content(
+      model='gemini-2.5-pro',
+      contents=(
+          'Divide 1000 by 2. And tell'
+          ' me the weather in London.'
+      ),
+      config={
+          'tools': [
+              divide_integers,
+              {'function_declarations': function_declarations},
+          ],
+      },
+  )
+  assert response.function_calls is not None
+
+
+@pytest.mark.asyncio
+async def test_function_declaration_with_callable_async_stream(client):
+    async for chunk in await client.aio.models.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Divide 1000 by 2. And tell me the weather in London.',
+        config={
+            'tools': [
+                divide_integers,
+                {'function_declarations': function_declarations},
+            ],
+        },
+    ):
+      pass

@@ -91,7 +91,6 @@ Explicitly close the sync client to ensure that resources, such as the
  underlying HTTP connections, are properly cleaned up and closed.
 
 ```python
-
 from google.genai import Client
 
 client = Client()
@@ -110,7 +109,6 @@ client.close()
 To explicitly close the async client:
 
 ```python
-
 from google.genai import Client
 
 aclient = Client(
@@ -137,15 +135,14 @@ By using the sync client context manager, it will close the underlying
 from google.genai import Client
 
 with Client() as client:
-  response_1 = client.models.generate_content(
-      model=MODEL_ID,
-      contents='Hello',
-  )
-  response_2 = client.models.generate_content(
-      model=MODEL_ID,
-      contents='Ask a question',
-  )
-
+    response_1 = client.models.generate_content(
+        model=MODEL_ID,
+        contents='Hello',
+    )
+    response_2 = client.models.generate_content(
+        model=MODEL_ID,
+        contents='Ask a question',
+    )
 ```
 
 By using the async client context manager, it will close the underlying
@@ -155,15 +152,14 @@ By using the async client context manager, it will close the underlying
 from google.genai import Client
 
 async with Client().aio as aclient:
-  response_1 = await aclient.models.generate_content(
-      model=MODEL_ID,
-      contents='Hello',
-  )
-  response_2 = await aclient.models.generate_content(
-      model=MODEL_ID,
-      contents='Ask a question',
-  )
-
+    response_1 = await aclient.models.generate_content(
+        model=MODEL_ID,
+        contents='Hello',
+    )
+    response_2 = await aclient.models.generate_content(
+        model=MODEL_ID,
+        contents='Ask a question',
+    )
 ```
 
 ### API Selection
@@ -208,7 +204,6 @@ Additional args of `aiohttp.ClientSession.request()` ([see _RequestOptions args]
 through the following way:
 
 ```python
-
 http_options = types.HttpOptions(
     async_client_args={'cookies': ..., 'ssl': ...},
 )
@@ -222,7 +217,6 @@ Both httpx and aiohttp libraries use `urllib.request.getproxies` from
 environment variables. Before client initialization, you may set proxy (and
 optional SSL_CERT_FILE) by setting the environment variables:
 
-
 ```bash
 export HTTPS_PROXY='http://username:password@proxy_uri:port'
 export SSL_CERT_FILE='client.pem'
@@ -233,13 +227,29 @@ args to `httpx.Client()`. You may install `httpx[socks]` to use it.
 Then, you can pass it through the following way:
 
 ```python
-
 http_options = types.HttpOptions(
     client_args={'proxy': 'socks5://user:pass@host:port'},
     async_client_args={'proxy': 'socks5://user:pass@host:port'},
 )
 
 client=Client(..., http_options=http_options)
+```
+
+### Custom base url
+
+In some cases you might need a custom base url (for example, API gateway proxy
+ server) and bypass some authentication checks for project, location, or API key.
+You may pass the custom base url like this:
+
+```python
+base_url = 'https://test-api-gateway-proxy.com'
+client = Client(
+    vertexai=True,  # Currently only vertexai=True is supported
+    http_options={
+        'base_url': base_url,
+        'headers': {'Authorization': 'Bearer test_token'},
+    },
+)
 ```
 
 ## Types
@@ -255,13 +265,35 @@ See the 'Create a client' section above to initialize a client.
 
 ### Generate Content
 
-#### with text content
+#### with text content input (text output)
 
 ```python
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001', contents='Why is the sky blue?'
+    model='gemini-2.5-flash', contents='Why is the sky blue?'
 )
 print(response.text)
+```
+
+#### with text content input (image output)
+
+```python
+from google.genai import types
+
+response = client.models.generate_content(
+    model='gemini-2.5-flash-image',
+    contents='A cartoon infographic for flying sneakers',
+    config=types.GenerateContentConfig(
+        response_modalities=["IMAGE"],
+        image_config=types.ImageConfig(
+            aspect_ratio="9:16",
+        ),
+    ),
+)
+
+for part in response.parts:
+    if part.inline_data:
+        generated_image = part.as_image()
+        generated_image.show()
 ```
 
 #### with uploaded file (Gemini Developer API only)
@@ -276,7 +308,7 @@ python code.
 ```python
 file = client.files.upload(file='a11.txt')
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents=['Could you summarize this file?', file]
 )
 print(response.text)
@@ -296,8 +328,8 @@ This is the canonical way to provide contents, SDK will not do any conversion.
 from google.genai import types
 
 contents = types.Content(
-  role='user',
-  parts=[types.Part.from_text(text='Why is the sky blue?')]
+    role='user',
+    parts=[types.Part.from_text(text='Why is the sky blue?')]
 )
 ```
 
@@ -305,10 +337,10 @@ SDK converts this to
 
 ```python
 [
-  types.Content(
-    role='user',
-    parts=[types.Part.from_text(text='Why is the sky blue?')]
-  )
+    types.Content(
+        role='user',
+        parts=[types.Part.from_text(text='Why is the sky blue?')]
+    )
 ]
 ```
 
@@ -322,11 +354,11 @@ The SDK will assume this is a text part, and it converts this into the following
 
 ```python
 [
-  types.UserContent(
-    parts=[
-      types.Part.from_text(text='Why is the sky blue?')
-    ]
-  )
+    types.UserContent(
+        parts=[
+            types.Part.from_text(text='Why is the sky blue?')
+        ]
+    )
 ]
 ```
 
@@ -344,12 +376,12 @@ like the following:
 
 ```python
 [
-  types.UserContent(
-    parts=[
-      types.Part.from_text(text='Why is the sky blue?'),
-      types.Part.from_text(text='Why is the cloud white?'),
-    ]
-  )
+    types.UserContent(
+        parts=[
+            types.Part.from_text(text='Why is the sky blue?'),
+            types.Part.from_text(text='Why is the cloud white?'),
+        ]
+    )
 ]
 ```
 
@@ -362,8 +394,8 @@ Where a `types.UserContent` is a subclass of `types.Content`, the
 from google.genai import types
 
 contents = types.Part.from_function_call(
-  name='get_weather_by_location',
-  args={'location': 'Boston'}
+    name='get_weather_by_location',
+    args={'location': 'Boston'}
 )
 ```
 
@@ -371,14 +403,14 @@ The SDK converts a function call part to a content with a `model` role:
 
 ```python
 [
-  types.ModelContent(
-    parts=[
-      types.Part.from_function_call(
-        name='get_weather_by_location',
-        args={'location': 'Boston'}
-      )
-    ]
-  )
+    types.ModelContent(
+        parts=[
+            types.Part.from_function_call(
+                name='get_weather_by_location',
+                args={'location': 'Boston'}
+            )
+        ]
+    )
 ]
 ```
 
@@ -391,14 +423,14 @@ Where a `types.ModelContent` is a subclass of `types.Content`, the
 from google.genai import types
 
 contents = [
-  types.Part.from_function_call(
-    name='get_weather_by_location',
-    args={'location': 'Boston'}
-  ),
-  types.Part.from_function_call(
-    name='get_weather_by_location',
-    args={'location': 'New York'}
-  ),
+    types.Part.from_function_call(
+        name='get_weather_by_location',
+        args={'location': 'Boston'}
+    ),
+    types.Part.from_function_call(
+        name='get_weather_by_location',
+        args={'location': 'New York'}
+    ),
 ]
 ```
 
@@ -406,18 +438,18 @@ The SDK converts a list of function call parts to the a content with a `model` r
 
 ```python
 [
-  types.ModelContent(
-    parts=[
-      types.Part.from_function_call(
-        name='get_weather_by_location',
-        args={'location': 'Boston'}
-      ),
-      types.Part.from_function_call(
-        name='get_weather_by_location',
-        args={'location': 'New York'}
-      )
-    ]
-  )
+    types.ModelContent(
+        parts=[
+            types.Part.from_function_call(
+                name='get_weather_by_location',
+                args={'location': 'Boston'}
+            ),
+            types.Part.from_function_call(
+                name='get_weather_by_location',
+                args={'location': 'New York'}
+            )
+        ]
+    )
 ]
 ```
 
@@ -430,8 +462,8 @@ Where a `types.ModelContent` is a subclass of `types.Content`, the
 from google.genai import types
 
 contents = types.Part.from_uri(
-  file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-  mime_type: 'image/jpeg',
+    file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+    mime_type: 'image/jpeg',
 )
 ```
 
@@ -439,12 +471,12 @@ The SDK converts all non function call parts into a content with a `user` role.
 
 ```python
 [
-  types.UserContent(parts=[
-    types.Part.from_uri(
-      file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-      mime_type: 'image/jpeg',
-    )
-  ])
+    types.UserContent(parts=[
+        types.Part.from_uri(
+            file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+            mime_type: 'image/jpeg',
+        )
+    ])
 ]
 ```
 
@@ -454,11 +486,11 @@ The SDK converts all non function call parts into a content with a `user` role.
 from google.genai import types
 
 contents = [
-  types.Part.from_text('What is this image about?'),
-  types.Part.from_uri(
-    file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-    mime_type: 'image/jpeg',
-  )
+    types.Part.from_text('What is this image about?'),
+    types.Part.from_uri(
+        file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+        mime_type: 'image/jpeg',
+    )
 ]
 ```
 
@@ -466,15 +498,15 @@ The SDK will convert the list of parts into a content with a `user` role
 
 ```python
 [
-  types.UserContent(
-    parts=[
-      types.Part.from_text('What is this image about?'),
-      types.Part.from_uri(
-        file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-        mime_type: 'image/jpeg',
-      )
-    ]
-  )
+    types.UserContent(
+        parts=[
+            types.Part.from_text('What is this image about?'),
+            types.Part.from_uri(
+                file_uri: 'gs://generativeai-downloads/images/scones.jpg',
+                mime_type: 'image/jpeg',
+            )
+        ]
+    )
 ]
 ```
 
@@ -580,7 +612,7 @@ print(async_pager[0])
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='Say something bad.',
     config=types.GenerateContentConfig(
         safety_settings=[
@@ -608,13 +640,13 @@ def get_current_weather(location: str) -> str:
     """Returns the current weather.
 
     Args:
-      location: The city and state, e.g. San Francisco, CA
+        location: The city and state, e.g. San Francisco, CA
     """
     return 'sunny'
 
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[get_current_weather]),
 )
@@ -630,14 +662,14 @@ as follows:
 from google.genai import types
 
 response = client.models.generate_content(
-  model='gemini-2.0-flash-001',
-  contents='What is the weather like in Boston?',
-  config=types.GenerateContentConfig(
-    tools=[get_current_weather],
-    automatic_function_calling=types.AutomaticFunctionCallingConfig(
-      disable=True
+    model='gemini-2.5-flash',
+    contents='What is the weather like in Boston?',
+    config=types.GenerateContentConfig(
+        tools=[get_current_weather],
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(
+            disable=True
+        ),
     ),
-  ),
 )
 ```
 
@@ -677,7 +709,7 @@ function = types.FunctionDeclaration(
 tool = types.Tool(function_declarations=[function])
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[tool]),
 )
@@ -721,7 +753,7 @@ function_response_content = types.Content(
 )
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents=[
         user_prompt_content,
         function_call_content,
@@ -751,12 +783,12 @@ def get_current_weather(location: str) -> str:
     """Returns the current weather.
 
     Args:
-      location: The city and state, e.g. San Francisco, CA
+        location: The city and state, e.g. San Francisco, CA
     """
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash-001",
+    model="gemini-2.5-flash",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -781,12 +813,12 @@ def get_current_weather(location: str) -> str:
     """Returns the current weather.
 
     Args:
-      location: The city and state, e.g. San Francisco, CA
+        location: The city and state, e.g. San Francisco, CA
     """
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash-001",
+    model="gemini-2.5-flash",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -876,7 +908,7 @@ user_profile = {
 }
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     contents='Give me a random user profile.',
     config={
         'response_mime_type': 'application/json',
@@ -906,7 +938,7 @@ class CountryInfo(BaseModel):
 
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -920,7 +952,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -958,21 +990,23 @@ You can set response_mime_type to 'text/x.enum' to return one of those enum
 values as the response.
 
 ```python
+from enum import Enum
+
 class InstrumentEnum(Enum):
-  PERCUSSION = 'Percussion'
-  STRING = 'String'
-  WOODWIND = 'Woodwind'
-  BRASS = 'Brass'
-  KEYBOARD = 'Keyboard'
+    PERCUSSION = 'Percussion'
+    STRING = 'String'
+    WOODWIND = 'Woodwind'
+    BRASS = 'Brass'
+    KEYBOARD = 'Keyboard'
 
 response = client.models.generate_content(
-      model='gemini-2.0-flash-001',
-      contents='What instrument plays multiple notes at once?',
-      config={
-          'response_mime_type': 'text/x.enum',
-          'response_schema': InstrumentEnum,
-      },
-  )
+    model='gemini-2.5-flash',
+    contents='What instrument plays multiple notes at once?',
+    config={
+        'response_mime_type': 'text/x.enum',
+        'response_schema': InstrumentEnum,
+    },
+)
 print(response.text)
 ```
 
@@ -985,20 +1019,20 @@ identical but in quotes.
 from enum import Enum
 
 class InstrumentEnum(Enum):
-  PERCUSSION = 'Percussion'
-  STRING = 'String'
-  WOODWIND = 'Woodwind'
-  BRASS = 'Brass'
-  KEYBOARD = 'Keyboard'
+    PERCUSSION = 'Percussion'
+    STRING = 'String'
+    WOODWIND = 'Woodwind'
+    BRASS = 'Brass'
+    KEYBOARD = 'Keyboard'
 
 response = client.models.generate_content(
-      model='gemini-2.0-flash-001',
-      contents='What instrument plays multiple notes at once?',
-      config={
-          'response_mime_type': 'application/json',
-          'response_schema': InstrumentEnum,
-      },
-  )
+    model='gemini-2.5-flash',
+    contents='What instrument plays multiple notes at once?',
+    config={
+        'response_mime_type': 'application/json',
+        'response_schema': InstrumentEnum,
+    },
+)
 print(response.text)
 ```
 
@@ -1011,7 +1045,7 @@ to you, rather than being returned as one chunk.
 
 ```python
 for chunk in client.models.generate_content_stream(
-    model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
+    model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1025,7 +1059,7 @@ you can use the `from_uri` class method to create a `Part` object.
 from google.genai import types
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents=[
         'What is this image about?',
         types.Part.from_uri(
@@ -1049,7 +1083,7 @@ with open(YOUR_IMAGE_PATH, 'rb') as f:
     image_bytes = f.read()
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents=[
         'What is this image about?',
         types.Part.from_bytes(data=image_bytes, mime_type=YOUR_IMAGE_MIME_TYPE),
@@ -1068,7 +1102,7 @@ of `client.models.generate_content`
 
 ```python
 response = await client.aio.models.generate_content(
-    model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
+    model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
 )
 
 print(response.text)
@@ -1076,10 +1110,9 @@ print(response.text)
 
 ### Generate Content (Asynchronous Streaming)
 
-
 ```python
 async for chunk in await client.aio.models.generate_content_stream(
-    model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
+    model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1088,7 +1121,7 @@ async for chunk in await client.aio.models.generate_content_stream(
 
 ```python
 response = client.models.count_tokens(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1100,7 +1133,7 @@ Compute tokens is only supported in Vertex AI.
 
 ```python
 response = client.models.compute_tokens(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1110,7 +1143,7 @@ print(response)
 
 ```python
 response = await client.aio.models.count_tokens(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1119,14 +1152,14 @@ print(response)
 #### Local Count Tokens
 
 ```python
-tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+tokenizer = genai.LocalTokenizer(model_name='gemini-2.5-flash')
 result = tokenizer.count_tokens("What is your name?")
 ```
 
 #### Local Compute Tokens
 
 ```python
-tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+tokenizer = genai.LocalTokenizer(model_name='gemini-2.5-flash')
 result = tokenizer.compute_tokens("What is your name?")
 ```
 
@@ -1134,7 +1167,7 @@ result = tokenizer.compute_tokens("What is your name?")
 
 ```python
 response = client.models.embed_content(
-    model='text-embedding-004',
+    model='gemini-embedding-001',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1145,7 +1178,7 @@ from google.genai import types
 
 # multiple contents with config
 response = client.models.embed_content(
-    model='text-embedding-004',
+    model='gemini-embedding-001',
     contents=['why is the sky blue?', 'What is your age?'],
     config=types.EmbedContentConfig(output_dimensionality=10),
 )
@@ -1339,7 +1372,7 @@ that it can reflect on its previous responses (i.e., engage in an ongoing
 ### Send Message (Synchronous Non-Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-2.0-flash-001')
+chat = client.chats.create(model='gemini-2.5-flash')
 response = chat.send_message('tell me a story')
 print(response.text)
 response = chat.send_message('summarize the story you told me in 1 sentence')
@@ -1349,7 +1382,7 @@ print(response.text)
 ### Send Message (Synchronous Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-2.0-flash-001')
+chat = client.chats.create(model='gemini-2.5-flash')
 for chunk in chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1357,7 +1390,7 @@ for chunk in chat.send_message_stream('tell me a story'):
 ### Send Message (Asynchronous Non-Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-2.0-flash-001')
+chat = client.aio.chats.create(model='gemini-2.5-flash')
 response = await chat.send_message('tell me a story')
 print(response.text)
 ```
@@ -1365,7 +1398,7 @@ print(response.text)
 ### Send Message (Asynchronous Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-2.0-flash-001')
+chat = client.aio.chats.create(model='gemini-2.5-flash')
 async for chunk in await chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1375,7 +1408,7 @@ async for chunk in await chat.send_message_stream('tell me a story'):
 Files are only supported in Gemini Developer API. See the 'Create a client'
 section above to initialize a client.
 
-```cmd
+```sh
 !gsutil cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
 !gsutil cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
 ```
@@ -1424,7 +1457,7 @@ else:
     file_uris = [file1.uri, file2.uri]
 
 cached_content = client.caches.create(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     config=types.CreateCachedContentConfig(
         contents=[
             types.Content(
@@ -1459,7 +1492,7 @@ cached_content = client.caches.get(name=cached_content.name)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='Summarize the pdfs',
     config=types.GenerateContentConfig(
         cached_content=cached_content.name,
@@ -1476,14 +1509,14 @@ section above to initialize a client.
 
 ### Tune
 
--   Vertex AI supports tuning from GCS source or from a Vertex Multimodal Dataset
+-   Vertex AI supports tuning from GCS source or from a [Vertex AI Multimodal Dataset](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/datasets)
 
 ```python
 from google.genai import types
 
-model = 'gemini-2.0-flash-001'
+model = 'gemini-2.5-flash'
 training_dataset = types.TuningDataset(
-  # or gcs_uri=my_vertex_multimodal_dataset
+    # or gcs_uri=my_vertex_multimodal_dataset
     gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
 )
 ```
@@ -1635,11 +1668,11 @@ Vertex AI:
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     src='bq://my-project.my-dataset.my-table',  # or "gs://path/to/input/data"
 )
 
-job
+print(job)
 ```
 
 Gemini Developer API:
@@ -1647,22 +1680,22 @@ Gemini Developer API:
 ```python
 # Create a batch job with inlined requests
 batch_job = client.batches.create(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     src=[{
-      "contents": [{
-        "parts": [{
-          "text": "Hello!",
+        "contents": [{
+            "parts": [{
+                "text": "Hello!",
+            }],
+            "role": "user",
         }],
-       "role": "user",
-     }],
-     "config": {"response_modalities": ["text"]},
+        "config": {"response_modalities": ["text"]},
     }],
 )
 
 job
 ```
 
-In order to create a batch job with file name. Need to upload a jsonl file.
+In order to create a batch job with file name. Need to upload a json file.
 For example myrequests.json:
 
 ```
@@ -1675,14 +1708,14 @@ Then upload the file.
 ```python
 # Upload the file
 file = client.files.upload(
-    file='myrequest.json',
-    config=types.UploadFileConfig(display_name='test_json')
+    file='myrequests.json',
+    config=types.UploadFileConfig(display_name='test-json')
 )
 
 # Create a batch job with file name
 batch_job = client.batches.create(
     model="gemini-2.0-flash",
-    src="files/file_name",
+    src="files/test-json",
 )
 ```
 
@@ -1763,13 +1796,13 @@ To handle errors raised by the model service, the SDK provides this [APIError](h
 from google.genai import errors
 
 try:
-  client.models.generate_content(
-      model="invalid-model-name",
-      contents="What is your name?",
-  )
+    client.models.generate_content(
+        model="invalid-model-name",
+        contents="What is your name?",
+    )
 except errors.APIError as e:
-  print(e.code) # 404
-  print(e.message)
+    print(e.code) # 404
+    print(e.message)
 ```
 
 ## Extra Request Body

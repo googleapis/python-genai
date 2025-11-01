@@ -675,3 +675,93 @@ However, we can talk about the **leading contenders** and what they are generall
       )
   """).strip()
   assert repr(obj) == expected
+
+
+def test_move_value_by_path():
+  """Test move_value_by_path function with array wildcard notation."""
+  data = {
+      "requests": [
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "1"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "2"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "3"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          }
+      ]
+  }
+
+  paths = {'requests[].*': 'requests[].request.*'}
+  _common.move_value_by_path(data, paths)
+
+  expected = {
+      "requests": [
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "1"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "2"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "3"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          }
+      ]
+  }
+
+  assert data == expected

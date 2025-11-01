@@ -16,8 +16,6 @@
 """Tests for async stream."""
 
 import asyncio
-from collections.abc import Sequence
-import datetime
 from typing import List
 from unittest import mock
 from unittest.mock import AsyncMock
@@ -35,8 +33,6 @@ except ImportError:
 import httpx
 
 from ... import _api_client as api_client
-from ... import errors
-from ... import types
 
 
 class MockHTTPXResponse(httpx.Response):

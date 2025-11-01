@@ -21,6 +21,7 @@ import pathlib
 from typing import Any, Optional
 from pydantic import BaseModel, Field, SerializeAsAny
 import pytest
+import re
 from .. import _common
 from .. import _replay_api_client
 from .. import types
@@ -206,3 +207,18 @@ def exception_if_vertex(client, exception_type: type[Exception]):
     return pytest.raises(exception_type)
   else:
     return contextlib.nullcontext()
+
+
+def snake_to_camel(snake_str: str) -> str:
+  """Converts a snake_case string to CamelCase."""
+  return re.sub(r'_([a-zA-Z])', lambda match: match.group(1).upper(), snake_str)
+
+
+def camel_to_snake(camel_str: str) -> str:
+  """Converts a CamelCase string to snake_case."""
+  return re.sub(r'([A-Z])', r'_\1', camel_str).lower().lstrip('_')
+
+
+def get_value_ignore_key_case(obj, key):
+  """Returns the value of the key in the object, converting to camelCase or snake_case if necessary."""
+  return obj.get(snake_to_camel(key), obj.get(camel_to_snake(key), None))

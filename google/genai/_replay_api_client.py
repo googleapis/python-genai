@@ -56,8 +56,13 @@ def _normalize_json_case(obj: Any) -> Any:
     return [_normalize_json_case(item) for item in obj]
   elif isinstance(obj, enum.Enum):
     return obj.value
-  else:
-    return obj
+  elif isinstance(obj, str):
+    # Python >= 3.14 has a new division by zero error message.
+    if 'division by zero' in obj:
+      return obj.replace(
+          'division by zero', 'integer division or modulo by zero'
+      )
+  return obj
 
 
 def _equals_ignore_key_case(obj1: Any, obj2: Any) -> bool:
@@ -88,7 +93,7 @@ def _equals_ignore_key_case(obj1: Any, obj2: Any) -> bool:
 
 def _redact_version_numbers(version_string: str) -> str:
   """Redacts version numbers in the form x.y.z from a string."""
-  return re.sub(r'\d+\.\d+\.\d+', '{VERSION_NUMBER}', version_string)
+  return re.sub(r'\d+\.\d+\.\d+[a-zA-Z0-9]*', '{VERSION_NUMBER}', version_string)
 
 
 def _redact_language_label(language_label: str) -> str:
@@ -138,7 +143,7 @@ def _redact_request_url(url: str) -> str:
       result,
   )
   result = re.sub(
-      r'https://generativelanguage.googleapis.com/[^/]+',
+      r'.*generativelanguage.*.googleapis.com/[^/]+',
       '{MLDEV_URL_PREFIX}',
       result,
   )
@@ -395,6 +400,8 @@ class ReplayApiClient(BaseApiClient):
       http_request: HttpRequest,
       interaction: ReplayInteraction,
   ) -> None:
+    _debug_print(f'http_request.url: {http_request.url}')
+    _debug_print(f'interaction.request.url: {interaction.request.url}')
     assert http_request.url == interaction.request.url
     assert http_request.headers == interaction.request.headers, (
         'Request headers mismatch:\n'
@@ -467,7 +474,9 @@ class ReplayApiClient(BaseApiClient):
 
     if isinstance(response_model, list):
       response_model = response_model[0]
-    print('response_model: ', response_model.model_dump(exclude_none=True))
+    _debug_print(
+        f'response_model: {response_model.model_dump(exclude_none=True)}'
+    )
     actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
@@ -480,8 +489,8 @@ class ReplayApiClient(BaseApiClient):
       ):
         if 'body' in expected['sdk_http_response']:
           raw_body = expected['sdk_http_response']['body']
-          print('raw_body length: ', len(raw_body))
-          print('raw_body: ', raw_body)
+          _debug_print(f'raw_body length: {len(raw_body)}')
+          _debug_print(f'raw_body: {raw_body}')
           if isinstance(raw_body, str) and raw_body != '':
             raw_body = json.loads(raw_body)
             raw_body = json.dumps(raw_body)
@@ -491,7 +500,7 @@ class ReplayApiClient(BaseApiClient):
           actual == expected
       ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
     else:
-      print('Expected SDK response mismatch:\nActual: {actual}\nExpected: {expected}')
+      _debug_print(f'Expected SDK response mismatch:\nActual: {actual}\nExpected: {expected}')
     self._sdk_response_index += 1
 
   def _request(

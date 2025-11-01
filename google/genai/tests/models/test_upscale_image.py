@@ -49,10 +49,13 @@ test_table: list[pytest_helper.TestTableItem] = [
             upscale_factor='x2',
             config=types.UpscaleImageConfig(
                 include_rai_reason=True,
+                person_generation=types.PersonGeneration.ALLOW_ADULT,
+                safety_filter_level=types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE,
                 output_mime_type='image/jpeg',
                 output_compression_quality=80,
                 enhance_input_image=True,
                 image_preservation_factor=0.6,
+                labels={'imagen_label_key': 'upscale_image'}
             ),
         ),
     ),
@@ -106,6 +109,8 @@ async def test_upscale_async(client):
         image=types.Image.from_file(location=IMAGE_FILE_PATH),
         upscale_factor='x2',
         config=types.UpscaleImageConfig(
+            person_generation=types.PersonGeneration.ALLOW_ADULT,
+            safety_filter_level=types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE,
             include_rai_reason=True,
             output_mime_type='image/jpeg',
             output_compression_quality=80,
