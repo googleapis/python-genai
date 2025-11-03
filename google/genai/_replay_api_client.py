@@ -17,17 +17,16 @@
 
 import base64
 import copy
-import datetime
+import contextlib
 import enum
 import inspect
 import io
 import json
 import os
 import re
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union, Iterator, AsyncIterator
 
 import google.auth
-from requests.exceptions import HTTPError
 
 from . import errors
 from ._api_client import BaseApiClient
@@ -209,6 +208,22 @@ def pop_undeterministic_headers(headers: dict[str, str]) -> None:
   headers.pop('Date', None)  # pytype: disable=attribute-error
   headers.pop('Server-Timing', None)  # pytype: disable=attribute-error
 
+
+@contextlib.contextmanager
+def _record_on_api_error(client: 'ReplayApiClient', http_request: HttpRequest) -> Iterator[None]:
+  try:
+    yield
+  except errors.APIError as e:
+    client._record_interaction(http_request, e)
+    raise e
+
+@contextlib.asynccontextmanager
+async def _async_record_on_api_error(client: 'ReplayApiClient', http_request: HttpRequest) -> AsyncIterator[None]:
+  try:
+    yield
+  except errors.APIError as e:
+    client._record_interaction(http_request, e)
+    raise e
 
 class ReplayRequest(BaseModel):
   """Represents a single request in a replay."""
@@ -512,11 +527,8 @@ class ReplayApiClient(BaseApiClient):
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
-      try:
+      with _record_on_api_error(self, http_request):
         result = super()._request(http_request, http_options, stream)
-      except errors.APIError as e:
-        self._record_interaction(http_request, e)
-        raise e
       if stream:
         result_segments = []
         for segment in result.segments():
@@ -541,13 +553,10 @@ class ReplayApiClient(BaseApiClient):
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
-      try:
+      async with _async_record_on_api_error(self, http_request):
         result = await super()._async_request(
             http_request, http_options, stream
         )
-      except errors.APIError as e:
-        self._record_interaction(http_request, e)
-        raise e
       if stream:
         result_segments = []
         async for segment in result.async_segments():
@@ -587,16 +596,10 @@ class ReplayApiClient(BaseApiClient):
       )
     if self._should_call_api():
       result: Union[str, HttpResponse]
-      try:
+      with _record_on_api_error(self, request):
         result = super().upload_file(
             file_path, upload_url, upload_size, http_options=http_options
         )
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:
@@ -626,16 +629,10 @@ class ReplayApiClient(BaseApiClient):
       )
     if self._should_call_api():
       result: HttpResponse
-      try:
+      async with _async_record_on_api_error(self, request):
         result = await super().async_upload_file(
             file_path, upload_url, upload_size, http_options=http_options
         )
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:
@@ -649,14 +646,8 @@ class ReplayApiClient(BaseApiClient):
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
-      try:
+      with _record_on_api_error(self, request):
         result = super().download_file(path, http_options=http_options)
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:
@@ -670,16 +661,10 @@ class ReplayApiClient(BaseApiClient):
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
-      try:
+      async with _async_record_on_api_error(self, request):
         result = await super().async_download_file(
             path, http_options=http_options
         )
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:

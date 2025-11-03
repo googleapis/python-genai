@@ -21,6 +21,7 @@ import io
 import pathlib
 import pytest
 from ... import types
+from ... import errors
 from .. import pytest_helper
 
 # Upload method is not pydantic.
@@ -184,6 +185,15 @@ def test_audio_m4a_upload_with_config_dict(client):
     assert file.name.startswith('files/')
 
 
+def test_bad_mime_type(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    with pytest.raises(errors.APIError, match="Unsupported MIME"):
+      file = client.files.upload(
+          file=io.BytesIO(b'test'),
+          config={'mime_type': 'bad/mime_type'},
+      )
+
+
 @pytest.mark.asyncio
 async def test_image_upload_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
@@ -234,3 +244,12 @@ async def test_unknown_path_upload_async(client):
       await client.aio.files.upload(file='unknown_path')
     except FileNotFoundError as e:
       assert 'is not a valid file path' in str(e)
+
+@pytest.mark.asyncio
+async def test_bad_mime_type_async(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    with pytest.raises(errors.APIError, match="Unsupported MIME"):
+      file = await client.aio.files.upload(
+          file=io.BytesIO(b'test'),
+          config={'mime_type': 'bad/mime_type'},
+      )

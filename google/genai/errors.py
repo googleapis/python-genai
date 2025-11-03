@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 class APIError(Exception):
   """General errors raised by the GenAI API."""
   code: int
-  response: Union['ReplayResponse', httpx.Response]
+  response: Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
 
   status: Optional[str] = None
   message: Optional[str] = None
