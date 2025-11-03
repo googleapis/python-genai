@@ -1493,7 +1493,7 @@ class BaseApiClient:
             f'All content has been uploaded, but the upload status is not'
             f' finalized.'
         )
-
+    errors.APIError.raise_for_response(response)
     if response.headers.get('x-goog-upload-status') != 'final':
       raise ValueError('Failed to upload file: Upload status is not finalized.')
     return HttpResponse(response.headers, response_stream=[response.text])
@@ -1656,6 +1656,8 @@ class BaseApiClient:
               f'All content has been uploaded, but the upload status is not'
               f' finalized.'
           )
+
+      await errors.APIError.raise_for_async_response(response)
       if (
           response is not None
           and response.headers.get('X-Goog-Upload-Status') != 'final'
@@ -1733,6 +1735,8 @@ class BaseApiClient:
               'All content has been uploaded, but the upload status is not'
               ' finalized.'
           )
+
+      await errors.APIError.raise_for_async_response(client_response)
       if (
           client_response is not None
           and client_response.headers.get('x-goog-upload-status') != 'final'
