@@ -119,6 +119,78 @@ def test_image(client, image_jpeg):
   )
 
 
+def test_thinking_budget(client):
+  """Tests that the thinking budget is respected and generates thoughts."""
+  chat = client.chats.create(
+      model='gemini-2.5-flash',
+      config={
+          'thinking_config': {
+               'include_thoughts': True,
+              'thinking_budget': 10000,
+          },
+      },
+  )
+  response1 = chat.send_message(
+      'what is the sum of natural numbers from 1 to 100?',
+  )
+  has_thought1 = False
+  if response1.candidates:
+    for candidate in response1.candidates:
+      for part in candidate.content.parts:
+        if part.thought:
+          has_thought1 = True
+          break
+  assert has_thought1
+
+  response2 = chat.send_message(
+      'can you help me to understand the logic better?'
+  )
+  has_thought2 = False
+  if response2.candidates:
+    for candidate in response2.candidates:
+      for part in candidate.content.parts:
+        if part.thought:
+          has_thought2 = True
+          break
+  assert has_thought2
+
+
+def test_thinking_budget_stream(client):
+  """Tests that the thinking budget is respected and generates thoughts."""
+  chat = client.chats.create(
+      model='gemini-2.5-flash',
+      config={
+          'thinking_config': {
+              'include_thoughts': True,
+              'thinking_budget': 10000,
+          },
+      },
+  )
+  has_thought1 = False
+  for chunk in chat.send_message_stream(
+      'what is the sum of natural numbers from 1 to 100?',
+  ):
+    if chunk.candidates:
+      for candidate in chunk.candidates:
+        for part in candidate.content.parts:
+          if part.thought:
+            has_thought1 = True
+            break
+  assert has_thought1
+
+  has_thought2 = False
+  for chunk in chat.send_message_stream(
+      'can you help me to understand the logic better?'
+  ):
+    if chunk.candidates:
+      for candidate in chunk.candidates:
+        for part in candidate.content.parts:
+          if part.thought:
+            has_thought2 = True
+            break
+  assert has_thought2
+
+
 def test_google_cloud_storage_uri(client):
   chat = client.chats.create(model='gemini-1.5-flash')
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
