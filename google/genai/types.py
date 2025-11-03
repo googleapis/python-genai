@@ -182,6 +182,20 @@ class Mode(_common.CaseInSensitiveEnum):
   """Run retrieval only when system decides it is necessary."""
 
 
+class ApiSpec(_common.CaseInSensitiveEnum):
+  """The API spec that the external API implements.
+
+  This enum is not supported in Gemini API.
+  """
+
+  API_SPEC_UNSPECIFIED = 'API_SPEC_UNSPECIFIED'
+  """Unspecified API spec. This value should not be used."""
+  SIMPLE_SEARCH = 'SIMPLE_SEARCH'
+  """Simple search API spec."""
+  ELASTIC_SEARCH = 'ELASTIC_SEARCH'
+  """Elastic search API spec."""
+
+
 class AuthType(_common.CaseInSensitiveEnum):
   """Type of auth scheme. This enum is not supported in Gemini API."""
 
@@ -200,18 +214,20 @@ class AuthType(_common.CaseInSensitiveEnum):
   """OpenID Connect (OIDC) Auth."""
 
 
-class ApiSpec(_common.CaseInSensitiveEnum):
-  """The API spec that the external API implements.
+class HttpElementLocation(_common.CaseInSensitiveEnum):
+  """The location of the API key. This enum is not supported in Gemini API."""
 
-  This enum is not supported in Gemini API.
-  """
-
-  API_SPEC_UNSPECIFIED = 'API_SPEC_UNSPECIFIED'
-  """Unspecified API spec. This value should not be used."""
-  SIMPLE_SEARCH = 'SIMPLE_SEARCH'
-  """Simple search API spec."""
-  ELASTIC_SEARCH = 'ELASTIC_SEARCH'
-  """Elastic search API spec."""
+  HTTP_IN_UNSPECIFIED = 'HTTP_IN_UNSPECIFIED'
+  HTTP_IN_QUERY = 'HTTP_IN_QUERY'
+  """Element is in the HTTP request query."""
+  HTTP_IN_HEADER = 'HTTP_IN_HEADER'
+  """Element is in the HTTP request header."""
+  HTTP_IN_PATH = 'HTTP_IN_PATH'
+  """Element is in the HTTP request path."""
+  HTTP_IN_BODY = 'HTTP_IN_BODY'
+  """Element is in the HTTP request body."""
+  HTTP_IN_COOKIE = 'HTTP_IN_COOKIE'
+  """Element is in the HTTP request cookie."""
 
 
 class PhishBlockThreshold(_common.CaseInSensitiveEnum):
@@ -2713,20 +2729,131 @@ GoogleSearchRetrievalOrDict = Union[
 ]
 
 
-class ApiKeyConfig(_common.BaseModel):
-  """Config for authentication with API key."""
+class ComputerUse(_common.BaseModel):
+  """Tool to support computer use."""
 
+  environment: Optional[Environment] = Field(
+      default=None, description="""Required. The environment being operated."""
+  )
+  excluded_predefined_functions: Optional[list[str]] = Field(
+      default=None,
+      description="""By default, predefined functions are included in the final model call.
+    Some of them can be explicitly excluded from being automatically included.
+    This can serve two purposes:
+      1. Using a more restricted / different action space.
+      2. Improving the definitions / instructions of predefined functions.""",
+  )
+
+
+class ComputerUseDict(TypedDict, total=False):
+  """Tool to support computer use."""
+
+  environment: Optional[Environment]
+  """Required. The environment being operated."""
+
+  excluded_predefined_functions: Optional[list[str]]
+  """By default, predefined functions are included in the final model call.
+    Some of them can be explicitly excluded from being automatically included.
+    This can serve two purposes:
+      1. Using a more restricted / different action space.
+      2. Improving the definitions / instructions of predefined functions."""
+
+
+ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
+
+
+class ApiAuthApiKeyConfig(_common.BaseModel):
+  """The API secret. This data type is not supported in Gemini API."""
+
+  api_key_secret_version: Optional[str] = Field(
+      default=None,
+      description="""Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}""",
+  )
   api_key_string: Optional[str] = Field(
       default=None,
-      description="""The API key to be used in the request directly.""",
+      description="""The API key string. Either this or `api_key_secret_version` must be set.""",
+  )
+
+
+class ApiAuthApiKeyConfigDict(TypedDict, total=False):
+  """The API secret. This data type is not supported in Gemini API."""
+
+  api_key_secret_version: Optional[str]
+  """Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}"""
+
+  api_key_string: Optional[str]
+  """The API key string. Either this or `api_key_secret_version` must be set."""
+
+
+ApiAuthApiKeyConfigOrDict = Union[ApiAuthApiKeyConfig, ApiAuthApiKeyConfigDict]
+
+
+class ApiAuth(_common.BaseModel):
+  """The generic reusable api auth config.
+
+  Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
+  instead. This data type is not supported in Gemini API.
+  """
+
+  api_key_config: Optional[ApiAuthApiKeyConfig] = Field(
+      default=None, description="""The API secret."""
+  )
+
+
+class ApiAuthDict(TypedDict, total=False):
+  """The generic reusable api auth config.
+
+  Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
+  instead. This data type is not supported in Gemini API.
+  """
+
+  api_key_config: Optional[ApiAuthApiKeyConfigDict]
+  """The API secret."""
+
+
+ApiAuthOrDict = Union[ApiAuth, ApiAuthDict]
+
+
+class ApiKeyConfig(_common.BaseModel):
+  """Config for authentication with API key.
+
+  This data type is not supported in Gemini API.
+  """
+
+  api_key_secret: Optional[str] = Field(
+      default=None,
+      description="""Optional. The name of the SecretManager secret version resource storing the API key. Format: `projects/{project}/secrets/{secrete}/versions/{version}` - If both `api_key_secret` and `api_key_string` are specified, this field takes precedence over `api_key_string`. - If specified, the `secretmanager.versions.access` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified resource.""",
+  )
+  api_key_string: Optional[str] = Field(
+      default=None,
+      description="""Optional. The API key to be used in the request directly.""",
+  )
+  http_element_location: Optional[HttpElementLocation] = Field(
+      default=None, description="""Optional. The location of the API key."""
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The parameter name of the API key. E.g. If the API request is "https://example.com/act?api_key=", "api_key" would be the parameter name.""",
   )
 
 
 class ApiKeyConfigDict(TypedDict, total=False):
-  """Config for authentication with API key."""
+  """Config for authentication with API key.
+
+  This data type is not supported in Gemini API.
+  """
+
+  api_key_secret: Optional[str]
+  """Optional. The name of the SecretManager secret version resource storing the API key. Format: `projects/{project}/secrets/{secrete}/versions/{version}` - If both `api_key_secret` and `api_key_string` are specified, this field takes precedence over `api_key_string`. - If specified, the `secretmanager.versions.access` permission should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents) on the specified resource."""
 
   api_key_string: Optional[str]
-  """The API key to be used in the request directly."""
+  """Optional. The API key to be used in the request directly."""
+
+  http_element_location: Optional[HttpElementLocation]
+  """Optional. The location of the API key."""
+
+  name: Optional[str]
+  """Optional. The parameter name of the API key. E.g. If the API request is "https://example.com/act?api_key=", "api_key" would be the parameter name."""
 
 
 ApiKeyConfigOrDict = Union[ApiKeyConfig, ApiKeyConfigDict]
@@ -2850,7 +2977,10 @@ AuthConfigOidcConfigOrDict = Union[
 
 
 class AuthConfig(_common.BaseModel):
-  """Auth configuration to run the extension."""
+  """Auth configuration to run the extension.
+
+  This data type is not supported in Gemini API.
+  """
 
   api_key_config: Optional[ApiKeyConfig] = Field(
       default=None, description="""Config for API key auth."""
@@ -2875,7 +3005,10 @@ class AuthConfig(_common.BaseModel):
 
 
 class AuthConfigDict(TypedDict, total=False):
-  """Auth configuration to run the extension."""
+  """Auth configuration to run the extension.
+
+  This data type is not supported in Gemini API.
+  """
 
   api_key_config: Optional[ApiKeyConfigDict]
   """Config for API key auth."""
@@ -2899,117 +3032,6 @@ class AuthConfigDict(TypedDict, total=False):
 
 
 AuthConfigOrDict = Union[AuthConfig, AuthConfigDict]
-
-
-class GoogleMaps(_common.BaseModel):
-  """Tool to support Google Maps in Model."""
-
-  auth_config: Optional[AuthConfig] = Field(
-      default=None,
-      description="""Optional. Auth config for the Google Maps tool.""",
-  )
-  enable_widget: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If true, include the widget context token in the response.""",
-  )
-
-
-class GoogleMapsDict(TypedDict, total=False):
-  """Tool to support Google Maps in Model."""
-
-  auth_config: Optional[AuthConfigDict]
-  """Optional. Auth config for the Google Maps tool."""
-
-  enable_widget: Optional[bool]
-  """Optional. If true, include the widget context token in the response."""
-
-
-GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
-
-
-class ComputerUse(_common.BaseModel):
-  """Tool to support computer use."""
-
-  environment: Optional[Environment] = Field(
-      default=None, description="""Required. The environment being operated."""
-  )
-  excluded_predefined_functions: Optional[list[str]] = Field(
-      default=None,
-      description="""By default, predefined functions are included in the final model call.
-    Some of them can be explicitly excluded from being automatically included.
-    This can serve two purposes:
-      1. Using a more restricted / different action space.
-      2. Improving the definitions / instructions of predefined functions.""",
-  )
-
-
-class ComputerUseDict(TypedDict, total=False):
-  """Tool to support computer use."""
-
-  environment: Optional[Environment]
-  """Required. The environment being operated."""
-
-  excluded_predefined_functions: Optional[list[str]]
-  """By default, predefined functions are included in the final model call.
-    Some of them can be explicitly excluded from being automatically included.
-    This can serve two purposes:
-      1. Using a more restricted / different action space.
-      2. Improving the definitions / instructions of predefined functions."""
-
-
-ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
-
-
-class ApiAuthApiKeyConfig(_common.BaseModel):
-  """The API secret. This data type is not supported in Gemini API."""
-
-  api_key_secret_version: Optional[str] = Field(
-      default=None,
-      description="""Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}""",
-  )
-  api_key_string: Optional[str] = Field(
-      default=None,
-      description="""The API key string. Either this or `api_key_secret_version` must be set.""",
-  )
-
-
-class ApiAuthApiKeyConfigDict(TypedDict, total=False):
-  """The API secret. This data type is not supported in Gemini API."""
-
-  api_key_secret_version: Optional[str]
-  """Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}"""
-
-  api_key_string: Optional[str]
-  """The API key string. Either this or `api_key_secret_version` must be set."""
-
-
-ApiAuthApiKeyConfigOrDict = Union[ApiAuthApiKeyConfig, ApiAuthApiKeyConfigDict]
-
-
-class ApiAuth(_common.BaseModel):
-  """The generic reusable api auth config.
-
-  Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
-  instead. This data type is not supported in Gemini API.
-  """
-
-  api_key_config: Optional[ApiAuthApiKeyConfig] = Field(
-      default=None, description="""The API secret."""
-  )
-
-
-class ApiAuthDict(TypedDict, total=False):
-  """The generic reusable api auth config.
-
-  Deprecated. Please use AuthConfig (google/cloud/aiplatform/master/auth.proto)
-  instead. This data type is not supported in Gemini API.
-  """
-
-  api_key_config: Optional[ApiAuthApiKeyConfigDict]
-  """The API secret."""
-
-
-ApiAuthOrDict = Union[ApiAuth, ApiAuthDict]
 
 
 class ExternalApiElasticSearchParams(_common.BaseModel):
@@ -3598,6 +3620,32 @@ class EnterpriseWebSearchDict(TypedDict, total=False):
 EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
 
 
+class GoogleMaps(_common.BaseModel):
+  """Tool to retrieve public maps data for grounding, powered by Google."""
+
+  auth_config: Optional[AuthConfig] = Field(
+      default=None,
+      description="""The authentication config to access the API. Only API key is supported. This field is not supported in Gemini API.""",
+  )
+  enable_widget: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If true, include the widget context token in the response.""",
+  )
+
+
+class GoogleMapsDict(TypedDict, total=False):
+  """Tool to retrieve public maps data for grounding, powered by Google."""
+
+  auth_config: Optional[AuthConfigDict]
+  """The authentication config to access the API. Only API key is supported. This field is not supported in Gemini API."""
+
+  enable_widget: Optional[bool]
+  """Optional. If true, include the widget context token in the response."""
+
+
+GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
+
+
 class Interval(_common.BaseModel):
   """Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
 
@@ -3703,11 +3751,6 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search.""",
   )
-  google_maps: Optional[GoogleMaps] = Field(
-      default=None,
-      description="""Optional. Google Maps tool type. Specialized retrieval tool
-      that is powered by Google Maps.""",
-  )
   computer_use: Optional[ComputerUse] = Field(
       default=None,
       description="""Optional. Tool to support the model interacting directly with the
@@ -3721,6 +3764,10 @@ class Tool(_common.BaseModel):
   enterprise_web_search: Optional[EnterpriseWebSearch] = Field(
       default=None,
       description="""Optional. Tool to support searching public web data, powered by Vertex AI Search and Sec4 compliance. This field is not supported in Gemini API.""",
+  )
+  google_maps: Optional[GoogleMaps] = Field(
+      default=None,
+      description="""Optional. GoogleMaps tool type. Tool to support Google Maps in Model.""",
   )
   google_search: Optional[GoogleSearch] = Field(
       default=None,
@@ -3744,10 +3791,6 @@ class ToolDict(TypedDict, total=False):
   google_search_retrieval: Optional[GoogleSearchRetrievalDict]
   """Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search."""
 
-  google_maps: Optional[GoogleMapsDict]
-  """Optional. Google Maps tool type. Specialized retrieval tool
-      that is powered by Google Maps."""
-
   computer_use: Optional[ComputerUseDict]
   """Optional. Tool to support the model interacting directly with the
       computer. If enabled, it automatically populates computer-use specific
@@ -3758,6 +3801,9 @@ class ToolDict(TypedDict, total=False):
 
   enterprise_web_search: Optional[EnterpriseWebSearchDict]
   """Optional. Tool to support searching public web data, powered by Vertex AI Search and Sec4 compliance. This field is not supported in Gemini API."""
+
+  google_maps: Optional[GoogleMapsDict]
+  """Optional. GoogleMaps tool type. Tool to support Google Maps in Model."""
 
   google_search: Optional[GoogleSearchDict]
   """Optional. GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google."""
