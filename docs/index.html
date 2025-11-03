@@ -1,16 +1,16 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Submodules" href="genai.html" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Submodules" href="genai.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
         <title>Google Gen AI SDK documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="_static/autodoc_pydantic.css?v=a0a71c94" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=fdc8595f" />
     
     
@@ -18,8 +18,8 @@
 
 <style>
   body {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
   --font-stack: "Google Sans Text", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-stack--monospace: Roboto Mono, "Helvetica Neue Mono", monospace;
   --font-stack--headings: "Google Sans Text", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -161,14 +161,10 @@
   </symbol>
 </svg>
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
 <a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
@@ -178,8 +174,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
       </label>
     </div>
     <div class="header-center">
@@ -187,8 +182,7 @@
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
           <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
           <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -196,8 +190,7 @@
         </button>
       </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
   </header>
@@ -205,7 +198,6 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
-  
   
   <span class="sidebar-brand-text">Google Gen AI SDK  documentation</span>
   
@@ -253,8 +245,7 @@
   </a>
 </div>
 <div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -262,21 +253,27 @@
             </button>
           </div>
           <label class="toc-overlay-icon toc-content-icon" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
           <section id="google-gen-ai-sdk">
 <h1>Google Gen AI SDK<a class="headerlink" href="#google-gen-ai-sdk" title="Link to this heading">¶</a></h1>
-<p><a class="reference external" href="https://pypi.org/project/google-genai/"><img alt="pypi" src="https://img.shields.io/pypi/v/google-genai.svg" /></a></p>
+<p><a class="reference external" href="https://pypi.org/project/google-genai/"><img alt="pypi" src="https://img.shields.io/pypi/v/google-genai.svg" /></a> <a class="reference external" href="https://pypi.org/project/google-genai/"><img alt="pyversions" src="https://img.shields.io/pypi/pyversions/google-genai" /></a> <a class="reference external" href="https://pypistats.org/packages/google-genai"><img alt="pydownloads" src="https://img.shields.io/pypi/dw/google-genai" /></a></p>
+<p><strong>Documentation:</strong> <a class="reference external" href="https://googleapis.github.io/python-genai/">https://googleapis.github.io/python-genai/</a></p>
 <p><a class="reference external" href="https://github.com/googleapis/python-genai">https://github.com/googleapis/python-genai</a></p>
-<p><strong>google-genai</strong> is an initial Python client library for interacting with
-Google’s Generative AI APIs.</p>
-<p>Google Gen AI Python SDK provides an interface for developers to integrate Google’s generative models into their Python applications. It supports the <a class="reference external" href="https://ai.google.dev/gemini-api/docs">Gemini Developer API</a> and <a class="reference external" href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview">Vertex AI</a> APIs.</p>
+<p>Google Gen AI Python SDK provides an interface for developers to integrate
+Google’s generative models into their Python applications. It supports the
+<a class="reference external" href="https://ai.google.dev/gemini-api/docs">Gemini Developer API</a> and
+<a class="reference external" href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview">Vertex AI</a>
+APIs.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>google-genai
+</pre></div>
+</div>
+<p>With <cite>uv</cite>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>google-genai
 </pre></div>
 </div>
 </section>
@@ -290,8 +287,7 @@ Google’s Generative AI APIs.</p>
 <section id="create-a-client">
 <h2>Create a client<a class="headerlink" href="#create-a-client" title="Link to this heading">¶</a></h2>
 <p>Please run one of the following code blocks to create a client for
-different services (<a class="reference external" href="https://ai.google.dev/gemini-api/docs">Gemini Developer API</a> or <a class="reference external" href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview">Vertex AI</a>). Feel free to switch the client and
-run all the examples to see how it behaves under different APIs.</p>
+different services (<a class="reference external" href="https://ai.google.dev/gemini-api/docs">Gemini Developer API</a> or <a class="reference external" href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview">Vertex AI</a>).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google</span><span class="w"> </span><span class="kn">import</span> <span class="n">genai</span>
 
 <span class="c1"># Only run this block for Gemini Developer API</span>
@@ -310,12 +306,15 @@ run all the examples to see how it behaves under different APIs.</p>
 <p>You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you’re using the Gemini
 Developer API or the Gemini API in Vertex AI.</p>
-<p><strong>Gemini Developer API:</strong> Set <cite>GOOGLE_API_KEY</cite> as shown below:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_API_KEY</span><span class="o">=</span><span class="s1">&#39;your-api-key&#39;</span>
+<p><strong>Gemini Developer API:</strong> Set the <cite>GEMINI_API_KEY</cite> or <cite>GOOGLE_API_KEY</cite>.
+It will automatically be picked up by the client. It’s recommended that you
+set only one of those variables, but if both are set, <cite>GOOGLE_API_KEY</cite> takes
+precedence.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">GEMINI_API_KEY</span><span class="o">=</span><span class="s1">&#39;your-api-key&#39;</span>
 </pre></div>
 </div>
-<p><strong>Gemini API in Vertex AI:</strong> Set <cite>GOOGLE_GENAI_USE_VERTEXAI</cite>, <cite>GOOGLE_CLOUD_PROJECT</cite>
-and <cite>GOOGLE_CLOUD_LOCATION</cite>, as shown below:</p>
+<p><strong>Gemini API on Vertex AI:</strong> Set <cite>GOOGLE_GENAI_USE_VERTEXAI</cite>,
+<cite>GOOGLE_CLOUD_PROJECT</cite> and <cite>GOOGLE_CLOUD_LOCATION</cite>, as shown below:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_GENAI_USE_VERTEXAI</span><span class="o">=</span><span class="nb">true</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_CLOUD_PROJECT</span><span class="o">=</span><span class="s1">&#39;your-project-id&#39;</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_CLOUD_LOCATION</span><span class="o">=</span><span class="s1">&#39;us-central1&#39;</span>
@@ -326,6 +325,77 @@ and <cite>GOOGLE_CLOUD_LOCATION</cite>, as shown below:</p>
 <span class="n">client</span> <span class="o">=</span> <span class="n">genai</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="close-a-client">
+<h3>Close a client<a class="headerlink" href="#close-a-client" title="Link to this heading">¶</a></h3>
+<p>Explicitly close the sync client to ensure that resources, such as the
+underlying HTTP connections, are properly cleaned up and closed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">response_1</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+    <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">response_2</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+    <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Ask a question&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># Close the sync client to release resources.</span>
+<span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To explicitly close the async client:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">aclient</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+    <span class="n">vertexai</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s1">&#39;my-project-id&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;us-central1&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">aio</span>
+<span class="n">response_1</span> <span class="o">=</span> <span class="k">await</span> <span class="n">aclient</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+    <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">response_2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">aclient</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+    <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Ask a question&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># Close the async client to release resources.</span>
+<span class="k">await</span> <span class="n">aclient</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="client-context-managers">
+<h3>Client context managers<a class="headerlink" href="#client-context-managers" title="Link to this heading">¶</a></h3>
+<p>By using the sync client context manager, it will close the underlying
+sync client when exiting the with block.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="k">with</span> <span class="n">Client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">response_1</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+        <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">response_2</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+        <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Ask a question&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>By using the async client context manager, it will close the underlying
+async client when exiting the with block.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="n">Client</span><span class="p">()</span><span class="o">.</span><span class="n">aio</span> <span class="k">as</span> <span class="n">aclient</span><span class="p">:</span>
+    <span class="n">response_1</span> <span class="o">=</span> <span class="k">await</span> <span class="n">aclient</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+        <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">response_2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">aclient</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">,</span>
+        <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Ask a question&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="api-selection">
 <h3>API Selection<a class="headerlink" href="#api-selection" title="Link to this heading">¶</a></h3>
 <p>By default, the SDK uses the beta API endpoints provided by Google to support preview features in the APIs. The stable API endpoints can be selected by setting the API version to <cite>v1</cite>.</p>
@@ -397,7 +467,7 @@ server) and bypass some authentication checks for project, location, or API key.
 You may pass the custom base url like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">base_url</span> <span class="o">=</span> <span class="s1">&#39;https://test-api-gateway-proxy.com&#39;</span>
 <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
-    <span class="n">vertexai</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">vertexai</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Currently only vertexai=True is supported</span>
     <span class="n">http_options</span><span class="o">=</span><span class="p">{</span>
         <span class="s1">&#39;base_url&#39;</span><span class="p">:</span> <span class="n">base_url</span><span class="p">,</span>
         <span class="s1">&#39;headers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="s1">&#39;Bearer test_token&#39;</span><span class="p">},</span>
@@ -419,12 +489,34 @@ Pydantic model types are available in the <code class="docutils literal notransl
 getters. See the ‘Create a client’ section above to initialize a client.</p>
 <section id="generate-content">
 <h2>Generate Content<a class="headerlink" href="#generate-content" title="Link to this heading">¶</a></h2>
-<section id="with-text-content">
-<h3>with text content<a class="headerlink" href="#with-text-content" title="Link to this heading">¶</a></h3>
+<section id="with-text-content-input-text-output">
+<h3>with text content input (text output)<a class="headerlink" href="#with-text-content-input-text-output" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="with-text-content-input-image-output">
+<h3>with text content input (image output)<a class="headerlink" href="#with-text-content-input-image-output" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash-image&#39;</span><span class="p">,</span>
+    <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;A cartoon infographic for flying sneakers&#39;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">GenerateContentConfig</span><span class="p">(</span>
+        <span class="n">response_modalities</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;IMAGE&quot;</span><span class="p">],</span>
+        <span class="n">image_config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">ImageConfig</span><span class="p">(</span>
+            <span class="n">aspect_ratio</span><span class="o">=</span><span class="s2">&quot;9:16&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">part</span><span class="o">.</span><span class="n">inline_data</span><span class="p">:</span>
+        <span class="n">generated_image</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">as_image</span><span class="p">()</span>
+        <span class="n">generated_image</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -458,17 +550,17 @@ The following shows some common ways to provide your inputs.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="n">contents</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Content</span><span class="p">(</span>
-<span class="n">role</span><span class="o">=</span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
-<span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">)]</span>
+    <span class="n">role</span><span class="o">=</span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
+    <span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">)]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>SDK converts this to</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">Content</span><span class="p">(</span>
-    <span class="n">role</span><span class="o">=</span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
-    <span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">)]</span>
-<span class="p">)</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">Content</span><span class="p">(</span>
+        <span class="n">role</span><span class="o">=</span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
+        <span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">)]</span>
+    <span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -480,11 +572,11 @@ The following shows some common ways to provide your inputs.</p>
 </div>
 <p>The SDK will assume this is a text part, and it converts this into the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span>
-    <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
-    <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">)</span>
-    <span class="p">]</span>
-<span class="p">)</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span>
+        <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -493,15 +585,18 @@ The following shows some common ways to provide your inputs.</p>
 </section>
 <section id="provide-a-list-of-string">
 <h4>Provide a list of string<a class="headerlink" href="#provide-a-list-of-string" title="Link to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contents</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">,</span> <span class="s1">&#39;Why is the cloud white?&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
 <p>The SDK assumes these are 2 text parts, it converts this into a single content,
 like the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span>
-    <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
-    <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">),</span>
-    <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the cloud white?&#39;</span><span class="p">),</span>
-    <span class="p">]</span>
-<span class="p">)</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span>
+        <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the sky blue?&#39;</span><span class="p">),</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Why is the cloud white?&#39;</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -513,21 +608,21 @@ like the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="n">contents</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
-<span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
-<span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;Boston&#39;</span><span class="p">}</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;Boston&#39;</span><span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>The SDK converts a function call part to a content with a <cite>model</cite> role:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">ModelContent</span><span class="p">(</span>
-    <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
-    <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
-        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;Boston&#39;</span><span class="p">}</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">ModelContent</span><span class="p">(</span>
+        <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;Boston&#39;</span><span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
     <span class="p">)</span>
-    <span class="p">]</span>
-<span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -539,21 +634,6 @@ like the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="n">contents</span> <span class="o">=</span> <span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
-    <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;Boston&#39;</span><span class="p">}</span>
-<span class="p">),</span>
-<span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
-    <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;New York&#39;</span><span class="p">}</span>
-<span class="p">),</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p>The SDK converts a list of function call parts to the a content with a <cite>model</cite> role:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">ModelContent</span><span class="p">(</span>
-    <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
     <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
         <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;Boston&#39;</span><span class="p">}</span>
@@ -561,9 +641,24 @@ like the following:</p>
     <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
         <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;New York&#39;</span><span class="p">}</span>
+    <span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>The SDK converts a list of function call parts to the a content with a <cite>model</cite> role:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">ModelContent</span><span class="p">(</span>
+        <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;Boston&#39;</span><span class="p">}</span>
+            <span class="p">),</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_function_call</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_weather_by_location&#39;</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;New York&#39;</span><span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
     <span class="p">)</span>
-    <span class="p">]</span>
-<span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -575,19 +670,19 @@ like the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="n">contents</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span>
-<span class="n">file_uri</span><span class="p">:</span> <span class="s1">&#39;gs://generativeai-downloads/images/scones.jpg&#39;</span><span class="p">,</span>
-<span class="n">mime_type</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
+    <span class="n">file_uri</span><span class="p">:</span> <span class="s1">&#39;gs://generativeai-downloads/images/scones.jpg&#39;</span><span class="p">,</span>
+    <span class="n">mime_type</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>The SDK converts all non function call parts into a content with a <cite>user</cite> role.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span><span class="n">parts</span><span class="o">=</span><span class="p">[</span>
-    <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span>
-    <span class="n">file_uri</span><span class="p">:</span> <span class="s1">&#39;gs://generativeai-downloads/images/scones.jpg&#39;</span><span class="p">,</span>
-    <span class="n">mime_type</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">])</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span><span class="n">parts</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span>
+            <span class="n">file_uri</span><span class="p">:</span> <span class="s1">&#39;gs://generativeai-downloads/images/scones.jpg&#39;</span><span class="p">,</span>
+            <span class="n">mime_type</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">])</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -597,25 +692,25 @@ like the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="n">contents</span> <span class="o">=</span> <span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="s1">&#39;What is this image about?&#39;</span><span class="p">),</span>
-<span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span>
-    <span class="n">file_uri</span><span class="p">:</span> <span class="s1">&#39;gs://generativeai-downloads/images/scones.jpg&#39;</span><span class="p">,</span>
-    <span class="n">mime_type</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p>The SDK will convert the list of parts into a content with a <cite>user</cite> role</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-<span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span>
-    <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
     <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="s1">&#39;What is this image about?&#39;</span><span class="p">),</span>
     <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span>
         <span class="n">file_uri</span><span class="p">:</span> <span class="s1">&#39;gs://generativeai-downloads/images/scones.jpg&#39;</span><span class="p">,</span>
         <span class="n">mime_type</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="p">]</span>
-<span class="p">)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>The SDK will convert the list of parts into a content with a <cite>user</cite> role</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">UserContent</span><span class="p">(</span>
+        <span class="n">parts</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="s1">&#39;What is this image about?&#39;</span><span class="p">),</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span>
+                <span class="n">file_uri</span><span class="p">:</span> <span class="s1">&#39;gs://generativeai-downloads/images/scones.jpg&#39;</span><span class="p">,</span>
+                <span class="n">mime_type</span><span class="p">:</span> <span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -685,7 +780,7 @@ dictionaries. You can get the type from <code class="docutils literal notranslat
 </section>
 <section id="list-base-models">
 <h2>List Base Models<a class="headerlink" href="#list-base-models" title="Link to this heading">¶</a></h2>
-<p>To retrieve tuned models, see: <span class="xref std std-ref">List Tuned Models</span></p>
+<p>To retrieve tuned models, see: <a class="reference internal" href="#list-tuned-models"><span class="std std-ref">List Tuned Models</span></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
@@ -734,16 +829,17 @@ dictionaries. You can get the type from <code class="docutils literal notranslat
 </section>
 <section id="function-calling">
 <h2>Function Calling<a class="headerlink" href="#function-calling" title="Link to this heading">¶</a></h2>
-<p>Automatic Python function Support:</p>
+<section id="automatic-python-function-support">
+<h3>Automatic Python function Support:<a class="headerlink" href="#automatic-python-function-support" title="Link to this heading">¶</a></h3>
 <p>You can pass a Python function directly and it will be automatically
-called and responded.</p>
+called and responded by default.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_current_weather</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the current weather.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      location: The city and state, e.g. San Francisco, CA</span>
+<span class="sd">        location: The city and state, e.g. San Francisco, CA</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s1">&#39;sunny&#39;</span>
 
@@ -759,6 +855,7 @@ called and responded.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
 <section id="disabling-automatic-function-calling">
 <h3>Disabling automatic function calling<a class="headerlink" href="#disabling-automatic-function-calling" title="Link to this heading">¶</a></h3>
 <p>If you pass in a python function as a tool directly, and do not want
@@ -780,6 +877,9 @@ as follows:</p>
 </div>
 <p>With automatic function calling disabled, you will get a list of function call
 parts in the response:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">function_calls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">FunctionCall</span><span class="p">]]</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">function_calls</span>
+</pre></div>
+</div>
 </section>
 <section id="manually-declare-and-invoke-a-function-for-function-calling">
 <h3>Manually declare and invoke a function for function calling<a class="headerlink" href="#manually-declare-and-invoke-a-function-for-function-calling" title="Link to this heading">¶</a></h3>
@@ -792,16 +892,16 @@ Then you will receive a function call part in the response.</p>
 <span class="n">function</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionDeclaration</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;get_current_weather&#39;</span><span class="p">,</span>
     <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Get the current weather in a given location&#39;</span><span class="p">,</span>
-    <span class="n">parameters</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">Schema</span><span class="p">(</span>
-        <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;OBJECT&#39;</span><span class="p">,</span>
-        <span class="n">properties</span><span class="o">=</span><span class="p">{</span>
-            <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Schema</span><span class="p">(</span>
-                <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;STRING&#39;</span><span class="p">,</span>
-                <span class="n">description</span><span class="o">=</span><span class="s1">&#39;The city and state, e.g. San Francisco, CA&#39;</span><span class="p">,</span>
-            <span class="p">),</span>
+    <span class="n">parameters_json_schema</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;The city and state, e.g. San Francisco, CA&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
         <span class="p">},</span>
-        <span class="n">required</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">],</span>
-    <span class="p">),</span>
+        <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">],</span>
+    <span class="p">},</span>
 <span class="p">)</span>
 
 <span class="n">tool</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span><span class="n">function_declarations</span><span class="o">=</span><span class="p">[</span><span class="n">function</span><span class="p">])</span>
@@ -926,9 +1026,92 @@ Assuming you prefer <code class="docutils literal notranslate"><span class="pre"
 </pre></div>
 </div>
 </section>
+<section id="model-context-protocol-mcp-support-experimental">
+<h3>Model Context Protocol (MCP) support (experimental)<a class="headerlink" href="#model-context-protocol-mcp-support-experimental" title="Link to this heading">¶</a></h3>
+<p>Built-in <a class="reference external" href="https://modelcontextprotocol.io/introduction">MCP</a> support is an
+experimental feature. You can pass a local MCP server as a tool directly.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcp</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientSession</span><span class="p">,</span> <span class="n">StdioServerParameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcp.client.stdio</span><span class="w"> </span><span class="kn">import</span> <span class="n">stdio_client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google</span><span class="w"> </span><span class="kn">import</span> <span class="n">genai</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">genai</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+
+<span class="c1"># Create server parameters for stdio connection</span>
+<span class="n">server_params</span> <span class="o">=</span> <span class="n">StdioServerParameters</span><span class="p">(</span>
+    <span class="n">command</span><span class="o">=</span><span class="s2">&quot;npx&quot;</span><span class="p">,</span>  <span class="c1"># Executable</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;-y&quot;</span><span class="p">,</span> <span class="s2">&quot;@philschmid/weather-mcp&quot;</span><span class="p">],</span>  <span class="c1"># MCP Server</span>
+    <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Optional environment variables</span>
+<span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">stdio_client</span><span class="p">(</span><span class="n">server_params</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">write</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">ClientSession</span><span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">write</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="c1"># Prompt to get the weather for the current day in London.</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;What is the weather in London in </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">?&quot;</span>
+
+            <span class="c1"># Initialize the connection between client and server</span>
+            <span class="k">await</span> <span class="n">session</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+
+            <span class="c1"># Send request to the model with MCP function declarations</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemini-2.5-flash&quot;</span><span class="p">,</span>
+                <span class="n">contents</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">=</span><span class="n">genai</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">GenerateContentConfig</span><span class="p">(</span>
+                    <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">session</span><span class="p">],</span>  <span class="c1"># uses the session, will automatically call the tool using automatic function calling</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+<span class="c1"># Start the asyncio event loop and run the main function</span>
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="json-response-schema">
 <h2>JSON Response Schema<a class="headerlink" href="#json-response-schema" title="Link to this heading">¶</a></h2>
+<p>However you define your schema, don’t duplicate it in your input prompt,
+including by giving examples of expected JSON output. If you do, the generated
+output might be lower in quality.</p>
+<section id="json-schema-support">
+<h3>JSON Schema support<a class="headerlink" href="#json-schema-support" title="Link to this heading">¶</a></h3>
+<p>Schemas can be provided as standard JSON schema.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">user_profile</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;anyOf&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;maximum&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;minimum&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">},</span>
+                <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;null&#39;</span><span class="p">},</span>
+            <span class="p">],</span>
+            <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;Age&#39;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;User&#39;s unique name&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;Username&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;User Schema&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">,</span>
+    <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;Give me a random user profile.&#39;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;response_mime_type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;response_json_schema&#39;</span><span class="p">:</span> <span class="n">user_profile</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">parsed</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="pydantic-model-schema-support">
 <h3>Pydantic Model Schema support<a class="headerlink" href="#pydantic-model-schema-support" title="Link to this heading">¶</a></h3>
 <p>Schemas can be provided as Pydantic Models.</p>
@@ -996,7 +1179,7 @@ Assuming you prefer <code class="docutils literal notranslate"><span class="pre"
 <h2>Enum Response Schema<a class="headerlink" href="#enum-response-schema" title="Link to this heading">¶</a></h2>
 <section id="text-response">
 <h3>Text Response<a class="headerlink" href="#text-response" title="Link to this heading">¶</a></h3>
-<p>You can set response_mime_type to ‘text/x.enum’ to return one of those enum
+<p>You can set <code class="docutils literal notranslate"><span class="pre">response_mime_type</span></code> to <code class="docutils literal notranslate"><span class="pre">'text/x.enum'</span></code> to return one of those enum
 values as the response.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 
@@ -1021,9 +1204,11 @@ values as the response.</p>
 </section>
 <section id="json-response">
 <h3>JSON Response<a class="headerlink" href="#json-response" title="Link to this heading">¶</a></h3>
-<p>You can also set response_mime_type to ‘application/json’, the response will be
+<p>You can also set <code class="docutils literal notranslate"><span class="pre">response_mime_type</span></code> to <code class="docutils literal notranslate"><span class="pre">'application/json'</span></code>, the response will be
 identical but in quotes.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InstrumentEnum</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">InstrumentEnum</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">PERCUSSION</span> <span class="o">=</span> <span class="s1">&#39;Percussion&#39;</span>
     <span class="n">STRING</span> <span class="o">=</span> <span class="s1">&#39;String&#39;</span>
     <span class="n">WOODWIND</span> <span class="o">=</span> <span class="s1">&#39;Woodwind&#39;</span>
@@ -1058,7 +1243,7 @@ to you, rather than being returned as one chunk.</p>
 </section>
 <section id="streaming-for-image-content">
 <h3>Streaming for image content<a class="headerlink" href="#streaming-for-image-content" title="Link to this heading">¶</a></h3>
-<p>If your image is stored in <a class="reference external" href="https://cloud.google.com/storage">Google Cloud Storage</a>, you can use the <cite>from_uri</cite> class method to create a <cite>Part</cite> object.</p>
+<p>If your image is stored in <a class="reference external" href="https://cloud.google.com/storage">Google Cloud Storage</a>, you can use the <code class="docutils literal notranslate"><span class="pre">from_uri</span></code> class method to create a <code class="docutils literal notranslate"><span class="pre">Part</span></code> object.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content_stream</span><span class="p">(</span>
@@ -1096,7 +1281,7 @@ data and use the <code class="docutils literal notranslate"><span class="pre">fr
 </section>
 </section>
 <section id="generate-content-asynchronous-non-streaming">
-<h2>Generate Content (Asynchronous Non-Streaming)<a class="headerlink" href="#generate-content-asynchronous-non-streaming" title="Link to this heading">¶</a></h2>
+<h2>Generate Content (Asynchronous Non Streaming)<a class="headerlink" href="#generate-content-asynchronous-non-streaming" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">client.aio</span></code> exposes all the analogous <a class="reference external" href="https://docs.python.org/3/library/asyncio.html">async methods</a> that are available on <code class="docutils literal notranslate"><span class="pre">client</span></code>.
 Note that it applies to all the modules.</p>
 <p>For example, <code class="docutils literal notranslate"><span class="pre">client.aio.models.generate_content</span></code> is the <code class="docutils literal notranslate"><span class="pre">async</span></code> version of <code class="docutils literal notranslate"><span class="pre">client.models.generate_content</span></code></p>
@@ -1147,11 +1332,25 @@ Note that it applies to all the modules.</p>
 </pre></div>
 </div>
 </section>
+<section id="local-count-tokens">
+<h3>Local Count Tokens<a class="headerlink" href="#local-count-tokens" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">genai</span><span class="o">.</span><span class="n">LocalTokenizer</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">count_tokens</span><span class="p">(</span><span class="s2">&quot;What is your name?&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="local-compute-tokens">
+<h3>Local Compute Tokens<a class="headerlink" href="#local-compute-tokens" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">genai</span><span class="o">.</span><span class="n">LocalTokenizer</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">compute_tokens</span><span class="p">(</span><span class="s2">&quot;What is your name?&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="embed-content">
 <h2>Embed Content<a class="headerlink" href="#embed-content" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">embed_content</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;text-embedding-004&#39;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-embedding-001&#39;</span><span class="p">,</span>
     <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;why is the sky blue?&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -1161,7 +1360,7 @@ Note that it applies to all the modules.</p>
 
 <span class="c1"># multiple contents with config</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">embed_content</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;text-embedding-004&#39;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-embedding-001&#39;</span><span class="p">,</span>
     <span class="n">contents</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;why is the sky blue?&#39;</span><span class="p">,</span> <span class="s1">&#39;What is your age?&#39;</span><span class="p">],</span>
     <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">EmbedContentConfig</span><span class="p">(</span><span class="n">output_dimensionality</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
 <span class="p">)</span>
@@ -1172,9 +1371,9 @@ Note that it applies to all the modules.</p>
 </section>
 <section id="imagen">
 <h2>Imagen<a class="headerlink" href="#imagen" title="Link to this heading">¶</a></h2>
-<section id="generate-image">
-<h3>Generate Image<a class="headerlink" href="#generate-image" title="Link to this heading">¶</a></h3>
-<p>Support for generate image in Gemini Developer API is behind an allowlist</p>
+<section id="generate-images">
+<h3>Generate Images<a class="headerlink" href="#generate-images" title="Link to this heading">¶</a></h3>
+<p>Support for generate images in Gemini Developer API is behind an allowlist</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="c1"># Generate Image</span>
@@ -1190,6 +1389,9 @@ Note that it applies to all the modules.</p>
 <span class="n">response1</span><span class="o">.</span><span class="n">generated_images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+</section>
+<section id="upscale-image">
+<h3>Upscale Image<a class="headerlink" href="#upscale-image" title="Link to this heading">¶</a></h3>
 <p>Upscale image is only supported in Vertex AI.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
@@ -1247,9 +1449,9 @@ Note that it applies to all the modules.</p>
 </section>
 <section id="veo">
 <h2>Veo<a class="headerlink" href="#veo" title="Link to this heading">¶</a></h2>
-<section id="generate-videos">
-<h3>Generate Videos<a class="headerlink" href="#generate-videos" title="Link to this heading">¶</a></h3>
-<p>Support for generate videos in Vertex and Gemini Developer API is behind an allowlist</p>
+<p>Support for generating videos is considered public preview</p>
+<section id="generate-videos-text-to-video">
+<h3>Generate Videos (Text to Video)<a class="headerlink" href="#generate-videos-text-to-video" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="c1"># Create operation</span>
@@ -1258,7 +1460,6 @@ Note that it applies to all the modules.</p>
     <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;A neon hologram of a cat driving at top speed&#39;</span><span class="p">,</span>
     <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">GenerateVideosConfig</span><span class="p">(</span>
         <span class="n">number_of_videos</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">fps</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
         <span class="n">duration_seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
         <span class="n">enhance_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">),</span>
@@ -1269,7 +1470,72 @@ Note that it applies to all the modules.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
     <span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">operation</span><span class="p">)</span>
 
-<span class="n">video</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">generated_videos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">video</span>
+<span class="n">video</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">generated_videos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">video</span>
+<span class="n">video</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="generate-videos-image-to-video">
+<h3>Generate Videos (Image to Video)<a class="headerlink" href="#generate-videos-image-to-video" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
+
+<span class="c1"># Read local image (uses mimetypes.guess_type to infer mime type)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;local/path/file.png&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create operation</span>
+<span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_videos</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;veo-2.0-generate-001&#39;</span><span class="p">,</span>
+    <span class="c1"># Prompt is optional if image is provided</span>
+    <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;Night sky&#39;</span><span class="p">,</span>
+    <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">GenerateVideosConfig</span><span class="p">(</span>
+        <span class="n">number_of_videos</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">duration_seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">enhance_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="c1"># Can also pass an Image into last_frame for frame interpolation</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Poll operation</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">operation</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">operation</span><span class="p">)</span>
+
+<span class="n">video</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">generated_videos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">video</span>
+<span class="n">video</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="generate-videos-video-to-video">
+<h3>Generate Videos (Video to Video)<a class="headerlink" href="#generate-videos-video-to-video" title="Link to this heading">¶</a></h3>
+<p>Currently, only Vertex AI supports Video to Video generation (Video extension).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
+
+<span class="c1"># Read local video (uses mimetypes.guess_type to infer mime type)</span>
+<span class="n">video</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Video</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;local/path/video.mp4&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create operation</span>
+<span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_videos</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;veo-2.0-generate-001&#39;</span><span class="p">,</span>
+    <span class="c1"># Prompt is optional if Video is provided</span>
+    <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;Night sky&#39;</span><span class="p">,</span>
+    <span class="c1"># Input video must be in GCS</span>
+    <span class="n">video</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">Video</span><span class="p">(</span>
+        <span class="n">uri</span><span class="o">=</span><span class="s2">&quot;gs://bucket-name/inputs/videos/cat_driving.mp4&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">GenerateVideosConfig</span><span class="p">(</span>
+        <span class="n">number_of_videos</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">duration_seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">enhance_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Poll operation</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">operation</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">operation</span><span class="p">)</span>
+
+<span class="n">video</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">generated_videos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">video</span>
 <span class="n">video</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1296,7 +1562,7 @@ conversation). See the ‘Create a client’ section above to initialize a clien
 <h2>Send Message (Synchronous Streaming)<a class="headerlink" href="#send-message-synchronous-streaming" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chat</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chats</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chat</span><span class="o">.</span><span class="n">send_message_stream</span><span class="p">(</span><span class="s1">&#39;tell me a story&#39;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>  <span class="c1"># end=&#39;&#39; is optional, for demo purposes.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1312,7 +1578,7 @@ conversation). See the ‘Create a client’ section above to initialize a clien
 <h2>Send Message (Asynchronous Streaming)<a class="headerlink" href="#send-message-asynchronous-streaming" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chat</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">chats</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">)</span>
 <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">chat</span><span class="o">.</span><span class="n">send_message_stream</span><span class="p">(</span><span class="s1">&#39;tell me a story&#39;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="c1"># end=&#39;&#39; is optional, for demo purposes.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1424,12 +1690,13 @@ section above to initialize a client.</p>
 <section id="tune">
 <h2>Tune<a class="headerlink" href="#tune" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>Vertex AI supports tuning from GCS source</p></li>
+<li><p>Vertex AI supports tuning from GCS source or from a <a class="reference external" href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/datasets">Vertex AI Multimodal Dataset</a></p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;gemini-2.5-flash&#39;</span>
 <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">TuningDataset</span><span class="p">(</span>
+    <span class="c1"># or gcs_uri=my_vertex_multimodal_dataset</span>
     <span class="n">gcs_uri</span><span class="o">=</span><span class="s1">&#39;gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -1503,13 +1770,13 @@ section above to initialize a client.</p>
 </div>
 </section>
 <section id="list-tuned-models">
-<h2>List Tuned Models<a class="headerlink" href="#list-tuned-models" title="Link to this heading">¶</a></h2>
+<span id="id4"></span><h2>List Tuned Models<a class="headerlink" href="#list-tuned-models" title="Link to this heading">¶</a></h2>
 <p>To retrieve base models, see: <span class="xref std std-ref">List Base Models</span></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}}):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pager</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}})</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pager</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pager</span><span class="o">.</span><span class="n">page_size</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pager</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">pager</span><span class="o">.</span><span class="n">next_page</span><span class="p">()</span>
@@ -1518,11 +1785,11 @@ section above to initialize a client.</p>
 </div>
 <section id="list-tuned-models-asynchronous">
 <h3>List Tuned Models (Asynchronous)<a class="headerlink" href="#list-tuned-models-asynchronous" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}}):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">async_pager</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}})</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">async_pager</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;query_base&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">async_pager</span><span class="o">.</span><span class="n">page_size</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">async_pager</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="k">await</span> <span class="n">async_pager</span><span class="o">.</span><span class="n">next_page</span><span class="p">()</span>
@@ -1531,9 +1798,11 @@ section above to initialize a client.</p>
 </div>
 </section>
 </section>
-<section id="id4">
-<h2>Update Tuned Model<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">pager</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<section id="id5">
+<h2>Update Tuned Model<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">pager</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -1575,35 +1844,59 @@ section above to initialize a client.</p>
 </section>
 <section id="batch-prediction">
 <h1>Batch Prediction<a class="headerlink" href="#batch-prediction" title="Link to this heading">¶</a></h1>
-<p>Create a batch job. See the ‘Create a client’ section above to initialize a client.</p>
-<section id="id5">
-<h2>Create<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<p>Create a batch job. See the ‘Create a client’ section above to
+initialize a client.</p>
+<section id="id6">
+<h2>Create<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
 <p>Vertex AI client support using a BigQuery table or a GCS file as the source.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify model and source file only, destination and job display name will be auto-populated</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">,</span>
-    <span class="n">src</span><span class="o">=</span><span class="s1">&#39;bq://my-project.my-dataset.my-table&#39;</span><span class="p">,</span>  <span class="c1"># or gcs://my-bucket/my-file.jsonl</span>
+    <span class="n">src</span><span class="o">=</span><span class="s1">&#39;bq://my-project.my-dataset.my-table&#39;</span><span class="p">,</span>  <span class="c1"># or &quot;gs://path/to/input/data&quot;</span>
 <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Gemini Developer API client:</p>
+<section id="id7">
+<h3>Gemini Developer API<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a batch job with inlined requests</span>
 <span class="n">batch_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemini-2.0-flash&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemini-2.5-flash&quot;</span><span class="p">,</span>
     <span class="n">src</span><span class="o">=</span><span class="p">[{</span>
-      <span class="s2">&quot;contents&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="s2">&quot;parts&quot;</span><span class="p">:</span> <span class="p">[{</span>
-          <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;contents&quot;</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="s2">&quot;parts&quot;</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">,</span>
+            <span class="p">}],</span>
+            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
         <span class="p">}],</span>
-       <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-     <span class="p">}],</span>
-     <span class="s2">&quot;config:&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;response_modalities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]},</span>
+        <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;response_modalities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]},</span>
     <span class="p">}],</span>
+<span class="p">)</span>
+
+<span class="n">job</span>
+</pre></div>
+</div>
+<p>In order to create a batch job with file name. Need to upload a json file.
+For example myrequests.json:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="s2">&quot;request_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;request&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;contents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;parts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;text&quot;</span><span class="p">:</span>
+<span class="w"> </span><span class="s2">&quot;Explain how AI works in a few words&quot;</span><span class="p">}]}],</span><span class="w"> </span><span class="nt">&quot;generation_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;response_modalities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;TEXT&quot;</span><span class="p">]}}}</span>
+<span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="s2">&quot;request_2&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;request&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;contents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;parts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain how Crypto works in a few words&quot;</span><span class="p">}]}]}}</span>
+</pre></div>
+</div>
+<p>Then upload the file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Upload a file to Gemini Developer API</span>
+<span class="n">file_name</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span>
+    <span class="n">file</span><span class="o">=</span><span class="s1">&#39;myrequests.json&#39;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">UploadFileConfig</span><span class="p">(</span><span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;test-json&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="c1"># Create a batch job with file name</span>
+<span class="n">batch_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemini-2.0-flash&quot;</span><span class="p">,</span>
+    <span class="n">src</span><span class="o">=</span><span class="s2">&quot;files/test-json&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>In order to create a batch job with a file. Need to upload a jsonl file.
-For example myrequests.json:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a job by name</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
@@ -1627,6 +1920,7 @@ For example myrequests.json:</p>
 <span class="n">job</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="list">
 <h2>List<a class="headerlink" href="#list" title="Link to this heading">¶</a></h2>
@@ -1674,8 +1968,8 @@ For example myrequests.json:</p>
 </div>
 </section>
 </section>
-<section id="id6">
-<h2>Delete<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<section id="id8">
+<h2>Delete<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Delete the job resource</span>
 <span class="n">delete_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">batches</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
@@ -1686,8 +1980,10 @@ For example myrequests.json:</p>
 </section>
 <section id="error-handling">
 <h1>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading">¶</a></h1>
-<p>To handle errors raised by the model, the SDK provides this <a class="reference external" href="https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py">APIError</a> class.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+<p>To handle errors raised by the model service, the SDK provides this <a class="reference external" href="https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py">APIError</a> class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">errors</span>
+
+<span class="k">try</span><span class="p">:</span>
     <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="s2">&quot;invalid-model-name&quot;</span><span class="p">,</span>
         <span class="n">contents</span><span class="o">=</span><span class="s2">&quot;What is your name?&quot;</span><span class="p">,</span>
@@ -1695,6 +1991,27 @@ For example myrequests.json:</p>
 <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">APIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">)</span> <span class="c1"># 404</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="extra-request-body">
+<h1>Extra Request Body<a class="headerlink" href="#extra-request-body" title="Link to this heading">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">extra_body</span></code> field in <code class="docutils literal notranslate"><span class="pre">HttpOptions</span></code> accepts a dictionary of additional JSON
+properties to include in the request body. This can be used to access new or
+experimental backend features that are not yet formally supported in the SDK.
+The structure of the dictionary must match the backend API’s request structure.</p>
+<ul class="simple">
+<li><p>VertexAI backend API docs: <a class="reference external" href="https://cloud.google.com/vertex-ai/docs/reference/rest">https://cloud.google.com/vertex-ai/docs/reference/rest</a></p></li>
+<li><p>GeminiAPI backend API docs: <a class="reference external" href="https://ai.google.dev/api/rest">https://ai.google.dev/api/rest</a></p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemini-2.5-pro&quot;</span><span class="p">,</span>
+    <span class="n">contents</span><span class="o">=</span><span class="s2">&quot;What is the weather in Boston? and how about Sunnyvale?&quot;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">GenerateContentConfig</span><span class="p">(</span>
+        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_current_weather</span><span class="p">],</span>
+        <span class="n">http_options</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">HttpOptions</span><span class="p">(</span><span class="n">extra_body</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tool_config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;function_calling_config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="s1">&#39;COMPOSITIONAL&#39;</span><span class="p">}}}),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -2184,6 +2501,8 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.BLOCKED_REASON_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">BlockedReason.BLOCKED_REASON_UNSPECIFIED</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.BLOCKLIST"><code class="docutils literal notranslate"><span class="pre">BlockedReason.BLOCKLIST</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.IMAGE_SAFETY"><code class="docutils literal notranslate"><span class="pre">BlockedReason.IMAGE_SAFETY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.JAILBREAK"><code class="docutils literal notranslate"><span class="pre">BlockedReason.JAILBREAK</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.MODEL_ARMOR"><code class="docutils literal notranslate"><span class="pre">BlockedReason.MODEL_ARMOR</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.OTHER"><code class="docutils literal notranslate"><span class="pre">BlockedReason.OTHER</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.PROHIBITED_CONTENT"><code class="docutils literal notranslate"><span class="pre">BlockedReason.PROHIBITED_CONTENT</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BlockedReason.SAFETY"><code class="docutils literal notranslate"><span class="pre">BlockedReason.SAFETY</span></code></a></li>
@@ -2563,6 +2882,7 @@ For example myrequests.json:</p>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.adapter_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.adapter_size</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.batch_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.batch_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.beta"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.beta</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.description"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.epoch_count"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.epoch_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.evaluation_config"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.evaluation_config</span></code></a></li>
@@ -2571,6 +2891,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.labels"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.labels</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.learning_rate"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.learning_rate</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.learning_rate_multiplier</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.method"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.method</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.pre_tuned_model_checkpoint_id"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.pre_tuned_model_checkpoint_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.tuned_model_display_name"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.tuned_model_display_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.validation_dataset"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.validation_dataset</span></code></a></li>
@@ -2579,6 +2900,7 @@ For example myrequests.json:</p>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.adapter_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.adapter_size</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.batch_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.batch_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.beta"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.beta</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.description"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.epoch_count"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.epoch_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.evaluation_config"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.evaluation_config</span></code></a></li>
@@ -2587,6 +2909,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.labels"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.labels</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.learning_rate"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.learning_rate</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.learning_rate_multiplier</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.method"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.method</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.pre_tuned_model_checkpoint_id"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.pre_tuned_model_checkpoint_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.tuned_model_display_name"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.tuned_model_display_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.validation_dataset"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.validation_dataset</span></code></a></li>
@@ -2915,10 +3238,12 @@ For example myrequests.json:</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EnterpriseWebSearch"><code class="docutils literal notranslate"><span class="pre">EnterpriseWebSearch</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EnterpriseWebSearch.blocking_confidence"><code class="docutils literal notranslate"><span class="pre">EnterpriseWebSearch.blocking_confidence</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EnterpriseWebSearch.exclude_domains"><code class="docutils literal notranslate"><span class="pre">EnterpriseWebSearch.exclude_domains</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EnterpriseWebSearchDict"><code class="docutils literal notranslate"><span class="pre">EnterpriseWebSearchDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EnterpriseWebSearchDict.blocking_confidence"><code class="docutils literal notranslate"><span class="pre">EnterpriseWebSearchDict.blocking_confidence</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EnterpriseWebSearchDict.exclude_domains"><code class="docutils literal notranslate"><span class="pre">EnterpriseWebSearchDict.exclude_domains</span></code></a></li>
 </ul>
 </li>
@@ -3529,6 +3854,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.audio_timestamp"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.audio_timestamp</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.candidate_count"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.candidate_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.enable_affective_dialog"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.enable_affective_dialog</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.enable_enhanced_civic_answers"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.enable_enhanced_civic_answers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.frequency_penalty"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.frequency_penalty</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.logprobs"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.logprobs</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfig.max_output_tokens"><code class="docutils literal notranslate"><span class="pre">GenerationConfig.max_output_tokens</span></code></a></li>
@@ -3554,6 +3880,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.audio_timestamp"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.audio_timestamp</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.candidate_count"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.candidate_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.enable_affective_dialog"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.enable_affective_dialog</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.enable_enhanced_civic_answers"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.enable_enhanced_civic_answers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.frequency_penalty"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.frequency_penalty</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.logprobs"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.logprobs</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigDict.max_output_tokens"><code class="docutils literal notranslate"><span class="pre">GenerationConfigDict.max_output_tokens</span></code></a></li>
@@ -3601,11 +3928,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigRoutingConfigManualRoutingModeDict.model_name"><code class="docutils literal notranslate"><span class="pre">GenerationConfigRoutingConfigManualRoutingModeDict.model_name</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerationConfigThinkingConfig"><code class="docutils literal notranslate"><span class="pre">GenerationConfigThinkingConfig</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigThinkingConfig.include_thoughts"><code class="docutils literal notranslate"><span class="pre">GenerationConfigThinkingConfig.include_thoughts</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigThinkingConfig.thinking_budget"><code class="docutils literal notranslate"><span class="pre">GenerationConfigThinkingConfig.thinking_budget</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerationConfigThinkingConfig"><code class="docutils literal notranslate"><span class="pre">GenerationConfigThinkingConfig</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerationConfigThinkingConfigDict"><code class="docutils literal notranslate"><span class="pre">GenerationConfigThinkingConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigThinkingConfigDict.include_thoughts"><code class="docutils literal notranslate"><span class="pre">GenerationConfigThinkingConfigDict.include_thoughts</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerationConfigThinkingConfigDict.thinking_budget"><code class="docutils literal notranslate"><span class="pre">GenerationConfigThinkingConfigDict.thinking_budget</span></code></a></li>
@@ -3682,11 +4005,13 @@ For example myrequests.json:</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GoogleSearch"><code class="docutils literal notranslate"><span class="pre">GoogleSearch</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearch.blocking_confidence"><code class="docutils literal notranslate"><span class="pre">GoogleSearch.blocking_confidence</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearch.exclude_domains"><code class="docutils literal notranslate"><span class="pre">GoogleSearch.exclude_domains</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearch.time_range_filter"><code class="docutils literal notranslate"><span class="pre">GoogleSearch.time_range_filter</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GoogleSearchDict"><code class="docutils literal notranslate"><span class="pre">GoogleSearchDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearchDict.blocking_confidence"><code class="docutils literal notranslate"><span class="pre">GoogleSearchDict.blocking_confidence</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearchDict.exclude_domains"><code class="docutils literal notranslate"><span class="pre">GoogleSearchDict.exclude_domains</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GoogleSearchDict.time_range_filter"><code class="docutils literal notranslate"><span class="pre">GoogleSearchDict.time_range_filter</span></code></a></li>
 </ul>
@@ -3877,6 +4202,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HarmCategory.HARM_CATEGORY_IMAGE_HARASSMENT"><code class="docutils literal notranslate"><span class="pre">HarmCategory.HARM_CATEGORY_IMAGE_HARASSMENT</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HarmCategory.HARM_CATEGORY_IMAGE_HATE"><code class="docutils literal notranslate"><span class="pre">HarmCategory.HARM_CATEGORY_IMAGE_HATE</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HarmCategory.HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT"><code class="docutils literal notranslate"><span class="pre">HarmCategory.HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HarmCategory.HARM_CATEGORY_JAILBREAK"><code class="docutils literal notranslate"><span class="pre">HarmCategory.HARM_CATEGORY_JAILBREAK</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT"><code class="docutils literal notranslate"><span class="pre">HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HarmCategory.HARM_CATEGORY_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">HarmCategory.HARM_CATEGORY_UNSPECIFIED</span></code></a></li>
 </ul>
@@ -3904,6 +4230,8 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.client_args"><code class="docutils literal notranslate"><span class="pre">HttpOptions.client_args</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.extra_body"><code class="docutils literal notranslate"><span class="pre">HttpOptions.extra_body</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.headers"><code class="docutils literal notranslate"><span class="pre">HttpOptions.headers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.httpx_async_client"><code class="docutils literal notranslate"><span class="pre">HttpOptions.httpx_async_client</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.httpx_client"><code class="docutils literal notranslate"><span class="pre">HttpOptions.httpx_client</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.retry_options"><code class="docutils literal notranslate"><span class="pre">HttpOptions.retry_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.HttpOptions.timeout"><code class="docutils literal notranslate"><span class="pre">HttpOptions.timeout</span></code></a></li>
 </ul>
@@ -4895,6 +5223,16 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PersonGeneration.DONT_ALLOW"><code class="docutils literal notranslate"><span class="pre">PersonGeneration.DONT_ALLOW</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold.BLOCK_HIGHER_AND_ABOVE"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold.BLOCK_HIGHER_AND_ABOVE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold.BLOCK_HIGH_AND_ABOVE"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold.BLOCK_HIGH_AND_ABOVE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold.BLOCK_LOW_AND_ABOVE"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold.BLOCK_LOW_AND_ABOVE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold.BLOCK_MEDIUM_AND_ABOVE"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold.BLOCK_MEDIUM_AND_ABOVE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold.BLOCK_ONLY_EXTREMELY_HIGH"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold.BLOCK_ONLY_EXTREMELY_HIGH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold.BLOCK_VERY_HIGH_AND_ABOVE"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold.BLOCK_VERY_HIGH_AND_ABOVE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PhishBlockThreshold.PHISH_BLOCK_THRESHOLD_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">PhishBlockThreshold.PHISH_BLOCK_THRESHOLD_UNSPECIFIED</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.PointwiseMetricSpec"><code class="docutils literal notranslate"><span class="pre">PointwiseMetricSpec</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PointwiseMetricSpec.custom_output_format_config"><code class="docutils literal notranslate"><span class="pre">PointwiseMetricSpec.custom_output_format_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PointwiseMetricSpec.metric_prompt_template"><code class="docutils literal notranslate"><span class="pre">PointwiseMetricSpec.metric_prompt_template</span></code></a></li>
@@ -4947,6 +5285,32 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationDataStatsDict.user_dataset_examples"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationDataStatsDict.user_dataset_examples</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationDataStatsDict.user_input_token_distribution"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationDataStatsDict.user_input_token_distribution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationDataStatsDict.user_output_token_distribution"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationDataStatsDict.user_output_token_distribution</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParameters"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParameters.adapter_size"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParameters.adapter_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParameters.beta"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParameters.beta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParameters.epoch_count"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParameters.epoch_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParameters.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParameters.learning_rate_multiplier</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParametersDict"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParametersDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParametersDict.adapter_size"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParametersDict.adapter_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParametersDict.beta"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParametersDict.beta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParametersDict.epoch_count"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParametersDict.epoch_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationHyperParametersDict.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationHyperParametersDict.learning_rate_multiplier</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpec"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpec</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpec.hyper_parameters"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpec.hyper_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpec.training_dataset_uri"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpec.training_dataset_uri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpec.validation_dataset_uri"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpec.validation_dataset_uri</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpecDict"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpecDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpecDict.hyper_parameters"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpecDict.hyper_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpecDict.training_dataset_uri"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpecDict.training_dataset_uri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.PreferenceOptimizationSpecDict.validation_dataset_uri"><code class="docutils literal notranslate"><span class="pre">PreferenceOptimizationSpecDict.validation_dataset_uri</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ProactivityConfig"><code class="docutils literal notranslate"><span class="pre">ProactivityConfig</span></code></a><ul>
@@ -5836,6 +6200,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.partner_model_tuning_spec"><code class="docutils literal notranslate"><span class="pre">TuningJob.partner_model_tuning_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.pipeline_job"><code class="docutils literal notranslate"><span class="pre">TuningJob.pipeline_job</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.pre_tuned_model"><code class="docutils literal notranslate"><span class="pre">TuningJob.pre_tuned_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.preference_optimization_spec"><code class="docutils literal notranslate"><span class="pre">TuningJob.preference_optimization_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.sdk_http_response"><code class="docutils literal notranslate"><span class="pre">TuningJob.sdk_http_response</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.service_account"><code class="docutils literal notranslate"><span class="pre">TuningJob.service_account</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.start_time"><code class="docutils literal notranslate"><span class="pre">TuningJob.start_time</span></code></a></li>
@@ -5866,6 +6231,7 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.partner_model_tuning_spec"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.partner_model_tuning_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.pipeline_job"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.pipeline_job</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.pre_tuned_model"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.pre_tuned_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.preference_optimization_spec"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.preference_optimization_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.sdk_http_response"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.sdk_http_response</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.service_account"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.service_account</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.start_time"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.start_time</span></code></a></li>
@@ -5876,6 +6242,11 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.tuning_data_stats"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.tuning_data_stats</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.update_time"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.update_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.veo_tuning_spec"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.veo_tuning_spec</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TuningMethod"><code class="docutils literal notranslate"><span class="pre">TuningMethod</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningMethod.PREFERENCE_TUNING"><code class="docutils literal notranslate"><span class="pre">TuningMethod.PREFERENCE_TUNING</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningMethod.SUPERVISED_FINE_TUNING"><code class="docutils literal notranslate"><span class="pre">TuningMethod.SUPERVISED_FINE_TUNING</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TuningMode"><code class="docutils literal notranslate"><span class="pre">TuningMode</span></code></a><ul>
@@ -5989,6 +6360,8 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfig.output_compression_quality"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfig.output_compression_quality</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfig.output_gcs_uri"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfig.output_gcs_uri</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfig.output_mime_type"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfig.output_mime_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfig.person_generation"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfig.person_generation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfig.safety_filter_level"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfig.safety_filter_level</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfigDict"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfigDict</span></code></a><ul>
@@ -6000,6 +6373,8 @@ For example myrequests.json:</p>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfigDict.output_compression_quality"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfigDict.output_compression_quality</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfigDict.output_gcs_uri"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfigDict.output_gcs_uri</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfigDict.output_mime_type"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfigDict.output_mime_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfigDict.person_generation"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfigDict.person_generation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.UpscaleImageConfigDict.safety_filter_level"><code class="docutils literal notranslate"><span class="pre">UpscaleImageConfigDict.safety_filter_level</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.UpscaleImageParameters"><code class="docutils literal notranslate"><span class="pre">UpscaleImageParameters</span></code></a><ul>
@@ -6302,6 +6677,8 @@ For example myrequests.json:</p>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#imports">Imports</a></li>
 <li><a class="reference internal" href="#create-a-client">Create a client</a><ul>
+<li><a class="reference internal" href="#close-a-client">Close a client</a></li>
+<li><a class="reference internal" href="#client-context-managers">Client context managers</a></li>
 <li><a class="reference internal" href="#api-selection">API Selection</a></li>
 <li><a class="reference internal" href="#faster-async-client-option-aiohttp">Faster async client option: Aiohttp</a></li>
 <li><a class="reference internal" href="#proxy">Proxy</a></li>
@@ -6313,7 +6690,8 @@ For example myrequests.json:</p>
 </li>
 <li><a class="reference internal" href="#models">Models</a><ul>
 <li><a class="reference internal" href="#generate-content">Generate Content</a><ul>
-<li><a class="reference internal" href="#with-text-content">with text content</a></li>
+<li><a class="reference internal" href="#with-text-content-input-text-output">with text content input (text output)</a></li>
+<li><a class="reference internal" href="#with-text-content-input-image-output">with text content input (image output)</a></li>
 <li><a class="reference internal" href="#with-uploaded-file-gemini-developer-api-only">with uploaded file (Gemini Developer API only)</a></li>
 <li><a class="reference internal" href="#how-to-structure-contents-argument-for-generate-content">How to structure <cite>contents</cite> argument for <cite>generate_content</cite></a><ul>
 <li><a class="reference internal" href="#provide-a-list-types-content">Provide a <cite>list[types.Content]</cite></a></li>
@@ -6337,12 +6715,15 @@ For example myrequests.json:</p>
 </li>
 <li><a class="reference internal" href="#safety-settings">Safety Settings</a></li>
 <li><a class="reference internal" href="#function-calling">Function Calling</a><ul>
+<li><a class="reference internal" href="#automatic-python-function-support">Automatic Python function Support:</a></li>
 <li><a class="reference internal" href="#disabling-automatic-function-calling">Disabling automatic function calling</a></li>
 <li><a class="reference internal" href="#manually-declare-and-invoke-a-function-for-function-calling">Manually declare and invoke a function for function calling</a></li>
 <li><a class="reference internal" href="#function-calling-with-any-tools-config-mode">Function calling with <code class="docutils literal notranslate"><span class="pre">ANY</span></code> tools config mode</a></li>
+<li><a class="reference internal" href="#model-context-protocol-mcp-support-experimental">Model Context Protocol (MCP) support (experimental)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#json-response-schema">JSON Response Schema</a><ul>
+<li><a class="reference internal" href="#json-schema-support">JSON Schema support</a></li>
 <li><a class="reference internal" href="#pydantic-model-schema-support">Pydantic Model Schema support</a></li>
 </ul>
 </li>
@@ -6356,21 +6737,26 @@ For example myrequests.json:</p>
 <li><a class="reference internal" href="#streaming-for-image-content">Streaming for image content</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#generate-content-asynchronous-non-streaming">Generate Content (Asynchronous Non-Streaming)</a></li>
+<li><a class="reference internal" href="#generate-content-asynchronous-non-streaming">Generate Content (Asynchronous Non Streaming)</a></li>
 <li><a class="reference internal" href="#generate-content-asynchronous-streaming">Generate Content (Asynchronous Streaming)</a></li>
 <li><a class="reference internal" href="#count-tokens-and-compute-tokens">Count Tokens and Compute Tokens</a><ul>
 <li><a class="reference internal" href="#compute-tokens">Compute Tokens</a></li>
 <li><a class="reference internal" href="#count-tokens-asynchronous">Count Tokens (Asynchronous)</a></li>
+<li><a class="reference internal" href="#local-count-tokens">Local Count Tokens</a></li>
+<li><a class="reference internal" href="#local-compute-tokens">Local Compute Tokens</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#embed-content">Embed Content</a></li>
 <li><a class="reference internal" href="#imagen">Imagen</a><ul>
-<li><a class="reference internal" href="#generate-image">Generate Image</a></li>
+<li><a class="reference internal" href="#generate-images">Generate Images</a></li>
+<li><a class="reference internal" href="#upscale-image">Upscale Image</a></li>
 <li><a class="reference internal" href="#edit-image">Edit Image</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#veo">Veo</a><ul>
-<li><a class="reference internal" href="#generate-videos">Generate Videos</a></li>
+<li><a class="reference internal" href="#generate-videos-text-to-video">Generate Videos (Text to Video)</a></li>
+<li><a class="reference internal" href="#generate-videos-image-to-video">Generate Videos (Image to Video)</a></li>
+<li><a class="reference internal" href="#generate-videos-video-to-video">Generate Videos (Video to Video)</a></li>
 </ul>
 </li>
 </ul>
@@ -6404,22 +6790,26 @@ For example myrequests.json:</p>
 <li><a class="reference internal" href="#list-tuned-models-asynchronous">List Tuned Models (Asynchronous)</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id4">Update Tuned Model</a></li>
+<li><a class="reference internal" href="#id5">Update Tuned Model</a></li>
 <li><a class="reference internal" href="#list-tuning-jobs">List Tuning Jobs</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#batch-prediction">Batch Prediction</a><ul>
-<li><a class="reference internal" href="#id5">Create</a></li>
+<li><a class="reference internal" href="#id6">Create</a><ul>
+<li><a class="reference internal" href="#id7">Gemini Developer API</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#list">List</a><ul>
 <li><a class="reference internal" href="#list-batch-jobs-with-pager">List Batch Jobs with Pager</a></li>
 <li><a class="reference internal" href="#list-batch-jobs-asynchronous">List Batch Jobs (Asynchronous)</a></li>
 <li><a class="reference internal" href="#list-batch-jobs-with-pager-asynchronous">List Batch Jobs with Pager (Asynchronous)</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id6">Delete</a></li>
+<li><a class="reference internal" href="#id8">Delete</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#error-handling">Error Handling</a></li>
+<li><a class="reference internal" href="#extra-request-body">Extra Request Body</a></li>
 <li><a class="reference internal" href="#reference">Reference</a></li>
 </ul>
 
@@ -6433,6 +6823,6 @@ For example myrequests.json:</p>
 </div><script src="_static/documentation_options.js?v=5929fcd5"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
