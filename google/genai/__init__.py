@@ -18,8 +18,9 @@
 from . import types
 from . import version
 from .client import Client
+from .local_tokenizer import LocalTokenizer
 
 
 __version__ = version.__version__
 
-__all__ = ['Client']
+__all__ = ["Client", "LocalTokenizer"]

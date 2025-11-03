@@ -18,8 +18,8 @@ from unittest.mock import MagicMock, patch
 
 from sentencepiece import sentencepiece_model_pb2
 
-from ... import local_tokenizer
-from ... import types
+from ...private import local_tokenizer
+from ...private import types
 
 
 class TestLocalTokenizer(unittest.TestCase):
