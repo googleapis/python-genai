@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.48.0](https://github.com/googleapis/python-genai/compare/v1.47.0...v1.48.0) (2025-11-03)
+
+
+### Features
+
+* Added phish filtering feature. ([a9297b7](https://github.com/googleapis/python-genai/commit/a9297b747eb406733125d72899d5382b0706cd18))
+* Drop support for Python 3.9 - EOL ([b542082](https://github.com/googleapis/python-genai/commit/b54208200eb3aefd13cd8199415682b146fce6df))
+
+
+### Bug Fixes
+
+* Append the current model chunk to contents in async streaming ([7c5cf56](https://github.com/googleapis/python-genai/commit/7c5cf56ef1249f0bcbdd170365aa3134849f28aa))
+* Disable AFC when there are incompatible tool presented. ([ce13aef](https://github.com/googleapis/python-genai/commit/ce13aefa421d5c284632b29083f8c2c8ac6dbb59))
+* Offload sync python tool calls to a thread when used from async context. ([f2a0782](https://github.com/googleapis/python-genai/commit/f2a078272629386578a0c7e0c6ca3b0e8a4bfe97))
+* Only show warning log for non-text or multi-candidate fields when response.text is accessed directly ([bf82505](https://github.com/googleapis/python-genai/commit/bf82505c588d8009acda24ab48b1578f685c64ec))
+
 ## [1.47.0](https://github.com/googleapis/python-genai/compare/v1.46.0...v1.47.0) (2025-10-29)
 
 
