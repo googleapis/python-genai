@@ -32,6 +32,60 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.tunings')
 
 
+def _AutoraterConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['samplingCount']) is not None:
+    setv(to_object, ['sampling_count'], getv(from_object, ['samplingCount']))
+
+  if getv(from_object, ['flipEnabled']) is not None:
+    setv(to_object, ['flip_enabled'], getv(from_object, ['flipEnabled']))
+
+  if getv(from_object, ['autoraterModel']) is not None:
+    setv(to_object, ['autorater_model'], getv(from_object, ['autoraterModel']))
+
+  if getv(from_object, ['generationConfig']) is not None:
+    setv(
+        to_object,
+        ['generation_config'],
+        _GenerationConfig_from_vertex(
+            getv(from_object, ['generationConfig']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _AutoraterConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sampling_count']) is not None:
+    setv(to_object, ['samplingCount'], getv(from_object, ['sampling_count']))
+
+  if getv(from_object, ['flip_enabled']) is not None:
+    setv(to_object, ['flipEnabled'], getv(from_object, ['flip_enabled']))
+
+  if getv(from_object, ['autorater_model']) is not None:
+    setv(to_object, ['autoraterModel'], getv(from_object, ['autorater_model']))
+
+  if getv(from_object, ['generation_config']) is not None:
+    setv(
+        to_object,
+        ['generationConfig'],
+        _GenerationConfig_to_vertex(
+            getv(from_object, ['generation_config']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
 def _CancelTuningJobParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -360,7 +414,11 @@ def _EvaluationConfig_from_vertex(
 
   if getv(from_object, ['autoraterConfig']) is not None:
     setv(
-        to_object, ['autorater_config'], getv(from_object, ['autoraterConfig'])
+        to_object,
+        ['autorater_config'],
+        _AutoraterConfig_from_vertex(
+            getv(from_object, ['autoraterConfig']), to_object, root_object
+        ),
     )
 
   return to_object
@@ -380,7 +438,240 @@ def _EvaluationConfig_to_vertex(
 
   if getv(from_object, ['autorater_config']) is not None:
     setv(
-        to_object, ['autoraterConfig'], getv(from_object, ['autorater_config'])
+        to_object,
+        ['autoraterConfig'],
+        _AutoraterConfig_to_vertex(
+            getv(from_object, ['autorater_config']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _GenerationConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['modelConfig']) is not None:
+    setv(
+        to_object,
+        ['model_selection_config'],
+        getv(from_object, ['modelConfig']),
+    )
+
+  if getv(from_object, ['responseJsonSchema']) is not None:
+    setv(
+        to_object,
+        ['response_json_schema'],
+        getv(from_object, ['responseJsonSchema']),
+    )
+
+  if getv(from_object, ['audioTimestamp']) is not None:
+    setv(to_object, ['audio_timestamp'], getv(from_object, ['audioTimestamp']))
+
+  if getv(from_object, ['candidateCount']) is not None:
+    setv(to_object, ['candidate_count'], getv(from_object, ['candidateCount']))
+
+  if getv(from_object, ['enableAffectiveDialog']) is not None:
+    setv(
+        to_object,
+        ['enable_affective_dialog'],
+        getv(from_object, ['enableAffectiveDialog']),
+    )
+
+  if getv(from_object, ['frequencyPenalty']) is not None:
+    setv(
+        to_object,
+        ['frequency_penalty'],
+        getv(from_object, ['frequencyPenalty']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['maxOutputTokens']) is not None:
+    setv(
+        to_object, ['max_output_tokens'], getv(from_object, ['maxOutputTokens'])
+    )
+
+  if getv(from_object, ['mediaResolution']) is not None:
+    setv(
+        to_object, ['media_resolution'], getv(from_object, ['mediaResolution'])
+    )
+
+  if getv(from_object, ['presencePenalty']) is not None:
+    setv(
+        to_object, ['presence_penalty'], getv(from_object, ['presencePenalty'])
+    )
+
+  if getv(from_object, ['responseLogprobs']) is not None:
+    setv(
+        to_object,
+        ['response_logprobs'],
+        getv(from_object, ['responseLogprobs']),
+    )
+
+  if getv(from_object, ['responseMimeType']) is not None:
+    setv(
+        to_object,
+        ['response_mime_type'],
+        getv(from_object, ['responseMimeType']),
+    )
+
+  if getv(from_object, ['responseModalities']) is not None:
+    setv(
+        to_object,
+        ['response_modalities'],
+        getv(from_object, ['responseModalities']),
+    )
+
+  if getv(from_object, ['responseSchema']) is not None:
+    setv(to_object, ['response_schema'], getv(from_object, ['responseSchema']))
+
+  if getv(from_object, ['routingConfig']) is not None:
+    setv(to_object, ['routing_config'], getv(from_object, ['routingConfig']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['speechConfig']) is not None:
+    setv(to_object, ['speech_config'], getv(from_object, ['speechConfig']))
+
+  if getv(from_object, ['stopSequences']) is not None:
+    setv(to_object, ['stop_sequences'], getv(from_object, ['stopSequences']))
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['thinkingConfig']) is not None:
+    setv(to_object, ['thinking_config'], getv(from_object, ['thinkingConfig']))
+
+  if getv(from_object, ['topK']) is not None:
+    setv(to_object, ['top_k'], getv(from_object, ['topK']))
+
+  if getv(from_object, ['topP']) is not None:
+    setv(to_object, ['top_p'], getv(from_object, ['topP']))
+
+  return to_object
+
+
+def _GenerationConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model_selection_config']) is not None:
+    setv(
+        to_object,
+        ['modelConfig'],
+        getv(from_object, ['model_selection_config']),
+    )
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
+  if getv(from_object, ['audio_timestamp']) is not None:
+    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
+
+  if getv(from_object, ['candidate_count']) is not None:
+    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
+
+  if getv(from_object, ['enable_affective_dialog']) is not None:
+    setv(
+        to_object,
+        ['enableAffectiveDialog'],
+        getv(from_object, ['enable_affective_dialog']),
+    )
+
+  if getv(from_object, ['frequency_penalty']) is not None:
+    setv(
+        to_object,
+        ['frequencyPenalty'],
+        getv(from_object, ['frequency_penalty']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    setv(
+        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['presence_penalty']) is not None:
+    setv(
+        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+    )
+
+  if getv(from_object, ['response_logprobs']) is not None:
+    setv(
+        to_object,
+        ['responseLogprobs'],
+        getv(from_object, ['response_logprobs']),
+    )
+
+  if getv(from_object, ['response_mime_type']) is not None:
+    setv(
+        to_object,
+        ['responseMimeType'],
+        getv(from_object, ['response_mime_type']),
+    )
+
+  if getv(from_object, ['response_modalities']) is not None:
+    setv(
+        to_object,
+        ['responseModalities'],
+        getv(from_object, ['response_modalities']),
+    )
+
+  if getv(from_object, ['response_schema']) is not None:
+    setv(to_object, ['responseSchema'], getv(from_object, ['response_schema']))
+
+  if getv(from_object, ['routing_config']) is not None:
+    setv(to_object, ['routingConfig'], getv(from_object, ['routing_config']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['speech_config']) is not None:
+    setv(
+        to_object,
+        ['speechConfig'],
+        _SpeechConfig_to_vertex(
+            getv(from_object, ['speech_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['stop_sequences']) is not None:
+    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+
+  if getv(from_object, ['top_k']) is not None:
+    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+
+  if getv(from_object, ['top_p']) is not None:
+    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    raise ValueError(
+        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
     )
 
   return to_object
@@ -537,6 +828,26 @@ def _ListTuningJobsResponse_from_vertex(
             _TuningJob_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['tuningJobs'])
         ],
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    raise ValueError(
+        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
     )
 
   return to_object

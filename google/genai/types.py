@@ -426,14 +426,13 @@ class BlockedReason(_common.CaseInSensitiveEnum):
 class TrafficType(_common.CaseInSensitiveEnum):
   """Output only.
 
-  Traffic type. This shows whether a request consumes Pay-As-You-Go or
-  Provisioned Throughput quota. This enum is not supported in Gemini API.
+  The traffic type for this request. This enum is not supported in Gemini API.
   """
 
   TRAFFIC_TYPE_UNSPECIFIED = 'TRAFFIC_TYPE_UNSPECIFIED'
   """Unspecified request traffic type."""
   ON_DEMAND = 'ON_DEMAND'
-  """Type for Pay-As-You-Go traffic."""
+  """The request was processed using Pay-As-You-Go quota."""
   PROVISIONED_THROUGHPUT = 'PROVISIONED_THROUGHPUT'
   """Type for Provisioned Throughput traffic."""
 
@@ -535,6 +534,8 @@ class TuningTask(_common.CaseInSensitiveEnum):
   """Tuning task for image to video."""
   TUNING_TASK_T2V = 'TUNING_TASK_T2V'
   """Tuning task for text to video."""
+  TUNING_TASK_R2V = 'TUNING_TASK_R2V'
+  """Tuning task for reference to video."""
 
 
 class JSONSchemaType(Enum):
@@ -921,7 +922,7 @@ class FunctionCall(_common.BaseModel):
   )
   name: Optional[str] = Field(
       default=None,
-      description="""Required. The name of the function to call. Matches [FunctionDeclaration.name].""",
+      description="""Optional. The name of the function to call. Matches [FunctionDeclaration.name].""",
   )
 
 
@@ -936,7 +937,7 @@ class FunctionCallDict(TypedDict, total=False):
   """Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details."""
 
   name: Optional[str]
-  """Required. The name of the function to call. Matches [FunctionDeclaration.name]."""
+  """Optional. The name of the function to call. Matches [FunctionDeclaration.name]."""
 
 
 FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
@@ -3889,7 +3890,7 @@ class Tool(_common.BaseModel):
   )
   google_search_retrieval: Optional[GoogleSearchRetrieval] = Field(
       default=None,
-      description="""Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search.""",
+      description="""Optional. Specialized retrieval tool that is powered by Google Search.""",
   )
   computer_use: Optional[ComputerUse] = Field(
       default=None,
@@ -3929,7 +3930,7 @@ class ToolDict(TypedDict, total=False):
   """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API."""
 
   google_search_retrieval: Optional[GoogleSearchRetrievalDict]
-  """Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered by Google search."""
+  """Optional. Specialized retrieval tool that is powered by Google Search."""
 
   computer_use: Optional[ComputerUseDict]
   """Optional. Tool to support the model interacting directly with the
@@ -5301,13 +5302,13 @@ class GroundingChunkMaps(_common.BaseModel):
       description="""This Place's resource name, in `places/{place_id}` format. Can be used to look up the Place.""",
   )
   text: Optional[str] = Field(
-      default=None, description="""Text of the chunk."""
+      default=None, description="""Text of the place answer."""
   )
   title: Optional[str] = Field(
-      default=None, description="""Title of the chunk."""
+      default=None, description="""Title of the place."""
   )
   uri: Optional[str] = Field(
-      default=None, description="""URI reference of the chunk."""
+      default=None, description="""URI reference of the place."""
   )
 
 
@@ -5321,13 +5322,13 @@ class GroundingChunkMapsDict(TypedDict, total=False):
   """This Place's resource name, in `places/{place_id}` format. Can be used to look up the Place."""
 
   text: Optional[str]
-  """Text of the chunk."""
+  """Text of the place answer."""
 
   title: Optional[str]
-  """Title of the chunk."""
+  """Title of the place."""
 
   uri: Optional[str]
-  """URI reference of the chunk."""
+  """URI reference of the place."""
 
 
 GroundingChunkMapsOrDict = Union[GroundingChunkMaps, GroundingChunkMapsDict]
@@ -6082,94 +6083,97 @@ ModalityTokenCountOrDict = Union[ModalityTokenCount, ModalityTokenCountDict]
 
 
 class GenerateContentResponseUsageMetadata(_common.BaseModel):
-  """Usage metadata about response(s).
+  """Usage metadata about the content generation request and response.
 
-  This data type is not supported in Gemini API.
+  This message provides a detailed breakdown of token usage and other relevant
+  metrics. This data type is not supported in Gemini API.
   """
 
   cache_tokens_details: Optional[list[ModalityTokenCount]] = Field(
       default=None,
-      description="""Output only. List of modalities of the cached content in the request input.""",
+      description="""Output only. A detailed breakdown of the token count for each modality in the cached content.""",
   )
   cached_content_token_count: Optional[int] = Field(
       default=None,
-      description="""Output only. Number of tokens in the cached part in the input (the cached content).""",
+      description="""Output only. The number of tokens in the cached content that was used for this request.""",
   )
   candidates_token_count: Optional[int] = Field(
-      default=None, description="""Number of tokens in the response(s)."""
+      default=None,
+      description="""The total number of tokens in the generated candidates.""",
   )
   candidates_tokens_details: Optional[list[ModalityTokenCount]] = Field(
       default=None,
-      description="""Output only. List of modalities that were returned in the response.""",
+      description="""Output only. A detailed breakdown of the token count for each modality in the generated candidates.""",
   )
   prompt_token_count: Optional[int] = Field(
       default=None,
-      description="""Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content.""",
+      description="""The total number of tokens in the prompt. This includes any text, images, or other media provided in the request. When `cached_content` is set, this also includes the number of tokens in the cached content.""",
   )
   prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
       default=None,
-      description="""Output only. List of modalities that were processed in the request input.""",
+      description="""Output only. A detailed breakdown of the token count for each modality in the prompt.""",
   )
   thoughts_token_count: Optional[int] = Field(
       default=None,
-      description="""Output only. Number of tokens present in thoughts output.""",
+      description="""Output only. The number of tokens that were part of the model's generated "thoughts" output, if applicable.""",
   )
   tool_use_prompt_token_count: Optional[int] = Field(
       default=None,
-      description="""Output only. Number of tokens present in tool-use prompt(s).""",
+      description="""Output only. The number of tokens in the results from tool executions, which are provided back to the model as input, if applicable.""",
   )
   tool_use_prompt_tokens_details: Optional[list[ModalityTokenCount]] = Field(
       default=None,
-      description="""Output only. List of modalities that were processed for tool-use request inputs.""",
+      description="""Output only. A detailed breakdown by modality of the token counts from the results of tool executions, which are provided back to the model as input.""",
   )
   total_token_count: Optional[int] = Field(
       default=None,
-      description="""Total token count for prompt, response candidates, and tool-use prompts (if present).""",
+      description="""The total number of tokens for the entire request. This is the sum of `prompt_token_count`, `candidates_token_count`, `tool_use_prompt_token_count`, and `thoughts_token_count`.""",
   )
   traffic_type: Optional[TrafficType] = Field(
       default=None,
-      description="""Output only. Traffic type. This shows whether a request consumes Pay-As-You-Go or Provisioned Throughput quota.""",
+      description="""Output only. The traffic type for this request.""",
   )
 
 
 class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
-  """Usage metadata about response(s).
+  """Usage metadata about the content generation request and response.
 
-  This data type is not supported in Gemini API.
+  This message provides a detailed breakdown of token usage and other relevant
+  metrics. This data type is not supported in Gemini API.
   """
 
   cache_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities of the cached content in the request input."""
+  """Output only. A detailed breakdown of the token count for each modality in the cached content."""
 
   cached_content_token_count: Optional[int]
-  """Output only. Number of tokens in the cached part in the input (the cached content)."""
+  """Output only. The number of tokens in the cached content that was used for this request."""
 
   candidates_token_count: Optional[int]
-  """Number of tokens in the response(s)."""
+  """The total number of tokens in the generated candidates."""
 
   candidates_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities that were returned in the response."""
+  """Output only. A detailed breakdown of the token count for each modality in the generated candidates."""
 
   prompt_token_count: Optional[int]
-  """Number of tokens in the request. When `cached_content` is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content."""
+  """The total number of tokens in the prompt. This includes any text, images, or other media provided in the request. When `cached_content` is set, this also includes the number of tokens in the cached content."""
 
   prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities that were processed in the request input."""
+  """Output only. A detailed breakdown of the token count for each modality in the prompt."""
 
   thoughts_token_count: Optional[int]
-  """Output only. Number of tokens present in thoughts output."""
+  """Output only. The number of tokens that were part of the model's generated "thoughts" output, if applicable."""
 
   tool_use_prompt_token_count: Optional[int]
-  """Output only. Number of tokens present in tool-use prompt(s)."""
+  """Output only. The number of tokens in the results from tool executions, which are provided back to the model as input, if applicable."""
 
   tool_use_prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
-  """Output only. List of modalities that were processed for tool-use request inputs."""
+  """Output only. A detailed breakdown by modality of the token counts from the results of tool executions, which are provided back to the model as input."""
 
   total_token_count: Optional[int]
-  """Total token count for prompt, response candidates, and tool-use prompts (if present)."""
+  """The total number of tokens for the entire request. This is the sum of `prompt_token_count`, `candidates_token_count`, `tool_use_prompt_token_count`, and `thoughts_token_count`."""
 
   traffic_type: Optional[TrafficType]
-  """Output only. Traffic type. This shows whether a request consumes Pay-As-You-Go or Provisioned Throughput quota."""
+  """Output only. The traffic type for this request."""
 
 
 GenerateContentResponseUsageMetadataOrDict = Union[
@@ -8687,32 +8691,26 @@ VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
 
 
 class SpeakerVoiceConfig(_common.BaseModel):
-  """The configuration for a single speaker in a multi speaker setup.
-
-  This data type is not supported in Vertex AI.
-  """
+  """Configuration for a single speaker in a multi speaker setup."""
 
   speaker: Optional[str] = Field(
       default=None,
-      description="""Required. The name of the speaker to use. Should be the same as in the prompt.""",
+      description="""Required. The name of the speaker. This should be the same as the speaker name used in the prompt.""",
   )
   voice_config: Optional[VoiceConfig] = Field(
       default=None,
-      description="""Required. The configuration for the voice to use.""",
+      description="""Required. The configuration for the voice of this speaker.""",
   )
 
 
 class SpeakerVoiceConfigDict(TypedDict, total=False):
-  """The configuration for a single speaker in a multi speaker setup.
-
-  This data type is not supported in Vertex AI.
-  """
+  """Configuration for a single speaker in a multi speaker setup."""
 
   speaker: Optional[str]
-  """Required. The name of the speaker to use. Should be the same as in the prompt."""
+  """Required. The name of the speaker. This should be the same as the speaker name used in the prompt."""
 
   voice_config: Optional[VoiceConfigDict]
-  """Required. The configuration for the voice to use."""
+  """Required. The configuration for the voice of this speaker."""
 
 
 SpeakerVoiceConfigOrDict = Union[SpeakerVoiceConfig, SpeakerVoiceConfigDict]
@@ -8750,6 +8748,12 @@ class GenerationConfig(_common.BaseModel):
   model_selection_config: Optional[ModelSelectionConfig] = Field(
       default=None, description="""Optional. Config for model selection."""
   )
+  response_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Output schema of the generated response. This is an alternative to
+      `response_schema` that accepts [JSON Schema](https://json-schema.org/).
+      """,
+  )
   audio_timestamp: Optional[bool] = Field(
       default=None,
       description="""Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API.""",
@@ -8778,10 +8782,6 @@ class GenerationConfig(_common.BaseModel):
   )
   presence_penalty: Optional[float] = Field(
       default=None, description="""Optional. Positive penalties."""
-  )
-  response_json_schema: Optional[Any] = Field(
-      default=None,
-      description="""Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set.""",
   )
   response_logprobs: Optional[bool] = Field(
       default=None,
@@ -8837,6 +8837,11 @@ class GenerationConfigDict(TypedDict, total=False):
   model_selection_config: Optional[ModelSelectionConfigDict]
   """Optional. Config for model selection."""
 
+  response_json_schema: Optional[Any]
+  """Output schema of the generated response. This is an alternative to
+      `response_schema` that accepts [JSON Schema](https://json-schema.org/).
+      """
+
   audio_timestamp: Optional[bool]
   """Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API."""
 
@@ -8860,9 +8865,6 @@ class GenerationConfigDict(TypedDict, total=False):
 
   presence_penalty: Optional[float]
   """Optional. Positive penalties."""
-
-  response_json_schema: Optional[Any]
-  """Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set."""
 
   response_logprobs: Optional[bool]
   """Optional. If true, export the logprobs results in response."""
@@ -9952,6 +9954,10 @@ PreferenceOptimizationHyperParametersOrDict = Union[
 class PreferenceOptimizationSpec(_common.BaseModel):
   """Preference optimization tuning spec for tuning."""
 
+  export_last_checkpoint_only: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If set to true, disable intermediate checkpoints for Preference Optimization and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for Preference Optimization. Default is false.""",
+  )
   hyper_parameters: Optional[PreferenceOptimizationHyperParameters] = Field(
       default=None,
       description="""Optional. Hyperparameters for Preference Optimization.""",
@@ -9968,6 +9974,9 @@ class PreferenceOptimizationSpec(_common.BaseModel):
 
 class PreferenceOptimizationSpecDict(TypedDict, total=False):
   """Preference optimization tuning spec for tuning."""
+
+  export_last_checkpoint_only: Optional[bool]
+  """Optional. If set to true, disable intermediate checkpoints for Preference Optimization and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for Preference Optimization. Default is false."""
 
   hyper_parameters: Optional[PreferenceOptimizationHyperParametersDict]
   """Optional. Hyperparameters for Preference Optimization."""
@@ -10061,6 +10070,10 @@ class AutoraterConfig(_common.BaseModel):
   Tuned model endpoint format:
   `projects/{project}/locations/{location}/endpoints/{endpoint}`""",
   )
+  generation_config: Optional[GenerationConfig] = Field(
+      default=None,
+      description="""Configuration options for model generation and outputs.""",
+  )
 
 
 class AutoraterConfigDict(TypedDict, total=False):
@@ -10088,6 +10101,9 @@ class AutoraterConfigDict(TypedDict, total=False):
 
   Tuned model endpoint format:
   `projects/{project}/locations/{location}/endpoints/{endpoint}`"""
+
+  generation_config: Optional[GenerationConfigDict]
+  """Configuration options for model generation and outputs."""
 
 
 AutoraterConfigOrDict = Union[AutoraterConfig, AutoraterConfigDict]
@@ -11213,7 +11229,7 @@ class TuningJob(_common.BaseModel):
   )
   tuned_model_display_name: Optional[str] = Field(
       default=None,
-      description="""Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters.""",
+      description="""Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters. For continuous tuning, tuned_model_display_name will by default use the same display name as the pre-tuned model. If a new display name is provided, the tuning job will create a new model instead of a new version.""",
   )
   veo_tuning_spec: Optional[VeoTuningSpec] = Field(
       default=None, description="""Tuning Spec for Veo Tuning."""
@@ -11306,7 +11322,7 @@ class TuningJobDict(TypedDict, total=False):
   """The service account that the tuningJob workload runs as. If not specified, the Vertex AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission on this service account."""
 
   tuned_model_display_name: Optional[str]
-  """Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters."""
+  """Optional. The display name of the TunedModel. The name can be up to 128 characters long and can consist of any UTF-8 characters. For continuous tuning, tuned_model_display_name will by default use the same display name as the pre-tuned model. If a new display name is provided, the tuning job will create a new model instead of a new version."""
 
   veo_tuning_spec: Optional[VeoTuningSpecDict]
   """Tuning Spec for Veo Tuning."""
