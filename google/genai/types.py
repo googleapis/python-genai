@@ -19,12 +19,13 @@ from abc import ABC, abstractmethod
 import datetime
 from enum import Enum, EnumMeta
 import inspect
+import io
 import json
 import logging
 import sys
 import types as builtin_types
 import typing
-from typing import Any, Callable, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
+from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
 import pydantic
 from pydantic import ConfigDict, Field, PrivateAttr, model_validator
 from typing_extensions import Self, TypedDict
@@ -1375,6 +1376,81 @@ class Part(_common.BaseModel):
       default=None,
       description="""Optional. Video metadata. The metadata should only be specified while the video data is presented in inline_data or file_data.""",
   )
+
+  def __init__(
+      self,
+      value: Optional['PartUnionDict'] = None,
+      /,
+      *,
+      video_metadata: Optional[VideoMetadata] = None,
+      thought: Optional[bool] = None,
+      inline_data: Optional[Blob] = None,
+      file_data: Optional[FileData] = None,
+      thought_signature: Optional[bytes] = None,
+      function_call: Optional[FunctionCall] = None,
+      code_execution_result: Optional[CodeExecutionResult] = None,
+      executable_code: Optional[ExecutableCode] = None,
+      function_response: Optional[FunctionResponse] = None,
+      text: Optional[str] = None,
+      # Pydantic allows CamelCase in addition to snake_case attribute
+      # names. kwargs here catch these aliases.
+      **kwargs: Any,
+  ):
+    part_dict = dict(
+        video_metadata=video_metadata,
+        thought=thought,
+        inline_data=inline_data,
+        file_data=file_data,
+        thought_signature=thought_signature,
+        function_call=function_call,
+        code_execution_result=code_execution_result,
+        executable_code=executable_code,
+        function_response=function_response,
+        text=text,
+    )
+    part_dict = {k: v for k, v in part_dict.items() if v is not None}
+
+    if part_dict and value is not None:
+      raise ValueError(
+          'Positional and keyword arguments can not be combined when '
+          'initializing a Part.'
+      )
+
+    if value is None:
+      pass
+    elif isinstance(value, str):
+      part_dict['text'] = value
+    elif isinstance(value, File):
+      if not value.uri or not value.mime_type:
+        raise ValueError('file uri and mime_type are required.')
+      part_dict['file_data'] = FileData(
+          file_uri=value.uri,
+          mime_type=value.mime_type,
+          display_name=value.display_name,
+      )
+    elif isinstance(value, dict):
+      try:
+        Part.model_validate(value)
+        part_dict.update(value)  # type: ignore[arg-type]
+      except pydantic.ValidationError:
+        part_dict['file_data'] = FileData.model_validate(value)
+    elif isinstance(value, Part):
+      part_dict.update(value.dict())
+    elif 'image' in value.__class__.__name__.lower():
+      # PIL.Image case.
+
+      suffix = value.format.lower() if value.format else 'jpeg'
+      mimetype = f'image/{suffix}'
+      bytes_io = io.BytesIO()
+      value.save(bytes_io, suffix.upper())
+
+      part_dict['inline_data'] = Blob(
+          data=bytes_io.getvalue(), mime_type=mimetype
+      )
+    else:
+      raise ValueError(f'Unsupported content part type: {type(value)}')
+
+    super().__init__(**part_dict, **kwargs)
 
   def as_image(self) -> Optional['Image']:
     """Returns the part as a PIL Image, or None if the part is not an image."""
