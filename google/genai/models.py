@@ -2299,6 +2299,13 @@ def _GenerationConfig_to_vertex(
         getv(from_object, ['model_selection_config']),
     )
 
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
   if getv(from_object, ['audio_timestamp']) is not None:
     setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
 
@@ -2335,13 +2342,6 @@ def _GenerationConfig_to_vertex(
   if getv(from_object, ['presence_penalty']) is not None:
     setv(
         to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
-    )
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
     )
 
   if getv(from_object, ['response_logprobs']) is not None:
