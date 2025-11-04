@@ -1999,8 +1999,7 @@ class Schema(_common.BaseModel):
     """Converts the Schema object to a JSONSchema object, that is compatible with 2020-12 JSON Schema draft.
 
      Note: Conversion of fields that are not included in the JSONSchema class
-     are ignored. And there is no plan to add new fields in the JSONSchema
-     class.
+     are ignored.
      Json Schema is now supported natively by both Vertex AI and Gemini API.
      Users
      are recommended to pass/receive Json Schema directly to/from the API. For
@@ -2018,7 +2017,7 @@ class Schema(_common.BaseModel):
 
     info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are
-ignored. And there is no plan to add new fields in the JSONSchema class.
+ignored.
 Json Schema is now supported natively by both Vertex AI and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
 1. the counter part of GenerateContentConfig.response_schema is
@@ -2103,8 +2102,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
     """Converts a JSONSchema object to a Schema object.
 
      Note: Conversion of fields that are not included in the JSONSchema class
-     are ignored. And there is no plan to add new fields in the JSONSchema
-     class.
+     are ignored.
      Json Schema is now supported natively by both Vertex AI and Gemini API.
      Users
      are recommended to pass/receive Json Schema directly to/from the API. For
@@ -2141,7 +2139,6 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
     """
     info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are ignored.
-And there is no plan to add new fields in the JSONSchema class.
 Json Schema is now supported natively by both Vertex AI and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
 1. the counter part of GenerateContentConfig.response_schema is
