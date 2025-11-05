@@ -72,7 +72,7 @@ def _get_replay_id(use_vertex: bool, replays_prefix: str) -> str:
 
 
 @pytest.fixture
-def client(use_vertex, replays_prefix, http_options, request):
+def client(use_vertex, replays_prefix,http_options, request):
   mode = request.config.getoption('--mode')
   if mode not in ['auto', 'record', 'replay', 'api', 'tap']:
     raise ValueError('Invalid mode: ' + mode)
