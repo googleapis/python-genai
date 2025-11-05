@@ -61,8 +61,13 @@ def base_test_function(
   try:
     if '.' in test_method:
       method_name_parts = test_method.split('.')
-      module = getattr(client, method_name_parts[0])
-      method = getattr(module, method_name_parts[1])
+      module_path_parts = method_name_parts[:-1]
+      method_name = method_name_parts[-1]
+      # Iterates the nested module starting from client
+      current_object = client
+      for part in module_path_parts:
+        current_object = getattr(current_object, part)
+      method = getattr(current_object, method_name)
       method(**parameters_dict)
     else:
       custom_method = globals_for_file[test_method]
