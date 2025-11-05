@@ -4238,6 +4238,12 @@ class ImageConfig(_common.BaseModel):
       description="""Aspect ratio of the generated images. Supported values are
       "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9".""",
   )
+  image_size: Optional[str] = Field(
+      default=None,
+      description="""Optional. Specifies the size of generated images. Supported
+      values are `1K`, `2K`, `4K`. If not specified, the model will use default
+      value `1K`.""",
+  )
 
 
 class ImageConfigDict(TypedDict, total=False):
@@ -4246,6 +4252,11 @@ class ImageConfigDict(TypedDict, total=False):
   aspect_ratio: Optional[str]
   """Aspect ratio of the generated images. Supported values are
       "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9"."""
+
+  image_size: Optional[str]
+  """Optional. Specifies the size of generated images. Supported
+      values are `1K`, `2K`, `4K`. If not specified, the model will use default
+      value `1K`."""
 
 
 ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]
