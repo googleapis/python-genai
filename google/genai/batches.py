@@ -328,6 +328,11 @@ def _BatchJob_from_vertex(
         ),
     )
 
+  if getv(from_object, ['completionStats']) is not None:
+    setv(
+        to_object, ['completion_stats'], getv(from_object, ['completionStats'])
+    )
+
   return to_object
 
 
