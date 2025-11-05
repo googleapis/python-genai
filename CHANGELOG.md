@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.49.0](https://github.com/googleapis/python-genai/compare/v1.48.0...v1.49.0) (2025-11-05)
+
+
+### Features
+
+* Add complete stats to BatchJob ([b211466](https://github.com/googleapis/python-genai/commit/b2114666443d2f72b60bb352e4c0c2be5be478c9))
+* Add FileSearch tool and associated FileSearchStore management APIs ([2e2a78d](https://github.com/googleapis/python-genai/commit/2e2a78d202c2598796394ddc9b764c581a3e4cab))
+* Add FileSearch tool and associated FileSearchStore management APIs ([7370d24](https://github.com/googleapis/python-genai/commit/7370d24899f8dfe9babcab247253d15bdd0b1c87))
+* Add image_size to ImageConfig (Early Access Program) ([81c027c](https://github.com/googleapis/python-genai/commit/81c027c9375c66eadba4ff1ed51934b8ee36e0cf))
+* Make genai.Part constructible from PartUnionDict. ([7526e4d](https://github.com/googleapis/python-genai/commit/7526e4de84824ba3c7318f5a1270b8065798bab7))
+
+
+### Bug Fixes
+
+* Raise errors during file upload. ([946a17e](https://github.com/googleapis/python-genai/commit/946a17e0a9ab9ba0f331790eb3114a145315ccbf))
+* Use duck type in t_part transformer ([be82981](https://github.com/googleapis/python-genai/commit/be82981afe988c24ecf1d1e65127cf0664b06152))
+
+
+### Documentation
+
+* Log deprecation waring to Schema.from_json_schema method and Schema.json_schema method ([856789a](https://github.com/googleapis/python-genai/commit/856789a7a79f4e00565c44e27b010f5fe8d8e9d0))
+* Regenerate docs for 1.48.0 ([004d238](https://github.com/googleapis/python-genai/commit/004d238b4f3cb628f68817c588212c0aae133e7c))
+* Update log message in Schema.json_schema and Schema.from_json_schema methods ([5bf69e5](https://github.com/googleapis/python-genai/commit/5bf69e55f1c1ac63f29188232b6a19d318fd5ff3))
+
 ## [1.48.0](https://github.com/googleapis/python-genai/compare/v1.47.0...v1.48.0) (2025-11-03)
 
 
