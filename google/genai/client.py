@@ -27,7 +27,6 @@ from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
 from .chats import AsyncChats, Chats
-from .file_search_stores import AsyncFileSearchStores, FileSearchStores
 from .files import AsyncFiles, Files
 from .live import AsyncLive
 from .models import AsyncModels, Models
@@ -48,7 +47,6 @@ class AsyncClient:
     self._caches = AsyncCaches(self._api_client)
     self._batches = AsyncBatches(self._api_client)
     self._files = AsyncFiles(self._api_client)
-    self._file_search_stores = AsyncFileSearchStores(self._api_client)
     self._live = AsyncLive(self._api_client)
     self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
@@ -64,10 +62,6 @@ class AsyncClient:
   @property
   def caches(self) -> AsyncCaches:
     return self._caches
-
-  @property
-  def file_search_stores(self) -> AsyncFileSearchStores:
-    return self._file_search_stores
 
   @property
   def batches(self) -> AsyncBatches:
@@ -282,7 +276,6 @@ class Client:
     self._models = Models(self._api_client)
     self._tunings = Tunings(self._api_client)
     self._caches = Caches(self._api_client)
-    self._file_search_stores = FileSearchStores(self._api_client)
     self._batches = Batches(self._api_client)
     self._files = Files(self._api_client)
     self._tokens = Tokens(self._api_client)
@@ -343,10 +336,6 @@ class Client:
   @property
   def caches(self) -> Caches:
     return self._caches
-
-  @property
-  def file_search_stores(self) -> FileSearchStores:
-    return self._file_search_stores
 
   @property
   def batches(self) -> Batches:

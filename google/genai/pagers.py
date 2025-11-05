@@ -25,13 +25,7 @@ from . import types
 T = TypeVar('T')
 
 PagedItem = Literal[
-    'batch_jobs',
-    'models',
-    'tuning_jobs',
-    'files',
-    'cached_contents',
-    'file_search_stores',
-    'documents',
+    'batch_jobs', 'models', 'tuning_jobs', 'files', 'cached_contents'
 ]
 
 

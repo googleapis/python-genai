@@ -1340,9 +1340,6 @@ def _Tool_to_mldev(
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
-  if getv(from_object, ['file_search']) is not None:
-    setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
-
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 

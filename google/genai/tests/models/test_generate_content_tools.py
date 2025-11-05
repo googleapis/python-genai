@@ -291,94 +291,6 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='retrieval',
     ),
     pytest_helper.TestTableItem(
-        name='test_file_search',
-        parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
-            contents=t.t_contents(
-                'can you tell me the author of "A Survey of Modernist Poetry"?',
-            ),
-            config={
-                'tools': [
-                    types.Tool(
-                        file_search=types.FileSearch(
-                            file_search_store_names=[
-                                'fileSearchStores/5en07ei3kojo-yo8sjqgvx2xf'
-                            ]
-                        ),
-                    ),
-                ],
-            },
-        ),
-        exception_if_vertex='is not supported in Vertex AI',
-    ),
-    pytest_helper.TestTableItem(
-        name='test_file_search_non_existent_file_search_store',
-        parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
-            contents=t.t_contents(
-                'can you tell me the author of "A Survey of Modernist Poetry"?',
-            ),
-            config={
-                'tools': [
-                    types.Tool(
-                        file_search=types.FileSearch(
-                            file_search_store_names=[
-                                'fileSearchStores/test-non-existent-rag-store'
-                            ],
-                        ),
-                    ),
-                ],
-            },
-        ),
-        exception_if_mldev='not exist',
-        exception_if_vertex='is not supported in Vertex AI',
-    ),
-    pytest_helper.TestTableItem(
-        name='test_file_search_with_metadata_filter',
-        parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
-            contents=t.t_contents(
-                'can you tell me the author of "A Survey of Modernist Poetry"?',
-            ),
-            config={
-                'tools': [
-                    types.Tool(
-                        file_search=types.FileSearch(
-                            file_search_store_names=[
-                                'fileSearchStores/5en07ei3kojo-yo8sjqgvx2xf'
-                            ],
-                            metadata_filter='tag=science',
-                        ),
-                    ),
-                ],
-            },
-        ),
-        exception_if_vertex='is not supported in Vertex AI',
-    ),
-    pytest_helper.TestTableItem(
-        name='test_file_search_with_metadata_filter_and_top_k',
-        parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
-            contents=t.t_contents(
-                'can you tell me the author of "A Survey of Modernist Poetry"',
-            ),
-            config={
-                'tools': [
-                    types.Tool(
-                        file_search=types.FileSearch(
-                            file_search_store_names=[
-                                'fileSearchStores/5en07ei3kojo-yo8sjqgvx2xf'
-                            ],
-                            metadata_filter='tag=science',
-                            top_k=1,
-                        ),
-                    ),
-                ],
-            },
-        ),
-        exception_if_vertex='is not supported in Vertex AI',
-    ),
-    pytest_helper.TestTableItem(
         name='test_function_call',
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
@@ -604,7 +516,11 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash',
             contents=t.t_contents('What is the nearest airport to Seattle?'),
-            config={'tools': [{'google_maps': {'enable_widget': True}}]},
+            config={
+                'tools': [
+                    {'google_maps': {'enable_widget': True}}
+                ]
+            },
         ),
     ),
 ]
