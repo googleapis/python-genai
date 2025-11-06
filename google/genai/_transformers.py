@@ -199,6 +199,8 @@ def _resource_name(
 def t_model(client: _api_client.BaseApiClient, model: str) -> str:
   if not model:
     raise ValueError('model is required.')
+  if '..' in model or '?' in model or '&' in model:
+    raise ValueError('invalid model parameter.')
   if client.vertexai:
     if (
         model.startswith('projects/')
