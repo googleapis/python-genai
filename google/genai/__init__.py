@@ -16,6 +16,7 @@
 """Google Gen AI SDK"""
 
 from . import types
+from . import keras
 from . import version
 from .client import Client
 
