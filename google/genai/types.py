@@ -8501,6 +8501,38 @@ class Model(_common.BaseModel):
   checkpoints: Optional[list[Checkpoint]] = Field(
       default=None, description="""The checkpoints of the model."""
   )
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Temperature value used for sampling set when the dataset was saved.
+      This value is used to tune the degree of randomness.""",
+  )
+  max_temperature: Optional[float] = Field(
+      default=None,
+      description="""The maximum temperature value used for sampling set when the
+      dataset was saved. This value is used to tune the degree of randomness.""",
+  )
+  top_p: Optional[float] = Field(
+      default=None,
+      description="""Optional. Specifies the nucleus sampling threshold. The model
+      considers only the smallest set of tokens whose cumulative probability is
+      at least `top_p`. This helps generate more diverse and less repetitive
+      responses. For example, a `top_p` of 0.9 means the model considers tokens
+      until the cumulative probability of the tokens to select from reaches 0.9.
+      It's recommended to adjust either temperature or `top_p`, but not both.""",
+  )
+  top_k: Optional[int] = Field(
+      default=None,
+      description="""Optional. Specifies the top-k sampling threshold. The model
+      considers only the top k most probable tokens for the next token. This can
+      be useful for generating more coherent and less random text. For example,
+      a `top_k` of 40 means the model will choose the next word from the 40 most
+      likely words.""",
+  )
+  thinking: Optional[bool] = Field(
+      default=None,
+      description="""Whether the model supports thinking features. If true, thoughts are
+      returned only if the model supports thought and thoughts are available.""",
+  )
 
 
 class ModelDict(TypedDict, total=False):
@@ -8546,6 +8578,33 @@ class ModelDict(TypedDict, total=False):
 
   checkpoints: Optional[list[CheckpointDict]]
   """The checkpoints of the model."""
+
+  temperature: Optional[float]
+  """Temperature value used for sampling set when the dataset was saved.
+      This value is used to tune the degree of randomness."""
+
+  max_temperature: Optional[float]
+  """The maximum temperature value used for sampling set when the
+      dataset was saved. This value is used to tune the degree of randomness."""
+
+  top_p: Optional[float]
+  """Optional. Specifies the nucleus sampling threshold. The model
+      considers only the smallest set of tokens whose cumulative probability is
+      at least `top_p`. This helps generate more diverse and less repetitive
+      responses. For example, a `top_p` of 0.9 means the model considers tokens
+      until the cumulative probability of the tokens to select from reaches 0.9.
+      It's recommended to adjust either temperature or `top_p`, but not both."""
+
+  top_k: Optional[int]
+  """Optional. Specifies the top-k sampling threshold. The model
+      considers only the top k most probable tokens for the next token. This can
+      be useful for generating more coherent and less random text. For example,
+      a `top_k` of 40 means the model will choose the next word from the 40 most
+      likely words."""
+
+  thinking: Optional[bool]
+  """Whether the model supports thinking features. If true, thoughts are
+      returned only if the model supports thought and thoughts are available."""
 
 
 ModelOrDict = Union[Model, ModelDict]
