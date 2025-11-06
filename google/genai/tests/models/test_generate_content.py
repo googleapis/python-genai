@@ -502,6 +502,33 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         ignore_keys=['parsed'],
     ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_path',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash/../../upload/v1beta/files',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_question_mark',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash?',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_ampersand',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash&',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
 ]
 
 pytestmark = pytest_helper.setup(
