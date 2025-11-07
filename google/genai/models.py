@@ -5227,7 +5227,6 @@ class Models(_api_module.BaseModule):
     )
     automatic_function_calling_history: list[types.Content] = []
     chunk = None
-    func_response_parts = None
     i = 0
     while remaining_remote_calls_afc > 0:
       i += 1
@@ -5237,47 +5236,30 @@ class Models(_api_module.BaseModule):
 
       function_map = _extra_utils.get_function_map(parsed_config)
 
-      if i == 1:
-        # First request gets a function call.
-        # Then get function response parts.
-        # Yield chunks only if there's no function response parts.
-        for chunk in response:
-          if not function_map:
-            contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
-            yield chunk
-          else:
-            if (
-                not chunk.candidates
-                or not chunk.candidates[0].content
-                or not chunk.candidates[0].content.parts
-            ):
-              break
-            func_response_parts = _extra_utils.get_function_response_parts(
-                chunk, function_map
-            )
-            if not func_response_parts:
-              contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
-              yield chunk
+      func_response_parts: list[types.Part] = []
+      for chunk in response:
+        if _extra_utils.should_append_afc_history(parsed_config):
+          chunk.automatic_function_calling_history = (
+              automatic_function_calling_history
+          )
 
-      else:
-        #  Second request and beyond, yield chunks.
-        for chunk in response:
-          if _extra_utils.should_append_afc_history(parsed_config):
-            chunk.automatic_function_calling_history = (
-                automatic_function_calling_history
-            )
-          contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
-          yield chunk
+        contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
+        yield chunk
+
         if (
             chunk is None
             or not chunk.candidates
             or not chunk.candidates[0].content
             or not chunk.candidates[0].content.parts
         ):
-          break
-        func_response_parts = _extra_utils.get_function_response_parts(
-            chunk, function_map
-        )
+          continue
+
+        if function_map:
+          func_response_parts_in_chunk = (
+              _extra_utils.get_function_response_parts(chunk, function_map)
+          )
+          if func_response_parts_in_chunk:
+            func_response_parts.extend(func_response_parts_in_chunk)
 
       if not function_map:
         break
@@ -5288,22 +5270,16 @@ class Models(_api_module.BaseModule):
       if remaining_remote_calls_afc == 0:
         logger.info('Reached max remote calls for automatic function calling.')
 
-      # Append function response parts to contents for the next request.
-      if chunk is not None and chunk.candidates is not None:
-        func_call_content = chunk.candidates[0].content
-        func_response_content = types.Content(
-            role='user',
-            parts=func_response_parts,
-        )
-        contents = t.t_contents(contents)  # type: ignore[assignment]
-        if not automatic_function_calling_history:
-          automatic_function_calling_history.extend(contents)  # type: ignore[arg-type]
-        if isinstance(contents, list) and func_call_content is not None:
-          contents.append(func_call_content)  # type: ignore[arg-type]
-          contents.append(func_response_content)  # type: ignore[arg-type]
-        if func_call_content is not None:
-          automatic_function_calling_history.append(func_call_content)
-        automatic_function_calling_history.append(func_response_content)
+      func_response_content = types.Content(
+          role='user',
+          parts=func_response_parts,
+      )
+      contents = t.t_contents(contents)  # type: ignore[assignment]
+      contents.append(func_response_content)  # type: ignore[arg-type, union-attr]
+
+      # Update AFC history - at the end of each iteration, it should match contents exactly
+      # using list to make a value copy instead of assigning by reference
+      automatic_function_calling_history = list(contents)  # type: ignore[arg-type]
 
   def generate_images(
       self,
@@ -7042,96 +7018,67 @@ class AsyncModels(_api_module.BaseModule):
           f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
       )
       automatic_function_calling_history: list[types.Content] = []
-      func_response_parts = None
-      chunk = None
       i = 0
       while remaining_remote_calls_afc > 0:
         i += 1
         response = await self._generate_content_stream(
             model=model, contents=contents, config=config
         )
-        # TODO: b/453739108 - make AFC logic more robust like the other 3 methods.
-        if i > 1:
-          logger.info(f'AFC remote call {i} is done.')
-        remaining_remote_calls_afc -= 1
-        if i > 1 and remaining_remote_calls_afc == 0:
-          logger.info(
-              'Reached max remote calls for automatic function calling.'
-          )
 
         function_map = _extra_utils.get_function_map(
             config, mcp_to_genai_tool_adapters, is_caller_method_async=True
         )
 
-        if i == 1:
-          # First request gets a function call.
-          # Then get function response parts.
-          # Yield chunks only if there's no function response parts.
-          async for chunk in response:  # type: ignore[attr-defined]
-            if not function_map:
-              contents = _extra_utils.append_chunk_contents(contents, chunk)
-              yield chunk
-            else:
-              if (
-                  not chunk.candidates
-                  or not chunk.candidates[0].content
-                  or not chunk.candidates[0].content.parts
-              ):
-                break
-              func_response_parts = (
-                  await _extra_utils.get_function_response_parts_async(
-                      chunk, function_map
-                  )
-              )
-              if not func_response_parts:
-                contents = _extra_utils.append_chunk_contents(contents, chunk)
-                yield chunk
+        func_response_parts: list[types.Part] = []
 
-        else:
-          #  Second request and beyond, yield chunks.
-          async for chunk in response:  # type: ignore[attr-defined]
+        async for chunk in response:  # type: ignore[attr-defined]
+          if _extra_utils.should_append_afc_history(config):
+            chunk.automatic_function_calling_history = (
+                automatic_function_calling_history
+            )
+          contents = _extra_utils.append_chunk_contents(contents, chunk)
+          yield chunk
 
-            if _extra_utils.should_append_afc_history(config):
-              chunk.automatic_function_calling_history = (
-                  automatic_function_calling_history
-              )
-            contents = _extra_utils.append_chunk_contents(contents, chunk)
-            yield chunk
           if (
               chunk is None
               or not chunk.candidates
               or not chunk.candidates[0].content
               or not chunk.candidates[0].content.parts
           ):
-            break
-          func_response_parts = (
-              await _extra_utils.get_function_response_parts_async(
-                  chunk, function_map
-              )
-          )
+            continue
+
+          if function_map:
+            func_response_parts_in_chunk = (
+                await _extra_utils.get_function_response_parts_async(
+                    chunk, function_map
+                )
+            )
+            if func_response_parts_in_chunk:
+              func_response_parts.extend(func_response_parts_in_chunk)
+
         if not function_map:
           break
 
         if not func_response_parts:
           break
 
-        if chunk is None:
-          continue
-        # Append function response parts to contents for the next request.
-        func_call_content = chunk.candidates[0].content
+        logger.info(f'AFC remote call {i} is done.')
+        remaining_remote_calls_afc -= 1
+        if remaining_remote_calls_afc == 0:
+          logger.info(
+              'Reached max remote calls for automatic function calling.'
+          )
+
         func_response_content = types.Content(
             role='user',
             parts=func_response_parts,
         )
         contents = t.t_contents(contents)
-        if not automatic_function_calling_history:
-          automatic_function_calling_history.extend(contents)
-        if isinstance(contents, list) and func_call_content is not None:
-          contents.append(func_call_content)
-          contents.append(func_response_content)
-        if func_call_content is not None:
-          automatic_function_calling_history.append(func_call_content)
-        automatic_function_calling_history.append(func_response_content)
+        contents.append(func_response_content)
+
+        # Update AFC history - at the end of each iteration, it should match contents exactly
+        # using list to make a value copy instead of assigning by reference
+        automatic_function_calling_history = list(contents)
 
     return async_generator(model, contents, parsed_config)  # type: ignore[no-untyped-call, no-any-return]
 
