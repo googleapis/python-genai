@@ -670,9 +670,9 @@ def test_video_edit_insert_poll(client):
 def test_create_operation_to_poll(client):
   if client.vertexai:
     # Fill in project and location for record mode
-    operation_name = "projects/<project>/locations/<location>/publishers/google/models/veo-3.1-generate-preview/operations/6a55ba83-558a-4b29-9999-325b1eb218cf"
+    operation_name = "projects/<project>/locations/<location>/publishers/google/models/veo-3.1-generate-preview/operations/9d2fc0b5-5bdf-4b5f-9a41-82970515e20b"
   else:
-    operation_name = "models/veo-3.1-generate-preview/operations/9jwcbmi5tkvw"
+    operation_name = "models/veo-3.1-generate-preview/operations/vz341u0pmdlc"
 
   operation = types.GenerateVideosOperation(
       name=operation_name,
