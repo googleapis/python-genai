@@ -152,18 +152,26 @@ class _BaseChat:
         considered valid.
     """
     input_contents = (
-        # Because the AFC input contains the entire curated chat history in
-        # addition to the new user input, we need to truncate the AFC history
-        # to deduplicate the existing chat history.
         automatic_function_calling_history[len(self._curated_history) :]
         if automatic_function_calling_history
         else [user_input]
     )
-    # Appends an empty content when model returns empty response, so that the
-    # history is always alternating between user and model.
-    output_contents = (
-        model_output if model_output else [Content(role="model", parts=[])]
-    )
+
+    if automatic_function_calling_history:
+      filtered_outputs = []
+      for output in model_output:
+        if output not in input_contents:
+          filtered_outputs.append(output)
+      output_contents = (
+          filtered_outputs
+          if filtered_outputs
+          else [Content(role="model", parts=[])]
+      )
+    else:
+      output_contents = (
+          model_output if model_output else [Content(role="model", parts=[])]
+      )
+
     self._comprehensive_history.extend(input_contents)
     self._comprehensive_history.extend(output_contents)
     if is_valid:

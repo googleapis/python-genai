@@ -327,37 +327,46 @@ def test_with_afc_multiple_remote_calls(client):
           'maximum_remote_calls': 3,
       }
   }
-  chat = client.chats.create(model='gemini-1.5-flash', config=config)
+  chat = client.chats.create(model='gemini-2.5-flash', config=config)
   chat.send_message('Turn this place into a party!')
   curated_history = chat.get_history()
 
   assert len(curated_history) == 8
   assert curated_history[0].role == 'user'
   assert curated_history[0].parts[0].text == 'Turn this place into a party!'
+
   assert curated_history[1].role == 'model'
   assert len(curated_history[1].parts) == 3
   for part in curated_history[1].parts:
     assert part.function_call
+
   assert curated_history[2].role == 'user'
   assert len(curated_history[2].parts) == 3
   for part in curated_history[2].parts:
     assert part.function_response
-  assert curated_history[3].role == 'model'
-  assert len(curated_history[3].parts) == 1
-  assert curated_history[3].parts[0].function_call
-  assert curated_history[4].role == 'user'
-  assert len(curated_history[4].parts) == 1
-  assert curated_history[4].parts[0].function_response
-  assert curated_history[5].role == 'model'
-  assert len(curated_history[5].parts) == 1
-  assert curated_history[5].parts[0].function_call
-  assert curated_history[6].role == 'user'
-  assert len(curated_history[6].parts) == 1
-  assert curated_history[6].parts[0].function_response
-  assert curated_history[7].role == 'model'
-  assert len(curated_history[7].parts) == 1
-  assert curated_history[7].parts[0].function_call
 
+  assert curated_history[3].role == 'model'
+  assert len(curated_history[3].parts) == 3
+  for part in curated_history[3].parts:
+    assert part.function_call
+
+  assert curated_history[4].role == 'user'
+  assert len(curated_history[4].parts) == 3
+  for part in curated_history[4].parts:
+    assert part.function_response
+
+  assert curated_history[5].role == 'model'
+  assert len(curated_history[5].parts) == 3
+  for part in curated_history[5].parts:
+    assert part.function_call
+
+  assert curated_history[6].role == 'user'
+  assert len(curated_history[6].parts) == 3
+  for part in curated_history[6].parts:
+    assert part.function_response
+
+  assert curated_history[7].role == 'model'
+  assert len(curated_history[7].parts) == 0
 
 @pytest.mark.skipif(
     sys.version_info >= (3, 13),
@@ -381,36 +390,50 @@ def test_with_afc_multiple_remote_calls_async(client):
           'maximum_remote_calls': 3,
       }
   }
-  chat = client.chats.create(model='gemini-1.5-flash', config=config)
+  chat = client.chats.create(model='gemini-2.5-flash', config=config)
+  chat.send_message('Turn this place into a party!')
+  curated_history = chat.get_history()
+
+  chat = client.chats.create(model='gemini-2.5-flash', config=config)
   chat.send_message('Turn this place into a party!')
   curated_history = chat.get_history()
 
   assert len(curated_history) == 8
   assert curated_history[0].role == 'user'
   assert curated_history[0].parts[0].text == 'Turn this place into a party!'
+
   assert curated_history[1].role == 'model'
   assert len(curated_history[1].parts) == 3
   for part in curated_history[1].parts:
     assert part.function_call
+
   assert curated_history[2].role == 'user'
   assert len(curated_history[2].parts) == 3
   for part in curated_history[2].parts:
     assert part.function_response
+
   assert curated_history[3].role == 'model'
-  assert len(curated_history[3].parts) == 1
-  assert curated_history[3].parts[0].function_call
+  assert len(curated_history[3].parts) == 3
+  for part in curated_history[3].parts:
+    assert part.function_call
+
   assert curated_history[4].role == 'user'
-  assert len(curated_history[4].parts) == 1
-  assert curated_history[4].parts[0].function_response
+  assert len(curated_history[4].parts) == 3
+  for part in curated_history[4].parts:
+    assert part.function_response
+
   assert curated_history[5].role == 'model'
-  assert len(curated_history[5].parts) == 1
-  assert curated_history[5].parts[0].function_call
+  assert len(curated_history[5].parts) == 3
+  for part in curated_history[5].parts:
+    assert part.function_call
+
   assert curated_history[6].role == 'user'
-  assert len(curated_history[6].parts) == 1
-  assert curated_history[6].parts[0].function_response
+  assert len(curated_history[6].parts) == 3
+  for part in curated_history[6].parts:
+    assert part.function_response
+
   assert curated_history[7].role == 'model'
-  assert len(curated_history[7].parts) == 1
-  assert curated_history[7].parts[0].function_call
+  assert len(curated_history[7].parts) == 0
 
 
 def test_with_afc_disabled(client):
