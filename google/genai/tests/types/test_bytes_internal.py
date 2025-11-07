@@ -15,9 +15,12 @@
 
 
 import base64
+import json
 from unittest import mock
 
 import pytest
+
+from .. import pytest_helper
 
 from ... import _api_client as google_genai_api_client_module
 from ... import _common as common_module
@@ -75,11 +78,14 @@ def mock_request_method():
 def test_base64_pydantic_input_success(
     client, mock_request_method, encode_unserializable_types_method, bytes_input
 ):
-  mock_request_method.return_value = {
-      'candidates': [
-          {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
-      ]
-  }
+  mock_request_method.return_value = types.HttpResponse(
+      headers={'header_key': 'header_value'},
+      body=json.dumps({
+          'candidates': [
+              {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
+          ]
+      }),
+  )
 
   response = client.models.generate_content(
       model='gemini-1.5-flash-001',
@@ -99,9 +105,10 @@ def test_base64_pydantic_input_success(
   encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
-      mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
+      pytest_helper.get_value_ignore_key_case(
+          mock_request_method.call_args[0][2]['contents'][0]['parts'][0],
           'inlineData'
-      ]['data']
+      )['data']
       == _BASE64_URL_SAFE
   )
   assert response.candidates[0].content == types.Content(
@@ -115,11 +122,14 @@ def test_base64_pydantic_input_success(
 @pytest.mark.usefixtures('client', 'mock_request_method', 'encode_unserializable_types_method')
 @pytest.mark.parametrize('bytes_input', [_RAW_BYTES, _BASE64_URL_SAFE])
 def test_base64_dict_input_success(client, mock_request_method, encode_unserializable_types_method, bytes_input):
-  mock_request_method.return_value = {
-      'candidates': [
-          {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
-      ]
-  }
+  mock_request_method.return_value = types.HttpResponse(
+      headers={'header_key': 'header_value'},
+      body = json.dumps({
+          'candidates': [
+              {'content': {'parts': [{'text': 'Hello World'}], 'role': 'model'}}
+          ]
+      }),
+  )
 
   response = client.models.generate_content(
       model='gemini-1.5-flash-001',
@@ -139,9 +149,10 @@ def test_base64_dict_input_success(client, mock_request_method, encode_unseriali
   encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
-      mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
+      pytest_helper.get_value_ignore_key_case(
+          mock_request_method.call_args[0][2]['contents'][0]['parts'][0],
           'inlineData'
-      ]['data']
+      )['data']
       == _BASE64_URL_SAFE
   )
   assert response.candidates[0].content == types.Content(
@@ -194,19 +205,22 @@ def test_base64_dict_input_failure(client):
 # then SDK will return the raw bytes in pydantic type.
 @pytest.mark.usefixtures('client', 'mock_request_method',)
 def test_base64_pydantic_output_success(client, mock_request_method):
-  mock_request_method.return_value = {
-      'candidates': [{
-          'content': {
-              'parts': [{
-                  'inlineData': {
-                      'data': _BASE64_URL_SAFE,
-                      'mimeType': 'image/png',
-                  }
-              }],
-              'role': 'model',
-          }
-      }]
-  }
+  mock_request_method.return_value = types.HttpResponse(
+      headers={'header_key': 'header_value'},
+      body=json.dumps({
+          'candidates': [{
+              'content': {
+                  'parts': [{
+                      'inlineData': {
+                          'data': _BASE64_URL_SAFE,
+                          'mimeType': 'image/png',
+                      }
+                  }],
+                  'role': 'model',
+              }
+          }]
+      }),
+  )
 
   response = client.models.generate_content(
       model='gemini-1.5-flash-001',
@@ -230,19 +244,22 @@ def test_base64_pydantic_output_success(client, mock_request_method):
 # not url safe), then SDK will raise ValueError.
 @pytest.mark.usefixtures('client', 'mock_request_method')
 def test_base64_pydantic_output_failure(client, mock_request_method):
-  mock_request_method.return_value = {
-      'candidates': [{
-          'content': {
-              'parts': [{
-                  'inlineData': {
-                      'data': _BASE64_NOT_URL_SAFE,
-                      'mimeType': 'image/png',
-                  }
-              }],
-              'role': 'model',
-          }
-      }]
-  }
+  mock_request_method.return_value = types.HttpResponse(
+      headers={'header_key': 'header_value'},
+      body=json.dumps({
+          'candidates': [{
+              'content': {
+                  'parts': [{
+                      'inlineData': {
+                          'data': _BASE64_NOT_URL_SAFE,
+                          'mimeType': 'image/png',
+                      }
+                  }],
+                  'role': 'model',
+              }
+          }]
+      }),
+  )
 
   with pytest.raises(ValueError, match='Data should be valid base64'):
     client.models.generate_content(

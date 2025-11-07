@@ -19,7 +19,6 @@
 import base64
 import os
 
-import PIL.Image
 from pydantic import ValidationError
 import pytest
 
@@ -44,8 +43,6 @@ VIDEO_MP4_FILE_PATH = os.path.abspath(
 AUDIO_MP3_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/pixel.m4a')
 )
-image_png = PIL.Image.open(IMAGE_PNG_FILE_PATH)
-image_jpeg = PIL.Image.open(IMAGE_JPEG_FILE_PATH)
 with open(IMAGE_PNG_FILE_PATH, 'rb') as image_file:
   image_bytes = image_file.read()
   image_string = base64.b64encode(image_bytes).decode('utf-8')
@@ -62,9 +59,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -88,9 +84,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -117,16 +112,15 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/q08l9on9u7d'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/az606f58k7zj'
                                     ),
                                     'mime_type': 'image/png',
                                 }
@@ -146,16 +140,15 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/tqbern1jkicb'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/wma71fsppgfp'
                                     ),
                                     'mime_type': 'image/jpeg',
                                 }
@@ -176,17 +169,16 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-1.5-flash',
             contents=[
                 t.t_content(
-                    None, 'Summarize the pdf in concise and professional tone.'
+                    'Summarize the pdf in concise and professional tone.'
                 ),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/yiskd41szkfm'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/r6ksskgddyxb'
                                     ),
                                     'mime_type': 'application/pdf',
                                 }
@@ -207,21 +199,19 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-1.5-flash',
             contents=[
                 t.t_content(
-                    None,
                     """
                     summarize the video in concise and professional tone.
                     the summary should include all important information said in the video.
                     """,
                 ),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/yu45gkirc8go'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/57w3vpfomj71'
                                     ),
                                     'mime_type': 'video/mp4',
                                 }
@@ -242,7 +232,6 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-1.5-flash',
             contents=[
                 t.t_content(
-                    None,
                     """
                     Provide a summary for the audio in the beginning of the transcript.
                     Provide concise chapter titles with timestamps.
@@ -250,16 +239,15 @@ test_table: list[pytest_helper.TestTableItem] = [
                 """,
                 ),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/wqnax2ohl9bp'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/wkvof7yeqitl'
                                     ),
-                                    'mime_type': 'audio/mp4',
+                                    'mime_type': 'audio/mpeg',
                                 }
                             })
                         ],
@@ -283,7 +271,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                         types.Part(text='summarize this video'),
                         types.Part(
                             file_data=types.FileData(
-                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/ansa0kyotrsw',
+                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/57w3vpfomj71',
                                 mime_type= 'video/mp4',
                             ),
                             video_metadata=types.VideoMetadata(
@@ -306,9 +294,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'what is the video about?'),
+                t.t_content('what is the video about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -335,11 +322,10 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_image_base64',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=[
-                t.t_content(None, 'What is this image about?'),
+                t.t_content('What is this image about?'),
                 t.t_content(
-                    None,
                     {
                         'role': 'user',
                         'parts': [
@@ -357,7 +343,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_none_part',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=[],
         ),
         exception_if_mldev='contents',
@@ -367,9 +353,8 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_dict_content',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=t.t_contents(
-                None,
                 types.ContentDict(
                     {'role': 'user', 'parts': [{'text': 'what is your name?'}]}
                 ),
@@ -379,7 +364,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_part_list',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-001',
+            model='gemini-1.5-flash',
             contents=['What is your name?'],
         ),
         has_union=True,
@@ -397,8 +382,8 @@ pytest_plugins = ('pytest_asyncio',)
 def test_empty_part(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
-        contents=t.t_contents(None, ['']),
+        model='gemini-1.5-flash',
+        contents=t.t_contents(['']),
     )
 
 
@@ -406,7 +391,7 @@ def test_none_list_part(client):
   # pydantic will raise ValidationError
   with pytest.raises(ValidationError):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-1.5-flash',
         contents=[None],
     )
 
@@ -421,7 +406,7 @@ def test_image_file(client):
   )
 
 
-def test_image_jpeg(client):
+def test_image_jpeg(client, image_jpeg):
   client.models.generate_content(
       model='gemini-1.5-flash',
       contents=['What is this image about?', image_jpeg],
@@ -498,17 +483,65 @@ def test_model_content_text(client):
     assert response.text
 
 
-def test_from_uploaded_file_uri(client):
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+def test_from_file_input(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = client.files.upload(file='tests/data/story.txt')
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
+        contents=file,
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
         contents=[
             'Summarize this file',
-            types.Part.from_uri(
-                file_uri='https://generativelanguage.googleapis.com/v1beta/files/w1l20sq33nwn',
-                mime_type='text/plain',
-            ),
+            file,
         ],
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[['Summarize this file', file]],
+    )
+
+
+def test_from_file_dict_input(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = client.files.upload(file='tests/data/story.txt')
+    file_dict = file.model_dump()
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=file_dict,
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            'Summarize this file',
+            file_dict,
+        ],
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[['Summarize this file', file_dict]],
+    )
+
+
+def test_from_uploaded_file_uri(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    file = client.files.upload(file='tests/data/story.txt')
+    file_part = types.Part.from_uri(file_uri=file.uri, mime_type='text/plain')
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=file_part,
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            'Summarize this file',
+            file_part,
+        ],
+    )
+    client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[['Summarize this file', file_part]],
     )
 
 
@@ -636,7 +669,7 @@ def test_video_audio_uri(client):
 def test_file(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     file = types.File(
-        uri='https://generativelanguage.googleapis.com/v1beta/files/cmpqbqoptyaa',
+        uri='https://generativelanguage.googleapis.com/v1beta/files/ly6p67c47xgq',
         mime_type='text/plain',
     )
     client.models.generate_content(
@@ -755,7 +788,7 @@ def test_from_function_call_response(client):
 @pytest.mark.asyncio
 async def test_image_base64_stream_async(client):
   async for part in await client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash-001',
+      model='gemini-1.5-flash',
       contents=[
           'What is this image about?',
           {'inline_data': {'data': image_string, 'mimeType': 'image/png'}},

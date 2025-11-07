@@ -29,16 +29,36 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',
-            config={'number_of_images': 1, 'output_mime_type': 'image/jpeg'},
+            config=types.GenerateImagesConfig(
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
-        name='test_simple_prompt_001',
+        name='test_simple_prompt_imagen3-001',
+        exception_if_mldev='not found',
         parameters=types._GenerateImagesParameters(
             model='imagen-3.0-generate-001',
             prompt='Red skateboard',
             # 001 model does not support prompt enhancement.
-            config={'number_of_images': 1, 'output_mime_type': 'image/jpeg'},
+            config=types.GenerateImagesConfig(
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_generate_size_2k_imagen4-001',
+        parameters=types._GenerateImagesParameters(
+            model='imagen-4.0-generate-001',
+            prompt='Red skateboard',
+            config=types.GenerateImagesConfig(
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+                # Replay file has a smaller image saved for smaller file size.
+                image_size='2K',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -47,23 +67,24 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',
-            config={
-                'aspect_ratio': '1:1',
-                'guidance_scale': 15.0,
-                'safety_filter_level': 'BLOCK_MEDIUM_AND_ABOVE',
-                'number_of_images': 1,
-                'person_generation': 'DONT_ALLOW',
-                'include_safety_attributes': True,
-                'include_rai_reason': True,
-                'output_mime_type': 'image/jpeg',
-                'output_compression_quality': 80,
+            config=types.GenerateImagesConfig(
+                aspect_ratio='1:1',
+                guidance_scale=15.0,
+                safety_filter_level=types.SafetyFilterLevel.BLOCK_MEDIUM_AND_ABOVE,
+                number_of_images=1,
+                person_generation=types.PersonGeneration.DONT_ALLOW,
+                include_safety_attributes=True,
+                include_rai_reason=True,
+                output_mime_type='image/jpeg',
+                output_compression_quality=80,
                 # The below parameters are not supported in Gemini Developer API.
-                'negative_prompt': 'human',
-                'add_watermark': False,
-                'seed': 1337,
-                'language': 'en',
-                'enhance_prompt': True,
-            },
+                negative_prompt='human',
+                add_watermark=False,
+                seed=1337,
+                language='en',
+                enhance_prompt=True,
+                labels={'imagen_label_key': 'generate_images'}
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -72,11 +93,11 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
-            config={
-                'person_generation': 'ALLOW_ALL',
-                'number_of_images': 1,
-                'output_mime_type': 'image/jpeg',
-            },
+            config=types.GenerateImagesConfig(
+                person_generation='ALLOW_ALL',
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -85,11 +106,11 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
-            config={
-                'person_generation': 'allow_all',
-                'number_of_images': 1,
-                'output_mime_type': 'image/jpeg',
-            },
+            config=types.GenerateImagesConfig(
+                person_generation='allow_all',
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -98,11 +119,11 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
-            config={
-                'person_generation': types.PersonGeneration.ALLOW_ALL,
-                'number_of_images': 1,
-                'output_mime_type': 'image/jpeg',
-            },
+            config=types.GenerateImagesConfig(
+                person_generation=types.PersonGeneration.ALLOW_ALL,
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -110,11 +131,11 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
-            config={
-                'safety_filter_level': 'BLOCK_LOW_AND_ABOVE',
-                'number_of_images': 1,
-                'output_mime_type': 'image/jpeg',
-            },
+            config=types.GenerateImagesConfig(
+                safety_filter_level='BLOCK_LOW_AND_ABOVE',
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -122,11 +143,11 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
-            config={
-                'safety_filter_level': 'block_low_and_above',
-                'number_of_images': 1,
-                'output_mime_type': 'image/jpeg',
-            },
+            config=types.GenerateImagesConfig(
+                safety_filter_level='block_low_and_above',
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -134,11 +155,11 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
-            config={
-                'safety_filter_level': types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE,
-                'number_of_images': 1,
-                'output_mime_type': 'image/jpeg',
-            },
+            config=types.GenerateImagesConfig(
+                safety_filter_level=types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE,
+                number_of_images=1,
+                output_mime_type='image/jpeg',
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
@@ -146,17 +167,17 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',
-            config={
-                'aspect_ratio': '1:1',
-                'guidance_scale': 15.0,
-                'safety_filter_level': 'BLOCK_LOW_AND_ABOVE',
-                'number_of_images': 1,
-                'person_generation': 'DONT_ALLOW',
-                'include_safety_attributes': True,
-                'include_rai_reason': True,
-                'output_mime_type': 'image/jpeg',
-                'output_compression_quality': 80,
-            },
+            config=types.GenerateImagesConfig(
+                aspect_ratio='1:1',
+                guidance_scale=15.0,
+                safety_filter_level='BLOCK_LOW_AND_ABOVE',
+                number_of_images=1,
+                person_generation='DONT_ALLOW',
+                include_safety_attributes=True,
+                include_rai_reason=True,
+                output_mime_type='image/jpeg',
+                output_compression_quality=80,
+            ),
         ),
     ),
 ]
@@ -173,15 +194,22 @@ async def test_simple_prompt_async(client):
   response = await client.aio.models.generate_images(
       model=IMAGEN_MODEL_LATEST,
       prompt='Red skateboard',
-      config={
-          'number_of_images': 1,
-          'output_mime_type': 'image/jpeg',
-          'include_safety_attributes': True,
-          'include_rai_reason': True,
-      },
+      config=types.GenerateImagesConfig(
+          number_of_images=1,
+          output_mime_type='image/jpeg',
+          include_safety_attributes=True,
+          include_rai_reason=True,
+      ),
   )
 
   assert response.generated_images[0].image.image_bytes
-  # TODO(tangmatthew): Re-enable this check once the bug is fixed.
+  # Verify the images accessor works correctly.
+  assert (
+      response.generated_images[0].image.image_bytes
+      == response.images[0].image_bytes
+  )
   assert len(response.generated_images) == 1
-  assert response.positive_prompt_safety_attributes.content_type == 'Positive Prompt'
+  assert (
+      response.positive_prompt_safety_attributes.content_type
+      == 'Positive Prompt'
+  )

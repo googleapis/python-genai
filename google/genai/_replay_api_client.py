@@ -17,17 +17,16 @@
 
 import base64
 import copy
-import datetime
+import contextlib
 import enum
 import inspect
 import io
 import json
 import os
 import re
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union, Iterator, AsyncIterator
 
 import google.auth
-from requests.exceptions import HTTPError
 
 from . import errors
 from ._api_client import BaseApiClient
@@ -35,7 +34,6 @@ from ._api_client import HttpRequest
 from ._api_client import HttpResponse
 from ._common import BaseModel
 from .types import HttpOptions, HttpOptionsOrDict
-from .types import GenerateVideosOperation
 
 
 def to_snake_case(name: str) -> str:
@@ -57,8 +55,13 @@ def _normalize_json_case(obj: Any) -> Any:
     return [_normalize_json_case(item) for item in obj]
   elif isinstance(obj, enum.Enum):
     return obj.value
-  else:
-    return obj
+  elif isinstance(obj, str):
+    # Python >= 3.14 has a new division by zero error message.
+    if 'division by zero' in obj:
+      return obj.replace(
+          'division by zero', 'integer division or modulo by zero'
+      )
+  return obj
 
 
 def _equals_ignore_key_case(obj1: Any, obj2: Any) -> bool:
@@ -89,7 +92,7 @@ def _equals_ignore_key_case(obj1: Any, obj2: Any) -> bool:
 
 def _redact_version_numbers(version_string: str) -> str:
   """Redacts version numbers in the form x.y.z from a string."""
-  return re.sub(r'\d+\.\d+\.\d+', '{VERSION_NUMBER}', version_string)
+  return re.sub(r'\d+\.\d+\.\d+[a-zA-Z0-9]*', '{VERSION_NUMBER}', version_string)
 
 
 def _redact_language_label(language_label: str) -> str:
@@ -139,7 +142,7 @@ def _redact_request_url(url: str) -> str:
       result,
   )
   result = re.sub(
-      r'https://generativelanguage.googleapis.com/[^/]+',
+      r'.*generativelanguage.*.googleapis.com/[^/]+',
       '{MLDEV_URL_PREFIX}',
       result,
   )
@@ -200,6 +203,28 @@ def _debug_print(message: str) -> None:
   )
 
 
+def pop_undeterministic_headers(headers: dict[str, str]) -> None:
+  """Remove headers that are not deterministic."""
+  headers.pop('Date', None)  # pytype: disable=attribute-error
+  headers.pop('Server-Timing', None)  # pytype: disable=attribute-error
+
+
+@contextlib.contextmanager
+def _record_on_api_error(client: 'ReplayApiClient', http_request: HttpRequest) -> Iterator[None]:
+  try:
+    yield
+  except errors.APIError as e:
+    client._record_interaction(http_request, e)
+    raise e
+
+@contextlib.asynccontextmanager
+async def _async_record_on_api_error(client: 'ReplayApiClient', http_request: HttpRequest) -> AsyncIterator[None]:
+  try:
+    yield
+  except errors.APIError as e:
+    client._record_interaction(http_request, e)
+    raise e
+
 class ReplayRequest(BaseModel):
   """Represents a single request in a replay."""
 
@@ -219,10 +244,7 @@ class ReplayResponse(BaseModel):
   sdk_response_segments: list[dict[str, object]]
 
   def model_post_init(self, __context: Any) -> None:
-    # Remove headers that are not deterministic so the replay files don't change
-    # every time they are recorded.
-    self.headers.pop('Date', None)
-    self.headers.pop('Server-Timing', None)
+    pop_undeterministic_headers(self.headers)
 
 
 class ReplayInteraction(BaseModel):
@@ -253,6 +275,7 @@ class ReplayApiClient(BaseApiClient):
       project: Optional[str] = None,
       location: Optional[str] = None,
       http_options: Optional[HttpOptions] = None,
+      private: bool = False,
   ):
     super().__init__(
         vertexai=vertexai,
@@ -271,6 +294,7 @@ class ReplayApiClient(BaseApiClient):
     self.replay_session: Union[ReplayFile, None] = None
     self._mode = mode
     self._replay_id = replay_id
+    self._private = private
 
   def initialize_replay_session(self, replay_id: str) -> None:
     self._replay_id = replay_id
@@ -391,6 +415,8 @@ class ReplayApiClient(BaseApiClient):
       http_request: HttpRequest,
       interaction: ReplayInteraction,
   ) -> None:
+    _debug_print(f'http_request.url: {http_request.url}')
+    _debug_print(f'interaction.request.url: {interaction.request.url}')
     assert http_request.url == interaction.request.url
     assert http_request.headers == interaction.request.headers, (
         'Request headers mismatch:\n'
@@ -425,7 +451,7 @@ class ReplayApiClient(BaseApiClient):
     self._replay_index += 1
     self._sdk_response_index = 0
     errors.APIError.raise_for_response(interaction.response)
-    return HttpResponse(
+    http_response = HttpResponse(
         headers=interaction.response.headers,
         response_stream=[
             json.dumps(segment)
@@ -433,6 +459,9 @@ class ReplayApiClient(BaseApiClient):
         ],
         byte_stream=interaction.response.byte_segments,
     )
+    if http_response.response_stream == ['{}']:
+      http_response.response_stream = [""]
+    return http_response
 
   def _verify_response(self, response_model: BaseModel) -> None:
     if self._mode == 'api':
@@ -444,8 +473,15 @@ class ReplayApiClient(BaseApiClient):
     if self._should_update_replay():
       if isinstance(response_model, list):
         response_model = response_model[0]
-      if response_model and 'http_headers' in response_model.model_fields:
-        response_model.http_headers.pop('Date', None)  # type: ignore[attr-defined]
+      sdk_response_response = getattr(response_model, 'sdk_http_response', None)
+      if response_model and (
+          sdk_response_response is not None
+      ):
+        headers = getattr(
+            sdk_response_response, 'headers', None
+        )
+        if headers:
+          pop_undeterministic_headers(headers)
       interaction.response.sdk_response_segments.append(
           response_model.model_dump(exclude_none=True)
       )
@@ -453,34 +489,46 @@ class ReplayApiClient(BaseApiClient):
 
     if isinstance(response_model, list):
       response_model = response_model[0]
-    print('response_model: ', response_model.model_dump(exclude_none=True))
-    if isinstance(response_model, GenerateVideosOperation):
-      actual = response_model.model_dump(
-          exclude={'result'}, exclude_none=True, mode='json'
-      )
-    else:
-      actual = response_model.model_dump(exclude_none=True, mode='json')
+    _debug_print(
+        f'response_model: {response_model.model_dump(exclude_none=True)}'
+    )
+    actual = response_model.model_dump(exclude_none=True, mode='json')
     expected = interaction.response.sdk_response_segments[
         self._sdk_response_index
     ]
-    assert (
-        actual == expected
-    ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    # The sdk_http_response.body has format in the string, need to get rid of
+    # the format information before comparing.
+    if isinstance(expected, dict):
+      if 'sdk_http_response' in expected and isinstance(
+          expected['sdk_http_response'], dict
+      ):
+        if 'body' in expected['sdk_http_response']:
+          raw_body = expected['sdk_http_response']['body']
+          _debug_print(f'raw_body length: {len(raw_body)}')
+          _debug_print(f'raw_body: {raw_body}')
+          if isinstance(raw_body, str) and raw_body != '':
+            raw_body = json.loads(raw_body)
+            raw_body = json.dumps(raw_body)
+            expected['sdk_http_response']['body'] = raw_body
+    if not self._private:
+      assert (
+          actual == expected
+      ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'
+    else:
+      _debug_print(f'Expected SDK response mismatch:\nActual: {actual}\nExpected: {expected}')
     self._sdk_response_index += 1
 
   def _request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
-      try:
-        result = super()._request(http_request, stream)
-      except errors.APIError as e:
-        self._record_interaction(http_request, e)
-        raise e
+      with _record_on_api_error(self, http_request):
+        result = super()._request(http_request, http_options, stream)
       if stream:
         result_segments = []
         for segment in result.segments():
@@ -499,16 +547,16 @@ class ReplayApiClient(BaseApiClient):
   async def _async_request(
       self,
       http_request: HttpRequest,
+      http_options: Optional[HttpOptionsOrDict] = None,
       stream: bool = False,
   ) -> HttpResponse:
     self._initialize_replay_session_if_not_loaded()
     if self._should_call_api():
       _debug_print('api mode request: %s' % http_request)
-      try:
-        result = await super()._async_request(http_request, stream)
-      except errors.APIError as e:
-        self._record_interaction(http_request, e)
-        raise e
+      async with _async_record_on_api_error(self, http_request):
+        result = await super()._async_request(
+            http_request, http_options, stream
+        )
       if stream:
         result_segments = []
         async for segment in result.async_segments():
@@ -548,16 +596,10 @@ class ReplayApiClient(BaseApiClient):
       )
     if self._should_call_api():
       result: Union[str, HttpResponse]
-      try:
+      with _record_on_api_error(self, request):
         result = super().upload_file(
             file_path, upload_url, upload_size, http_options=http_options
         )
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:
@@ -587,16 +629,10 @@ class ReplayApiClient(BaseApiClient):
       )
     if self._should_call_api():
       result: HttpResponse
-      try:
+      async with _async_record_on_api_error(self, request):
         result = await super().async_upload_file(
             file_path, upload_url, upload_size, http_options=http_options
         )
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:
@@ -610,14 +646,8 @@ class ReplayApiClient(BaseApiClient):
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
-      try:
+      with _record_on_api_error(self, request):
         result = super().download_file(path, http_options=http_options)
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:
@@ -631,16 +661,10 @@ class ReplayApiClient(BaseApiClient):
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
-      try:
+      async with _async_record_on_api_error(self, request):
         result = await super().async_download_file(
             path, http_options=http_options
         )
-      except HTTPError as e:
-        result = HttpResponse(
-            dict(e.response.headers), [json.dumps({'reason': e.response.reason})]
-        )
-        result.status_code = e.response.status_code
-        raise e
       self._record_interaction(request, result)
       return result
     else:

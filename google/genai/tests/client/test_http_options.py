@@ -29,17 +29,24 @@ def test_patch_http_options_with_copies_all_fields():
       timeout=10000,
       client_args={'http2': True},
       async_client_args={'http1': True},
+      extra_body={'key': 'value'},
+      retry_options=types.HttpRetryOptions(attempts=10),
   )
   options = types.HttpOptions()
-  patched = _api_client._patch_http_options(options, patch_options)
+  patched = _api_client.patch_http_options(options, patch_options)
   http_options_keys = types.HttpOptions.model_fields.keys()
 
   for key in http_options_keys:
-    assert hasattr(patched, key) and getattr(patched, key) is not None
+    assert hasattr(patched, key)
+    if key not in ['httpx_client', 'httpx_async_client', 'aiohttp_client_session']:
+      assert getattr(patched, key) is not None
   assert patched.base_url == 'https://fake-url.com/'
   assert patched.api_version == 'v1'
   assert patched.headers['X-Custom-Header'] == 'custom_value'
   assert patched.timeout == 10000
+  assert patched.retry_options.attempts == 10
+  assert patched.client_args['http2']
+  assert patched.async_client_args['http1']
 
 
 def test_patch_http_options_merges_headers():
@@ -55,12 +62,14 @@ def test_patch_http_options_merges_headers():
       headers={'X-Custom-Header': 'custom_value'},
       timeout=10000,
   )
-  patched = _api_client._patch_http_options(original_options, patch_options)
+  patched = _api_client.patch_http_options(original_options, patch_options)
   # If the header is present in both the original and patch options, the patch
   # options value should be used
   assert patched.headers['X-Custom-Header'] == 'custom_value'
-
   assert patched.headers['X-different-header'] == 'different_value'
+  assert patched.base_url == 'https://fake-url.com/'
+  assert patched.api_version == 'v1'
+  assert patched.timeout == 10000
 
 
 def test_patch_http_options_appends_version_headers():
@@ -76,7 +85,7 @@ def test_patch_http_options_appends_version_headers():
       headers={'X-Custom-Header': 'custom_value'},
       timeout=10000,
   )
-  patched = _api_client._patch_http_options(original_options, patch_options)
+  patched = _api_client.patch_http_options(original_options, patch_options)
   assert 'user-agent' in patched.headers
   assert 'x-goog-api-client' in patched.headers
 
@@ -139,3 +148,8 @@ def test_server_timeout_not_set_by_default():
       request_dict={},
   )
   assert not 'X-Server-Timeout' in request.headers
+
+
+def test_retry_options_not_set_by_default():
+  options = types.HttpOptions()
+  assert options.retry_options is None
