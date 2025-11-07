@@ -14,6 +14,8 @@
 #
 
 
+"""Tests for tunings.get()."""
+
 from ... import types as genai_types
 from .. import pytest_helper
 
@@ -22,6 +24,13 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_vertexai",
         parameters=genai_types._GetTuningJobParameters(
             name="projects/801452371447/locations/us-central1/tuningJobs/4303478340632707072"
+        ),
+        exception_if_mldev="Not Found",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_vertexai_with_pretuned_model",
+        parameters=genai_types._GetTuningJobParameters(
+            name="projects/801452371447/locations/us-central1/tuningJobs/8520221517529743360",
         ),
         exception_if_mldev="Not Found",
     ),

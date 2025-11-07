@@ -155,7 +155,7 @@ def mock_generate_content_stream_afc_history():
     yield mock_generate_content
 
 
-def test_history_start_with_model_content():
+def test_history_start_with_valid_model_content():
   history = [
       types.Content(
           role='model',
@@ -166,10 +166,139 @@ def test_history_start_with_model_content():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  with pytest.raises(ValueError) as e:
-    chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
 
-  assert 'History must start with a user turn.' in str(e)
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == history
+
+
+def test_history_start_with_invalid_model_content():
+  history = [
+      types.Content(
+          role='model',
+          parts=[],
+      ),
+      types.Content(role='user', parts=[types.Part.from_text(text='Hello')]),
+  ]
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == [types.Content(role='user', parts=[types.Part.from_text(text='Hello')])]
+
+
+def test_history_with_consecutive_valid_user_inputs():
+  history = [
+      types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 1')],
+      ),
+       types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 2')],
+      ),
+  ]
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == history
+
+
+def test_history_with_valid_and_invalid_user_inputs():
+  history = [
+      types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 1')],
+      ),
+      types.Content(
+          role='user',
+          parts=[], # invalid content
+      ),
+      types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 2')],
+      ),
+  ]
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == history
+
+
+def test_history_with_consecutive_valid_model_outputs():
+  history = [
+      types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output 1')],
+      ),
+       types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output 2')],
+      ),
+  ]
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == history
+
+
+def test_history_with_valid_and_invalid_model_output():
+  history = [
+      types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output 1')],
+      ),
+      types.Content(
+          role='model',
+          parts=[], # invalid content
+      ),
+      types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output 2')],
+      ),
+  ]
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == []
+
+
+def test_history_end_with_user_input():
+  history = [
+      types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 1')],
+      ),
+       types.Content(
+          role='model',
+          parts=[types.Part.from_text(text='model output')],
+      ),
+       types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 2')],
+      ),
+  ]
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == history
 
 
 def test_unrecognized_role_in_history():

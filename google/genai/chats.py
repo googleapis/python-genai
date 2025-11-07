@@ -63,13 +63,8 @@ def _extract_curated_history(
   """Extracts the curated (valid) history from a comprehensive history.
 
   The comprehensive history contains all turns (user input and model responses),
-  including any invalid or rejected model outputs.  This function filters
-  that history to return only the valid turns.
-
-  A "turn" starts with one user input (a single content) and then follows by
-  corresponding model response (which may consist of multiple contents).
-  Turns are assumed to alternate: user input, model output, user input, model
-  output, etc.
+  including any invalid or rejected model outputs. This function filters that
+  history to return only the valid turns.
 
   Args:
       comprehensive_history: A list representing the complete chat history.
@@ -84,8 +79,6 @@ def _extract_curated_history(
   length = len(comprehensive_history)
   i = 0
   current_input = comprehensive_history[i]
-  if current_input.role != "user":
-    raise ValueError("History must start with a user turn.")
   while i < length:
     if comprehensive_history[i].role not in ["user", "model"]:
       raise ValueError(
@@ -94,6 +87,7 @@ def _extract_curated_history(
 
     if comprehensive_history[i].role == "user":
       current_input = comprehensive_history[i]
+      curated_history.append(current_input)
       i += 1
     else:
       current_output = []
@@ -104,8 +98,9 @@ def _extract_curated_history(
           is_valid = False
         i += 1
       if is_valid:
-        curated_history.append(current_input)
         curated_history.extend(current_output)
+      elif curated_history:
+        curated_history.pop()
   return curated_history
 
 
@@ -255,7 +250,7 @@ class Chat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
     response = self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
@@ -308,7 +303,7 @@ class Chat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
     output_contents = []
     finish_reason = None
     is_valid = True
@@ -417,7 +412,7 @@ class AsyncChat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
     response = await self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
@@ -459,6 +454,7 @@ class AsyncChat(_BaseChat):
     Usage:
 
     .. code-block:: python
+
       chat = client.aio.chats.create(model='gemini-2.0-flash')
       async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)
@@ -469,7 +465,7 @@ class AsyncChat(_BaseChat):
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(self._modules._api_client, message)
+    input_content = t.t_content(message)
 
     async def async_generator():  # type: ignore[no-untyped-def]
       output_contents = []
