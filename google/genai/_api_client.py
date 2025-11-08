@@ -80,7 +80,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger('google_genai._api_client')
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB chunk size
-READ_BUFFER_SIZE = 2**20
+READ_BUFFER_SIZE = 2**22
 MAX_RETRY_COUNT = 3
 INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
@@ -489,6 +489,7 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
       'retry': retry,
       'reraise': True,
       'wait': wait,
+      'before_sleep': tenacity.before_sleep_log(logger, logging.INFO),
   }
 
 
@@ -546,6 +547,7 @@ class BaseApiClient:
       http_options: Optional[HttpOptionsOrDict] = None,
   ):
     self.vertexai = vertexai
+    self.custom_base_url = None
     if self.vertexai is None:
       if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI', '0').lower() in [
           'true',
@@ -597,7 +599,7 @@ class BaseApiClient:
     # Handle when to use Vertex AI in express mode (api key).
     # Explicit initializer arguments are already validated above.
     if self.vertexai:
-      if credentials:
+      if credentials and env_api_key:
         # Explicit credentials take precedence over implicit api_key.
         logger.info(
             'The user provided Google Cloud credentials will take precedence'
@@ -627,11 +629,20 @@ class BaseApiClient:
         )
         self.api_key = None
 
+      if not self.location and not self.api_key:
+          self.location = 'global'
+
+      self.custom_base_url = (
+          validated_http_options.base_url
+          if validated_http_options.base_url
+          else None
+      )
+
       # Skip fetching project from ADC if base url is provided in http options.
       if (
           not self.project
           and not self.api_key
-          and not validated_http_options.base_url
+          and not self.custom_base_url
       ):
         credentials, self.project = load_auth(project=None)
         if not self._credentials:
@@ -639,17 +650,22 @@ class BaseApiClient:
 
       has_sufficient_auth = (self.project and self.location) or self.api_key
 
-      if not has_sufficient_auth and not validated_http_options.base_url:
+      if not has_sufficient_auth and not self.custom_base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
-            'Project and location or API key must be set when using the Vertex '
+            'Project or API key must be set when using the Vertex '
             'AI API.'
         )
       if self.api_key or self.location == 'global':
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif validated_http_options.base_url and not has_sufficient_auth:
+      elif self.custom_base_url and not ((project and location) or api_key):
         # Avoid setting default base url and api version if base_url provided.
-        self._http_options.base_url = validated_http_options.base_url
+        # API gateway proxy can use the auth in custom headers, not url.
+        # Enable custom url if auth is not sufficient.
+        self._http_options.base_url = self.custom_base_url
+        # Clear project and location if base_url is provided.
+        self.project = None
+        self.location = None
       else:
         self._http_options.base_url = (
             f'https://{self.location}-aiplatform.googleapis.com/'
@@ -682,13 +698,26 @@ class BaseApiClient:
     client_args, async_client_args = self._ensure_httpx_ssl_ctx(
         self._http_options
     )
-    self._httpx_client = SyncHttpxClient(**client_args)
-    self._async_httpx_client = AsyncHttpxClient(**async_client_args)
+    self._async_httpx_client_args = async_client_args
+
+    if self._http_options.httpx_client:
+      self._httpx_client = self._http_options.httpx_client
+    else:
+      self._httpx_client = SyncHttpxClient(**client_args)
+    if self._http_options.httpx_async_client:
+      self._async_httpx_client = self._http_options.httpx_async_client
+    else:
+      self._async_httpx_client = AsyncHttpxClient(**async_client_args)
     if self._use_aiohttp():
-      # Do it once at the genai.Client level. Share among all requests.
-      self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
-          self._http_options
-      )
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
+        # Do it once at the genai.Client level. Share among all requests.
+        self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
+            self._http_options
+        )
+      except ImportError:
+        pass
+
     # Initialize the aiohttp client session.
     self._aiohttp_session: Optional[aiohttp.ClientSession] = None
 
@@ -893,9 +922,15 @@ class BaseApiClient:
         has_aiohttp
         and (self._http_options.async_client_args or {}).get('transport')
         is None
+        and (self._http_options.httpx_async_client is None)
     )
 
   def _websocket_base_url(self) -> str:
+    has_sufficient_auth = (self.project and self.location) or self.api_key
+    if self.custom_base_url and not has_sufficient_auth:
+      # API gateway proxy can use the auth in custom headers, not url.
+      # Enable custom url if auth is not sufficient.
+      return self.custom_base_url
     url_parts = urlparse(self._http_options.base_url)
     return url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type, return-value]
 
@@ -1033,11 +1068,16 @@ class BaseApiClient:
       _common.recursive_dict_update(
           request_dict, patched_http_options.extra_body
       )
-
-    url = join_url_path(
-        base_url,
-        versioned_path,
-    )
+    url = base_url
+    if (
+        not self.custom_base_url
+        or (self.project and self.location)
+        or self.api_key
+    ):
+      url = join_url_path(
+          base_url,
+          versioned_path,
+      )
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(
@@ -1453,7 +1493,7 @@ class BaseApiClient:
             f'All content has been uploaded, but the upload status is not'
             f' finalized.'
         )
-
+    errors.APIError.raise_for_response(response)
     if response.headers.get('x-goog-upload-status') != 'final':
       raise ValueError('Failed to upload file: Upload status is not finalized.')
     return HttpResponse(response.headers, response_stream=[response.text])
@@ -1616,6 +1656,8 @@ class BaseApiClient:
               f'All content has been uploaded, but the upload status is not'
               f' finalized.'
           )
+
+      await errors.APIError.raise_for_async_response(response)
       if (
           response is not None
           and response.headers.get('X-Goog-Upload-Status') != 'final'
@@ -1693,6 +1735,8 @@ class BaseApiClient:
               'All content has been uploaded, but the upload status is not'
               ' finalized.'
           )
+
+      await errors.APIError.raise_for_async_response(client_response)
       if (
           client_response is not None
           and client_response.headers.get('x-goog-upload-status') != 'final'
@@ -1784,11 +1828,17 @@ class BaseApiClient:
     """
 
     try:
-      self.close()
+      # Let users close the custom client explicitly by themselves. Otherwise,
+      # close the client when the object is garbage collected.
+      if not self._http_options.httpx_client:
+        self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 
     try:
-      asyncio.get_running_loop().create_task(self.aclose())
+      # Let users close the custom client explicitly by themselves. Otherwise,
+      # close the client when the object is garbage collected.
+      if not self._http_options.httpx_async_client:
+        asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass

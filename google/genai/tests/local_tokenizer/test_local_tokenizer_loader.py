@@ -53,10 +53,7 @@ GEMMA2_HASH = "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2"
 class TestGetTokenizerName(unittest.TestCase):
 
   def test_get_tokenizer_name_success(self):
-    self.assertEqual(loader.get_tokenizer_name("gemini-1.0-pro"), "gemma2")
-    self.assertEqual(loader.get_tokenizer_name("gemini-1.5-pro"), "gemma2")
     self.assertEqual(loader.get_tokenizer_name("gemini-2.5-pro"), "gemma3")
-    self.assertEqual(loader.get_tokenizer_name("gemini-1.0-pro-001"), "gemma2")
     self.assertEqual(
         loader.get_tokenizer_name("gemini-2.5-pro-preview-06-05"), "gemma3"
     )

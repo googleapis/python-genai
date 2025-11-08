@@ -47,16 +47,23 @@ def _SafetyFilterLevel_to_mldev_enum_validate(enum_value: Any) -> None:
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
 
+def _VideoGenerationReferenceType_to_mldev_enum_validate(
+    enum_value: Any,
+) -> None:
+  if enum_value in set(['STYLE']):
+    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
+
+
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
-
   if getv(from_object, ['data']) is not None:
     setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
@@ -87,13 +94,6 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['urlContextMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_context_metadata'],
-        getv(from_object, ['urlContextMetadata']),
-    )
-
   if getv(from_object, ['avgLogprobs']) is not None:
     setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
@@ -115,6 +115,13 @@ def _Candidate_from_mldev(
         to_object,
         ['safety_ratings'],
         [item for item in getv(from_object, ['safetyRatings'])],
+    )
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_context_metadata'],
+        getv(from_object, ['urlContextMetadata']),
     )
 
   return to_object
@@ -559,6 +566,9 @@ def _EditImageConfig_to_vertex(
         ['parameters', 'addWatermark'],
         getv(from_object, ['add_watermark']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['edit_mode']) is not None:
     setv(
@@ -1436,6 +1446,9 @@ def _GenerateImagesConfig_to_mldev(
   if getv(from_object, ['add_watermark']) is not None:
     raise ValueError('add_watermark parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
   if getv(from_object, ['image_size']) is not None:
     setv(
         parent_object,
@@ -1548,6 +1561,9 @@ def _GenerateImagesConfig_to_vertex(
         ['parameters', 'addWatermark'],
         getv(from_object, ['add_watermark']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['image_size']) is not None:
     setv(
@@ -1745,11 +1761,20 @@ def _GenerateVideosConfig_to_mldev(
     raise ValueError('generate_audio parameter is not supported in Gemini API.')
 
   if getv(from_object, ['last_frame']) is not None:
-    raise ValueError('last_frame parameter is not supported in Gemini API.')
+    setv(
+        parent_object,
+        ['instances[0]', 'lastFrame'],
+        _Image_to_mldev(getv(from_object, ['last_frame']), to_object),
+    )
 
   if getv(from_object, ['reference_images']) is not None:
-    raise ValueError(
-        'reference_images parameter is not supported in Gemini API.'
+    setv(
+        parent_object,
+        ['instances[0]', 'referenceImages'],
+        [
+            _VideoGenerationReferenceImage_to_mldev(item, to_object)
+            for item in getv(from_object, ['reference_images'])
+        ],
     )
 
   if getv(from_object, ['mask']) is not None:
@@ -1979,7 +2004,11 @@ def _GenerateVideosParameters_to_mldev(
     )
 
   if getv(from_object, ['video']) is not None:
-    raise ValueError('video parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['instances[0]', 'video'],
+        _Video_to_mldev(getv(from_object, ['video']), to_object),
+    )
 
   if getv(from_object, ['source']) is not None:
     _GenerateVideosSource_to_mldev(getv(from_object, ['source']), to_object)
@@ -2111,7 +2140,11 @@ def _GenerateVideosSource_to_mldev(
     )
 
   if getv(from_object, ['video']) is not None:
-    raise ValueError('video parameter is not supported in Gemini API.')
+    setv(
+        parent_object,
+        ['instances[0]', 'video'],
+        _Video_to_mldev(getv(from_object, ['video']), to_object),
+    )
 
   return to_object
 
@@ -2229,11 +2262,11 @@ def _GeneratedVideo_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
+  if getv(from_object, ['video']) is not None:
     setv(
         to_object,
         ['video'],
-        _Video_from_mldev(getv(from_object, ['_self']), to_object),
+        _Video_from_mldev(getv(from_object, ['video']), to_object),
     )
 
   return to_object
@@ -2264,6 +2297,13 @@ def _GenerationConfig_to_vertex(
         to_object,
         ['modelConfig'],
         getv(from_object, ['model_selection_config']),
+    )
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
@@ -2302,13 +2342,6 @@ def _GenerationConfig_to_vertex(
   if getv(from_object, ['presence_penalty']) is not None:
     setv(
         to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
-    )
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
     )
 
   if getv(from_object, ['response_logprobs']) is not None:
@@ -2365,6 +2398,11 @@ def _GenerationConfig_to_vertex(
   if getv(from_object, ['top_p']) is not None:
     setv(to_object, ['topP'], getv(from_object, ['top_p']))
 
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    raise ValueError(
+        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+    )
+
   return to_object
 
 
@@ -2400,19 +2438,38 @@ def _GetModelParameters_to_vertex(
   return to_object
 
 
+def _GoogleMaps_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['auth_config']) is not None:
+    raise ValueError('auth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['enable_widget']) is not None:
+    setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  return to_object
+
+
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
-    )
-
   if getv(from_object, ['exclude_domains']) is not None:
     raise ValueError(
         'exclude_domains parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['blocking_confidence']) is not None:
+    raise ValueError(
+        'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
     )
 
   return to_object
@@ -2702,6 +2759,21 @@ def _Model_from_mldev(
         getv(from_object, ['supportedGenerationMethods']),
     )
 
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['maxTemperature']) is not None:
+    setv(to_object, ['max_temperature'], getv(from_object, ['maxTemperature']))
+
+  if getv(from_object, ['topP']) is not None:
+    setv(to_object, ['top_p'], getv(from_object, ['topP']))
+
+  if getv(from_object, ['topK']) is not None:
+    setv(to_object, ['top_k'], getv(from_object, ['topK']))
+
+  if getv(from_object, ['thinking']) is not None:
+    setv(to_object, ['thinking'], getv(from_object, ['thinking']))
+
   return to_object
 
 
@@ -2764,33 +2836,6 @@ def _Part_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
-    )
-
-  if getv(from_object, ['thought_signature']) is not None:
-    setv(
-        to_object,
-        ['thoughtSignature'],
-        getv(from_object, ['thought_signature']),
-    )
-
   if getv(from_object, ['function_call']) is not None:
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
 
@@ -2804,6 +2849,13 @@ def _Part_to_mldev(
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
 
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
   if getv(from_object, ['function_response']) is not None:
     setv(
         to_object,
@@ -2811,8 +2863,28 @@ def _Part_to_mldev(
         getv(from_object, ['function_response']),
     )
 
+  if getv(from_object, ['inline_data']) is not None:
+    setv(
+        to_object,
+        ['inlineData'],
+        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
+    )
+
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   return to_object
 
@@ -2903,6 +2975,9 @@ def _RecontextImageConfig_to_vertex(
         ['parameters', 'enhancePrompt'],
         getv(from_object, ['enhance_prompt']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   return to_object
 
@@ -3081,11 +3156,11 @@ def _SafetySetting_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['method']) is not None:
-    raise ValueError('method parameter is not supported in Gemini API.')
-
   if getv(from_object, ['category']) is not None:
     setv(to_object, ['category'], getv(from_object, ['category']))
+
+  if getv(from_object, ['method']) is not None:
+    raise ValueError('method parameter is not supported in Gemini API.')
 
   if getv(from_object, ['threshold']) is not None:
     setv(to_object, ['threshold'], getv(from_object, ['threshold']))
@@ -3144,6 +3219,9 @@ def _SegmentImageConfig_to_vertex(
         ['parameters', 'binaryColorThreshold'],
         getv(from_object, ['binary_color_threshold']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   return to_object
 
@@ -3222,6 +3300,9 @@ def _SpeechConfig_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
   if getv(from_object, ['voice_config']) is not None:
     setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
 
@@ -3229,9 +3310,6 @@ def _SpeechConfig_to_vertex(
     raise ValueError(
         'multi_speaker_voice_config parameter is not supported in Vertex AI.'
     )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -3251,13 +3329,6 @@ def _Tool_to_mldev(
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
-    )
-
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
@@ -3265,22 +3336,36 @@ def _Tool_to_mldev(
         getv(from_object, ['google_search_retrieval']),
     )
 
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
+  if getv(from_object, ['file_search']) is not None:
+    setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
   if getv(from_object, ['enterprise_web_search']) is not None:
     raise ValueError(
         'enterprise_web_search parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['google_maps']) is not None:
-    raise ValueError('google_maps parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['googleMaps'],
+        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
+    )
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -3303,15 +3388,21 @@ def _Tool_to_vertex(
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
-
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
         ['googleSearchRetrieval'],
         getv(from_object, ['google_search_retrieval']),
     )
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
+  if getv(from_object, ['file_search']) is not None:
+    raise ValueError('file_search parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   if getv(from_object, ['enterprise_web_search']) is not None:
     setv(
@@ -3323,14 +3414,11 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_maps']) is not None:
     setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
+  if getv(from_object, ['google_search']) is not None:
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -3454,6 +3542,20 @@ def _UpscaleImageAPIConfig_to_vertex(
         getv(from_object, ['output_gcs_uri']),
     )
 
+  if getv(from_object, ['safety_filter_level']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'safetySetting'],
+        getv(from_object, ['safety_filter_level']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
   if getv(from_object, ['include_rai_reason']) is not None:
     setv(
         parent_object,
@@ -3488,6 +3590,9 @@ def _UpscaleImageAPIConfig_to_vertex(
         ['parameters', 'upscaleConfig', 'imagePreservationFactor'],
         getv(from_object, ['image_preservation_factor']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['number_of_images']) is not None:
     setv(
@@ -3576,6 +3681,27 @@ def _VideoGenerationMask_to_vertex(
   return to_object
 
 
+def _VideoGenerationReferenceImage_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['image']) is not None:
+    setv(
+        to_object,
+        ['image'],
+        _Image_to_mldev(getv(from_object, ['image']), to_object),
+    )
+
+  if getv(from_object, ['reference_type']) is not None:
+    _VideoGenerationReferenceType_to_mldev_enum_validate(
+        getv(from_object, ['reference_type'])
+    )
+    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
+
+  return to_object
+
+
 def _VideoGenerationReferenceImage_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3599,14 +3725,14 @@ def _Video_from_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video', 'uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
 
-  if getv(from_object, ['video', 'encodedVideo']) is not None:
+  if getv(from_object, ['encodedVideo']) is not None:
     setv(
         to_object,
         ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
+        base_t.t_bytes(getv(from_object, ['encodedVideo'])),
     )
 
   if getv(from_object, ['encoding']) is not None:
@@ -3632,6 +3758,27 @@ def _Video_from_vertex(
 
   if getv(from_object, ['mimeType']) is not None:
     setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+
+  return to_object
+
+
+def _Video_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
+
+  if getv(from_object, ['video_bytes']) is not None:
+    setv(
+        to_object,
+        ['encodedVideo'],
+        base_t.t_bytes(getv(from_object, ['video_bytes'])),
+    )
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['encoding'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -4872,6 +5019,9 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
     if (
         parsed_config
@@ -4885,6 +5035,28 @@ class Models(_api_module.BaseModule):
       return self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling (AFC). AFC is disabled. If AFC is intended, please '
+            'include python callables in the tool list, and do not include '
+            'function declaration in the tool list.',
+            indices_str,
+        )
+      return self._generate_content(
+          model=model, contents=contents, config=parsed_config
+      )
+
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
         parsed_config
     )
@@ -5008,6 +5180,9 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
     if (
         parsed_config
@@ -5018,6 +5193,27 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
+      yield from self._generate_content_stream(
+          model=model, contents=contents, config=parsed_config
+      )
+      return
+
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling. AFC will be disabled.',
+            indices_str,
+        )
       yield from self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
@@ -5047,7 +5243,7 @@ class Models(_api_module.BaseModule):
         # Yield chunks only if there's no function response parts.
         for chunk in response:
           if not function_map:
-            _extra_utils.append_chunk_contents(contents, chunk)
+            contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
             yield chunk
           else:
             if (
@@ -5060,7 +5256,7 @@ class Models(_api_module.BaseModule):
                 chunk, function_map
             )
             if not func_response_parts:
-              _extra_utils.append_chunk_contents(contents, chunk)
+              contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
               yield chunk
 
       else:
@@ -5070,7 +5266,7 @@ class Models(_api_module.BaseModule):
             chunk.automatic_function_calling_history = (
                 automatic_function_calling_history
             )
-          _extra_utils.append_chunk_contents(contents, chunk)
+          contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
           yield chunk
         if (
             chunk is None
@@ -5269,6 +5465,8 @@ class Models(_api_module.BaseModule):
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
         output_gcs_uri=config_dct.get('output_gcs_uri', None),
+        safety_filter_level=config_dct.get('safety_filter_level', None),
+        person_generation=config_dct.get('person_generation', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
@@ -5278,6 +5476,7 @@ class Models(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
@@ -5345,6 +5544,36 @@ class Models(_api_module.BaseModule):
           'Source and prompt/image/video are mutually exclusive.'
           + ' Please only use source.'
       )
+    # Gemini Developer API does not support video bytes.
+    video_dct: dict[str, Any] = {}
+    if not self._api_client.vertexai and video:
+      if isinstance(video, types.Video):
+        video_dct = video.model_dump()
+      else:
+        video_dct = dict(video)
+
+      if video_dct.get('uri') and video_dct.get('video_bytes'):
+        video = types.Video(
+            uri=video_dct.get('uri'), mime_type=video_dct.get('mime_type')
+        )
+    elif not self._api_client.vertexai and source:
+      if isinstance(source, types.GenerateVideosSource):
+        source_dct = source.model_dump()
+        video_dct = source_dct.get('video', {})
+      else:
+        source_dct = dict(source)
+        if isinstance(source_dct.get('video'), types.Video):
+          video_obj: types.Video = source_dct.get('video', types.Video())
+          video_dct = video_obj.model_dump()
+      if video_dct and video_dct.get('uri') and video_dct.get('video_bytes'):
+        source = types.GenerateVideosSource(
+            prompt=source_dct.get('prompt'),
+            image=source_dct.get('image'),
+            video=types.Video(
+                uri=video_dct.get('uri'),
+                mime_type=video_dct.get('mime_type'),
+            ),
+        )
     return self._generate_videos(
         model=model,
         prompt=prompt,
@@ -6605,10 +6834,34 @@ class AsyncModels(_api_module.BaseModule):
       # J'aime les bagels.
     """
     # Retrieve and cache any MCP sessions if provided.
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
     parsed_config, mcp_to_genai_tool_adapters = (
         await _extra_utils.parse_config_for_mcp_sessions(config)
     )
     if _extra_utils.should_disable_afc(parsed_config):
+      return await self._generate_content(
+          model=model, contents=contents, config=parsed_config
+      )
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling (AFC). AFC is disabled. If AFC is intended, please '
+            'include python callables in the tool list, and do not include '
+            'function declaration in the tool list.',
+            indices_str,
+        )
       return await self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
@@ -6723,7 +6976,7 @@ class AsyncModels(_api_module.BaseModule):
       # * Everlasting Florals
       # * Timeless Petals
 
-      async for chunk in awiat client.aio.models.generate_content_stream(
+      async for chunk in await client.aio.models.generate_content_stream(
         model='gemini-2.0-flash',
         contents=[
           types.Part.from_text('What is shown in this image?'),
@@ -6737,10 +6990,42 @@ class AsyncModels(_api_module.BaseModule):
     """
 
     # Retrieve and cache any MCP sessions if provided.
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
+    # Retrieve and cache any MCP sessions if provided.
     parsed_config, mcp_to_genai_tool_adapters = (
         await _extra_utils.parse_config_for_mcp_sessions(config)
     )
     if _extra_utils.should_disable_afc(parsed_config):
+      response = await self._generate_content_stream(
+          model=model, contents=contents, config=parsed_config
+      )
+
+      async def base_async_generator(model, contents, config):  # type: ignore[no-untyped-def]
+        async for chunk in response:  # type: ignore[attr-defined]
+          yield chunk
+
+      return base_async_generator(model, contents, parsed_config)  # type: ignore[no-untyped-call, no-any-return]
+
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling (AFC). AFC is disabled. If AFC is intended, please '
+            'include python callables in the tool list, and do not include '
+            'function declaration in the tool list.',
+            indices_str,
+        )
       response = await self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
@@ -6765,9 +7050,11 @@ class AsyncModels(_api_module.BaseModule):
         response = await self._generate_content_stream(
             model=model, contents=contents, config=config
         )
-        logger.info(f'AFC remote call {i} is done.')
+        # TODO: b/453739108 - make AFC logic more robust like the other 3 methods.
+        if i > 1:
+          logger.info(f'AFC remote call {i} is done.')
         remaining_remote_calls_afc -= 1
-        if remaining_remote_calls_afc == 0:
+        if i > 1 and remaining_remote_calls_afc == 0:
           logger.info(
               'Reached max remote calls for automatic function calling.'
           )
@@ -6782,7 +7069,7 @@ class AsyncModels(_api_module.BaseModule):
           # Yield chunks only if there's no function response parts.
           async for chunk in response:  # type: ignore[attr-defined]
             if not function_map:
-              _extra_utils.append_chunk_contents(contents, chunk)
+              contents = _extra_utils.append_chunk_contents(contents, chunk)
               yield chunk
             else:
               if (
@@ -6797,7 +7084,7 @@ class AsyncModels(_api_module.BaseModule):
                   )
               )
               if not func_response_parts:
-                _extra_utils.append_chunk_contents(contents, chunk)
+                contents = _extra_utils.append_chunk_contents(contents, chunk)
                 yield chunk
 
         else:
@@ -6808,7 +7095,7 @@ class AsyncModels(_api_module.BaseModule):
               chunk.automatic_function_calling_history = (
                   automatic_function_calling_history
               )
-            _extra_utils.append_chunk_contents(contents, chunk)
+            contents = _extra_utils.append_chunk_contents(contents, chunk)
             yield chunk
           if (
               chunk is None
@@ -7060,6 +7347,8 @@ class AsyncModels(_api_module.BaseModule):
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
         output_gcs_uri=config_dct.get('output_gcs_uri', None),
+        safety_filter_level=config_dct.get('safety_filter_level', None),
+        person_generation=config_dct.get('person_generation', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
@@ -7069,6 +7358,7 @@ class AsyncModels(_api_module.BaseModule):
         image_preservation_factor=config_dct.get(
             'image_preservation_factor', None
         ),
+        labels=config_dct.get('labels', None),
     )  # pylint: disable=protected-access
 
     # Provide default values through API config.
@@ -7136,6 +7426,36 @@ class AsyncModels(_api_module.BaseModule):
           'Source and prompt/image/video are mutually exclusive.'
           + ' Please only use source.'
       )
+    # Gemini Developer API does not support video bytes.
+    video_dct: dict[str, Any] = {}
+    if not self._api_client.vertexai and video:
+      if isinstance(video, types.Video):
+        video_dct = video.model_dump()
+      else:
+        video_dct = dict(video)
+
+      if video_dct.get('uri') and video_dct.get('video_bytes'):
+        video = types.Video(
+            uri=video_dct.get('uri'), mime_type=video_dct.get('mime_type')
+        )
+    elif not self._api_client.vertexai and source:
+      if isinstance(source, types.GenerateVideosSource):
+        source_dct = source.model_dump()
+        video_dct = source_dct.get('video', {})
+      else:
+        source_dct = dict(source)
+        if isinstance(source_dct.get('video'), types.Video):
+          video_obj: types.Video = source_dct.get('video', types.Video())
+          video_dct = video_obj.model_dump()
+      if video_dct and video_dct.get('uri') and video_dct.get('video_bytes'):
+        source = types.GenerateVideosSource(
+            prompt=source_dct.get('prompt'),
+            image=source_dct.get('image'),
+            video=types.Video(
+                uri=video_dct.get('uri'),
+                mime_type=video_dct.get('mime_type'),
+            ),
+        )
     return await self._generate_videos(
         model=model,
         prompt=prompt,

@@ -282,6 +282,8 @@ class Operations(_api_module.BaseModule):
       response_operation = operation.from_api_response(
           response_dict, is_vertex_ai=True
       )
+
+      self._api_client._verify_response(response_operation)  # type: ignore [arg-type]
       return response_operation  # type: ignore[no-any-return]
     else:
       response_dict = self._get_videos_operation(
@@ -291,6 +293,8 @@ class Operations(_api_module.BaseModule):
       response_operation = operation.from_api_response(
           response_dict, is_vertex_ai=False
       )
+
+      self._api_client._verify_response(response_operation)  # type: ignore [arg-type]
       return response_operation  # type: ignore[no-any-return]
 
 

@@ -28,9 +28,6 @@ from sentencepiece import sentencepiece_model_pb2
 
 # Source of truth: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
 _GEMINI_MODELS_TO_TOKENIZER_NAMES = {
-    "gemini-1.0-pro": "gemma2",
-    "gemini-1.5-pro": "gemma2",
-    "gemini-1.5-flash": "gemma2",
     "gemini-2.5-pro": "gemma3",
     "gemini-2.5-flash": "gemma3",
     "gemini-2.5-flash-lite": "gemma3",
@@ -38,12 +35,6 @@ _GEMINI_MODELS_TO_TOKENIZER_NAMES = {
     "gemini-2.0-flash-lite": "gemma3",
 }
 _GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES = {
-    "gemini-1.0-pro-001": "gemma2",
-    "gemini-1.0-pro-002": "gemma2",
-    "gemini-1.5-pro-001": "gemma2",
-    "gemini-1.5-flash-001": "gemma2",
-    "gemini-1.5-flash-002": "gemma2",
-    "gemini-1.5-pro-002": "gemma2",
     "gemini-2.5-pro-preview-06-05": "gemma3",
     "gemini-2.5-pro-preview-05-06": "gemma3",
     "gemini-2.5-pro-exp-03-25": "gemma3",

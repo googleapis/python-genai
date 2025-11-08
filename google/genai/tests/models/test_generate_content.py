@@ -227,6 +227,24 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_maps_tool',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.0-flash-exp',
+            contents=t.t_contents('Find restaurants near me.'),
+            config=types.GenerateContentConfig(
+                tools=[{'google_maps': {}}],
+                tool_config={
+                    "retrieval_config": {
+                        "lat_lng": {
+                            "latitude": 37.421993,
+                            "longitude": -122.079725,
+                        }
+                    }
+                }
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_google_search_tool_with_time_range_filter',
         parameters=types._GenerateContentParameters(
             model='gemini-2.0-flash-exp',
@@ -267,6 +285,23 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='not supported in',
     ),
     pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_blocking_confidence',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            blocking_confidence=types.PhishBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash',
@@ -291,6 +326,23 @@ test_table: list[pytest_helper.TestTableItem] = [
                     types.Tool(
                         enterprise_web_search=types.EnterpriseWebSearch(
                             exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool_with_blocking_confidence',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch(
+                            blocking_confidence=types.PhishBlockThreshold.BLOCK_LOW_AND_ABOVE,
                         )
                     )
                 ]
@@ -449,6 +501,33 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         ignore_keys=['parsed'],
+    ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_path',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash/../../upload/v1beta/files',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_question_mark',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash?',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_ampersand',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash&',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
     ),
 ]
 
@@ -2220,33 +2299,6 @@ def test_usage_metadata_part_types(client):
       [d.modality.name for d in usage_metadata.prompt_tokens_details]
   )
   assert modalities == ['IMAGE', 'TEXT']
-
-
-def test_warning_log_includes_parsed_for_multi_candidate_response(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='google_genai')
-
-  class CountryInfo(BaseModel):
-    name: str
-    population: int
-    capital: str
-    continent: str
-    major_cities: list[str]
-    gdp: int
-    official_language: str
-    total_area_sq_mi: int
-
-  response = client.models.generate_content(
-      model='gemini-2.0-flash',
-      contents='Give me information of the United States.',
-      config={
-          'response_mime_type': 'application/json',
-          'response_schema': CountryInfo,
-          'candidate_count': 2,
-      },
-  )
-  assert response.parsed
-  assert len(response.candidates) == 2
-  assert 'parsed' in caplog.text
 
 
 def test_error_handling_stream(client):

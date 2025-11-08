@@ -32,9 +32,64 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.tunings')
 
 
+def _AutoraterConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['samplingCount']) is not None:
+    setv(to_object, ['sampling_count'], getv(from_object, ['samplingCount']))
+
+  if getv(from_object, ['flipEnabled']) is not None:
+    setv(to_object, ['flip_enabled'], getv(from_object, ['flipEnabled']))
+
+  if getv(from_object, ['autoraterModel']) is not None:
+    setv(to_object, ['autorater_model'], getv(from_object, ['autoraterModel']))
+
+  if getv(from_object, ['generationConfig']) is not None:
+    setv(
+        to_object,
+        ['generation_config'],
+        _GenerationConfig_from_vertex(
+            getv(from_object, ['generationConfig']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _AutoraterConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sampling_count']) is not None:
+    setv(to_object, ['samplingCount'], getv(from_object, ['sampling_count']))
+
+  if getv(from_object, ['flip_enabled']) is not None:
+    setv(to_object, ['flipEnabled'], getv(from_object, ['flip_enabled']))
+
+  if getv(from_object, ['autorater_model']) is not None:
+    setv(to_object, ['autoraterModel'], getv(from_object, ['autorater_model']))
+
+  if getv(from_object, ['generation_config']) is not None:
+    setv(
+        to_object,
+        ['generationConfig'],
+        _GenerationConfig_to_vertex(
+            getv(from_object, ['generation_config']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
 def _CancelTuningJobParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -46,6 +101,7 @@ def _CancelTuningJobParameters_to_mldev(
 def _CancelTuningJobParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -57,6 +113,7 @@ def _CancelTuningJobParameters_to_vertex(
 def _CreateTuningJobConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -125,23 +182,41 @@ def _CreateTuningJobConfig_to_mldev(
   if getv(from_object, ['labels']) is not None:
     raise ValueError('labels parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['beta']) is not None:
+    raise ValueError('beta parameter is not supported in Gemini API.')
+
   return to_object
 
 
 def _CreateTuningJobConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
-  if getv(from_object, ['validation_dataset']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec'],
-        _TuningValidationDataset_to_vertex(
-            getv(from_object, ['validation_dataset']), to_object
-        ),
-    )
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['validation_dataset']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec'],
+          _TuningValidationDataset_to_vertex(
+              getv(from_object, ['validation_dataset']), to_object, root_object
+          ),
+      )
+
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['validation_dataset']) is not None:
+      setv(
+          parent_object,
+          ['preferenceOptimizationSpec'],
+          _TuningValidationDataset_to_vertex(
+              getv(from_object, ['validation_dataset']), to_object, root_object
+          ),
+      )
 
   if getv(from_object, ['tuned_model_display_name']) is not None:
     setv(
@@ -153,33 +228,85 @@ def _CreateTuningJobConfig_to_vertex(
   if getv(from_object, ['description']) is not None:
     setv(parent_object, ['description'], getv(from_object, ['description']))
 
-  if getv(from_object, ['epoch_count']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec', 'hyperParameters', 'epochCount'],
-        getv(from_object, ['epoch_count']),
-    )
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['epoch_count']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'hyperParameters', 'epochCount'],
+          getv(from_object, ['epoch_count']),
+      )
 
-  if getv(from_object, ['learning_rate_multiplier']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec', 'hyperParameters', 'learningRateMultiplier'],
-        getv(from_object, ['learning_rate_multiplier']),
-    )
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['epoch_count']) is not None:
+      setv(
+          parent_object,
+          ['preferenceOptimizationSpec', 'hyperParameters', 'epochCount'],
+          getv(from_object, ['epoch_count']),
+      )
 
-  if getv(from_object, ['export_last_checkpoint_only']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec', 'exportLastCheckpointOnly'],
-        getv(from_object, ['export_last_checkpoint_only']),
-    )
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['learning_rate_multiplier']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'hyperParameters', 'learningRateMultiplier'],
+          getv(from_object, ['learning_rate_multiplier']),
+      )
 
-  if getv(from_object, ['adapter_size']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec', 'hyperParameters', 'adapterSize'],
-        getv(from_object, ['adapter_size']),
-    )
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['learning_rate_multiplier']) is not None:
+      setv(
+          parent_object,
+          [
+              'preferenceOptimizationSpec',
+              'hyperParameters',
+              'learningRateMultiplier',
+          ],
+          getv(from_object, ['learning_rate_multiplier']),
+      )
+
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['export_last_checkpoint_only']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'exportLastCheckpointOnly'],
+          getv(from_object, ['export_last_checkpoint_only']),
+      )
+
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['export_last_checkpoint_only']) is not None:
+      setv(
+          parent_object,
+          ['preferenceOptimizationSpec', 'exportLastCheckpointOnly'],
+          getv(from_object, ['export_last_checkpoint_only']),
+      )
+
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['adapter_size']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'hyperParameters', 'adapterSize'],
+          getv(from_object, ['adapter_size']),
+      )
+
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['adapter_size']) is not None:
+      setv(
+          parent_object,
+          ['preferenceOptimizationSpec', 'hyperParameters', 'adapterSize'],
+          getv(from_object, ['adapter_size']),
+      )
 
   if getv(from_object, ['batch_size']) is not None:
     raise ValueError('batch_size parameter is not supported in Vertex AI.')
@@ -187,17 +314,38 @@ def _CreateTuningJobConfig_to_vertex(
   if getv(from_object, ['learning_rate']) is not None:
     raise ValueError('learning_rate parameter is not supported in Vertex AI.')
 
-  if getv(from_object, ['evaluation_config']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec', 'evaluationConfig'],
-        _EvaluationConfig_to_vertex(
-            getv(from_object, ['evaluation_config']), to_object
-        ),
-    )
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['evaluation_config']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'evaluationConfig'],
+          _EvaluationConfig_to_vertex(
+              getv(from_object, ['evaluation_config']), to_object, root_object
+          ),
+      )
+
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['evaluation_config']) is not None:
+      setv(
+          parent_object,
+          ['preferenceOptimizationSpec', 'evaluationConfig'],
+          _EvaluationConfig_to_vertex(
+              getv(from_object, ['evaluation_config']), to_object, root_object
+          ),
+      )
 
   if getv(from_object, ['labels']) is not None:
     setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  if getv(from_object, ['beta']) is not None:
+    setv(
+        parent_object,
+        ['preferenceOptimizationSpec', 'hyperParameters', 'beta'],
+        getv(from_object, ['beta']),
+    )
 
   return to_object
 
@@ -205,6 +353,7 @@ def _CreateTuningJobConfig_to_vertex(
 def _CreateTuningJobParametersPrivate_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['base_model']) is not None:
@@ -214,16 +363,14 @@ def _CreateTuningJobParametersPrivate_to_mldev(
     setv(to_object, ['preTunedModel'], getv(from_object, ['pre_tuned_model']))
 
   if getv(from_object, ['training_dataset']) is not None:
-    setv(
-        to_object,
-        ['tuningTask', 'trainingData'],
-        _TuningDataset_to_mldev(
-            getv(from_object, ['training_dataset']), to_object
-        ),
+    _TuningDataset_to_mldev(
+        getv(from_object, ['training_dataset']), to_object, root_object
     )
 
   if getv(from_object, ['config']) is not None:
-    _CreateTuningJobConfig_to_mldev(getv(from_object, ['config']), to_object)
+    _CreateTuningJobConfig_to_mldev(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -231,6 +378,7 @@ def _CreateTuningJobParametersPrivate_to_mldev(
 def _CreateTuningJobParametersPrivate_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['base_model']) is not None:
@@ -240,16 +388,14 @@ def _CreateTuningJobParametersPrivate_to_vertex(
     setv(to_object, ['preTunedModel'], getv(from_object, ['pre_tuned_model']))
 
   if getv(from_object, ['training_dataset']) is not None:
-    setv(
-        to_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
-        _TuningDataset_to_vertex(
-            getv(from_object, ['training_dataset']), to_object
-        ),
+    _TuningDataset_to_vertex(
+        getv(from_object, ['training_dataset']), to_object, root_object
     )
 
   if getv(from_object, ['config']) is not None:
-    _CreateTuningJobConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _CreateTuningJobConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -257,6 +403,7 @@ def _CreateTuningJobParametersPrivate_to_vertex(
 def _EvaluationConfig_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['metrics']) is not None:
@@ -267,7 +414,11 @@ def _EvaluationConfig_from_vertex(
 
   if getv(from_object, ['autoraterConfig']) is not None:
     setv(
-        to_object, ['autorater_config'], getv(from_object, ['autoraterConfig'])
+        to_object,
+        ['autorater_config'],
+        _AutoraterConfig_from_vertex(
+            getv(from_object, ['autoraterConfig']), to_object, root_object
+        ),
     )
 
   return to_object
@@ -276,6 +427,7 @@ def _EvaluationConfig_from_vertex(
 def _EvaluationConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['metrics']) is not None:
@@ -286,7 +438,240 @@ def _EvaluationConfig_to_vertex(
 
   if getv(from_object, ['autorater_config']) is not None:
     setv(
-        to_object, ['autoraterConfig'], getv(from_object, ['autorater_config'])
+        to_object,
+        ['autoraterConfig'],
+        _AutoraterConfig_to_vertex(
+            getv(from_object, ['autorater_config']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _GenerationConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['modelConfig']) is not None:
+    setv(
+        to_object,
+        ['model_selection_config'],
+        getv(from_object, ['modelConfig']),
+    )
+
+  if getv(from_object, ['responseJsonSchema']) is not None:
+    setv(
+        to_object,
+        ['response_json_schema'],
+        getv(from_object, ['responseJsonSchema']),
+    )
+
+  if getv(from_object, ['audioTimestamp']) is not None:
+    setv(to_object, ['audio_timestamp'], getv(from_object, ['audioTimestamp']))
+
+  if getv(from_object, ['candidateCount']) is not None:
+    setv(to_object, ['candidate_count'], getv(from_object, ['candidateCount']))
+
+  if getv(from_object, ['enableAffectiveDialog']) is not None:
+    setv(
+        to_object,
+        ['enable_affective_dialog'],
+        getv(from_object, ['enableAffectiveDialog']),
+    )
+
+  if getv(from_object, ['frequencyPenalty']) is not None:
+    setv(
+        to_object,
+        ['frequency_penalty'],
+        getv(from_object, ['frequencyPenalty']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['maxOutputTokens']) is not None:
+    setv(
+        to_object, ['max_output_tokens'], getv(from_object, ['maxOutputTokens'])
+    )
+
+  if getv(from_object, ['mediaResolution']) is not None:
+    setv(
+        to_object, ['media_resolution'], getv(from_object, ['mediaResolution'])
+    )
+
+  if getv(from_object, ['presencePenalty']) is not None:
+    setv(
+        to_object, ['presence_penalty'], getv(from_object, ['presencePenalty'])
+    )
+
+  if getv(from_object, ['responseLogprobs']) is not None:
+    setv(
+        to_object,
+        ['response_logprobs'],
+        getv(from_object, ['responseLogprobs']),
+    )
+
+  if getv(from_object, ['responseMimeType']) is not None:
+    setv(
+        to_object,
+        ['response_mime_type'],
+        getv(from_object, ['responseMimeType']),
+    )
+
+  if getv(from_object, ['responseModalities']) is not None:
+    setv(
+        to_object,
+        ['response_modalities'],
+        getv(from_object, ['responseModalities']),
+    )
+
+  if getv(from_object, ['responseSchema']) is not None:
+    setv(to_object, ['response_schema'], getv(from_object, ['responseSchema']))
+
+  if getv(from_object, ['routingConfig']) is not None:
+    setv(to_object, ['routing_config'], getv(from_object, ['routingConfig']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['speechConfig']) is not None:
+    setv(to_object, ['speech_config'], getv(from_object, ['speechConfig']))
+
+  if getv(from_object, ['stopSequences']) is not None:
+    setv(to_object, ['stop_sequences'], getv(from_object, ['stopSequences']))
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['thinkingConfig']) is not None:
+    setv(to_object, ['thinking_config'], getv(from_object, ['thinkingConfig']))
+
+  if getv(from_object, ['topK']) is not None:
+    setv(to_object, ['top_k'], getv(from_object, ['topK']))
+
+  if getv(from_object, ['topP']) is not None:
+    setv(to_object, ['top_p'], getv(from_object, ['topP']))
+
+  return to_object
+
+
+def _GenerationConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['model_selection_config']) is not None:
+    setv(
+        to_object,
+        ['modelConfig'],
+        getv(from_object, ['model_selection_config']),
+    )
+
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
+  if getv(from_object, ['audio_timestamp']) is not None:
+    setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
+
+  if getv(from_object, ['candidate_count']) is not None:
+    setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
+
+  if getv(from_object, ['enable_affective_dialog']) is not None:
+    setv(
+        to_object,
+        ['enableAffectiveDialog'],
+        getv(from_object, ['enable_affective_dialog']),
+    )
+
+  if getv(from_object, ['frequency_penalty']) is not None:
+    setv(
+        to_object,
+        ['frequencyPenalty'],
+        getv(from_object, ['frequency_penalty']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    setv(
+        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['presence_penalty']) is not None:
+    setv(
+        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+    )
+
+  if getv(from_object, ['response_logprobs']) is not None:
+    setv(
+        to_object,
+        ['responseLogprobs'],
+        getv(from_object, ['response_logprobs']),
+    )
+
+  if getv(from_object, ['response_mime_type']) is not None:
+    setv(
+        to_object,
+        ['responseMimeType'],
+        getv(from_object, ['response_mime_type']),
+    )
+
+  if getv(from_object, ['response_modalities']) is not None:
+    setv(
+        to_object,
+        ['responseModalities'],
+        getv(from_object, ['response_modalities']),
+    )
+
+  if getv(from_object, ['response_schema']) is not None:
+    setv(to_object, ['responseSchema'], getv(from_object, ['response_schema']))
+
+  if getv(from_object, ['routing_config']) is not None:
+    setv(to_object, ['routingConfig'], getv(from_object, ['routing_config']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['speech_config']) is not None:
+    setv(
+        to_object,
+        ['speechConfig'],
+        _SpeechConfig_to_vertex(
+            getv(from_object, ['speech_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['stop_sequences']) is not None:
+    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+
+  if getv(from_object, ['top_k']) is not None:
+    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+
+  if getv(from_object, ['top_p']) is not None:
+    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    raise ValueError(
+        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
     )
 
   return to_object
@@ -295,6 +680,7 @@ def _EvaluationConfig_to_vertex(
 def _GetTuningJobParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -306,6 +692,7 @@ def _GetTuningJobParameters_to_mldev(
 def _GetTuningJobParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -317,6 +704,7 @@ def _GetTuningJobParameters_to_vertex(
 def _ListTuningJobsConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -341,6 +729,7 @@ def _ListTuningJobsConfig_to_mldev(
 def _ListTuningJobsConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -365,10 +754,13 @@ def _ListTuningJobsConfig_to_vertex(
 def _ListTuningJobsParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    _ListTuningJobsConfig_to_mldev(getv(from_object, ['config']), to_object)
+    _ListTuningJobsConfig_to_mldev(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -376,10 +768,13 @@ def _ListTuningJobsParameters_to_mldev(
 def _ListTuningJobsParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    _ListTuningJobsConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _ListTuningJobsConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -387,6 +782,7 @@ def _ListTuningJobsParameters_to_vertex(
 def _ListTuningJobsResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -402,7 +798,7 @@ def _ListTuningJobsResponse_from_mldev(
         to_object,
         ['tuning_jobs'],
         [
-            _TuningJob_from_mldev(item, to_object)
+            _TuningJob_from_mldev(item, to_object, root_object)
             for item in getv(from_object, ['tunedModels'])
         ],
     )
@@ -413,6 +809,7 @@ def _ListTuningJobsResponse_from_mldev(
 def _ListTuningJobsResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -428,9 +825,29 @@ def _ListTuningJobsResponse_from_vertex(
         to_object,
         ['tuning_jobs'],
         [
-            _TuningJob_from_vertex(item, to_object)
+            _TuningJob_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['tuningJobs'])
         ],
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    raise ValueError(
+        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
     )
 
   return to_object
@@ -439,6 +856,7 @@ def _ListTuningJobsResponse_from_vertex(
 def _TunedModel_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -453,6 +871,7 @@ def _TunedModel_from_mldev(
 def _TuningDataset_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
@@ -476,21 +895,47 @@ def _TuningDataset_to_mldev(
 def _TuningDataset_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
-        getv(from_object, ['gcs_uri']),
-    )
 
-  if getv(from_object, ['vertex_dataset_resource']) is not None:
-    setv(
-        parent_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
-        getv(from_object, ['vertex_dataset_resource']),
-    )
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['gcs_uri']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'trainingDatasetUri'],
+          getv(from_object, ['gcs_uri']),
+      )
+
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['gcs_uri']) is not None:
+      setv(
+          parent_object,
+          ['preferenceOptimizationSpec', 'trainingDatasetUri'],
+          getv(from_object, ['gcs_uri']),
+      )
+
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['vertex_dataset_resource']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'trainingDatasetUri'],
+          getv(from_object, ['vertex_dataset_resource']),
+      )
+
+  elif discriminator == 'PREFERENCE_TUNING':
+    if getv(from_object, ['vertex_dataset_resource']) is not None:
+      setv(
+          parent_object,
+          ['preferenceOptimizationSpec', 'trainingDatasetUri'],
+          getv(from_object, ['vertex_dataset_resource']),
+      )
 
   if getv(from_object, ['examples']) is not None:
     raise ValueError('examples parameter is not supported in Vertex AI.')
@@ -501,6 +946,7 @@ def _TuningDataset_to_vertex(
 def _TuningJob_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -548,38 +994,10 @@ def _TuningJob_from_mldev(
     setv(
         to_object,
         ['tuned_model'],
-        _TunedModel_from_mldev(getv(from_object, ['_self']), to_object),
+        _TunedModel_from_mldev(
+            getv(from_object, ['_self']), to_object, root_object
+        ),
     )
-
-  if getv(from_object, ['customBaseModel']) is not None:
-    setv(
-        to_object, ['custom_base_model'], getv(from_object, ['customBaseModel'])
-    )
-
-  if getv(from_object, ['experiment']) is not None:
-    setv(to_object, ['experiment'], getv(from_object, ['experiment']))
-
-  if getv(from_object, ['labels']) is not None:
-    setv(to_object, ['labels'], getv(from_object, ['labels']))
-
-  if getv(from_object, ['outputUri']) is not None:
-    setv(to_object, ['output_uri'], getv(from_object, ['outputUri']))
-
-  if getv(from_object, ['pipelineJob']) is not None:
-    setv(to_object, ['pipeline_job'], getv(from_object, ['pipelineJob']))
-
-  if getv(from_object, ['serviceAccount']) is not None:
-    setv(to_object, ['service_account'], getv(from_object, ['serviceAccount']))
-
-  if getv(from_object, ['tunedModelDisplayName']) is not None:
-    setv(
-        to_object,
-        ['tuned_model_display_name'],
-        getv(from_object, ['tunedModelDisplayName']),
-    )
-
-  if getv(from_object, ['veoTuningSpec']) is not None:
-    setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
   return to_object
 
@@ -587,6 +1005,7 @@ def _TuningJob_from_mldev(
 def _TuningJob_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -638,6 +1057,13 @@ def _TuningJob_from_vertex(
         getv(from_object, ['supervisedTuningSpec']),
     )
 
+  if getv(from_object, ['preferenceOptimizationSpec']) is not None:
+    setv(
+        to_object,
+        ['preference_optimization_spec'],
+        getv(from_object, ['preferenceOptimizationSpec']),
+    )
+
   if getv(from_object, ['tuningDataStats']) is not None:
     setv(
         to_object, ['tuning_data_stats'], getv(from_object, ['tuningDataStats'])
@@ -658,7 +1084,7 @@ def _TuningJob_from_vertex(
         to_object,
         ['evaluation_config'],
         _EvaluationConfig_from_vertex(
-            getv(from_object, ['evaluationConfig']), to_object
+            getv(from_object, ['evaluationConfig']), to_object, root_object
         ),
     )
 
@@ -698,6 +1124,7 @@ def _TuningJob_from_vertex(
 def _TuningOperation_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -723,6 +1150,7 @@ def _TuningOperation_from_mldev(
 def _TuningValidationDataset_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
@@ -730,8 +1158,8 @@ def _TuningValidationDataset_to_vertex(
 
   if getv(from_object, ['vertex_dataset_resource']) is not None:
     setv(
-        parent_object,
-        ['supervisedTuningSpec', 'trainingDatasetUri'],
+        to_object,
+        ['validationDatasetUri'],
         getv(from_object, ['vertex_dataset_resource']),
     )
 
@@ -763,14 +1191,18 @@ class Tunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _GetTuningJobParameters_to_vertex(parameter_model)
+      request_dict = _GetTuningJobParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _GetTuningJobParameters_to_mldev(parameter_model)
+      request_dict = _GetTuningJobParameters_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -830,14 +1262,18 @@ class Tunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _ListTuningJobsParameters_to_vertex(parameter_model)
+      request_dict = _ListTuningJobsParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
     else:
-      request_dict = _ListTuningJobsParameters_to_mldev(parameter_model)
+      request_dict = _ListTuningJobsParameters_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tunedModels'.format_map(request_url_dict)
@@ -898,14 +1334,18 @@ class Tunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _CancelTuningJobParameters_to_vertex(parameter_model)
+      request_dict = _CancelTuningJobParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}:cancel'.format_map(request_url_dict)
       else:
         path = '{name}:cancel'
     else:
-      request_dict = _CancelTuningJobParameters_to_mldev(parameter_model)
+      request_dict = _CancelTuningJobParameters_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}:cancel'.format_map(request_url_dict)
@@ -939,7 +1379,7 @@ class Tunings(_api_module.BaseModule):
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
-    """Creates a supervised fine-tuning job and returns the TuningJob object.
+    """Creates a tuning job and returns the TuningJob object.
 
     Args:
       base_model: The name of the model to tune.
@@ -962,7 +1402,7 @@ class Tunings(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
-          parameter_model
+          parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1012,7 +1452,7 @@ class Tunings(_api_module.BaseModule):
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningOperation:
-    """Creates a supervised fine-tuning job and returns the TuningJob object.
+    """Creates a tuning job and returns the TuningJob object.
 
     Args:
       base_model: The name of the model to tune.
@@ -1036,7 +1476,9 @@ class Tunings(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateTuningJobParametersPrivate_to_mldev(parameter_model)
+      request_dict = _CreateTuningJobParametersPrivate_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tunedModels'.format_map(request_url_dict)
@@ -1214,14 +1656,18 @@ class AsyncTunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _GetTuningJobParameters_to_vertex(parameter_model)
+      request_dict = _GetTuningJobParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
       else:
         path = '{name}'
     else:
-      request_dict = _GetTuningJobParameters_to_mldev(parameter_model)
+      request_dict = _GetTuningJobParameters_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1283,14 +1729,18 @@ class AsyncTunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _ListTuningJobsParameters_to_vertex(parameter_model)
+      request_dict = _ListTuningJobsParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
     else:
-      request_dict = _ListTuningJobsParameters_to_mldev(parameter_model)
+      request_dict = _ListTuningJobsParameters_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tunedModels'.format_map(request_url_dict)
@@ -1353,14 +1803,18 @@ class AsyncTunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _CancelTuningJobParameters_to_vertex(parameter_model)
+      request_dict = _CancelTuningJobParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}:cancel'.format_map(request_url_dict)
       else:
         path = '{name}:cancel'
     else:
-      request_dict = _CancelTuningJobParameters_to_mldev(parameter_model)
+      request_dict = _CancelTuningJobParameters_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}:cancel'.format_map(request_url_dict)
@@ -1394,7 +1848,7 @@ class AsyncTunings(_api_module.BaseModule):
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningJob:
-    """Creates a supervised fine-tuning job and returns the TuningJob object.
+    """Creates a tuning job and returns the TuningJob object.
 
     Args:
       base_model: The name of the model to tune.
@@ -1417,7 +1871,7 @@ class AsyncTunings(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
-          parameter_model
+          parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -1467,7 +1921,7 @@ class AsyncTunings(_api_module.BaseModule):
       training_dataset: types.TuningDatasetOrDict,
       config: Optional[types.CreateTuningJobConfigOrDict] = None,
   ) -> types.TuningOperation:
-    """Creates a supervised fine-tuning job and returns the TuningJob object.
+    """Creates a tuning job and returns the TuningJob object.
 
     Args:
       base_model: The name of the model to tune.
@@ -1491,7 +1945,9 @@ class AsyncTunings(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateTuningJobParametersPrivate_to_mldev(parameter_model)
+      request_dict = _CreateTuningJobParametersPrivate_to_mldev(
+          parameter_model, None, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'tunedModels'.format_map(request_url_dict)

@@ -69,7 +69,7 @@ def test_pager(client):
 async def test_async_pager(client):
   batch_jobs = await client.aio.batches.list(config={'page_size': 10})
 
-  assert 'Content-Type' in batch_jobs.sdk_http_response.headers
+  assert 'content-type' in batch_jobs.sdk_http_response.headers
   assert batch_jobs.name == 'batch_jobs'
   assert batch_jobs.page_size == 10
   assert len(batch_jobs) <= 10

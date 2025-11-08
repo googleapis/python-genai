@@ -84,7 +84,13 @@ def test_retry_args_enabled_with_defaults():
   # Empty options means use the default values whereas None means no retries.
   args = api_client.retry_args(types.HttpRetryOptions())
 
-  assert set(args.keys()) == {'stop', 'retry', 'wait', 'reraise'}
+  assert set(args.keys()) == {
+      'stop',
+      'retry',
+      'wait',
+      'reraise',
+      'before_sleep',
+  }
 
   assert args['stop'].max_attempt_number == 5
 

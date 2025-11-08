@@ -16,6 +16,7 @@
 
 """Tests for batches.create() with inlined requests."""
 import base64
+import copy
 import datetime
 import os
 
@@ -25,10 +26,22 @@ from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 
-_GEMINI_MODEL = 'gemini-1.5-flash-002'
+_GEMINI_MODEL = 'gemini-2.5-flash-lite'
 _DISPLAY_NAME = 'test_batch'
 
-_MLDEV_GEMINI_MODEL = 'gemini-2.0-flash'
+_MLDEV_GEMINI_MODEL = 'gemini-2.5-flash'
+
+_SAFETY_SETTINGS = [
+    {
+        'category': 'HARM_CATEGORY_HATE_SPEECH',
+        'threshold': 'BLOCK_ONLY_HIGH',
+    },
+    {
+        'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        'threshold': 'BLOCK_LOW_AND_ABOVE',
+    },
+]
+
 _INLINED_REQUEST = {
     'contents': [{
         'parts': [{
@@ -36,6 +49,12 @@ _INLINED_REQUEST = {
         }],
         'role': 'user',
     }],
+    'metadata': {
+        'key': 'request-1',
+    },
+    'config': {
+        'safety_settings': _SAFETY_SETTINGS,
+    },
 }
 _INLINED_TEXT_REQUEST_UNION = {
     'contents': [{
@@ -53,10 +72,15 @@ _INLINED_TEXT_REQUEST_UNION = {
         },
     },
 }
-_INLINED_TEXT_REQUEST = _INLINED_TEXT_REQUEST_UNION.copy()
+_INLINED_TEXT_REQUEST = copy.deepcopy(_INLINED_TEXT_REQUEST_UNION)
 _INLINED_TEXT_REQUEST['config']['system_instruction'] = t.t_content(
     'I say high, you say low'
 )
+_INLINED_TEXT_REQUEST['config']['tools'] = [{'google_search': {}}]
+_INLINED_TEXT_REQUEST['config']['tool_config'] = {
+    'retrieval_config': {'lat_lng': {'latitude': 37.422, 'longitude': -122.084}}
+}
+
 _INLINED_IMAGE_REQUEST = {
     'contents': [{
         'parts': [
@@ -150,7 +174,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='not supported',
     ),
     pytest_helper.TestTableItem(
-        name='test_with_inlined_request_system_instruction',
+        name='test_with_inlined_request_config',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
             src={'inlined_requests': [_INLINED_TEXT_REQUEST]},
