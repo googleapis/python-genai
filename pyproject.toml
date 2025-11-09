@@ -55,3 +55,7 @@ plugins = ["pydantic.mypy"]
 # 'import-not-found' and 'import-untyped' are environment specific
 disable_error_code = ["import-not-found", "import-untyped", "unused-ignore"]
 strict = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
