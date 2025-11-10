@@ -21,7 +21,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_video_audio_uri_with_media_resolution',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash',
+            model='gemini-2.5-flash',
             contents=[
                 types.Content(
                     role='user',
@@ -79,7 +79,7 @@ def test_low_media_resolution(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     file = client.files.upload(file='tests/data/google.png')
     response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-2.5-flash',
         contents=[file, 'Describe the image.'],
         config=types.GenerateContentConfig(
             media_resolution='MEDIA_RESOLUTION_LOW',

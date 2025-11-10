@@ -57,7 +57,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_image_uri',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content('What is this image about?'),
                 t.t_content(
@@ -82,7 +82,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_external_file_uri',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content('What is this image about?'),
                 t.t_content(
@@ -110,7 +110,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'Name of the file is hardcoded, only supporting replay mode.'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content('What is this image about?'),
                 t.t_content(
@@ -120,7 +120,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/az606f58k7zj'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/864z7ft4m14h'
                                     ),
                                     'mime_type': 'image/png',
                                 }
@@ -138,7 +138,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'Name of the file is hardcoded, only supporting replay mode.'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content('What is this image about?'),
                 t.t_content(
@@ -148,7 +148,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/wma71fsppgfp'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/22xab9a8jp0v'
                                     ),
                                     'mime_type': 'image/jpeg',
                                 }
@@ -166,7 +166,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'Name of the file is hardcoded, only supporting replay mode.'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content(
                     'Summarize the pdf in concise and professional tone.'
@@ -178,7 +178,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/r6ksskgddyxb'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/9tnpjy0re13a'
                                     ),
                                     'mime_type': 'application/pdf',
                                 }
@@ -196,7 +196,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'Name of the file is hardcoded, only supporting replay mode.'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content(
                     """
@@ -211,7 +211,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/57w3vpfomj71'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/i2ojhd8z99uk'
                                     ),
                                     'mime_type': 'video/mp4',
                                 }
@@ -229,7 +229,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'Name of the file is hardcoded, only supporting replay mode.'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content(
                     """
@@ -245,9 +245,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                             types.PartDict({
                                 'file_data': {
                                     'file_uri': (
-                                        'https://generativelanguage.googleapis.com/v1beta/files/wkvof7yeqitl'
+                                        'https://generativelanguage.googleapis.com/v1beta/files/0o9iyit198g1'
                                     ),
-                                    'mime_type': 'audio/mpeg',
+                                    'mime_type': 'audio/mp4',
                                 }
                             })
                         ],
@@ -263,7 +263,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'Name of the file is hardcoded, only supporting replay mode.'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 types.Content(
                     role='user',
@@ -271,7 +271,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                         types.Part(text='summarize this video'),
                         types.Part(
                             file_data=types.FileData(
-                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/57w3vpfomj71',
+                                file_uri='https://generativelanguage.googleapis.com/v1beta/files/fq9r5ftyqrho',
                                 mime_type= 'video/mp4',
                             ),
                             video_metadata=types.VideoMetadata(
@@ -292,7 +292,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'Name of the file is hardcoded, only supporting replay mode.'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content('what is the video about?'),
                 t.t_content(
@@ -322,7 +322,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_image_base64',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 t.t_content('What is this image about?'),
                 t.t_content(
@@ -343,7 +343,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_none_part',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=[],
         ),
         exception_if_mldev='contents',
@@ -353,7 +353,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_dict_content',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=t.t_contents(
                 types.ContentDict(
                     {'role': 'user', 'parts': [{'text': 'what is your name?'}]}
@@ -364,7 +364,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_part_list',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=['What is your name?'],
         ),
         has_union=True,
@@ -380,25 +380,24 @@ pytest_plugins = ('pytest_asyncio',)
 
 
 def test_empty_part(client):
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
-    client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents=t.t_contents(['']),
-    )
+  client.models.generate_content(
+      model='gemini-2.5-flash',
+      contents=t.t_contents(['']),
+  )
 
 
 def test_none_list_part(client):
   # pydantic will raise ValidationError
   with pytest.raises(ValidationError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[None],
     )
 
 
 def test_image_file(client):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           'What is this image about?',
           {'inline_data': {'data': image_bytes, 'mimeType': 'image/png'}},
@@ -408,7 +407,7 @@ def test_image_file(client):
 
 def test_image_jpeg(client, image_jpeg):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=['What is this image about?', image_jpeg],
   )
 
@@ -417,7 +416,7 @@ def test_from_uri(client):
   # gs://generativeai-downloads/images/scones.jpg isn't supported in MLDev
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             'What is this image about?',
             types.Part.from_uri(
@@ -430,7 +429,7 @@ def test_from_uri(client):
 
 def test_user_content_text(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=types.UserContent(parts='why is the sky blue?'),
   )
   assert response.text
@@ -439,7 +438,7 @@ def test_user_content_text(client):
 def test_user_content_part(client):
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=types.UserContent(
             parts=[
                 'what is this image about?',
@@ -456,7 +455,7 @@ def test_user_content_part(client):
 def test_model_content_text(client):
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             types.UserContent(
                 parts=[
@@ -549,7 +548,7 @@ def test_from_uri_inferred_mime_type(client):
   # gs://generativeai-downloads/images/scones.jpg isn't supported in MLDev
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             'What is this image about?',
             types.Part.from_uri(
@@ -563,7 +562,7 @@ def test_from_uri_invalid_inferred_mime_type(client):
   # Throws ValueError if mime_type cannot be inferred.
   with pytest.raises(ValueError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             'What is this image about?',
             types.Part.from_uri(
@@ -576,7 +575,7 @@ def test_from_uri_invalid_inferred_mime_type(client):
 def test_audio_uri(client):
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             """
         Provide a summary for the audio in the beginning of the transcript.
@@ -599,7 +598,7 @@ def test_audio_uri(client):
 def test_pdf_uri(client):
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             'summarize the pdf in concise and professional tone',
             types.Part.from_uri(
@@ -618,7 +617,7 @@ def test_pdf_uri(client):
 def test_video_uri(client):
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             """
             summarize the video in concise and professional tone.
@@ -640,7 +639,7 @@ def test_video_uri(client):
 def test_video_audio_uri(client):
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             """
             Is the audio related to the video?
@@ -669,11 +668,11 @@ def test_video_audio_uri(client):
 def test_file(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     file = types.File(
-        uri='https://generativelanguage.googleapis.com/v1beta/files/ly6p67c47xgq',
+        uri='https://generativelanguage.googleapis.com/v1beta/files/8q6j6weg80ey',
         mime_type='text/plain',
     )
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             'Summarize this file',
             file,
@@ -685,10 +684,10 @@ def test_file_error(client):
   # missing mime_type
   with pytest.raises(ValueError):
     file = types.File(
-        uri='https://generativelanguage.googleapis.com/v1beta/files/cmpqbqoptyaa',
+        uri='https://generativelanguage.googleapis.com/v1beta/files/8q6j6weg80ey',
     )
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             'Summarize this file',
             file,
@@ -698,14 +697,14 @@ def test_file_error(client):
 
 def test_from_text(client):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[types.Part.from_text(text='What is your name?')],
   )
 
 
 def test_from_bytes_image(client):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           'What is this image about?',
           types.Part.from_bytes(data=image_bytes, mime_type='image/png'),
@@ -715,7 +714,7 @@ def test_from_bytes_image(client):
 
 def test_from_bytes_image_dict(client):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           {'text': 'What is this image about?'},
           {'inline_data': {'data': image_bytes, 'mimeType': 'image/png'}},
@@ -726,7 +725,7 @@ def test_from_bytes_image_dict(client):
 def test_from_bytes_image_none(client):
   with pytest.raises(errors.ClientError) as e:
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=[
             {'text': 'What is this image about?'},
             {'inline_data': {'data': None, 'mimeType': 'image/png'}},
@@ -737,7 +736,7 @@ def test_from_bytes_image_none(client):
 
 def test_from_bytes_video(client):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           'What is this video about?',
           types.Part.from_bytes(data=video_bytes, mime_type='video/mp4'),
@@ -747,7 +746,7 @@ def test_from_bytes_video(client):
 
 def test_from_bytes_audio(client):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           'What is this audio about?',
           types.Part.from_bytes(data=audio_bytes, mime_type='audio/mpeg'),
@@ -757,7 +756,7 @@ def test_from_bytes_audio(client):
 
 def test_from_bytes_pdf(client):
   client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           'What is this pdf about?',
           types.Part.from_bytes(data=pdf_bytes, mime_type='application/pdf'),
@@ -773,7 +772,7 @@ def test_from_function_call_response(client):
       name='get_weather', response={'weather': 'sunny'}
   )
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           'what is the weather in Boston?',
           function_call,
@@ -788,7 +787,7 @@ def test_from_function_call_response(client):
 @pytest.mark.asyncio
 async def test_image_base64_stream_async(client):
   async for part in await client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash',
+      model='gemini-2.5-flash',
       contents=[
           'What is this image about?',
           {'inline_data': {'data': image_string, 'mimeType': 'image/png'}},
