@@ -4536,7 +4536,12 @@ class Models(_api_module.BaseModule):
       else:
         path = '{models_url}'
     query_params = request_dict.get('_query')
-    if query_params:
+    if query_params and query_params.get('filter'):
+      query_param_filter = query_params.pop('filter')
+      path = f'{path}?filter={query_param_filter}'
+      if query_params:
+        path += f'&{urlencode(query_params)}'
+    elif query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
@@ -6376,7 +6381,12 @@ class AsyncModels(_api_module.BaseModule):
       else:
         path = '{models_url}'
     query_params = request_dict.get('_query')
-    if query_params:
+    if query_params and query_params.get('filter'):
+      query_param_filter = query_params.pop('filter')
+      path = f'{path}?filter={query_param_filter}'
+      if query_params:
+        path += f'&{urlencode(query_params)}'
+    elif query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
