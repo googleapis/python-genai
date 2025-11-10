@@ -37,7 +37,7 @@ pytest_plugins = ("pytest_asyncio",)
 def test_tune_until_success(client):
   if client._api_client.vertexai:
     job = client.tunings.tune(
-        base_model="gemini-2.0-flash-001",
+        base_model="gemini-2.5-flash-lite",
         training_dataset=genai_types.TuningDataset(
             gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl",
         ),
