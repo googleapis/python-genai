@@ -37,14 +37,12 @@ import time
 from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
-import warnings
 
 import anyio
 import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
-from google.auth.transport.requests import Request
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -197,6 +195,7 @@ def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
 
 
 def refresh_auth(credentials: Credentials) -> Credentials:
+  from google.auth.transport.requests import Request
   credentials.refresh(Request())  # type: ignore[no-untyped-call]
   return credentials
 
