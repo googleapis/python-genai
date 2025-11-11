@@ -13,23 +13,5 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
 
-from . import version
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-  from .client import Client
-  from . import types
-
-__version__ = version.__version__
-
-__all__ = ['Client']
-
-def __getattr__(name: str):
-  if name == 'Client':
-    from .client import Client
-
-    return Client
-  raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+"""Tests for the Google GenAI SDK's import behavior."""

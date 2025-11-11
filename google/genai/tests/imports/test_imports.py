@@ -13,23 +13,16 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+import pytest
 
-from . import version
+def test_import_client():
+    from ... import Client
+    assert Client is not None
 
-from typing import TYPE_CHECKING
+def test_import_invalid_client():
+    with pytest.raises(ImportError):
+        from ... import foo
 
-if TYPE_CHECKING:
-  from .client import Client
-  from . import types
-
-__version__ = version.__version__
-
-__all__ = ['Client']
-
-def __getattr__(name: str):
-  if name == 'Client':
-    from .client import Client
-
-    return Client
-  raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+def test_import_types():
+    from ... import types
+    assert types is not None
