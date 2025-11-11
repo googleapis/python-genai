@@ -1346,9 +1346,21 @@ class BaseApiClient:
 
     session_response = self._request(http_request, http_options, stream=True)
     for chunk in session_response.segments():
-      yield SdkHttpResponse(
-          headers=session_response.headers, body=json.dumps(chunk)
-      )
+      chunk_dump = json.dumps(chunk)
+      try:
+        if chunk_dump.startswith('{"error":'):
+          chunk_json = json.loads(chunk_dump)
+          errors.APIError.raise_error(
+              chunk_json.get('error', {}).get('code'),
+              chunk_json,
+              session_response,
+          )
+      except json.decoder.JSONDecodeError:
+        logger.debug(
+            'Failed to decode chunk that contains an error: %s' % chunk_dump
+        )
+        pass
+      yield SdkHttpResponse(headers=session_response.headers, body=chunk_dump)
 
   async def async_request(
       self,
@@ -1382,7 +1394,21 @@ class BaseApiClient:
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
-        yield SdkHttpResponse(headers=response.headers, body=json.dumps(chunk))
+        chunk_dump = json.dumps(chunk)
+        try:
+          if chunk_dump.startswith('{"error":'):
+            chunk_json = json.loads(chunk_dump)
+            await errors.APIError.raise_error_async(
+                chunk_json.get('error', {}).get('code'),
+                chunk_json,
+                response,
+            )
+        except json.decoder.JSONDecodeError:
+          logger.debug(
+              'Failed to decode chunk that contains an error: %s' % chunk_dump
+          )
+          pass
+        yield SdkHttpResponse(headers=response.headers, body=chunk_dump)
 
     return async_generator()  # type: ignore[no-untyped-call]
 
