@@ -6311,7 +6311,7 @@ class GenerateContentResponse(_common.BaseModel):
     non_text_parts = []
     for part in self.candidates[0].content.parts:
       for field_name, field_value in part.model_dump(
-          exclude={'text', 'thought'}
+          exclude={'text', 'thought', 'thought_signature'}
       ).items():
         if field_value is not None:
           non_text_parts.append(field_name)
