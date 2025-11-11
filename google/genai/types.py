@@ -114,6 +114,8 @@ else:
     HttpxAsyncClient = None
 
 logger = logging.getLogger('google_genai.types')
+_from_json_schema_warning_logged = False
+_json_schema_warning_logged = False
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
 
@@ -2026,7 +2028,9 @@ class Schema(_common.BaseModel):
     Schema](https://json-schema.org/)
     """
 
-    info_message = """
+    global _json_schema_warning_logged
+    if not _json_schema_warning_logged:
+      info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are
 ignored.
 Json Schema is now supported natively by both Vertex AI and Gemini API. Users
@@ -2041,7 +2045,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
    FunctionDeclaration.response_json_schema, which accepts [JSON
    Schema](https://json-schema.org/)
 """
-    logger.info(info_message)
+      logger.info(info_message)
+      _json_schema_warning_logged = True
+
     json_schema_field_names: set[str] = set(JSONSchema.model_fields.keys())
     schema_field_names: tuple[str] = (
         'items',
@@ -2148,7 +2154,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
            raise_error_on_unsupported_field is set to True. Or if the JSONSchema
            is not compatible with the specified API option.
     """
-    info_message = """
+    global _from_json_schema_warning_logged
+    if not _from_json_schema_warning_logged:
+      info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are ignored.
 Json Schema is now supported natively by both Vertex AI and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
@@ -2162,7 +2170,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
    FunctionDeclaration.response_json_schema, which accepts [JSON
    Schema](https://json-schema.org/)
 """
-    logger.info(info_message)
+      logger.info(info_message)
+      _from_json_schema_warning_logged = True
+
     google_schema_field_names: set[str] = set(cls.model_fields.keys())
     schema_field_names: tuple[str, ...] = (
         'items',

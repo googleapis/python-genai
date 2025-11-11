@@ -14,7 +14,7 @@
 #
 
 
-
+import logging
 import pydantic
 
 from ... import types
@@ -435,3 +435,34 @@ def test_complex_any_of_conversion():
       'required',
   ]
 
+
+def test_json_schema_logs_only_once(caplog):
+  """Test that the info message is logged only once across multiple json_schema calls."""
+  from ... import types as types_module
+
+  types_module._json_schema_warning_logged = False
+
+  caplog.set_level(logging.INFO, logger='google_genai.types')
+
+  schema1 = types_module.Schema(type='STRING')
+  json_schema1 = schema1.json_schema
+
+  assert len(caplog.records) == 1
+  assert 'Json Schema is now supported natively' in caplog.text
+  assert 'response_json_schema' in caplog.text
+
+  schema2 = types_module.Schema(type='NUMBER')
+  json_schema2 = schema2.json_schema
+
+  assert len(caplog.records) == 1
+
+  schema3 = types_module.Schema(type='OBJECT')
+  json_schema3 = schema3.json_schema
+
+  assert len(caplog.records) == 1
+
+  assert json_schema1.type == types_module.JSONSchemaType('string')
+  assert json_schema2.type == types_module.JSONSchemaType('number')
+  assert json_schema3.type == types_module.JSONSchemaType('object')
+
+  types_module._json_schema_warning_logged = False
