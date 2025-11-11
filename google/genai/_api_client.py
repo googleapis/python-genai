@@ -629,7 +629,7 @@ class BaseApiClient:
         self.api_key = None
 
       if not self.location and not self.api_key:
-          self.location = 'global'
+        self.location = 'global'
 
       self.custom_base_url = (
           validated_http_options.base_url
@@ -727,10 +727,57 @@ class BaseApiClient:
 
   async def _get_aiohttp_session(self) -> 'aiohttp.ClientSession':
     """Returns the aiohttp client session."""
-    if self._aiohttp_session is None or self._aiohttp_session.closed:
+    new_session_per_request = False
+    if (
+        self._http_options
+        and self._http_options.async_client_args
+        and 'new_session_per_request' in self._http_options.async_client_args
+    ):
+      # Experimental, may result in memory leaks.
+      new_session_per_request = True
+
+    if (
+        self._aiohttp_session is None
+        or self._aiohttp_session.closed
+        or new_session_per_request
+    ):
+      if new_session_per_request and self._aiohttp_session is not None:
+        # If new_session_per_request is True, close the session if exists.
+        asyncio.get_running_loop().create_task(self._aiohttp_session.close())
+
       # Initialize the aiohttp client session if it's not set up or closed.
-      self._aiohttp_session = aiohttp.ClientSession(
-          connector=aiohttp.TCPConnector(limit=0),
+
+      class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+
+        def __del__(self, _warn: Any = warnings) -> None:
+          if not self.closed:
+            context = {
+                'client_session': self,
+                'message': 'Unclosed client session',
+            }
+            if self._source_traceback is not None:
+              context['source_traceback'] = self._source_traceback
+            # Remove this self._loop.call_exception_handler(context)
+
+      class AiohttpTCPConnector(aiohttp.TCPConnector):  # type: ignore[misc]
+
+        def __del__(self, _warn: Any = warnings) -> None:
+          if self._closed:
+            return
+          if not self._conns:
+            return
+          conns = [repr(c) for c in self._conns.values()]
+          self._close()
+          context = {
+              'connector': self,
+              'connections': conns,
+              'message': 'Unclosed connector',
+          }
+          if self._source_traceback is not None:
+            context['source_traceback'] = self._source_traceback
+          # Remove this self._loop.call_exception_handler(context)
+      self._aiohttp_session = AiohttpClientSession(
+          connector=AiohttpTCPConnector(limit=0),
           trust_env=True,
           read_bufsize=READ_BUFFER_SIZE,
       )
