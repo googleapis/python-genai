@@ -776,3 +776,15 @@ def recursive_dict_update(
       target_dict[key] = value
     else:
       target_dict[key] = value
+
+
+def convert_uri_to_string(obj: Any) -> Any:
+  if isinstance(obj, dict):
+    return {
+        k: convert_uri_to_string(v) for k, v in obj.items()
+    }
+  elif isinstance(obj, list):
+    return [convert_uri_to_string(i) for i in obj]
+  elif type(obj).__name__ == 'AnyUrl':
+    return str(obj)
+  return obj

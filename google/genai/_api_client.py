@@ -1111,11 +1111,19 @@ class BaseApiClient:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
+      data = json.dumps(
+          _common.convert_uri_to_string(http_request.data)
+          if http_request.data
+          else None
+      )
     else:
       if http_request.data:
         if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
+          data = json.dumps(
+              _common.convert_uri_to_string(http_request.data)
+              if http_request.data
+              else None
+          )
         else:
           data = http_request.data
 
@@ -1179,11 +1187,11 @@ class BaseApiClient:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
+      data = json.dumps(_common.convert_uri_to_string(http_request.data) if http_request.data else None)
     else:
       if http_request.data:
         if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
+          data = json.dumps(_common.convert_uri_to_string(http_request.data) if http_request.data else None)
         else:
           data = http_request.data
 
