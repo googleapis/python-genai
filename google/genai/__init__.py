@@ -15,11 +15,35 @@
 
 """Google Gen AI SDK"""
 
-from . import types
 from . import version
-from .client import Client
+import importlib
 
+from typing import Any
+from typing import TYPE_CHECKING
+
+# The TYPE_CHECKING block is needed to keep auto-completion working
+if TYPE_CHECKING:
+  from .client import Client
+  from . import types
 
 __version__ = version.__version__
 
 __all__ = ['Client']
+
+
+def __getattr__(name: str) -> Any:
+  if name == 'Client':
+    from .client import Client
+
+    return Client
+  try:
+    # Import sub-modules relative to the package
+    return importlib.import_module(f'.{name}', __package__)
+  except ImportError:
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
+
+# Given the lazy import above, __dir__() is needed to show the public API. This
+# keeps mocking with autoscope working in unit tests.
+def __dir__() -> list[str]:
+    return list(globals().keys()) + ['Client', 'types']
