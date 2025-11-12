@@ -28,7 +28,6 @@ from . import _extra_utils
 from . import _mcp_utils
 from . import _transformers as t
 from . import errors
-from . import files
 from . import types
 from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
@@ -3738,18 +3737,21 @@ def _ensure_file_active(
                 time.sleep(retry_delay_seconds)
 
                 try:
-                    # Get the latest file state
-                    response = api_client.call_api(
-                        method="GET",
-                        url=f'files/{file_obj.name.split("/")[-1]}',
-                        api_client_type="mldev",
+                    # Get the latest file state using the API client's request method
+                    file_id = file_obj.name.split("/")[-1]
+                    response = api_client.request(
+                        "GET",
+                        f"files/{file_id}",
+                        None,
+                        None,
                     )
 
                     # Parse the response
+                    response_dict = {} if not response.body else json.loads(response.body)
+                    
+                    # Create a refreshed File object from the response
                     refreshed_file = types.File._from_response(
-                        response=files._File_from_mldev(
-                            api_client, response.json["file"]
-                        ),
+                        response=response_dict,
                         kwargs={},
                     )
 
@@ -3784,7 +3786,7 @@ def _ensure_file_active(
 def _process_contents_for_generation(
     api_client: BaseApiClient,
     contents: Union[types.ContentListUnion, types.ContentListUnionDict],
-) -> list:
+) -> list[types.Content]:
     """Process the contents, ensuring all File objects are in the ACTIVE state.
 
     This is an internal function used by generate_content and similar methods.
@@ -3800,37 +3802,22 @@ def _process_contents_for_generation(
       The processed contents.
     """
     # First, transform the contents into a standard format
-    processed_contents = t.t_contents(api_client, contents)
+    processed_contents = t.t_contents(contents)
 
     # Process any file objects within the contents to ensure they're in ACTIVE state
-    def process_file_in_item(item):
+    def process_file_in_item(item: types.Content) -> types.Content:
         """Process a content item, ensuring any file objects are in ACTIVE state."""
-        if isinstance(item, types.File):
-            return _ensure_file_active(api_client, item)
-        elif isinstance(item, types.Content):
+        if isinstance(item, types.Content):
             if hasattr(item, "parts") and item.parts:
                 for i, part in enumerate(item.parts):
-                    if isinstance(part, types.File):
-                        item.parts[i] = _ensure_file_active(api_client, part)
-                    elif (
-                        hasattr(part, "file_data")
-                        and part.file_data
-                        and hasattr(part.file_data, "file_object")
-                    ):
-                        part.file_data.file_object = _ensure_file_active(
-                            api_client, part.file_data.file_object
-                        )
-        elif isinstance(item, types.Part):
-            if isinstance(item.file_data, types.File):
-                return _ensure_file_active(api_client, item.file_data)
-            elif (
-                hasattr(item, "file_data")
-                and item.file_data
-                and hasattr(item.file_data, "file_object")
-            ):
-                item.file_data.file_object = _ensure_file_active(
-                    api_client, item.file_data.file_object
-                )
+                    # Check if the part has file_data with a File object
+                    if hasattr(part, "file_data") and part.file_data:
+                        if isinstance(part.file_data, types.File):
+                            # Ensure the file is in ACTIVE state
+                            part.file_data = _ensure_file_active(api_client, part.file_data)
+                        elif hasattr(part.file_data, "file_uri"):
+                            # Skip files referenced by URI (they don't need processing)
+                            pass
         return item
 
     # Apply the processing to all items in the contents

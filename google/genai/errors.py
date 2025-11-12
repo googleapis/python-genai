@@ -217,7 +217,7 @@ class FileProcessingError(Exception):
   required for using it in content generation requests.
   """
 
-  def __init__(self, message, response_json=None):
+  def __init__(self, message: str, response_json: Optional[dict[str, Any]] = None) -> None:
     self.message = message
     self.details = response_json or {}
     super().__init__(message)
