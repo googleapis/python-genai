@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.50.0](https://github.com/googleapis/python-genai/compare/v1.49.0...v1.50.0) (2025-11-12)
+
+
+### Features
+
+* Add EvaluationConfig support to tune() in Java ([686ec87](https://github.com/googleapis/python-genai/commit/686ec87f60d94ec2222606e3b9e09d4617bd9a78))
+* Use pytest-xdist for test parallelization ([6ff82fc](https://github.com/googleapis/python-genai/commit/6ff82fca9ed90992c15cfb3affdbb65dd5d5f4d1))
+
+
+### Bug Fixes
+
+* Add missing fields to the model types ([4b855e6](https://github.com/googleapis/python-genai/commit/4b855e621525f2bdd7cdd00e3a98edbdd173997b))
+* Don't generate warnings from response.text property because of thought_signature. ([dd9360d](https://github.com/googleapis/python-genai/commit/dd9360d21d0a979ddd7acf994a0aa19bec794182))
+* Fix base_steps parameter for recontext_image ([d94077b](https://github.com/googleapis/python-genai/commit/d94077bdeeddf012eae8134a341c915be5fe24ce))
+* Fix file_search_stores.documents pagination ([8d40d48](https://github.com/googleapis/python-genai/commit/8d40d48d9a048313ec97b60a8941e7b536721d6e))
+* Fix models.list() filter parameter ([7fa1e41](https://github.com/googleapis/python-genai/commit/7fa1e41580052822c90d9b6ba99c66674ab5851a))
+* Handle SSE error message types properly in streaming ([72afa50](https://github.com/googleapis/python-genai/commit/72afa50eb2c4d960a4f6b55909205d0739fde05a))
+* Roll back a breaking change to the import system ([8674003](https://github.com/googleapis/python-genai/commit/86740033fb9c93b822b33100324f6c2ac8ad1f7e))
+
+
+### Documentation
+
+* Log Schema.json_schema and Schema.from_json_schema only once ([517300c](https://github.com/googleapis/python-genai/commit/517300caabd58268f06f4091f0cbbb52c2bc889e))
+* Regenerate docs for 1.49.0 ([74b680a](https://github.com/googleapis/python-genai/commit/74b680adfdf74b6e807d50d8595f092cd522a6f8))
+
 ## [1.49.0](https://github.com/googleapis/python-genai/compare/v1.48.0...v1.49.0) (2025-11-05)
 
 
