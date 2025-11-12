@@ -10195,7 +10195,7 @@ class AutoraterConfig(_common.BaseModel):
   endpoint to use.
 
   Publisher model format:
-  `projects/{project}/locations/{location}/publishers/*/models/*`
+  `projects/{project}/locations/{location}/publishers/{publisher}/models/{model}`
 
   Tuned model endpoint format:
   `projects/{project}/locations/{location}/endpoints/{endpoint}`""",
@@ -10227,7 +10227,7 @@ class AutoraterConfigDict(TypedDict, total=False):
   endpoint to use.
 
   Publisher model format:
-  `projects/{project}/locations/{location}/publishers/*/models/*`
+  `projects/{project}/locations/{location}/publishers/{publisher}/models/{model}`
 
   Tuned model endpoint format:
   `projects/{project}/locations/{location}/endpoints/{endpoint}`"""
@@ -11330,7 +11330,7 @@ class TuningJob(_common.BaseModel):
       description="""Tuning Spec for open sourced and third party Partner models.""",
   )
   evaluation_config: Optional[EvaluationConfig] = Field(
-      default=None, description=""""""
+      default=None, description="""Evaluation config for the tuning job."""
   )
   custom_base_model: Optional[str] = Field(
       default=None,
@@ -11430,7 +11430,7 @@ class TuningJobDict(TypedDict, total=False):
   """Tuning Spec for open sourced and third party Partner models."""
 
   evaluation_config: Optional[EvaluationConfigDict]
-  """"""
+  """Evaluation config for the tuning job."""
 
   custom_base_model: Optional[str]
   """Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models."""
