@@ -2920,7 +2920,7 @@ def _RecontextImageConfig_to_vertex(
   if getv(from_object, ['base_steps']) is not None:
     setv(
         parent_object,
-        ['parameters', 'editConfig', 'baseSteps'],
+        ['parameters', 'baseSteps'],
         getv(from_object, ['base_steps']),
     )
 
