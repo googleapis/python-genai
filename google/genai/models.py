@@ -3747,8 +3747,10 @@ def _ensure_file_active(
                     )
 
                     # Parse the response
-                    response_dict = {} if not response.body else json.loads(response.body)
-                    
+                    response_dict = (
+                        {} if not response.body else json.loads(response.body)
+                    )
+
                     # Create a refreshed File object from the response
                     refreshed_file = types.File._from_response(
                         response=response_dict,
@@ -3814,7 +3816,9 @@ def _process_contents_for_generation(
                     if hasattr(part, "file_data") and part.file_data:
                         if isinstance(part.file_data, types.File):
                             # Ensure the file is in ACTIVE state
-                            part.file_data = _ensure_file_active(api_client, part.file_data)
+                            part.file_data = _ensure_file_active(
+                                api_client, part.file_data
+                            )
                         elif hasattr(part.file_data, "file_uri"):
                             # Skip files referenced by URI (they don't need processing)
                             pass
