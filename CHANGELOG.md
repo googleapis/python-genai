@@ -5,7 +5,6 @@
 
 ### Features
 
-* Add EvaluationConfig support to tune() in Java ([686ec87](https://github.com/googleapis/python-genai/commit/686ec87f60d94ec2222606e3b9e09d4617bd9a78))
 * Use pytest-xdist for test parallelization ([6ff82fc](https://github.com/googleapis/python-genai/commit/6ff82fca9ed90992c15cfb3affdbb65dd5d5f4d1))
 
 
