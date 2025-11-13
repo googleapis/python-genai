@@ -25,6 +25,7 @@ from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
 import google.auth
+import google.auth.transport.requests
 import pydantic
 from websockets import ConnectionClosed
 
