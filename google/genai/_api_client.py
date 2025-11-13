@@ -1836,12 +1836,17 @@ class BaseApiClient:
 
   def close(self) -> None:
     """Closes the API client."""
-    self._httpx_client.close()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_client:
+      self._httpx_client.close()
 
   async def aclose(self) -> None:
     """Closes the API async client."""
-
-    await self._async_httpx_client.aclose()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_async_client:
+      await self._async_httpx_client.aclose()
     if self._aiohttp_session:
       await self._aiohttp_session.close()
 
@@ -1853,17 +1858,12 @@ class BaseApiClient:
     """
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
       if not self._http_options.httpx_client:
         self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
-      if not self._http_options.httpx_async_client:
-        asyncio.get_running_loop().create_task(self.aclose())
+      asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
