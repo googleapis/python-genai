@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.50.1](https://github.com/googleapis/python-genai/compare/v1.50.0...v1.50.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* Do not use ADC if passing a base_url, no project, no location ([a00b67a](https://github.com/googleapis/python-genai/commit/a00b67a9618e81b0aa8abde9ddc68388869f8445))
+* Ensure the custom httpx client and async client won't be closed automatically ([9a9fa3c](https://github.com/googleapis/python-genai/commit/9a9fa3c95ee872efeee8ede411bd2946f7351100))
+
 ## [1.50.0](https://github.com/googleapis/python-genai/compare/v1.49.0...v1.50.0) (2025-11-12)
 
 
