@@ -628,14 +628,14 @@ class BaseApiClient:
         )
         self.api_key = None
 
-      if not self.location and not self.api_key:
-          self.location = 'global'
-
       self.custom_base_url = (
           validated_http_options.base_url
           if validated_http_options.base_url
           else None
       )
+
+      if not self.location and not self.api_key and not self.custom_base_url:
+          self.location = 'global'
 
       # Skip fetching project from ADC if base url is provided in http options.
       if (

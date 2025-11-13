@@ -372,7 +372,8 @@ def test_vertexai_constructor_empty_base_url_override(monkeypatch):
   monkeypatch.setattr(google.auth, "default", mock_auth_default)
   # Including a base_url override skips the check for having proj/location or
   # api_key set.
-  Client(vertexai=True, http_options={"base_url": "https://override.com/"})
+  client = Client(vertexai=True, http_options={"base_url": "https://override.com/"})
+  assert client.models._api_client.location is None
 
 
 def test_invalid_mldev_constructor_empty(monkeypatch):
