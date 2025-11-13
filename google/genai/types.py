@@ -1070,6 +1070,11 @@ class FunctionResponseBlob(_common.BaseModel):
   data: Optional[bytes] = Field(
       default=None, description="""Required. Inline media bytes."""
   )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the blob.
+      Used to provide a label or filename to distinguish blobs.""",
+  )
 
 
 class FunctionResponseBlobDict(TypedDict, total=False):
@@ -1084,6 +1089,10 @@ class FunctionResponseBlobDict(TypedDict, total=False):
 
   data: Optional[bytes]
   """Required. Inline media bytes."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the blob.
+      Used to provide a label or filename to distinguish blobs."""
 
 
 FunctionResponseBlobOrDict = Union[
