@@ -186,12 +186,11 @@ def test_build_request_with_custom_base_url_model_method_call(monkeypatch):
       vertexai=True,
       http_options=types.HttpOptionsDict(
           base_url='https://custom-base-url.com',
-          api_version='',  # Override default 'v1beta1' for custom endpoints
+          api_version='',
           headers={'Authorization': 'Bearer fake_access_token'},
       ),
   )
   request_client = client.models._api_client
-  # Test with a typical generate_content path (has ':')
   request = request_client._build_request(
       'POST',
       'publishers/google/models/gemini-2.5-flash:generateContent',
@@ -222,7 +221,6 @@ def test_build_request_with_custom_base_url_model_resource_path(monkeypatch):
       ),
   )
   request_client = client.models._api_client
-  # Test with a model resource path (has 'publishers/' and 'models/' but no ':')
   request = request_client._build_request(
       'GET',
       'publishers/google/models/gemini-2.5-flash',
@@ -253,7 +251,6 @@ def test_build_request_with_custom_base_url_models_list(monkeypatch):
       ),
   )
   request_client = client.models._api_client
-  # Test with just 'models' path (has 'models/' after version is prepended)
   request = request_client._build_request(
       'GET',
       'models',

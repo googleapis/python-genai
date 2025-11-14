@@ -1068,12 +1068,7 @@ class BaseApiClient:
           request_dict, patched_http_options.extra_body
       )
     url = base_url
-    # For custom base URLs, append the versioned_path to support proxy endpoints
-    # that need Vertex AI-compatible paths. Detect if the path contains:
-    # - 'publishers/' or 'models/': Vertex AI resource paths (GET requests)
-    # - ':': API method calls like :generateContent (POST requests)
-    # This handles both resource fetching (models.list, models.get) and
-    # method invocation (models.generate_content) for API gateway proxies.
+
     if (
         not self.custom_base_url
         or (self.project and self.location)
