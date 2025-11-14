@@ -1068,10 +1068,19 @@ class BaseApiClient:
           request_dict, patched_http_options.extra_body
       )
     url = base_url
+    # For custom base URLs, append the versioned_path to support proxy endpoints
+    # that need the full model path (e.g., publishers/google/models/X:generateContent).
+    # The original logic skipped path appending for custom base URLs, but this breaks
+    # API gateway proxies that expect Vertex AI-compatible paths.
     if (
         not self.custom_base_url
         or (self.project and self.location)
         or self.api_key
+        or (versioned_path and (
+            'publishers/' in versioned_path
+            or 'models/' in versioned_path
+            or ':' in versioned_path
+        ))
     ):
       url = join_url_path(
           base_url,
