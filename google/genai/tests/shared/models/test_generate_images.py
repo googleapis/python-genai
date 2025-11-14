@@ -17,7 +17,7 @@
 from .... import types
 from ... import pytest_helper
 
-IMAGEN_MODEL_LATEST = 'imagen-3.0-generate-002'
+IMAGEN_MODEL_LATEST = 'imagen-4.0-generate-001'
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
