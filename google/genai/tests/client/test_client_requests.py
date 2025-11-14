@@ -170,3 +170,93 @@ def test_build_request_with_custom_base_url_no_env_vars(monkeypatch):
       {'key': 'value'},
   )
   assert request.url == 'https://custom-base-url.com'
+
+
+def test_build_request_with_custom_base_url_model_method_call(monkeypatch):
+  """Test that model API method calls (with :) are appended to custom base URLs.
+  
+  This ensures API gateway proxies correctly handle method invocations like
+  generate_content, stream_generate_content, etc.
+  """
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          api_version='',  # Override default 'v1beta1' for custom endpoints
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+  )
+  request_client = client.models._api_client
+  # Test with a typical generate_content path (has ':')
+  request = request_client._build_request(
+      'POST',
+      'publishers/google/models/gemini-2.5-flash:generateContent',
+      {'contents': [{'parts': [{'text': 'test'}]}]},
+  )
+  assert request.url == (
+      'https://custom-base-url.com/'
+      'publishers/google/models/gemini-2.5-flash:generateContent'
+  )
+
+
+def test_build_request_with_custom_base_url_model_resource_path(monkeypatch):
+  """Test that model resource paths (without :) are appended to custom base URLs.
+  
+  This ensures API gateway proxies correctly handle GET requests like
+  models.get() that fetch model information without invoking a method.
+  """
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          api_version='',
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+  )
+  request_client = client.models._api_client
+  # Test with a model resource path (has 'publishers/' and 'models/' but no ':')
+  request = request_client._build_request(
+      'GET',
+      'publishers/google/models/gemini-2.5-flash',
+      {},
+  )
+  assert request.url == (
+      'https://custom-base-url.com/'
+      'publishers/google/models/gemini-2.5-flash'
+  )
+
+
+def test_build_request_with_custom_base_url_models_list(monkeypatch):
+  """Test that models list paths are appended to custom base URLs.
+  
+  This ensures API gateway proxies correctly handle models.list() calls
+  that only have 'models/' in the path.
+  """
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          api_version='v1beta1',
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+  )
+  request_client = client.models._api_client
+  # Test with just 'models' path (has 'models/' after version is prepended)
+  request = request_client._build_request(
+      'GET',
+      'models',
+      {},
+  )
+  assert request.url == 'https://custom-base-url.com/v1beta1/models'
