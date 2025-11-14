@@ -1068,16 +1068,12 @@ class BaseApiClient:
           request_dict, patched_http_options.extra_body
       )
     url = base_url
-    should_append_path = False
-    if patched_http_options.append_path is not None:
-      should_append_path = patched_http_options.append_path
-    else:
-      should_append_path = (
-          not self.custom_base_url
-          or (self.project and self.location)
-          or self.api_key
-      )
-    if should_append_path:
+    if (
+        patched_http_options.append_path
+        or not self.custom_base_url
+        or (self.project and self.location)
+        or self.api_key
+    ):
       url = join_url_path(
           base_url,
           versioned_path,
