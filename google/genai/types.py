@@ -1110,6 +1110,11 @@ class FunctionResponseFileData(_common.BaseModel):
       default=None,
       description="""Required. The IANA standard MIME type of the source data.""",
   )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the file.
+      Used to provide a label or filename to distinguish files.""",
+  )
 
 
 class FunctionResponseFileDataDict(TypedDict, total=False):
@@ -1120,6 +1125,10 @@ class FunctionResponseFileDataDict(TypedDict, total=False):
 
   mime_type: Optional[str]
   """Required. The IANA standard MIME type of the source data."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the file.
+      Used to provide a label or filename to distinguish files."""
 
 
 FunctionResponseFileDataOrDict = Union[
