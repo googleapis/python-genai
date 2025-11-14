@@ -1068,14 +1068,13 @@ class BaseApiClient:
           request_dict, patched_http_options.extra_body
       )
     url = base_url
-    
     if (
         not self.custom_base_url
         or (self.project and self.location)
         or self.api_key
         or (versioned_path and (
             'publishers/' in versioned_path
-            or 'models/' in versioned_path
+            or '/models' in versioned_path
             or ':' in versioned_path
         ))
     ):
