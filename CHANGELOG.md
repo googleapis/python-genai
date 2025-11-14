@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.51.0](https://github.com/googleapis/python-genai/compare/v1.50.1...v1.51.0) (2025-11-14)
+
+
+### Features
+
+* Add a pre-validation hook to warn about Pydantic model type mismatches. ([f7af6ef](https://github.com/googleapis/python-genai/commit/f7af6ef697dee79115c8e5716ae9e3a102c49a4a))
+* Add display name to FunctionResponseBlob ([52906d5](https://github.com/googleapis/python-genai/commit/52906d513f22d58fda9bc177fc1f6bff003d2e61))
+
+
+### Documentation
+
+* Remove gemini 2 below model reference ([c42ddff](https://github.com/googleapis/python-genai/commit/c42ddff06c662eaec3cf770dfa35e39a6376ad2d))
+* Update sample code to use gemini 2 or above ([d48bbba](https://github.com/googleapis/python-genai/commit/d48bbba5f8e7f8b18d2c22f60ba96c366a0d2ff1))
+
 ## [1.50.1](https://github.com/googleapis/python-genai/compare/v1.50.0...v1.50.1) (2025-11-13)
 
 
