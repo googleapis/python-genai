@@ -1684,6 +1684,15 @@ class HttpOptions(_common.BaseModel):
   api_version: Optional[str] = Field(
       default=None, description="""Specifies the version of the API to use."""
   )
+  append_model_path: Optional[bool] = Field(
+      default=None,
+      description="""Whether to append model-specific API paths to the base URL.
+      When set to True, paths like 'publishers/google/models/...' will be
+      appended to the base_url. When set to False, only the base_url is used.
+      This is useful for custom base URLs with API gateway proxies.
+      If not specified (None), the SDK uses default logic based on api_key,
+      project, and location settings.""",
+  )
   headers: Optional[dict[str, str]] = Field(
       default=None,
       description="""Additional HTTP headers to be sent with the request.""",
@@ -1726,6 +1735,14 @@ class HttpOptionsDict(TypedDict, total=False):
 
   api_version: Optional[str]
   """Specifies the version of the API to use."""
+
+  append_model_path: Optional[bool]
+  """Whether to append model-specific API paths to the base URL.
+  When set to True, paths like 'publishers/google/models/...' will be
+  appended to the base_url. When set to False, only the base_url is used.
+  This is useful for custom base URLs with API gateway proxies.
+  If not specified (None), the SDK uses default logic based on api_key,
+  project, and location settings."""
 
   headers: Optional[dict[str, str]]
   """Additional HTTP headers to be sent with the request."""

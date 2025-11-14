@@ -1068,11 +1068,22 @@ class BaseApiClient:
           request_dict, patched_http_options.extra_body
       )
     url = base_url
-    if (
-        not self.custom_base_url
-        or (self.project and self.location)
-        or self.api_key
-    ):
+    
+    # Determine if we should append the versioned path
+    # Priority: explicit append_model_path setting > default logic
+    should_append_path = False
+    if patched_http_options.append_model_path is not None:
+      # User explicitly set the append_model_path option
+      should_append_path = patched_http_options.append_model_path
+    else:
+      # Use default logic
+      should_append_path = (
+          not self.custom_base_url
+          or (self.project and self.location)
+          or self.api_key
+      )
+    
+    if should_append_path:
       url = join_url_path(
           base_url,
           versioned_path,
