@@ -1068,7 +1068,7 @@ class BaseApiClient:
           request_dict, patched_http_options.extra_body
       )
     url = base_url
-
+    
     if (
         not self.custom_base_url
         or (self.project and self.location)
