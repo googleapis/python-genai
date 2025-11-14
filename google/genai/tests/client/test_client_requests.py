@@ -170,3 +170,75 @@ def test_build_request_with_custom_base_url_no_env_vars(monkeypatch):
       {'key': 'value'},
   )
   assert request.url == 'https://custom-base-url.com'
+
+
+def test_build_request_with_custom_base_url_model_method_call(monkeypatch):
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          api_version='',
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+  )
+  request_client = client.models._api_client
+  request = request_client._build_request(
+      'POST',
+      'publishers/google/models/gemini-2.5-flash:generateContent',
+      {'contents': [{'parts': [{'text': 'test'}]}]},
+  )
+  assert request.url == (
+      'https://custom-base-url.com/'
+      'publishers/google/models/gemini-2.5-flash:generateContent'
+  )
+
+
+def test_build_request_with_custom_base_url_model_resource_path(monkeypatch):
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          api_version='',
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+  )
+  request_client = client.models._api_client
+  request = request_client._build_request(
+      'GET',
+      'publishers/google/models/gemini-2.5-flash',
+      {},
+  )
+  assert request.url == (
+      'https://custom-base-url.com/'
+      'publishers/google/models/gemini-2.5-flash'
+  )
+
+
+def test_build_request_with_custom_base_url_models_list(monkeypatch):
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          api_version='v1beta1',
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+  )
+  request_client = client.models._api_client
+  request = request_client._build_request(
+      'GET',
+      'models',
+      {},
+  )
+  assert request.url == 'https://custom-base-url.com/v1beta1/models'
