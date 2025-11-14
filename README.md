@@ -269,7 +269,6 @@ client = Client(
     vertexai=True,
     http_options={
         'base_url': 'https://my-proxy.com/ais/v1/',
-        'api_version': '',  # Prevent double versioning
         'append_path': True,  # Force path appending
         'headers': {'Authorization': 'Bearer your_token'},
     },
