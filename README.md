@@ -252,6 +252,38 @@ client = Client(
 )
 ```
 
+**Note:** Model-specific API paths (e.g., `publishers/google/models/gemini-2.5-flash:generateContent`) are automatically appended to your custom base URL.
+
+**Example URL construction:**
+When using the basic example above (without `api_version` override), the SDK will construct:
+```
+https://test-api-gateway-proxy.com/v1beta1/publishers/google/models/gemini-2.5-flash:generateContent
+```
+
+If your custom base URL already includes the API version (e.g., `https://proxy.com/gemini-api/v1/`), you should override the default `api_version` to prevent it from being added twice:
+
+```python
+base_url = 'https://proxy.com/gemini-api/v1/'
+client = Client(
+    vertexai=True,
+    http_options={
+        'base_url': base_url,
+        'api_version': '',  # Override default 'v1beta1' to empty string
+        'headers': {'Authorization': 'Bearer test_token'},
+    },
+)
+```
+
+With `api_version` set to empty string, the SDK will construct:
+```
+https://proxy.com/gemini-api/v1/publishers/google/models/gemini-2.5-flash:generateContent
+```
+
+Without the override (if `api_version` is not declared), it would incorrectly construct:
+```
+https://proxy.com/gemini-api/v1/v1beta1/publishers/google/models/gemini-2.5-flash:generateContent
+```
+
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
