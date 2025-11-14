@@ -261,7 +261,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_rag_model_ga',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-001',
+            model='gemini-2.5-flash',
             contents=t.t_contents(
                 'How much gain or loss did Google get in the Motorola Mobile'
                 ' deal in 2014?',
