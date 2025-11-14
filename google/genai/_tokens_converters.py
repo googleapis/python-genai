@@ -148,16 +148,72 @@ def _FileData_to_mldev(
   return to_object
 
 
-def _GoogleMaps_to_mldev(
+def _FunctionResponseFileData_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
 
-  if getv(from_object, ['enable_widget']) is not None:
-    setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _FunctionResponsePart_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FunctionResponseFileData_to_mldev(
+            getv(from_object, ['file_data']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _FunctionResponse_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['will_continue']) is not None:
+    setv(to_object, ['willContinue'], getv(from_object, ['will_continue']))
+
+  if getv(from_object, ['scheduling']) is not None:
+    setv(to_object, ['scheduling'], getv(from_object, ['scheduling']))
+
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _FunctionResponsePart_to_mldev(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
 
   return to_object
 
@@ -167,14 +223,14 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
-
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -389,7 +445,9 @@ def _Part_to_mldev(
     setv(
         to_object,
         ['functionResponse'],
-        getv(from_object, ['function_response']),
+        _FunctionResponse_to_mldev(
+            getv(from_object, ['function_response']), to_object
+        ),
     )
 
   if getv(from_object, ['inline_data']) is not None:
@@ -414,6 +472,9 @@ def _Part_to_mldev(
 
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
 
   return to_object
 
@@ -469,11 +530,7 @@ def _Tool_to_mldev(
     )
 
   if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
-    )
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['google_search']) is not None:
     setv(
