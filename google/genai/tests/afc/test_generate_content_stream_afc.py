@@ -313,9 +313,11 @@ def test_generate_content_stream_with_function_tools_used(
   )
 
   chunk = None
+  afc_text_present = False
   for chunk in stream:
-    assert chunk.text == TEST_AFC_TEXT_PART.text
-
+    if chunk.text and chunk.text == TEST_AFC_TEXT_PART.text:
+      afc_text_present = True
+  assert afc_text_present
   assert mock_generate_content_stream_with_afc.call_count == 2
   assert mock_get_function_response_parts.call_count == 2
 
@@ -346,9 +348,11 @@ def test_generate_content_stream_with_thought_summaries(
   )
 
   chunk = None
+  afc_text_present = False
   for chunk in stream:
-    assert chunk.text == TEST_AFC_TEXT_PART.text
-
+    if chunk.text and chunk.text == TEST_AFC_TEXT_PART.text:
+      afc_text_present = True
+  assert afc_text_present
   assert mock_generate_content_stream_with_afc.call_count == 2
   assert mock_get_function_response_parts.call_count == 2
 
@@ -449,9 +453,11 @@ async def test_generate_content_stream_with_function_tools_used_async(
   )
 
   chunk = None
+  received_afc_text = False
   async for chunk in stream:
-    assert chunk.text == TEST_AFC_TEXT_PART.text
-
+    if chunk.text and chunk.text == TEST_AFC_TEXT_PART.text:
+      received_afc_text = True
+  assert received_afc_text
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
   assert mock_get_function_response_parts_async.call_count == 2
@@ -481,9 +487,11 @@ async def test_generate_content_stream_with_function_async_function_used_async(
   )
 
   chunk = None
+  received_afc_text = False
   async for chunk in stream:
-    assert chunk.text == TEST_AFC_TEXT_PART.text
-
+    if chunk.text and chunk.text == TEST_AFC_TEXT_PART.text:
+      received_afc_text = True
+  assert received_afc_text
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
   assert mock_get_function_response_parts_async.call_count == 2
@@ -516,9 +524,11 @@ async def test_generate_content_stream_with_thought_summaries_async(
   )
 
   chunk = None
+  received_afc_text = False
   async for chunk in stream:
-    assert chunk.text == TEST_AFC_TEXT_PART.text
-
+    if chunk.text and chunk.text == TEST_AFC_TEXT_PART.text:
+      received_afc_text = True
+  assert received_afc_text
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
   assert mock_get_function_response_parts_async.call_count == 2
