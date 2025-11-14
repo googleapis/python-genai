@@ -1013,7 +1013,7 @@ print(response.text)
 #### JSON Response
 
 You can also set response_mime_type to 'application/json', the response will be
-identical but in quotes. Testing to see if my code changes work?
+identical but in quotes.
 
 ```python
 from enum import Enum
