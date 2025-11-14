@@ -1,4 +1,5 @@
 # Google Gen AI SDK
+# The Python version support
 
 [![PyPI version](https://img.shields.io/pypi/v/google-genai.svg)](https://pypi.org/project/google-genai/)
 ![Python support](https://img.shields.io/pypi/pyversions/google-genai)
