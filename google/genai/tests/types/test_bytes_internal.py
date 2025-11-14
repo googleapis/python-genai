@@ -88,7 +88,7 @@ def test_base64_pydantic_input_success(
   )
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash-001',
+      model='gemini-2.5-flash-001',
       contents=types.Content(
           role='user',
           parts=[
@@ -132,7 +132,7 @@ def test_base64_dict_input_success(client, mock_request_method, encode_unseriali
   )
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash-001',
+      model='gemini-2.5-flash-001',
       contents={
           'role': 'user',
           'parts': [
@@ -167,7 +167,7 @@ def test_base64_dict_input_success(client, mock_request_method, encode_unseriali
 def test_base64_pydantic_input_failure(client):
   with pytest.raises(ValueError, match='Data should be valid base64'):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-2.5-flash-001',
         contents=types.Content(
             role='user',
             parts=[
@@ -188,7 +188,7 @@ def test_base64_pydantic_input_failure(client):
 def test_base64_dict_input_failure(client):
   with pytest.raises(ValueError, match='Data should be valid base64'):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-2.5-flash-001',
         contents={
             'role': 'user',
             'parts': [{
@@ -223,7 +223,7 @@ def test_base64_pydantic_output_success(client, mock_request_method):
   )
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash-001',
+      model='gemini-2.5-flash-001',
       contents=types.Content(
           role='user',
           parts=[types.Part(text='Hello World')],
@@ -263,7 +263,7 @@ def test_base64_pydantic_output_failure(client, mock_request_method):
 
   with pytest.raises(ValueError, match='Data should be valid base64'):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-2.5-flash-001',
         contents=types.Content(
             role='user',
             parts=[types.Part(text='Hello World')],
