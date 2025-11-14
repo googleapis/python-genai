@@ -247,21 +247,21 @@ client = Client(
     vertexai=True,  # Currently only vertexai=True is supported
     http_options={
         'base_url': base_url,
-        'append_model_path': True,  # Explicitly enable path appending
+        'append_path': True,  # Explicitly enable path appending
         'headers': {'Authorization': 'Bearer test_token'},
     },
 )
 ```
 
-**Note:** Model-specific API paths (e.g., `publishers/google/models/gemini-2.5-flash:generateContent`) are appended to your custom base URL when `append_model_path: True` is set.
+**Note:** Model-specific API paths (e.g., `publishers/google/models/gemini-2.5-flash:generateContent`) are appended to your custom base URL when `append_path: True` is set.
 
-#### Controlling Path Appending with `append_model_path`
+#### Controlling Path Appending with `append_path`
 
-The `append_model_path` parameter in `http_options` gives you explicit control over whether model paths are appended to your custom base URL:
+The `append_path` parameter in `http_options` gives you explicit control over whether API paths are appended to your custom base URL:
 
-- **`append_model_path: True`** - Always append model paths (recommended for custom base URLs with API gateway proxies)
-- **`append_model_path: False`** - Never append model paths (use if your base URL already includes the full path)
-- **`append_model_path: None` (omit parameter)** - Use SDK's default logic (appends if `api_key` is set, or if both `project` and `location` are set)
+- **`append_path: True`** - Always append paths (recommended for custom base URLs with API gateway proxies)
+- **`append_path: False`** - Never append paths (use if your base URL already includes the full path)
+- **`append_path: None` (omit parameter)** - Use SDK's default logic (appends if `api_key` is set, or if both `project` and `location` are set)
 
 **Example with path appending enabled:**
 
@@ -271,7 +271,7 @@ client = Client(
     http_options={
         'base_url': 'https://my-proxy.com/ais/v1/',
         'api_version': '',  # Prevent double versioning
-        'append_model_path': True,  # Force path appending
+        'append_path': True,  # Force path appending
         'headers': {'Authorization': 'Bearer your_token'},
     },
 )
@@ -287,7 +287,7 @@ client = Client(
     vertexai=True,
     http_options={
         'base_url': 'https://my-proxy.com/full/complete/path',
-        'append_model_path': False,  # Don't append anything
+        'append_path': False,  # Don't append anything
         'headers': {'Authorization': 'Bearer your_token'},
     },
 )

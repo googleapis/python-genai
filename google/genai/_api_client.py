@@ -1070,11 +1070,11 @@ class BaseApiClient:
     url = base_url
     
     # Determine if we should append the versioned path
-    # Priority: explicit append_model_path setting > default logic
+    # Priority: explicit append_path setting > default logic
     should_append_path = False
-    if patched_http_options.append_model_path is not None:
-      # User explicitly set the append_model_path option
-      should_append_path = patched_http_options.append_model_path
+    if patched_http_options.append_path is not None:
+      # User explicitly set the append_path option
+      should_append_path = patched_http_options.append_path
     else:
       # Use default logic
       should_append_path = (
