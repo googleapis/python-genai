@@ -247,9 +247,35 @@ client = Client(
     vertexai=True,  # Currently only vertexai=True is supported
     http_options={
         'base_url': base_url,
+        'append_path': True,  # Explicitly enable path appending
         'headers': {'Authorization': 'Bearer test_token'},
     },
 )
+```
+
+**Note:** Model-specific API paths (e.g., `publishers/google/models/gemini-2.5-flash:generateContent`) are appended to your custom base URL when `append_path: True` is set.
+
+#### Controlling Path Appending with `append_path`
+
+The `append_path` parameter in `http_options` allows you to force path appending for custom base URLs:
+
+- **`append_path: True`** - Force append API paths (use when custom base URLs aren't triggering path appending)
+- **`append_path: False` or omit** - Use SDK's default logic (appends if `api_key` is set, or if both `project` and `location` are set)
+
+**Example:**
+
+```python
+client = Client(
+    vertexai=True,
+    http_options={
+        'base_url': 'https://my-proxy.com/ais/v1/',
+        'append_path': True,  # Force path appending
+        'headers': {'Authorization': 'Bearer your_token'},
+    },
+)
+
+# SDK constructs:
+# https://my-proxy.com/ais/v1/publishers/google/models/gemini-2.5-flash:generateContent
 ```
 
 ## Types
