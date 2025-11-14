@@ -170,3 +170,34 @@ def test_build_request_with_custom_base_url_no_env_vars(monkeypatch):
       {'key': 'value'},
   )
   assert request.url == 'https://custom-base-url.com'
+
+
+def test_build_request_with_custom_base_url_model_path(monkeypatch):
+  """Test that model API paths are appended to custom base URLs.
+  
+  This ensures that custom base URLs acting as proxies to Vertex AI-compatible
+  endpoints correctly append model-specific paths like generate_content.
+  """
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          api_version='',  # Override default 'v1beta1' for custom endpoints
+          headers={'Authorization': 'Bearer fake_access_token'},
+      ),
+  )
+  request_client = client.models._api_client
+  # Test with a typical generate_content path
+  request = request_client._build_request(
+      'POST',
+      'publishers/google/models/gemini-2.5-flash:generateContent',
+      {'contents': [{'parts': [{'text': 'test'}]}]},
+  )
+  assert request.url == (
+      'https://custom-base-url.com/'
+      'publishers/google/models/gemini-2.5-flash:generateContent'
+  )

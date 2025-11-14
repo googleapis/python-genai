@@ -252,6 +252,22 @@ client = Client(
 )
 ```
 
+**Note**: When using custom base URLs with Vertex AI-compatible endpoints, the SDK
+will automatically append model-specific paths (e.g., `publishers/google/models/gemini-2.5-flash:generateContent`)
+to your base URL. If your proxy expects a different API version than the default `v1beta1`,
+you can override it:
+
+```python
+client = Client(
+    vertexai=True,
+    http_options={
+        'base_url': 'https://custom-proxy.com/api/v1/',
+        'api_version': '',  # Set to empty string to avoid appending 'v1beta1'
+        'headers': {'Authorization': 'Bearer test_token'},
+    },
+)
+```
+
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
