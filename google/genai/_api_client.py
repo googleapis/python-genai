@@ -1069,10 +1069,10 @@ class BaseApiClient:
       )
     url = base_url
     if (
-        patched_http_options.append_path
-        or not self.custom_base_url
+        not self.custom_base_url
         or (self.project and self.location)
         or self.api_key
+        or patched_http_options.append_path
     ):
       url = join_url_path(
           base_url,
