@@ -257,13 +257,12 @@ client = Client(
 
 #### Controlling Path Appending with `append_path`
 
-The `append_path` parameter in `http_options` gives you explicit control over whether API paths are appended to your custom base URL:
+The `append_path` parameter in `http_options` allows you to force path appending for custom base URLs:
 
-- **`append_path: True`** - Always append paths (recommended for custom base URLs with API gateway proxies)
-- **`append_path: False`** - Never append paths (use if your base URL already includes the full path)
-- **`append_path: None` (omit parameter)** - Use SDK's default logic (appends if `api_key` is set, or if both `project` and `location` are set)
+- **`append_path: True`** - Force append API paths (use when custom base URLs aren't triggering path appending)
+- **`append_path: False` or omit** - Use SDK's default logic (appends if `api_key` is set, or if both `project` and `location` are set)
 
-**Example with path appending enabled:**
+**Example:**
 
 ```python
 client = Client(
@@ -278,22 +277,6 @@ client = Client(
 
 # SDK constructs:
 # https://my-proxy.com/ais/v1/publishers/google/models/gemini-2.5-flash:generateContent
-```
-
-**Example with path appending disabled:**
-
-```python
-client = Client(
-    vertexai=True,
-    http_options={
-        'base_url': 'https://my-proxy.com/full/complete/path',
-        'append_path': False,  # Don't append anything
-        'headers': {'Authorization': 'Bearer your_token'},
-    },
-)
-
-# SDK uses exactly:
-# https://my-proxy.com/full/complete/path
 ```
 
 ## Types
