@@ -1,5 +1,5 @@
 # Google Gen AI SDK
-# The Python version support
+# The Python version support now that the email has been added to the commit
 
 [![PyPI version](https://img.shields.io/pypi/v/google-genai.svg)](https://pypi.org/project/google-genai/)
 ![Python support](https://img.shields.io/pypi/pyversions/google-genai)
