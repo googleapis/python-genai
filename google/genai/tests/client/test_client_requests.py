@@ -173,11 +173,6 @@ def test_build_request_with_custom_base_url_no_env_vars(monkeypatch):
 
 
 def test_build_request_with_custom_base_url_model_method_call(monkeypatch):
-  """Test that model API method calls (with :) are appended to custom base URLs.
-  
-  This ensures API gateway proxies correctly handle method invocations like
-  generate_content, stream_generate_content, etc.
-  """
   monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
   monkeypatch.delenv('GEMINI_API_KEY', raising=False)
   monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
@@ -203,11 +198,6 @@ def test_build_request_with_custom_base_url_model_method_call(monkeypatch):
 
 
 def test_build_request_with_custom_base_url_model_resource_path(monkeypatch):
-  """Test that model resource paths (without :) are appended to custom base URLs.
-  
-  This ensures API gateway proxies correctly handle GET requests like
-  models.get() that fetch model information without invoking a method.
-  """
   monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
   monkeypatch.delenv('GEMINI_API_KEY', raising=False)
   monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
@@ -233,11 +223,6 @@ def test_build_request_with_custom_base_url_model_resource_path(monkeypatch):
 
 
 def test_build_request_with_custom_base_url_models_list(monkeypatch):
-  """Test that models list paths are appended to custom base URLs.
-  
-  This ensures API gateway proxies correctly handle models.list() calls
-  that only have 'models/' in the path.
-  """
   monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
   monkeypatch.delenv('GEMINI_API_KEY', raising=False)
   monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
