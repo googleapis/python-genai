@@ -86,6 +86,12 @@ def _ListDocumentsConfig_to_mldev(
         ['_query', 'pageToken'],
         getv(from_object, ['page_token']),
     )
+    
+  if getv(from_object, ['parent']) is not None:
+    setv(
+      parent_object, 
+      ['_url', 'parent'], getv(from_object, ['parent'])
+         )
 
   return to_object
 
