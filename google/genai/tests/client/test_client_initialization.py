@@ -1173,6 +1173,7 @@ def test_constructor_with_base_url_from_set_default_base_urls_overrides_environm
       ]
       == "https://vertex-base-url.com/"
   )
+  base_url.set_default_base_urls(gemini_url=None, vertex_url=None)
 
 
 def test_constructor_with_base_url_from_environment_variables(monkeypatch):
