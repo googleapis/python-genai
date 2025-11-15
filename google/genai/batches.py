@@ -35,6 +35,11 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.batches')
 
 
+def _TaskType_to_mldev_enum_validate(enum_value: Any) -> None:
+  if enum_value in set(['UNSPECIFIED']):
+    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
+
+
 def _BatchJobDestination_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -456,6 +461,20 @@ def _CitationMetadata_from_mldev(
   return to_object
 
 
+def _ContentEmbedding_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['values']) is not None:
+    setv(to_object, ['values'], getv(from_object, ['values']))
+
+  if getv(from_object, ['statistics']) is not None:
+    raise ValueError('statistics parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -698,6 +717,26 @@ def _DeleteResourceJob_from_vertex(
   return to_object
 
 
+def _EmbedContentBatchOutput_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['inlined_responses']) is not None:
+    setv(
+        to_object,
+        ['inlinedResponses'],
+        _InlinedEmbedContentResponses_to_mldev(
+            getv(from_object, ['inlined_responses']), to_object
+        ),
+    )
+
+  if getv(from_object, ['responses_file']) is not None:
+    setv(to_object, ['responsesFile'], getv(from_object, ['responses_file']))
+
+  return to_object
+
+
 def _EmbedContentBatch_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -723,6 +762,51 @@ def _EmbedContentBatch_to_mldev(
         _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object),
     )
     movev(to_object, {'requests[].*': 'requests[].request.*'})
+  if getv(from_object, ['batch_stats']) is not None:
+    setv(to_object, ['batchStats'], getv(from_object, ['batch_stats']))
+
+  if getv(from_object, ['create_time']) is not None:
+    setv(to_object, ['createTime'], getv(from_object, ['create_time']))
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+
+  if getv(from_object, ['end_time']) is not None:
+    setv(to_object, ['endTime'], getv(from_object, ['end_time']))
+
+  if getv(from_object, ['input_config']) is not None:
+    setv(
+        to_object,
+        ['inputConfig'],
+        _InputEmbedContentConfig_to_mldev(
+            getv(from_object, ['input_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['model']) is not None:
+    setv(to_object, ['model'], getv(from_object, ['model']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['output']) is not None:
+    setv(
+        to_object,
+        ['output'],
+        _EmbedContentBatchOutput_to_mldev(
+            getv(from_object, ['output']), to_object
+        ),
+    )
+
+  if getv(from_object, ['priority']) is not None:
+    setv(to_object, ['priority'], getv(from_object, ['priority']))
+
+  if getv(from_object, ['state']) is not None:
+    setv(to_object, ['state'], getv(from_object, ['state']))
+
+  if getv(from_object, ['update_time']) is not None:
+    setv(to_object, ['updateTime'], getv(from_object, ['update_time']))
+
   return to_object
 
 
@@ -754,6 +838,41 @@ def _EmbedContentConfig_to_mldev(
 
   if getv(from_object, ['auto_truncate']) is not None:
     raise ValueError('auto_truncate parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _EmbedContentRequest_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['auto_truncate']) is not None:
+    raise ValueError('auto_truncate parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['content']) is not None:
+    setv(
+        to_object,
+        ['content'],
+        _Content_to_mldev(getv(from_object, ['content']), to_object),
+    )
+
+  if getv(from_object, ['output_dimensionality']) is not None:
+    setv(
+        to_object,
+        ['outputDimensionality'],
+        getv(from_object, ['output_dimensionality']),
+    )
+
+  if getv(from_object, ['task_type']) is not None:
+    _TaskType_to_mldev_enum_validate(getv(from_object, ['task_type']))
+    setv(to_object, ['taskType'], getv(from_object, ['task_type']))
+
+  if getv(from_object, ['title']) is not None:
+    setv(to_object, ['title'], getv(from_object, ['title']))
+
+  if getv(from_object, ['model']) is not None:
+    setv(to_object, ['model'], getv(from_object, ['model']))
 
   return to_object
 
@@ -792,6 +911,76 @@ def _FileData_to_mldev(
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _FunctionResponseFileData_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['file_uri']) is not None:
+    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
+
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _FunctionResponsePart_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FunctionResponseFileData_to_mldev(
+            getv(from_object, ['file_data']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _FunctionResponse_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['will_continue']) is not None:
+    setv(to_object, ['willContinue'], getv(from_object, ['will_continue']))
+
+  if getv(from_object, ['scheduling']) is not None:
+    setv(to_object, ['scheduling'], getv(from_object, ['scheduling']))
+
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _FunctionResponsePart_to_mldev(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
 
   return to_object
 
@@ -949,7 +1138,11 @@ def _GenerateContentConfig_to_mldev(
     setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
 
   if getv(from_object, ['image_config']) is not None:
-    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+    setv(
+        to_object,
+        ['imageConfig'],
+        _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
+    )
 
   return to_object
 
@@ -1021,38 +1214,127 @@ def _GetBatchJobParameters_to_vertex(
   return to_object
 
 
-def _GoogleMaps_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['enable_widget']) is not None:
-    setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
-
-  return to_object
-
-
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
-
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
+    )
+
+  return to_object
+
+
+def _ImageConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['aspect_ratio']) is not None:
+    setv(to_object, ['aspectRatio'], getv(from_object, ['aspect_ratio']))
+
+  if getv(from_object, ['image_size']) is not None:
+    setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['image_output_options']) is not None:
+    raise ValueError(
+        'image_output_options parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    raise ValueError(
+        'person_generation parameter is not supported in Gemini API.'
+    )
+
+  return to_object
+
+
+def _InlinedEmbedContentRequest_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(from_object, ['request']) is not None:
+    setv(
+        to_object,
+        ['request'],
+        _EmbedContentRequest_to_mldev(
+            getv(from_object, ['request']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _InlinedEmbedContentRequests_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['requests']) is not None:
+    setv(
+        to_object,
+        ['requests'],
+        [
+            _InlinedEmbedContentRequest_to_mldev(item, to_object)
+            for item in getv(from_object, ['requests'])
+        ],
+    )
+
+  return to_object
+
+
+def _InlinedEmbedContentResponse_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['response']) is not None:
+    setv(
+        to_object,
+        ['response'],
+        _SingleEmbedContentResponse_to_mldev(
+            getv(from_object, ['response']), to_object
+        ),
+    )
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  return to_object
+
+
+def _InlinedEmbedContentResponses_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['inlined_responses']) is not None:
+    setv(
+        to_object,
+        ['inlinedResponses'],
+        [
+            _InlinedEmbedContentResponse_to_mldev(item, to_object)
+            for item in getv(from_object, ['inlined_responses'])
+        ],
     )
 
   return to_object
@@ -1114,6 +1396,26 @@ def _InlinedResponse_from_mldev(
 
   if getv(from_object, ['error']) is not None:
     setv(to_object, ['error'], getv(from_object, ['error']))
+
+  return to_object
+
+
+def _InputEmbedContentConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['file_name']) is not None:
+    setv(to_object, ['fileName'], getv(from_object, ['file_name']))
+
+  if getv(from_object, ['requests']) is not None:
+    setv(
+        to_object,
+        ['requests'],
+        _InlinedEmbedContentRequests_to_mldev(
+            getv(from_object, ['requests']), to_object
+        ),
+    )
 
   return to_object
 
@@ -1269,7 +1571,9 @@ def _Part_to_mldev(
     setv(
         to_object,
         ['functionResponse'],
-        getv(from_object, ['function_response']),
+        _FunctionResponse_to_mldev(
+            getv(from_object, ['function_response']), to_object
+        ),
     )
 
   if getv(from_object, ['inline_data']) is not None:
@@ -1295,6 +1599,9 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
   return to_object
 
 
@@ -1311,6 +1618,24 @@ def _SafetySetting_to_mldev(
 
   if getv(from_object, ['threshold']) is not None:
     setv(to_object, ['threshold'], getv(from_object, ['threshold']))
+
+  return to_object
+
+
+def _SingleEmbedContentResponse_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['embedding']) is not None:
+    setv(
+        to_object,
+        ['embedding'],
+        _ContentEmbedding_to_mldev(getv(from_object, ['embedding']), to_object),
+    )
+
+  if getv(from_object, ['token_count']) is not None:
+    setv(to_object, ['tokenCount'], getv(from_object, ['token_count']))
 
   return to_object
 
@@ -1352,11 +1677,7 @@ def _Tool_to_mldev(
     )
 
   if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
-    )
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['google_search']) is not None:
     setv(
