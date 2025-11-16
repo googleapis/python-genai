@@ -22,8 +22,8 @@ from ... import types
 from .. import pytest_helper
 
 
-_GEMINI_MODEL = 'gemini-1.5-flash-002'
-_GEMINI_MODEL_FULL_NAME = 'publishers/google/models/gemini-1.5-flash-002'
+_GEMINI_MODEL = 'gemini-2.5-flash'
+_GEMINI_MODEL_FULL_NAME = 'publishers/google/models/gemini-2.5-flash'
 _EMBEDDING_MODEL = 'text-embedding-004'
 _EMBEDDING_MODEL_FULL_NAME = 'publishers/google/models/text-embedding-004'
 _DISPLAY_NAME = 'test_batch'

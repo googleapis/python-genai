@@ -179,7 +179,7 @@ def test_eval_config(client):
 
   if client._api_client.vertexai:
     tuning_job = client.tunings.tune(
-      base_model="gemini-1.5-pro-002",
+      base_model="gemini-2.5-flash",
       training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
       config=genai_types.CreateTuningJobConfig(
           tuned_model_display_name="tuning job with eval config",
@@ -226,7 +226,7 @@ def test_eval_config_with_metrics(client):
         ),
     )
     tuning_job = client.tunings.tune(
-      base_model="gemini-1.5-pro-002",
+      base_model="gemini-2.5-flash",
       training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
       config=genai_types.CreateTuningJobConfig(
           tuned_model_display_name="tuning job with eval config",
@@ -251,7 +251,7 @@ async def test_eval_config_async(client):
   """Tests tuning with eval config."""
   if client._api_client.vertexai:
     tuning_job = await client.aio.tunings.tune(
-      base_model="gemini-1.5-pro-002",
+      base_model="gemini-2.5-flash",
       training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
       config=genai_types.CreateTuningJobConfig(
           tuned_model_display_name="tuning job with eval config",

@@ -114,6 +114,8 @@ else:
     HttpxAsyncClient = None
 
 logger = logging.getLogger('google_genai.types')
+_from_json_schema_warning_logged = False
+_json_schema_warning_logged = False
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
 
@@ -1068,6 +1070,11 @@ class FunctionResponseBlob(_common.BaseModel):
   data: Optional[bytes] = Field(
       default=None, description="""Required. Inline media bytes."""
   )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the blob.
+      Used to provide a label or filename to distinguish blobs.""",
+  )
 
 
 class FunctionResponseBlobDict(TypedDict, total=False):
@@ -1082,6 +1089,10 @@ class FunctionResponseBlobDict(TypedDict, total=False):
 
   data: Optional[bytes]
   """Required. Inline media bytes."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the blob.
+      Used to provide a label or filename to distinguish blobs."""
 
 
 FunctionResponseBlobOrDict = Union[
@@ -2026,7 +2037,9 @@ class Schema(_common.BaseModel):
     Schema](https://json-schema.org/)
     """
 
-    info_message = """
+    global _json_schema_warning_logged
+    if not _json_schema_warning_logged:
+      info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are
 ignored.
 Json Schema is now supported natively by both Vertex AI and Gemini API. Users
@@ -2041,7 +2054,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
    FunctionDeclaration.response_json_schema, which accepts [JSON
    Schema](https://json-schema.org/)
 """
-    logger.info(info_message)
+      logger.info(info_message)
+      _json_schema_warning_logged = True
+
     json_schema_field_names: set[str] = set(JSONSchema.model_fields.keys())
     schema_field_names: tuple[str] = (
         'items',
@@ -2148,7 +2163,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
            raise_error_on_unsupported_field is set to True. Or if the JSONSchema
            is not compatible with the specified API option.
     """
-    info_message = """
+    global _from_json_schema_warning_logged
+    if not _from_json_schema_warning_logged:
+      info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are ignored.
 Json Schema is now supported natively by both Vertex AI and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
@@ -2162,7 +2179,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
    FunctionDeclaration.response_json_schema, which accepts [JSON
    Schema](https://json-schema.org/)
 """
-    logger.info(info_message)
+      logger.info(info_message)
+      _from_json_schema_warning_logged = True
+
     google_schema_field_names: set[str] = set(cls.model_fields.keys())
     schema_field_names: tuple[str, ...] = (
         'items',
@@ -6311,7 +6330,7 @@ class GenerateContentResponse(_common.BaseModel):
     non_text_parts = []
     for part in self.candidates[0].content.parts:
       for field_name, field_value in part.model_dump(
-          exclude={'text', 'thought'}
+          exclude={'text', 'thought', 'thought_signature'}
       ).items():
         if field_value is not None:
           non_text_parts.append(field_name)
@@ -10185,7 +10204,7 @@ class AutoraterConfig(_common.BaseModel):
   endpoint to use.
 
   Publisher model format:
-  `projects/{project}/locations/{location}/publishers/*/models/*`
+  `projects/{project}/locations/{location}/publishers/{publisher}/models/{model}`
 
   Tuned model endpoint format:
   `projects/{project}/locations/{location}/endpoints/{endpoint}`""",
@@ -10217,7 +10236,7 @@ class AutoraterConfigDict(TypedDict, total=False):
   endpoint to use.
 
   Publisher model format:
-  `projects/{project}/locations/{location}/publishers/*/models/*`
+  `projects/{project}/locations/{location}/publishers/{publisher}/models/{model}`
 
   Tuned model endpoint format:
   `projects/{project}/locations/{location}/endpoints/{endpoint}`"""
@@ -11320,7 +11339,7 @@ class TuningJob(_common.BaseModel):
       description="""Tuning Spec for open sourced and third party Partner models.""",
   )
   evaluation_config: Optional[EvaluationConfig] = Field(
-      default=None, description=""""""
+      default=None, description="""Evaluation config for the tuning job."""
   )
   custom_base_model: Optional[str] = Field(
       default=None,
@@ -11420,7 +11439,7 @@ class TuningJobDict(TypedDict, total=False):
   """Tuning Spec for open sourced and third party Partner models."""
 
   evaluation_config: Optional[EvaluationConfigDict]
-  """"""
+  """Evaluation config for the tuning job."""
 
   custom_base_model: Optional[str]
   """Optional. The user-provided path to custom model weights. Set this field to tune a custom model. The path must be a Cloud Storage directory that contains the model weights in .safetensors format along with associated model metadata files. If this field is set, the base_model field must still be set to indicate which base model the custom model is derived from. This feature is only available for open source models."""

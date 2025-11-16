@@ -37,14 +37,12 @@ import time
 from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
-import warnings
 
 import anyio
 import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
-from google.auth.transport.requests import Request
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -197,6 +195,7 @@ def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
 
 
 def refresh_auth(credentials: Credentials) -> Credentials:
+  from google.auth.transport.requests import Request
   credentials.refresh(Request())  # type: ignore[no-untyped-call]
   return credentials
 
@@ -629,14 +628,14 @@ class BaseApiClient:
         )
         self.api_key = None
 
-      if not self.location and not self.api_key:
-          self.location = 'global'
-
       self.custom_base_url = (
           validated_http_options.base_url
           if validated_http_options.base_url
           else None
       )
+
+      if not self.location and not self.api_key and not self.custom_base_url:
+          self.location = 'global'
 
       # Skip fetching project from ADC if base url is provided in http options.
       if (
@@ -1347,9 +1346,21 @@ class BaseApiClient:
 
     session_response = self._request(http_request, http_options, stream=True)
     for chunk in session_response.segments():
-      yield SdkHttpResponse(
-          headers=session_response.headers, body=json.dumps(chunk)
-      )
+      chunk_dump = json.dumps(chunk)
+      try:
+        if chunk_dump.startswith('{"error":'):
+          chunk_json = json.loads(chunk_dump)
+          errors.APIError.raise_error(
+              chunk_json.get('error', {}).get('code'),
+              chunk_json,
+              session_response,
+          )
+      except json.decoder.JSONDecodeError:
+        logger.debug(
+            'Failed to decode chunk that contains an error: %s' % chunk_dump
+        )
+        pass
+      yield SdkHttpResponse(headers=session_response.headers, body=chunk_dump)
 
   async def async_request(
       self,
@@ -1383,7 +1394,21 @@ class BaseApiClient:
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
-        yield SdkHttpResponse(headers=response.headers, body=json.dumps(chunk))
+        chunk_dump = json.dumps(chunk)
+        try:
+          if chunk_dump.startswith('{"error":'):
+            chunk_json = json.loads(chunk_dump)
+            await errors.APIError.raise_error_async(
+                chunk_json.get('error', {}).get('code'),
+                chunk_json,
+                response,
+            )
+        except json.decoder.JSONDecodeError:
+          logger.debug(
+              'Failed to decode chunk that contains an error: %s' % chunk_dump
+          )
+          pass
+        yield SdkHttpResponse(headers=response.headers, body=chunk_dump)
 
     return async_generator()  # type: ignore[no-untyped-call]
 
@@ -1811,12 +1836,17 @@ class BaseApiClient:
 
   def close(self) -> None:
     """Closes the API client."""
-    self._httpx_client.close()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_client:
+      self._httpx_client.close()
 
   async def aclose(self) -> None:
     """Closes the API async client."""
-
-    await self._async_httpx_client.aclose()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_async_client:
+      await self._async_httpx_client.aclose()
     if self._aiohttp_session:
       await self._aiohttp_session.close()
 
@@ -1828,17 +1858,12 @@ class BaseApiClient:
     """
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
       if not self._http_options.httpx_client:
         self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
-      if not self._http_options.httpx_async_client:
-        asyncio.get_running_loop().create_task(self.aclose())
+      asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
