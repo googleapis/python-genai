@@ -697,7 +697,7 @@ async def test_async_stream_with_headers(client):
 async def test_async_stream_with_non_text_modality(client):
   chunks = 0
   async for chunk in await client.aio.models.generate_content_stream(
-      model='gemini-2.0-flash-preview-image-generation',
+      model=GEMINI_FLASH_IMAGE_LATEST,
       contents=(
           'Generate an image of the Eiffel tower with fireworks in the'
           ' background.'
@@ -718,10 +718,10 @@ async def test_async_stream_with_non_text_modality(client):
 def test_simple_shared_generation_config_stream(client):
   chunks = 0
   for chunk in client.models.generate_content_stream(
-      model=GEMINI_FLASH_2_0,
+      model=GEMINI_FLASH_LATEST,
       contents='tell me a story in 300 words',
       config={
-          'max_output_tokens': 400,
+          'max_output_tokens': 1000,
           'top_k': 2,
           'temperature': 0.5,
           'top_p': 0.5,

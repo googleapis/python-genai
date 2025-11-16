@@ -1543,7 +1543,7 @@ from google.genai import types
 model = 'gemini-2.5-flash'
 training_dataset = types.TuningDataset(
     # or gcs_uri=my_vertex_multimodal_dataset
-    gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
+    gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
 )
 ```
 
