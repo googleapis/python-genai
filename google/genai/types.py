@@ -1684,7 +1684,7 @@ class HttpOptions(_common.BaseModel):
   api_version: Optional[str] = Field(
       default=None, description="""Specifies the version of the API to use."""
   )
-  append_path: Optional[bool] = Field(
+  force_append_path: Optional[bool] = Field(
       default=None,
       description="""Whether to force append API paths to the base URL.
       When set to True, paths like 'publishers/google/models/...' will always
@@ -1736,7 +1736,7 @@ class HttpOptionsDict(TypedDict, total=False):
   api_version: Optional[str]
   """Specifies the version of the API to use."""
 
-  append_path: Optional[bool]
+  force_append_path: Optional[bool]
   """Whether to force append API paths to the base URL.
   When set to True, paths like 'publishers/google/models/...' will always
   be appended to the base_url. This is useful for custom base URLs with
