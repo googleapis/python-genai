@@ -921,41 +921,6 @@ class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
       Retains the current prompts and config."""
 
 
-class FunctionCall(_common.BaseModel):
-  """A function call."""
-
-  id: Optional[str] = Field(
-      default=None,
-      description="""The unique id of the function call. If populated, the client to execute the
-   `function_call` and return the response with the matching `id`.""",
-  )
-  args: Optional[dict[str, Any]] = Field(
-      default=None,
-      description="""Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details.""",
-  )
-  name: Optional[str] = Field(
-      default=None,
-      description="""Optional. The name of the function to call. Matches [FunctionDeclaration.name].""",
-  )
-
-
-class FunctionCallDict(TypedDict, total=False):
-  """A function call."""
-
-  id: Optional[str]
-  """The unique id of the function call. If populated, the client to execute the
-   `function_call` and return the response with the matching `id`."""
-
-  args: Optional[dict[str, Any]]
-  """Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details."""
-
-  name: Optional[str]
-  """Optional. The name of the function to call. Matches [FunctionDeclaration.name]."""
-
-
-FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
-
-
 class CodeExecutionResult(_common.BaseModel):
   """Result of executing the [ExecutableCode].
 
@@ -1054,6 +1019,111 @@ class FileDataDict(TypedDict, total=False):
 
 
 FileDataOrDict = Union[FileData, FileDataDict]
+
+
+class PartialArg(_common.BaseModel):
+  """Partial argument value of the function call.
+
+  This data type is not supported in Gemini API.
+  """
+
+  null_value: Optional[Literal['NULL_VALUE']] = Field(
+      default=None, description="""Optional. Represents a null value."""
+  )
+  number_value: Optional[float] = Field(
+      default=None, description="""Optional. Represents a double value."""
+  )
+  string_value: Optional[str] = Field(
+      default=None, description="""Optional. Represents a string value."""
+  )
+  bool_value: Optional[bool] = Field(
+      default=None, description="""Optional. Represents a boolean value."""
+  )
+  json_path: Optional[str] = Field(
+      default=None,
+      description="""Required. A JSON Path (RFC 9535) to the argument being streamed. https://datatracker.ietf.org/doc/html/rfc9535. e.g. "$.foo.bar[0].data".""",
+  )
+  will_continue: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether this is not the last part of the same json_path. If true, another PartialArg message for the current json_path is expected to follow.""",
+  )
+
+
+class PartialArgDict(TypedDict, total=False):
+  """Partial argument value of the function call.
+
+  This data type is not supported in Gemini API.
+  """
+
+  null_value: Optional[Literal['NULL_VALUE']]
+  """Optional. Represents a null value."""
+
+  number_value: Optional[float]
+  """Optional. Represents a double value."""
+
+  string_value: Optional[str]
+  """Optional. Represents a string value."""
+
+  bool_value: Optional[bool]
+  """Optional. Represents a boolean value."""
+
+  json_path: Optional[str]
+  """Required. A JSON Path (RFC 9535) to the argument being streamed. https://datatracker.ietf.org/doc/html/rfc9535. e.g. "$.foo.bar[0].data"."""
+
+  will_continue: Optional[bool]
+  """Optional. Whether this is not the last part of the same json_path. If true, another PartialArg message for the current json_path is expected to follow."""
+
+
+PartialArgOrDict = Union[PartialArg, PartialArgDict]
+
+
+class FunctionCall(_common.BaseModel):
+  """A function call."""
+
+  id: Optional[str] = Field(
+      default=None,
+      description="""The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`.""",
+  )
+  args: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The name of the function to call. Matches [FunctionDeclaration.name].""",
+  )
+  partial_args: Optional[list[PartialArg]] = Field(
+      default=None,
+      description="""Optional. The partial argument value of the function call. If provided, represents the arguments/fields that are streamed incrementally. This field is not supported in Gemini API.""",
+  )
+  will_continue: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether this is the last part of the FunctionCall. If true, another partial message for the current FunctionCall is expected to follow. This field is not supported in Gemini API.""",
+  )
+
+
+class FunctionCallDict(TypedDict, total=False):
+  """A function call."""
+
+  id: Optional[str]
+  """The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`."""
+
+  args: Optional[dict[str, Any]]
+  """Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details."""
+
+  name: Optional[str]
+  """Optional. The name of the function to call. Matches [FunctionDeclaration.name]."""
+
+  partial_args: Optional[list[PartialArgDict]]
+  """Optional. The partial argument value of the function call. If provided, represents the arguments/fields that are streamed incrementally. This field is not supported in Gemini API."""
+
+  will_continue: Optional[bool]
+  """Optional. Whether this is the last part of the FunctionCall. If true, another partial message for the current FunctionCall is expected to follow. This field is not supported in Gemini API."""
+
+
+FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
 
 
 class FunctionResponseBlob(_common.BaseModel):
@@ -1369,12 +1439,6 @@ class Part(_common.BaseModel):
   instance is considered invalid.
   """
 
-  function_call: Optional[FunctionCall] = Field(
-      default=None,
-      description="""A predicted [FunctionCall] returned from the model that contains a string
-      representing the [FunctionDeclaration.name] and a structured JSON object
-      containing the parameters and their values.""",
-  )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
       description="""Optional. Result of executing the [ExecutableCode].""",
@@ -1385,6 +1449,10 @@ class Part(_common.BaseModel):
   )
   file_data: Optional[FileData] = Field(
       default=None, description="""Optional. URI based data."""
+  )
+  function_call: Optional[FunctionCall] = Field(
+      default=None,
+      description="""Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values.""",
   )
   function_response: Optional[FunctionResponse] = Field(
       default=None,
@@ -1561,11 +1629,6 @@ class PartDict(TypedDict, total=False):
   instance is considered invalid.
   """
 
-  function_call: Optional[FunctionCallDict]
-  """A predicted [FunctionCall] returned from the model that contains a string
-      representing the [FunctionDeclaration.name] and a structured JSON object
-      containing the parameters and their values."""
-
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
 
@@ -1574,6 +1637,9 @@ class PartDict(TypedDict, total=False):
 
   file_data: Optional[FileDataDict]
   """Optional. URI based data."""
+
+  function_call: Optional[FunctionCallDict]
+  """Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values."""
 
   function_response: Optional[FunctionResponseDict]
   """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
@@ -4060,6 +4126,10 @@ class FunctionCallingConfig(_common.BaseModel):
       default=None,
       description="""Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided.""",
   )
+  stream_function_call_arguments: Optional[bool] = Field(
+      default=None,
+      description="""Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API.""",
+  )
 
 
 class FunctionCallingConfigDict(TypedDict, total=False):
@@ -4070,6 +4140,9 @@ class FunctionCallingConfigDict(TypedDict, total=False):
 
   allowed_function_names: Optional[list[str]]
   """Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided."""
+
+  stream_function_call_arguments: Optional[bool]
+  """Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API."""
 
 
 FunctionCallingConfigOrDict = Union[
