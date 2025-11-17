@@ -545,3 +545,69 @@ def test_code_execution_result_one_candidate():
   )
 
   assert response.code_execution_result == '"hello"'
+
+
+def test_from_file_media_resolution_str():
+  file_uri = types.Part.from_uri(
+      file_uri='gs://test',
+      mime_type='image/png',
+      media_resolution='MEDIA_RESOLUTION_LOW',
+  )
+  assert file_uri.file_data.file_uri == 'gs://test'
+  assert file_uri.file_data.mime_type == 'image/png'
+  assert file_uri.media_resolution.level == types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW
+
+
+def test_from_file_media_resolution_enum():
+  file_uri = types.Part.from_uri(
+      file_uri='gs://test',
+      mime_type='image/png',
+      media_resolution=types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW,
+  )
+  assert file_uri.file_data.file_uri == 'gs://test'
+  assert file_uri.file_data.mime_type == 'image/png'
+  assert file_uri.media_resolution.level == types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW
+
+
+def test_from_file_media_resolution_object():
+  file_uri = types.Part.from_uri(
+      file_uri='gs://test',
+      mime_type='image/png',
+      media_resolution=types.PartMediaResolution(level='MEDIA_RESOLUTION_LOW'),
+  )
+  assert file_uri.file_data.file_uri == 'gs://test'
+  assert file_uri.file_data.mime_type == 'image/png'
+  assert file_uri.media_resolution.level == types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW
+
+
+def test_from_bytes_media_resolution_str():
+  file_uri = types.Part.from_bytes(
+      data=b'1234',
+      mime_type='image/png',
+      media_resolution='MEDIA_RESOLUTION_LOW',
+  )
+  assert file_uri.inline_data.data == b'1234'
+  assert file_uri.inline_data.mime_type == 'image/png'
+  assert file_uri.media_resolution.level == types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW
+
+
+def test_from_bytes_media_resolution_enum():
+  file_uri = types.Part.from_bytes(
+      data=b'1234',
+      mime_type='image/png',
+      media_resolution=types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW,
+  )
+  assert file_uri.inline_data.data == b'1234'
+  assert file_uri.inline_data.mime_type == 'image/png'
+  assert file_uri.media_resolution.level == types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW
+
+
+def test_from_bytes_media_resolution_object():
+  file_uri = types.Part.from_bytes(
+      data=b'1234',
+      mime_type='image/png',
+      media_resolution=types.PartMediaResolution(level='MEDIA_RESOLUTION_LOW'),
+  )
+  assert file_uri.inline_data.data == b'1234'
+  assert file_uri.inline_data.mime_type == 'image/png'
+  assert file_uri.media_resolution.level == types.PartMediaResolutionLevel.MEDIA_RESOLUTION_LOW

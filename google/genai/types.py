@@ -257,6 +257,17 @@ class PhishBlockThreshold(_common.CaseInSensitiveEnum):
   """Blocks Extremely high confidence URL that is risky."""
 
 
+class ThinkingLevel(_common.CaseInSensitiveEnum):
+  """The level of thoughts tokens that the model should generate."""
+
+  THINKING_LEVEL_UNSPECIFIED = 'THINKING_LEVEL_UNSPECIFIED'
+  """Default value."""
+  LOW = 'LOW'
+  """Low thinking level."""
+  HIGH = 'HIGH'
+  """High thinking level."""
+
+
 class HarmCategory(_common.CaseInSensitiveEnum):
   """Harm category."""
 
@@ -540,6 +551,19 @@ class TuningTask(_common.CaseInSensitiveEnum):
   """Tuning task for text to video."""
   TUNING_TASK_R2V = 'TUNING_TASK_R2V'
   """Tuning task for reference to video."""
+
+
+class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
+  """The tokenization quality used for given media."""
+
+  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  """Media resolution has not been set."""
+  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  """Media resolution set to low."""
+  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  """Media resolution set to medium."""
+  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
+  """Media resolution set to high."""
 
 
 class JSONSchemaType(Enum):
@@ -919,6 +943,36 @@ class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
   RESET_CONTEXT = 'RESET_CONTEXT'
   """Reset the context of the music generation without stopping it.
       Retains the current prompts and config."""
+
+
+class PartMediaResolution(_common.BaseModel):
+  """Media resolution for the input media."""
+
+  level: Optional[PartMediaResolutionLevel] = Field(
+      default=None,
+      description="""The tokenization quality used for given media.
+    """,
+  )
+  num_tokens: Optional[int] = Field(
+      default=None,
+      description="""Specifies the required sequence length for media tokenization.
+    """,
+  )
+
+
+class PartMediaResolutionDict(TypedDict, total=False):
+  """Media resolution for the input media."""
+
+  level: Optional[PartMediaResolutionLevel]
+  """The tokenization quality used for given media.
+    """
+
+  num_tokens: Optional[int]
+  """Specifies the required sequence length for media tokenization.
+    """
+
+
+PartMediaResolutionOrDict = Union[PartMediaResolution, PartMediaResolutionDict]
 
 
 class CodeExecutionResult(_common.BaseModel):
@@ -1439,6 +1493,11 @@ class Part(_common.BaseModel):
   instance is considered invalid.
   """
 
+  media_resolution: Optional[PartMediaResolution] = Field(
+      default=None,
+      description="""Media resolution for the input media.
+    """,
+  )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
       description="""Optional. Result of executing the [ExecutableCode].""",
@@ -1559,8 +1618,30 @@ class Part(_common.BaseModel):
     return self.inline_data.as_image()
 
   @classmethod
+  def _t_part_media_resolution(
+      cls,
+      part_media_resolution: Union[
+          'PartMediaResolutionOrDict', 'PartMediaResolutionLevel', str
+      ],
+  ) -> PartMediaResolution:
+    if isinstance(part_media_resolution, str):
+      part_media_resolution = PartMediaResolution(level=part_media_resolution)
+    elif isinstance(part_media_resolution, PartMediaResolutionLevel):
+      part_media_resolution = PartMediaResolution(level=part_media_resolution)
+    elif isinstance(part_media_resolution, dict):
+      part_media_resolution = PartMediaResolution(**part_media_resolution)
+
+    return part_media_resolution
+
+  @classmethod
   def from_uri(
-      cls, *, file_uri: str, mime_type: Optional[str] = None
+      cls,
+      *,
+      file_uri: str,
+      mime_type: Optional[str] = None,
+      media_resolution: Optional[
+          Union['PartMediaResolutionOrDict', 'PartMediaResolutionLevel', str]
+      ] = None,
   ) -> 'Part':
     """Creates a Part from a file uri.
 
@@ -1575,20 +1656,33 @@ class Part(_common.BaseModel):
       mime_type, _ = mimetypes.guess_type(file_uri)
       if not mime_type:
         raise ValueError(f'Failed to determine mime type for file: {file_uri}')
+    if media_resolution is not None:
+      media_resolution = cls._t_part_media_resolution(media_resolution)
     file_data = FileData(file_uri=file_uri, mime_type=mime_type)
-    return cls(file_data=file_data)
+    return cls(file_data=file_data, media_resolution=media_resolution)
 
   @classmethod
   def from_text(cls, *, text: str) -> 'Part':
     return cls(text=text)
 
   @classmethod
-  def from_bytes(cls, *, data: bytes, mime_type: str) -> 'Part':
+  def from_bytes(
+      cls,
+      *,
+      data: bytes,
+      mime_type: str,
+      media_resolution: Optional[
+          Union['PartMediaResolutionOrDict', 'PartMediaResolutionLevel', str]
+      ] = None,
+  ) -> 'Part':
     inline_data = Blob(
         data=data,
         mime_type=mime_type,
     )
-    return cls(inline_data=inline_data)
+    if media_resolution is not None:
+      media_resolution = cls._t_part_media_resolution(media_resolution)
+
+    return cls(inline_data=inline_data, media_resolution=media_resolution)
 
   @classmethod
   def from_function_call(cls, *, name: str, args: dict[str, Any]) -> 'Part':
@@ -1628,6 +1722,10 @@ class PartDict(TypedDict, total=False):
   of content being conveyed. Using multiple fields within the same `Part`
   instance is considered invalid.
   """
+
+  media_resolution: Optional[PartMediaResolutionDict]
+  """Media resolution for the input media.
+    """
 
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
@@ -4314,6 +4412,10 @@ class ThinkingConfig(_common.BaseModel):
       description="""Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """,
   )
+  thinking_level: Optional[ThinkingLevel] = Field(
+      default=None,
+      description="""Optional. The level of thoughts tokens that the model should generate.""",
+  )
 
 
 class ThinkingConfigDict(TypedDict, total=False):
@@ -4326,6 +4428,9 @@ class ThinkingConfigDict(TypedDict, total=False):
   thinking_budget: Optional[int]
   """Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """
+
+  thinking_level: Optional[ThinkingLevel]
+  """Optional. The level of thoughts tokens that the model should generate."""
 
 
 ThinkingConfigOrDict = Union[ThinkingConfig, ThinkingConfigDict]
