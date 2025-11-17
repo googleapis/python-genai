@@ -4263,6 +4263,16 @@ class ImageConfig(_common.BaseModel):
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`.""",
   )
+  output_mime_type: Optional[str] = Field(
+      default=None,
+      description="""MIME type of the generated image. This field is not
+      supported in Gemini API.""",
+  )
+  output_compression_quality: Optional[int] = Field(
+      default=None,
+      description="""Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API.""",
+  )
 
 
 class ImageConfigDict(TypedDict, total=False):
@@ -4276,6 +4286,14 @@ class ImageConfigDict(TypedDict, total=False):
   """Optional. Specifies the size of generated images. Supported
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`."""
+
+  output_mime_type: Optional[str]
+  """MIME type of the generated image. This field is not
+      supported in Gemini API."""
+
+  output_compression_quality: Optional[int]
+  """Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API."""
 
 
 ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]
