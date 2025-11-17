@@ -1110,6 +1110,11 @@ class FunctionResponseFileData(_common.BaseModel):
       default=None,
       description="""Required. The IANA standard MIME type of the source data.""",
   )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the file.
+      Used to provide a label or filename to distinguish files.""",
+  )
 
 
 class FunctionResponseFileDataDict(TypedDict, total=False):
@@ -1120,6 +1125,10 @@ class FunctionResponseFileDataDict(TypedDict, total=False):
 
   mime_type: Optional[str]
   """Required. The IANA standard MIME type of the source data."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the file.
+      Used to provide a label or filename to distinguish files."""
 
 
 FunctionResponseFileDataOrDict = Union[
@@ -4280,6 +4289,16 @@ class ImageConfig(_common.BaseModel):
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`.""",
   )
+  output_mime_type: Optional[str] = Field(
+      default=None,
+      description="""MIME type of the generated image. This field is not
+      supported in Gemini API.""",
+  )
+  output_compression_quality: Optional[int] = Field(
+      default=None,
+      description="""Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API.""",
+  )
 
 
 class ImageConfigDict(TypedDict, total=False):
@@ -4293,6 +4312,14 @@ class ImageConfigDict(TypedDict, total=False):
   """Optional. Specifies the size of generated images. Supported
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`."""
+
+  output_mime_type: Optional[str]
+  """MIME type of the generated image. This field is not
+      supported in Gemini API."""
+
+  output_compression_quality: Optional[int]
+  """Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API."""
 
 
 ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]

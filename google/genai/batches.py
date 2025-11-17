@@ -949,7 +949,11 @@ def _GenerateContentConfig_to_mldev(
     setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
 
   if getv(from_object, ['image_config']) is not None:
-    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+    setv(
+        to_object,
+        ['imageConfig'],
+        _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
+    )
 
   return to_object
 
@@ -1053,6 +1057,30 @@ def _GoogleSearch_to_mldev(
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
+    )
+
+  return to_object
+
+
+def _ImageConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['aspect_ratio']) is not None:
+    setv(to_object, ['aspectRatio'], getv(from_object, ['aspect_ratio']))
+
+  if getv(from_object, ['image_size']) is not None:
+    setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    raise ValueError(
+        'output_mime_type parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    raise ValueError(
+        'output_compression_quality parameter is not supported in Gemini API.'
     )
 
   return to_object
