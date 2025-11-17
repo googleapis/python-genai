@@ -80,6 +80,49 @@ def test_two_candidates_text(caplog, generate_content_response):
   generate_content_response.candidates = None
 
 
+def test_thought_signature_no_warning(caplog, generate_content_response):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(text='Hello'),
+                  types.Part(thought_signature=b'thought'),
+              ]
+          )
+      ),
+  ]
+
+  assert generate_content_response.text == 'Hello'
+  assert not any(
+      record.levelname == 'WARNING'
+      and 'there are non-text parts in the response' in record.message
+      for record in caplog.records
+  )
+  generate_content_response.candidates = None
+
+
+def test_thought_signature_no_warning_in_text(
+    caplog, generate_content_response
+):
+  generate_content_response.candidates = [
+      types.Candidate(
+          content=types.Content(
+              parts=[
+                  types.Part(text='Hello', thought_signature=b'thought'),
+              ]
+          )
+      ),
+  ]
+
+  assert generate_content_response.text == 'Hello'
+  assert not any(
+      record.levelname == 'WARNING'
+      and 'there are non-text parts in the response' in record.message
+      for record in caplog.records
+  )
+  generate_content_response.candidates = None
+
+
 def test_1_candidate_text():
   response = types.GenerateContentResponse(
       candidates=[

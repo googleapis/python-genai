@@ -59,11 +59,11 @@ def _Blob_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
-
   if getv(from_object, ['data']) is not None:
     setv(to_object, ['data'], getv(from_object, ['data']))
+
+  if getv(from_object, ['display_name']) is not None:
+    raise ValueError('display_name parameter is not supported in Gemini API.')
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
@@ -94,13 +94,6 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['urlContextMetadata']) is not None:
-    setv(
-        to_object,
-        ['url_context_metadata'],
-        getv(from_object, ['urlContextMetadata']),
-    )
-
   if getv(from_object, ['avgLogprobs']) is not None:
     setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
@@ -122,6 +115,13 @@ def _Candidate_from_mldev(
         to_object,
         ['safety_ratings'],
         [item for item in getv(from_object, ['safetyRatings'])],
+    )
+
+  if getv(from_object, ['urlContextMetadata']) is not None:
+    setv(
+        to_object,
+        ['url_context_metadata'],
+        getv(from_object, ['urlContextMetadata']),
     )
 
   return to_object
@@ -2299,6 +2299,13 @@ def _GenerationConfig_to_vertex(
         getv(from_object, ['model_selection_config']),
     )
 
+  if getv(from_object, ['response_json_schema']) is not None:
+    setv(
+        to_object,
+        ['responseJsonSchema'],
+        getv(from_object, ['response_json_schema']),
+    )
+
   if getv(from_object, ['audio_timestamp']) is not None:
     setv(to_object, ['audioTimestamp'], getv(from_object, ['audio_timestamp']))
 
@@ -2335,13 +2342,6 @@ def _GenerationConfig_to_vertex(
   if getv(from_object, ['presence_penalty']) is not None:
     setv(
         to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
-    )
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
     )
 
   if getv(from_object, ['response_logprobs']) is not None:
@@ -2457,14 +2457,19 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['time_range_filter']) is not None:
-    setv(
-        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
-    )
-
   if getv(from_object, ['exclude_domains']) is not None:
     raise ValueError(
         'exclude_domains parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['blocking_confidence']) is not None:
+    raise ValueError(
+        'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['time_range_filter']) is not None:
+    setv(
+        to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
     )
 
   return to_object
@@ -2754,6 +2759,21 @@ def _Model_from_mldev(
         getv(from_object, ['supportedGenerationMethods']),
     )
 
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['maxTemperature']) is not None:
+    setv(to_object, ['max_temperature'], getv(from_object, ['maxTemperature']))
+
+  if getv(from_object, ['topP']) is not None:
+    setv(to_object, ['top_p'], getv(from_object, ['topP']))
+
+  if getv(from_object, ['topK']) is not None:
+    setv(to_object, ['top_k'], getv(from_object, ['topK']))
+
+  if getv(from_object, ['thinking']) is not None:
+    setv(to_object, ['thinking'], getv(from_object, ['thinking']))
+
   return to_object
 
 
@@ -2816,33 +2836,6 @@ def _Part_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video_metadata']) is not None:
-    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
-
-  if getv(from_object, ['thought']) is not None:
-    setv(to_object, ['thought'], getv(from_object, ['thought']))
-
-  if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
-    )
-
-  if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
-    )
-
-  if getv(from_object, ['thought_signature']) is not None:
-    setv(
-        to_object,
-        ['thoughtSignature'],
-        getv(from_object, ['thought_signature']),
-    )
-
   if getv(from_object, ['function_call']) is not None:
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
 
@@ -2856,6 +2849,13 @@ def _Part_to_mldev(
   if getv(from_object, ['executable_code']) is not None:
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
 
+  if getv(from_object, ['file_data']) is not None:
+    setv(
+        to_object,
+        ['fileData'],
+        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
   if getv(from_object, ['function_response']) is not None:
     setv(
         to_object,
@@ -2863,8 +2863,28 @@ def _Part_to_mldev(
         getv(from_object, ['function_response']),
     )
 
+  if getv(from_object, ['inline_data']) is not None:
+    setv(
+        to_object,
+        ['inlineData'],
+        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
+    )
+
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   return to_object
 
@@ -2900,7 +2920,7 @@ def _RecontextImageConfig_to_vertex(
   if getv(from_object, ['base_steps']) is not None:
     setv(
         parent_object,
-        ['parameters', 'editConfig', 'baseSteps'],
+        ['parameters', 'baseSteps'],
         getv(from_object, ['base_steps']),
     )
 
@@ -3136,11 +3156,11 @@ def _SafetySetting_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['method']) is not None:
-    raise ValueError('method parameter is not supported in Gemini API.')
-
   if getv(from_object, ['category']) is not None:
     setv(to_object, ['category'], getv(from_object, ['category']))
+
+  if getv(from_object, ['method']) is not None:
+    raise ValueError('method parameter is not supported in Gemini API.')
 
   if getv(from_object, ['threshold']) is not None:
     setv(to_object, ['threshold'], getv(from_object, ['threshold']))
@@ -3280,6 +3300,9 @@ def _SpeechConfig_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
   if getv(from_object, ['voice_config']) is not None:
     setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
 
@@ -3287,9 +3310,6 @@ def _SpeechConfig_to_vertex(
     raise ValueError(
         'multi_speaker_voice_config parameter is not supported in Vertex AI.'
     )
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
 
   return to_object
 
@@ -3309,19 +3329,21 @@ def _Tool_to_mldev(
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
-    )
-
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
         ['googleSearchRetrieval'],
         getv(from_object, ['google_search_retrieval']),
     )
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
+  if getv(from_object, ['file_search']) is not None:
+    setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   if getv(from_object, ['enterprise_web_search']) is not None:
     raise ValueError(
@@ -3335,14 +3357,15 @@ def _Tool_to_mldev(
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
+
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -3365,15 +3388,21 @@ def _Tool_to_vertex(
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
-
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
         ['googleSearchRetrieval'],
         getv(from_object, ['google_search_retrieval']),
     )
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+
+  if getv(from_object, ['file_search']) is not None:
+    raise ValueError('file_search parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   if getv(from_object, ['enterprise_web_search']) is not None:
     setv(
@@ -3385,14 +3414,11 @@ def _Tool_to_vertex(
   if getv(from_object, ['google_maps']) is not None:
     setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
+  if getv(from_object, ['google_search']) is not None:
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
-
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   return to_object
 
@@ -3514,6 +3540,20 @@ def _UpscaleImageAPIConfig_to_vertex(
         parent_object,
         ['parameters', 'storageUri'],
         getv(from_object, ['output_gcs_uri']),
+    )
+
+  if getv(from_object, ['safety_filter_level']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'safetySetting'],
+        getv(from_object, ['safety_filter_level']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'personGeneration'],
+        getv(from_object, ['person_generation']),
     )
 
   if getv(from_object, ['include_rai_reason']) is not None:
@@ -4496,7 +4536,12 @@ class Models(_api_module.BaseModule):
       else:
         path = '{models_url}'
     query_params = request_dict.get('_query')
-    if query_params:
+    if query_params and query_params.get('filter'):
+      query_param_filter = query_params.pop('filter')
+      path = f'{path}?filter={query_param_filter}'
+      if query_params:
+        path += f'&{urlencode(query_params)}'
+    elif query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
@@ -4979,6 +5024,9 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
     if (
         parsed_config
@@ -4992,6 +5040,28 @@ class Models(_api_module.BaseModule):
       return self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling (AFC). AFC is disabled. If AFC is intended, please '
+            'include python callables in the tool list, and do not include '
+            'function declaration in the tool list.',
+            indices_str,
+        )
+      return self._generate_content(
+          model=model, contents=contents, config=parsed_config
+      )
+
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
         parsed_config
     )
@@ -5115,6 +5185,9 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
     if (
         parsed_config
@@ -5125,6 +5198,27 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
+      yield from self._generate_content_stream(
+          model=model, contents=contents, config=parsed_config
+      )
+      return
+
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling. AFC will be disabled.',
+            indices_str,
+        )
       yield from self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
@@ -5154,7 +5248,7 @@ class Models(_api_module.BaseModule):
         # Yield chunks only if there's no function response parts.
         for chunk in response:
           if not function_map:
-            _extra_utils.append_chunk_contents(contents, chunk)
+            contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
             yield chunk
           else:
             if (
@@ -5167,7 +5261,7 @@ class Models(_api_module.BaseModule):
                 chunk, function_map
             )
             if not func_response_parts:
-              _extra_utils.append_chunk_contents(contents, chunk)
+              contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
               yield chunk
 
       else:
@@ -5177,7 +5271,7 @@ class Models(_api_module.BaseModule):
             chunk.automatic_function_calling_history = (
                 automatic_function_calling_history
             )
-          _extra_utils.append_chunk_contents(contents, chunk)
+          contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
           yield chunk
         if (
             chunk is None
@@ -5376,6 +5470,8 @@ class Models(_api_module.BaseModule):
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
         output_gcs_uri=config_dct.get('output_gcs_uri', None),
+        safety_filter_level=config_dct.get('safety_filter_level', None),
+        person_generation=config_dct.get('person_generation', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(
@@ -6285,7 +6381,12 @@ class AsyncModels(_api_module.BaseModule):
       else:
         path = '{models_url}'
     query_params = request_dict.get('_query')
-    if query_params:
+    if query_params and query_params.get('filter'):
+      query_param_filter = query_params.pop('filter')
+      path = f'{path}?filter={query_param_filter}'
+      if query_params:
+        path += f'&{urlencode(query_params)}'
+    elif query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
@@ -6743,10 +6844,34 @@ class AsyncModels(_api_module.BaseModule):
       # J'aime les bagels.
     """
     # Retrieve and cache any MCP sessions if provided.
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
     parsed_config, mcp_to_genai_tool_adapters = (
         await _extra_utils.parse_config_for_mcp_sessions(config)
     )
     if _extra_utils.should_disable_afc(parsed_config):
+      return await self._generate_content(
+          model=model, contents=contents, config=parsed_config
+      )
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling (AFC). AFC is disabled. If AFC is intended, please '
+            'include python callables in the tool list, and do not include '
+            'function declaration in the tool list.',
+            indices_str,
+        )
       return await self._generate_content(
           model=model, contents=contents, config=parsed_config
       )
@@ -6875,10 +7000,42 @@ class AsyncModels(_api_module.BaseModule):
     """
 
     # Retrieve and cache any MCP sessions if provided.
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(config)
+    )
+    # Retrieve and cache any MCP sessions if provided.
     parsed_config, mcp_to_genai_tool_adapters = (
         await _extra_utils.parse_config_for_mcp_sessions(config)
     )
     if _extra_utils.should_disable_afc(parsed_config):
+      response = await self._generate_content_stream(
+          model=model, contents=contents, config=parsed_config
+      )
+
+      async def base_async_generator(model, contents, config):  # type: ignore[no-untyped-def]
+        async for chunk in response:  # type: ignore[attr-defined]
+          yield chunk
+
+      return base_async_generator(model, contents, parsed_config)  # type: ignore[no-untyped-call, no-any-return]
+
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if isinstance(config, types.GenerateContentConfig):
+        if config.tools:
+          original_tools_length = len(config.tools)
+      elif isinstance(config, dict):
+        tools = config.get('tools', [])
+        if tools:
+          original_tools_length = len(tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ', '.join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            'Tools at indices [%s] are not compatible with automatic function '
+            'calling (AFC). AFC is disabled. If AFC is intended, please '
+            'include python callables in the tool list, and do not include '
+            'function declaration in the tool list.',
+            indices_str,
+        )
       response = await self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
@@ -6922,7 +7079,7 @@ class AsyncModels(_api_module.BaseModule):
           # Yield chunks only if there's no function response parts.
           async for chunk in response:  # type: ignore[attr-defined]
             if not function_map:
-              _extra_utils.append_chunk_contents(contents, chunk)
+              contents = _extra_utils.append_chunk_contents(contents, chunk)
               yield chunk
             else:
               if (
@@ -6937,7 +7094,7 @@ class AsyncModels(_api_module.BaseModule):
                   )
               )
               if not func_response_parts:
-                _extra_utils.append_chunk_contents(contents, chunk)
+                contents = _extra_utils.append_chunk_contents(contents, chunk)
                 yield chunk
 
         else:
@@ -6948,7 +7105,7 @@ class AsyncModels(_api_module.BaseModule):
               chunk.automatic_function_calling_history = (
                   automatic_function_calling_history
               )
-            _extra_utils.append_chunk_contents(contents, chunk)
+            contents = _extra_utils.append_chunk_contents(contents, chunk)
             yield chunk
           if (
               chunk is None
@@ -7200,6 +7357,8 @@ class AsyncModels(_api_module.BaseModule):
     api_config = types._UpscaleImageAPIConfigDict(
         http_options=config_dct.get('http_options', None),
         output_gcs_uri=config_dct.get('output_gcs_uri', None),
+        safety_filter_level=config_dct.get('safety_filter_level', None),
+        person_generation=config_dct.get('person_generation', None),
         include_rai_reason=config_dct.get('include_rai_reason', None),
         output_mime_type=config_dct.get('output_mime_type', None),
         output_compression_quality=config_dct.get(

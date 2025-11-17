@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 class APIError(Exception):
   """General errors raised by the GenAI API."""
   code: int
-  response: Union['ReplayResponse', httpx.Response]
+  response: Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
 
   status: Optional[str] = None
   message: Optional[str] = None
@@ -103,7 +103,30 @@ class APIError(Exception):
     else:
       response_json = response.body_segments[0].get('error', {})
 
-    status_code = response.status_code
+    cls.raise_error(response.status_code, response_json, response)
+
+  @classmethod
+  def raise_error(
+      cls,
+      status_code: int,
+      response_json: Any,
+      response: Optional[
+          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+      ],
+  ) -> None:
+    """Raises an appropriate APIError subclass based on the status code.
+
+    Args:
+      status_code: The HTTP status code of the response.
+      response_json: The JSON body of the response, or a dict containing error
+        details.
+      response: The original response object.
+
+    Raises:
+      ClientError: If the status code is in the 4xx range.
+      ServerError: If the status code is in the 5xx range.
+      APIError: For other error status codes.
+    """
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
@@ -162,6 +185,27 @@ class APIError(Exception):
       except ImportError:
         raise ValueError(f'Unsupported response type: {type(response)}')
 
+    await cls.raise_error_async(status_code, response_json, response)
+
+  @classmethod
+  async def raise_error_async(
+      cls, status_code: int, response_json: Any, response: Optional[
+          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+      ]
+  ) -> None:
+    """Raises an appropriate APIError subclass based on the status code.
+
+    Args:
+      status_code: The HTTP status code of the response.
+      response_json: The JSON body of the response, or a dict containing error
+        details.
+      response: The original response object.
+
+    Raises:
+      ClientError: If the status code is in the 4xx range.
+      ServerError: If the status code is in the 5xx range.
+      APIError: For other error status codes.
+    """
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:

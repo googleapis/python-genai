@@ -40,6 +40,12 @@ from ... import Client
 from ... import client as gl_client
 from ... import live
 from ... import types
+try:
+    import aiohttp
+    AIOHTTP_NOT_INSTALLED = False
+except ImportError:
+    AIOHTTP_NOT_INSTALLED = True
+    aiohttp = mock.MagicMock()
 
 
 if typing.TYPE_CHECKING:
@@ -55,6 +61,10 @@ else:
     mcp_types = None
     McpClientSession = None
 
+
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
 
 function_declarations = [{
     'name': 'get_current_weather',
@@ -180,6 +190,7 @@ def test_mldev_from_env(monkeypatch):
   assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
+@requires_aiohttp
 def test_vertex_from_env(monkeypatch):
   project_id = 'fake_project_id'
   location = 'fake-location'
@@ -189,6 +200,7 @@ def test_vertex_from_env(monkeypatch):
 
   client = Client()
 
+  assert client.aio.live._api_client.custom_base_url is None
   assert client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.project == project_id
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
@@ -1960,13 +1972,14 @@ async def test_connect_with_default_credentials(mock_websocket):
 @pytest.mark.asyncio
 async def test_connect_with_custom_base_url(mock_websocket):
   # mock api client
-  client = mock_api_client(
-      vertexai=True, http_options={'base_url': 'https://custom-base-url.com'}
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      http_options={
+          'base_url': 'https://custom-base-url.com',
+          'headers': {'Authorization': 'Bearer custom_test_token'},
+      }
   )
-  # mock google auth cred
-  mock_google_auth_default = Mock(return_value=(None, None))
-  mock_creds = Mock(token='default_test_token')
-  mock_google_auth_default.return_value = (mock_creds, None)
+  # No ADC credentials.
   capture = {}
 
   @contextlib.asynccontextmanager
@@ -1975,7 +1988,6 @@ async def test_connect_with_custom_base_url(mock_websocket):
     capture['headers'] = additional_headers
     yield mock_websocket
 
-  @patch('google.auth.default', new=mock_google_auth_default)
   @patch.object(live, 'ws_connect', new=mock_connect)
   async def _test_connect():
     live_module = live.AsyncLive(client)
@@ -1983,7 +1995,7 @@ async def test_connect_with_custom_base_url(mock_websocket):
       pass
 
     assert 'Authorization' in capture['headers']
-    assert capture['headers']['Authorization'] == 'Bearer default_test_token'
+    assert capture['headers']['Authorization'] == 'Bearer custom_test_token'
     assert capture['uri'] == 'https://custom-base-url.com'
 
   await _test_connect()
@@ -2060,5 +2072,4 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
 
   assert 'x-goog-api-key' in capture['headers'], "x-goog-api-key is missing from headers"
   assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
-  assert 'BidiGenerateContent' in capture['uri']
   assert 'BidiGenerateContent' in capture['uri']

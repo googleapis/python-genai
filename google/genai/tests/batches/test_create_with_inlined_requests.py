@@ -26,7 +26,7 @@ from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 
-_GEMINI_MODEL = 'gemini-2.5-flash-lite'
+_GEMINI_MODEL = 'gemini-2.5-flash'
 _DISPLAY_NAME = 'test_batch'
 
 _MLDEV_GEMINI_MODEL = 'gemini-2.5-flash'

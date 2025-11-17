@@ -765,3 +765,177 @@ def test_move_value_by_path():
   }
 
   assert data == expected
+
+
+def test_check_field_type_mismatches_no_warning_for_correct_types(caplog):
+  """Test that no warning is logged when types match."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_a: ModelA
+
+  # Should not warn - dict will be converted to ModelA by Pydantic
+  data = {"model_a": {"value": 123}}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_a.value == 123
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_warns_on_pydantic_type_mismatch(caplog):
+  """Test that warning is logged when Pydantic model types mismatch."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class ModelB(_common.BaseModel):
+    value: str
+
+  class TestModel(_common.BaseModel):
+    model_field: ModelA
+
+  # Create an instance of ModelB (wrong type)
+  model_b_instance = ModelB(value="test")
+
+  # Pass the wrong Pydantic model instance
+  data = {"model_field": model_b_instance}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel._check_field_type_mismatches(data)
+
+  assert len(caplog.records) == 1
+  assert "Type mismatch in TestModel.model_field" in caplog.records[0].message
+  assert "expected ModelA, got ModelB" in caplog.records[0].message
+
+
+def test_check_field_type_mismatches_no_warning_for_none_values(caplog):
+  """Test that no warning is logged for None values."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_field: Optional[ModelA] = None
+
+  data = {"model_field": None}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_field is None
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_no_warning_for_missing_fields(caplog):
+  """Test that no warning is logged for missing fields."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_field: Optional[ModelA] = None
+
+  data = {}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_field is None
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_no_warning_for_primitive_types(caplog):
+  """Test that no warning is logged for primitive type mismatches."""
+
+  class TestModel(_common.BaseModel):
+    int_field: int
+    str_field: str
+
+  # Even though we're passing wrong primitive types, we should not warn
+  # (Pydantic will handle validation)
+  data = {"int_field": "123", "str_field": "test"}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    # This will succeed because Pydantic can coerce "123" to int
+    result = TestModel.model_validate(data)
+
+  assert result.int_field == 123
+  assert result.str_field == "test"
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_handles_optional_unwrapping(caplog):
+  """Test that Optional types are properly unwrapped before checking."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class ModelB(_common.BaseModel):
+    value: str
+
+  class TestModel(_common.BaseModel):
+    model_field: Optional[ModelA] = None
+
+  # Pass wrong Pydantic model type
+  model_b_instance = ModelB(value="test")
+  data = {"model_field": model_b_instance}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel._check_field_type_mismatches(data)
+
+  assert len(caplog.records) == 1
+  assert "expected ModelA, got ModelB" in caplog.records[0].message
+
+
+def test_check_field_type_mismatches_no_warning_for_correct_pydantic_instance(caplog):
+  """Test that no warning is logged when correct Pydantic instance is provided."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_field: ModelA
+
+  # Pass correct Pydantic model instance
+  model_a_instance = ModelA(value=42)
+  data = {"model_field": model_a_instance}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_field.value == 42
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_with_multiple_fields(caplog):
+  """Test checking multiple fields with mixed scenarios."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class ModelB(_common.BaseModel):
+    value: str
+
+  class TestModel(_common.BaseModel):
+    field_a: ModelA
+    field_b: Optional[ModelA] = None
+    field_c: str
+
+  model_b_instance = ModelB(value="wrong")
+  data = {
+      "field_a": model_b_instance,  # Wrong type - should warn
+      "field_b": None,  # None - should not warn
+      "field_c": "test",  # Primitive - should not warn
+  }
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel._check_field_type_mismatches(data)
+
+  # Should only warn about field_a
+  assert len(caplog.records) == 1
+  assert "field_a" in caplog.records[0].message
+  assert "expected ModelA, got ModelB" in caplog.records[0].message

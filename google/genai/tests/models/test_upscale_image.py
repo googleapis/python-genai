@@ -24,7 +24,7 @@ import pytest
 from ... import types
 from .. import pytest_helper
 
-IMAGEN_MODEL_LATEST = 'imagen-3.0-generate-002'
+IMAGEN_MODEL_LATEST = 'imagen-4.0-upscale-preview'
 
 IMAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/bridge1.png')
@@ -49,6 +49,8 @@ test_table: list[pytest_helper.TestTableItem] = [
             upscale_factor='x2',
             config=types.UpscaleImageConfig(
                 include_rai_reason=True,
+                person_generation=types.PersonGeneration.ALLOW_ADULT,
+                safety_filter_level=types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE,
                 output_mime_type='image/jpeg',
                 output_compression_quality=80,
                 enhance_input_image=True,
@@ -107,6 +109,8 @@ async def test_upscale_async(client):
         image=types.Image.from_file(location=IMAGE_FILE_PATH),
         upscale_factor='x2',
         config=types.UpscaleImageConfig(
+            person_generation=types.PersonGeneration.ALLOW_ADULT,
+            safety_filter_level=types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE,
             include_rai_reason=True,
             output_mime_type='image/jpeg',
             output_compression_quality=80,

@@ -18,8 +18,8 @@ from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 
-VERTEX_CACHED_CONTENT_NAME = '5648094474862067712'
-MLDEV_CACHED_CONTENT_NAME = '5d231lden4nu'
+VERTEX_CACHED_CONTENT_NAME = '8163416782997028864'
+MLDEV_CACHED_CONTENT_NAME = 'idv6zldt3p2f1lbm31vn41tx2ld42qngpcnka2s3'
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
@@ -27,7 +27,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='INVALID_ARGUMENT',
         exception_if_mldev='INVALID_ARGUMENT',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-pro-002',
+            model='gemini-2.5-flash',
             contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': 'batchPredictionJobs/123',
@@ -41,7 +41,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'CachedContent API has expiration and permission issues'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-pro-002',
+            model='gemini-2.5-flash',
             contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': f'locations/us-central1/cachedContents/{VERTEX_CACHED_CONTENT_NAME}',
@@ -55,7 +55,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'CachedContent API has expiration and permission issues'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-pro-002',
+            model='gemini-2.5-flash',
             contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': (
@@ -71,7 +71,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'CachedContent API has expiration and permission issues'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-pro-002',
+            model='gemini-2.5-flash',
             contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': VERTEX_CACHED_CONTENT_NAME,
@@ -85,7 +85,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'CachedContent API has expiration and permission issues'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-pro-001',
+            model='gemini-2.5-flash',
             contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': f'{MLDEV_CACHED_CONTENT_NAME}',
@@ -99,7 +99,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'CachedContent API has expiration and permission issues'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-pro-002',
+            model='gemini-2.5-flash',
             contents=t.t_contents('What is in these docs?'),
             config={
                 'cached_content': f'projects/964831358985/locations/us-central1/cachedContents/{VERTEX_CACHED_CONTENT_NAME}',
@@ -113,7 +113,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             'CachedContent API has expiration and permission issues'
         ),
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-pro-001',
+            model='gemini-2.5-flash',
             contents=t.t_contents('Tell me a story in 300 words.'),
             config={
                 'cached_content': f'cachedContents/{MLDEV_CACHED_CONTENT_NAME}',

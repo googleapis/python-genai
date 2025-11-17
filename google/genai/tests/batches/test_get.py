@@ -29,7 +29,7 @@ _BATCH_JOB_FULL_RESOURCE_NAME = (
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
 # MLDev batch operation name.
-_MLDEV_BATCH_OPERATION_NAME = 'batches/2uqn2xn58tohxdg0qnypy4dujme2mvs90gp1'
+_MLDEV_BATCH_OPERATION_NAME = 'batches/0yew7plxupyybd7appsrq5vw7w0lp3l79lab'
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
 
 

@@ -1,5 +1,106 @@
 # Changelog
 
+## [1.50.1](https://github.com/googleapis/python-genai/compare/v1.50.0...v1.50.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* Do not use ADC if passing a base_url, no project, no location ([a00b67a](https://github.com/googleapis/python-genai/commit/a00b67a9618e81b0aa8abde9ddc68388869f8445))
+* Ensure the custom httpx client and async client won't be closed automatically ([9a9fa3c](https://github.com/googleapis/python-genai/commit/9a9fa3c95ee872efeee8ede411bd2946f7351100))
+
+## [1.50.0](https://github.com/googleapis/python-genai/compare/v1.49.0...v1.50.0) (2025-11-12)
+
+
+### Features
+
+* Use pytest-xdist for test parallelization ([6ff82fc](https://github.com/googleapis/python-genai/commit/6ff82fca9ed90992c15cfb3affdbb65dd5d5f4d1))
+
+
+### Bug Fixes
+
+* Add missing fields to the model types ([4b855e6](https://github.com/googleapis/python-genai/commit/4b855e621525f2bdd7cdd00e3a98edbdd173997b))
+* Don't generate warnings from response.text property because of thought_signature. ([dd9360d](https://github.com/googleapis/python-genai/commit/dd9360d21d0a979ddd7acf994a0aa19bec794182))
+* Fix base_steps parameter for recontext_image ([d94077b](https://github.com/googleapis/python-genai/commit/d94077bdeeddf012eae8134a341c915be5fe24ce))
+* Fix file_search_stores.documents pagination ([8d40d48](https://github.com/googleapis/python-genai/commit/8d40d48d9a048313ec97b60a8941e7b536721d6e))
+* Fix models.list() filter parameter ([7fa1e41](https://github.com/googleapis/python-genai/commit/7fa1e41580052822c90d9b6ba99c66674ab5851a))
+* Handle SSE error message types properly in streaming ([72afa50](https://github.com/googleapis/python-genai/commit/72afa50eb2c4d960a4f6b55909205d0739fde05a))
+* Roll back a breaking change to the import system ([8674003](https://github.com/googleapis/python-genai/commit/86740033fb9c93b822b33100324f6c2ac8ad1f7e))
+
+
+### Documentation
+
+* Log Schema.json_schema and Schema.from_json_schema only once ([517300c](https://github.com/googleapis/python-genai/commit/517300caabd58268f06f4091f0cbbb52c2bc889e))
+* Regenerate docs for 1.49.0 ([74b680a](https://github.com/googleapis/python-genai/commit/74b680adfdf74b6e807d50d8595f092cd522a6f8))
+
+## [1.49.0](https://github.com/googleapis/python-genai/compare/v1.48.0...v1.49.0) (2025-11-05)
+
+
+### Features
+
+* Add complete stats to BatchJob ([b211466](https://github.com/googleapis/python-genai/commit/b2114666443d2f72b60bb352e4c0c2be5be478c9))
+* Add FileSearch tool and associated FileSearchStore management APIs ([2e2a78d](https://github.com/googleapis/python-genai/commit/2e2a78d202c2598796394ddc9b764c581a3e4cab))
+* Add FileSearch tool and associated FileSearchStore management APIs ([7370d24](https://github.com/googleapis/python-genai/commit/7370d24899f8dfe9babcab247253d15bdd0b1c87))
+* Add image_size to ImageConfig (Early Access Program) ([81c027c](https://github.com/googleapis/python-genai/commit/81c027c9375c66eadba4ff1ed51934b8ee36e0cf))
+* Make genai.Part constructible from PartUnionDict. ([7526e4d](https://github.com/googleapis/python-genai/commit/7526e4de84824ba3c7318f5a1270b8065798bab7))
+
+
+### Bug Fixes
+
+* Raise errors during file upload. ([946a17e](https://github.com/googleapis/python-genai/commit/946a17e0a9ab9ba0f331790eb3114a145315ccbf))
+* Use duck type in t_part transformer ([be82981](https://github.com/googleapis/python-genai/commit/be82981afe988c24ecf1d1e65127cf0664b06152))
+
+
+### Documentation
+
+* Log deprecation waring to Schema.from_json_schema method and Schema.json_schema method ([856789a](https://github.com/googleapis/python-genai/commit/856789a7a79f4e00565c44e27b010f5fe8d8e9d0))
+* Regenerate docs for 1.48.0 ([004d238](https://github.com/googleapis/python-genai/commit/004d238b4f3cb628f68817c588212c0aae133e7c))
+* Update log message in Schema.json_schema and Schema.from_json_schema methods ([5bf69e5](https://github.com/googleapis/python-genai/commit/5bf69e55f1c1ac63f29188232b6a19d318fd5ff3))
+
+## [1.48.0](https://github.com/googleapis/python-genai/compare/v1.47.0...v1.48.0) (2025-11-03)
+
+
+### Features
+
+* Added phish filtering feature. ([a9297b7](https://github.com/googleapis/python-genai/commit/a9297b747eb406733125d72899d5382b0706cd18))
+* Drop support for Python 3.9 - EOL ([b542082](https://github.com/googleapis/python-genai/commit/b54208200eb3aefd13cd8199415682b146fce6df))
+
+
+### Bug Fixes
+
+* Append the current model chunk to contents in async streaming ([7c5cf56](https://github.com/googleapis/python-genai/commit/7c5cf56ef1249f0bcbdd170365aa3134849f28aa))
+* Disable AFC when there are incompatible tool presented. ([ce13aef](https://github.com/googleapis/python-genai/commit/ce13aefa421d5c284632b29083f8c2c8ac6dbb59))
+* Offload sync python tool calls to a thread when used from async context. ([f2a0782](https://github.com/googleapis/python-genai/commit/f2a078272629386578a0c7e0c6ca3b0e8a4bfe97))
+* Only show warning log for non-text or multi-candidate fields when response.text is accessed directly ([bf82505](https://github.com/googleapis/python-genai/commit/bf82505c588d8009acda24ab48b1578f685c64ec))
+
+## [1.47.0](https://github.com/googleapis/python-genai/compare/v1.46.0...v1.47.0) (2025-10-29)
+
+
+### Features
+
+* Add safety_filter_level and person_generation for Imagen upscaling ([6196b1b](https://github.com/googleapis/python-genai/commit/6196b1b4251007e33661bb5d7dc27bafee3feefe))
+* Add support for preference optimization tuning in the SDK. ([4540f9d](https://github.com/googleapis/python-genai/commit/4540f9d25ffb31d9b3838ed34fa767af956cc69b))
+* Pass file name to the backend when uploading with a file path ([4fa2edd](https://github.com/googleapis/python-genai/commit/4fa2edd9276dadee0f8100b2e5ed8787f8937e8d))
+* Support default global location when not using api key with vertexai backend ([6340ce0](https://github.com/googleapis/python-genai/commit/6340ce0cf04985c259ba6f85305ad29ec74b5c47))
+* Support retries in API requests ([ac70ecd](https://github.com/googleapis/python-genai/commit/ac70ecdb02677535fb2a4590a1702d961d2b942b))
+
+
+### Bug Fixes
+
+* Check environment Vertex AI api key for credential precedence ([9bd758c](https://github.com/googleapis/python-genai/commit/9bd758c50c0dfee463ec722975ff19e7d58436fd))
+* Correct pydantic version range (bytes fields are broken with pydantic&lt;=2.8). ([d24cb56](https://github.com/googleapis/python-genai/commit/d24cb5634e15d6071af17f6ee79c8b864b82d377))
+* Make `__del__` methods more robust in `_api_client` and `client`. ([64cab58](https://github.com/googleapis/python-genai/commit/64cab58b381b7a27e02c8fe0dc14d6513c01456a))
+* Setting custom httpx async client will ensure using httpx client even if aiohttp is installed ([7bd1bde](https://github.com/googleapis/python-genai/commit/7bd1bdef36179d404f671926df624afc5be5682d))
+* Support custom_base_url for Live and other APIs when project/location are unset and even when project/location are set in the environment, and avoid Automatic Default Credentials ([7bd1bde](https://github.com/googleapis/python-genai/commit/7bd1bdef36179d404f671926df624afc5be5682d))
+
+
+### Documentation
+
+* Add docstring for classes and fields that are not supported in Gemini or Vertex API ([4a6c6af](https://github.com/googleapis/python-genai/commit/4a6c6af19063bc2ae0dd54f98fa345c0666b7f58))
+* Add docstring for enum classes that are not supported in Gemini or Vertex API ([909f26b](https://github.com/googleapis/python-genai/commit/909f26b926267b690c8a02dd97ee7681a43f3d7b))
+* Add documentation for the retry behavior ([ff12b46](https://github.com/googleapis/python-genai/commit/ff12b462947bff3cfcd9bc4c1e4a61c6a90b5591))
+* Update Codegen Instructions to include newer models and use consistent formatting. ([f0b0a94](https://github.com/googleapis/python-genai/commit/f0b0a94aa174e9e31dd56542cb3f9683fb065176))
+* Update README.md and index.rst to use consistent spacing for Python Samples ([2e5aa1f](https://github.com/googleapis/python-genai/commit/2e5aa1f9332b0a858f3b783a52d8007485cbe33f))
+
 ## [1.46.0](https://github.com/googleapis/python-genai/compare/v1.45.0...v1.46.0) (2025-10-21)
 
 

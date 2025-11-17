@@ -91,7 +91,16 @@ def _is_duck_type_of(obj: Any, cls: type[pydantic.BaseModel]) -> bool:
     return False
 
   # Check if the object has all of the Pydantic model's defined fields.
-  return all(hasattr(obj, field) for field in cls.model_fields)
+  all_matched = all(hasattr(obj, field) for field in cls.model_fields)
+  if not all_matched and isinstance(obj, pydantic.BaseModel):
+    # Check the other way around if obj is a Pydantic model.
+    # Check if the Pydantic model has all of the object's defined fields.
+    try:
+      obj_private = cls()
+      all_matched = all(hasattr(obj_private, f) for f in type(obj).model_fields)
+    except ValueError:
+      return False
+  return all_matched
 
 
 def _resource_name(
@@ -190,6 +199,8 @@ def _resource_name(
 def t_model(client: _api_client.BaseApiClient, model: str) -> str:
   if not model:
     raise ValueError('model is required.')
+  if '..' in model or '?' in model or '&' in model:
+    raise ValueError('invalid model parameter.')
   if client.vertexai:
     if (
         model.startswith('projects/')

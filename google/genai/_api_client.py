@@ -37,14 +37,12 @@ import time
 from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
-import warnings
 
 import anyio
 import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
-from google.auth.transport.requests import Request
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -197,6 +195,7 @@ def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
 
 
 def refresh_auth(credentials: Credentials) -> Credentials:
+  from google.auth.transport.requests import Request
   credentials.refresh(Request())  # type: ignore[no-untyped-call]
   return credentials
 
@@ -629,14 +628,14 @@ class BaseApiClient:
         )
         self.api_key = None
 
-      if not self.location and not self.api_key:
-          self.location = 'global'
-
       self.custom_base_url = (
           validated_http_options.base_url
           if validated_http_options.base_url
           else None
       )
+
+      if not self.location and not self.api_key and not self.custom_base_url:
+          self.location = 'global'
 
       # Skip fetching project from ADC if base url is provided in http options.
       if (
@@ -658,11 +657,14 @@ class BaseApiClient:
         )
       if self.api_key or self.location == 'global':
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif self.custom_base_url and not has_sufficient_auth:
+      elif self.custom_base_url and not ((project and location) or api_key):
         # Avoid setting default base url and api version if base_url provided.
         # API gateway proxy can use the auth in custom headers, not url.
         # Enable custom url if auth is not sufficient.
         self._http_options.base_url = self.custom_base_url
+        # Clear project and location if base_url is provided.
+        self.project = None
+        self.location = None
       else:
         self._http_options.base_url = (
             f'https://{self.location}-aiplatform.googleapis.com/'
@@ -706,10 +708,15 @@ class BaseApiClient:
     else:
       self._async_httpx_client = AsyncHttpxClient(**async_client_args)
     if self._use_aiohttp():
-      # Do it once at the genai.Client level. Share among all requests.
-      self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
-          self._http_options
-      )
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
+        # Do it once at the genai.Client level. Share among all requests.
+        self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
+            self._http_options
+        )
+      except ImportError:
+        pass
+
     # Initialize the aiohttp client session.
     self._aiohttp_session: Optional[aiohttp.ClientSession] = None
 
@@ -914,6 +921,7 @@ class BaseApiClient:
         has_aiohttp
         and (self._http_options.async_client_args or {}).get('transport')
         is None
+        and (self._http_options.httpx_async_client is None)
     )
 
   def _websocket_base_url(self) -> str:
@@ -1059,11 +1067,16 @@ class BaseApiClient:
       _common.recursive_dict_update(
           request_dict, patched_http_options.extra_body
       )
-
-    url = join_url_path(
-        base_url,
-        versioned_path,
-    )
+    url = base_url
+    if (
+        not self.custom_base_url
+        or (self.project and self.location)
+        or self.api_key
+    ):
+      url = join_url_path(
+          base_url,
+          versioned_path,
+      )
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(
@@ -1333,9 +1346,21 @@ class BaseApiClient:
 
     session_response = self._request(http_request, http_options, stream=True)
     for chunk in session_response.segments():
-      yield SdkHttpResponse(
-          headers=session_response.headers, body=json.dumps(chunk)
-      )
+      chunk_dump = json.dumps(chunk)
+      try:
+        if chunk_dump.startswith('{"error":'):
+          chunk_json = json.loads(chunk_dump)
+          errors.APIError.raise_error(
+              chunk_json.get('error', {}).get('code'),
+              chunk_json,
+              session_response,
+          )
+      except json.decoder.JSONDecodeError:
+        logger.debug(
+            'Failed to decode chunk that contains an error: %s' % chunk_dump
+        )
+        pass
+      yield SdkHttpResponse(headers=session_response.headers, body=chunk_dump)
 
   async def async_request(
       self,
@@ -1369,7 +1394,21 @@ class BaseApiClient:
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
-        yield SdkHttpResponse(headers=response.headers, body=json.dumps(chunk))
+        chunk_dump = json.dumps(chunk)
+        try:
+          if chunk_dump.startswith('{"error":'):
+            chunk_json = json.loads(chunk_dump)
+            await errors.APIError.raise_error_async(
+                chunk_json.get('error', {}).get('code'),
+                chunk_json,
+                response,
+            )
+        except json.decoder.JSONDecodeError:
+          logger.debug(
+              'Failed to decode chunk that contains an error: %s' % chunk_dump
+          )
+          pass
+        yield SdkHttpResponse(headers=response.headers, body=chunk_dump)
 
     return async_generator()  # type: ignore[no-untyped-call]
 
@@ -1479,7 +1518,7 @@ class BaseApiClient:
             f'All content has been uploaded, but the upload status is not'
             f' finalized.'
         )
-
+    errors.APIError.raise_for_response(response)
     if response.headers.get('x-goog-upload-status') != 'final':
       raise ValueError('Failed to upload file: Upload status is not finalized.')
     return HttpResponse(response.headers, response_stream=[response.text])
@@ -1642,6 +1681,8 @@ class BaseApiClient:
               f'All content has been uploaded, but the upload status is not'
               f' finalized.'
           )
+
+      await errors.APIError.raise_for_async_response(response)
       if (
           response is not None
           and response.headers.get('X-Goog-Upload-Status') != 'final'
@@ -1719,6 +1760,8 @@ class BaseApiClient:
               'All content has been uploaded, but the upload status is not'
               ' finalized.'
           )
+
+      await errors.APIError.raise_for_async_response(client_response)
       if (
           client_response is not None
           and client_response.headers.get('x-goog-upload-status') != 'final'
@@ -1793,12 +1836,17 @@ class BaseApiClient:
 
   def close(self) -> None:
     """Closes the API client."""
-    self._httpx_client.close()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_client:
+      self._httpx_client.close()
 
   async def aclose(self) -> None:
     """Closes the API async client."""
-
-    await self._async_httpx_client.aclose()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_async_client:
+      await self._async_httpx_client.aclose()
     if self._aiohttp_session:
       await self._aiohttp_session.close()
 
@@ -1810,7 +1858,8 @@ class BaseApiClient:
     """
 
     try:
-      self.close()
+      if not self._http_options.httpx_client:
+        self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 

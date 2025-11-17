@@ -15,6 +15,7 @@
 
 """Extra utils depending on types that are shared between sync and async modules."""
 
+import asyncio
 import inspect
 import io
 import logging
@@ -115,6 +116,35 @@ def format_destination(
       config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
 
   return config
+
+
+def find_afc_incompatible_tool_indexes(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> list[int]:
+  """Checks if the config contains any AFC incompatible tools.
+
+  A `types.Tool` object that contains `function_declarations` is considered a
+  non-AFC tool for this execution path.
+
+  Args:
+    config: The GenerateContentConfig to check for incompatible tools.
+
+  Returns:
+    A list of indexes of the incompatible tools in the config.
+  """
+  if not config:
+    return []
+  config_model = _create_generate_content_config_model(config)
+  incompatible_tools_indexes: list[int] = []
+
+  if not config_model or not config_model.tools:
+    return incompatible_tools_indexes
+
+  for index, tool in enumerate(config_model.tools):
+    if isinstance(tool, types.Tool) and tool.function_declarations:
+      incompatible_tools_indexes.append(index)
+
+  return incompatible_tools_indexes
 
 
 def get_function_map(
@@ -371,7 +401,9 @@ async def get_function_response_parts_async(
             }
           else:
             func_response = {
-                'result': invoke_function_from_dict_args(args, func)
+                'result': await asyncio.to_thread(
+                    invoke_function_from_dict_args, args, func
+                )
             }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}
@@ -536,13 +568,14 @@ async def parse_config_for_mcp_sessions(
 def append_chunk_contents(
     contents: Union[types.ContentListUnion, types.ContentListUnionDict],
     chunk: types.GenerateContentResponse,
-) -> None:
-  """Appends the contents of the chunk to the contents list."""
+) -> Union[types.ContentListUnion, types.ContentListUnionDict]:
+  """Appends the contents of the chunk to the contents list and returns it."""
   if chunk is not None and chunk.candidates is not None:
     chunk_content = chunk.candidates[0].content
     contents = t.t_contents(contents)  # type: ignore[assignment]
     if isinstance(contents, list) and chunk_content is not None:
       contents.append(chunk_content)  # type: ignore[arg-type]
+  return contents
 
 
 def prepare_resumable_upload(
@@ -611,4 +644,8 @@ def prepare_resumable_upload(
             'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
         },
     )
+  if isinstance(file, (str, os.PathLike)):
+    if http_options.headers is None:
+        http_options.headers = {}
+    http_options.headers['X-Goog-Upload-File-Name'] = os.path.basename(file)
   return http_options, size_bytes, mime_type

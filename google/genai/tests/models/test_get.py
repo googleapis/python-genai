@@ -52,20 +52,19 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_get_mldev_base_model_with_http_options_in_method',
         parameters=types._GetModelParameters(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             config={
                 'http_options': test_http_options,
             },
         ),
-        exception_if_vertex='404',
     ),
     pytest_helper.TestTableItem(
         name='test_get_base_model',
-        parameters=types._GetModelParameters(model='gemini-1.5-flash'),
+        parameters=types._GetModelParameters(model='gemini-2.5-flash'),
     ),
     pytest_helper.TestTableItem(
         name='test_get_base_model_with_models_prefix',
-        parameters=types._GetModelParameters(model='models/gemini-1.5-flash'),
+        parameters=types._GetModelParameters(model='models/gemini-2.5-flash'),
         exception_if_vertex='400',
     ),
 ]

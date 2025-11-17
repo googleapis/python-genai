@@ -3,11 +3,11 @@ requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=
 
 [project]
 name = "google-genai"
-version = "1.46.0"
+version = "1.50.1"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Google LLC", email = "googleapis-packages@google.com" },
 ]
@@ -16,7 +16,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -29,7 +28,7 @@ dependencies = [
     "anyio>=4.8.0, <5.0.0",
     "google-auth>=2.14.1, <3.0.0",
     "httpx>=0.28.1, <1.0.0",
-    "pydantic>=2.0.0, <3.0.0",
+    "pydantic>=2.9.0, <3.0.0",
     "requests>=2.28.1, <3.0.0",
     "tenacity>=8.2.3, <9.2.0",
     "websockets>=13.0.0, <15.1.0",
@@ -56,3 +55,7 @@ plugins = ["pydantic.mypy"]
 # 'import-not-found' and 'import-untyped' are environment specific
 disable_error_code = ["import-not-found", "import-untyped", "unused-ignore"]
 strict = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
