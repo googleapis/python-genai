@@ -116,6 +116,15 @@ else:
 logger = logging.getLogger('google_genai.types')
 _from_json_schema_warning_logged = False
 _json_schema_warning_logged = False
+_response_text_warning_logged = False
+_response_text_non_text_warning_logged = False
+_response_parts_warning_logged = False
+_response_function_calls_warning_logged = False
+_response_executable_code_warning_logged = False
+_response_code_execution_warning_logged = False
+_live_server_text_warning_logged = False
+_live_server_data_warning_logged = False
+
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
 
@@ -6504,15 +6513,11 @@ class GenerateContentResponse(_common.BaseModel):
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
 
-  def _get_text(self, warn_property: Optional[str] = None) -> Optional[str]:
+  def _get_text(self) -> Optional[str]:
     """Returns the concatenation of all text parts in the response.
 
     This is an internal method that allows customizing or disabling the warning
     message.
-
-    Args:
-      warn_property: The property name that is being accessed. This is used to
-        customize the warning message. If None, no warning will be logged.
 
     Returns:
       The concatenation of all text parts in the response.
@@ -6523,13 +6528,14 @@ class GenerateContentResponse(_common.BaseModel):
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1 and warn_property:
+    global _response_text_warning_logged
+    if len(self.candidates) > 1 and not _response_text_warning_logged:
       logger.warning(
-          f'there are {len(self.candidates)} candidates, returning'
-          f' {warn_property} result from the first candidate. Access'
-          ' response.candidates directly to get the result from other'
-          ' candidates.'
+          f'there are {len(self.candidates)} candidates, returning text result'
+          ' from the first candidate. Access response.candidates directly to'
+          ' get the result from other candidates.'
       )
+      _response_text_warning_logged = True
     text = ''
     any_text_part_text = False
     non_text_parts = []
@@ -6544,30 +6550,37 @@ class GenerateContentResponse(_common.BaseModel):
           continue
         any_text_part_text = True
         text += part.text
-    if non_text_parts and warn_property:
+    global _response_text_non_text_warning_logged
+    if non_text_parts and not _response_text_non_text_warning_logged:
       logger.warning(
           'Warning: there are non-text parts in the response:'
-          f' {non_text_parts}, returning concatenated {warn_property} result'
+          f' {non_text_parts}, returning concatenated text result'
           ' from text parts. Check the full candidates.content.parts accessor'
           ' to get the full model response.'
       )
+      _response_text_non_text_warning_logged = True
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
 
   @property
   def parts(self) -> Optional[list[Part]]:
-    """Returns the content-parts in the response."""
+    """Returns the content-parts in the response.
+
+    If there are multiple candidates, returns the parts from only the first one.
+    """
     if (
         not self.candidates
         or self.candidates[0].content is None
         or self.candidates[0].content.parts is None
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_parts_warning_logged
+    if len(self.candidates) > 1 and not _response_parts_warning_logged:
       logger.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' parts from the first one.'
       )
+      _response_parts_warning_logged = True
 
     return self.candidates[0].content.parts
 
@@ -6576,23 +6589,32 @@ class GenerateContentResponse(_common.BaseModel):
     """Returns the concatenation of all text parts in the response.
 
     If there are multiple candidates, returns the text from only the first one.
+    If there are non-text parts in the response, this returns only the text
+    parts.
     """
-    return self._get_text(warn_property='text')
+    return self._get_text()
 
   @property
   def function_calls(self) -> Optional[list[FunctionCall]]:
-    """Returns the list of function calls in the response."""
+    """Returns the list of function calls in the response.
+
+    If there are multiple candidates, this returns the function calls from only
+    the
+    first one.
+    """
     if (
         not self.candidates
         or not self.candidates[0].content
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_function_calls_warning_logged
+    if len(self.candidates) > 1 and not _response_function_calls_warning_logged:
       logger.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' function calls from the first one.'
       )
+      _response_function_calls_warning_logged = True
     function_calls = [
         part.function_call
         for part in self.candidates[0].content.parts
@@ -6603,18 +6625,28 @@ class GenerateContentResponse(_common.BaseModel):
 
   @property
   def executable_code(self) -> Optional[str]:
-    """Returns the executable code in the response."""
+    """Returns the executable code in the response.
+
+    If there are multiple candidates, this returns the executable code from only
+    the
+    first one.
+    """
     if (
         not self.candidates
         or not self.candidates[0].content
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_executable_code_warning_logged
+    if (
+        len(self.candidates) > 1
+        and not _response_executable_code_warning_logged
+    ):
       logging.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' executable code from the first one.'
       )
+      _response_executable_code_warning_logged = True
     for part in self.candidates[0].content.parts:
       if part.executable_code is not None:
         return part.executable_code.code
@@ -6622,18 +6654,25 @@ class GenerateContentResponse(_common.BaseModel):
 
   @property
   def code_execution_result(self) -> Optional[str]:
-    """Returns the code execution result in the response."""
+    """Returns the code execution result in the response.
+
+    If there are multiple candidates, this returns the code execution result
+    from only the
+    first one.
+    """
     if (
         not self.candidates
         or not self.candidates[0].content
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_code_execution_warning_logged
+    if len(self.candidates) > 1 and not _response_code_execution_warning_logged:
       logging.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' code execution result from the first one.'
       )
+      _response_code_execution_warning_logged = True
     for part in self.candidates[0].content.parts:
       if part.code_execution_result is not None:
         return part.code_execution_result.output
@@ -16125,7 +16164,11 @@ class LiveServerMessage(_common.BaseModel):
 
   @property
   def text(self) -> Optional[str]:
-    """Returns the concatenation of all text parts in the response."""
+    """Returns the concatenation of all text parts in the response.
+
+    If there are non-text parts in the response, only the concatenated text
+    result from text parts will be returned.
+    """
     if (
         not self.server_content
         or not self.server_content
@@ -16145,17 +16188,23 @@ class LiveServerMessage(_common.BaseModel):
         if isinstance(part.thought, bool) and part.thought:
           continue
         text += part.text
-    if non_text_parts:
+    global _live_server_text_warning_logged
+    if non_text_parts and not _live_server_text_warning_logged:
       logger.warning(
           'Warning: there are non-text parts in the response:'
           f' {non_text_parts}, returning concatenated text result from text'
           ' parts, check out the non text parts for full response from model.'
       )
+      _live_server_text_warning_logged = True
     return text if text else None
 
   @property
   def data(self) -> Optional[bytes]:
-    """Returns the concatenation of all inline data parts in the response."""
+    """Returns the concatenation of all inline data parts in the response.
+
+    If there are non-data parts in the response, only the concatenated data
+    result from the data parts will be returned.
+    """
     if (
         not self.server_content
         or not self.server_content
@@ -16173,12 +16222,14 @@ class LiveServerMessage(_common.BaseModel):
           non_data_parts.append(field_name)
       if part.inline_data and isinstance(part.inline_data.data, bytes):
         concatenated_data += part.inline_data.data
-    if non_data_parts:
+    global _live_server_data_warning_logged
+    if non_data_parts and not _live_server_data_warning_logged:
       logger.warning(
           'Warning: there are non-data parts in the response:'
           f' {non_data_parts}, returning concatenated data result from data'
           ' parts, check out the non data parts for full response from model.'
       )
+      _live_server_data_warning_logged = True
     return concatenated_data if len(concatenated_data) > 0 else None
 
 

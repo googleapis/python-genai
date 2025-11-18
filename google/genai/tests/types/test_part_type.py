@@ -52,6 +52,9 @@ def test_content_empty_parts_text():
 
 
 def test_two_candidates_text(caplog, generate_content_response):
+  from ... import types as types_module
+  types_module._response_text_warning_logged = False
+
   generate_content_response.candidates = [
       types.Candidate(
           content=types.Content(
