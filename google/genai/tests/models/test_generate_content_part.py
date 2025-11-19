@@ -161,6 +161,28 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='403',
     ),
     pytest_helper.TestTableItem(
+        name='test_image_inline_part_media_resolution',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=[
+                t.t_content('What is this image about?'),
+                t.t_content(
+                    {
+                        'role': 'user',
+                        'parts': [
+                            types.Part(
+                                inline_data=types.Blob(
+                                    data=image_string, mime_type='image/png'
+                                ),
+                                media_resolution={'level': 'MEDIA_RESOLUTION_LOW'}
+                            )
+                        ],
+                    },
+                ),
+            ],
+        ),
+    ),
+    pytest_helper.TestTableItem(
         name='test_application_pdf_file_uri',
         skip_in_api_mode=(
             'Name of the file is hardcoded, only supporting replay mode.'

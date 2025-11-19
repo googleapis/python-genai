@@ -697,7 +697,7 @@ async def test_async_stream_with_headers(client):
 async def test_async_stream_with_non_text_modality(client):
   chunks = 0
   async for chunk in await client.aio.models.generate_content_stream(
-      model='gemini-2.0-flash-preview-image-generation',
+      model=GEMINI_FLASH_IMAGE_LATEST,
       contents=(
           'Generate an image of the Eiffel tower with fireworks in the'
           ' background.'
@@ -718,10 +718,10 @@ async def test_async_stream_with_non_text_modality(client):
 def test_simple_shared_generation_config_stream(client):
   chunks = 0
   for chunk in client.models.generate_content_stream(
-      model=GEMINI_FLASH_2_0,
+      model=GEMINI_FLASH_LATEST,
       contents='tell me a story in 300 words',
       config={
-          'max_output_tokens': 400,
+          'max_output_tokens': 1000,
           'top_k': 2,
           'temperature': 0.5,
           'top_p': 0.5,
@@ -830,10 +830,13 @@ def test_model_selection_config_pydantic(client):
   assert response.text
 
 
-def test_sdk_logger_logs_warnings(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='gemini_sdk_logger')
-  sdk_logger = logging.getLogger('gemini_sdk_logger')
-  sdk_logger.setLevel(logging.WARNING)
+def test_sdk_logger_logs_warnings_once(client, caplog):
+  from ... import types as types_module
+
+  types_module._response_text_warning_logged = False
+
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
   response = client.models.generate_content(
       model=GEMINI_FLASH_LATEST,
       contents='Tell me a 50 word story about cheese.',
@@ -844,6 +847,17 @@ def test_sdk_logger_logs_warnings(client, caplog):
   assert response.text
   assert 'WARNING' in caplog.text
   assert 'there are 2 candidates' in caplog.text
+  caplog_after_first_call = caplog.text
+  assert len(caplog.records) == 1
+  client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a 50 word story about cheese.',
+      config={
+        'candidate_count': 2,
+      }
+  )
+  assert caplog.text == caplog_after_first_call
+  assert len(caplog.records) == 1
 
 
 def test_response_create_time_and_response_id(client):

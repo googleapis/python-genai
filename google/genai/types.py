@@ -116,6 +116,15 @@ else:
 logger = logging.getLogger('google_genai.types')
 _from_json_schema_warning_logged = False
 _json_schema_warning_logged = False
+_response_text_warning_logged = False
+_response_text_non_text_warning_logged = False
+_response_parts_warning_logged = False
+_response_function_calls_warning_logged = False
+_response_executable_code_warning_logged = False
+_response_code_execution_warning_logged = False
+_live_server_text_warning_logged = False
+_live_server_data_warning_logged = False
+
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
 
@@ -255,6 +264,17 @@ class PhishBlockThreshold(_common.CaseInSensitiveEnum):
   """Blocks Very high and above confidence URL that is risky."""
   BLOCK_ONLY_EXTREMELY_HIGH = 'BLOCK_ONLY_EXTREMELY_HIGH'
   """Blocks Extremely high confidence URL that is risky."""
+
+
+class ThinkingLevel(_common.CaseInSensitiveEnum):
+  """The level of thoughts tokens that the model should generate."""
+
+  THINKING_LEVEL_UNSPECIFIED = 'THINKING_LEVEL_UNSPECIFIED'
+  """Default value."""
+  LOW = 'LOW'
+  """Low thinking level."""
+  HIGH = 'HIGH'
+  """High thinking level."""
 
 
 class HarmCategory(_common.CaseInSensitiveEnum):
@@ -540,6 +560,19 @@ class TuningTask(_common.CaseInSensitiveEnum):
   """Tuning task for text to video."""
   TUNING_TASK_R2V = 'TUNING_TASK_R2V'
   """Tuning task for reference to video."""
+
+
+class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
+  """The tokenization quality used for given media."""
+
+  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  """Media resolution has not been set."""
+  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  """Media resolution set to low."""
+  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  """Media resolution set to medium."""
+  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
+  """Media resolution set to high."""
 
 
 class JSONSchemaType(Enum):
@@ -921,39 +954,34 @@ class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
       Retains the current prompts and config."""
 
 
-class FunctionCall(_common.BaseModel):
-  """A function call."""
+class PartMediaResolution(_common.BaseModel):
+  """Media resolution for the input media."""
 
-  id: Optional[str] = Field(
+  level: Optional[PartMediaResolutionLevel] = Field(
       default=None,
-      description="""The unique id of the function call. If populated, the client to execute the
-   `function_call` and return the response with the matching `id`.""",
+      description="""The tokenization quality used for given media.
+    """,
   )
-  args: Optional[dict[str, Any]] = Field(
+  num_tokens: Optional[int] = Field(
       default=None,
-      description="""Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details.""",
-  )
-  name: Optional[str] = Field(
-      default=None,
-      description="""Optional. The name of the function to call. Matches [FunctionDeclaration.name].""",
+      description="""Specifies the required sequence length for media tokenization.
+    """,
   )
 
 
-class FunctionCallDict(TypedDict, total=False):
-  """A function call."""
+class PartMediaResolutionDict(TypedDict, total=False):
+  """Media resolution for the input media."""
 
-  id: Optional[str]
-  """The unique id of the function call. If populated, the client to execute the
-   `function_call` and return the response with the matching `id`."""
+  level: Optional[PartMediaResolutionLevel]
+  """The tokenization quality used for given media.
+    """
 
-  args: Optional[dict[str, Any]]
-  """Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details."""
-
-  name: Optional[str]
-  """Optional. The name of the function to call. Matches [FunctionDeclaration.name]."""
+  num_tokens: Optional[int]
+  """Specifies the required sequence length for media tokenization.
+    """
 
 
-FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
+PartMediaResolutionOrDict = Union[PartMediaResolution, PartMediaResolutionDict]
 
 
 class CodeExecutionResult(_common.BaseModel):
@@ -1056,6 +1084,111 @@ class FileDataDict(TypedDict, total=False):
 FileDataOrDict = Union[FileData, FileDataDict]
 
 
+class PartialArg(_common.BaseModel):
+  """Partial argument value of the function call.
+
+  This data type is not supported in Gemini API.
+  """
+
+  null_value: Optional[Literal['NULL_VALUE']] = Field(
+      default=None, description="""Optional. Represents a null value."""
+  )
+  number_value: Optional[float] = Field(
+      default=None, description="""Optional. Represents a double value."""
+  )
+  string_value: Optional[str] = Field(
+      default=None, description="""Optional. Represents a string value."""
+  )
+  bool_value: Optional[bool] = Field(
+      default=None, description="""Optional. Represents a boolean value."""
+  )
+  json_path: Optional[str] = Field(
+      default=None,
+      description="""Required. A JSON Path (RFC 9535) to the argument being streamed. https://datatracker.ietf.org/doc/html/rfc9535. e.g. "$.foo.bar[0].data".""",
+  )
+  will_continue: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether this is not the last part of the same json_path. If true, another PartialArg message for the current json_path is expected to follow.""",
+  )
+
+
+class PartialArgDict(TypedDict, total=False):
+  """Partial argument value of the function call.
+
+  This data type is not supported in Gemini API.
+  """
+
+  null_value: Optional[Literal['NULL_VALUE']]
+  """Optional. Represents a null value."""
+
+  number_value: Optional[float]
+  """Optional. Represents a double value."""
+
+  string_value: Optional[str]
+  """Optional. Represents a string value."""
+
+  bool_value: Optional[bool]
+  """Optional. Represents a boolean value."""
+
+  json_path: Optional[str]
+  """Required. A JSON Path (RFC 9535) to the argument being streamed. https://datatracker.ietf.org/doc/html/rfc9535. e.g. "$.foo.bar[0].data"."""
+
+  will_continue: Optional[bool]
+  """Optional. Whether this is not the last part of the same json_path. If true, another PartialArg message for the current json_path is expected to follow."""
+
+
+PartialArgOrDict = Union[PartialArg, PartialArgDict]
+
+
+class FunctionCall(_common.BaseModel):
+  """A function call."""
+
+  id: Optional[str] = Field(
+      default=None,
+      description="""The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`.""",
+  )
+  args: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The name of the function to call. Matches [FunctionDeclaration.name].""",
+  )
+  partial_args: Optional[list[PartialArg]] = Field(
+      default=None,
+      description="""Optional. The partial argument value of the function call. If provided, represents the arguments/fields that are streamed incrementally. This field is not supported in Gemini API.""",
+  )
+  will_continue: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether this is the last part of the FunctionCall. If true, another partial message for the current FunctionCall is expected to follow. This field is not supported in Gemini API.""",
+  )
+
+
+class FunctionCallDict(TypedDict, total=False):
+  """A function call."""
+
+  id: Optional[str]
+  """The unique id of the function call. If populated, the client to execute the
+   `function_call` and return the response with the matching `id`."""
+
+  args: Optional[dict[str, Any]]
+  """Optional. The function parameters and values in JSON object format. See [FunctionDeclaration.parameters] for parameter details."""
+
+  name: Optional[str]
+  """Optional. The name of the function to call. Matches [FunctionDeclaration.name]."""
+
+  partial_args: Optional[list[PartialArgDict]]
+  """Optional. The partial argument value of the function call. If provided, represents the arguments/fields that are streamed incrementally. This field is not supported in Gemini API."""
+
+  will_continue: Optional[bool]
+  """Optional. Whether this is the last part of the FunctionCall. If true, another partial message for the current FunctionCall is expected to follow. This field is not supported in Gemini API."""
+
+
+FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
+
+
 class FunctionResponseBlob(_common.BaseModel):
   """Raw media bytes for function response.
 
@@ -1110,6 +1243,11 @@ class FunctionResponseFileData(_common.BaseModel):
       default=None,
       description="""Required. The IANA standard MIME type of the source data.""",
   )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. Display name of the file.
+      Used to provide a label or filename to distinguish files.""",
+  )
 
 
 class FunctionResponseFileDataDict(TypedDict, total=False):
@@ -1120,6 +1258,10 @@ class FunctionResponseFileDataDict(TypedDict, total=False):
 
   mime_type: Optional[str]
   """Required. The IANA standard MIME type of the source data."""
+
+  display_name: Optional[str]
+  """Optional. Display name of the file.
+      Used to provide a label or filename to distinguish files."""
 
 
 FunctionResponseFileDataOrDict = Union[
@@ -1360,11 +1502,10 @@ class Part(_common.BaseModel):
   instance is considered invalid.
   """
 
-  function_call: Optional[FunctionCall] = Field(
+  media_resolution: Optional[PartMediaResolution] = Field(
       default=None,
-      description="""A predicted [FunctionCall] returned from the model that contains a string
-      representing the [FunctionDeclaration.name] and a structured JSON object
-      containing the parameters and their values.""",
+      description="""Media resolution for the input media.
+    """,
   )
   code_execution_result: Optional[CodeExecutionResult] = Field(
       default=None,
@@ -1376,6 +1517,10 @@ class Part(_common.BaseModel):
   )
   file_data: Optional[FileData] = Field(
       default=None, description="""Optional. URI based data."""
+  )
+  function_call: Optional[FunctionCall] = Field(
+      default=None,
+      description="""Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values.""",
   )
   function_response: Optional[FunctionResponse] = Field(
       default=None,
@@ -1482,8 +1627,30 @@ class Part(_common.BaseModel):
     return self.inline_data.as_image()
 
   @classmethod
+  def _t_part_media_resolution(
+      cls,
+      part_media_resolution: Union[
+          'PartMediaResolutionOrDict', 'PartMediaResolutionLevel', str
+      ],
+  ) -> PartMediaResolution:
+    if isinstance(part_media_resolution, str):
+      part_media_resolution = PartMediaResolution(level=part_media_resolution)
+    elif isinstance(part_media_resolution, PartMediaResolutionLevel):
+      part_media_resolution = PartMediaResolution(level=part_media_resolution)
+    elif isinstance(part_media_resolution, dict):
+      part_media_resolution = PartMediaResolution(**part_media_resolution)
+
+    return part_media_resolution
+
+  @classmethod
   def from_uri(
-      cls, *, file_uri: str, mime_type: Optional[str] = None
+      cls,
+      *,
+      file_uri: str,
+      mime_type: Optional[str] = None,
+      media_resolution: Optional[
+          Union['PartMediaResolutionOrDict', 'PartMediaResolutionLevel', str]
+      ] = None,
   ) -> 'Part':
     """Creates a Part from a file uri.
 
@@ -1498,20 +1665,33 @@ class Part(_common.BaseModel):
       mime_type, _ = mimetypes.guess_type(file_uri)
       if not mime_type:
         raise ValueError(f'Failed to determine mime type for file: {file_uri}')
+    if media_resolution is not None:
+      media_resolution = cls._t_part_media_resolution(media_resolution)
     file_data = FileData(file_uri=file_uri, mime_type=mime_type)
-    return cls(file_data=file_data)
+    return cls(file_data=file_data, media_resolution=media_resolution)
 
   @classmethod
   def from_text(cls, *, text: str) -> 'Part':
     return cls(text=text)
 
   @classmethod
-  def from_bytes(cls, *, data: bytes, mime_type: str) -> 'Part':
+  def from_bytes(
+      cls,
+      *,
+      data: bytes,
+      mime_type: str,
+      media_resolution: Optional[
+          Union['PartMediaResolutionOrDict', 'PartMediaResolutionLevel', str]
+      ] = None,
+  ) -> 'Part':
     inline_data = Blob(
         data=data,
         mime_type=mime_type,
     )
-    return cls(inline_data=inline_data)
+    if media_resolution is not None:
+      media_resolution = cls._t_part_media_resolution(media_resolution)
+
+    return cls(inline_data=inline_data, media_resolution=media_resolution)
 
   @classmethod
   def from_function_call(cls, *, name: str, args: dict[str, Any]) -> 'Part':
@@ -1552,10 +1732,9 @@ class PartDict(TypedDict, total=False):
   instance is considered invalid.
   """
 
-  function_call: Optional[FunctionCallDict]
-  """A predicted [FunctionCall] returned from the model that contains a string
-      representing the [FunctionDeclaration.name] and a structured JSON object
-      containing the parameters and their values."""
+  media_resolution: Optional[PartMediaResolutionDict]
+  """Media resolution for the input media.
+    """
 
   code_execution_result: Optional[CodeExecutionResultDict]
   """Optional. Result of executing the [ExecutableCode]."""
@@ -1565,6 +1744,9 @@ class PartDict(TypedDict, total=False):
 
   file_data: Optional[FileDataDict]
   """Optional. URI based data."""
+
+  function_call: Optional[FunctionCallDict]
+  """Optional. A predicted [FunctionCall] returned from the model that contains a string representing the [FunctionDeclaration.name] with the parameters and their values."""
 
   function_response: Optional[FunctionResponseDict]
   """Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."""
@@ -4051,6 +4233,10 @@ class FunctionCallingConfig(_common.BaseModel):
       default=None,
       description="""Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided.""",
   )
+  stream_function_call_arguments: Optional[bool] = Field(
+      default=None,
+      description="""Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API.""",
+  )
 
 
 class FunctionCallingConfigDict(TypedDict, total=False):
@@ -4061,6 +4247,9 @@ class FunctionCallingConfigDict(TypedDict, total=False):
 
   allowed_function_names: Optional[list[str]]
   """Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided."""
+
+  stream_function_call_arguments: Optional[bool]
+  """Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API."""
 
 
 FunctionCallingConfigOrDict = Union[
@@ -4232,6 +4421,10 @@ class ThinkingConfig(_common.BaseModel):
       description="""Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """,
   )
+  thinking_level: Optional[ThinkingLevel] = Field(
+      default=None,
+      description="""Optional. The level of thoughts tokens that the model should generate.""",
+  )
 
 
 class ThinkingConfigDict(TypedDict, total=False):
@@ -4244,6 +4437,9 @@ class ThinkingConfigDict(TypedDict, total=False):
   thinking_budget: Optional[int]
   """Indicates the thinking budget in tokens. 0 is DISABLED. -1 is AUTOMATIC. The default values and allowed ranges are model dependent.
       """
+
+  thinking_level: Optional[ThinkingLevel]
+  """Optional. The level of thoughts tokens that the model should generate."""
 
 
 ThinkingConfigOrDict = Union[ThinkingConfig, ThinkingConfigDict]
@@ -4263,6 +4459,16 @@ class ImageConfig(_common.BaseModel):
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`.""",
   )
+  output_mime_type: Optional[str] = Field(
+      default=None,
+      description="""MIME type of the generated image. This field is not
+      supported in Gemini API.""",
+  )
+  output_compression_quality: Optional[int] = Field(
+      default=None,
+      description="""Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API.""",
+  )
 
 
 class ImageConfigDict(TypedDict, total=False):
@@ -4276,6 +4482,14 @@ class ImageConfigDict(TypedDict, total=False):
   """Optional. Specifies the size of generated images. Supported
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`."""
+
+  output_mime_type: Optional[str]
+  """MIME type of the generated image. This field is not
+      supported in Gemini API."""
+
+  output_compression_quality: Optional[int]
+  """Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API."""
 
 
 ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]
@@ -6299,15 +6513,11 @@ class GenerateContentResponse(_common.BaseModel):
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
 
-  def _get_text(self, warn_property: Optional[str] = None) -> Optional[str]:
+  def _get_text(self) -> Optional[str]:
     """Returns the concatenation of all text parts in the response.
 
     This is an internal method that allows customizing or disabling the warning
     message.
-
-    Args:
-      warn_property: The property name that is being accessed. This is used to
-        customize the warning message. If None, no warning will be logged.
 
     Returns:
       The concatenation of all text parts in the response.
@@ -6318,13 +6528,14 @@ class GenerateContentResponse(_common.BaseModel):
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1 and warn_property:
+    global _response_text_warning_logged
+    if len(self.candidates) > 1 and not _response_text_warning_logged:
       logger.warning(
-          f'there are {len(self.candidates)} candidates, returning'
-          f' {warn_property} result from the first candidate. Access'
-          ' response.candidates directly to get the result from other'
-          ' candidates.'
+          f'there are {len(self.candidates)} candidates, returning text result'
+          ' from the first candidate. Access response.candidates directly to'
+          ' get the result from other candidates.'
       )
+      _response_text_warning_logged = True
     text = ''
     any_text_part_text = False
     non_text_parts = []
@@ -6339,30 +6550,37 @@ class GenerateContentResponse(_common.BaseModel):
           continue
         any_text_part_text = True
         text += part.text
-    if non_text_parts and warn_property:
+    global _response_text_non_text_warning_logged
+    if non_text_parts and not _response_text_non_text_warning_logged:
       logger.warning(
           'Warning: there are non-text parts in the response:'
-          f' {non_text_parts}, returning concatenated {warn_property} result'
+          f' {non_text_parts}, returning concatenated text result'
           ' from text parts. Check the full candidates.content.parts accessor'
           ' to get the full model response.'
       )
+      _response_text_non_text_warning_logged = True
     # part.text == '' is different from part.text is None
     return text if any_text_part_text else None
 
   @property
   def parts(self) -> Optional[list[Part]]:
-    """Returns the content-parts in the response."""
+    """Returns the content-parts in the response.
+
+    If there are multiple candidates, returns the parts from only the first one.
+    """
     if (
         not self.candidates
         or self.candidates[0].content is None
         or self.candidates[0].content.parts is None
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_parts_warning_logged
+    if len(self.candidates) > 1 and not _response_parts_warning_logged:
       logger.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' parts from the first one.'
       )
+      _response_parts_warning_logged = True
 
     return self.candidates[0].content.parts
 
@@ -6371,23 +6589,32 @@ class GenerateContentResponse(_common.BaseModel):
     """Returns the concatenation of all text parts in the response.
 
     If there are multiple candidates, returns the text from only the first one.
+    If there are non-text parts in the response, this returns only the text
+    parts.
     """
-    return self._get_text(warn_property='text')
+    return self._get_text()
 
   @property
   def function_calls(self) -> Optional[list[FunctionCall]]:
-    """Returns the list of function calls in the response."""
+    """Returns the list of function calls in the response.
+
+    If there are multiple candidates, this returns the function calls from only
+    the
+    first one.
+    """
     if (
         not self.candidates
         or not self.candidates[0].content
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_function_calls_warning_logged
+    if len(self.candidates) > 1 and not _response_function_calls_warning_logged:
       logger.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' function calls from the first one.'
       )
+      _response_function_calls_warning_logged = True
     function_calls = [
         part.function_call
         for part in self.candidates[0].content.parts
@@ -6398,18 +6625,28 @@ class GenerateContentResponse(_common.BaseModel):
 
   @property
   def executable_code(self) -> Optional[str]:
-    """Returns the executable code in the response."""
+    """Returns the executable code in the response.
+
+    If there are multiple candidates, this returns the executable code from only
+    the
+    first one.
+    """
     if (
         not self.candidates
         or not self.candidates[0].content
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_executable_code_warning_logged
+    if (
+        len(self.candidates) > 1
+        and not _response_executable_code_warning_logged
+    ):
       logging.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' executable code from the first one.'
       )
+      _response_executable_code_warning_logged = True
     for part in self.candidates[0].content.parts:
       if part.executable_code is not None:
         return part.executable_code.code
@@ -6417,18 +6654,25 @@ class GenerateContentResponse(_common.BaseModel):
 
   @property
   def code_execution_result(self) -> Optional[str]:
-    """Returns the code execution result in the response."""
+    """Returns the code execution result in the response.
+
+    If there are multiple candidates, this returns the code execution result
+    from only the
+    first one.
+    """
     if (
         not self.candidates
         or not self.candidates[0].content
         or not self.candidates[0].content.parts
     ):
       return None
-    if len(self.candidates) > 1:
+    global _response_code_execution_warning_logged
+    if len(self.candidates) > 1 and not _response_code_execution_warning_logged:
       logging.warning(
           'Warning: there are multiple candidates in the response, returning'
           ' code execution result from the first one.'
       )
+      _response_code_execution_warning_logged = True
     for part in self.candidates[0].content.parts:
       if part.code_execution_result is not None:
         return part.code_execution_result.output
@@ -15920,7 +16164,11 @@ class LiveServerMessage(_common.BaseModel):
 
   @property
   def text(self) -> Optional[str]:
-    """Returns the concatenation of all text parts in the response."""
+    """Returns the concatenation of all text parts in the response.
+
+    If there are non-text parts in the response, only the concatenated text
+    result from text parts will be returned.
+    """
     if (
         not self.server_content
         or not self.server_content
@@ -15940,17 +16188,23 @@ class LiveServerMessage(_common.BaseModel):
         if isinstance(part.thought, bool) and part.thought:
           continue
         text += part.text
-    if non_text_parts:
+    global _live_server_text_warning_logged
+    if non_text_parts and not _live_server_text_warning_logged:
       logger.warning(
           'Warning: there are non-text parts in the response:'
           f' {non_text_parts}, returning concatenated text result from text'
           ' parts, check out the non text parts for full response from model.'
       )
+      _live_server_text_warning_logged = True
     return text if text else None
 
   @property
   def data(self) -> Optional[bytes]:
-    """Returns the concatenation of all inline data parts in the response."""
+    """Returns the concatenation of all inline data parts in the response.
+
+    If there are non-data parts in the response, only the concatenated data
+    result from the data parts will be returned.
+    """
     if (
         not self.server_content
         or not self.server_content
@@ -15968,12 +16222,14 @@ class LiveServerMessage(_common.BaseModel):
           non_data_parts.append(field_name)
       if part.inline_data and isinstance(part.inline_data.data, bytes):
         concatenated_data += part.inline_data.data
-    if non_data_parts:
+    global _live_server_data_warning_logged
+    if non_data_parts and not _live_server_data_warning_logged:
       logger.warning(
           'Warning: there are non-data parts in the response:'
           f' {non_data_parts}, returning concatenated data result from data'
           ' parts, check out the non data parts for full response from model.'
       )
+      _live_server_data_warning_logged = True
     return concatenated_data if len(concatenated_data) > 0 else None
 
 
