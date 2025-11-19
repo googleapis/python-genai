@@ -1246,15 +1246,6 @@ class Tunings(_api_module.BaseModule):
   def _list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> types.ListTuningJobsResponse:
-    """Lists `TuningJob` objects.
-
-    Args:
-      config: The configuration for the list request.
-
-    Returns:
-      A list of `TuningJob` objects.
-    """
-
     parameter_model = types._ListTuningJobsParameters(
         config=config,
     )
@@ -1522,9 +1513,26 @@ class Tunings(_api_module.BaseModule):
   def list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> Pager[types.TuningJob]:
+    """Lists `TuningJob` objects.
+
+    Args:
+      config: The configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of tuning jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+        for tuning_job in client.tunings.list():
+            print(tuning_job.name)
+    """
+
+    list_request = self._list
     return Pager(
         'tuning_jobs',
-        self._list,
+        list_request,
         self._list(config=config),
         config,
     )
@@ -1713,15 +1721,6 @@ class AsyncTunings(_api_module.BaseModule):
   async def _list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> types.ListTuningJobsResponse:
-    """Lists `TuningJob` objects.
-
-    Args:
-      config: The configuration for the list request.
-
-    Returns:
-      A list of `TuningJob` objects.
-    """
-
     parameter_model = types._ListTuningJobsParameters(
         config=config,
     )
@@ -1991,9 +1990,26 @@ class AsyncTunings(_api_module.BaseModule):
   async def list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> AsyncPager[types.TuningJob]:
+    """Lists `TuningJob` objects asynchronously.
+
+    Args:
+      config: The configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of tuning jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+        async for tuning_job in await client.aio.tunings.list():
+            print(tuning_job.name)
+    """
+
+    list_request = self._list
     return AsyncPager(
         'tuning_jobs',
-        self._list,
+        list_request,
         await self._list(config=config),
         config,
     )

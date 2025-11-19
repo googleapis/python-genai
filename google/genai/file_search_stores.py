@@ -499,16 +499,6 @@ class FileSearchStores(_api_module.BaseModule):
   def _list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
   ) -> types.ListFileSearchStoresResponse:
-    """Lists all FileSearchStore owned by the user.
-
-    Args:
-      config (ListFileSearchStoresConfig | None): Optional parameters for the
-        request, such as page_size.
-
-    Returns:
-      ListFileSearchStoresResponse: A paginated list of FileSearchStore.
-    """
-
     parameter_model = types._ListFileSearchStoresParameters(
         config=config,
     )
@@ -705,6 +695,36 @@ class FileSearchStores(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  def list(
+      self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
+  ) -> Pager[types.FileSearchStore]:
+    """Lists FileSearchStores.
+
+    Args:
+      config (ListFileSearchStoresConfig): Optional configuration for the list
+        request.
+
+    Returns:
+      A Pager object that contains one page of file search stores. When
+      iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      for file_search_store in client.file_search_stores.list():
+        print(f"file search store: {file_search_store.name} -
+        {file_search_store.display_name}")
+    """
+
+    list_request = self._list
+    return Pager(
+        'file_search_stores',
+        list_request,
+        self._list(config=config),
+        config,
+    )
+
   def upload_to_file_search_store(
       self,
       *,
@@ -779,34 +799,6 @@ class FileSearchStores(_api_module.BaseModule):
     )
     return types.UploadToFileSearchStoreOperation._from_response(
         response=response_dict, kwargs={}
-    )
-
-  def list(
-      self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
-  ) -> Pager[types.FileSearchStore]:
-    """Lists FileSearchStores.
-
-    Args:
-      config (ListFileSearchStoresConfig): Optional configuration for the list
-        request.
-
-    Returns:
-      A Pager object that contains one page of file search stores. When
-      iterating over
-      the pager, it automatically fetches the next page if there are more.
-
-    Usage:
-
-    .. code-block:: python
-      for file_search_store in client.file_search_stores.list():
-        print(f"file search store: {file_search_store.name} -
-        {file_search_store.display_name}")
-    """
-    return Pager(
-        'file_search_stores',
-        self._list,
-        self._list(config=config),
-        config,
     )
 
 
@@ -999,16 +991,6 @@ class AsyncFileSearchStores(_api_module.BaseModule):
   async def _list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
   ) -> types.ListFileSearchStoresResponse:
-    """Lists all FileSearchStore owned by the user.
-
-    Args:
-      config (ListFileSearchStoresConfig | None): Optional parameters for the
-        request, such as page_size.
-
-    Returns:
-      ListFileSearchStoresResponse: A paginated list of FileSearchStore.
-    """
-
     parameter_model = types._ListFileSearchStoresParameters(
         config=config,
     )
@@ -1207,6 +1189,36 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  async def list(
+      self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
+  ) -> AsyncPager[types.FileSearchStore]:
+    """Lists FileSearchStores asynchronously.
+
+    Args:
+      config (ListFileSearchStoresConfig): Optional parameters for the request,
+        such as page_size.
+
+    Returns:
+      A Pager object that contains one page of FileSearchStores. When iterating
+      over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      async for file_search_store in await client.aio.file_search_stores.list():
+        print(f"file search store: {file_search_store.name} -
+        {file_search_store.display_name}")
+    """
+
+    list_request = self._list
+    return AsyncPager(
+        'file_search_stores',
+        list_request,
+        await self._list(config=config),
+        config,
+    )
+
   async def upload_to_file_search_store(
       self,
       *,
@@ -1281,32 +1293,4 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     )
     return types.UploadToFileSearchStoreOperation._from_response(
         response=response_dict, kwargs={}
-    )
-
-  async def list(
-      self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
-  ) -> AsyncPager[types.FileSearchStore]:
-    """Lists FileSearchStores asynchronously.
-
-    Args:
-      config (ListFileSearchStoresConfig): Optional configuration for the list
-        request.
-
-    Returns:
-      A Pager object that contains one page of FileSearchStores. When iterating
-      over
-      the pager, it automatically fetches the next page if there are more.
-
-    Usage:
-
-    .. code-block:: python
-      async for file_search_store in await client.file_search_stores.list():
-        print(f"file search store: {file_search_store.name} -
-        {file_search_store.display_name}")
-    """
-    return AsyncPager(
-        'file_search_stores',
-        self._list,
-        await self._list(config=config),
-        config,
     )
