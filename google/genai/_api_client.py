@@ -37,6 +37,7 @@ import time
 from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
+import warnings
 
 import anyio
 import certifi
@@ -727,10 +728,44 @@ class BaseApiClient:
 
   async def _get_aiohttp_session(self) -> 'aiohttp.ClientSession':
     """Returns the aiohttp client session."""
-    if self._aiohttp_session is None or self._aiohttp_session.closed:
+    if (
+        self._aiohttp_session is None
+        or self._aiohttp_session.closed
+        or self._aiohttp_session._loop.is_closed()  # pylint: disable=protected-access
+    ):
       # Initialize the aiohttp client session if it's not set up or closed.
-      self._aiohttp_session = aiohttp.ClientSession(
-          connector=aiohttp.TCPConnector(limit=0),
+      class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if not self.closed:
+            context = {
+                'client_session': self,
+                'message': 'Unclosed client session',
+            }
+            if self._source_traceback is not None:
+              context['source_traceback'] = self._source_traceback
+            # Remove this self._loop.call_exception_handler(context)
+
+      class AiohttpTCPConnector(aiohttp.TCPConnector):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if self._closed:
+            return
+          if not self._conns:
+            return
+          conns = [repr(c) for c in self._conns.values()]
+          # After v3.13.2, it may change to self._close_immediately()
+          self._close()
+          context = {
+              'connector': self,
+              'connections': conns,
+              'message': 'Unclosed connector',
+          }
+          if self._source_traceback is not None:
+            context['source_traceback'] = self._source_traceback
+          # Remove this self._loop.call_exception_handler(context)
+      self._aiohttp_session = AiohttpClientSession(
+          connector=AiohttpTCPConnector(limit=0),
           trust_env=True,
           read_bufsize=READ_BUFFER_SIZE,
       )
