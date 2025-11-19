@@ -489,6 +489,31 @@ def get_max_remote_calls_afc(
   return int(config_model.automatic_function_calling.maximum_remote_calls)
 
 
+def raise_error_for_afc_incompatible_config(config: Optional[types.GenerateContentConfig]
+) -> None:
+  """Raises an error if the config is not compatible with AFC."""
+  if (
+      not config
+      or not config.tool_config
+      or not config.tool_config.function_calling_config
+  ):
+    return
+  afc_config = config.automatic_function_calling
+  disable_afc_config = afc_config.disable if afc_config else False
+  stream_function_call = (
+      config.tool_config.function_calling_config.stream_function_call_arguments
+  )
+
+  if stream_function_call and not disable_afc_config:
+    raise ValueError(
+        'Running in streaming mode with stream_function_call_arguments'
+        ' enabled, this feature is not compatible with automatic function'
+        ' calling (AFC). Please set config.automatic_function_calling.disable'
+        ' to True to disable AFC or leave config.tool_config.'
+        ' function_calling_config.stream_function_call_arguments to be empty'
+        ' or set to False to disable streaming function call arguments.'
+    )
+
 def should_append_afc_history(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:

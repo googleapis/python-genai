@@ -830,10 +830,13 @@ def test_model_selection_config_pydantic(client):
   assert response.text
 
 
-def test_sdk_logger_logs_warnings(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='gemini_sdk_logger')
-  sdk_logger = logging.getLogger('gemini_sdk_logger')
-  sdk_logger.setLevel(logging.WARNING)
+def test_sdk_logger_logs_warnings_once(client, caplog):
+  from ... import types as types_module
+
+  types_module._response_text_warning_logged = False
+
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
   response = client.models.generate_content(
       model=GEMINI_FLASH_LATEST,
       contents='Tell me a 50 word story about cheese.',
@@ -844,6 +847,17 @@ def test_sdk_logger_logs_warnings(client, caplog):
   assert response.text
   assert 'WARNING' in caplog.text
   assert 'there are 2 candidates' in caplog.text
+  caplog_after_first_call = caplog.text
+  assert len(caplog.records) == 1
+  client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a 50 word story about cheese.',
+      config={
+        'candidate_count': 2,
+      }
+  )
+  assert caplog.text == caplog_after_first_call
+  assert len(caplog.records) == 1
 
 
 def test_response_create_time_and_response_id(client):
