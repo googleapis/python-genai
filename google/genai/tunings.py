@@ -110,6 +110,34 @@ def _CancelTuningJobParameters_to_vertex(
   return to_object
 
 
+def _CancelTuningJobResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
+def _CancelTuningJobResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
 def _CreateTuningJobConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1310,7 +1338,7 @@ class Tunings(_api_module.BaseModule):
       *,
       name: str,
       config: Optional[types.CancelTuningJobConfigOrDict] = None,
-  ) -> None:
+  ) -> types.CancelTuningJobResponse:
     """Cancels a tuning job.
 
     Args:
@@ -1361,6 +1389,23 @@ class Tunings(_api_module.BaseModule):
     response = self._api_client.request(
         'post', path, request_dict, http_options
     )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+
+    if not self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+
+    return_value = types.CancelTuningJobResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
 
   def _tune(
       self,
@@ -1787,7 +1832,7 @@ class AsyncTunings(_api_module.BaseModule):
       *,
       name: str,
       config: Optional[types.CancelTuningJobConfigOrDict] = None,
-  ) -> None:
+  ) -> types.CancelTuningJobResponse:
     """Cancels a tuning job asynchronously.
 
     Args:
@@ -1838,6 +1883,23 @@ class AsyncTunings(_api_module.BaseModule):
     response = await self._api_client.async_request(
         'post', path, request_dict, http_options
     )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+
+    if not self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+
+    return_value = types.CancelTuningJobResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
 
   async def _tune(
       self,
