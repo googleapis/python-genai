@@ -31,6 +31,7 @@ def test_patch_http_options_with_copies_all_fields():
       async_client_args={'http1': True},
       extra_body={'key': 'value'},
       retry_options=types.HttpRetryOptions(attempts=10),
+      force_append_path=True,
   )
   options = types.HttpOptions()
   patched = _api_client.patch_http_options(options, patch_options)
@@ -47,6 +48,7 @@ def test_patch_http_options_with_copies_all_fields():
   assert patched.retry_options.attempts == 10
   assert patched.client_args['http2']
   assert patched.async_client_args['http1']
+  assert patched.force_append_path is True
 
 
 def test_patch_http_options_merges_headers():
