@@ -588,6 +588,7 @@ class BaseModel(pydantic.BaseModel):
           expected_type = non_none_types[0]
 
       if (isinstance(expected_type, type) and
+          get_origin(expected_type) is None and
           issubclass(expected_type, pydantic.BaseModel) and
           isinstance(value, pydantic.BaseModel) and
           not isinstance(value, expected_type)):
