@@ -4368,6 +4368,163 @@ class ToolConfigDict(TypedDict, total=False):
 ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
 
 
+class ReplicatedVoiceConfig(_common.BaseModel):
+  """ReplicatedVoiceConfig is used to configure replicated voice."""
+
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""The mime type of the replicated voice.
+      """,
+  )
+  voice_sample_audio: Optional[bytes] = Field(
+      default=None,
+      description="""The sample audio of the replicated voice.
+      """,
+  )
+
+
+class ReplicatedVoiceConfigDict(TypedDict, total=False):
+  """ReplicatedVoiceConfig is used to configure replicated voice."""
+
+  mime_type: Optional[str]
+  """The mime type of the replicated voice.
+      """
+
+  voice_sample_audio: Optional[bytes]
+  """The sample audio of the replicated voice.
+      """
+
+
+ReplicatedVoiceConfigOrDict = Union[
+    ReplicatedVoiceConfig, ReplicatedVoiceConfigDict
+]
+
+
+class PrebuiltVoiceConfig(_common.BaseModel):
+  """The configuration for the prebuilt speaker to use."""
+
+  voice_name: Optional[str] = Field(
+      default=None, description="""The name of the preset voice to use."""
+  )
+
+
+class PrebuiltVoiceConfigDict(TypedDict, total=False):
+  """The configuration for the prebuilt speaker to use."""
+
+  voice_name: Optional[str]
+  """The name of the preset voice to use."""
+
+
+PrebuiltVoiceConfigOrDict = Union[PrebuiltVoiceConfig, PrebuiltVoiceConfigDict]
+
+
+class VoiceConfig(_common.BaseModel):
+
+  replicated_voice_config: Optional[ReplicatedVoiceConfig] = Field(
+      default=None,
+      description="""If true, the model will use a replicated voice for the response.""",
+  )
+  prebuilt_voice_config: Optional[PrebuiltVoiceConfig] = Field(
+      default=None,
+      description="""The configuration for the prebuilt voice to use.""",
+  )
+
+
+class VoiceConfigDict(TypedDict, total=False):
+
+  replicated_voice_config: Optional[ReplicatedVoiceConfigDict]
+  """If true, the model will use a replicated voice for the response."""
+
+  prebuilt_voice_config: Optional[PrebuiltVoiceConfigDict]
+  """The configuration for the prebuilt voice to use."""
+
+
+VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
+
+
+class SpeakerVoiceConfig(_common.BaseModel):
+  """Configuration for a single speaker in a multi speaker setup."""
+
+  speaker: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the speaker. This should be the same as the speaker name used in the prompt.""",
+  )
+  voice_config: Optional[VoiceConfig] = Field(
+      default=None,
+      description="""Required. The configuration for the voice of this speaker.""",
+  )
+
+
+class SpeakerVoiceConfigDict(TypedDict, total=False):
+  """Configuration for a single speaker in a multi speaker setup."""
+
+  speaker: Optional[str]
+  """Required. The name of the speaker. This should be the same as the speaker name used in the prompt."""
+
+  voice_config: Optional[VoiceConfigDict]
+  """Required. The configuration for the voice of this speaker."""
+
+
+SpeakerVoiceConfigOrDict = Union[SpeakerVoiceConfig, SpeakerVoiceConfigDict]
+
+
+class MultiSpeakerVoiceConfig(_common.BaseModel):
+  """The configuration for the multi-speaker setup.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  speaker_voice_configs: Optional[list[SpeakerVoiceConfig]] = Field(
+      default=None, description="""Required. All the enabled speaker voices."""
+  )
+
+
+class MultiSpeakerVoiceConfigDict(TypedDict, total=False):
+  """The configuration for the multi-speaker setup.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  speaker_voice_configs: Optional[list[SpeakerVoiceConfigDict]]
+  """Required. All the enabled speaker voices."""
+
+
+MultiSpeakerVoiceConfigOrDict = Union[
+    MultiSpeakerVoiceConfig, MultiSpeakerVoiceConfigDict
+]
+
+
+class SpeechConfig(_common.BaseModel):
+
+  voice_config: Optional[VoiceConfig] = Field(
+      default=None,
+      description="""Configuration for the voice of the response.""",
+  )
+  language_code: Optional[str] = Field(
+      default=None,
+      description="""Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.""",
+  )
+  multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfig] = Field(
+      default=None,
+      description="""Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI.""",
+  )
+
+
+class SpeechConfigDict(TypedDict, total=False):
+
+  voice_config: Optional[VoiceConfigDict]
+  """Configuration for the voice of the response."""
+
+  language_code: Optional[str]
+  """Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization."""
+
+  multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfigDict]
+  """Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI."""
+
+
+SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
+
+
 class AutomaticFunctionCallingConfig(_common.BaseModel):
   """The configuration for automatic function calling."""
 
@@ -4790,38 +4947,6 @@ class SafetySettingDict(TypedDict, total=False):
 
 
 SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
-
-
-class SpeechConfig(_common.BaseModel):
-  """The speech generation config."""
-
-  language_code: Optional[str] = Field(
-      default=None,
-      description="""Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.""",
-  )
-  voice_config: Optional['VoiceConfig'] = Field(
-      default=None, description="""The configuration for the speaker to use."""
-  )
-  multi_speaker_voice_config: Optional['MultiSpeakerVoiceConfig'] = Field(
-      default=None,
-      description="""Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI.""",
-  )
-
-
-class SpeechConfigDict(TypedDict, total=False):
-  """The speech generation config."""
-
-  language_code: Optional[str]
-  """Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization."""
-
-  voice_config: Optional['VoiceConfigDict']
-  """The configuration for the speaker to use."""
-
-  multi_speaker_voice_config: Optional['MultiSpeakerVoiceConfigDict']
-  """Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI."""
-
-
-SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
 
 
 SpeechConfigUnion = Union[str, SpeechConfig]
@@ -9066,95 +9191,6 @@ class DeleteModelResponseDict(TypedDict, total=False):
 
 
 DeleteModelResponseOrDict = Union[DeleteModelResponse, DeleteModelResponseDict]
-
-
-class PrebuiltVoiceConfig(_common.BaseModel):
-  """The configuration for the prebuilt speaker to use."""
-
-  voice_name: Optional[str] = Field(
-      default=None, description="""The name of the preset voice to use."""
-  )
-
-
-class PrebuiltVoiceConfigDict(TypedDict, total=False):
-  """The configuration for the prebuilt speaker to use."""
-
-  voice_name: Optional[str]
-  """The name of the preset voice to use."""
-
-
-PrebuiltVoiceConfigOrDict = Union[PrebuiltVoiceConfig, PrebuiltVoiceConfigDict]
-
-
-class VoiceConfig(_common.BaseModel):
-  """The configuration for the voice to use."""
-
-  prebuilt_voice_config: Optional[PrebuiltVoiceConfig] = Field(
-      default=None,
-      description="""The configuration for the prebuilt voice to use.""",
-  )
-
-
-class VoiceConfigDict(TypedDict, total=False):
-  """The configuration for the voice to use."""
-
-  prebuilt_voice_config: Optional[PrebuiltVoiceConfigDict]
-  """The configuration for the prebuilt voice to use."""
-
-
-VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
-
-
-class SpeakerVoiceConfig(_common.BaseModel):
-  """Configuration for a single speaker in a multi speaker setup."""
-
-  speaker: Optional[str] = Field(
-      default=None,
-      description="""Required. The name of the speaker. This should be the same as the speaker name used in the prompt.""",
-  )
-  voice_config: Optional[VoiceConfig] = Field(
-      default=None,
-      description="""Required. The configuration for the voice of this speaker.""",
-  )
-
-
-class SpeakerVoiceConfigDict(TypedDict, total=False):
-  """Configuration for a single speaker in a multi speaker setup."""
-
-  speaker: Optional[str]
-  """Required. The name of the speaker. This should be the same as the speaker name used in the prompt."""
-
-  voice_config: Optional[VoiceConfigDict]
-  """Required. The configuration for the voice of this speaker."""
-
-
-SpeakerVoiceConfigOrDict = Union[SpeakerVoiceConfig, SpeakerVoiceConfigDict]
-
-
-class MultiSpeakerVoiceConfig(_common.BaseModel):
-  """The configuration for the multi-speaker setup.
-
-  This data type is not supported in Vertex AI.
-  """
-
-  speaker_voice_configs: Optional[list[SpeakerVoiceConfig]] = Field(
-      default=None, description="""Required. All the enabled speaker voices."""
-  )
-
-
-class MultiSpeakerVoiceConfigDict(TypedDict, total=False):
-  """The configuration for the multi-speaker setup.
-
-  This data type is not supported in Vertex AI.
-  """
-
-  speaker_voice_configs: Optional[list[SpeakerVoiceConfigDict]]
-  """Required. All the enabled speaker voices."""
-
-
-MultiSpeakerVoiceConfigOrDict = Union[
-    MultiSpeakerVoiceConfig, MultiSpeakerVoiceConfigDict
-]
 
 
 class GenerationConfig(_common.BaseModel):
