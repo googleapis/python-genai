@@ -545,6 +545,15 @@ def _format_collection(
 
   return f'{brackets[0]}\n' + ',\n'.join(elements) + f',\n{indent}{brackets[1]}'
 
+def safe_issubclass(a, b) -> bool:
+    """Safe issubclass for Python 3.10 compatibility issues.
+    
+    For more details, see: https://github.com/python/cpython/issues/89010
+    """
+    try:
+        return isinstance(a, type) and issubclass(a, b)
+    except TypeError:
+        return False
 
 class BaseModel(pydantic.BaseModel):
 
@@ -587,8 +596,8 @@ class BaseModel(pydantic.BaseModel):
         if len(non_none_types) == 1:
           expected_type = non_none_types[0]
 
-      if (isinstance(expected_type, type) and
-          issubclass(expected_type, pydantic.BaseModel) and
+      if (expected_type is not None and
+          safe_issubclass(expected_type, pydantic.BaseModel) and
           isinstance(value, pydantic.BaseModel) and
           not isinstance(value, expected_type)):
         logger.warning(
