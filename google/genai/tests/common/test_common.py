@@ -939,3 +939,16 @@ def test_check_field_type_mismatches_with_multiple_fields(caplog):
   assert len(caplog.records) == 1
   assert "field_a" in caplog.records[0].message
   assert "expected ModelA, got ModelB" in caplog.records[0].message
+
+
+def test_check_field_type_mismatches_generic_type_no_error(caplog):
+  """Test that validation doesn't crash on generic types like list[str]."""
+  class TestModel(_common.BaseModel):
+    tags: list[str]
+
+  data = {"tags": ["a", "b"]}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel.model_validate(data)
+
+  assert len(caplog.records) == 0
