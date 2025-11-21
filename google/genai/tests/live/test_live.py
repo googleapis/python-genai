@@ -85,6 +85,23 @@ function_declarations = [{
 }]
 
 
+class FakeCredentials(Credentials):
+  def __init__(self, token='fake_token', valid=True):
+    super().__init__(token='placeholder')
+    self.token = token
+    self._valid = valid
+    self.refresh_called = False
+
+  def refresh(self, request):
+    self.token = 'refreshed_token'
+    self._valid = True
+    self.refresh_called = True
+
+  @property
+  def valid(self):
+    return self._valid
+
+
 def get_current_weather(location: str, unit: str):
   """Get the current weather in a city."""
   return 15 if unit == 'C' else 59
@@ -2073,3 +2090,48 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
   assert 'x-goog-api-key' in capture['headers'], "x-goog-api-key is missing from headers"
   assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
   assert 'BidiGenerateContent' in capture['uri']
+
+
+@pytest.mark.asyncio
+async def test_prepare_connection_vertex_with_api_key(mock_websocket):
+    # Test the branch where api_key is present in vertexai
+    client = Client(vertexai=True, api_key="test_api_key")
+
+    live_module = client.aio.live
+    parameter_model = types.LiveConnectConfig()
+
+    uri, headers, request = await live_module._prepare_connection_vertex(
+        base_url="wss://test-url",
+        model="test-model",
+        parameter_model=parameter_model
+    )
+
+    assert 'x-goog-api-key' in headers
+    assert headers['x-goog-api-key'] == "test_api_key"
+    # Authorization header should not be added by this method if api_key is used
+    assert 'Authorization' not in headers
+    assert "BidiGenerateContent" in uri
+
+@pytest.mark.asyncio
+async def test_prepare_connection_vertex_refresh_creds(mock_websocket):
+    # Test the branch where credentials need refreshing
+    fake_creds = FakeCredentials(token=None, valid=False)
+
+    with patch('google.auth.default', return_value=(fake_creds, "test-project")):
+        client = Client(vertexai=True, project="test-project", location="us-central1")
+
+    live_module = client.aio.live
+    parameter_model = types.LiveConnectConfig()
+
+    with patch('google.auth.transport.requests.Request', return_value=Mock()):
+        with patch('google.auth.default', return_value=(fake_creds, "test-project")):
+            uri, headers, request = await live_module._prepare_connection_vertex(
+                base_url="wss://test-url",
+                model="test-model",
+                parameter_model=parameter_model
+            )
+
+    assert fake_creds.refresh_called
+    assert 'Authorization' in headers
+    assert headers['Authorization'] == f'Bearer {fake_creds.token}'
+    assert "BidiGenerateContent" in uri
