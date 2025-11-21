@@ -56,6 +56,7 @@ from .types import HttpOptions
 from .types import HttpOptionsOrDict
 from .types import HttpResponse as SdkHttpResponse
 from .types import HttpRetryOptions
+from .types import ResourceScope
 
 
 try:
@@ -579,6 +580,12 @@ class BaseApiClient:
     elif isinstance(http_options, HttpOptions):
       validated_http_options = http_options
 
+    if validated_http_options.base_url_resource_scope and not validated_http_options.base_url:
+      # base_url_resource_scope is only valid when base_url is set.
+      raise ValueError(
+          'base_url must be set when base_url_resource_scope is set.'
+      )
+
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
@@ -1079,6 +1086,11 @@ class BaseApiClient:
         and not path.startswith('projects/')
         and not query_vertex_base_models
         and (self.project or self.location)
+        and not (
+            self.custom_base_url
+            and patched_http_options.base_url_resource_scope
+            == ResourceScope.COLLECTION
+        )
     ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
 
@@ -1108,10 +1120,21 @@ class BaseApiClient:
         or (self.project and self.location)
         or self.api_key
     ):
-      url = join_url_path(
-          base_url,
-          versioned_path,
-      )
+      if (
+          patched_http_options.base_url_resource_scope
+          == ResourceScope.COLLECTION
+      ):
+        url = join_url_path(base_url, path)
+      else:
+        url = join_url_path(
+            base_url,
+            versioned_path,
+        )
+    elif(
+        self.custom_base_url
+        and patched_http_options.base_url_resource_scope == ResourceScope.COLLECTION
+    ):
+      url = join_url_path(base_url, path)
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(

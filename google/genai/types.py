@@ -575,6 +575,17 @@ class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """Media resolution set to high."""
 
 
+class ResourceScope(_common.CaseInSensitiveEnum):
+  """Resource scope."""
+
+  COLLECTION = 'COLLECTION'
+  """When setting base_url, this value configures resource scope to be the collection.
+      The resource name will not include api version, project, or location.
+      For example, if base_url is set to "https://aiplatform.googleapis.com",
+      then the resource name for a Model would be
+      "https://aiplatform.googleapis.com/publishers/google/models/gemini-3-pro-preview"""
+
+
 class JSONSchemaType(Enum):
   """The type of the data supported by JSON Schema.
 
@@ -1863,6 +1874,10 @@ class HttpOptions(_common.BaseModel):
       default=None,
       description="""The base URL for the AI platform service endpoint.""",
   )
+  base_url_resource_scope: Optional[ResourceScope] = Field(
+      default=None,
+      description="""The resource scope used to constructing the resource name when base_url is set""",
+  )
   api_version: Optional[str] = Field(
       default=None, description="""Specifies the version of the API to use."""
   )
@@ -1905,6 +1920,9 @@ class HttpOptionsDict(TypedDict, total=False):
 
   base_url: Optional[str]
   """The base URL for the AI platform service endpoint."""
+
+  base_url_resource_scope: Optional[ResourceScope]
+  """The resource scope used to constructing the resource name when base_url is set"""
 
   api_version: Optional[str]
   """Specifies the version of the API to use."""
