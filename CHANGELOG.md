@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.52.0](https://github.com/googleapis/python-genai/compare/v1.51.0...v1.52.0) (2025-11-21)
+
+
+### Features
+
+* Add support for configuring resource scope when using base_url ([a3e0859](https://github.com/googleapis/python-genai/commit/a3e0859b673ad5b20157ed9970ecfc2edfa5077c))
+
+
+### Bug Fixes
+
+* `TypeError: issubclass() arg 1 must be a class` when using`List[str]` for `contents` ([c624d7e](https://github.com/googleapis/python-genai/commit/c624d7e5705df98e36cbc7b55dc110adf5871c85))
+* Create new aiohttp Client Session if loop is closed ([1dc35ea](https://github.com/googleapis/python-genai/commit/1dc35ea7abdd8f5d0faed4f8aa55756d8da7c478))
+
 ## [1.51.0](https://github.com/googleapis/python-genai/compare/v1.50.1...v1.51.0) (2025-11-18)
 
 
