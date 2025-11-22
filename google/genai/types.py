@@ -11869,6 +11869,26 @@ _CancelTuningJobParametersOrDict = Union[
 ]
 
 
+class CancelTuningJobResponse(_common.BaseModel):
+  """Empty response for tunings.cancel method."""
+
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
+
+
+class CancelTuningJobResponseDict(TypedDict, total=False):
+  """Empty response for tunings.cancel method."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
+
+
+CancelTuningJobResponseOrDict = Union[
+    CancelTuningJobResponse, CancelTuningJobResponseDict
+]
+
+
 class TuningExample(_common.BaseModel):
   """A single example for tuning.
 
