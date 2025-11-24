@@ -113,6 +113,40 @@ class APIError(Exception):
             raise cls(status_code, response_json, response)
 
     @classmethod
+    def raise_error(
+        cls,
+        status_code: int,
+        response_json: Any,
+        response: Optional[
+            Union["ReplayResponse", httpx.Response, "aiohttp.ClientResponse"]
+        ],
+    ) -> None:
+        """Raises an appropriate APIError subclass based on the status code."""
+        if 400 <= status_code < 500:
+            raise ClientError(status_code, response_json, response)
+        elif 500 <= status_code < 600:
+            raise ServerError(status_code, response_json, response)
+        else:
+            raise cls(status_code, response_json, response)
+
+    @classmethod
+    async def raise_error_async(
+        cls,
+        status_code: int,
+        response_json: Any,
+        response: Optional[
+            Union["ReplayResponse", httpx.Response, "aiohttp.ClientResponse"]
+        ],
+    ) -> None:
+        """Raises an appropriate APIError subclass based on the status code."""
+        if 400 <= status_code < 500:
+            raise ClientError(status_code, response_json, response)
+        elif 500 <= status_code < 600:
+            raise ServerError(status_code, response_json, response)
+        else:
+            raise cls(status_code, response_json, response)
+
+    @classmethod
     async def raise_for_async_response(
         cls,
         response: Union["ReplayResponse", httpx.Response, "aiohttp.ClientResponse"],

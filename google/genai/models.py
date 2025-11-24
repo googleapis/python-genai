@@ -3742,7 +3742,7 @@ def _ensure_file_active(
                     response = api_client.request(
                         "GET",
                         f"files/{file_id}",
-                        None,
+                        {},
                         None,
                     )
 
