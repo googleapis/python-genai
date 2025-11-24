@@ -249,17 +249,6 @@ class Documents(_api_module.BaseModule):
       parent: str,
       config: Optional[types.ListDocumentsConfigOrDict] = None,
   ) -> types.ListDocumentsResponse:
-    """Lists all Documents in a FileSearchStore.
-
-    Args:
-      parent (str): The name of the FileSearchStore containing the Documents.
-      config (ListDocumentsConfig | None): Optional parameters for the request,
-        such as page_size.
-
-    Returns:
-      ListDocumentsResponse: A paginated list of Documents.
-    """
-
     parameter_model = types._ListDocumentsParameters(
         parent=parent,
         config=config,
@@ -328,6 +317,7 @@ class Documents(_api_module.BaseModule):
       for document in client.documents.list(parent='rag_store_name'):
         print(f"document: {document.name} - {document.display_name}")
     """
+
     list_request = partial(self._list, parent=parent)
     return Pager(
         'documents',
@@ -461,17 +451,6 @@ class AsyncDocuments(_api_module.BaseModule):
       parent: str,
       config: Optional[types.ListDocumentsConfigOrDict] = None,
   ) -> types.ListDocumentsResponse:
-    """Lists all Documents in a FileSearchStore.
-
-    Args:
-      parent (str): The name of the FileSearchStore containing the Documents.
-      config (ListDocumentsConfig | None): Optional parameters for the request,
-        such as page_size.
-
-    Returns:
-      ListDocumentsResponse: A paginated list of Documents.
-    """
-
     parameter_model = types._ListDocumentsParameters(
         parent=parent,
         config=config,
@@ -540,9 +519,10 @@ class AsyncDocuments(_api_module.BaseModule):
     Usage:
     .. code-block:: python
       async for document in await
-      client.documents.list(parent='rag_store_name'):
+      client.aio.documents.list(parent='rag_store_name'):
         print(f"document: {document.name} - {document.display_name}")
     """
+
     list_request = partial(self._list, parent=parent)
     return AsyncPager(
         'documents',
