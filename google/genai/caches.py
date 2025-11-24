@@ -1129,15 +1129,6 @@ class Caches(_api_module.BaseModule):
   def _list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> types.ListCachedContentsResponse:
-    """Lists cached content configurations.
-
-    .. code-block:: python
-
-      cached_contents = client.caches.list(config={'page_size': 2})
-      for cached_content in cached_contents:
-        print(cached_content)
-    """
-
     parameter_model = types._ListCachedContentsParameters(
         config=config,
     )
@@ -1196,9 +1187,28 @@ class Caches(_api_module.BaseModule):
   def list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> Pager[types.CachedContent]:
+    """Lists cached contents.
+
+    Args:
+      config (ListCachedContentsConfig): Optional configuration for the list
+        request.
+
+    Returns:
+      A Pager object that contains one page of cached contents. When iterating
+      over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      for cached_content in client.caches.list():
+        print(cached_content.name)
+    """
+
+    list_request = self._list
     return Pager(
         'cached_contents',
-        self._list,
+        list_request,
         self._list(config=config),
         config,
     )
@@ -1505,15 +1515,6 @@ class AsyncCaches(_api_module.BaseModule):
   async def _list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> types.ListCachedContentsResponse:
-    """Lists cached content configurations.
-
-    .. code-block:: python
-
-      cached_contents = await client.aio.caches.list(config={'page_size': 2})
-      async for cached_content in cached_contents:
-        print(cached_content)
-    """
-
     parameter_model = types._ListCachedContentsParameters(
         config=config,
     )
@@ -1574,9 +1575,28 @@ class AsyncCaches(_api_module.BaseModule):
   async def list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> AsyncPager[types.CachedContent]:
+    """Lists cached contents asynchronously.
+
+    Args:
+      config (ListCachedContentsConfig): Optional configuration for the list
+        request.
+
+    Returns:
+      A Pager object that contains one page of cached contents. When iterating
+      over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      async for cached_content in await client.aio.caches.list():
+        print(cached_content.name)
+    """
+
+    list_request = self._list
     return AsyncPager(
         'cached_contents',
-        self._list,
+        list_request,
         await self._list(config=config),
         config,
     )
