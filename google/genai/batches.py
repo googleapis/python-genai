@@ -1006,6 +1006,13 @@ def _GenerateContentConfig_to_mldev(
         _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
     )
 
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    setv(
+        to_object,
+        ['enableEnhancedCivicAnswers'],
+        getv(from_object, ['enable_enhanced_civic_answers']),
+    )
+
   return to_object
 
 
