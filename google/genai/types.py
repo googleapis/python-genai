@@ -2529,14 +2529,26 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
         root_json_schema_dict: dict[str, Any],
         api_option: Literal['VERTEX_AI', 'GEMINI_API'],
         raise_error_on_unsupported_field: bool,
+        _visited_refs: set[str] | None = None,
     ) -> 'Schema':
+      if _visited_refs is None:
+        _visited_refs = set()
+
       schema = Schema()
       json_schema_dict = current_json_schema.model_dump()
 
       if json_schema_dict.get('ref'):
-        json_schema_dict = _resolve_ref(
-            json_schema_dict['ref'], root_json_schema_dict
-        )
+          ref_path = json_schema_dict['ref']
+          
+          if ref_path in _visited_refs:
+              logger.warning(f"Circular reference detected: {ref_path}")
+              schema.type = Type('OBJECT')
+              schema.description = f"Circular reference to {ref_path}"
+              return schema
+          
+          _visited_refs.add(ref_path)
+          
+          json_schema_dict = _resolve_ref(ref_path, root_json_schema_dict)
 
       raise_error_if_cannot_convert(
           json_schema_dict=json_schema_dict,
@@ -2603,6 +2615,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
               root_json_schema_dict=root_json_schema_dict,
               api_option=api_option,
               raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              _visited_refs=_visited_refs,
           )
           setattr(schema, field_name, schema_field_value)
         elif field_name in list_schema_field_names:
@@ -2612,6 +2625,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
                   root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+                  _visited_refs=_visited_refs,
               )
               for this_field_value in field_value
           ]
@@ -2625,6 +2639,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
                   root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+                  _visited_refs=_visited_refs,
               )
               for key, value in field_value.items()
           }
