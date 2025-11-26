@@ -38,6 +38,7 @@ dependencies = [
 [project.optional-dependencies]
 aiohttp = ["aiohttp<3.13.3"]
 local-tokenizer = ["sentencepiece>=0.2.0", "protobuf"]
+images = ["pillow>=8.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
