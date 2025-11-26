@@ -161,27 +161,6 @@ class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
   """Add the result to the conversation context, interrupt ongoing generation and prompt to generate output."""
 
 
-class Type(_common.CaseInSensitiveEnum):
-  """The type of the data."""
-
-  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
-  """Not specified, should not be used."""
-  STRING = 'STRING'
-  """OpenAPI string type"""
-  NUMBER = 'NUMBER'
-  """OpenAPI number type"""
-  INTEGER = 'INTEGER'
-  """OpenAPI integer type"""
-  BOOLEAN = 'BOOLEAN'
-  """OpenAPI boolean type"""
-  ARRAY = 'ARRAY'
-  """OpenAPI array type"""
-  OBJECT = 'OBJECT'
-  """OpenAPI object type"""
-  NULL = 'NULL'
-  """Null type"""
-
-
 class ApiSpec(_common.CaseInSensitiveEnum):
   """The API spec that the external API implements.
 
@@ -267,6 +246,27 @@ class Behavior(_common.CaseInSensitiveEnum):
   """If set, the system will not wait to receive the function response. Instead, it will attempt to handle function responses as they become available while maintaining the conversation between the user and the model."""
 
 
+class Type(_common.CaseInSensitiveEnum):
+  """The type of the data."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  """Not specified, should not be used."""
+  STRING = 'STRING'
+  """OpenAPI string type"""
+  NUMBER = 'NUMBER'
+  """OpenAPI number type"""
+  INTEGER = 'INTEGER'
+  """OpenAPI integer type"""
+  BOOLEAN = 'BOOLEAN'
+  """OpenAPI boolean type"""
+  ARRAY = 'ARRAY'
+  """OpenAPI array type"""
+  OBJECT = 'OBJECT'
+  """OpenAPI object type"""
+  NULL = 'NULL'
+  """Null type"""
+
+
 class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
   """The mode of the predictor to be used in dynamic retrieval."""
 
@@ -289,6 +289,32 @@ class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
   """Model will not predict any function calls. Model behavior is same as when not passing any function declarations."""
   VALIDATED = 'VALIDATED'
   """Model is constrained to predict either function calls or natural language response. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
+
+
+class MediaResolution(_common.CaseInSensitiveEnum):
+  """If specified, the media resolution specified will be used."""
+
+  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
+  """Media resolution has not been set."""
+  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
+  """Media resolution set to low (64 tokens)."""
+  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
+  """Media resolution set to medium (256 tokens)."""
+  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
+  """Media resolution set to high (zoomed reframing with 256 tokens)."""
+
+
+class Modality(_common.CaseInSensitiveEnum):
+  """Server content modalities."""
+
+  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
+  """The modality is unspecified."""
+  TEXT = 'TEXT'
+  """Indicates the model should return text"""
+  IMAGE = 'IMAGE'
+  """Indicates the model should return images."""
+  AUDIO = 'AUDIO'
+  """Indicates the model should return audio."""
 
 
 class ThinkingLevel(_common.CaseInSensitiveEnum):
@@ -494,32 +520,6 @@ class TrafficType(_common.CaseInSensitiveEnum):
   """Type for Provisioned Throughput traffic."""
 
 
-class Modality(_common.CaseInSensitiveEnum):
-  """Server content modalities."""
-
-  MODALITY_UNSPECIFIED = 'MODALITY_UNSPECIFIED'
-  """The modality is unspecified."""
-  TEXT = 'TEXT'
-  """Indicates the model should return text"""
-  IMAGE = 'IMAGE'
-  """Indicates the model should return images."""
-  AUDIO = 'AUDIO'
-  """Indicates the model should return audio."""
-
-
-class MediaResolution(_common.CaseInSensitiveEnum):
-  """The media resolution to use."""
-
-  MEDIA_RESOLUTION_UNSPECIFIED = 'MEDIA_RESOLUTION_UNSPECIFIED'
-  """Media resolution has not been set"""
-  MEDIA_RESOLUTION_LOW = 'MEDIA_RESOLUTION_LOW'
-  """Media resolution set to low (64 tokens)."""
-  MEDIA_RESOLUTION_MEDIUM = 'MEDIA_RESOLUTION_MEDIUM'
-  """Media resolution set to medium (256 tokens)."""
-  MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
-  """Media resolution set to high (zoomed reframing with 256 tokens)."""
-
-
 class TuningMode(_common.CaseInSensitiveEnum):
   """Tuning mode. This enum is not supported in Gemini API."""
 
@@ -621,6 +621,15 @@ class ResourceScope(_common.CaseInSensitiveEnum):
       "https://aiplatform.googleapis.com/publishers/google/models/gemini-3-pro-preview"""
 
 
+class Environment(_common.CaseInSensitiveEnum):
+  """The environment being operated."""
+
+  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
+  """Defaults to browser."""
+  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
+  """Operates in a web browser."""
+
+
 class JSONSchemaType(Enum):
   """The type of the data supported by JSON Schema.
 
@@ -635,26 +644,6 @@ class JSONSchemaType(Enum):
   NUMBER = 'number'
   INTEGER = 'integer'
   STRING = 'string'
-
-
-class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
-  """Options for feature selection preference."""
-
-  FEATURE_SELECTION_PREFERENCE_UNSPECIFIED = (
-      'FEATURE_SELECTION_PREFERENCE_UNSPECIFIED'
-  )
-  PRIORITIZE_QUALITY = 'PRIORITIZE_QUALITY'
-  BALANCED = 'BALANCED'
-  PRIORITIZE_COST = 'PRIORITIZE_COST'
-
-
-class Environment(_common.CaseInSensitiveEnum):
-  """The environment being operated."""
-
-  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
-  """Defaults to browser."""
-  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
-  """Operates in a web browser."""
 
 
 class SafetyFilterLevel(_common.CaseInSensitiveEnum):
@@ -790,6 +779,17 @@ class VideoCompressionQuality(_common.CaseInSensitiveEnum):
   LOSSLESS = 'LOSSLESS'
   """Lossless video compression quality. This will produce videos
       with a larger file size."""
+
+
+class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
+  """Options for feature selection preference."""
+
+  FEATURE_SELECTION_PREFERENCE_UNSPECIFIED = (
+      'FEATURE_SELECTION_PREFERENCE_UNSPECIFIED'
+  )
+  PRIORITIZE_QUALITY = 'PRIORITIZE_QUALITY'
+  BALANCED = 'BALANCED'
+  PRIORITIZE_COST = 'PRIORITIZE_COST'
 
 
 class TuningMethod(_common.CaseInSensitiveEnum):
@@ -1964,843 +1964,6 @@ class HttpOptionsDict(TypedDict, total=False):
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
 
 
-class JSONSchema(_common.BaseModel):
-  """A subset of JSON Schema according to 2020-12 JSON Schema draft.
-
-  Represents a subset of a JSON Schema object that is used by the Gemini model.
-  The difference between this class and the Schema class is that this class is
-  compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
-  make API call to Gemini model.
-  """
-
-  type: Optional[Union[JSONSchemaType, list[JSONSchemaType]]] = Field(
-      default=None,
-      description="""Validation succeeds if the type of the instance matches the type represented by the given type, or matches at least one of the given types.""",
-  )
-  format: Optional[str] = Field(
-      default=None,
-      description='Define semantic information about a string instance.',
-  )
-  title: Optional[str] = Field(
-      default=None,
-      description=(
-          'A preferably short description about the purpose of the instance'
-          ' described by the schema.'
-      ),
-  )
-  description: Optional[str] = Field(
-      default=None,
-      description=(
-          'An explanation about the purpose of the instance described by the'
-          ' schema.'
-      ),
-  )
-  default: Optional[Any] = Field(
-      default=None,
-      description=(
-          'This keyword can be used to supply a default JSON value associated'
-          ' with a particular schema.'
-      ),
-  )
-  items: Optional['JSONSchema'] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if each element of the instance not covered by'
-          ' prefixItems validates against this schema.'
-      ),
-  )
-  min_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is greater than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  max_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is less than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  enum: Optional[list[Any]] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the instance is equal to one of the elements'
-          ' in this keyword’s array value.'
-      ),
-  )
-  properties: Optional[dict[str, 'JSONSchema']] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if, for each name that appears in both the'
-          ' instance and as a name within this keyword’s value, the child'
-          ' instance for that name successfully validates against the'
-          ' corresponding schema.'
-      ),
-  )
-  required: Optional[list[str]] = Field(
-      default=None,
-      description=(
-          'An object instance is valid against this keyword if every item in'
-          ' the array is the name of a property in the instance.'
-      ),
-  )
-  min_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is greater'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is less'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  minimum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is greater than or equal'
-          ' to the given number.'
-      ),
-  )
-  maximum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is less than or equal to'
-          ' the given number.'
-      ),
-  )
-  min_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' greater than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' less than, or equal to, the value of this keyword.'
-      ),
-  )
-  pattern: Optional[str] = Field(
-      default=None,
-      description=(
-          'A string instance is considered valid if the regular expression'
-          ' matches the instance successfully.'
-      ),
-  )
-  additional_properties: Optional[Any] = Field(
-      default=None,
-      description="""Can either be a boolean or an object; controls the presence of additional properties.""",
-  )
-  any_of: Optional[list['JSONSchema']] = Field(
-      default=None,
-      description=(
-          'An instance validates successfully against this keyword if it'
-          ' validates successfully against at least one schema defined by this'
-          ' keyword’s value.'
-      ),
-  )
-  unique_items: Optional[bool] = Field(
-      default=None,
-      description="""Boolean value that indicates whether the items in an array are unique.""",
-  )
-  ref: Optional[str] = Field(
-      default=None,
-      alias='$ref',
-      description="""Allows indirect references between schema nodes.""",
-  )
-  defs: Optional[dict[str, 'JSONSchema']] = Field(
-      default=None,
-      alias='$defs',
-      description="""Schema definitions to be used with $ref.""",
-  )
-
-
-class Schema(_common.BaseModel):
-  """Schema is used to define the format of input/output data.
-
-  Represents a select subset of an [OpenAPI 3.0 schema
-  object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
-  be added in the future as needed.
-  """
-
-  additional_properties: Optional[Any] = Field(
-      default=None,
-      description="""Optional. Can either be a boolean or an object; controls the presence of additional properties.""",
-  )
-  defs: Optional[dict[str, 'Schema']] = Field(
-      default=None,
-      description="""Optional. A map of definitions for use by `ref` Only allowed at the root of the schema.""",
-  )
-  ref: Optional[str] = Field(
-      default=None,
-      description="""Optional. Allows indirect references between schema nodes. The value should be a valid reference to a child of the root `defs`. For example, the following schema defines a reference to a schema node named "Pet": type: object properties: pet: ref: #/defs/Pet defs: Pet: type: object properties: name: type: string The value of the "pet" property is a reference to the schema node named "Pet". See details in https://json-schema.org/understanding-json-schema/structuring""",
-  )
-  any_of: Optional[list['Schema']] = Field(
-      default=None,
-      description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
-  )
-  default: Optional[Any] = Field(
-      default=None, description="""Optional. Default value of the data."""
-  )
-  description: Optional[str] = Field(
-      default=None, description="""Optional. The description of the data."""
-  )
-  enum: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}""",
-  )
-  example: Optional[Any] = Field(
-      default=None,
-      description="""Optional. Example of the object. Will only populated when the object is the root.""",
-  )
-  format: Optional[str] = Field(
-      default=None,
-      description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
-  )
-  items: Optional['Schema'] = Field(
-      default=None,
-      description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
-  )
-  max_items: Optional[int] = Field(
-      default=None,
-      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
-  )
-  max_length: Optional[int] = Field(
-      default=None,
-      description="""Optional. Maximum length of the Type.STRING""",
-  )
-  max_properties: Optional[int] = Field(
-      default=None,
-      description="""Optional. Maximum number of the properties for Type.OBJECT.""",
-  )
-  maximum: Optional[float] = Field(
-      default=None,
-      description="""Optional. Maximum value of the Type.INTEGER and Type.NUMBER""",
-  )
-  min_items: Optional[int] = Field(
-      default=None,
-      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
-  )
-  min_length: Optional[int] = Field(
-      default=None,
-      description="""Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING""",
-  )
-  min_properties: Optional[int] = Field(
-      default=None,
-      description="""Optional. Minimum number of the properties for Type.OBJECT.""",
-  )
-  minimum: Optional[float] = Field(
-      default=None,
-      description="""Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER""",
-  )
-  nullable: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Indicates if the value may be null.""",
-  )
-  pattern: Optional[str] = Field(
-      default=None,
-      description="""Optional. Pattern of the Type.STRING to restrict a string to a regular expression.""",
-  )
-  properties: Optional[dict[str, 'Schema']] = Field(
-      default=None,
-      description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
-  )
-  property_ordering: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
-  )
-  required: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Required properties of Type.OBJECT.""",
-  )
-  title: Optional[str] = Field(
-      default=None, description="""Optional. The title of the Schema."""
-  )
-  type: Optional[Type] = Field(
-      default=None, description="""Optional. The type of the data."""
-  )
-
-  @property
-  def json_schema(self) -> JSONSchema:
-    """Converts the Schema object to a JSONSchema object, that is compatible with 2020-12 JSON Schema draft.
-
-     Note: Conversion of fields that are not included in the JSONSchema class
-     are ignored.
-     Json Schema is now supported natively by both Vertex AI and Gemini API.
-     Users
-     are recommended to pass/receive Json Schema directly to/from the API. For
-     example:
-     1. the counter part of GenerateContentConfig.response_schema is
-        GenerateContentConfig.response_json_schema, which accepts [JSON
-       Schema](https://json-schema.org/)
-     2. the counter part of FunctionDeclaration.parameters is
-        FunctionDeclaration.parameters_json_schema, which accepts [JSON
-        Schema](https://json-schema.org/)
-     3. the counter part of FunctionDeclaration.response is
-        FunctionDeclaration.response_json_schema, which accepts [JSON
-    Schema](https://json-schema.org/)
-    """
-
-    global _json_schema_warning_logged
-    if not _json_schema_warning_logged:
-      info_message = """
-Note: Conversion of fields that are not included in the JSONSchema class are
-ignored.
-Json Schema is now supported natively by both Vertex AI and Gemini API. Users
-are recommended to pass/receive Json Schema directly to/from the API. For example:
-1. the counter part of GenerateContentConfig.response_schema is
-   GenerateContentConfig.response_json_schema, which accepts [JSON
-  Schema](https://json-schema.org/)
-2. the counter part of FunctionDeclaration.parameters is
-   FunctionDeclaration.parameters_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-3. the counter part of FunctionDeclaration.response is
-   FunctionDeclaration.response_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-"""
-      logger.info(info_message)
-      _json_schema_warning_logged = True
-
-    json_schema_field_names: set[str] = set(JSONSchema.model_fields.keys())
-    schema_field_names: tuple[str] = (
-        'items',
-    )  # 'additional_properties' to come
-    list_schema_field_names: tuple[str] = (
-        'any_of',  # 'one_of', 'all_of', 'not' to come
-    )
-    dict_schema_field_names: tuple[str] = ('properties',)  # 'defs' to come
-
-    def convert_schema(schema: Union['Schema', dict[str, Any]]) -> JSONSchema:
-      if isinstance(schema, pydantic.BaseModel):
-        schema_dict = schema.model_dump(exclude_none=True)
-      else:
-        schema_dict = schema
-      json_schema = JSONSchema()
-      for field_name, field_value in schema_dict.items():
-        if field_value is None:
-          continue
-        elif field_name == 'nullable':
-          if json_schema.type is None:
-            json_schema.type = JSONSchemaType.NULL
-          elif isinstance(json_schema.type, JSONSchemaType):
-            current_type: JSONSchemaType = json_schema.type
-            json_schema.type = [current_type, JSONSchemaType.NULL]
-          elif isinstance(json_schema.type, list):
-            json_schema.type.append(JSONSchemaType.NULL)
-        elif field_name not in json_schema_field_names:
-          continue
-        elif field_name == 'type':
-          if field_value == Type.TYPE_UNSPECIFIED:
-            continue
-          json_schema_type = JSONSchemaType(field_value.lower())
-          if json_schema.type is None:
-            json_schema.type = json_schema_type
-          elif isinstance(json_schema.type, JSONSchemaType):
-            existing_type: JSONSchemaType = json_schema.type
-            json_schema.type = [existing_type, json_schema_type]
-          elif isinstance(json_schema.type, list):
-            json_schema.type.append(json_schema_type)
-        elif field_name in schema_field_names:
-          schema_field_value: 'JSONSchema' = convert_schema(field_value)
-          setattr(json_schema, field_name, schema_field_value)
-        elif field_name in list_schema_field_names:
-          list_schema_field_value: list['JSONSchema'] = [
-              convert_schema(this_field_value)
-              for this_field_value in field_value
-          ]
-          setattr(json_schema, field_name, list_schema_field_value)
-        elif field_name in dict_schema_field_names:
-          dict_schema_field_value: dict[str, 'JSONSchema'] = {
-              key: convert_schema(value) for key, value in field_value.items()
-          }
-          setattr(json_schema, field_name, dict_schema_field_value)
-        else:
-          setattr(json_schema, field_name, field_value)
-
-      return json_schema
-
-    return convert_schema(self)
-
-  @classmethod
-  def from_json_schema(
-      cls,
-      *,
-      json_schema: JSONSchema,
-      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
-      raise_error_on_unsupported_field: bool = False,
-  ) -> 'Schema':
-    """Converts a JSONSchema object to a Schema object.
-
-     Note: Conversion of fields that are not included in the JSONSchema class
-     are ignored.
-     Json Schema is now supported natively by both Vertex AI and Gemini API.
-     Users
-     are recommended to pass/receive Json Schema directly to/from the API. For
-     example:
-     1. the counter part of GenerateContentConfig.response_schema is
-        GenerateContentConfig.response_json_schema, which accepts [JSON
-       Schema](https://json-schema.org/)
-     2. the counter part of FunctionDeclaration.parameters is
-        FunctionDeclaration.parameters_json_schema, which accepts [JSON
-        Schema](https://json-schema.org/)
-     3. the counter part of FunctionDeclaration.response is
-        FunctionDeclaration.response_json_schema, which accepts [JSON
-    Schema](https://json-schema.org/)
-     The JSONSchema is compatible with 2020-12 JSON Schema draft, specified by
-     OpenAPI 3.1.
-
-     Args:
-         json_schema: JSONSchema object to be converted.
-         api_option: API option to be used. If set to 'VERTEX_AI', the
-           JSONSchema will be converted to a Schema object that is compatible
-           with Vertex AI API. If set to 'GEMINI_API', the JSONSchema will be
-           converted to a Schema object that is compatible with Gemini API.
-           Default is 'GEMINI_API'.
-         raise_error_on_unsupported_field: If set to True, an error will be
-           raised if the JSONSchema contains any unsupported fields. Default is
-           False.
-
-     Returns:
-         Schema object that is compatible with the specified API option.
-     Raises:
-         ValueError: If the JSONSchema contains any unsupported fields and
-           raise_error_on_unsupported_field is set to True. Or if the JSONSchema
-           is not compatible with the specified API option.
-    """
-    global _from_json_schema_warning_logged
-    if not _from_json_schema_warning_logged:
-      info_message = """
-Note: Conversion of fields that are not included in the JSONSchema class are ignored.
-Json Schema is now supported natively by both Vertex AI and Gemini API. Users
-are recommended to pass/receive Json Schema directly to/from the API. For example:
-1. the counter part of GenerateContentConfig.response_schema is
-   GenerateContentConfig.response_json_schema, which accepts [JSON
-  Schema](https://json-schema.org/)
-2. the counter part of FunctionDeclaration.parameters is
-   FunctionDeclaration.parameters_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-3. the counter part of FunctionDeclaration.response is
-   FunctionDeclaration.response_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-"""
-      logger.info(info_message)
-      _from_json_schema_warning_logged = True
-
-    google_schema_field_names: set[str] = set(cls.model_fields.keys())
-    schema_field_names: tuple[str, ...] = (
-        'items',
-    )  # 'additional_properties' to come
-    list_schema_field_names: tuple[str, ...] = (
-        'any_of',  # 'one_of', 'all_of', 'not' to come
-    )
-    dict_schema_field_names: tuple[str, ...] = ('properties',)
-
-    related_field_names_by_type: dict[str, tuple[str, ...]] = {
-        JSONSchemaType.NUMBER.value: (
-            'description',
-            'enum',
-            'format',
-            'maximum',
-            'minimum',
-            'title',
-        ),
-        JSONSchemaType.STRING.value: (
-            'description',
-            'enum',
-            'format',
-            'max_length',
-            'min_length',
-            'pattern',
-            'title',
-        ),
-        JSONSchemaType.OBJECT.value: (
-            'any_of',
-            'description',
-            'max_properties',
-            'min_properties',
-            'properties',
-            'required',
-            'title',
-        ),
-        JSONSchemaType.ARRAY.value: (
-            'description',
-            'items',
-            'max_items',
-            'min_items',
-            'title',
-        ),
-        JSONSchemaType.BOOLEAN.value: (
-            'description',
-            'title',
-        ),
-    }
-    # Treat `INTEGER` like `NUMBER`.
-    related_field_names_by_type[JSONSchemaType.INTEGER.value] = (
-        related_field_names_by_type[JSONSchemaType.NUMBER.value]
-    )
-
-    # placeholder for potential gemini api unsupported fields
-    gemini_api_unsupported_field_names: tuple[str, ...] = ()
-
-    def _resolve_ref(
-        ref_path: str, root_schema_dict: dict[str, Any]
-    ) -> dict[str, Any]:
-      """Helper to resolve a $ref path."""
-      current = root_schema_dict
-      for part in ref_path.lstrip('#/').split('/'):
-        if part == '$defs':
-          part = 'defs'
-        current = current[part]
-      current.pop('title', None)
-      if 'properties' in current and current['properties'] is not None:
-        for prop_schema in current['properties'].values():
-          if isinstance(prop_schema, dict):
-            prop_schema.pop('title', None)
-
-      return current
-
-    def normalize_json_schema_type(
-        json_schema_type: Optional[
-            Union[JSONSchemaType, Sequence[JSONSchemaType], str, Sequence[str]]
-        ],
-    ) -> tuple[list[str], bool]:
-      """Returns (non_null_types, nullable)"""
-      if json_schema_type is None:
-        return [], False
-      type_sequence: Sequence[Union[JSONSchemaType, str]]
-      if isinstance(json_schema_type, str) or not isinstance(
-          json_schema_type, Sequence
-      ):
-        type_sequence = [json_schema_type]
-      else:
-        type_sequence = json_schema_type
-      non_null_types = []
-      nullable = False
-      for type_value in type_sequence:
-        if isinstance(type_value, JSONSchemaType):
-          type_value = type_value.value
-        if type_value == JSONSchemaType.NULL.value:
-          nullable = True
-        else:
-          non_null_types.append(type_value)
-      return non_null_types, nullable
-
-    def raise_error_if_cannot_convert(
-        json_schema_dict: dict[str, Any],
-        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
-        raise_error_on_unsupported_field: bool,
-    ) -> None:
-      """Raises an error if the JSONSchema cannot be converted to the specified Schema object."""
-      if not raise_error_on_unsupported_field:
-        return
-      for field_name, field_value in json_schema_dict.items():
-        if field_value is None:
-          continue
-        if field_name not in google_schema_field_names and field_name not in [
-            'ref',
-            'defs',
-        ]:
-          raise ValueError(
-              f'JSONSchema field "{field_name}" is not supported by the Schema'
-              ' object. And the "raise_error_on_unsupported_field" argument is'
-              ' set to True. If you still want to convert it into the Schema'
-              f' object, please either remove the field "{field_name}" from the'
-              ' JSONSchema object, leave the'
-              ' "raise_error_on_unsupported_field" unset, or try using'
-              ' response_json_schema instead.'
-          )
-        if (
-            field_name in gemini_api_unsupported_field_names
-            and api_option == 'GEMINI_API'
-        ):
-          raise ValueError(
-              f'The "{field_name}" field is not supported by the Schema '
-              'object for GEMINI_API.'
-          )
-
-    def copy_schema_fields(
-        json_schema_dict: dict[str, Any],
-        related_fields_to_copy: tuple[str, ...],
-        sub_schema_in_any_of: dict[str, Any],
-    ) -> None:
-      """Copies the fields from json_schema_dict to sub_schema_in_any_of."""
-      for field_name in related_fields_to_copy:
-        sub_schema_in_any_of[field_name] = json_schema_dict.get(
-            field_name, None
-        )
-
-    def convert_json_schema(
-        current_json_schema: JSONSchema,
-        root_json_schema_dict: dict[str, Any],
-        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
-        raise_error_on_unsupported_field: bool,
-    ) -> 'Schema':
-      schema = Schema()
-      json_schema_dict = current_json_schema.model_dump()
-
-      if json_schema_dict.get('ref'):
-        json_schema_dict = _resolve_ref(
-            json_schema_dict['ref'], root_json_schema_dict
-        )
-
-      raise_error_if_cannot_convert(
-          json_schema_dict=json_schema_dict,
-          api_option=api_option,
-          raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-      )
-
-      # At the highest level of the logic, there are two passes:
-      # Pass 1: the JSONSchema.type is union-like,
-      #         e.g. ['null', 'string', 'array'].
-      #         for this case, we need to split the JSONSchema into multiple
-      #         sub-schemas, and copy them into the any_of field of the Schema.
-      #         And when we copy the non-type fields into any_of field,
-      #         we only copy the fields related to the specific type.
-      #         Detailed logic is commented below with `Pass 1` keyword tag.
-      # Pass 2: the JSONSchema.type is not union-like,
-      #         e.g. 'string', ['string'], ['null', 'string'].
-      #         for this case, no splitting is needed. Detailed
-      #         logic is commented below with `Pass 2` keyword tag.
-      #
-      #
-      # Pass 1: the JSONSchema.type is union-like
-      #         e.g. ['null', 'string', 'array'].
-      non_null_types, nullable = normalize_json_schema_type(
-          json_schema_dict.get('type', None)
-      )
-      is_union_like_type = len(non_null_types) > 1
-      if len(non_null_types) > 1:
-        logger.warning(
-            'JSONSchema type is union-like, e.g. ["null", "string", "array"]. '
-            'Converting it into multiple sub-schemas, and copying them into '
-            'the any_of field of the Schema. The value of `default` field is '
-            'ignored because it is ambiguous to tell which sub-schema it '
-            'belongs to.'
-        )
-        reformed_json_schema = JSONSchema()
-        # start splitting the JSONSchema into multiple sub-schemas
-        any_of = []
-        if nullable:
-          schema.nullable = True
-        for normalized_type in non_null_types:
-          sub_schema_in_any_of = {'type': normalized_type}
-          related_field_names = related_field_names_by_type.get(normalized_type)
-          if related_field_names is not None:
-            copy_schema_fields(
-                json_schema_dict=json_schema_dict,
-                related_fields_to_copy=related_field_names,
-                sub_schema_in_any_of=sub_schema_in_any_of,
-            )
-          any_of.append(JSONSchema(**sub_schema_in_any_of))
-        reformed_json_schema.any_of = any_of
-        json_schema_dict = reformed_json_schema.model_dump()
-
-      # Pass 2: the JSONSchema.type is not union-like,
-      # e.g. 'string', ['string'], ['null', 'string'].
-      for field_name, field_value in json_schema_dict.items():
-        if field_value is None or field_name == 'defs':
-          continue
-        if field_name in schema_field_names:
-          if field_name == 'items' and not field_value:
-            continue
-          schema_field_value: 'Schema' = convert_json_schema(
-              current_json_schema=JSONSchema(**field_value),
-              root_json_schema_dict=root_json_schema_dict,
-              api_option=api_option,
-              raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-          )
-          setattr(schema, field_name, schema_field_value)
-        elif field_name in list_schema_field_names:
-          list_schema_field_value: list['Schema'] = [
-              convert_json_schema(
-                  current_json_schema=JSONSchema(**this_field_value),
-                  root_json_schema_dict=root_json_schema_dict,
-                  api_option=api_option,
-                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-              )
-              for this_field_value in field_value
-          ]
-          setattr(schema, field_name, list_schema_field_value)
-          if not schema.type and not is_union_like_type and not schema.any_of:
-            schema.type = Type('OBJECT')
-        elif field_name in dict_schema_field_names:
-          dict_schema_field_value: dict[str, 'Schema'] = {
-              key: convert_json_schema(
-                  current_json_schema=JSONSchema(**value),
-                  root_json_schema_dict=root_json_schema_dict,
-                  api_option=api_option,
-                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-              )
-              for key, value in field_value.items()
-          }
-          setattr(schema, field_name, dict_schema_field_value)
-        elif field_name == 'type':
-          non_null_types, nullable = normalize_json_schema_type(field_value)
-          if nullable:
-            schema.nullable = True
-          if non_null_types:
-            schema.type = Type(non_null_types[0])
-        else:
-          if (
-              hasattr(schema, field_name)
-              and field_name != 'additional_properties'
-          ):
-            setattr(schema, field_name, field_value)
-
-      if (
-          schema.type == 'ARRAY'
-          and schema.items
-          and not schema.items.model_dump(exclude_unset=True)
-      ):
-        schema.items = None
-
-      if schema.any_of and len(schema.any_of) == 2:
-        nullable_part = None
-        type_part = None
-        for part in schema.any_of:
-          # A schema representing `None` will either be of type NULL or just be nullable.
-          part_dict = part.model_dump(exclude_unset=True)
-          if part_dict == {'nullable': True} or part_dict == {'type': 'NULL'}:
-            nullable_part = part
-          else:
-            type_part = part
-
-        # If we found both parts, unwrap them into a single schema.
-        if nullable_part and type_part:
-          default_value = schema.default
-          schema = type_part
-          schema.nullable = True
-          # Carry the default value over to the unwrapped schema
-          if default_value is not None:
-            schema.default = default_value
-
-      return schema
-
-    # This is the initial call to the recursive function.
-    root_schema_dict = json_schema.model_dump()
-    return convert_json_schema(
-        current_json_schema=json_schema,
-        root_json_schema_dict=root_schema_dict,
-        api_option=api_option,
-        raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-    )
-
-
-class SchemaDict(TypedDict, total=False):
-  """Schema is used to define the format of input/output data.
-
-  Represents a select subset of an [OpenAPI 3.0 schema
-  object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
-  be added in the future as needed.
-  """
-
-  additional_properties: Optional[Any]
-  """Optional. Can either be a boolean or an object; controls the presence of additional properties."""
-
-  defs: Optional[dict[str, 'SchemaDict']]
-  """Optional. A map of definitions for use by `ref` Only allowed at the root of the schema."""
-
-  ref: Optional[str]
-  """Optional. Allows indirect references between schema nodes. The value should be a valid reference to a child of the root `defs`. For example, the following schema defines a reference to a schema node named "Pet": type: object properties: pet: ref: #/defs/Pet defs: Pet: type: object properties: name: type: string The value of the "pet" property is a reference to the schema node named "Pet". See details in https://json-schema.org/understanding-json-schema/structuring"""
-
-  any_of: Optional[list['SchemaDict']]
-  """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
-
-  default: Optional[Any]
-  """Optional. Default value of the data."""
-
-  description: Optional[str]
-  """Optional. The description of the data."""
-
-  enum: Optional[list[str]]
-  """Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}"""
-
-  example: Optional[Any]
-  """Optional. Example of the object. Will only populated when the object is the root."""
-
-  format: Optional[str]
-  """Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc"""
-
-  items: Optional['SchemaDict']
-  """Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY."""
-
-  max_items: Optional[int]
-  """Optional. Maximum number of the elements for Type.ARRAY."""
-
-  max_length: Optional[int]
-  """Optional. Maximum length of the Type.STRING"""
-
-  max_properties: Optional[int]
-  """Optional. Maximum number of the properties for Type.OBJECT."""
-
-  maximum: Optional[float]
-  """Optional. Maximum value of the Type.INTEGER and Type.NUMBER"""
-
-  min_items: Optional[int]
-  """Optional. Minimum number of the elements for Type.ARRAY."""
-
-  min_length: Optional[int]
-  """Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"""
-
-  min_properties: Optional[int]
-  """Optional. Minimum number of the properties for Type.OBJECT."""
-
-  minimum: Optional[float]
-  """Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER"""
-
-  nullable: Optional[bool]
-  """Optional. Indicates if the value may be null."""
-
-  pattern: Optional[str]
-  """Optional. Pattern of the Type.STRING to restrict a string to a regular expression."""
-
-  properties: Optional[dict[str, 'SchemaDict']]
-  """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
-
-  property_ordering: Optional[list[str]]
-  """Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties."""
-
-  required: Optional[list[str]]
-  """Optional. Required properties of Type.OBJECT."""
-
-  title: Optional[str]
-  """Optional. The title of the Schema."""
-
-  type: Optional[Type]
-  """Optional. The type of the data."""
-
-
-SchemaOrDict = Union[Schema, SchemaDict]
-
-
-class ModelSelectionConfig(_common.BaseModel):
-  """Config for model selection."""
-
-  feature_selection_preference: Optional[FeatureSelectionPreference] = Field(
-      default=None, description="""Options for feature selection preference."""
-  )
-
-
-class ModelSelectionConfigDict(TypedDict, total=False):
-  """Config for model selection."""
-
-  feature_selection_preference: Optional[FeatureSelectionPreference]
-  """Options for feature selection preference."""
-
-
-ModelSelectionConfigOrDict = Union[
-    ModelSelectionConfig, ModelSelectionConfigDict
-]
-
-
 class ComputerUse(_common.BaseModel):
   """Tool to support computer use."""
 
@@ -3727,6 +2890,664 @@ class EnterpriseWebSearchDict(TypedDict, total=False):
 EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
 
 
+class Schema(_common.BaseModel):
+  """Schema is used to define the format of input/output data.
+
+  Represents a select subset of an [OpenAPI 3.0 schema
+  object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
+  be added in the future as needed.
+  """
+
+  additional_properties: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Can either be a boolean or an object; controls the presence of additional properties.""",
+  )
+  defs: Optional[dict[str, 'Schema']] = Field(
+      default=None,
+      description="""Optional. A map of definitions for use by `ref` Only allowed at the root of the schema.""",
+  )
+  ref: Optional[str] = Field(
+      default=None,
+      description="""Optional. Allows indirect references between schema nodes. The value should be a valid reference to a child of the root `defs`. For example, the following schema defines a reference to a schema node named "Pet": type: object properties: pet: ref: #/defs/Pet defs: Pet: type: object properties: name: type: string The value of the "pet" property is a reference to the schema node named "Pet". See details in https://json-schema.org/understanding-json-schema/structuring""",
+  )
+  any_of: Optional[list['Schema']] = Field(
+      default=None,
+      description="""Optional. The value should be validated against any (one or more) of the subschemas in the list.""",
+  )
+  default: Optional[Any] = Field(
+      default=None, description="""Optional. Default value of the data."""
+  )
+  description: Optional[str] = Field(
+      default=None, description="""Optional. The description of the data."""
+  )
+  enum: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}""",
+  )
+  example: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Example of the object. Will only populated when the object is the root.""",
+  )
+  format: Optional[str] = Field(
+      default=None,
+      description="""Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc""",
+  )
+  items: Optional['Schema'] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.""",
+  )
+  max_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the elements for Type.ARRAY.""",
+  )
+  max_length: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum length of the Type.STRING""",
+  )
+  max_properties: Optional[int] = Field(
+      default=None,
+      description="""Optional. Maximum number of the properties for Type.OBJECT.""",
+  )
+  maximum: Optional[float] = Field(
+      default=None,
+      description="""Optional. Maximum value of the Type.INTEGER and Type.NUMBER""",
+  )
+  min_items: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the elements for Type.ARRAY.""",
+  )
+  min_length: Optional[int] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING""",
+  )
+  min_properties: Optional[int] = Field(
+      default=None,
+      description="""Optional. Minimum number of the properties for Type.OBJECT.""",
+  )
+  minimum: Optional[float] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER""",
+  )
+  nullable: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Indicates if the value may be null.""",
+  )
+  pattern: Optional[str] = Field(
+      default=None,
+      description="""Optional. Pattern of the Type.STRING to restrict a string to a regular expression.""",
+  )
+  properties: Optional[dict[str, 'Schema']] = Field(
+      default=None,
+      description="""Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.""",
+  )
+  property_ordering: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties.""",
+  )
+  required: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Required properties of Type.OBJECT.""",
+  )
+  title: Optional[str] = Field(
+      default=None, description="""Optional. The title of the Schema."""
+  )
+  type: Optional[Type] = Field(
+      default=None, description="""Optional. The type of the data."""
+  )
+
+  @property
+  def json_schema(self) -> JSONSchema:
+    """Converts the Schema object to a JSONSchema object, that is compatible with 2020-12 JSON Schema draft.
+
+     Note: Conversion of fields that are not included in the JSONSchema class
+     are ignored.
+     Json Schema is now supported natively by both Vertex AI and Gemini API.
+     Users
+     are recommended to pass/receive Json Schema directly to/from the API. For
+     example:
+     1. the counter part of GenerateContentConfig.response_schema is
+        GenerateContentConfig.response_json_schema, which accepts [JSON
+       Schema](https://json-schema.org/)
+     2. the counter part of FunctionDeclaration.parameters is
+        FunctionDeclaration.parameters_json_schema, which accepts [JSON
+        Schema](https://json-schema.org/)
+     3. the counter part of FunctionDeclaration.response is
+        FunctionDeclaration.response_json_schema, which accepts [JSON
+    Schema](https://json-schema.org/)
+    """
+
+    global _json_schema_warning_logged
+    if not _json_schema_warning_logged:
+      info_message = """
+Note: Conversion of fields that are not included in the JSONSchema class are
+ignored.
+Json Schema is now supported natively by both Vertex AI and Gemini API. Users
+are recommended to pass/receive Json Schema directly to/from the API. For example:
+1. the counter part of GenerateContentConfig.response_schema is
+   GenerateContentConfig.response_json_schema, which accepts [JSON
+  Schema](https://json-schema.org/)
+2. the counter part of FunctionDeclaration.parameters is
+   FunctionDeclaration.parameters_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+3. the counter part of FunctionDeclaration.response is
+   FunctionDeclaration.response_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+"""
+      logger.info(info_message)
+      _json_schema_warning_logged = True
+
+    json_schema_field_names: set[str] = set(JSONSchema.model_fields.keys())
+    schema_field_names: tuple[str] = (
+        'items',
+    )  # 'additional_properties' to come
+    list_schema_field_names: tuple[str] = (
+        'any_of',  # 'one_of', 'all_of', 'not' to come
+    )
+    dict_schema_field_names: tuple[str] = ('properties',)  # 'defs' to come
+
+    def convert_schema(schema: Union['Schema', dict[str, Any]]) -> JSONSchema:
+      if isinstance(schema, pydantic.BaseModel):
+        schema_dict = schema.model_dump(exclude_none=True)
+      else:
+        schema_dict = schema
+      json_schema = JSONSchema()
+      for field_name, field_value in schema_dict.items():
+        if field_value is None:
+          continue
+        elif field_name == 'nullable':
+          if json_schema.type is None:
+            json_schema.type = JSONSchemaType.NULL
+          elif isinstance(json_schema.type, JSONSchemaType):
+            current_type: JSONSchemaType = json_schema.type
+            json_schema.type = [current_type, JSONSchemaType.NULL]
+          elif isinstance(json_schema.type, list):
+            json_schema.type.append(JSONSchemaType.NULL)
+        elif field_name not in json_schema_field_names:
+          continue
+        elif field_name == 'type':
+          if field_value == Type.TYPE_UNSPECIFIED:
+            continue
+          json_schema_type = JSONSchemaType(field_value.lower())
+          if json_schema.type is None:
+            json_schema.type = json_schema_type
+          elif isinstance(json_schema.type, JSONSchemaType):
+            existing_type: JSONSchemaType = json_schema.type
+            json_schema.type = [existing_type, json_schema_type]
+          elif isinstance(json_schema.type, list):
+            json_schema.type.append(json_schema_type)
+        elif field_name in schema_field_names:
+          schema_field_value: 'JSONSchema' = convert_schema(field_value)
+          setattr(json_schema, field_name, schema_field_value)
+        elif field_name in list_schema_field_names:
+          list_schema_field_value: list['JSONSchema'] = [
+              convert_schema(this_field_value)
+              for this_field_value in field_value
+          ]
+          setattr(json_schema, field_name, list_schema_field_value)
+        elif field_name in dict_schema_field_names:
+          dict_schema_field_value: dict[str, 'JSONSchema'] = {
+              key: convert_schema(value) for key, value in field_value.items()
+          }
+          setattr(json_schema, field_name, dict_schema_field_value)
+        else:
+          setattr(json_schema, field_name, field_value)
+
+      return json_schema
+
+    return convert_schema(self)
+
+  @classmethod
+  def from_json_schema(
+      cls,
+      *,
+      json_schema: JSONSchema,
+      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
+      raise_error_on_unsupported_field: bool = False,
+  ) -> 'Schema':
+    """Converts a JSONSchema object to a Schema object.
+
+     Note: Conversion of fields that are not included in the JSONSchema class
+     are ignored.
+     Json Schema is now supported natively by both Vertex AI and Gemini API.
+     Users
+     are recommended to pass/receive Json Schema directly to/from the API. For
+     example:
+     1. the counter part of GenerateContentConfig.response_schema is
+        GenerateContentConfig.response_json_schema, which accepts [JSON
+       Schema](https://json-schema.org/)
+     2. the counter part of FunctionDeclaration.parameters is
+        FunctionDeclaration.parameters_json_schema, which accepts [JSON
+        Schema](https://json-schema.org/)
+     3. the counter part of FunctionDeclaration.response is
+        FunctionDeclaration.response_json_schema, which accepts [JSON
+    Schema](https://json-schema.org/)
+     The JSONSchema is compatible with 2020-12 JSON Schema draft, specified by
+     OpenAPI 3.1.
+
+     Args:
+         json_schema: JSONSchema object to be converted.
+         api_option: API option to be used. If set to 'VERTEX_AI', the
+           JSONSchema will be converted to a Schema object that is compatible
+           with Vertex AI API. If set to 'GEMINI_API', the JSONSchema will be
+           converted to a Schema object that is compatible with Gemini API.
+           Default is 'GEMINI_API'.
+         raise_error_on_unsupported_field: If set to True, an error will be
+           raised if the JSONSchema contains any unsupported fields. Default is
+           False.
+
+     Returns:
+         Schema object that is compatible with the specified API option.
+     Raises:
+         ValueError: If the JSONSchema contains any unsupported fields and
+           raise_error_on_unsupported_field is set to True. Or if the JSONSchema
+           is not compatible with the specified API option.
+    """
+    global _from_json_schema_warning_logged
+    if not _from_json_schema_warning_logged:
+      info_message = """
+Note: Conversion of fields that are not included in the JSONSchema class are ignored.
+Json Schema is now supported natively by both Vertex AI and Gemini API. Users
+are recommended to pass/receive Json Schema directly to/from the API. For example:
+1. the counter part of GenerateContentConfig.response_schema is
+   GenerateContentConfig.response_json_schema, which accepts [JSON
+  Schema](https://json-schema.org/)
+2. the counter part of FunctionDeclaration.parameters is
+   FunctionDeclaration.parameters_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+3. the counter part of FunctionDeclaration.response is
+   FunctionDeclaration.response_json_schema, which accepts [JSON
+   Schema](https://json-schema.org/)
+"""
+      logger.info(info_message)
+      _from_json_schema_warning_logged = True
+
+    google_schema_field_names: set[str] = set(cls.model_fields.keys())
+    schema_field_names: tuple[str, ...] = (
+        'items',
+    )  # 'additional_properties' to come
+    list_schema_field_names: tuple[str, ...] = (
+        'any_of',  # 'one_of', 'all_of', 'not' to come
+    )
+    dict_schema_field_names: tuple[str, ...] = ('properties',)
+
+    related_field_names_by_type: dict[str, tuple[str, ...]] = {
+        JSONSchemaType.NUMBER.value: (
+            'description',
+            'enum',
+            'format',
+            'maximum',
+            'minimum',
+            'title',
+        ),
+        JSONSchemaType.STRING.value: (
+            'description',
+            'enum',
+            'format',
+            'max_length',
+            'min_length',
+            'pattern',
+            'title',
+        ),
+        JSONSchemaType.OBJECT.value: (
+            'any_of',
+            'description',
+            'max_properties',
+            'min_properties',
+            'properties',
+            'required',
+            'title',
+        ),
+        JSONSchemaType.ARRAY.value: (
+            'description',
+            'items',
+            'max_items',
+            'min_items',
+            'title',
+        ),
+        JSONSchemaType.BOOLEAN.value: (
+            'description',
+            'title',
+        ),
+    }
+    # Treat `INTEGER` like `NUMBER`.
+    related_field_names_by_type[JSONSchemaType.INTEGER.value] = (
+        related_field_names_by_type[JSONSchemaType.NUMBER.value]
+    )
+
+    # placeholder for potential gemini api unsupported fields
+    gemini_api_unsupported_field_names: tuple[str, ...] = ()
+
+    def _resolve_ref(
+        ref_path: str, root_schema_dict: dict[str, Any]
+    ) -> dict[str, Any]:
+      """Helper to resolve a $ref path."""
+      current = root_schema_dict
+      for part in ref_path.lstrip('#/').split('/'):
+        if part == '$defs':
+          part = 'defs'
+        current = current[part]
+      current.pop('title', None)
+      if 'properties' in current and current['properties'] is not None:
+        for prop_schema in current['properties'].values():
+          if isinstance(prop_schema, dict):
+            prop_schema.pop('title', None)
+
+      return current
+
+    def normalize_json_schema_type(
+        json_schema_type: Optional[
+            Union[JSONSchemaType, Sequence[JSONSchemaType], str, Sequence[str]]
+        ],
+    ) -> tuple[list[str], bool]:
+      """Returns (non_null_types, nullable)"""
+      if json_schema_type is None:
+        return [], False
+      type_sequence: Sequence[Union[JSONSchemaType, str]]
+      if isinstance(json_schema_type, str) or not isinstance(
+          json_schema_type, Sequence
+      ):
+        type_sequence = [json_schema_type]
+      else:
+        type_sequence = json_schema_type
+      non_null_types = []
+      nullable = False
+      for type_value in type_sequence:
+        if isinstance(type_value, JSONSchemaType):
+          type_value = type_value.value
+        if type_value == JSONSchemaType.NULL.value:
+          nullable = True
+        else:
+          non_null_types.append(type_value)
+      return non_null_types, nullable
+
+    def raise_error_if_cannot_convert(
+        json_schema_dict: dict[str, Any],
+        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
+        raise_error_on_unsupported_field: bool,
+    ) -> None:
+      """Raises an error if the JSONSchema cannot be converted to the specified Schema object."""
+      if not raise_error_on_unsupported_field:
+        return
+      for field_name, field_value in json_schema_dict.items():
+        if field_value is None:
+          continue
+        if field_name not in google_schema_field_names and field_name not in [
+            'ref',
+            'defs',
+        ]:
+          raise ValueError(
+              f'JSONSchema field "{field_name}" is not supported by the Schema'
+              ' object. And the "raise_error_on_unsupported_field" argument is'
+              ' set to True. If you still want to convert it into the Schema'
+              f' object, please either remove the field "{field_name}" from the'
+              ' JSONSchema object, leave the'
+              ' "raise_error_on_unsupported_field" unset, or try using'
+              ' response_json_schema instead.'
+          )
+        if (
+            field_name in gemini_api_unsupported_field_names
+            and api_option == 'GEMINI_API'
+        ):
+          raise ValueError(
+              f'The "{field_name}" field is not supported by the Schema '
+              'object for GEMINI_API.'
+          )
+
+    def copy_schema_fields(
+        json_schema_dict: dict[str, Any],
+        related_fields_to_copy: tuple[str, ...],
+        sub_schema_in_any_of: dict[str, Any],
+    ) -> None:
+      """Copies the fields from json_schema_dict to sub_schema_in_any_of."""
+      for field_name in related_fields_to_copy:
+        sub_schema_in_any_of[field_name] = json_schema_dict.get(
+            field_name, None
+        )
+
+    def convert_json_schema(
+        current_json_schema: JSONSchema,
+        root_json_schema_dict: dict[str, Any],
+        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
+        raise_error_on_unsupported_field: bool,
+    ) -> 'Schema':
+      schema = Schema()
+      json_schema_dict = current_json_schema.model_dump()
+
+      if json_schema_dict.get('ref'):
+        json_schema_dict = _resolve_ref(
+            json_schema_dict['ref'], root_json_schema_dict
+        )
+
+      raise_error_if_cannot_convert(
+          json_schema_dict=json_schema_dict,
+          api_option=api_option,
+          raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+      )
+
+      # At the highest level of the logic, there are two passes:
+      # Pass 1: the JSONSchema.type is union-like,
+      #         e.g. ['null', 'string', 'array'].
+      #         for this case, we need to split the JSONSchema into multiple
+      #         sub-schemas, and copy them into the any_of field of the Schema.
+      #         And when we copy the non-type fields into any_of field,
+      #         we only copy the fields related to the specific type.
+      #         Detailed logic is commented below with `Pass 1` keyword tag.
+      # Pass 2: the JSONSchema.type is not union-like,
+      #         e.g. 'string', ['string'], ['null', 'string'].
+      #         for this case, no splitting is needed. Detailed
+      #         logic is commented below with `Pass 2` keyword tag.
+      #
+      #
+      # Pass 1: the JSONSchema.type is union-like
+      #         e.g. ['null', 'string', 'array'].
+      non_null_types, nullable = normalize_json_schema_type(
+          json_schema_dict.get('type', None)
+      )
+      is_union_like_type = len(non_null_types) > 1
+      if len(non_null_types) > 1:
+        logger.warning(
+            'JSONSchema type is union-like, e.g. ["null", "string", "array"]. '
+            'Converting it into multiple sub-schemas, and copying them into '
+            'the any_of field of the Schema. The value of `default` field is '
+            'ignored because it is ambiguous to tell which sub-schema it '
+            'belongs to.'
+        )
+        reformed_json_schema = JSONSchema()
+        # start splitting the JSONSchema into multiple sub-schemas
+        any_of = []
+        if nullable:
+          schema.nullable = True
+        for normalized_type in non_null_types:
+          sub_schema_in_any_of = {'type': normalized_type}
+          related_field_names = related_field_names_by_type.get(normalized_type)
+          if related_field_names is not None:
+            copy_schema_fields(
+                json_schema_dict=json_schema_dict,
+                related_fields_to_copy=related_field_names,
+                sub_schema_in_any_of=sub_schema_in_any_of,
+            )
+          any_of.append(JSONSchema(**sub_schema_in_any_of))
+        reformed_json_schema.any_of = any_of
+        json_schema_dict = reformed_json_schema.model_dump()
+
+      # Pass 2: the JSONSchema.type is not union-like,
+      # e.g. 'string', ['string'], ['null', 'string'].
+      for field_name, field_value in json_schema_dict.items():
+        if field_value is None or field_name == 'defs':
+          continue
+        if field_name in schema_field_names:
+          if field_name == 'items' and not field_value:
+            continue
+          schema_field_value: 'Schema' = convert_json_schema(
+              current_json_schema=JSONSchema(**field_value),
+              root_json_schema_dict=root_json_schema_dict,
+              api_option=api_option,
+              raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+          )
+          setattr(schema, field_name, schema_field_value)
+        elif field_name in list_schema_field_names:
+          list_schema_field_value: list['Schema'] = [
+              convert_json_schema(
+                  current_json_schema=JSONSchema(**this_field_value),
+                  root_json_schema_dict=root_json_schema_dict,
+                  api_option=api_option,
+                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              )
+              for this_field_value in field_value
+          ]
+          setattr(schema, field_name, list_schema_field_value)
+          if not schema.type and not is_union_like_type and not schema.any_of:
+            schema.type = Type('OBJECT')
+        elif field_name in dict_schema_field_names:
+          dict_schema_field_value: dict[str, 'Schema'] = {
+              key: convert_json_schema(
+                  current_json_schema=JSONSchema(**value),
+                  root_json_schema_dict=root_json_schema_dict,
+                  api_option=api_option,
+                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              )
+              for key, value in field_value.items()
+          }
+          setattr(schema, field_name, dict_schema_field_value)
+        elif field_name == 'type':
+          non_null_types, nullable = normalize_json_schema_type(field_value)
+          if nullable:
+            schema.nullable = True
+          if non_null_types:
+            schema.type = Type(non_null_types[0])
+        else:
+          if (
+              hasattr(schema, field_name)
+              and field_name != 'additional_properties'
+          ):
+            setattr(schema, field_name, field_value)
+
+      if (
+          schema.type == 'ARRAY'
+          and schema.items
+          and not schema.items.model_dump(exclude_unset=True)
+      ):
+        schema.items = None
+
+      if schema.any_of and len(schema.any_of) == 2:
+        nullable_part = None
+        type_part = None
+        for part in schema.any_of:
+          # A schema representing `None` will either be of type NULL or just be nullable.
+          part_dict = part.model_dump(exclude_unset=True)
+          if part_dict == {'nullable': True} or part_dict == {'type': 'NULL'}:
+            nullable_part = part
+          else:
+            type_part = part
+
+        # If we found both parts, unwrap them into a single schema.
+        if nullable_part and type_part:
+          default_value = schema.default
+          schema = type_part
+          schema.nullable = True
+          # Carry the default value over to the unwrapped schema
+          if default_value is not None:
+            schema.default = default_value
+
+      return schema
+
+    # This is the initial call to the recursive function.
+    root_schema_dict = json_schema.model_dump()
+    return convert_json_schema(
+        current_json_schema=json_schema,
+        root_json_schema_dict=root_schema_dict,
+        api_option=api_option,
+        raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+    )
+
+
+class SchemaDict(TypedDict, total=False):
+  """Schema is used to define the format of input/output data.
+
+  Represents a select subset of an [OpenAPI 3.0 schema
+  object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
+  be added in the future as needed.
+  """
+
+  additional_properties: Optional[Any]
+  """Optional. Can either be a boolean or an object; controls the presence of additional properties."""
+
+  defs: Optional[dict[str, 'SchemaDict']]
+  """Optional. A map of definitions for use by `ref` Only allowed at the root of the schema."""
+
+  ref: Optional[str]
+  """Optional. Allows indirect references between schema nodes. The value should be a valid reference to a child of the root `defs`. For example, the following schema defines a reference to a schema node named "Pet": type: object properties: pet: ref: #/defs/Pet defs: Pet: type: object properties: name: type: string The value of the "pet" property is a reference to the schema node named "Pet". See details in https://json-schema.org/understanding-json-schema/structuring"""
+
+  any_of: Optional[list['SchemaDict']]
+  """Optional. The value should be validated against any (one or more) of the subschemas in the list."""
+
+  default: Optional[Any]
+  """Optional. Default value of the data."""
+
+  description: Optional[str]
+  """Optional. The description of the data."""
+
+  enum: Optional[list[str]]
+  """Optional. Possible values of the element of primitive type with enum format. Examples: 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH", "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum, enum:["101", "201", "301"]}"""
+
+  example: Optional[Any]
+  """Optional. Example of the object. Will only populated when the object is the root."""
+
+  format: Optional[str]
+  """Optional. The format of the data. Supported formats: for NUMBER type: "float", "double" for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc"""
+
+  items: Optional['SchemaDict']
+  """Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY."""
+
+  max_items: Optional[int]
+  """Optional. Maximum number of the elements for Type.ARRAY."""
+
+  max_length: Optional[int]
+  """Optional. Maximum length of the Type.STRING"""
+
+  max_properties: Optional[int]
+  """Optional. Maximum number of the properties for Type.OBJECT."""
+
+  maximum: Optional[float]
+  """Optional. Maximum value of the Type.INTEGER and Type.NUMBER"""
+
+  min_items: Optional[int]
+  """Optional. Minimum number of the elements for Type.ARRAY."""
+
+  min_length: Optional[int]
+  """Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING"""
+
+  min_properties: Optional[int]
+  """Optional. Minimum number of the properties for Type.OBJECT."""
+
+  minimum: Optional[float]
+  """Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER and Type.NUMBER"""
+
+  nullable: Optional[bool]
+  """Optional. Indicates if the value may be null."""
+
+  pattern: Optional[str]
+  """Optional. Pattern of the Type.STRING to restrict a string to a regular expression."""
+
+  properties: Optional[dict[str, 'SchemaDict']]
+  """Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT."""
+
+  property_ordering: Optional[list[str]]
+  """Optional. The order of the properties. Not a standard field in open api spec. Only used to support the order of the properties."""
+
+  required: Optional[list[str]]
+  """Optional. Required properties of Type.OBJECT."""
+
+  title: Optional[str]
+  """Optional. The title of the Schema."""
+
+  type: Optional[Type]
+  """Optional. The type of the data."""
+
+
+SchemaOrDict = Union[Schema, SchemaDict]
+
+
 class FunctionDeclaration(_common.BaseModel):
   """Structured representation of a function declaration as defined by the [OpenAPI 3.0 specification](https://spec.openapis.org/oas/v3.0.3).
 
@@ -4383,6 +4204,394 @@ class ToolConfigDict(TypedDict, total=False):
 ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
 
 
+class JSONSchema(_common.BaseModel):
+  """A subset of JSON Schema according to 2020-12 JSON Schema draft.
+
+  Represents a subset of a JSON Schema object that is used by the Gemini model.
+  The difference between this class and the Schema class is that this class is
+  compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
+  make API call to Gemini model.
+  """
+
+  type: Optional[Union[JSONSchemaType, list[JSONSchemaType]]] = Field(
+      default=None,
+      description="""Validation succeeds if the type of the instance matches the type represented by the given type, or matches at least one of the given types.""",
+  )
+  format: Optional[str] = Field(
+      default=None,
+      description='Define semantic information about a string instance.',
+  )
+  title: Optional[str] = Field(
+      default=None,
+      description=(
+          'A preferably short description about the purpose of the instance'
+          ' described by the schema.'
+      ),
+  )
+  description: Optional[str] = Field(
+      default=None,
+      description=(
+          'An explanation about the purpose of the instance described by the'
+          ' schema.'
+      ),
+  )
+  default: Optional[Any] = Field(
+      default=None,
+      description=(
+          'This keyword can be used to supply a default JSON value associated'
+          ' with a particular schema.'
+      ),
+  )
+  items: Optional['JSONSchema'] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if each element of the instance not covered by'
+          ' prefixItems validates against this schema.'
+      ),
+  )
+  min_items: Optional[int] = Field(
+      default=None,
+      description=(
+          'An array instance is valid if its size is greater than, or equal to,'
+          ' the value of this keyword.'
+      ),
+  )
+  max_items: Optional[int] = Field(
+      default=None,
+      description=(
+          'An array instance is valid if its size is less than, or equal to,'
+          ' the value of this keyword.'
+      ),
+  )
+  enum: Optional[list[Any]] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if the instance is equal to one of the elements'
+          ' in this keyword’s array value.'
+      ),
+  )
+  properties: Optional[dict[str, 'JSONSchema']] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if, for each name that appears in both the'
+          ' instance and as a name within this keyword’s value, the child'
+          ' instance for that name successfully validates against the'
+          ' corresponding schema.'
+      ),
+  )
+  required: Optional[list[str]] = Field(
+      default=None,
+      description=(
+          'An object instance is valid against this keyword if every item in'
+          ' the array is the name of a property in the instance.'
+      ),
+  )
+  min_properties: Optional[int] = Field(
+      default=None,
+      description=(
+          'An object instance is valid if its number of properties is greater'
+          ' than, or equal to, the value of this keyword.'
+      ),
+  )
+  max_properties: Optional[int] = Field(
+      default=None,
+      description=(
+          'An object instance is valid if its number of properties is less'
+          ' than, or equal to, the value of this keyword.'
+      ),
+  )
+  minimum: Optional[float] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if the numeric instance is greater than or equal'
+          ' to the given number.'
+      ),
+  )
+  maximum: Optional[float] = Field(
+      default=None,
+      description=(
+          'Validation succeeds if the numeric instance is less than or equal to'
+          ' the given number.'
+      ),
+  )
+  min_length: Optional[int] = Field(
+      default=None,
+      description=(
+          'A string instance is valid against this keyword if its length is'
+          ' greater than, or equal to, the value of this keyword.'
+      ),
+  )
+  max_length: Optional[int] = Field(
+      default=None,
+      description=(
+          'A string instance is valid against this keyword if its length is'
+          ' less than, or equal to, the value of this keyword.'
+      ),
+  )
+  pattern: Optional[str] = Field(
+      default=None,
+      description=(
+          'A string instance is considered valid if the regular expression'
+          ' matches the instance successfully.'
+      ),
+  )
+  additional_properties: Optional[Any] = Field(
+      default=None,
+      description="""Can either be a boolean or an object; controls the presence of additional properties.""",
+  )
+  any_of: Optional[list['JSONSchema']] = Field(
+      default=None,
+      description=(
+          'An instance validates successfully against this keyword if it'
+          ' validates successfully against at least one schema defined by this'
+          ' keyword’s value.'
+      ),
+  )
+  unique_items: Optional[bool] = Field(
+      default=None,
+      description="""Boolean value that indicates whether the items in an array are unique.""",
+  )
+  ref: Optional[str] = Field(
+      default=None,
+      alias='$ref',
+      description="""Allows indirect references between schema nodes.""",
+  )
+  defs: Optional[dict[str, 'JSONSchema']] = Field(
+      default=None,
+      alias='$defs',
+      description="""Schema definitions to be used with $ref.""",
+  )
+
+
+class ImageConfig(_common.BaseModel):
+  """The image generation configuration to be used in GenerateContentConfig."""
+
+  aspect_ratio: Optional[str] = Field(
+      default=None,
+      description="""Aspect ratio of the generated images. Supported values are
+      "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9".""",
+  )
+  image_size: Optional[str] = Field(
+      default=None,
+      description="""Optional. Specifies the size of generated images. Supported
+      values are `1K`, `2K`, `4K`. If not specified, the model will use default
+      value `1K`.""",
+  )
+  person_generation: Optional[str] = Field(
+      default=None,
+      description="""Controls the generation of people. Supported values are:
+      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE.""",
+  )
+  output_mime_type: Optional[str] = Field(
+      default=None,
+      description="""MIME type of the generated image. This field is not
+      supported in Gemini API.""",
+  )
+  output_compression_quality: Optional[int] = Field(
+      default=None,
+      description="""Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API.""",
+  )
+
+
+class ImageConfigDict(TypedDict, total=False):
+  """The image generation configuration to be used in GenerateContentConfig."""
+
+  aspect_ratio: Optional[str]
+  """Aspect ratio of the generated images. Supported values are
+      "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9"."""
+
+  image_size: Optional[str]
+  """Optional. Specifies the size of generated images. Supported
+      values are `1K`, `2K`, `4K`. If not specified, the model will use default
+      value `1K`."""
+
+  person_generation: Optional[str]
+  """Controls the generation of people. Supported values are:
+      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE."""
+
+  output_mime_type: Optional[str]
+  """MIME type of the generated image. This field is not
+      supported in Gemini API."""
+
+  output_compression_quality: Optional[int]
+  """Compression quality of the generated image (for
+      ``image/jpeg`` only). This field is not supported in Gemini API."""
+
+
+ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]
+
+
+class AutomaticFunctionCallingConfig(_common.BaseModel):
+  """The configuration for automatic function calling."""
+
+  disable: Optional[bool] = Field(
+      default=None,
+      description="""Whether to disable automatic function calling.
+      If not set or set to False, will enable automatic function calling.
+      If set to True, will disable automatic function calling.
+      """,
+  )
+  maximum_remote_calls: Optional[int] = Field(
+      default=10,
+      description="""If automatic function calling is enabled,
+      maximum number of remote calls for automatic function calling.
+      This number should be a positive integer.
+      If not set, SDK will set maximum number of remote calls to 10.
+      """,
+  )
+  ignore_call_history: Optional[bool] = Field(
+      default=None,
+      description="""If automatic function calling is enabled,
+      whether to ignore call history to the response.
+      If not set, SDK will set ignore_call_history to false,
+      and will append the call history to
+      GenerateContentResponse.automatic_function_calling_history.
+      """,
+  )
+
+
+class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
+  """The configuration for automatic function calling."""
+
+  disable: Optional[bool]
+  """Whether to disable automatic function calling.
+      If not set or set to False, will enable automatic function calling.
+      If set to True, will disable automatic function calling.
+      """
+
+  maximum_remote_calls: Optional[int]
+  """If automatic function calling is enabled,
+      maximum number of remote calls for automatic function calling.
+      This number should be a positive integer.
+      If not set, SDK will set maximum number of remote calls to 10.
+      """
+
+  ignore_call_history: Optional[bool]
+  """If automatic function calling is enabled,
+      whether to ignore call history to the response.
+      If not set, SDK will set ignore_call_history to false,
+      and will append the call history to
+      GenerateContentResponse.automatic_function_calling_history.
+      """
+
+
+AutomaticFunctionCallingConfigOrDict = Union[
+    AutomaticFunctionCallingConfig, AutomaticFunctionCallingConfigDict
+]
+
+
+class ModelSelectionConfig(_common.BaseModel):
+  """Config for model selection."""
+
+  feature_selection_preference: Optional[FeatureSelectionPreference] = Field(
+      default=None, description="""Options for feature selection preference."""
+  )
+
+
+class ModelSelectionConfigDict(TypedDict, total=False):
+  """Config for model selection."""
+
+  feature_selection_preference: Optional[FeatureSelectionPreference]
+  """Options for feature selection preference."""
+
+
+ModelSelectionConfigOrDict = Union[
+    ModelSelectionConfig, ModelSelectionConfigDict
+]
+
+
+class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
+  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference.
+
+  This data type is not supported in Gemini API.
+  """
+
+  model_routing_preference: Optional[
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
+  ] = Field(default=None, description="""The model routing preference.""")
+
+
+class GenerationConfigRoutingConfigAutoRoutingModeDict(TypedDict, total=False):
+  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference.
+
+  This data type is not supported in Gemini API.
+  """
+
+  model_routing_preference: Optional[
+      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
+  ]
+  """The model routing preference."""
+
+
+GenerationConfigRoutingConfigAutoRoutingModeOrDict = Union[
+    GenerationConfigRoutingConfigAutoRoutingMode,
+    GenerationConfigRoutingConfigAutoRoutingModeDict,
+]
+
+
+class GenerationConfigRoutingConfigManualRoutingMode(_common.BaseModel):
+  """When manual routing is set, the specified model will be used directly.
+
+  This data type is not supported in Gemini API.
+  """
+
+  model_name: Optional[str] = Field(
+      default=None,
+      description="""The model name to use. Only the public LLM models are accepted. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models).""",
+  )
+
+
+class GenerationConfigRoutingConfigManualRoutingModeDict(
+    TypedDict, total=False
+):
+  """When manual routing is set, the specified model will be used directly.
+
+  This data type is not supported in Gemini API.
+  """
+
+  model_name: Optional[str]
+  """The model name to use. Only the public LLM models are accepted. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models)."""
+
+
+GenerationConfigRoutingConfigManualRoutingModeOrDict = Union[
+    GenerationConfigRoutingConfigManualRoutingMode,
+    GenerationConfigRoutingConfigManualRoutingModeDict,
+]
+
+
+class GenerationConfigRoutingConfig(_common.BaseModel):
+  """The configuration for routing the request to a specific model.
+
+  This data type is not supported in Gemini API.
+  """
+
+  auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingMode] = Field(
+      default=None, description="""Automated routing."""
+  )
+  manual_mode: Optional[GenerationConfigRoutingConfigManualRoutingMode] = Field(
+      default=None, description="""Manual routing."""
+  )
+
+
+class GenerationConfigRoutingConfigDict(TypedDict, total=False):
+  """The configuration for routing the request to a specific model.
+
+  This data type is not supported in Gemini API.
+  """
+
+  auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingModeDict]
+  """Automated routing."""
+
+  manual_mode: Optional[GenerationConfigRoutingConfigManualRoutingModeDict]
+  """Manual routing."""
+
+
+GenerationConfigRoutingConfigOrDict = Union[
+    GenerationConfigRoutingConfig, GenerationConfigRoutingConfigDict
+]
+
+
 class ReplicatedVoiceConfig(_common.BaseModel):
   """ReplicatedVoiceConfig is used to configure replicated voice."""
 
@@ -4535,65 +4744,6 @@ class SpeechConfigDict(TypedDict, total=False):
 SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
 
 
-class AutomaticFunctionCallingConfig(_common.BaseModel):
-  """The configuration for automatic function calling."""
-
-  disable: Optional[bool] = Field(
-      default=None,
-      description="""Whether to disable automatic function calling.
-      If not set or set to False, will enable automatic function calling.
-      If set to True, will disable automatic function calling.
-      """,
-  )
-  maximum_remote_calls: Optional[int] = Field(
-      default=10,
-      description="""If automatic function calling is enabled,
-      maximum number of remote calls for automatic function calling.
-      This number should be a positive integer.
-      If not set, SDK will set maximum number of remote calls to 10.
-      """,
-  )
-  ignore_call_history: Optional[bool] = Field(
-      default=None,
-      description="""If automatic function calling is enabled,
-      whether to ignore call history to the response.
-      If not set, SDK will set ignore_call_history to false,
-      and will append the call history to
-      GenerateContentResponse.automatic_function_calling_history.
-      """,
-  )
-
-
-class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
-  """The configuration for automatic function calling."""
-
-  disable: Optional[bool]
-  """Whether to disable automatic function calling.
-      If not set or set to False, will enable automatic function calling.
-      If set to True, will disable automatic function calling.
-      """
-
-  maximum_remote_calls: Optional[int]
-  """If automatic function calling is enabled,
-      maximum number of remote calls for automatic function calling.
-      This number should be a positive integer.
-      If not set, SDK will set maximum number of remote calls to 10.
-      """
-
-  ignore_call_history: Optional[bool]
-  """If automatic function calling is enabled,
-      whether to ignore call history to the response.
-      If not set, SDK will set ignore_call_history to false,
-      and will append the call history to
-      GenerateContentResponse.automatic_function_calling_history.
-      """
-
-
-AutomaticFunctionCallingConfigOrDict = Union[
-    AutomaticFunctionCallingConfig, AutomaticFunctionCallingConfigDict
-]
-
-
 class ThinkingConfig(_common.BaseModel):
   """The thinking features configuration."""
 
@@ -4631,63 +4781,173 @@ class ThinkingConfigDict(TypedDict, total=False):
 ThinkingConfigOrDict = Union[ThinkingConfig, ThinkingConfigDict]
 
 
-class ImageConfig(_common.BaseModel):
-  """The image generation configuration to be used in GenerateContentConfig."""
+class GenerationConfig(_common.BaseModel):
+  """Generation config."""
 
-  aspect_ratio: Optional[str] = Field(
-      default=None,
-      description="""Aspect ratio of the generated images. Supported values are
-      "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9".""",
+  model_selection_config: Optional[ModelSelectionConfig] = Field(
+      default=None, description="""Optional. Config for model selection."""
   )
-  image_size: Optional[str] = Field(
+  audio_timestamp: Optional[bool] = Field(
       default=None,
-      description="""Optional. Specifies the size of generated images. Supported
-      values are `1K`, `2K`, `4K`. If not specified, the model will use default
-      value `1K`.""",
+      description="""Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API.""",
   )
-  person_generation: Optional[str] = Field(
+  candidate_count: Optional[int] = Field(
       default=None,
-      description="""Controls the generation of people. Supported values are:
-      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE.""",
+      description="""Optional. Number of candidates to generate.""",
   )
-  output_mime_type: Optional[str] = Field(
+  enable_affective_dialog: Optional[bool] = Field(
       default=None,
-      description="""MIME type of the generated image. This field is not
-      supported in Gemini API.""",
+      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API.""",
   )
-  output_compression_quality: Optional[int] = Field(
+  frequency_penalty: Optional[float] = Field(
+      default=None, description="""Optional. Frequency penalties."""
+  )
+  logprobs: Optional[int] = Field(
+      default=None, description="""Optional. Logit probabilities."""
+  )
+  max_output_tokens: Optional[int] = Field(
       default=None,
-      description="""Compression quality of the generated image (for
-      ``image/jpeg`` only). This field is not supported in Gemini API.""",
+      description="""Optional. The maximum number of output tokens to generate per message.""",
+  )
+  media_resolution: Optional[MediaResolution] = Field(
+      default=None,
+      description="""Optional. If specified, the media resolution specified will be used.""",
+  )
+  presence_penalty: Optional[float] = Field(
+      default=None, description="""Optional. Positive penalties."""
+  )
+  response_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set.""",
+  )
+  response_logprobs: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If true, export the logprobs results in response.""",
+  )
+  response_mime_type: Optional[str] = Field(
+      default=None,
+      description="""Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature.""",
+  )
+  response_modalities: Optional[list[Modality]] = Field(
+      default=None, description="""Optional. The modalities of the response."""
+  )
+  response_schema: Optional[Schema] = Field(
+      default=None,
+      description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
+  )
+  routing_config: Optional[GenerationConfigRoutingConfig] = Field(
+      default=None,
+      description="""Optional. Routing configuration. This field is not supported in Gemini API.""",
+  )
+  seed: Optional[int] = Field(default=None, description="""Optional. Seed.""")
+  speech_config: Optional[SpeechConfig] = Field(
+      default=None, description="""Optional. The speech generation config."""
+  )
+  stop_sequences: Optional[list[str]] = Field(
+      default=None, description="""Optional. Stop sequences."""
+  )
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Optional. Controls the randomness of predictions.""",
+  )
+  thinking_config: Optional[ThinkingConfig] = Field(
+      default=None,
+      description="""Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking.""",
+  )
+  top_k: Optional[float] = Field(
+      default=None,
+      description="""Optional. If specified, top-k sampling will be used.""",
+  )
+  top_p: Optional[float] = Field(
+      default=None,
+      description="""Optional. If specified, nucleus sampling will be used.""",
+  )
+  enable_enhanced_civic_answers: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI.""",
   )
 
 
-class ImageConfigDict(TypedDict, total=False):
-  """The image generation configuration to be used in GenerateContentConfig."""
+class GenerationConfigDict(TypedDict, total=False):
+  """Generation config."""
 
-  aspect_ratio: Optional[str]
-  """Aspect ratio of the generated images. Supported values are
-      "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9"."""
+  model_selection_config: Optional[ModelSelectionConfigDict]
+  """Optional. Config for model selection."""
 
-  image_size: Optional[str]
-  """Optional. Specifies the size of generated images. Supported
-      values are `1K`, `2K`, `4K`. If not specified, the model will use default
-      value `1K`."""
+  audio_timestamp: Optional[bool]
+  """Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API."""
 
-  person_generation: Optional[str]
-  """Controls the generation of people. Supported values are:
-      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE."""
+  candidate_count: Optional[int]
+  """Optional. Number of candidates to generate."""
 
-  output_mime_type: Optional[str]
-  """MIME type of the generated image. This field is not
-      supported in Gemini API."""
+  enable_affective_dialog: Optional[bool]
+  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API."""
 
-  output_compression_quality: Optional[int]
-  """Compression quality of the generated image (for
-      ``image/jpeg`` only). This field is not supported in Gemini API."""
+  frequency_penalty: Optional[float]
+  """Optional. Frequency penalties."""
+
+  logprobs: Optional[int]
+  """Optional. Logit probabilities."""
+
+  max_output_tokens: Optional[int]
+  """Optional. The maximum number of output tokens to generate per message."""
+
+  media_resolution: Optional[MediaResolution]
+  """Optional. If specified, the media resolution specified will be used."""
+
+  presence_penalty: Optional[float]
+  """Optional. Positive penalties."""
+
+  response_json_schema: Optional[Any]
+  """Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set."""
+
+  response_logprobs: Optional[bool]
+  """Optional. If true, export the logprobs results in response."""
+
+  response_mime_type: Optional[str]
+  """Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature."""
+
+  response_modalities: Optional[list[Modality]]
+  """Optional. The modalities of the response."""
+
+  response_schema: Optional[SchemaDict]
+  """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
+
+  routing_config: Optional[GenerationConfigRoutingConfigDict]
+  """Optional. Routing configuration. This field is not supported in Gemini API."""
+
+  seed: Optional[int]
+  """Optional. Seed."""
+
+  speech_config: Optional[SpeechConfigDict]
+  """Optional. The speech generation config."""
+
+  stop_sequences: Optional[list[str]]
+  """Optional. Stop sequences."""
+
+  temperature: Optional[float]
+  """Optional. Controls the randomness of predictions."""
+
+  thinking_config: Optional[ThinkingConfigDict]
+  """Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking."""
+
+  top_k: Optional[float]
+  """Optional. If specified, top-k sampling will be used."""
+
+  top_p: Optional[float]
+  """Optional. If specified, nucleus sampling will be used."""
+
+  enable_enhanced_civic_answers: Optional[bool]
+  """Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI."""
 
 
-ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]
+GenerationConfigOrDict = Union[GenerationConfig, GenerationConfigDict]
+
+
+SpeechConfigUnion = Union[str, SpeechConfig]
+
+
+SpeechConfigUnionDict = Union[str, SpeechConfig, SpeechConfigDict]
 
 
 class FileStatus(_common.BaseModel):
@@ -4846,97 +5106,6 @@ ContentUnionDict = Union[
 ]
 
 
-class GenerationConfigRoutingConfigAutoRoutingMode(_common.BaseModel):
-  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference.
-
-  This data type is not supported in Gemini API.
-  """
-
-  model_routing_preference: Optional[
-      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
-  ] = Field(default=None, description="""The model routing preference.""")
-
-
-class GenerationConfigRoutingConfigAutoRoutingModeDict(TypedDict, total=False):
-  """When automated routing is specified, the routing will be determined by the pretrained routing model and customer provided model routing preference.
-
-  This data type is not supported in Gemini API.
-  """
-
-  model_routing_preference: Optional[
-      Literal['UNKNOWN', 'PRIORITIZE_QUALITY', 'BALANCED', 'PRIORITIZE_COST']
-  ]
-  """The model routing preference."""
-
-
-GenerationConfigRoutingConfigAutoRoutingModeOrDict = Union[
-    GenerationConfigRoutingConfigAutoRoutingMode,
-    GenerationConfigRoutingConfigAutoRoutingModeDict,
-]
-
-
-class GenerationConfigRoutingConfigManualRoutingMode(_common.BaseModel):
-  """When manual routing is set, the specified model will be used directly.
-
-  This data type is not supported in Gemini API.
-  """
-
-  model_name: Optional[str] = Field(
-      default=None,
-      description="""The model name to use. Only the public LLM models are accepted. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models).""",
-  )
-
-
-class GenerationConfigRoutingConfigManualRoutingModeDict(
-    TypedDict, total=False
-):
-  """When manual routing is set, the specified model will be used directly.
-
-  This data type is not supported in Gemini API.
-  """
-
-  model_name: Optional[str]
-  """The model name to use. Only the public LLM models are accepted. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models)."""
-
-
-GenerationConfigRoutingConfigManualRoutingModeOrDict = Union[
-    GenerationConfigRoutingConfigManualRoutingMode,
-    GenerationConfigRoutingConfigManualRoutingModeDict,
-]
-
-
-class GenerationConfigRoutingConfig(_common.BaseModel):
-  """The configuration for routing the request to a specific model.
-
-  This data type is not supported in Gemini API.
-  """
-
-  auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingMode] = Field(
-      default=None, description="""Automated routing."""
-  )
-  manual_mode: Optional[GenerationConfigRoutingConfigManualRoutingMode] = Field(
-      default=None, description="""Manual routing."""
-  )
-
-
-class GenerationConfigRoutingConfigDict(TypedDict, total=False):
-  """The configuration for routing the request to a specific model.
-
-  This data type is not supported in Gemini API.
-  """
-
-  auto_mode: Optional[GenerationConfigRoutingConfigAutoRoutingModeDict]
-  """Automated routing."""
-
-  manual_mode: Optional[GenerationConfigRoutingConfigManualRoutingModeDict]
-  """Manual routing."""
-
-
-GenerationConfigRoutingConfigOrDict = Union[
-    GenerationConfigRoutingConfig, GenerationConfigRoutingConfigDict
-]
-
-
 class SafetySetting(_common.BaseModel):
   """Safety settings."""
 
@@ -4968,12 +5137,6 @@ class SafetySettingDict(TypedDict, total=False):
 SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
 
 
-SpeechConfigUnion = Union[str, SpeechConfig]
-
-
-SpeechConfigUnionDict = Union[str, SpeechConfig, SpeechConfigDict]
-
-
 class GenerateContentConfig(_common.BaseModel):
   """Optional model configuration parameters.
 
@@ -4981,6 +5144,88 @@ class GenerateContentConfig(_common.BaseModel):
   <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
   """
 
+  model_selection_config: Optional[ModelSelectionConfig] = Field(
+      default=None, description="""Optional. Config for model selection."""
+  )
+  audio_timestamp: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API.""",
+  )
+  candidate_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of candidates to generate.""",
+  )
+  enable_affective_dialog: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API.""",
+  )
+  frequency_penalty: Optional[float] = Field(
+      default=None, description="""Optional. Frequency penalties."""
+  )
+  logprobs: Optional[int] = Field(
+      default=None, description="""Optional. Logit probabilities."""
+  )
+  max_output_tokens: Optional[int] = Field(
+      default=None,
+      description="""Optional. The maximum number of output tokens to generate per message.""",
+  )
+  media_resolution: Optional[MediaResolution] = Field(
+      default=None,
+      description="""Optional. If specified, the media resolution specified will be used.""",
+  )
+  presence_penalty: Optional[float] = Field(
+      default=None, description="""Optional. Positive penalties."""
+  )
+  response_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set.""",
+  )
+  response_logprobs: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If true, export the logprobs results in response.""",
+  )
+  response_mime_type: Optional[str] = Field(
+      default=None,
+      description="""Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature.""",
+  )
+  response_modalities: Optional[list[str]] = Field(
+      default=None, description="""Optional. The modalities of the response."""
+  )
+  response_schema: Optional[SchemaUnion] = Field(
+      default=None,
+      description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
+  )
+  routing_config: Optional[GenerationConfigRoutingConfig] = Field(
+      default=None,
+      description="""Optional. Routing configuration. This field is not supported in Gemini API.""",
+  )
+  seed: Optional[int] = Field(default=None, description="""Optional. Seed.""")
+  speech_config: Optional[SpeechConfigUnion] = Field(
+      default=None, description="""Optional. The speech generation config."""
+  )
+  stop_sequences: Optional[list[str]] = Field(
+      default=None, description="""Optional. Stop sequences."""
+  )
+  temperature: Optional[float] = Field(
+      default=None,
+      description="""Optional. Controls the randomness of predictions.""",
+  )
+  thinking_config: Optional[ThinkingConfig] = Field(
+      default=None,
+      description="""Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking.""",
+  )
+  top_k: Optional[float] = Field(
+      default=None,
+      description="""Optional. If specified, top-k sampling will be used.""",
+  )
+  top_p: Optional[float] = Field(
+      default=None,
+      description="""Optional. If specified, nucleus sampling will be used.""",
+  )
+  enable_enhanced_civic_answers: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI.""",
+  )
   http_options: Optional[HttpOptions] = Field(
       default=None, description="""Used to override HTTP request options."""
   )
@@ -4993,131 +5238,6 @@ class GenerateContentConfig(_common.BaseModel):
       description="""Instructions for the model to steer it toward better performance.
       For example, "Answer as concisely as possible" or "Don't use technical
       terms in your response".
-      """,
-  )
-  temperature: Optional[float] = Field(
-      default=None,
-      description="""Value that controls the degree of randomness in token selection.
-      Lower temperatures are good for prompts that require a less open-ended or
-      creative response, while higher temperatures can lead to more diverse or
-      creative results.
-      """,
-  )
-  top_p: Optional[float] = Field(
-      default=None,
-      description="""Tokens are selected from the most to least probable until the sum
-      of their probabilities equals this value. Use a lower value for less
-      random responses and a higher value for more random responses.
-      """,
-  )
-  top_k: Optional[float] = Field(
-      default=None,
-      description="""For each token selection step, the ``top_k`` tokens with the
-      highest probabilities are sampled. Then tokens are further filtered based
-      on ``top_p`` with the final token selected using temperature sampling. Use
-      a lower number for less random responses and a higher number for more
-      random responses.
-      """,
-  )
-  candidate_count: Optional[int] = Field(
-      default=None,
-      description="""Number of response variations to return.
-      """,
-  )
-  max_output_tokens: Optional[int] = Field(
-      default=None,
-      description="""Maximum number of tokens that can be generated in the response.
-      """,
-  )
-  stop_sequences: Optional[list[str]] = Field(
-      default=None,
-      description="""List of strings that tells the model to stop generating text if one
-      of the strings is encountered in the response.
-      """,
-  )
-  response_logprobs: Optional[bool] = Field(
-      default=None,
-      description="""Whether to return the log probabilities of the tokens that were
-      chosen by the model at each step.
-      """,
-  )
-  logprobs: Optional[int] = Field(
-      default=None,
-      description="""Number of top candidate tokens to return the log probabilities for
-      at each generation step.
-      """,
-  )
-  presence_penalty: Optional[float] = Field(
-      default=None,
-      description="""Positive values penalize tokens that already appear in the
-      generated text, increasing the probability of generating more diverse
-      content.
-      """,
-  )
-  frequency_penalty: Optional[float] = Field(
-      default=None,
-      description="""Positive values penalize tokens that repeatedly appear in the
-      generated text, increasing the probability of generating more diverse
-      content.
-      """,
-  )
-  seed: Optional[int] = Field(
-      default=None,
-      description="""When ``seed`` is fixed to a specific number, the model makes a best
-      effort to provide the same response for repeated requests. By default, a
-      random number is used.
-      """,
-  )
-  response_mime_type: Optional[str] = Field(
-      default=None,
-      description="""Output response mimetype of the generated candidate text.
-      Supported mimetype:
-        - `text/plain`: (default) Text output.
-        - `application/json`: JSON response in the candidates.
-      The model needs to be prompted to output the appropriate response type,
-      otherwise the behavior is undefined.
-      This is a preview feature.
-      """,
-  )
-  response_schema: Optional[SchemaUnion] = Field(
-      default=None,
-      description="""The `Schema` object allows the definition of input and output data types.
-      These types can be objects, but also primitives and arrays.
-      Represents a select subset of an [OpenAPI 3.0 schema
-      object](https://spec.openapis.org/oas/v3.0.3#schema).
-      If set, a compatible response_mime_type must also be set.
-      Compatible mimetypes: `application/json`: Schema for JSON response.
-
-      If `response_schema` doesn't process your schema correctly, try using
-      `response_json_schema` instead.
-      """,
-  )
-  response_json_schema: Optional[Any] = Field(
-      default=None,
-      description="""Optional. Output schema of the generated response.
-      This is an alternative to `response_schema` that accepts [JSON
-      Schema](https://json-schema.org/). If set, `response_schema` must be
-      omitted, but `response_mime_type` is required. While the full JSON Schema
-      may be sent, not all features are supported. Specifically, only the
-      following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor`
-      - `type` - `format` - `title` - `description` - `enum` (for strings and
-      numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` -
-      `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) -
-      `properties` - `additionalProperties` - `required` The non-standard
-      `propertyOrdering` property may also be set. Cyclic references are
-      unrolled to a limited degree and, as such, may only be used within
-      non-required properties. (Nullable properties are not sufficient.) If
-      `$ref` is set on a sub-schema, no other properties, except for than those
-      starting as a `$`, may be set.""",
-  )
-  routing_config: Optional[GenerationConfigRoutingConfig] = Field(
-      default=None,
-      description="""Configuration for model router requests.
-      """,
-  )
-  model_selection_config: Optional[ModelSelectionConfig] = Field(
-      default=None,
-      description="""Configuration for model selection.
       """,
   )
   safety_settings: Optional[list[SafetySetting]] = Field(
@@ -5147,47 +5267,14 @@ class GenerateContentConfig(_common.BaseModel):
       requests.
       """,
   )
-  response_modalities: Optional[list[str]] = Field(
-      default=None,
-      description="""The requested modalities of the response. Represents the set of
-      modalities that the model can return.
-      """,
-  )
-  media_resolution: Optional[MediaResolution] = Field(
-      default=None,
-      description="""If specified, the media resolution specified will be used.
-    """,
-  )
-  speech_config: Optional[SpeechConfigUnion] = Field(
-      default=None,
-      description="""The speech generation configuration.
-      """,
-  )
-  audio_timestamp: Optional[bool] = Field(
-      default=None,
-      description="""If enabled, audio timestamp will be included in the request to the
-       model.
-      """,
-  )
-  automatic_function_calling: Optional[AutomaticFunctionCallingConfig] = Field(
-      default=None,
-      description="""The configuration for automatic function calling.
-      """,
-  )
-  thinking_config: Optional[ThinkingConfig] = Field(
-      default=None,
-      description="""The thinking features configuration.
-      """,
-  )
   image_config: Optional[ImageConfig] = Field(
       default=None,
       description="""The image generation configuration.
       """,
   )
-  enable_enhanced_civic_answers: Optional[bool] = Field(
+  automatic_function_calling: Optional[AutomaticFunctionCallingConfig] = Field(
       default=None,
-      description="""Enables enhanced civic answers. It may not be available for all
-      models. This field is not supported in Vertex AI.
+      description="""The configuration for automatic function calling.
       """,
   )
 
@@ -5222,6 +5309,75 @@ class GenerateContentConfigDict(TypedDict, total=False):
   <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
   """
 
+  model_selection_config: Optional[ModelSelectionConfigDict]
+  """Optional. Config for model selection."""
+
+  audio_timestamp: Optional[bool]
+  """Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API."""
+
+  candidate_count: Optional[int]
+  """Optional. Number of candidates to generate."""
+
+  enable_affective_dialog: Optional[bool]
+  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API."""
+
+  frequency_penalty: Optional[float]
+  """Optional. Frequency penalties."""
+
+  logprobs: Optional[int]
+  """Optional. Logit probabilities."""
+
+  max_output_tokens: Optional[int]
+  """Optional. The maximum number of output tokens to generate per message."""
+
+  media_resolution: Optional[MediaResolution]
+  """Optional. If specified, the media resolution specified will be used."""
+
+  presence_penalty: Optional[float]
+  """Optional. Positive penalties."""
+
+  response_json_schema: Optional[Any]
+  """Optional. Output schema of the generated response. This is an alternative to `response_schema` that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must be omitted, but `response_mime_type` is required. While the full JSON Schema may be sent, not all features are supported. Specifically, only the following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title` - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering` property may also be set. Cyclic references are unrolled to a limited degree and, as such, may only be used within non-required properties. (Nullable properties are not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for than those starting as a `$`, may be set."""
+
+  response_logprobs: Optional[bool]
+  """Optional. If true, export the logprobs results in response."""
+
+  response_mime_type: Optional[str]
+  """Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature."""
+
+  response_modalities: Optional[list[str]]
+  """Optional. The modalities of the response."""
+
+  response_schema: Optional[SchemaUnionDict]
+  """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
+
+  routing_config: Optional[GenerationConfigRoutingConfigDict]
+  """Optional. Routing configuration. This field is not supported in Gemini API."""
+
+  seed: Optional[int]
+  """Optional. Seed."""
+
+  speech_config: Optional[SpeechConfigUnionDict]
+  """Optional. The speech generation config."""
+
+  stop_sequences: Optional[list[str]]
+  """Optional. Stop sequences."""
+
+  temperature: Optional[float]
+  """Optional. Controls the randomness of predictions."""
+
+  thinking_config: Optional[ThinkingConfigDict]
+  """Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking."""
+
+  top_k: Optional[float]
+  """Optional. If specified, top-k sampling will be used."""
+
+  top_p: Optional[float]
+  """Optional. If specified, nucleus sampling will be used."""
+
+  enable_enhanced_civic_answers: Optional[bool]
+  """Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI."""
+
   http_options: Optional[HttpOptionsDict]
   """Used to override HTTP request options."""
 
@@ -5232,115 +5388,6 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """Instructions for the model to steer it toward better performance.
       For example, "Answer as concisely as possible" or "Don't use technical
       terms in your response".
-      """
-
-  temperature: Optional[float]
-  """Value that controls the degree of randomness in token selection.
-      Lower temperatures are good for prompts that require a less open-ended or
-      creative response, while higher temperatures can lead to more diverse or
-      creative results.
-      """
-
-  top_p: Optional[float]
-  """Tokens are selected from the most to least probable until the sum
-      of their probabilities equals this value. Use a lower value for less
-      random responses and a higher value for more random responses.
-      """
-
-  top_k: Optional[float]
-  """For each token selection step, the ``top_k`` tokens with the
-      highest probabilities are sampled. Then tokens are further filtered based
-      on ``top_p`` with the final token selected using temperature sampling. Use
-      a lower number for less random responses and a higher number for more
-      random responses.
-      """
-
-  candidate_count: Optional[int]
-  """Number of response variations to return.
-      """
-
-  max_output_tokens: Optional[int]
-  """Maximum number of tokens that can be generated in the response.
-      """
-
-  stop_sequences: Optional[list[str]]
-  """List of strings that tells the model to stop generating text if one
-      of the strings is encountered in the response.
-      """
-
-  response_logprobs: Optional[bool]
-  """Whether to return the log probabilities of the tokens that were
-      chosen by the model at each step.
-      """
-
-  logprobs: Optional[int]
-  """Number of top candidate tokens to return the log probabilities for
-      at each generation step.
-      """
-
-  presence_penalty: Optional[float]
-  """Positive values penalize tokens that already appear in the
-      generated text, increasing the probability of generating more diverse
-      content.
-      """
-
-  frequency_penalty: Optional[float]
-  """Positive values penalize tokens that repeatedly appear in the
-      generated text, increasing the probability of generating more diverse
-      content.
-      """
-
-  seed: Optional[int]
-  """When ``seed`` is fixed to a specific number, the model makes a best
-      effort to provide the same response for repeated requests. By default, a
-      random number is used.
-      """
-
-  response_mime_type: Optional[str]
-  """Output response mimetype of the generated candidate text.
-      Supported mimetype:
-        - `text/plain`: (default) Text output.
-        - `application/json`: JSON response in the candidates.
-      The model needs to be prompted to output the appropriate response type,
-      otherwise the behavior is undefined.
-      This is a preview feature.
-      """
-
-  response_schema: Optional[SchemaUnionDict]
-  """The `Schema` object allows the definition of input and output data types.
-      These types can be objects, but also primitives and arrays.
-      Represents a select subset of an [OpenAPI 3.0 schema
-      object](https://spec.openapis.org/oas/v3.0.3#schema).
-      If set, a compatible response_mime_type must also be set.
-      Compatible mimetypes: `application/json`: Schema for JSON response.
-
-      If `response_schema` doesn't process your schema correctly, try using
-      `response_json_schema` instead.
-      """
-
-  response_json_schema: Optional[Any]
-  """Optional. Output schema of the generated response.
-      This is an alternative to `response_schema` that accepts [JSON
-      Schema](https://json-schema.org/). If set, `response_schema` must be
-      omitted, but `response_mime_type` is required. While the full JSON Schema
-      may be sent, not all features are supported. Specifically, only the
-      following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor`
-      - `type` - `format` - `title` - `description` - `enum` (for strings and
-      numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` -
-      `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) -
-      `properties` - `additionalProperties` - `required` The non-standard
-      `propertyOrdering` property may also be set. Cyclic references are
-      unrolled to a limited degree and, as such, may only be used within
-      non-required properties. (Nullable properties are not sufficient.) If
-      `$ref` is set on a sub-schema, no other properties, except for than those
-      starting as a `$`, may be set."""
-
-  routing_config: Optional[GenerationConfigRoutingConfigDict]
-  """Configuration for model router requests.
-      """
-
-  model_selection_config: Optional[ModelSelectionConfigDict]
-  """Configuration for model selection.
       """
 
   safety_settings: Optional[list[SafetySettingDict]]
@@ -5365,39 +5412,12 @@ class GenerateContentConfigDict(TypedDict, total=False):
       requests.
       """
 
-  response_modalities: Optional[list[str]]
-  """The requested modalities of the response. Represents the set of
-      modalities that the model can return.
-      """
-
-  media_resolution: Optional[MediaResolution]
-  """If specified, the media resolution specified will be used.
-    """
-
-  speech_config: Optional[SpeechConfigUnionDict]
-  """The speech generation configuration.
-      """
-
-  audio_timestamp: Optional[bool]
-  """If enabled, audio timestamp will be included in the request to the
-       model.
-      """
-
-  automatic_function_calling: Optional[AutomaticFunctionCallingConfigDict]
-  """The configuration for automatic function calling.
-      """
-
-  thinking_config: Optional[ThinkingConfigDict]
-  """The thinking features configuration.
-      """
-
   image_config: Optional[ImageConfigDict]
   """The image generation configuration.
       """
 
-  enable_enhanced_civic_answers: Optional[bool]
-  """Enables enhanced civic answers. It may not be available for all
-      models. This field is not supported in Vertex AI.
+  automatic_function_calling: Optional[AutomaticFunctionCallingConfigDict]
+  """The configuration for automatic function calling.
       """
 
 
@@ -9221,173 +9241,6 @@ class DeleteModelResponseDict(TypedDict, total=False):
 
 
 DeleteModelResponseOrDict = Union[DeleteModelResponse, DeleteModelResponseDict]
-
-
-class GenerationConfig(_common.BaseModel):
-  """Generation config."""
-
-  model_selection_config: Optional[ModelSelectionConfig] = Field(
-      default=None, description="""Optional. Config for model selection."""
-  )
-  response_json_schema: Optional[Any] = Field(
-      default=None,
-      description="""Output schema of the generated response. This is an alternative to
-      `response_schema` that accepts [JSON Schema](https://json-schema.org/).
-      """,
-  )
-  audio_timestamp: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API.""",
-  )
-  candidate_count: Optional[int] = Field(
-      default=None,
-      description="""Optional. Number of candidates to generate.""",
-  )
-  enable_affective_dialog: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API.""",
-  )
-  frequency_penalty: Optional[float] = Field(
-      default=None, description="""Optional. Frequency penalties."""
-  )
-  logprobs: Optional[int] = Field(
-      default=None, description="""Optional. Logit probabilities."""
-  )
-  max_output_tokens: Optional[int] = Field(
-      default=None,
-      description="""Optional. The maximum number of output tokens to generate per message.""",
-  )
-  media_resolution: Optional[MediaResolution] = Field(
-      default=None,
-      description="""Optional. If specified, the media resolution specified will be used.""",
-  )
-  presence_penalty: Optional[float] = Field(
-      default=None, description="""Optional. Positive penalties."""
-  )
-  response_logprobs: Optional[bool] = Field(
-      default=None,
-      description="""Optional. If true, export the logprobs results in response.""",
-  )
-  response_mime_type: Optional[str] = Field(
-      default=None,
-      description="""Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature.""",
-  )
-  response_modalities: Optional[list[Modality]] = Field(
-      default=None, description="""Optional. The modalities of the response."""
-  )
-  response_schema: Optional[Schema] = Field(
-      default=None,
-      description="""Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response.""",
-  )
-  routing_config: Optional[GenerationConfigRoutingConfig] = Field(
-      default=None,
-      description="""Optional. Routing configuration. This field is not supported in Gemini API.""",
-  )
-  seed: Optional[int] = Field(default=None, description="""Optional. Seed.""")
-  speech_config: Optional[SpeechConfig] = Field(
-      default=None, description="""Optional. The speech generation config."""
-  )
-  stop_sequences: Optional[list[str]] = Field(
-      default=None, description="""Optional. Stop sequences."""
-  )
-  temperature: Optional[float] = Field(
-      default=None,
-      description="""Optional. Controls the randomness of predictions.""",
-  )
-  thinking_config: Optional[ThinkingConfig] = Field(
-      default=None,
-      description="""Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking.""",
-  )
-  top_k: Optional[float] = Field(
-      default=None,
-      description="""Optional. If specified, top-k sampling will be used.""",
-  )
-  top_p: Optional[float] = Field(
-      default=None,
-      description="""Optional. If specified, nucleus sampling will be used.""",
-  )
-  enable_enhanced_civic_answers: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI.""",
-  )
-
-
-class GenerationConfigDict(TypedDict, total=False):
-  """Generation config."""
-
-  model_selection_config: Optional[ModelSelectionConfigDict]
-  """Optional. Config for model selection."""
-
-  response_json_schema: Optional[Any]
-  """Output schema of the generated response. This is an alternative to
-      `response_schema` that accepts [JSON Schema](https://json-schema.org/).
-      """
-
-  audio_timestamp: Optional[bool]
-  """Optional. If enabled, audio timestamp will be included in the request to the model. This field is not supported in Gemini API."""
-
-  candidate_count: Optional[int]
-  """Optional. Number of candidates to generate."""
-
-  enable_affective_dialog: Optional[bool]
-  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. This field is not supported in Gemini API."""
-
-  frequency_penalty: Optional[float]
-  """Optional. Frequency penalties."""
-
-  logprobs: Optional[int]
-  """Optional. Logit probabilities."""
-
-  max_output_tokens: Optional[int]
-  """Optional. The maximum number of output tokens to generate per message."""
-
-  media_resolution: Optional[MediaResolution]
-  """Optional. If specified, the media resolution specified will be used."""
-
-  presence_penalty: Optional[float]
-  """Optional. Positive penalties."""
-
-  response_logprobs: Optional[bool]
-  """Optional. If true, export the logprobs results in response."""
-
-  response_mime_type: Optional[str]
-  """Optional. Output response mimetype of the generated candidate text. Supported mimetype: - `text/plain`: (default) Text output. - `application/json`: JSON response in the candidates. The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature."""
-
-  response_modalities: Optional[list[Modality]]
-  """Optional. The modalities of the response."""
-
-  response_schema: Optional[SchemaDict]
-  """Optional. The `Schema` object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`: Schema for JSON response."""
-
-  routing_config: Optional[GenerationConfigRoutingConfigDict]
-  """Optional. Routing configuration. This field is not supported in Gemini API."""
-
-  seed: Optional[int]
-  """Optional. Seed."""
-
-  speech_config: Optional[SpeechConfigDict]
-  """Optional. The speech generation config."""
-
-  stop_sequences: Optional[list[str]]
-  """Optional. Stop sequences."""
-
-  temperature: Optional[float]
-  """Optional. Controls the randomness of predictions."""
-
-  thinking_config: Optional[ThinkingConfigDict]
-  """Optional. Config for thinking features. An error will be returned if this field is set for models that don't support thinking."""
-
-  top_k: Optional[float]
-  """Optional. If specified, top-k sampling will be used."""
-
-  top_p: Optional[float]
-  """Optional. If specified, nucleus sampling will be used."""
-
-  enable_enhanced_civic_answers: Optional[bool]
-  """Optional. Enables enhanced civic answers. It may not be available for all models. This field is not supported in Vertex AI."""
-
-
-GenerationConfigOrDict = Union[GenerationConfig, GenerationConfigDict]
 
 
 class CountTokensConfig(_common.BaseModel):
