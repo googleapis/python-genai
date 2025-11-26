@@ -41,10 +41,33 @@ except ImportError:
   AIOHTTP_NOT_INSTALLED = True
   aiohttp = mock.MagicMock()
 
+from google.genai import _api_client
 
 requires_aiohttp = pytest.mark.skipif(
     AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
 )
+
+
+class FakeCredentials(credentials.Credentials):
+  def __init__(self, token="fake_token", expired=False, quota_project_id=None):
+    super().__init__()
+    self.token = token
+    self._expired = expired
+    self._quota_project_id = quota_project_id
+    self.refresh_count = 0
+
+  @property
+  def expired(self):
+    return self._expired
+
+  @property
+  def quota_project_id(self):
+    return self._quota_project_id
+
+  def refresh(self, request):
+    self.refresh_count += 1
+    self.token = "refreshed_token"
+    self._expired = False
 
 
 @pytest.fixture(autouse=True)
@@ -1685,3 +1708,222 @@ async def test_get_aiohttp_session():
   assert initial_session is not None
   session = await client._api_client._get_aiohttp_session()
   assert session is initial_session
+
+
+def test_missing_api_key_and_credentials(monkeypatch):
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
+  with pytest.raises(ValueError, match="Missing key inputs argument!"):
+    Client()
+
+
+@mock.patch.dict(os.environ, {"GOOGLE_API_KEY": "env_api_key"})
+@mock.patch("httpx.Client.send")
+def test_credentials_precedence_generate_content(mock_send, monkeypatch):
+  creds = FakeCredentials()
+  client = Client(credentials=creds)
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  client.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer fake_token"
+  assert "x-goog-api-key" not in request.headers
+  assert creds.refresh_count == 0
+
+@mock.patch.dict(os.environ, {"GOOGLE_API_KEY": "env_api_key"})
+@mock.patch("httpx.Client.send")
+def test_api_key_generate_content(mock_send):
+  client = Client(api_key="test_api_key")
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  client.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  request = mock_send.call_args[0][0]
+  assert "x-goog-api-key" in request.headers
+  assert request.headers["x-goog-api-key"] == "test_api_key"
+  assert "Authorization" not in request.headers
+
+
+@mock.patch.dict(os.environ, {"GOOGLE_API_KEY": "env_api_key"})
+@mock.patch("httpx.Client.send")
+def test_env_api_key_generate_content(mock_send):
+  client = Client()
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  client.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  request = mock_send.call_args[0][0]
+  assert "x-goog-api-key" in request.headers
+  assert request.headers["x-goog-api-key"] == "env_api_key"
+  assert "Authorization" not in request.headers
+
+
+@mock.patch.dict(os.environ, {"GOOGLE_API_KEY": "env_api_key"})
+@mock.patch("httpx.Client.send")
+def test_credentials_precedence_generate_content_expired(mock_send, monkeypatch):
+  creds = FakeCredentials(expired=True)
+  client = Client(credentials=creds)
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  client.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  assert creds.refresh_count == 1
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer refreshed_token"
+  assert "x-goog-api-key" not in request.headers
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@mock.patch.dict(os.environ, {"GOOGLE_API_KEY": "env_api_key"})
+@mock.patch("httpx.AsyncClient.send")
+async def test_async_credentials_precedence_generate_content(mock_send, monkeypatch):
+  creds = FakeCredentials()
+  client = Client(credentials=creds)
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  await client.aio.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer fake_token"
+  assert "x-goog-api-key" not in request.headers
+  assert creds.refresh_count == 0
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@mock.patch.dict(os.environ, {"GOOGLE_API_KEY": "env_api_key"})
+@mock.patch("httpx.AsyncClient.send")
+async def test_async_credentials_precedence_generate_content_expired(mock_send, monkeypatch):
+  creds = FakeCredentials(expired=True)
+  client = Client(credentials=creds)
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  await client.aio.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  assert creds.refresh_count == 1
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer refreshed_token"
+  assert "x-goog-api-key" not in request.headers
+
+
+@mock.patch("httpx.Client.send")
+def test_vertex_credentials_generate_content(mock_send, monkeypatch):
+  creds = FakeCredentials()
+  monkeypatch.setattr(google.auth, "default", lambda scopes=None: (creds, None))
+  client = Client(vertexai=True, project="test-project", location="test-location")
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  client.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer fake_token"
+  assert "x-goog-api-key" not in request.headers
+  assert creds.refresh_count == 0
+
+
+@mock.patch("httpx.Client.send")
+def test_vertex_credentials_generate_content_expired(mock_send, monkeypatch):
+  creds = FakeCredentials(expired=True)
+  monkeypatch.setattr(google.auth, "default", lambda scopes=None: (creds, None))
+  client = Client(vertexai=True, project="test-project", location="test-location")
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  client.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  assert creds.refresh_count == 1
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer refreshed_token"
+  assert "x-goog-api-key" not in request.headers
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@mock.patch("httpx.AsyncClient.send")
+async def test_async_vertex_credentials_generate_content(mock_send, monkeypatch):
+  creds = FakeCredentials()
+  monkeypatch.setattr(google.auth, "default", lambda scopes=None: (creds, None))
+  client = Client(vertexai=True, project="test-project", location="test-location")
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  await client.aio.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer fake_token"
+  assert "x-goog-api-key" not in request.headers
+  assert creds.refresh_count == 0
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@mock.patch("httpx.AsyncClient.send")
+async def test_async_vertex_credentials_generate_content_expired(mock_send, monkeypatch):
+  creds = FakeCredentials(expired=True)
+  monkeypatch.setattr(google.auth, "default", lambda scopes=None: (creds, None))
+  client = Client(vertexai=True, project="test-project", location="test-location")
+  mock_send.return_value = httpx.Response(
+      status_code=200,
+      json={"candidates": [{"content": {"parts": [{"text": "response"}]}}]},
+  )
+  await client.aio.models.generate_content(
+      model="test",
+      contents="hello?"
+  )
+  mock_send.assert_called_once()
+  assert creds.refresh_count == 1
+  request = mock_send.call_args[0][0]
+  assert "Authorization" in request.headers
+  assert request.headers["Authorization"] == "Bearer refreshed_token"
+  assert "x-goog-api-key" not in request.headers

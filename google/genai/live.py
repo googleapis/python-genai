@@ -29,6 +29,7 @@ import pydantic
 from websockets import ConnectionClosed
 
 from . import _api_module
+from . import _extra_utils
 from . import _common
 from . import _live_converters as live_converters
 from . import _mcp_utils
@@ -929,17 +930,76 @@ class AsyncLive(_api_module.BaseModule):
     base_url = self._api_client._websocket_base_url()
     if isinstance(base_url, bytes):
       base_url = base_url.decode('utf-8')
-    transformed_model = t.t_model(self._api_client, model)  # type: ignore
 
     parameter_model = await _t_live_connect_config(self._api_client, config)
 
-    if self._api_client.api_key and not self._api_client.vertexai:
-      version = self._api_client._http_options.api_version
-      api_key = self._api_client.api_key
-      method = 'BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
-      headers = original_headers.copy() if original_headers is not None else {}
+    if self._api_client.vertexai:
+      uri, headers, request = await self._prepare_connection_vertex(
+          base_url=base_url, model=model, parameter_model=parameter_model
+      )
+    else:
+      uri, headers, request = await self._prepare_connection_genai(
+          base_url=base_url, model=model, parameter_model=parameter_model
+      )
+
+    if parameter_model.tools and _mcp_utils.has_mcp_tool_usage(
+        parameter_model.tools
+    ):
+      if headers is None:
+        headers = {}
+      _mcp_utils.set_mcp_usage_header(headers)
+
+    async with ws_connect(
+        uri, additional_headers=headers, **self._api_client._websocket_ssl_ctx
+    ) as ws:
+      await ws.send(request)
+      try:
+        # websockets 14.0+
+        raw_response = await ws.recv(decode=False)
+      except TypeError:
+        raw_response = await ws.recv()  # type: ignore[assignment]
+      if raw_response:
+        try:
+          response = json.loads(raw_response)
+        except json.decoder.JSONDecodeError as e:
+          raise ValueError(f'Failed to parse response: {raw_response!r}') from e
+      else:
+        response = {}
+
+      if self._api_client.vertexai:
+        response_dict = live_converters._LiveServerMessage_from_vertex(response)
+      else:
+        response_dict = response
+
+      setup_response = types.LiveServerMessage._from_response(
+          response=response_dict, kwargs=parameter_model.model_dump()
+      )
+      if setup_response.setup_complete:
+        session_id = setup_response.setup_complete.session_id
+      else:
+        session_id = None
+      yield AsyncSession(
+          api_client=self._api_client,
+          websocket=ws,
+          session_id=session_id,
+      )
+
+  async def _prepare_connection_genai(
+      self, *,
+      base_url: str,
+      model: str,
+      parameter_model: types.LiveConnectConfig,
+  ) -> tuple[str, _common.StringDict, str]:
+    transformed_model = t.t_model(self._api_client, model)  # type: ignore
+    version = self._api_client._http_options.api_version
+    method = 'BidiGenerateContent'
+    original_headers = self._api_client._http_options.headers
+    headers = original_headers.copy() if original_headers is not None else {}
+
+    if api_key := self._api_client.api_key:
       if api_key.startswith('auth_tokens/'):
+        method = 'BidiGenerateContentConstrained'
+        headers['Authorization'] = f'Token {api_key}'
         warnings.warn(
             message=(
                 "The SDK's ephemeral token support is experimental, and may"
@@ -947,8 +1007,6 @@ class AsyncLive(_api_module.BaseModule):
             ),
             category=errors.ExperimentalWarning,
         )
-        method = 'BidiGenerateContentConstrained'
-        headers['Authorization'] = f'Token {api_key}'
         if version != 'v1alpha':
           warnings.warn(
               message=(
@@ -959,46 +1017,46 @@ class AsyncLive(_api_module.BaseModule):
               ),
               category=errors.ExperimentalWarning,
           )
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
-
-      request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_mldev(
-              api_client=self._api_client,
-              from_object=types.LiveConnectParameters(
-                  model=transformed_model,
-                  config=parameter_model,
-              ).model_dump(exclude_none=True),
-          )
-      )
-      del request_dict['config']
-
-      setv(request_dict, ['setup', 'model'], transformed_model)
-
-      request = json.dumps(request_dict)
-    elif self._api_client.api_key and self._api_client.vertexai:
-      # Headers already contains api key for express mode.
-      api_key = self._api_client.api_key
-      version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
-      headers = original_headers.copy() if original_headers is not None else {}
-
-      request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_vertex(
-              api_client=self._api_client,
-              from_object=types.LiveConnectParameters(
-                  model=transformed_model,
-                  config=parameter_model,
-              ).model_dump(exclude_none=True),
-          )
-      )
-      del request_dict['config']
-
-      setv(request_dict, ['setup', 'model'], transformed_model)
-
-      request = json.dumps(request_dict)
+    elif creds := self._api_client._credentials:
+      await _extra_utils._maybe_update_and_insert_auth_token(headers, creds)
     else:
-      version = self._api_client._http_options.api_version
+      # this shouldn't happen.
+      raise ValueError('Genai live connection requires credentials or API key provided.')
+
+    uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
+
+    request_dict = _common.convert_to_dict(
+        live_converters._LiveConnectParameters_to_mldev(
+            api_client=self._api_client,
+            from_object=types.LiveConnectParameters(
+                model=transformed_model,
+                config=parameter_model,
+            ).model_dump(exclude_none=True),
+        )
+    )
+    del request_dict['config']
+
+    setv(request_dict, ['setup', 'model'], transformed_model)
+
+    return uri, headers, json.dumps(request_dict)
+
+
+  async def _prepare_connection_vertex(
+      self, *,
+      base_url: str,
+      model: str,
+      parameter_model: types.LiveConnectConfig,
+  ) -> tuple[str, _common.StringDict, str]:
+    transformed_model = t.t_model(self._api_client, model)  # type: ignore
+    version = self._api_client._http_options.api_version
+    original_headers = self._api_client._http_options.headers
+    headers = (
+        original_headers.copy() if original_headers is not None else {}
+    )
+    if api_key := self._api_client.api_key:
+      # Headers already contains api key
+      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+    else:
       has_sufficient_auth = (
           self._api_client.project and self._api_client.location
       )
@@ -1026,17 +1084,8 @@ class AsyncLive(_api_module.BaseModule):
           creds = self._api_client._credentials
         # creds.valid is False, and creds.token is None
         # Need to refresh credentials to populate those
-        if not (creds.token and creds.valid):
-          auth_req = google.auth.transport.requests.Request()  # type: ignore
-          creds.refresh(auth_req)
-        bearer_token = creds.token
+        await _extra_utils._maybe_update_and_insert_auth_token(headers, creds)
 
-        original_headers = self._api_client._http_options.headers
-        headers = (
-            original_headers.copy() if original_headers is not None else {}
-        )
-        if not headers.get('Authorization'):
-          headers['Authorization'] = f'Bearer {bearer_token}'
 
       location = self._api_client.location
       project = self._api_client.project
@@ -1044,17 +1093,19 @@ class AsyncLive(_api_module.BaseModule):
         transformed_model = (
             f'projects/{project}/locations/{location}/' + transformed_model
         )
-      request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_vertex(
-              api_client=self._api_client,
-              from_object=types.LiveConnectParameters(
-                  model=transformed_model,
-                  config=parameter_model,
-              ).model_dump(exclude_none=True),
-          )
-      )
-      del request_dict['config']
 
+    request_dict = _common.convert_to_dict(
+        live_converters._LiveConnectParameters_to_vertex(
+            api_client=self._api_client,
+            from_object=types.LiveConnectParameters(
+                model=transformed_model,
+                config=parameter_model,
+            ).model_dump(exclude_none=True),
+        )
+    )
+    del request_dict['config']
+
+    if api_key is None:
       if (
           getv(
               request_dict, ['setup', 'generationConfig', 'responseModalities']
@@ -1067,49 +1118,10 @@ class AsyncLive(_api_module.BaseModule):
             ['AUDIO'],
         )
 
-      request = json.dumps(request_dict)
+    return uri, headers, json.dumps(request_dict)
 
-    if parameter_model.tools and _mcp_utils.has_mcp_tool_usage(
-        parameter_model.tools
-    ):
-      if headers is None:
-        headers = {}
-      _mcp_utils.set_mcp_usage_header(headers)
 
-    async with ws_connect(
-        uri, additional_headers=headers, **self._api_client._websocket_ssl_ctx
-    ) as ws:
-      await ws.send(request)
-      try:
-        # websockets 14.0+
-        raw_response = await ws.recv(decode=False)
-      except TypeError:
-        raw_response = await ws.recv()  # type: ignore[assignment]
-      if raw_response:
-        try:
-          response = json.loads(raw_response)
-        except json.decoder.JSONDecodeError:
-          raise ValueError(f'Failed to parse response: {raw_response!r}')
-      else:
-        response = {}
 
-      if self._api_client.vertexai:
-        response_dict = live_converters._LiveServerMessage_from_vertex(response)
-      else:
-        response_dict = response
-
-      setup_response = types.LiveServerMessage._from_response(
-          response=response_dict, kwargs=parameter_model.model_dump()
-      )
-      if setup_response.setup_complete:
-        session_id = setup_response.setup_complete.session_id
-      else:
-        session_id = None
-      yield AsyncSession(
-          api_client=self._api_client,
-          websocket=ws,
-          session_id=session_id,
-      )
 
 
 async def _t_live_connect_config(
