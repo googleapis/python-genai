@@ -55,6 +55,44 @@ client = genai.Client(
 )
 ```
 
+## Using types
+
+All API methods support Pydantic types and dictionaries, which you can access
+from `google.genai.types`. You can import the types module with the following:
+
+```python
+from google.genai import types
+```
+
+Below is an example `generate_content()` call using types from the types module:
+
+```python
+response = client.models.generate_content(
+    model='gemini-2.0-flash-001',
+    contents=types.Part.from_text(text='Why is the sky blue?'),
+    config=types.GenerateContentConfig(
+        temperature=0,
+        top_p=0.95,
+        top_k=20,
+    ),
+)
+```
+
+Alternatively, you can accomplish the same request using dictionaries instead of
+types:
+
+```python
+response = client.models.generate_content(
+    model='gemini-2.0-flash-001',
+    contents={'text': 'Why is the sky blue?'},
+    config={
+        'temperature': 0,
+        'top_p': 0.95,
+        'top_k': 20,
+    },
+)
+```
+
 **(Optional) Using environment variables:**
 
 You can create a client by configuring the necessary environment variables.
@@ -544,33 +582,6 @@ response = client.models.generate_content(
         temperature=0.3,
     ),
 )
-print(response.text)
-```
-
-### Typed Config
-
-All API methods support Pydantic types for parameters as well as
-dictionaries. You can get the type from `google.genai.types`.
-
-```python
-from google.genai import types
-
-response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
-    contents=types.Part.from_text(text='Why is the sky blue?'),
-    config=types.GenerateContentConfig(
-        temperature=0,
-        top_p=0.95,
-        top_k=20,
-        candidate_count=1,
-        seed=5,
-        max_output_tokens=100,
-        stop_sequences=['STOP!'],
-        presence_penalty=0.0,
-        frequency_penalty=0.0,
-    ),
-)
-
 print(response.text)
 ```
 
