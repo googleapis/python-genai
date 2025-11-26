@@ -26,6 +26,7 @@ import warnings
 
 import google.auth
 import pydantic
+from google.auth.transport import requests
 from websockets import ConnectionClosed
 
 from . import _api_module
@@ -1027,7 +1028,7 @@ class AsyncLive(_api_module.BaseModule):
         # creds.valid is False, and creds.token is None
         # Need to refresh credentials to populate those
         if not (creds.token and creds.valid):
-          auth_req = google.auth.transport.requests.Request()  # type: ignore
+          auth_req = requests.Request()  # type: ignore
           creds.refresh(auth_req)
         bearer_token = creds.token
 
