@@ -148,6 +148,29 @@ def _FileData_to_mldev(
   return to_object
 
 
+def _FunctionCall_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['args']) is not None:
+    setv(to_object, ['args'], getv(from_object, ['args']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['partial_args']) is not None:
+    raise ValueError('partial_args parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError('will_continue parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _GoogleMaps_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -365,8 +388,10 @@ def _Part_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -383,6 +408,13 @@ def _Part_to_mldev(
         to_object,
         ['fileData'],
         _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(
+        to_object,
+        ['functionCall'],
+        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
     )
 
   if getv(from_object, ['function_response']) is not None:

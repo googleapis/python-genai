@@ -1197,7 +1197,7 @@ from google.genai import types
 
 # Generate Image
 response1 = client.models.generate_images(
-    model='imagen-3.0-generate-002',
+    model='imagen-4.0-generate-001',
     prompt='An umbrella in the foreground, and a rainy night sky in the background',
     config=types.GenerateImagesConfig(
         number_of_images=1,
@@ -1217,7 +1217,7 @@ from google.genai import types
 
 # Upscale the generated image from above
 response2 = client.models.upscale_image(
-    model='imagen-3.0-generate-001',
+    model='imagen-4.0-upscale-preview',
     image=response1.generated_images[0].image,
     upscale_factor='x2',
     config=types.UpscaleImageConfig(
@@ -1278,7 +1278,7 @@ from google.genai import types
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-2.0-generate-001',
+    model='veo-3.1-generate-preview',
     prompt='A neon hologram of a cat driving at top speed',
     config=types.GenerateVideosConfig(
         number_of_videos=1,
@@ -1306,7 +1306,7 @@ image = types.Image.from_file("local/path/file.png")
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-2.0-generate-001',
+    model='veo-3.1-generate-preview',
     # Prompt is optional if image is provided
     prompt='Night sky',
     image=image,
@@ -1329,7 +1329,8 @@ video.show()
 
 #### Generate Videos (Video to Video)
 
-Currently, only Vertex supports Video to Video generation (Video extension).
+Currently, only Gemini Developer API supports video extension on Veo 3.1 for
+previously generated videos. Vertex supports video extension on Veo 2.0.
 
 ```python
 from google.genai import types
@@ -1339,10 +1340,10 @@ video = types.Video.from_file("local/path/video.mp4")
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-2.0-generate-001',
+    model='veo-3.1-generate-preview',
     # Prompt is optional if Video is provided
     prompt='Night sky',
-    # Input video must be in GCS
+    # Input video must be in GCS for Vertex or a URI for Gemini
     video=types.Video(
         uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
     ),
@@ -1517,7 +1518,7 @@ from google.genai import types
 model = 'gemini-2.5-flash'
 training_dataset = types.TuningDataset(
     # or gcs_uri=my_vertex_multimodal_dataset
-    gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
+    gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
 )
 ```
 
