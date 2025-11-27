@@ -37,6 +37,7 @@ import time
 from typing import Any, AsyncIterator, Iterator, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
+import warnings
 
 import anyio
 import certifi
@@ -55,6 +56,7 @@ from .types import HttpOptions
 from .types import HttpOptionsOrDict
 from .types import HttpResponse as SdkHttpResponse
 from .types import HttpRetryOptions
+from .types import ResourceScope
 
 
 try:
@@ -578,6 +580,12 @@ class BaseApiClient:
     elif isinstance(http_options, HttpOptions):
       validated_http_options = http_options
 
+    if validated_http_options.base_url_resource_scope and not validated_http_options.base_url:
+      # base_url_resource_scope is only valid when base_url is set.
+      raise ValueError(
+          'base_url must be set when base_url_resource_scope is set.'
+      )
+
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
@@ -727,10 +735,44 @@ class BaseApiClient:
 
   async def _get_aiohttp_session(self) -> 'aiohttp.ClientSession':
     """Returns the aiohttp client session."""
-    if self._aiohttp_session is None or self._aiohttp_session.closed:
+    if (
+        self._aiohttp_session is None
+        or self._aiohttp_session.closed
+        or self._aiohttp_session._loop.is_closed()  # pylint: disable=protected-access
+    ):
       # Initialize the aiohttp client session if it's not set up or closed.
-      self._aiohttp_session = aiohttp.ClientSession(
-          connector=aiohttp.TCPConnector(limit=0),
+      class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if not self.closed:
+            context = {
+                'client_session': self,
+                'message': 'Unclosed client session',
+            }
+            if self._source_traceback is not None:
+              context['source_traceback'] = self._source_traceback
+            # Remove this self._loop.call_exception_handler(context)
+
+      class AiohttpTCPConnector(aiohttp.TCPConnector):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if self._closed:
+            return
+          if not self._conns:
+            return
+          conns = [repr(c) for c in self._conns.values()]
+          # After v3.13.2, it may change to self._close_immediately()
+          self._close()
+          context = {
+              'connector': self,
+              'connections': conns,
+              'message': 'Unclosed connector',
+          }
+          if self._source_traceback is not None:
+            context['source_traceback'] = self._source_traceback
+          # Remove this self._loop.call_exception_handler(context)
+      self._aiohttp_session = AiohttpClientSession(
+          connector=AiohttpTCPConnector(limit=0),
           trust_env=True,
           read_bufsize=READ_BUFFER_SIZE,
       )
@@ -1044,6 +1086,11 @@ class BaseApiClient:
         and not path.startswith('projects/')
         and not query_vertex_base_models
         and (self.project or self.location)
+        and not (
+            self.custom_base_url
+            and patched_http_options.base_url_resource_scope
+            == ResourceScope.COLLECTION
+        )
     ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
 
@@ -1073,10 +1120,21 @@ class BaseApiClient:
         or (self.project and self.location)
         or self.api_key
     ):
-      url = join_url_path(
-          base_url,
-          versioned_path,
-      )
+      if (
+          patched_http_options.base_url_resource_scope
+          == ResourceScope.COLLECTION
+      ):
+        url = join_url_path(base_url, path)
+      else:
+        url = join_url_path(
+            base_url,
+            versioned_path,
+        )
+    elif(
+        self.custom_base_url
+        and patched_http_options.base_url_resource_scope == ResourceScope.COLLECTION
+    ):
+      url = join_url_path(base_url, path)
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(

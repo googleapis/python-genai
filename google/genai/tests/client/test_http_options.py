@@ -16,6 +16,7 @@
 
 """Tests for client behavior when issuing requests."""
 
+import pytest
 
 from ... import _api_client
 from ... import types
@@ -31,6 +32,7 @@ def test_patch_http_options_with_copies_all_fields():
       async_client_args={'http1': True},
       extra_body={'key': 'value'},
       retry_options=types.HttpRetryOptions(attempts=10),
+      base_url_resource_scope=types.ResourceScope.COLLECTION,
   )
   options = types.HttpOptions()
   patched = _api_client.patch_http_options(options, patch_options)
@@ -148,6 +150,27 @@ def test_server_timeout_not_set_by_default():
       request_dict={},
   )
   assert not 'X-Server-Timeout' in request.headers
+
+
+def test_resource_scope_without_base_url_raises_error():
+  with pytest.raises(ValueError):
+    _api_client.BaseApiClient(
+        vertexai=True,
+        http_options=types.HttpOptions(
+            base_url_resource_scope=types.ResourceScope.COLLECTION,
+        ),
+    )
+
+
+def test_base_url_resource_scope_not_set_by_default():
+  api_client = _api_client.BaseApiClient(
+      vertexai=True,
+      http_options=types.HttpOptions(
+          base_url='https://fake-url.com/',
+      ),
+  )
+
+  assert api_client._http_options.base_url_resource_scope is None
 
 
 def test_retry_options_not_set_by_default():
