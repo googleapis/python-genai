@@ -1302,7 +1302,7 @@ video.show()
 from google.genai import types
 
 # Read local image (uses mimetypes.guess_type to infer mime type)
-image = types.Image.from_file("local/path/file.png")
+image = types.Image.from_file(location="local/path/file.png")
 
 # Create operation
 operation = client.models.generate_videos(
