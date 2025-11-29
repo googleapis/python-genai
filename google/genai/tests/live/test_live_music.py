@@ -49,10 +49,10 @@ requires_aiohttp = pytest.mark.skipif(
 )
 
 
-def mock_api_client(vertexai=False, credentials=None):
+def mock_api_client(vertexai=False, credentials=None, api_key='TEST_API_KEY'):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   if not vertexai:
-    api_client.api_key = 'TEST_API_KEY'
+    api_client.api_key = api_key
     api_client.location = None
     api_client.project = None
   else:
@@ -67,6 +67,7 @@ def mock_api_client(vertexai=False, credentials=None):
   )  # Ensure headers exist
   api_client.vertexai = vertexai
   api_client._api_client = api_client
+  api_client._websocket_base_url = lambda: 'wss://test.com'
   return api_client
 
 
@@ -142,6 +143,7 @@ def test_mldev_from_env(monkeypatch):
   assert not client.aio.live.music._api_client.vertexai
   assert client.aio.live.music._api_client.api_key == api_key
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
 @requires_aiohttp
@@ -360,3 +362,78 @@ async def test_setup_to_api(vertexai):
   else:
     expected_result['setup']['model'] = 'models/test_model'
   assert result == expected_result
+
+@pytest.mark.asyncio
+@patch('google.genai.live_music.connect')
+async def test_connect_with_api_key(mock_connect):
+    mock_ws = AsyncMock()
+    mock_connect.return_value = mock_ws
+    client = Client(api_key='TEST_API_KEY', http_options={'api_version': 'v1test'})
+    client._api_client._websocket_base_url = lambda: 'wss://test.com'
+    live_module = client.aio.live.music
+
+    async with live_module.connect(model='test-model'):
+        pass
+
+    mock_connect.assert_called_once()
+    args, kwargs = mock_connect.call_args
+    assert args[0] == 'wss://test.com/ws/google.ai.generativelanguage.v1test.GenerativeService.BidiGenerateMusic'
+    assert kwargs['additional_headers']['x-goog-api-key'] == 'TEST_API_KEY'
+
+@pytest.mark.asyncio
+@patch('google.genai.live_music.connect')
+@patch('google.auth.transport.requests.Request')
+async def test_connect_with_credentials(mock_request, mock_connect):
+    mock_ws = AsyncMock()
+    mock_connect.return_value = mock_ws
+    mock_creds = Mock(spec=Credentials)
+    mock_creds.token = 'test_token'
+    mock_creds.valid = True
+    client = Client(credentials=mock_creds, http_options={'api_version': 'v1test'})
+    client._api_client._websocket_base_url = lambda: 'wss://test.com'
+    live_module = client.aio.live.music
+
+    async with live_module.connect(model='test-model'):
+        pass
+
+    mock_connect.assert_called_once()
+    args, kwargs = mock_connect.call_args
+    assert args[0] == 'wss://test.com/ws/google.ai.generativelanguage.v1test.GenerativeService.BidiGenerateMusic'
+    assert kwargs['additional_headers']['Authorization'] == 'Bearer test_token'
+    mock_creds.refresh.assert_not_called()
+
+@pytest.mark.asyncio
+@patch('google.genai.live_music.connect')
+@patch('google.auth.transport.requests.Request')
+async def test_connect_with_credentials_refresh(mock_request, mock_connect):
+    mock_ws = AsyncMock()
+    mock_connect.return_value = mock_ws
+    mock_creds = Mock(spec=Credentials)
+    mock_creds.token = None
+    mock_creds.valid = False
+    def refresh_effect(request):
+        mock_creds.token = 'refreshed_token'
+        mock_creds.valid = True
+    mock_creds.refresh.side_effect = refresh_effect
+    client = Client(credentials=mock_creds, http_options={'api_version': 'v1test'})
+    client._api_client._websocket_base_url = lambda: 'wss://test.com'
+    live_module = client.aio.live.music
+
+    with patch('asyncio.to_thread', new_callable=AsyncMock) as mock_to_thread:
+      mock_to_thread.side_effect = lambda func, *args, **kwargs: func(*args, **kwargs)
+      async with live_module.connect(model='test-model'):
+          pass
+
+    mock_connect.assert_called_once()
+    args, kwargs = mock_connect.call_args
+    assert args[0] == 'wss://test.com/ws/google.ai.generativelanguage.v1test.GenerativeService.BidiGenerateMusic'
+    assert kwargs['additional_headers']['Authorization'] == 'Bearer refreshed_token'
+    mock_creds.refresh.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_connect_vertex_unsupported(mock_websocket):
+    client = Client(vertexai=True, project='test', location='us-central1')
+    live_module = client.aio.live.music
+    with pytest.raises(NotImplementedError):
+        async with live_module.connect(model='test-model'):
+            pass
