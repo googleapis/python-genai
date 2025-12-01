@@ -29,6 +29,8 @@ from unittest.mock import patch
 import warnings
 
 import certifi
+import google.auth
+from google.auth.transport import requests
 from google.oauth2.credentials import Credentials
 import pytest
 from websockets import client
@@ -83,6 +85,23 @@ function_declarations = [{
         },
     },
 }]
+
+
+class FakeCredentials(Credentials):
+  def __init__(self, token='fake_token', valid=True):
+    super().__init__(token='placeholder')
+    self.token = token
+    self._valid = valid
+    self.refresh_called = False
+
+  def refresh(self, request):
+    self.token = 'refreshed_token'
+    self._valid = True
+    self.refresh_called = True
+
+  @property
+  def valid(self):
+    return self._valid
 
 
 def get_current_weather(location: str, unit: str):
@@ -2073,3 +2092,61 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
   assert 'x-goog-api-key' in capture['headers'], "x-goog-api-key is missing from headers"
   assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
   assert 'BidiGenerateContent' in capture['uri']
+
+
+
+@pytest.mark.asyncio
+async def test_prepare_connection_vertex_with_api_key(mock_websocket):
+    # Test the branch where api_key is present in vertexai
+    client = Client(vertexai=True, api_key="test_api_key")
+    capture = {}
+
+    @contextlib.asynccontextmanager
+    async def mock_ws_connect(uri, additional_headers=None, **kwargs):
+        capture['uri'] = uri
+        capture['headers'] = additional_headers
+        yield mock_websocket
+
+    with patch.object(live, 'ws_connect', new=mock_ws_connect):
+        live_module = client.aio.live
+        async with live_module.connect(model='test-model'):
+            pass
+
+    headers = capture['headers']
+    uri = capture['uri']
+    assert 'x-goog-api-key' in headers
+    assert headers['x-goog-api-key'] == "test_api_key"
+    # Authorization header should not be added by this method if api_key is used
+    assert 'Authorization' not in headers
+    assert "BidiGenerateContent" in uri
+
+
+@pytest.mark.asyncio
+async def test_prepare_connection_vertex_refresh_creds(mock_websocket):
+    # Test the branch where credentials need refreshing
+    fake_creds = FakeCredentials(token=None, valid=False)
+    capture = {}
+
+    @contextlib.asynccontextmanager
+    async def mock_ws_connect(uri, additional_headers=None, **kwargs):
+        capture['uri'] = uri
+        capture['headers'] = additional_headers
+        yield mock_websocket
+
+    with (
+        patch.object(google.auth, 'default', return_value=(fake_creds, "test-project")),
+        patch.object(requests, 'Request', return_value=Mock()),
+        patch.object(live, 'ws_connect', new=mock_ws_connect)
+    ):
+        client = Client(vertexai=True, project="test-project",
+                        location="us-central1")
+        live_module = client.aio.live
+        async with live_module.connect(model='test-model'):
+            pass
+
+    headers = capture['headers']
+    uri = capture['uri']
+    assert fake_creds.refresh_called
+    assert 'Authorization' in headers
+    assert headers['Authorization'] == f'Bearer refreshed_token'
+    assert "BidiGenerateContent" in uri
