@@ -50,6 +50,11 @@ except ModuleNotFoundError:
   from websockets.client import ClientConnection  # type: ignore
   from websockets.client import connect as ws_connect  # type: ignore
 
+try:
+  from google.auth.transport import requests
+except ImportError:
+  requests = None  # type: ignore[assignment]
+
 if typing.TYPE_CHECKING:
   from mcp import ClientSession as McpClientSession
   from mcp.types import Tool as McpTool
@@ -1027,7 +1032,9 @@ class AsyncLive(_api_module.BaseModule):
         # creds.valid is False, and creds.token is None
         # Need to refresh credentials to populate those
         if not (creds.token and creds.valid):
-          auth_req = google.auth.transport.requests.Request()  # type: ignore
+          if requests is None:
+            raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
+          auth_req = requests.Request()  # type: ignore
           creds.refresh(auth_req)
         bearer_token = creds.token
 
