@@ -679,10 +679,29 @@ class BaseApiClient:
         )
       self._http_options.api_version = 'v1beta1'
     else:  # Implicit initialization or missing arguments.
-      if not self.api_key:
+      if env_api_key and api_key:
+        # Explicit credentials take precedence over implicit api_key.
+        logger.info(
+            'The client initialiser api_key argument takes '
+            'precedence over the API key from the environment variable.'
+        )
+      if credentials:
+        if api_key:
+          raise ValueError(
+              'Credentials and API key are mutually exclusive in the client'
+              ' initializer.'
+          )
+        elif env_api_key:
+          logger.info(
+              'The user `credentials` argument will take precedence over the'
+              ' api key from the environment variables.'
+          )
+          self.api_key = None
+
+      if not self.api_key and not credentials:
         raise ValueError(
             'Missing key inputs argument! To use the Google AI API,'
-            ' provide (`api_key`) arguments. To use the Google Cloud API,'
+            ' provide (`api_key` or `credentials`) arguments. To use the Google Cloud API,'
             ' provide (`vertexai`, `project` & `location`) arguments.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
@@ -1163,19 +1182,21 @@ class BaseApiClient:
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
     # If using proj/location, fetch ADC
-    if self.vertexai and (self.project or self.location):
+    if (
+        self.vertexai and (self.project or self.location)
+        or not self.vertexai and self._credentials
+    ):
       http_request.headers['Authorization'] = f'Bearer {self._access_token()}'
       if self._credentials and self._credentials.quota_project_id:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
-    else:
-      if http_request.data:
-        if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
-        else:
-          data = http_request.data
+
+    if http_request.data:
+      if not isinstance(http_request.data, bytes):
+        data = json.dumps(http_request.data) if http_request.data else None
+      else:
+        data = http_request.data
 
     if stream:
       httpx_request = self._httpx_client.build_request(
@@ -1229,7 +1250,10 @@ class BaseApiClient:
     data: Optional[Union[str, bytes]] = None
 
     # If using proj/location, fetch ADC
-    if self.vertexai and (self.project or self.location):
+    if (
+        self.vertexai and (self.project or self.location) or
+        not self.vertexai and self._credentials
+    ):
       http_request.headers['Authorization'] = (
           f'Bearer {await self._async_access_token()}'
       )
@@ -1237,13 +1261,12 @@ class BaseApiClient:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
-    else:
-      if http_request.data:
-        if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
-        else:
-          data = http_request.data
+
+    if http_request.data:
+      if not isinstance(http_request.data, bytes):
+        data = json.dumps(http_request.data) if http_request.data else None
+      else:
+        data = http_request.data
 
     if stream:
       if self._use_aiohttp():
