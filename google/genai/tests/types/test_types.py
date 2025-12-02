@@ -2866,3 +2866,8 @@ def test_user_content_unsupported_type_in_list():
 def test_user_content_unsupported_role():
   with pytest.raises(TypeError):
     types.UserContent(role='model', parts=['hi'])
+
+def test_audio_transcription_config_fields():
+    cfg = types.AudioTranscriptionConfig(enable_output=True, enable_input=False)
+    assert cfg.enable_output is True
+    assert cfg.enable_input is False
