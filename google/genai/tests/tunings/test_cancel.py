@@ -23,7 +23,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_cancel_vertex",
         parameters=genai_types._CancelTuningJobParameters(
-            name="projects/801452371447/locations/us-central1/tuningJobs/6871785856412155904"
+            name="projects/801452371447/locations/us-central1/tuningJobs/2470687341547618304"
         ),
         exception_if_mldev="Not Found",
     ),
