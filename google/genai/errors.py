@@ -15,7 +15,7 @@
 
 """Error classes for the GenAI SDK."""
 
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import httpx
 import json
 from . import _common
@@ -52,6 +52,21 @@ class APIError(Exception):
     self.code = code if code else self._get_code(response_json)
 
     super().__init__(f'{self.code} {self.status}. {self.details}')
+
+  def __reduce__(
+      self,
+  ) -> tuple[Callable[..., 'APIError'], tuple[dict[str, Any]]]:
+    """Returns a tuple that can be used to reconstruct the error for pickling."""
+    state = self.__dict__.copy()
+    return (self.__class__._rebuild, (state,))
+
+  @staticmethod
+  def _rebuild(state: dict[str, Any]) -> 'APIError':
+    """Rebuilds the error from the state."""
+    obj = APIError.__new__(APIError)
+    obj.__dict__.update(state)
+    Exception.__init__(obj, f'{obj.code} {obj.status}. {obj.details}')
+    return obj
 
   def _get_status(self, response_json: Any) -> Any:
     return response_json.get(
