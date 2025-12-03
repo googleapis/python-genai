@@ -15,6 +15,16 @@ Google's generative models into their Python applications. It supports the
 [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
 APIs.
 
+## Code Generation
+
+Generative models are often unaware of recent API and SDK updates and may suggest outdated or legacy code.
+
+We recommend using our Code Generation instructions [codegen_instructions.md](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md) when generating Google Gen AI SDK code to guide your model towards using the more recent SDK features.
+
+Copy and paste the instructions from [this file](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md)
+into your development environment to provide the model with the necessary
+context
+
 ## Installation
 
 ```sh
