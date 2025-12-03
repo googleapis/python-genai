@@ -1933,14 +1933,15 @@ class Batches(_api_module.BaseModule):
   def create(
       self,
       *,
-      model: str,
+      model: str | None,
       src: types.BatchJobSourceUnionDict,
       config: Optional[types.CreateBatchJobConfigOrDict] = None,
   ) -> types.BatchJob:
     """Creates a batch job.
 
     Args:
-      model (str): The model to use for the batch job.
+      model (str|None): The model to use for the batch job. If the model is
+        None, you must specify the model in the request contained within src.
       src: The source of the batch job. Currently Vertex AI supports GCS URI(-s)
         or BigQuery URI. Example: "gs://path/to/input/data" or
         "bq://projectId.bqDatasetId.bqTableId". Gemini Developer API supports
