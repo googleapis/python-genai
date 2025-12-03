@@ -5459,6 +5459,13 @@ class CitationMetadata(_common.BaseModel):
       """,
   )
 
+  @model_validator(mode='before')
+  @classmethod
+  def _rename_citation_sources(cls, data: Any) -> Any:
+    if isinstance(data, dict) and 'citationSources' in data:
+      data['citations'] = data.pop('citationSources')
+    return data
+
 
 class CitationMetadataDict(TypedDict, total=False):
   """Citation information when the model quotes another source."""

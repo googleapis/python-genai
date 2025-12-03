@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.53.0](https://github.com/googleapis/python-genai/compare/v1.52.0...v1.53.0) (2025-12-03)
+
+
+### Features
+
+* Add empty response for tunings.cancel() ([97cc7e4](https://github.com/googleapis/python-genai/commit/97cc7e4eafbee4fa4035e7420170ab6a2c9da7fb))
+
+
+### Bug Fixes
+
+* Convert 'citationSources' key in CitationMetadata to 'citations' when present (fixes [#1222](https://github.com/googleapis/python-genai/issues/1222)) ([2f28b02](https://github.com/googleapis/python-genai/commit/2f28b02517dbbe57ca604079e8f14c0773ec4aca))
+* Fix google.auth.transport.requests import error in Live API ([a842721](https://github.com/googleapis/python-genai/commit/a842721cb1f536b9663552bf424aaa0c48387903))
+
+
+### Documentation
+
+* Improve docs for google.genai.types ([5b50adc](https://github.com/googleapis/python-genai/commit/5b50adce2a76cb77bef067bc0a624d111d39c2dc))
+* Recommend using response_json_schema in error messages and docstrings. ([c0b175a](https://github.com/googleapis/python-genai/commit/c0b175a0ca20286db419390031a2239938d0c0b7))
+* Updating codegen instructions to use gemini 3 pro and nano banana pro ([060f015](https://github.com/googleapis/python-genai/commit/060f015d7efb39f716731d7f3a6571f59a5e94e9))
+
 ## [1.52.0](https://github.com/googleapis/python-genai/compare/v1.51.0...v1.52.0) (2025-11-21)
 
 

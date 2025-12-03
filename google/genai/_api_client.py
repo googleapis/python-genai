@@ -1254,7 +1254,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
         except (
@@ -1276,7 +1276,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
 
@@ -1306,7 +1306,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1330,7 +1330,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1718,7 +1718,7 @@ class BaseApiClient:
               url=upload_url,
               data=file_chunk,
               headers=upload_headers,
-              timeout=aiohttp.ClientTimeout(connect=timeout_in_seconds),
+              timeout=aiohttp.ClientTimeout(total=timeout_in_seconds),
           )
 
           if response.headers.get('X-Goog-Upload-Status'):
@@ -1864,7 +1864,7 @@ class BaseApiClient:
           url=http_request.url,
           headers=http_request.headers,
           data=data,
-          timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+          timeout=aiohttp.ClientTimeout(total=http_request.timeout),
       )
       await errors.APIError.raise_for_async_response(response)
 

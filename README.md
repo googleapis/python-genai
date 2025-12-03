@@ -177,7 +177,7 @@ await aclient.aclose()
 ## Client context managers
 
 By using the sync client context manager, it will close the underlying
- sync client when exiting the with block.
+ sync client when exiting the with block and avoid httpx "client has been closed" error like [issues#1763](https://github.com/googleapis/python-genai/issues/1763).
 
 ```python
 from google.genai import Client
