@@ -15,6 +15,7 @@
 
 
 import copy
+import json
 import sys
 import typing
 from typing import Optional, assert_never
@@ -2866,3 +2867,37 @@ def test_user_content_unsupported_type_in_list():
 def test_user_content_unsupported_role():
   with pytest.raises(TypeError):
     types.UserContent(role='model', parts=['hi'])
+
+
+def test_instantiate_response_from_batch_json():
+  test_batch_json = json.dumps({
+      'candidates': [{
+          'citationMetadata': {
+              'citationSources': [{
+                  'endIndex': 2009,
+                  'startIndex': 1880,
+                  'uri': 'http://someurl.com',
+              }]
+          },
+          'content': {
+              'parts': [{
+                  'text': (
+                      'This recipe makes a moist and delicious banana bread!'
+                  )
+              }],
+              'role': 'model',
+          },
+          'finishReason': 'STOP',
+      }],
+      'modelVersion': 'gemini-1.5-flash-002@default',
+  })
+  parsed = types.GenerateContentResponse.model_validate_json(test_batch_json)
+  assert isinstance(parsed, types.GenerateContentResponse)
+  assert isinstance(parsed.candidates[0].citation_metadata, types.CitationMetadata)
+  assert isinstance(
+      parsed.candidates[0].citation_metadata.citations[0], types.Citation
+  )
+  assert(
+      parsed.candidates[0].citation_metadata.citations[0].uri
+      == 'http://someurl.com'
+  )
