@@ -1902,34 +1902,6 @@ class Batches(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  def list(
-      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
-  ) -> Pager[types.BatchJob]:
-    """Lists batch jobs.
-
-    Args:
-      config (ListBatchJobsConfig): Optional configuration for the list request.
-
-    Returns:
-      A Pager object that contains one page of batch jobs. When iterating over
-      the pager, it automatically fetches the next page if there are more.
-
-    Usage:
-
-    .. code-block:: python
-      config = {'page_size': 10}
-      for batch_job in client.batches.list(config):
-        print(batch_job.name)
-    """
-
-    list_request = self._list
-    return Pager(
-        'batch_jobs',
-        list_request,
-        self._list(config=config),
-        config,
-    )
-
   def create(
       self,
       *,
@@ -2024,6 +1996,34 @@ class Batches(_api_module.BaseModule):
       raise ValueError('Vertex AI does not support batches.create_embeddings.')
     else:
       return self._create_embeddings(model=model, src=src, config=config)
+
+  def list(
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
+  ) -> Pager[types.BatchJob]:
+    """Lists batch jobs.
+
+    Args:
+      config (ListBatchJobsConfig): Optional configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of batch jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      config = {'page_size': 10}
+      for batch_job in client.batches.list(config):
+        print(batch_job.name)
+    """
+
+    list_request = self._list
+    return Pager(
+        'batch_jobs',
+        list_request,
+        self._list(config=config),
+        config,
+    )
 
 
 class AsyncBatches(_api_module.BaseModule):
@@ -2451,33 +2451,6 @@ class AsyncBatches(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def list(
-      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
-  ) -> AsyncPager[types.BatchJob]:
-    """Lists batch jobs asynchronously.
-
-    Args:
-      config (ListBatchJobsConfig): Optional configuration for the list request.
-
-    Returns:
-      A Pager object that contains one page of batch jobs. When iterating over
-      the pager, it automatically fetches the next page if there are more.
-
-    Usage:
-
-    .. code-block:: python
-      async for batch_job in await client.aio.batches.list():
-        print(batch_job.name)
-    """
-
-    list_request = self._list
-    return AsyncPager(
-        'batch_jobs',
-        list_request,
-        await self._list(config=config),
-        config,
-    )
-
   async def create(
       self,
       *,
@@ -2578,3 +2551,30 @@ class AsyncBatches(_api_module.BaseModule):
       raise ValueError('Vertex AI does not support batches.create_embeddings.')
     else:
       return await self._create_embeddings(model=model, src=src, config=config)
+
+  async def list(
+      self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
+  ) -> AsyncPager[types.BatchJob]:
+    """Lists batch jobs asynchronously.
+
+    Args:
+      config (ListBatchJobsConfig): Optional configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of batch jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      async for batch_job in await client.aio.batches.list():
+        print(batch_job.name)
+    """
+
+    list_request = self._list
+    return AsyncPager(
+        'batch_jobs',
+        list_request,
+        await self._list(config=config),
+        config,
+    )
