@@ -233,7 +233,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_google_maps_tool',
         parameters=types._GenerateContentParameters(
-            model=GEMINI_FLASH_LATEST,
+            model=GEMINI_FLASH_2_0,
             contents=t.t_contents('Find restaurants near me.'),
             config=types.GenerateContentConfig(
                 tools=[{'google_maps': {}}],
@@ -375,7 +375,6 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_multi_speaker_voice_config',
-        exception_if_vertex='not supported',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
             contents=t.t_contents(
@@ -410,7 +409,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_speech_error_with_speech_config_and_multi_speech_config',
-        exception_if_vertex='not supported',
+        exception_if_vertex='mutually exclusive',
         exception_if_mldev='mutually exclusive',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
