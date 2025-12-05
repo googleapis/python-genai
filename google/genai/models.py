@@ -54,6 +54,40 @@ def _VideoGenerationReferenceType_to_mldev_enum_validate(
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
 
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError('api_key_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError('auth_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError('oauth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError('oidc_config parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -94,15 +128,15 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
   if getv(from_object, ['groundingMetadata']) is not None:
     setv(
         to_object,
         ['grounding_metadata'],
         getv(from_object, ['groundingMetadata']),
     )
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
   if getv(from_object, ['index']) is not None:
     setv(to_object, ['index'], getv(from_object, ['index']))
@@ -159,7 +193,10 @@ def _ComputeTokensParameters_to_vertex(
     setv(
         to_object,
         ['contents'],
-        [item for item in t.t_contents(getv(from_object, ['contents']))],
+        [
+            _Content_to_vertex(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
+        ],
     )
 
   return to_object
@@ -240,6 +277,27 @@ def _Content_to_mldev(
   return to_object
 
 
+def _Content_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _Part_to_vertex(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['role']) is not None:
+    setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
 def _ControlReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -290,7 +348,9 @@ def _CountTokensConfig_to_vertex(
     setv(
         parent_object,
         ['systemInstruction'],
-        t.t_content(getv(from_object, ['system_instruction'])),
+        _Content_to_vertex(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
     )
 
   if getv(from_object, ['tools']) is not None:
@@ -361,7 +421,10 @@ def _CountTokensParameters_to_vertex(
     setv(
         to_object,
         ['contents'],
-        [item for item in t.t_contents(getv(from_object, ['contents']))],
+        [
+            _Content_to_vertex(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
+        ],
     )
 
   if getv(from_object, ['config']) is not None:
@@ -1092,7 +1155,9 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['speechConfig'],
-        t.t_speech_config(getv(from_object, ['speech_config'])),
+        _SpeechConfig_to_mldev(
+            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
+        ),
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
@@ -1124,7 +1189,9 @@ def _GenerateContentConfig_to_vertex(
     setv(
         parent_object,
         ['systemInstruction'],
-        t.t_content(getv(from_object, ['system_instruction'])),
+        _Content_to_vertex(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
     )
 
   if getv(from_object, ['temperature']) is not None:
@@ -1251,9 +1318,7 @@ def _GenerateContentConfig_to_vertex(
     setv(
         to_object,
         ['speechConfig'],
-        _SpeechConfig_to_vertex(
-            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
-        ),
+        t.t_speech_config(getv(from_object, ['speech_config'])),
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
@@ -1324,7 +1389,10 @@ def _GenerateContentParameters_to_vertex(
     setv(
         to_object,
         ['contents'],
-        [item for item in t.t_contents(getv(from_object, ['contents']))],
+        [
+            _Content_to_vertex(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
+        ],
     )
 
   if getv(from_object, ['config']) is not None:
@@ -2434,13 +2502,7 @@ def _GenerationConfig_to_vertex(
     setv(to_object, ['seed'], getv(from_object, ['seed']))
 
   if getv(from_object, ['speech_config']) is not None:
-    setv(
-        to_object,
-        ['speechConfig'],
-        _SpeechConfig_to_vertex(
-            getv(from_object, ['speech_config']), to_object
-        ),
-    )
+    setv(to_object, ['speechConfig'], getv(from_object, ['speech_config']))
 
   if getv(from_object, ['stop_sequences']) is not None:
     setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
@@ -2503,7 +2565,11 @@ def _GoogleMaps_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(getv(from_object, ['auth_config']), to_object),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
@@ -2516,14 +2582,14 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
-
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -2555,6 +2621,16 @@ def _ImageConfig_to_mldev(
         'output_compression_quality parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['image_output_options']) is not None:
+    raise ValueError(
+        'image_output_options parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    raise ValueError(
+        'person_generation parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -2581,6 +2657,20 @@ def _ImageConfig_to_vertex(
         to_object,
         ['imageOutputOptions', 'compressionQuality'],
         getv(from_object, ['output_compression_quality']),
+    )
+
+  if getv(from_object, ['image_output_options']) is not None:
+    setv(
+        to_object,
+        ['imageOutputOptions'],
+        getv(from_object, ['image_output_options']),
+    )
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        to_object,
+        ['personGeneration'],
+        getv(from_object, ['person_generation']),
     )
 
   return to_object
@@ -2942,6 +3032,24 @@ def _Model_from_vertex(
   return to_object
 
 
+def _MultiSpeakerVoiceConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    setv(
+        to_object,
+        ['speakerVoiceConfigs'],
+        [
+            _SpeakerVoiceConfig_to_mldev(item, to_object)
+            for item in getv(from_object, ['speaker_voice_configs'])
+        ],
+    )
+
+  return to_object
+
+
 def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3005,6 +3113,67 @@ def _Part_to_mldev(
 
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  return to_object
+
+
+def _Part_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['part_metadata']) is not None:
+    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -3415,7 +3584,25 @@ def _SegmentImageSource_to_vertex(
   return to_object
 
 
-def _SpeechConfig_to_vertex(
+def _SpeakerVoiceConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -3423,12 +3610,20 @@ def _SpeechConfig_to_vertex(
   if getv(from_object, ['language_code']) is not None:
     setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
 
-  if getv(from_object, ['voice_config']) is not None:
-    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
-
   if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    raise ValueError(
-        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
+    setv(
+        to_object,
+        ['multiSpeakerVoiceConfig'],
+        _MultiSpeakerVoiceConfig_to_mldev(
+            getv(from_object, ['multi_speaker_voice_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_mldev(getv(from_object, ['voice_config']), to_object),
     )
 
   return to_object
@@ -3484,19 +3679,19 @@ def _Tool_to_mldev(
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
+  if getv(from_object, ['google_maps']) is not None:
+    setv(
+        to_object,
+        ['googleMaps'],
+        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
+    )
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
   if getv(from_object, ['enterprise_web_search']) is not None:
     raise ValueError(
         'enterprise_web_search parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
   if getv(from_object, ['google_search']) is not None:
@@ -3543,6 +3738,9 @@ def _Tool_to_vertex(
   if getv(from_object, ['file_search']) is not None:
     raise ValueError('file_search parameter is not supported in Vertex AI.')
 
+  if getv(from_object, ['google_maps']) is not None:
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
@@ -3552,9 +3750,6 @@ def _Tool_to_vertex(
         ['enterpriseWebSearch'],
         getv(from_object, ['enterprise_web_search']),
     )
-
-  if getv(from_object, ['google_maps']) is not None:
-    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['google_search']) is not None:
     setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
@@ -3942,6 +4137,26 @@ def _Video_to_vertex(
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _VoiceConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['prebuilt_voice_config']) is not None:
+    setv(
+        to_object,
+        ['prebuiltVoiceConfig'],
+        getv(from_object, ['prebuilt_voice_config']),
+    )
+
+  if getv(from_object, ['replicated_voice_config']) is not None:
+    raise ValueError(
+        'replicated_voice_config parameter is not supported in Gemini API.'
+    )
 
   return to_object
 
