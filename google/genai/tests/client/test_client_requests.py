@@ -19,6 +19,8 @@
 from ... import _api_client as api_client
 from ... import Client
 from ... import types
+from unittest import mock
+import pytest
 
 
 def build_test_client(monkeypatch):
@@ -144,6 +146,55 @@ def test_build_request_keeps_sdk_version_headers(monkeypatch):
   assert 'gl-python/' in request.headers['x-goog-api-client']
   assert 'google-genai-sdk/' in request.headers['x-goog-api-client']
   assert 'gl-python/' in request.headers['x-goog-api-client']
+
+
+def test_build_request_with_resource_scope(monkeypatch):
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+
+  client = Client(
+      vertexai=True,
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          base_url_resource_scope=types.ResourceScope.COLLECTION,
+      ),
+  )
+
+  request = client.models._api_client._build_request(
+      'post',
+      'publishers/google/models/gemini-3-pro-preview',
+      {'key': 'value'},
+  )
+  assert request.url == 'https://custom-base-url.com/publishers/google/models/gemini-3-pro-preview'
+
+
+def test_build_request_with_resource_scope_with_project_and_location(
+    monkeypatch,
+):
+  monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+  monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_PROJECT', raising=False)
+  monkeypatch.delenv('GOOGLE_CLOUD_LOCATION', raising=False)
+
+  client = Client(
+      vertexai=True,
+      project='test-project',
+      location='test-location',
+      http_options=types.HttpOptionsDict(
+          base_url='https://custom-base-url.com',
+          base_url_resource_scope=types.ResourceScope.COLLECTION,
+      ),
+  )
+
+  request = client.models._api_client._build_request(
+      'post',
+      'publishers/google/models/gemini-3-pro-preview',
+      {'key': 'value'},
+  )
+  assert request.url == 'https://custom-base-url.com/publishers/google/models/gemini-3-pro-preview'
+
 
 
 def build_test_client_no_env_vars(monkeypatch):

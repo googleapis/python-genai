@@ -1,5 +1,95 @@
 # Changelog
 
+## [1.53.0](https://github.com/googleapis/python-genai/compare/v1.52.0...v1.53.0) (2025-12-03)
+
+
+### Features
+
+* Add empty response for tunings.cancel() ([97cc7e4](https://github.com/googleapis/python-genai/commit/97cc7e4eafbee4fa4035e7420170ab6a2c9da7fb))
+
+
+### Bug Fixes
+
+* Convert 'citationSources' key in CitationMetadata to 'citations' when present (fixes [#1222](https://github.com/googleapis/python-genai/issues/1222)) ([2f28b02](https://github.com/googleapis/python-genai/commit/2f28b02517dbbe57ca604079e8f14c0773ec4aca))
+* Fix google.auth.transport.requests import error in Live API ([a842721](https://github.com/googleapis/python-genai/commit/a842721cb1f536b9663552bf424aaa0c48387903))
+
+
+### Documentation
+
+* Improve docs for google.genai.types ([5b50adc](https://github.com/googleapis/python-genai/commit/5b50adce2a76cb77bef067bc0a624d111d39c2dc))
+* Recommend using response_json_schema in error messages and docstrings. ([c0b175a](https://github.com/googleapis/python-genai/commit/c0b175a0ca20286db419390031a2239938d0c0b7))
+* Updating codegen instructions to use gemini 3 pro and nano banana pro ([060f015](https://github.com/googleapis/python-genai/commit/060f015d7efb39f716731d7f3a6571f59a5e94e9))
+
+## [1.52.0](https://github.com/googleapis/python-genai/compare/v1.51.0...v1.52.0) (2025-11-21)
+
+
+### Features
+
+* Add support for configuring resource scope when using base_url ([a3e0859](https://github.com/googleapis/python-genai/commit/a3e0859b673ad5b20157ed9970ecfc2edfa5077c))
+
+
+### Bug Fixes
+
+* `TypeError: issubclass() arg 1 must be a class` when using`List[str]` for `contents` ([c624d7e](https://github.com/googleapis/python-genai/commit/c624d7e5705df98e36cbc7b55dc110adf5871c85))
+* Create new aiohttp Client Session if loop is closed ([1dc35ea](https://github.com/googleapis/python-genai/commit/1dc35ea7abdd8f5d0faed4f8aa55756d8da7c478))
+
+## [1.51.0](https://github.com/googleapis/python-genai/compare/v1.50.1...v1.51.0) (2025-11-18)
+
+
+### Features
+
+* Add a pre-validation hook to warn about Pydantic model type mismatches. ([f7af6ef](https://github.com/googleapis/python-genai/commit/f7af6ef697dee79115c8e5716ae9e3a102c49a4a))
+* Add display name to FunctionResponseBlob ([52906d5](https://github.com/googleapis/python-genai/commit/52906d513f22d58fda9bc177fc1f6bff003d2e61))
+* Add display name to FunctionResponseFileData ([7c39f70](https://github.com/googleapis/python-genai/commit/7c39f702636516596233ed29ae0a588e621b8152))
+* Add generate_content_config.thinking_level ([30b00db](https://github.com/googleapis/python-genai/commit/30b00dbad15f9cf0bb79deca7f1d7b69e345986e))
+* Add image output options to ImageConfig for Vertex ([014aaad](https://github.com/googleapis/python-genai/commit/014aaad624790afc50d46c996bf84c96e3751498))
+* Add part.media_resolution ([30b00db](https://github.com/googleapis/python-genai/commit/30b00dbad15f9cf0bb79deca7f1d7b69e345986e))
+* Support Function call argument streaming for all languages ([9b2ca50](https://github.com/googleapis/python-genai/commit/9b2ca50d5194af8ff8f3fdaed1c2a317acd52970))
+
+
+### Bug Fixes
+
+* Only log warnings once for accessors in GenerateContentResponse and LiveServerMessage ([eec841e](https://github.com/googleapis/python-genai/commit/eec841e6a35c5d656f79f0e0700f00126acfda9c))
+
+
+### Documentation
+
+* Remove gemini 2 below model reference ([c42ddff](https://github.com/googleapis/python-genai/commit/c42ddff06c662eaec3cf770dfa35e39a6376ad2d))
+* Update sample code to use gemini 2 or above ([d48bbba](https://github.com/googleapis/python-genai/commit/d48bbba5f8e7f8b18d2c22f60ba96c366a0d2ff1))
+* Update Veo and Imagen model id in README ([5c69122](https://github.com/googleapis/python-genai/commit/5c6912273964a195fbaf8df0f3e3b6c5bf4e99d5))
+
+## [1.50.1](https://github.com/googleapis/python-genai/compare/v1.50.0...v1.50.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* Do not use ADC if passing a base_url, no project, no location ([a00b67a](https://github.com/googleapis/python-genai/commit/a00b67a9618e81b0aa8abde9ddc68388869f8445))
+* Ensure the custom httpx client and async client won't be closed automatically ([9a9fa3c](https://github.com/googleapis/python-genai/commit/9a9fa3c95ee872efeee8ede411bd2946f7351100))
+
+## [1.50.0](https://github.com/googleapis/python-genai/compare/v1.49.0...v1.50.0) (2025-11-12)
+
+
+### Features
+
+* Use pytest-xdist for test parallelization ([6ff82fc](https://github.com/googleapis/python-genai/commit/6ff82fca9ed90992c15cfb3affdbb65dd5d5f4d1))
+
+
+### Bug Fixes
+
+* Add missing fields to the model types ([4b855e6](https://github.com/googleapis/python-genai/commit/4b855e621525f2bdd7cdd00e3a98edbdd173997b))
+* Don't generate warnings from response.text property because of thought_signature. ([dd9360d](https://github.com/googleapis/python-genai/commit/dd9360d21d0a979ddd7acf994a0aa19bec794182))
+* Fix base_steps parameter for recontext_image ([d94077b](https://github.com/googleapis/python-genai/commit/d94077bdeeddf012eae8134a341c915be5fe24ce))
+* Fix file_search_stores.documents pagination ([8d40d48](https://github.com/googleapis/python-genai/commit/8d40d48d9a048313ec97b60a8941e7b536721d6e))
+* Fix models.list() filter parameter ([7fa1e41](https://github.com/googleapis/python-genai/commit/7fa1e41580052822c90d9b6ba99c66674ab5851a))
+* Handle SSE error message types properly in streaming ([72afa50](https://github.com/googleapis/python-genai/commit/72afa50eb2c4d960a4f6b55909205d0739fde05a))
+* Roll back a breaking change to the import system ([8674003](https://github.com/googleapis/python-genai/commit/86740033fb9c93b822b33100324f6c2ac8ad1f7e))
+
+
+### Documentation
+
+* Log Schema.json_schema and Schema.from_json_schema only once ([517300c](https://github.com/googleapis/python-genai/commit/517300caabd58268f06f4091f0cbbb52c2bc889e))
+* Regenerate docs for 1.49.0 ([74b680a](https://github.com/googleapis/python-genai/commit/74b680adfdf74b6e807d50d8595f092cd522a6f8))
+
 ## [1.49.0](https://github.com/googleapis/python-genai/compare/v1.48.0...v1.49.0) (2025-11-05)
 
 

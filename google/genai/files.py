@@ -154,23 +154,6 @@ class Files(_api_module.BaseModule):
   def _list(
       self, *, config: Optional[types.ListFilesConfigOrDict] = None
   ) -> types.ListFilesResponse:
-    """Lists all files from the service.
-
-    Args:
-      config (ListFilesConfig): Optional, configuration for the list method.
-
-    Returns:
-      ListFilesResponse: The response for the list method.
-
-    Usage:
-
-    .. code-block:: python
-
-      pager = client.files.list(config={'page_size': 10})
-      for file in pager.page:
-        print(file.name)
-    """
-
     parameter_model = types._ListFilesParameters(
         config=config,
     )
@@ -495,16 +478,6 @@ class Files(_api_module.BaseModule):
         kwargs=config_model.model_dump() if config else {},
     )
 
-  def list(
-      self, *, config: Optional[types.ListFilesConfigOrDict] = None
-  ) -> Pager[types.File]:
-    return Pager(
-        'files',
-        self._list,
-        self._list(config=config),
-        config,
-    )
-
   def download(
       self,
       *,
@@ -586,29 +559,40 @@ class Files(_api_module.BaseModule):
 
     return data
 
-
-class AsyncFiles(_api_module.BaseModule):
-
-  async def _list(
+  def list(
       self, *, config: Optional[types.ListFilesConfigOrDict] = None
-  ) -> types.ListFilesResponse:
+  ) -> Pager[types.File]:
     """Lists all files from the service.
 
     Args:
       config (ListFilesConfig): Optional, configuration for the list method.
 
     Returns:
-      ListFilesResponse: The response for the list method.
+      A Pager object that contains one page of files. When iterating over
+      the pager, it automatically fetches the next page if there are more.
 
     Usage:
 
     .. code-block:: python
 
-      pager = await client.aio.files.list(config={'page_size': 10})
-      for file in pager.page:
+      for file in client.files.list(config={'page_size': 10}):
         print(file.name)
     """
 
+    list_request = self._list
+    return Pager(
+        'files',
+        list_request,
+        self._list(config=config),
+        config,
+    )
+
+
+class AsyncFiles(_api_module.BaseModule):
+
+  async def _list(
+      self, *, config: Optional[types.ListFilesConfigOrDict] = None
+  ) -> types.ListFilesResponse:
     parameter_model = types._ListFilesParameters(
         config=config,
     )
@@ -942,16 +926,6 @@ class AsyncFiles(_api_module.BaseModule):
         kwargs=config_model.model_dump() if config else {},
     )
 
-  async def list(
-      self, *, config: Optional[types.ListFilesConfigOrDict] = None
-  ) -> AsyncPager[types.File]:
-    return AsyncPager(
-        'files',
-        self._list,
-        await self._list(config=config),
-        config,
-    )
-
   async def download(
       self,
       *,
@@ -1017,3 +991,31 @@ class AsyncFiles(_api_module.BaseModule):
     )
 
     return data
+
+  async def list(
+      self, *, config: Optional[types.ListFilesConfigOrDict] = None
+  ) -> AsyncPager[types.File]:
+    """Lists all files from the service asynchronously.
+
+    Args:
+      config (ListFilesConfig): Optional, configuration for the list method.
+
+    Returns:
+      A Pager object that contains one page of files. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+
+      async for file in await client.aio.files.list(config={'page_size': 10}):
+        print(file.name)
+    """
+
+    list_request = self._list
+    return AsyncPager(
+        'files',
+        list_request,
+        await self._list(config=config),
+        config,
+    )

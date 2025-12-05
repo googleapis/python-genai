@@ -44,7 +44,6 @@ import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
-from google.auth.transport.requests import Request
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -57,6 +56,7 @@ from .types import HttpOptions
 from .types import HttpOptionsOrDict
 from .types import HttpResponse as SdkHttpResponse
 from .types import HttpRetryOptions
+from .types import ResourceScope
 
 
 try:
@@ -197,6 +197,7 @@ def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
 
 
 def refresh_auth(credentials: Credentials) -> Credentials:
+  from google.auth.transport.requests import Request
   credentials.refresh(Request())  # type: ignore[no-untyped-call]
   return credentials
 
@@ -579,6 +580,12 @@ class BaseApiClient:
     elif isinstance(http_options, HttpOptions):
       validated_http_options = http_options
 
+    if validated_http_options.base_url_resource_scope and not validated_http_options.base_url:
+      # base_url_resource_scope is only valid when base_url is set.
+      raise ValueError(
+          'base_url must be set when base_url_resource_scope is set.'
+      )
+
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
@@ -629,14 +636,14 @@ class BaseApiClient:
         )
         self.api_key = None
 
-      if not self.location and not self.api_key:
-          self.location = 'global'
-
       self.custom_base_url = (
           validated_http_options.base_url
           if validated_http_options.base_url
           else None
       )
+
+      if not self.location and not self.api_key and not self.custom_base_url:
+          self.location = 'global'
 
       # Skip fetching project from ADC if base url is provided in http options.
       if (
@@ -728,10 +735,44 @@ class BaseApiClient:
 
   async def _get_aiohttp_session(self) -> 'aiohttp.ClientSession':
     """Returns the aiohttp client session."""
-    if self._aiohttp_session is None or self._aiohttp_session.closed:
+    if (
+        self._aiohttp_session is None
+        or self._aiohttp_session.closed
+        or self._aiohttp_session._loop.is_closed()  # pylint: disable=protected-access
+    ):
       # Initialize the aiohttp client session if it's not set up or closed.
-      self._aiohttp_session = aiohttp.ClientSession(
-          connector=aiohttp.TCPConnector(limit=0),
+      class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if not self.closed:
+            context = {
+                'client_session': self,
+                'message': 'Unclosed client session',
+            }
+            if self._source_traceback is not None:
+              context['source_traceback'] = self._source_traceback
+            # Remove this self._loop.call_exception_handler(context)
+
+      class AiohttpTCPConnector(aiohttp.TCPConnector):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if self._closed:
+            return
+          if not self._conns:
+            return
+          conns = [repr(c) for c in self._conns.values()]
+          # After v3.13.2, it may change to self._close_immediately()
+          self._close()
+          context = {
+              'connector': self,
+              'connections': conns,
+              'message': 'Unclosed connector',
+          }
+          if self._source_traceback is not None:
+            context['source_traceback'] = self._source_traceback
+          # Remove this self._loop.call_exception_handler(context)
+      self._aiohttp_session = AiohttpClientSession(
+          connector=AiohttpTCPConnector(limit=0),
           trust_env=True,
           read_bufsize=READ_BUFFER_SIZE,
       )
@@ -1045,6 +1086,11 @@ class BaseApiClient:
         and not path.startswith('projects/')
         and not query_vertex_base_models
         and (self.project or self.location)
+        and not (
+            self.custom_base_url
+            and patched_http_options.base_url_resource_scope
+            == ResourceScope.COLLECTION
+        )
     ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
 
@@ -1074,10 +1120,21 @@ class BaseApiClient:
         or (self.project and self.location)
         or self.api_key
     ):
-      url = join_url_path(
-          base_url,
-          versioned_path,
-      )
+      if (
+          patched_http_options.base_url_resource_scope
+          == ResourceScope.COLLECTION
+      ):
+        url = join_url_path(base_url, path)
+      else:
+        url = join_url_path(
+            base_url,
+            versioned_path,
+        )
+    elif(
+        self.custom_base_url
+        and patched_http_options.base_url_resource_scope == ResourceScope.COLLECTION
+    ):
+      url = join_url_path(base_url, path)
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(
@@ -1197,7 +1254,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
         except (
@@ -1219,7 +1276,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
 
@@ -1249,7 +1306,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1273,7 +1330,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1347,9 +1404,21 @@ class BaseApiClient:
 
     session_response = self._request(http_request, http_options, stream=True)
     for chunk in session_response.segments():
-      yield SdkHttpResponse(
-          headers=session_response.headers, body=json.dumps(chunk)
-      )
+      chunk_dump = json.dumps(chunk)
+      try:
+        if chunk_dump.startswith('{"error":'):
+          chunk_json = json.loads(chunk_dump)
+          errors.APIError.raise_error(
+              chunk_json.get('error', {}).get('code'),
+              chunk_json,
+              session_response,
+          )
+      except json.decoder.JSONDecodeError:
+        logger.debug(
+            'Failed to decode chunk that contains an error: %s' % chunk_dump
+        )
+        pass
+      yield SdkHttpResponse(headers=session_response.headers, body=chunk_dump)
 
   async def async_request(
       self,
@@ -1383,7 +1452,21 @@ class BaseApiClient:
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
-        yield SdkHttpResponse(headers=response.headers, body=json.dumps(chunk))
+        chunk_dump = json.dumps(chunk)
+        try:
+          if chunk_dump.startswith('{"error":'):
+            chunk_json = json.loads(chunk_dump)
+            await errors.APIError.raise_error_async(
+                chunk_json.get('error', {}).get('code'),
+                chunk_json,
+                response,
+            )
+        except json.decoder.JSONDecodeError:
+          logger.debug(
+              'Failed to decode chunk that contains an error: %s' % chunk_dump
+          )
+          pass
+        yield SdkHttpResponse(headers=response.headers, body=chunk_dump)
 
     return async_generator()  # type: ignore[no-untyped-call]
 
@@ -1635,7 +1718,7 @@ class BaseApiClient:
               url=upload_url,
               data=file_chunk,
               headers=upload_headers,
-              timeout=aiohttp.ClientTimeout(connect=timeout_in_seconds),
+              timeout=aiohttp.ClientTimeout(total=timeout_in_seconds),
           )
 
           if response.headers.get('X-Goog-Upload-Status'):
@@ -1781,7 +1864,7 @@ class BaseApiClient:
           url=http_request.url,
           headers=http_request.headers,
           data=data,
-          timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+          timeout=aiohttp.ClientTimeout(total=http_request.timeout),
       )
       await errors.APIError.raise_for_async_response(response)
 
@@ -1811,12 +1894,17 @@ class BaseApiClient:
 
   def close(self) -> None:
     """Closes the API client."""
-    self._httpx_client.close()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_client:
+      self._httpx_client.close()
 
   async def aclose(self) -> None:
     """Closes the API async client."""
-
-    await self._async_httpx_client.aclose()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_async_client:
+      await self._async_httpx_client.aclose()
     if self._aiohttp_session:
       await self._aiohttp_session.close()
 
@@ -1828,17 +1916,12 @@ class BaseApiClient:
     """
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
       if not self._http_options.httpx_client:
         self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
-      if not self._http_options.httpx_async_client:
-        asyncio.get_running_loop().create_task(self.aclose())
+      asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass

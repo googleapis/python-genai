@@ -110,6 +110,34 @@ def _CancelTuningJobParameters_to_vertex(
   return to_object
 
 
+def _CancelTuningJobResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
+def _CancelTuningJobResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  return to_object
+
+
 def _CreateTuningJobConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1246,15 +1274,6 @@ class Tunings(_api_module.BaseModule):
   def _list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> types.ListTuningJobsResponse:
-    """Lists `TuningJob` objects.
-
-    Args:
-      config: The configuration for the list request.
-
-    Returns:
-      A list of `TuningJob` objects.
-    """
-
     parameter_model = types._ListTuningJobsParameters(
         config=config,
     )
@@ -1319,7 +1338,7 @@ class Tunings(_api_module.BaseModule):
       *,
       name: str,
       config: Optional[types.CancelTuningJobConfigOrDict] = None,
-  ) -> None:
+  ) -> types.CancelTuningJobResponse:
     """Cancels a tuning job.
 
     Args:
@@ -1370,6 +1389,23 @@ class Tunings(_api_module.BaseModule):
     response = self._api_client.request(
         'post', path, request_dict, http_options
     )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+
+    if not self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+
+    return_value = types.CancelTuningJobResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
 
   def _tune(
       self,
@@ -1519,16 +1555,6 @@ class Tunings(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  def list(
-      self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
-  ) -> Pager[types.TuningJob]:
-    return Pager(
-        'tuning_jobs',
-        self._list,
-        self._list(config=config),
-        config,
-    )
-
   def get(
       self,
       *,
@@ -1630,6 +1656,33 @@ class Tunings(_api_module.BaseModule):
       )
     return tuning_job
 
+  def list(
+      self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
+  ) -> Pager[types.TuningJob]:
+    """Lists `TuningJob` objects.
+
+    Args:
+      config: The configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of tuning jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+        for tuning_job in client.tunings.list():
+            print(tuning_job.name)
+    """
+
+    list_request = self._list
+    return Pager(
+        'tuning_jobs',
+        list_request,
+        self._list(config=config),
+        config,
+    )
+
 
 class AsyncTunings(_api_module.BaseModule):
 
@@ -1713,15 +1766,6 @@ class AsyncTunings(_api_module.BaseModule):
   async def _list(
       self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
   ) -> types.ListTuningJobsResponse:
-    """Lists `TuningJob` objects.
-
-    Args:
-      config: The configuration for the list request.
-
-    Returns:
-      A list of `TuningJob` objects.
-    """
-
     parameter_model = types._ListTuningJobsParameters(
         config=config,
     )
@@ -1788,7 +1832,7 @@ class AsyncTunings(_api_module.BaseModule):
       *,
       name: str,
       config: Optional[types.CancelTuningJobConfigOrDict] = None,
-  ) -> None:
+  ) -> types.CancelTuningJobResponse:
     """Cancels a tuning job asynchronously.
 
     Args:
@@ -1839,6 +1883,23 @@ class AsyncTunings(_api_module.BaseModule):
     response = await self._api_client.async_request(
         'post', path, request_dict, http_options
     )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+
+    if not self._api_client.vertexai:
+      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+
+    return_value = types.CancelTuningJobResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
 
   async def _tune(
       self,
@@ -1988,16 +2049,6 @@ class AsyncTunings(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
-  async def list(
-      self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
-  ) -> AsyncPager[types.TuningJob]:
-    return AsyncPager(
-        'tuning_jobs',
-        self._list,
-        await self._list(config=config),
-        config,
-    )
-
   async def get(
       self,
       *,
@@ -2092,6 +2143,33 @@ class AsyncTunings(_api_module.BaseModule):
           tuning_job_resource=tuning_job.name
       )
     return tuning_job
+
+  async def list(
+      self, *, config: Optional[types.ListTuningJobsConfigOrDict] = None
+  ) -> AsyncPager[types.TuningJob]:
+    """Lists `TuningJob` objects asynchronously.
+
+    Args:
+      config: The configuration for the list request.
+
+    Returns:
+      A Pager object that contains one page of tuning jobs. When iterating over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+        async for tuning_job in await client.aio.tunings.list():
+            print(tuning_job.name)
+    """
+
+    list_request = self._list
+    return AsyncPager(
+        'tuning_jobs',
+        list_request,
+        await self._list(config=config),
+        config,
+    )
 
 
 class _IpythonUtils:

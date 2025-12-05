@@ -499,16 +499,6 @@ class FileSearchStores(_api_module.BaseModule):
   def _list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
   ) -> types.ListFileSearchStoresResponse:
-    """Lists all FileSearchStore owned by the user.
-
-    Args:
-      config (ListFileSearchStoresConfig | None): Optional parameters for the
-        request, such as page_size.
-
-    Returns:
-      ListFileSearchStoresResponse: A paginated list of FileSearchStore.
-    """
-
     parameter_model = types._ListFileSearchStoresParameters(
         config=config,
     )
@@ -802,9 +792,11 @@ class FileSearchStores(_api_module.BaseModule):
         print(f"file search store: {file_search_store.name} -
         {file_search_store.display_name}")
     """
+
+    list_request = self._list
     return Pager(
         'file_search_stores',
-        self._list,
+        list_request,
         self._list(config=config),
         config,
     )
@@ -999,16 +991,6 @@ class AsyncFileSearchStores(_api_module.BaseModule):
   async def _list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
   ) -> types.ListFileSearchStoresResponse:
-    """Lists all FileSearchStore owned by the user.
-
-    Args:
-      config (ListFileSearchStoresConfig | None): Optional parameters for the
-        request, such as page_size.
-
-    Returns:
-      ListFileSearchStoresResponse: A paginated list of FileSearchStore.
-    """
-
     parameter_model = types._ListFileSearchStoresParameters(
         config=config,
     )
@@ -1289,8 +1271,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     """Lists FileSearchStores asynchronously.
 
     Args:
-      config (ListFileSearchStoresConfig): Optional configuration for the list
-        request.
+      config (ListFileSearchStoresConfig): Optional parameters for the request,
+        such as page_size.
 
     Returns:
       A Pager object that contains one page of FileSearchStores. When iterating
@@ -1300,13 +1282,15 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     Usage:
 
     .. code-block:: python
-      async for file_search_store in await client.file_search_stores.list():
+      async for file_search_store in await client.aio.file_search_stores.list():
         print(f"file search store: {file_search_store.name} -
         {file_search_store.display_name}")
     """
+
+    list_request = self._list
     return AsyncPager(
         'file_search_stores',
-        self._list,
+        list_request,
         await self._list(config=config),
         config,
     )

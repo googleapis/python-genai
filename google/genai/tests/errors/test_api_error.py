@@ -19,6 +19,8 @@
 End to end tests should be in models/test_generate_content.py.
 """
 
+import pickle
+
 import httpx
 import pytest
 
@@ -327,6 +329,11 @@ def test_raise_for_response_server_error():
             'status': 'SERVER_INTERNAL ERROR',
         }
     }
+
+
+def test_api_error_is_picklable():
+  pickled_error = pickle.loads(pickle.dumps(errors.APIError(1, {})))
+  assert isinstance(pickled_error, errors.APIError)
 
 
 @pytest.mark.asyncio

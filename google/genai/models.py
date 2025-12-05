@@ -863,6 +863,53 @@ def _FileData_to_mldev(
   return to_object
 
 
+def _FunctionCall_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['args']) is not None:
+    setv(to_object, ['args'], getv(from_object, ['args']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['partial_args']) is not None:
+    raise ValueError('partial_args parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError('will_continue parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _FunctionCallingConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['allowed_function_names']) is not None:
+    setv(
+        to_object,
+        ['allowedFunctionNames'],
+        getv(from_object, ['allowed_function_names']),
+    )
+
+  if getv(from_object, ['stream_function_call_arguments']) is not None:
+    raise ValueError(
+        'stream_function_call_arguments parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  return to_object
+
+
 def _FunctionDeclaration_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1011,7 +1058,11 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
+    setv(
+        parent_object,
+        ['toolConfig'],
+        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
+    )
 
   if getv(from_object, ['labels']) is not None:
     raise ValueError('labels parameter is not supported in Gemini API.')
@@ -1053,7 +1104,11 @@ def _GenerateContentConfig_to_mldev(
     setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
 
   if getv(from_object, ['image_config']) is not None:
-    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+    setv(
+        to_object,
+        ['imageConfig'],
+        _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
+    )
 
   return to_object
 
@@ -1208,7 +1263,11 @@ def _GenerateContentConfig_to_vertex(
     setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
 
   if getv(from_object, ['image_config']) is not None:
-    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+    setv(
+        to_object,
+        ['imageConfig'],
+        _ImageConfig_to_vertex(getv(from_object, ['image_config']), to_object),
+    )
 
   return to_object
 
@@ -2475,6 +2534,58 @@ def _GoogleSearch_to_mldev(
   return to_object
 
 
+def _ImageConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['aspect_ratio']) is not None:
+    setv(to_object, ['aspectRatio'], getv(from_object, ['aspect_ratio']))
+
+  if getv(from_object, ['image_size']) is not None:
+    setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    raise ValueError(
+        'output_mime_type parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    raise ValueError(
+        'output_compression_quality parameter is not supported in Gemini API.'
+    )
+
+  return to_object
+
+
+def _ImageConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['aspect_ratio']) is not None:
+    setv(to_object, ['aspectRatio'], getv(from_object, ['aspect_ratio']))
+
+  if getv(from_object, ['image_size']) is not None:
+    setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    setv(
+        to_object,
+        ['imageOutputOptions', 'mimeType'],
+        getv(from_object, ['output_mime_type']),
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    setv(
+        to_object,
+        ['imageOutputOptions', 'compressionQuality'],
+        getv(from_object, ['output_compression_quality']),
+    )
+
+  return to_object
+
+
 def _Image_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2759,6 +2870,21 @@ def _Model_from_mldev(
         getv(from_object, ['supportedGenerationMethods']),
     )
 
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['maxTemperature']) is not None:
+    setv(to_object, ['max_temperature'], getv(from_object, ['maxTemperature']))
+
+  if getv(from_object, ['topP']) is not None:
+    setv(to_object, ['top_p'], getv(from_object, ['topP']))
+
+  if getv(from_object, ['topK']) is not None:
+    setv(to_object, ['top_k'], getv(from_object, ['topK']))
+
+  if getv(from_object, ['thinking']) is not None:
+    setv(to_object, ['thinking'], getv(from_object, ['thinking']))
+
   return to_object
 
 
@@ -2821,8 +2947,10 @@ def _Part_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -2839,6 +2967,13 @@ def _Part_to_mldev(
         to_object,
         ['fileData'],
         _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(
+        to_object,
+        ['functionCall'],
+        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
     )
 
   if getv(from_object, ['function_response']) is not None:
@@ -2905,7 +3040,7 @@ def _RecontextImageConfig_to_vertex(
   if getv(from_object, ['base_steps']) is not None:
     setv(
         parent_object,
-        ['parameters', 'editConfig', 'baseSteps'],
+        ['parameters', 'baseSteps'],
         getv(from_object, ['base_steps']),
     )
 
@@ -3294,6 +3429,28 @@ def _SpeechConfig_to_vertex(
   if getv(from_object, ['multi_speaker_voice_config']) is not None:
     raise ValueError(
         'multi_speaker_voice_config parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
+def _ToolConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_calling_config']) is not None:
+    setv(
+        to_object,
+        ['functionCallingConfig'],
+        _FunctionCallingConfig_to_mldev(
+            getv(from_object, ['function_calling_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -4521,7 +4678,12 @@ class Models(_api_module.BaseModule):
       else:
         path = '{models_url}'
     query_params = request_dict.get('_query')
-    if query_params:
+    if query_params and query_params.get('filter'):
+      query_param_filter = query_params.pop('filter')
+      path = f'{path}?filter={query_param_filter}'
+      if query_params:
+        path += f'&{urlencode(query_params)}'
+    elif query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
@@ -5203,6 +5365,10 @@ class Models(_api_module.BaseModule):
           model=model, contents=contents, config=parsed_config
       )
       return
+
+    # With tool compatibility confirmed, validate that the configuration are
+    # compatible with each other and raise an error if invalid.
+    _extra_utils.raise_error_for_afc_incompatible_config(parsed_config)
 
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
         parsed_config
@@ -6361,7 +6527,12 @@ class AsyncModels(_api_module.BaseModule):
       else:
         path = '{models_url}'
     query_params = request_dict.get('_query')
-    if query_params:
+    if query_params and query_params.get('filter'):
+      query_param_filter = query_params.pop('filter')
+      path = f'{path}?filter={query_param_filter}'
+      if query_params:
+        path += f'&{urlencode(query_params)}'
+    elif query_params:
       path = f'{path}?{urlencode(query_params)}'
     # TODO: remove the hack that pops config.
     request_dict.pop('config', None)
@@ -7020,6 +7191,10 @@ class AsyncModels(_api_module.BaseModule):
           yield chunk
 
       return base_async_generator(model, contents, parsed_config)  # type: ignore[no-untyped-call, no-any-return]
+
+    # With tool compatibility confirmed, validate that the configuration are
+    # compatible with each other and raise an error if invalid.
+    _extra_utils.raise_error_for_afc_incompatible_config(parsed_config)
 
     async def async_generator(model, contents, config):  # type: ignore[no-untyped-def]
       remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(config)

@@ -15,6 +15,16 @@ Google's generative models into their Python applications. It supports the
 [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
 APIs.
 
+## Code Generation
+
+Generative models are often unaware of recent API and SDK updates and may suggest outdated or legacy code.
+
+We recommend using our Code Generation instructions [codegen_instructions.md](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md) when generating Google Gen AI SDK code to guide your model towards using the more recent SDK features.
+
+Copy and paste the instructions from [this file](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md)
+into your development environment to provide the model with the necessary
+context
+
 ## Installation
 
 ```sh
@@ -52,6 +62,44 @@ from google import genai
 # Only run this block for Vertex AI API
 client = genai.Client(
     vertexai=True, project='your-project-id', location='us-central1'
+)
+```
+
+## Using types
+
+All API methods support Pydantic types and dictionaries, which you can access
+from `google.genai.types`. You can import the types module with the following:
+
+```python
+from google.genai import types
+```
+
+Below is an example `generate_content()` call using types from the types module:
+
+```python
+response = client.models.generate_content(
+    model='gemini-2.0-flash-001',
+    contents=types.Part.from_text(text='Why is the sky blue?'),
+    config=types.GenerateContentConfig(
+        temperature=0,
+        top_p=0.95,
+        top_k=20,
+    ),
+)
+```
+
+Alternatively, you can accomplish the same request using dictionaries instead of
+types:
+
+```python
+response = client.models.generate_content(
+    model='gemini-2.0-flash-001',
+    contents={'text': 'Why is the sky blue?'},
+    config={
+        'temperature': 0,
+        'top_p': 0.95,
+        'top_k': 20,
+    },
 )
 ```
 
@@ -129,7 +177,7 @@ await aclient.aclose()
 ## Client context managers
 
 By using the sync client context manager, it will close the underlying
- sync client when exiting the with block.
+ sync client when exiting the with block and avoid httpx "client has been closed" error like [issues#1763](https://github.com/googleapis/python-genai/issues/1763).
 
 ```python
 from google.genai import Client
@@ -544,33 +592,6 @@ response = client.models.generate_content(
         temperature=0.3,
     ),
 )
-print(response.text)
-```
-
-### Typed Config
-
-All API methods support Pydantic types for parameters as well as
-dictionaries. You can get the type from `google.genai.types`.
-
-```python
-from google.genai import types
-
-response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
-    contents=types.Part.from_text(text='Why is the sky blue?'),
-    config=types.GenerateContentConfig(
-        temperature=0,
-        top_p=0.95,
-        top_k=20,
-        candidate_count=1,
-        seed=5,
-        max_output_tokens=100,
-        stop_sequences=['STOP!'],
-        presence_penalty=0.0,
-        frequency_penalty=0.0,
-    ),
-)
-
 print(response.text)
 ```
 
@@ -1197,7 +1218,7 @@ from google.genai import types
 
 # Generate Image
 response1 = client.models.generate_images(
-    model='imagen-3.0-generate-002',
+    model='imagen-4.0-generate-001',
     prompt='An umbrella in the foreground, and a rainy night sky in the background',
     config=types.GenerateImagesConfig(
         number_of_images=1,
@@ -1217,7 +1238,7 @@ from google.genai import types
 
 # Upscale the generated image from above
 response2 = client.models.upscale_image(
-    model='imagen-3.0-generate-001',
+    model='imagen-4.0-upscale-preview',
     image=response1.generated_images[0].image,
     upscale_factor='x2',
     config=types.UpscaleImageConfig(
@@ -1278,7 +1299,7 @@ from google.genai import types
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-2.0-generate-001',
+    model='veo-3.1-generate-preview',
     prompt='A neon hologram of a cat driving at top speed',
     config=types.GenerateVideosConfig(
         number_of_videos=1,
@@ -1306,7 +1327,7 @@ image = types.Image.from_file("local/path/file.png")
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-2.0-generate-001',
+    model='veo-3.1-generate-preview',
     # Prompt is optional if image is provided
     prompt='Night sky',
     image=image,
@@ -1329,7 +1350,8 @@ video.show()
 
 #### Generate Videos (Video to Video)
 
-Currently, only Vertex supports Video to Video generation (Video extension).
+Currently, only Gemini Developer API supports video extension on Veo 3.1 for
+previously generated videos. Vertex supports video extension on Veo 2.0.
 
 ```python
 from google.genai import types
@@ -1339,10 +1361,10 @@ video = types.Video.from_file("local/path/video.mp4")
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-2.0-generate-001',
+    model='veo-3.1-generate-preview',
     # Prompt is optional if Video is provided
     prompt='Night sky',
-    # Input video must be in GCS
+    # Input video must be in GCS for Vertex or a URI for Gemini
     video=types.Video(
         uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
     ),
@@ -1517,7 +1539,7 @@ from google.genai import types
 model = 'gemini-2.5-flash'
 training_dataset = types.TuningDataset(
     # or gcs_uri=my_vertex_multimodal_dataset
-    gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
+    gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
 )
 ```
 

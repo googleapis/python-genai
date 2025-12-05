@@ -106,12 +106,10 @@ The `google-genai` library requires creating a client object for all API calls.
 
 -   By default, use the following models when using `google-genai`:
     -   **General Text & Multimodal Tasks:** `gemini-2.5-flash`
-    -   **Coding and Complex Reasoning Tasks:** `gemini-2.5-pro`
+    -   **Coding and Complex Reasoning Tasks:** `gemini-3-pro-preview`
     -   **Low Latency & High Volume Tasks:** `gemini-2.5-flash-lite`
-    -   **Image Editing and Manipulation:** `gemini-2.5-flash-image`
-    -   **High-Quality Image Generation:** `imagen-4.0-generate-001`
-    -   **Rapid Image Generation:** `imagen-4.0-fast-generate-001`
-    -   **Advanced Image Generation:** `imagen-4.0-ultra-generate-001`
+    -   **Fast Image Generation and Editing:** `gemini-2.5-flash-image` (aka Nano Banana)
+    -   **High-Quality Image Generation and Editing:** `gemini-3-pro-image-preview` (aka Nano Banana Pro)
     -   **High-Fidelity Video Generation:** `veo-3.0-generate-001` or `veo-3.1-generate-preview`
     -   **Fast Video Generation:** `veo-3.0-fast-generate-001` or `veo-3.1-fast-generate-preview`
     -   **Advanced Video Editing Tasks:** `veo-3.1-generate-preview`
@@ -408,31 +406,62 @@ else:
 
 ### Generate Images
 
-Here's how to generate images using the Imagen models. Start with the fast model
-as it should cover most use-cases, and move to the more standard or the ultra
-models for advanced use-cases.
+Here's how to generate images using the Nano Banana models. Start with the
+Gemini 2.5 Flash image (Nano Banana) model as it should cover most use-cases.
 
 ```python
 from google import genai
 from google.genai import types
 from PIL import Image
-from io import BytesIO
+
+prompt =  "Create a picture of a nano banana dish in a fancy restaurant with a Gemini theme"
 
 client = genai.Client()
 
-result = client.models.generate_images(
-    model='imagen-4.0-fast-generate-001',
-    prompt='Image of a cat',
-    config=types.GenerateImagesConfig(
-        number_of_images=1, # 1 to 4 (always 1 for the ultra model)
-        output_mime_type='image/jpeg',
-        person_generation='ALLOW_ADULT', # 'ALLOW_ALL' (but not in Europe/Mena), 'DONT_ALLOW' or 'ALLOW_ADULT'
-        aspect_ratio='1:1' # '1:1', '3:4', '4:3', '9:16', or '16:9'
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image",
+    contents=prompt,
+)
+
+for part in response.parts:
+    if part.text is not None:
+        print(part.text)
+    elif part.inline_data is not None:
+        image = part.as_image()
+        image.save("generated_image.png")
+```
+
+Upgrade to the Gemini 3 Pro image (Nano Banana Pro) model if the user requests
+high-resolution images or needs real-time information using the Google Search tool.
+
+```python
+from google import genai
+from google.genai import types
+from PIL import Image
+
+prompt = "Visualize the current weather forecast for the next 5 days in San Francisco as a clean, modern weather chart. Add a visual on what I should wear each day"
+aspect_ratio = "16:9" # "1:1","2:3","3:2","3:4","4:3","4:5","5:4","9:16","16:9","21:9"
+resolution = "1K" # "1K", "2K", "4K"
+
+client = genai.Client()
+
+response = client.models.generate_content(
+    model="gemini-3-pro-image-preview",
+    contents=prompt,
+    config=types.GenerateContentConfig(
+        image_config=types.ImageConfig(
+            aspect_ratio=aspect_ratio,
+            image_size=resolution
+        ),
+        tools=[{"google_search": {}}]
     )
 )
 
-for generated_image in result.generated_images:
-    image = Image.open(BytesIO(generated_image.image.image_bytes))
+for part in response.parts:
+    if part.text is not None:
+        print(part.text)
+    elif image:= part.as_image():
+        image.save("weather.png")
 ```
 
 ### Edit images
@@ -463,7 +492,7 @@ for i, part in enumerate(response.candidates[0].content.parts):
     if part.text is not None:
         print(part.text)
     elif part.inline_data is not None:
-        image = Image.open(BytesIO(part.inline_data.data))
+        image = part.as_image()
         image.save(f'generated_image_{i}.png') # Multiple images can be generated
 
 # Continue iterating
