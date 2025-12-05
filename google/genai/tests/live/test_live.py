@@ -1141,11 +1141,11 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
           'model': 'models/test_model',
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parametersJsonSchema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },
@@ -1167,11 +1167,11 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
           ),
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parametersJsonSchema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },
@@ -1197,6 +1197,10 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
           ],
       },
   )
+  
+  print(result, 'hello result!!')
+  print(expected_result_vertexai, 'hello expected_result_vertexai!!')
+  print(expected_result_googleai, 'hello expected_result_googleai!!')
 
   assert (
       result == expected_result_vertexai
@@ -1238,11 +1242,11 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
           'model': 'models/test_model',
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parametersJsonSchema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },
@@ -1264,11 +1268,11 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
           ),
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parametersJsonSchema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },

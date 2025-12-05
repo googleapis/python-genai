@@ -104,20 +104,22 @@ def test_mcp_tool(client):
   if not _is_mcp_imported:
     return
 
+  inputSchema = {
+      'type': 'object',
+      'properties': {
+          'key1': {
+              'type': 'string',
+          },
+          'key2': {
+              'type': 'number',
+          },
+      },
+  }
+
   mcp_tool = mcp_types.Tool(
       name='tool',
       description='tool-description',
-      inputSchema={
-          'type': 'object',
-          'properties': {
-              'key1': {
-                  'type': 'string',
-              },
-              'key2': {
-                  'type': 'number',
-              },
-          },
-      },
+      inputSchema=inputSchema,
   )
   assert t.t_tools(client, [mcp_tool]) == [
       types.Tool(
@@ -125,13 +127,7 @@ def test_mcp_tool(client):
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      properties={
-                          'key1': types.Schema(type='STRING'),
-                          'key2': types.Schema(type='NUMBER'),
-                      },
-                  ),
+                  parameters_json_schema=inputSchema,
               )
           ]
       )
@@ -143,29 +139,32 @@ def test_multiple_tools(client):
   if not _is_mcp_imported:
     return
 
+  inputSchema1 = {
+      'type': 'object',
+      'properties': {
+          'key1': {
+              'type': 'string',
+          },
+      },
+  }
+  inputSchema2 = {
+      'type': 'object',
+      'properties': {
+          'key1': {
+              'type': 'number',
+          },
+      },
+  }
+
   mcp_tool1 = mcp_types.Tool(
       name='tool1',
       description='tool1-description',
-      inputSchema={
-          'type': 'object',
-          'properties': {
-              'key1': {
-                  'type': 'string',
-              },
-          },
-      },
+      inputSchema=inputSchema1,
   )
   mcp_tool2 = mcp_types.Tool(
       name='tool2',
       description='tool2-description',
-      inputSchema={
-          'type': 'object',
-          'properties': {
-              'key1': {
-                  'type': 'number',
-              },
-          },
-      },
+      inputSchema=inputSchema2,
   )
   assert t.t_tools(client, [mcp_tool1, mcp_tool2]) == [
       types.Tool(
@@ -173,22 +172,12 @@ def test_multiple_tools(client):
               types.FunctionDeclaration(
                   name='tool1',
                   description='tool1-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      properties={
-                          'key1': types.Schema(type='STRING'),
-                      },
-                  ),
+                  parameters_json_schema=inputSchema1,
               ),
               types.FunctionDeclaration(
                   name='tool2',
                   description='tool2-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      properties={
-                          'key1': types.Schema(type='NUMBER'),
-                      },
-                  ),
+                  parameters_json_schema=inputSchema2,
               ),
           ]
       ),
