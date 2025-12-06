@@ -21,7 +21,11 @@ from typing import Optional, Union
 import google.auth
 import pydantic
 
-from ._api_client import BaseApiClient
+# BEGIN_IMPORTS
+import warnings
+import httpx
+# END_IMPORTS
+from ._api_client import BaseApiClient, has_aiohttp
 from ._base_url import get_base_url
 from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
@@ -52,6 +56,16 @@ class AsyncClient:
     self._live = AsyncLive(self._api_client)
     self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
+# BEGIN_ASYNC_PROPERTY
+#  self....
+
+# @property
+#   def ...
+
+# @property
+#   def ...
+
+# END_ASYNC_PROPERTY
 
   @property
   def models(self) -> AsyncModels:
@@ -119,7 +133,9 @@ class AsyncClient:
       await async_client.aclose()
     """
     await self._api_client.aclose()
-
+# BEGIN_ACLOSE
+#    if ...
+# END_ACLOSE
   async def __aenter__(self) -> 'AsyncClient':
     return self
 
@@ -136,6 +152,11 @@ class AsyncClient:
       asyncio.get_running_loop().create_task(self.aclose())
     except Exception:
       pass
+
+# BEGIN_AHAS
+# async_client
+# has feature
+# END_AHAS
 
 
 class DebugConfig(pydantic.BaseModel):
@@ -287,6 +308,7 @@ class Client:
     self._files = Files(self._api_client)
     self._tokens = Tokens(self._api_client)
     self._operations = Operations(self._api_client)
+    # Placeholder of an instance.
 
   @staticmethod
   def _get_api_client(
@@ -323,7 +345,16 @@ class Client:
         location=location,
         http_options=http_options,
     )
+# BEGIN_PROPERTY
+#  self....
 
+# @property
+#   def ...
+
+# @property
+#   def ...
+
+# END_PROPERTY
   @property
   def chats(self) -> Chats:
     return Chats(modules=self.models)
@@ -396,6 +427,9 @@ class Client:
     """
     self._api_client.close()
 
+# BEGIN_CLOSE
+#    if ...
+# END_CLOSE
   def __enter__(self) -> 'Client':
     return self
 
@@ -412,3 +446,8 @@ class Client:
       self.close()
     except Exception:
       pass
+
+# BEGIN_HAS
+#  @property
+#   def _has...
+# END_HAS
