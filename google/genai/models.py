@@ -1110,6 +1110,13 @@ def _GenerateContentConfig_to_mldev(
         _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
     )
 
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    setv(
+        to_object,
+        ['enableEnhancedCivicAnswers'],
+        getv(from_object, ['enable_enhanced_civic_answers']),
+    )
+
   return to_object
 
 
@@ -1267,6 +1274,11 @@ def _GenerateContentConfig_to_vertex(
         to_object,
         ['imageConfig'],
         _ImageConfig_to_vertex(getv(from_object, ['image_config']), to_object),
+    )
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    raise ValueError(
+        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
     )
 
   return to_object
