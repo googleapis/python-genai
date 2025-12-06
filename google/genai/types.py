@@ -4639,7 +4639,7 @@ class GenerateContentResponse(_common.BaseModel):
       default=None, description="""Usage metadata about the response(s)."""
   )
   automatic_function_calling_history: Optional[list[Content]] = None
-  parsed: Optional[Union[pydantic.BaseModel, list[pydantic.BaseModel], dict[Any, Any], Enum]] = Field(
+  parsed: Optional[Union[pydantic.BaseModel, list[Any], dict[Any, Any], Enum]] = Field(
       default=None,
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
