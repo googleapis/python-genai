@@ -44,6 +44,7 @@ _GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES = {
     "gemini-2.5-flash-lite-preview-06-17": "gemma3",
     "gemini-2.0-flash-001": "gemma3",
     "gemini-2.0-flash-lite-001": "gemma3",
+    "gemini-3-pro-preview": "gemma3",
 }
 
 
@@ -62,7 +63,7 @@ _TOKENIZERS = {
         ),
     ),
     "gemma3": _TokenizerConfig(
-        model_url="https://raw.githubusercontent.com/google/gemma_pytorch/014acb7ac4563a5f77c76d7ff98f31b568c16508/tokenizer/gemma3_cleaned_262144_v2.spiece.model",
+        model_url="https://raw.githubusercontent.com/google/gemma_pytorch/cb7c0152a369e43908e769eb09e1ce6043afe084/tokenizer/gemma3_cleaned_262144_v2.spiece.model",
         model_hash=(
             "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c"
         ),
