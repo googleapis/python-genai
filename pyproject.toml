@@ -3,47 +3,63 @@ requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=
 
 [project]
 name = "google-genai"
-version = "1.16.1"
+version = "1.53.0"
 description = "GenAI Python SDK"
 readme = "README.md"
-license = {text = "Apache-2.0"}
-requires-python = ">=3.9"
+license = "Apache-2.0"
+requires-python = ">=3.10"
 authors = [
     { name = "Google LLC", email = "googleapis-packages@google.com" },
 ]
 classifiers = [
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Internet",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
     "anyio>=4.8.0, <5.0.0",
-    "google-auth>=2.14.1, <3.0.0",
+    "google-auth[requests]>=2.14.1, <3.0.0",
     "httpx>=0.28.1, <1.0.0",
-    "pydantic>=2.0.0, <3.0.0",
+    "pydantic>=2.9.0, <3.0.0",
     "requests>=2.28.1, <3.0.0",
+    "tenacity>=8.2.3, <9.2.0",
     "websockets>=13.0.0, <15.1.0",
     "typing-extensions>=4.11.0, <5.0.0",
 ]
 
+[project.optional-dependencies]
+aiohttp = ["aiohttp<3.13.3"]
+local-tokenizer = ["sentencepiece>=0.2.0", "protobuf"]
+
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
 
-[tool.setuptools]
-packages = [
-    "google",
-    "google.genai",
-]
-include-package-data = true
+# [tool.setuptools] settings are in setup.cfg
 
-[tools.setuptools.package_data]
+[tool.setuptools.package-data]
 "google.genai" = ["py.typed"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.mypy]
+exclude = ["tests/", "_test_api_client\\.py"]
+plugins = ["pydantic.mypy"]
+# we are ignoring 'unused-ignore' because we run mypy on Python 3.9 - 3.13 and
+# some errors in _automatic_function_calling_util.py only apply in 3.10+
+# 'import-not-found' and 'import-untyped' are environment specific
+disable_error_code = [
+  "import-not-found",
+  "import-untyped",
+  "unused-ignore",
+]
+strict = true

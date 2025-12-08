@@ -24,7 +24,7 @@ from ... import _transformers as t
 
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters(
-    model='gemini-1.5-pro-002',
+    model='gemini-2.5-flash',
     config={
         'contents': [
             types.Content(
@@ -45,14 +45,14 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters
                 ],
             )
         ],
-        'system_instruction': t.t_content(None, 'What is the sum of the two pdfs?'),
+        'system_instruction': t.t_content('What is the sum of the two pdfs?'),
         'display_name': 'test cache',
         'ttl': '86400s',
     },
 )
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE = types._CreateCachedContentParameters(
-    model='gemini-1.5-pro-001',
+    model='gemini-2.5-flash',
     config={
         'contents': [
             types.Content(
@@ -60,14 +60,14 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE = types._CreateCachedContentPara
                 parts=[
                     types.Part(
                         fileData=types.FileData(
-                            mimeType='video/mp4',
+                            mimeType='application/pdf',
                             fileUri='https://generativelanguage.googleapis.com/v1beta/files/v200dhvn15h7',
                         )
                     )
                 ],
             )
         ],
-        'system_instruction': t.t_content(None, 'What is the sum of the two pdfs?'),
+        'system_instruction': t.t_content('What is the sum of the two pdfs?'),
         'display_name': 'test cache',
         'ttl': '86400s',
     },
@@ -77,20 +77,20 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_PARTIAL_MODEL_1 = deepcopy(
     _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI
 )
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_PARTIAL_MODEL_1.model = (
-    'models/gemini-1.5-pro-002'
+    'models/gemini-2.5-flash'
 )
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_PARTIAL_MODEL_2 = deepcopy(
     _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI
 )
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_PARTIAL_MODEL_2.model = (
-    'publishers/google/models/gemini-1.5-pro-002'
+    'publishers/google/models/gemini-2.5-flash'
 )
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE_PARTIAL_MODEL_1 = deepcopy(
     _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE
 )
 _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE_PARTIAL_MODEL_1.model = (
-    'models/gemini-1.5-pro-001'
+    'models/gemini-2.5-flash'
 )
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_CMEK = deepcopy(
@@ -101,9 +101,9 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_CMEK.config.kms_key_name = (
 )
 
 if sys.version_info >= (3, 11):
-  _EXPIRE_TIME = datetime.datetime.fromisoformat('2024-12-20T00:00:00Z')
+  _EXPIRE_TIME = datetime.datetime.fromisoformat('2025-12-20T00:00:00Z')
 else:
-  _EXPIRE_TIME = datetime.datetime.fromisoformat('2024-12-20T00:00:00+00:00')
+  _EXPIRE_TIME = datetime.datetime.fromisoformat('2025-12-20T00:00:00+00:00')
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_EXPIRE_TIME = deepcopy(
     _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI

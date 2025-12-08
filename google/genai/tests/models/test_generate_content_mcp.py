@@ -46,8 +46,8 @@ pytestmark = pytest_helper.setup(
 @pytest.mark.asyncio
 async def test_mcp_tools_async(client):
   response = await client.aio.models.generate_content(
-      model='gemini-2.0-flash',
-      contents=t.t_contents(None, 'What is the weather in Boston?'),
+      model='gemini-2.5-flash',
+      contents=t.t_contents('What is the weather in Boston?'),
       config={
           'tools': [
               mcp_types.Tool(
@@ -89,8 +89,8 @@ async def test_mcp_tools_with_custom_headers_async(client):
       ],
   }
   response = await client.aio.models.generate_content(
-      model='gemini-2.0-flash',
-      contents=t.t_contents(None, 'What is the weather in Boston?'),
+      model='gemini-2.5-flash',
+      contents=t.t_contents('What is the weather in Boston?'),
       config=config,
   )
   assert response.function_calls == [
@@ -157,15 +157,15 @@ async def test_mcp_tools_subsequent_calls_async(client):
   }
 
   response = await client.aio.models.generate_content(
-      model='gemini-2.0-flash',
-      contents=t.t_contents(None, 'What is the weather in Boston?'),
+      model='gemini-2.5-flash',
+      contents=t.t_contents('What is the weather in Boston?'),
       config=config,
   )
-  assert 'sunny' in response.text
+  assert 'sunny' in response.text.lower()
 
   response_2 = await client.aio.models.generate_content(
-      model='gemini-2.0-flash',
-      contents=t.t_contents(None, 'What is 50 + 50?'),
+      model='gemini-2.5-flash',
+      contents=t.t_contents('What is 50 + 50?'),
       config=config,
   )
   assert '100' in response_2.text
@@ -203,18 +203,18 @@ async def test_mcp_tools_duplicate_tool_name_raises_error(client):
 
   with pytest.raises(ValueError):
     await client.aio.models.generate_content(
-        model='gemini-2.0-flash',
-        contents=t.t_contents(None, 'What is the weather in Boston?'),
+        model='gemini-2.5-flash',
+        contents=t.t_contents('What is the weather in Boston?'),
         config={
             'tools': [MockMcpClientSession()],
         },
     )
 
 
-async def test_mcp_tools_synchronous_call(client):
+def test_mcp_tools_synchronous_call(client):
   response = client.models.generate_content(
-      model='gemini-2.0-flash',
-      contents=t.t_contents(None, 'What is the weather in Boston?'),
+      model='gemini-2.5-flash',
+      contents=t.t_contents('What is the weather in Boston?'),
       config={
           'tools': [
               mcp_types.Tool(
@@ -236,7 +236,7 @@ async def test_mcp_tools_synchronous_call(client):
   ]
 
 
-async def test_mcp_session_synchronous_call_raises_error(client):
+def test_mcp_session_synchronous_call_raises_error(client):
   class MockMcpClientSession(McpClientSession):
 
     def __init__(self):
@@ -267,18 +267,18 @@ async def test_mcp_session_synchronous_call_raises_error(client):
 
   with pytest.raises(errors.UnsupportedFunctionError):
     client.models.generate_content(
-        model='gemini-2.0-flash',
-        contents=t.t_contents(None, 'What is the weather in Boston?'),
+        model='gemini-2.5-flash',
+        contents=t.t_contents('What is the weather in Boston?'),
         config={
             'tools': [MockMcpClientSession()],
         },
     )
 
 
-async def test_mcp_tools_synchronous_stream_call(client):
+def test_mcp_tools_synchronous_stream_call(client):
   response = client.models.generate_content_stream(
-      model='gemini-2.0-flash',
-      contents=t.t_contents(None, 'What is the weather in Boston?'),
+      model='gemini-2.5-flash',
+      contents=t.t_contents('What is the weather in Boston?'),
       config={
           'tools': [
               mcp_types.Tool(
@@ -292,15 +292,16 @@ async def test_mcp_tools_synchronous_stream_call(client):
           ]
       },
   )
-  assert response.function_calls == [
-      types.FunctionCall(
-          name='get_weather',
-          args={'location': 'Boston'},
-      )
-  ]
+  for chunk in response:
+    assert chunk.function_calls == [
+        types.FunctionCall(
+            name='get_weather',
+            args={'location': 'Boston'},
+        )
+    ]
 
 
-async def test_mcp_session_synchronous_stream_call_raises_error(client):
+def test_mcp_session_synchronous_stream_call_raises_error(client):
   class MockMcpClientSession(McpClientSession):
 
     def __init__(self):
@@ -329,11 +330,14 @@ async def test_mcp_session_synchronous_stream_call_raises_error(client):
           ]
       )
 
+  response = client.models.generate_content_stream(
+      model='gemini-2.5-flash',
+      contents=t.t_contents('What is the weather in Boston?'),
+      config={
+          'tools': [MockMcpClientSession()],
+      },
+  )
+
   with pytest.raises(errors.UnsupportedFunctionError):
-    client.models.generate_content_stream(
-        model='gemini-2.0-flash',
-        contents=t.t_contents(None, 'What is the weather in Boston?'),
-        config={
-            'tools': [MockMcpClientSession()],
-        },
-    )
+    for chunk in response:
+      pass

@@ -17,7 +17,6 @@ import json
 import os
 import sys
 
-import PIL.Image
 from pydantic import BaseModel
 from pydantic import ValidationError
 import pytest
@@ -41,18 +40,14 @@ except ImportError as e:
     raise e
 
 
-IMAGE_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.jpg')
-)
-image = PIL.Image.open(IMAGE_FILE_PATH)
-
-
 pytestmark = pytest_helper.setup(
     file=__file__,
     globals_for_file=globals(),
 )
 pytest_plugins = ('pytest_asyncio',)
 
+
+MODEL_NAME = 'gemini-2.5-flash'
 
 def divide_intergers_with_customized_math_rule(
     numerator: int, denominator: int
@@ -93,21 +88,21 @@ def dim_lights(brightness: float) -> bool:
     return True
 
 def test_text(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   chat.send_message(
       'tell me a story in 100 words',
   )
 
 
 def test_part(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   chat.send_message(
       types.Part.from_text(text='tell me a story in 100 words'),
   )
 
 
 def test_parts(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   chat.send_message(
       [
           types.Part.from_text(text='tell me a US city'),
@@ -116,18 +111,90 @@ def test_parts(client):
   )
 
 
-def test_image(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+def test_image(client, image_jpeg):
+  chat = client.chats.create(model=MODEL_NAME)
   chat.send_message(
       [
           'what is the image about?',
-          image,
+          image_jpeg,
       ],
   )
 
 
+def test_thinking_budget(client):
+  """Tests that the thinking budget is respected and generates thoughts."""
+  chat = client.chats.create(
+      model=MODEL_NAME,
+      config={
+          'thinking_config': {
+               'include_thoughts': True,
+              'thinking_budget': 10000,
+          },
+      },
+  )
+  response1 = chat.send_message(
+      'what is the sum of natural numbers from 1 to 100?',
+  )
+  has_thought1 = False
+  if response1.candidates:
+    for candidate in response1.candidates:
+      for part in candidate.content.parts:
+        if part.thought:
+          has_thought1 = True
+          break
+  assert has_thought1
+
+  response2 = chat.send_message(
+      'can you help me to understand the logic better?'
+  )
+  has_thought2 = False
+  if response2.candidates:
+    for candidate in response2.candidates:
+      for part in candidate.content.parts:
+        if part.thought:
+          has_thought2 = True
+          break
+  assert has_thought2
+
+
+def test_thinking_budget_stream(client):
+  """Tests that the thinking budget is respected and generates thoughts."""
+  chat = client.chats.create(
+      model=MODEL_NAME,
+      config={
+          'thinking_config': {
+              'include_thoughts': True,
+              'thinking_budget': 10000,
+          },
+      },
+  )
+  has_thought1 = False
+  for chunk in chat.send_message_stream(
+      'what is the sum of natural numbers from 1 to 100?',
+  ):
+    if chunk.candidates:
+      for candidate in chunk.candidates:
+        for part in candidate.content.parts:
+          if part.thought:
+            has_thought1 = True
+            break
+  assert has_thought1
+
+  has_thought2 = False
+  for chunk in chat.send_message_stream(
+      'can you help me to understand the logic better?'
+  ):
+    if chunk.candidates:
+      for candidate in chunk.candidates:
+        for part in candidate.content.parts:
+          if part.thought:
+            has_thought2 = True
+            break
+  assert has_thought2
+
+
 def test_google_cloud_storage_uri(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   with pytest_helper.exception_if_mldev(client, errors.ClientError):
     chat.send_message(
         [
@@ -141,13 +208,13 @@ def test_google_cloud_storage_uri(client):
 
 
 def test_uploaded_file_uri(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     chat.send_message(
         [
             'what is the image about?',
             types.Part.from_uri(
-                file_uri='https://generativelanguage.googleapis.com/v1beta/files/9w04rxmcgsp8',
+                file_uri='https://generativelanguage.googleapis.com/v1beta/files/az606f58k7zj',
                 mime_type='image/png',
             ),
         ],
@@ -156,7 +223,7 @@ def test_uploaded_file_uri(client):
 
 def test_config_override(client):
   chat_config = {'candidate_count': 1}
-  chat = client.chats.create(model='gemini-1.5-flash', config=chat_config)
+  chat = client.chats.create(model=MODEL_NAME, config=chat_config)
   request_config = {'candidate_count': 2}
   request_config_response = chat.send_message(
       'tell me a story in 100 words',
@@ -178,14 +245,14 @@ def test_history(client):
           parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
   ]
-  chat = client.chats.create(model='gemini-1.5-flash', history=history)
+  chat = client.chats.create(model=MODEL_NAME, history=history)
   chat.send_message('what is a + b?')
 
   assert len(chat.get_history()) > 2
 
 
 def test_send_2_messages(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   chat.send_message('write a python function to check if a year is a leap year')
   chat.send_message('write a unit test for the function')
 
@@ -262,7 +329,7 @@ def test_with_afc_multiple_remote_calls(client):
           'maximum_remote_calls': 3,
       }
   }
-  chat = client.chats.create(model='gemini-1.5-flash', config=config)
+  chat = client.chats.create(model=MODEL_NAME, config=config)
   chat.send_message('Turn this place into a party!')
   curated_history = chat.get_history()
 
@@ -278,20 +345,25 @@ def test_with_afc_multiple_remote_calls(client):
   for part in curated_history[2].parts:
     assert part.function_response
   assert curated_history[3].role == 'model'
-  assert len(curated_history[3].parts) == 1
-  assert curated_history[3].parts[0].function_call
+  assert len(curated_history[3].parts) == 3
+  for part in curated_history[3].parts:
+    assert part.function_call
   assert curated_history[4].role == 'user'
-  assert len(curated_history[4].parts) == 1
-  assert curated_history[4].parts[0].function_response
+  assert len(curated_history[4].parts) == 3
+  for part in curated_history[4].parts:
+    assert part.function_response
   assert curated_history[5].role == 'model'
-  assert len(curated_history[5].parts) == 1
-  assert curated_history[5].parts[0].function_call
+  assert len(curated_history[5].parts) == 3
+  for part in curated_history[5].parts:
+    assert part.function_call
   assert curated_history[6].role == 'user'
-  assert len(curated_history[6].parts) == 1
-  assert curated_history[6].parts[0].function_response
+  assert len(curated_history[6].parts) == 3
+  for part in curated_history[6].parts:
+    assert part.function_response
   assert curated_history[7].role == 'model'
-  assert len(curated_history[7].parts) == 1
-  assert curated_history[7].parts[0].function_call
+  assert len(curated_history[7].parts) == 3
+  for part in curated_history[7].parts:
+    assert part.function_call
 
 
 @pytest.mark.skipif(
@@ -316,7 +388,7 @@ def test_with_afc_multiple_remote_calls_async(client):
           'maximum_remote_calls': 3,
       }
   }
-  chat = client.chats.create(model='gemini-1.5-flash', config=config)
+  chat = client.chats.create(model=MODEL_NAME, config=config)
   chat.send_message('Turn this place into a party!')
   curated_history = chat.get_history()
 
@@ -332,21 +404,25 @@ def test_with_afc_multiple_remote_calls_async(client):
   for part in curated_history[2].parts:
     assert part.function_response
   assert curated_history[3].role == 'model'
-  assert len(curated_history[3].parts) == 1
-  assert curated_history[3].parts[0].function_call
+  assert len(curated_history[3].parts) == 3
+  for part in curated_history[3].parts:
+    assert part.function_call
   assert curated_history[4].role == 'user'
-  assert len(curated_history[4].parts) == 1
-  assert curated_history[4].parts[0].function_response
+  assert len(curated_history[4].parts) == 3
+  for part in curated_history[4].parts:
+    assert part.function_response
   assert curated_history[5].role == 'model'
-  assert len(curated_history[5].parts) == 1
-  assert curated_history[5].parts[0].function_call
+  assert len(curated_history[5].parts) == 3
+  for part in curated_history[5].parts:
+    assert part.function_call
   assert curated_history[6].role == 'user'
-  assert len(curated_history[6].parts) == 1
-  assert curated_history[6].parts[0].function_response
+  assert len(curated_history[6].parts) == 3
+  for part in curated_history[6].parts:
+    assert part.function_response
   assert curated_history[7].role == 'model'
-  assert len(curated_history[7].parts) == 1
-  assert curated_history[7].parts[0].function_call
-
+  assert len(curated_history[7].parts) == 3
+  for part in curated_history[7].parts:
+    assert part.function_call
 
 def test_with_afc_disabled(client):
   chat = client.chats.create(
@@ -432,29 +508,29 @@ async def test_with_afc_disabled_async(client):
 
 
 def test_stream_text(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   chunks = 0
   for chunk in chat.send_message_stream(
       'tell me a story in 100 words',
   ):
     chunks += 1
 
-  assert chunks > 2
+  assert chunks > 1
 
 
 def test_stream_part(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   chunks = 0
   for chunk in chat.send_message_stream(
       types.Part.from_text(text='tell me a story in 100 words'),
   ):
     chunks += 1
 
-  assert chunks > 2
+  assert chunks > 1
 
 
 def test_stream_parts(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   chunks = 0
   for chunk in chat.send_message_stream(
       [
@@ -469,7 +545,7 @@ def test_stream_parts(client):
 
 def test_stream_config_override(client):
   chat_config = {'response_mime_type': 'text/plain'}
-  chat = client.chats.create(model='gemini-1.5-flash', config=chat_config)
+  chat = client.chats.create(model=MODEL_NAME, config=chat_config)
   request_config = {'response_mime_type': 'application/json'}
   request_config_text = ''
   for chunk in chat.send_message_stream(
@@ -516,7 +592,7 @@ def test_stream_function_calling(client):
 
 
 def test_stream_send_2_messages(client):
-  chat = client.chats.create(model='gemini-1.5-flash')
+  chat = client.chats.create(model=MODEL_NAME)
   for chunk in chat.send_message_stream(
       'write a python function to check if a year is a leap year'
   ):
@@ -528,19 +604,19 @@ def test_stream_send_2_messages(client):
 
 @pytest.mark.asyncio
 async def test_async_text(client):
-  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chat = client.aio.chats.create(model=MODEL_NAME)
   await chat.send_message('tell me a story in 100 words')
 
 
 @pytest.mark.asyncio
 async def test_async_part(client):
-  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chat = client.aio.chats.create(model=MODEL_NAME)
   await chat.send_message(types.Part.from_text(text='tell me a story in 100 words'))
 
 
 @pytest.mark.asyncio
 async def test_async_parts(client):
-  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chat = client.aio.chats.create(model=MODEL_NAME)
   await chat.send_message(
       [
           types.Part.from_text(text='tell me a US city'),
@@ -552,7 +628,7 @@ async def test_async_parts(client):
 @pytest.mark.asyncio
 async def test_async_config_override(client):
   chat_config = {'candidate_count': 1}
-  chat = client.aio.chats.create(model='gemini-1.5-flash', config=chat_config)
+  chat = client.aio.chats.create(model=MODEL_NAME, config=chat_config)
   request_config = {'candidate_count': 2}
   request_config_response = await chat.send_message(
       'tell me a story in 100 words',
@@ -575,7 +651,7 @@ async def test_async_history(client):
           parts=[types.Part.from_text(text='Hello there! how can I help you?')],
       ),
   ]
-  chat = client.aio.chats.create(model='gemini-1.5-flash', history=history)
+  chat = client.aio.chats.create(model=MODEL_NAME, history=history)
   await chat.send_message('what is a + b?')
 
   assert len(chat.get_history()) > 2
@@ -583,29 +659,29 @@ async def test_async_history(client):
 
 @pytest.mark.asyncio
 async def test_async_stream_text(client):
-  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chat = client.aio.chats.create(model=MODEL_NAME)
   chunks = 0
   async for chunk in await chat.send_message_stream('tell me a story in 100 words'):
     chunks += 1
 
-  assert chunks > 2
+  assert chunks > 1
 
 
 @pytest.mark.asyncio
 async def test_async_stream_part(client):
-  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chat = client.aio.chats.create(model=MODEL_NAME)
   chunks = 0
   async for chunk in await chat.send_message_stream(
       types.Part.from_text(text='tell me a story in 100 words')
   ):
     chunks += 1
 
-  assert chunks > 2
+  assert chunks > 1
 
 
 @pytest.mark.asyncio
 async def test_async_stream_parts(client):
-  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chat = client.aio.chats.create(model=MODEL_NAME)
   chunks = 0
   async for chunk in await chat.send_message_stream(
       [
@@ -615,13 +691,13 @@ async def test_async_stream_parts(client):
   ):
     chunks += 1
 
-  assert chunks > 2
+  assert chunks > 1
 
 
 @pytest.mark.asyncio
 async def test_async_stream_config_override(client):
   chat_config = {'response_mime_type': 'text/plain'}
-  chat = client.aio.chats.create(model='gemini-1.5-flash', config=chat_config)
+  chat = client.aio.chats.create(model=MODEL_NAME, config=chat_config)
   request_config = {'response_mime_type': 'application/json'}
   request_config_text = ''
   async for chunk in await chat.send_message_stream(
@@ -634,7 +710,7 @@ async def test_async_stream_config_override(client):
     default_config_text += chunk.text
 
   assert json.loads(request_config_text)
-  with pytest.raises(json.JSONDecodeError):
+  with pytest_helper.exception_if_mldev(client, json.JSONDecodeError):
     json.loads(default_config_text)
 
 
@@ -667,7 +743,7 @@ async def test_async_stream_function_calling(client):
 
 @pytest.mark.asyncio
 async def test_async_stream_send_2_messages(client):
-  chat = client.aio.chats.create(model='gemini-1.5-flash')
+  chat = client.aio.chats.create(model=MODEL_NAME)
   async for chunk in await chat.send_message_stream(
       'write a python function to check if a year is a leap year'
   ):

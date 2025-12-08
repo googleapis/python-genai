@@ -15,8 +15,11 @@
 
 
 """Tests for live.py."""
+
 import contextlib
 import json
+import os
+import ssl
 import typing
 from typing import Any, AsyncIterator
 from unittest import mock
@@ -25,17 +28,25 @@ from unittest.mock import Mock
 from unittest.mock import patch
 import warnings
 
+import certifi
 from google.oauth2.credentials import Credentials
 import pytest
 from websockets import client
 
+from .. import pytest_helper
 from ... import _api_client as api_client
 from ... import _common
 from ... import Client
 from ... import client as gl_client
 from ... import live
 from ... import types
-from .. import pytest_helper
+try:
+    import aiohttp
+    AIOHTTP_NOT_INSTALLED = False
+except ImportError:
+    AIOHTTP_NOT_INSTALLED = True
+    aiohttp = mock.MagicMock()
+
 
 if typing.TYPE_CHECKING:
   from mcp import types as mcp_types
@@ -50,6 +61,10 @@ else:
     mcp_types = None
     McpClientSession = None
 
+
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
 
 function_declarations = [{
     'name': 'get_current_weather',
@@ -75,16 +90,28 @@ def get_current_weather(location: str, unit: str):
   return 15 if unit == 'C' else 59
 
 
-def mock_api_client(vertexai=False, credentials=None):
+def mock_api_client(vertexai=False, credentials=None, http_options=None):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   if not vertexai:
     api_client.api_key = 'TEST_API_KEY'
     api_client.location = None
     api_client.project = None
+    api_client.custom_base_url = None
   else:
     api_client.api_key = None
-    api_client.location = 'us-central1'
-    api_client.project = 'test_project'
+    if http_options:
+      http_options = (
+          types.HttpOptions(**http_options)
+          if isinstance(http_options, dict)
+          else http_options
+      )
+      api_client.custom_base_url = http_options.base_url
+      api_client.location = None
+      api_client.project = None
+    else:
+      api_client.location = 'us-central1'
+      api_client.project = 'test_project'
+      api_client.custom_base_url = None
 
   api_client._host = lambda: 'test_host'
   api_client._credentials = credentials
@@ -93,6 +120,11 @@ def mock_api_client(vertexai=False, credentials=None):
   )  # Ensure headers exist
   api_client.vertexai = vertexai
   api_client._api_client = api_client
+  ctx = ssl.create_default_context(
+      cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+      capath=os.environ.get("SSL_CERT_DIR"),
+  )
+  api_client._websocket_ssl_ctx = {'ssl': ctx}
   return api_client
 
 
@@ -112,14 +144,18 @@ async def get_connect_message(api_client, model, config=None):
     config = {}
   mock_ws = AsyncMock()
   mock_ws.send = AsyncMock()
-  mock_ws.recv = AsyncMock(return_value=b'some response')
+  mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+      )
+  )
 
   mock_google_auth_default = Mock(return_value=(None, None))
   mock_creds = Mock(token='test_token')
   mock_google_auth_default.return_value = (mock_creds, None)
 
   @contextlib.asynccontextmanager
-  async def mock_connect(uri, additional_headers=None):
+  async def mock_connect(uri, additional_headers=None, **kwargs):
     yield mock_ws
 
   @patch('google.auth.default', new=mock_google_auth_default)
@@ -151,8 +187,10 @@ def test_mldev_from_env(monkeypatch):
   assert not client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.api_key == api_key
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
+@requires_aiohttp
 def test_vertex_from_env(monkeypatch):
   project_id = 'fake_project_id'
   location = 'fake-location'
@@ -162,9 +200,30 @@ def test_vertex_from_env(monkeypatch):
 
   client = Client()
 
+  assert client.aio.live._api_client.custom_base_url is None
   assert client.aio.live._api_client.vertexai
   assert client.aio.live._api_client.project == project_id
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert 'x-goog-api-key' not in client.aio.live._api_client._http_options.headers
+
+
+def test_vertex_api_key_from_env(monkeypatch):
+  api_key = 'google_api_key'
+  monkeypatch.setenv('GOOGLE_GENAI_USE_VERTEXAI', 'true')
+  monkeypatch.setenv('GOOGLE_API_KEY', api_key)
+
+  # Due to proj/location taking precedence, need to clear proj/location env
+  # variables. Tests in client/test_client_initialization.py provide
+  # comprehensive coverage for proj/location and api key precedence.
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client()
+
+  assert client.aio.live._api_client.vertexai
+  assert client.aio.live._api_client.api_key == api_key
+  assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
 def test_websocket_base_url():
@@ -176,11 +235,27 @@ def test_websocket_base_url():
   assert api_client._websocket_base_url() == 'wss://test.com'
 
 
+def test_websocket_base_url_no_auth_with_custom_base_url():
+  base_url = 'https://test-api-gateway-proxy.com'
+  api_client = gl_client.BaseApiClient(
+      vertexai=True,
+      http_options={
+          'base_url': base_url,
+          'headers': {'Authorization': 'Bearer test_token'},
+      },
+  )
+  # Note that our test environment does have project/location set. So we
+  # need to explicitly set them to None here.
+  api_client.project = None
+  api_client.location = None
+
+  # Fully pass the custom base url if no API key or project/location.
+  assert api_client._websocket_base_url() == base_url
+
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_async_session_send_text(
-    mock_websocket, vertexai
-):
+async def test_async_session_send_text(mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
   )
@@ -595,15 +670,10 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
           'model': 'models/test_model',
           'generationConfig': {
               'speechConfig': {
-                  # Note: the snake_casing is different from the usual camelCase
-                  # here. This is because speechConfig is an unmodified proto
-                  # defined in the discovery doc, so it doesn't need to/from
-                  # converters. The API is insensitive to the case format.
-                  # This looks wrong, but it is okay/correct.
-                  'voiceConfig': {
-                      'prebuiltVoiceConfig': {'voiceName': 'en-default'}
+                  'voice_config': {
+                      'prebuilt_voice_config': {'voice_name': 'en-default'}
                   },
-                  'languageCode': 'en-US',
+                  'language_code': 'en-US',
               },
               'enableAffectiveDialog': True,
               'temperature': 0.7,
@@ -613,7 +683,7 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
               'mediaResolution': 'MEDIA_RESOLUTION_MEDIUM',
               'seed': 13,
           },
-          'proactivity': {'proactiveAudio': True},
+          'proactivity': {'proactive_audio': True},
           'systemInstruction': {
               'parts': [
                   {
@@ -632,6 +702,12 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
     expected_result['setup']['generationConfig']['responseModalities'] = [
         'AUDIO'
     ]
+    expected_result['setup']['generationConfig']['speechConfig'] = {
+        'voiceConfig': {
+            'prebuilt_voice_config': {'voice_name': 'en-default'}
+        },
+        'languageCode': 'en-US',
+    }
   else:
     expected_result['setup']['model'] = 'models/test_model'
 
@@ -656,7 +732,11 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
   )
-  assert result == expected_result
+  assert types.LiveClientMessage._from_response(
+      response=result, kwargs=None
+  ) == types.LiveClientMessage._from_response(
+      response=expected_result, kwargs=None
+  )
   # Config is a LiveConnectConfig
   config = types.LiveConnectConfig(
       speech_config=types.SpeechConfig(
@@ -681,7 +761,11 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
       mock_api_client(vertexai=vertexai),
       model='test_model', config=config
   )
-  assert result == expected_result
+  assert types.LiveClientMessage._from_response(
+      response=result, kwargs=None
+  ) == types.LiveClientMessage._from_response(
+      response=expected_result, kwargs=None
+  )
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -722,6 +806,44 @@ async def test_bidi_setup_error_if_multispeaker_voice_config(vertexai):
         model='test_model',
         config=config_dict,
     )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncioasync
+async def test_replicated_voice_config(vertexai):
+  # Config is a dict
+  config_dict = {
+      'speech_config': {
+          'voice_config': {
+              'replicated_voice_config': {
+                  'mime_type': 'audio/pcm',
+                  ' voice_sample_audio ': bytes([0, 0, 0]),
+              },
+          },
+      },
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model',
+      config=config_dict,
+  )
+  assert (
+      result['setup']['generationConfig']['speechConfig']['voiceConfig'][
+          'replicatedVoiceConfig'
+      ]
+      == 'AAAA'
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncioasync
+async def test_explicit_vad(vertexai):
+  # Config is a dict
+  config_dict = {'explicit_vad_signal': True}
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+  )
+  assert result['setup']['explicitVadSignal'] == True
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -807,6 +929,7 @@ async def test_bidi_setup_to_api_with_config_tools_google_search(vertexai):
 
   assert result == expected_result
 
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_config_tools_with_no_mcp(vertexai):
@@ -878,8 +1001,8 @@ async def test_bidi_setup_to_api_with_context_window_compression(
               'role': 'user',
           },
            'contextWindowCompression': {
-              'triggerTokens': 1000,
-              'slidingWindow': {'targetTokens': 10},
+              'trigger_tokens': 1000,
+              'sliding_window': {'target_tokens': 10},
           }
       }
   }
@@ -893,6 +1016,7 @@ async def test_bidi_setup_to_api_with_context_window_compression(
       model='test_model', config=config
   )
   assert result == expected_result
+
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
@@ -1253,17 +1377,7 @@ async def test_bidi_setup_to_api_with_realtime_input_config(vertexai):
   expected_result = {
       'setup': {
           'model': 'test_model',
-          'realtimeInputConfig': {
-              'automaticActivityDetection': {
-                  'disabled': True,
-                  'startOfSpeechSensitivity': 'START_SENSITIVITY_HIGH',
-                  'endOfSpeechSensitivity': 'END_SENSITIVITY_HIGH',
-                  'prefixPaddingMs': 20,
-                  'silenceDurationMs': 100,
-              },
-              'activityHandling': 'NO_INTERRUPTION',
-              'turnCoverage': 'TURN_INCLUDES_ALL_INPUT',
-          },
+          'realtimeInputConfig': config_dict['realtime_input_config'],
       }
   }
 
@@ -1389,6 +1503,7 @@ async def test_bidi_setup_generation_config_warning(
 
   assert result['setup']['generationConfig']['temperature'] == 0.7
 
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_session_resumption(vertexai):
@@ -1419,6 +1534,7 @@ async def test_bidi_setup_to_api_with_session_resumption(vertexai):
   else:
     expected_result['setup']['model'] = 'models/test_model'
   assert result == expected_result
+
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
@@ -1473,6 +1589,45 @@ def test_parse_client_message_str( mock_websocket, vertexai):
   # _parse_client_message returns a TypedDict, so we should be able to
   # construct a LiveClientMessage from it
   assert types.LiveClientMessage(**result)
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_thinking_config(vertexai):
+  config_dict = {
+      'thinking_config': {
+          'include_thoughts': True,
+          'thinking_budget': 1024,
+      }
+  }
+
+  expected_gen_config = {
+      'thinkingConfig': {
+          'include_thoughts': True,
+          'thinking_budget': 1024,
+      }
+  }
+
+  if vertexai:
+    expected_gen_config['responseModalities'] = ['AUDIO']
+
+  expected_result = {
+      'setup': {
+          'generationConfig': expected_gen_config,
+      }
+  }
+
+  if vertexai:
+    expected_result['setup'][
+        'model'
+    ] = 'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+  else:
+    expected_result['setup']['model'] = 'models/test_model'
+
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+  )
+  assert result == expected_result
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -1699,7 +1854,7 @@ def test_parse_client_message_tool_response(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_function_response(
-     mock_websocket, vertexai
+    mock_websocket, vertexai
 ):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -1707,7 +1862,11 @@ def test_parse_client_message_function_response(
   input = types.FunctionResponse(
     id='test_id',
     name='test_name',
-    response={'result': 'test_response'},
+    response={
+        'result': 'test_response',
+        'user_name': 'test_user_name',
+        'userEmail': 'test_user_email',
+    },
   )
   result = session._parse_client_message(input)
   assert 'tool_response' in result
@@ -1719,6 +1878,8 @@ def test_parse_client_message_function_response(
                   'name': 'test_name',
                   'response': {
                       'result': 'test_response',
+                      'user_name': 'test_user_name',
+                      'userEmail': 'test_user_email',
                   },
               },
           ],
@@ -1795,54 +1956,158 @@ def test_parse_client_message_realtime_tool_response(
 
 @pytest.mark.asyncio
 async def test_connect_with_provided_credentials(mock_websocket):
-    # custom oauth2 credentials
-    credentials = Credentials(token="provided_fake_token")
-    # mock api client
-    client = mock_api_client(vertexai=True, credentials=credentials)
+  # custom oauth2 credentials
+  credentials = Credentials(token='provided_fake_token')
+  # mock api client
+  client = mock_api_client(vertexai=True, credentials=credentials)
+  capture = {}
 
-    @contextlib.asynccontextmanager
-    async def mock_connect(uri, additional_headers=None):
-        yield mock_websocket
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
 
-    @patch.object(live, "ws_connect", new=mock_connect)
-    async def _test_connect():
-        live_module = live.AsyncLive(client)
-        async with live_module.connect(model="test-model"):
-            pass
+  @patch.object(live, 'ws_connect', new=mock_connect)
+  async def _test_connect():
+    live_module = live.AsyncLive(client)
+    async with live_module.connect(model='test-model'):
+      pass
 
-        assert "Authorization" in live_module._api_client._http_options.headers
-        assert (
-            live_module._api_client._http_options.headers["Authorization"]
-            == "Bearer provided_fake_token"
-        )
+    assert 'Authorization' in capture['headers']
+    assert capture['headers']['Authorization'] == 'Bearer provided_fake_token'
 
-    await _test_connect()
+  await _test_connect()
 
 
 @pytest.mark.asyncio
 async def test_connect_with_default_credentials(mock_websocket):
-    # mock api client
-    client = mock_api_client(vertexai=True, credentials=None)
-    # mock google auth cred
-    mock_google_auth_default = Mock(return_value=(None, None))
-    mock_creds = Mock(token="default_test_token")
-    mock_google_auth_default.return_value = (mock_creds, None)
+  # mock api client
+  client = mock_api_client(vertexai=True, credentials=None)
+  # mock google auth cred
+  mock_google_auth_default = Mock(return_value=(None, None))
+  mock_creds = Mock(token='default_test_token')
+  mock_google_auth_default.return_value = (mock_creds, None)
+  capture = {}
 
-    @contextlib.asynccontextmanager
-    async def mock_connect(uri, additional_headers=None):
-        yield mock_websocket
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
 
-    @patch("google.auth.default", new=mock_google_auth_default)
-    @patch.object(live, "ws_connect", new=mock_connect)
-    async def _test_connect():
-        live_module = live.AsyncLive(client)
-        async with live_module.connect(model="test-model"):
-            pass
+  @patch('google.auth.default', new=mock_google_auth_default)
+  @patch.object(live, 'ws_connect', new=mock_connect)
+  async def _test_connect():
+    live_module = live.AsyncLive(client)
+    async with live_module.connect(model='test-model'):
+      pass
 
-        assert "Authorization" in live_module._api_client._http_options.headers
-        assert (
-            live_module._api_client._http_options.headers["Authorization"]
-            == "Bearer default_test_token"
-        )
+    assert 'Authorization' in capture['headers']
+    assert capture['headers']['Authorization'] == 'Bearer default_test_token'
 
-    await _test_connect()
+  await _test_connect()
+
+
+@pytest.mark.asyncio
+async def test_connect_with_custom_base_url(mock_websocket):
+  # mock api client
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      http_options={
+          'base_url': 'https://custom-base-url.com',
+          'headers': {'Authorization': 'Bearer custom_test_token'},
+      }
+  )
+  # No ADC credentials.
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['uri'] = uri
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  @patch.object(live, 'ws_connect', new=mock_connect)
+  async def _test_connect():
+    live_module = live.AsyncLive(client)
+    async with live_module.connect(model='test-model'):
+      pass
+
+    assert 'Authorization' in capture['headers']
+    assert capture['headers']['Authorization'] == 'Bearer custom_test_token'
+    assert capture['uri'] == 'https://custom-base-url.com'
+
+  await _test_connect()
+
+
+@pytest.mark.parametrize('vertexai', [False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_auth_tokens(mock_websocket, vertexai):
+  api_client_mock = mock_api_client(vertexai=vertexai)
+  api_client_mock.api_key = 'auth_tokens/TEST_AUTH_TOKEN'
+  result = await get_connect_message(api_client_mock, model='test_model')
+
+  mock_ws = AsyncMock()
+  mock_ws.send = AsyncMock()
+  mock_ws.recv = AsyncMock(
+    return_value=(
+        b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+    )
+  )
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['uri'] = uri
+    capture['headers'] = additional_headers
+    yield mock_ws
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    live_module = live.AsyncLive(api_client_mock)
+    async with live_module.connect(
+        model='test_model',
+    ):
+      pass
+
+  assert (
+      'Authorization' in capture['headers']
+  ), 'Authorization key is missing from headers'
+  assert (
+      capture['headers']['Authorization'] == 'Token auth_tokens/TEST_AUTH_TOKEN'
+  )
+  assert 'BidiGenerateContentConstrained' in capture['uri']
+
+
+@pytest.mark.parametrize('vertexai', [False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
+  api_client_mock = mock_api_client(vertexai=vertexai)
+  api_client_mock._http_options = types.HttpOptions.model_validate(
+      {'headers': {'x-goog-api-key': 'TEST_API_KEY'}}
+  )
+  result = await get_connect_message(api_client_mock, model='test_model')
+
+  mock_ws = AsyncMock()
+  mock_ws.send = AsyncMock()
+  mock_ws.recv = AsyncMock(
+    return_value=(
+        b'{\n  "setupComplete": {"sessionId": "test_session_id"}\n}\n'
+    )
+  )
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['uri'] = uri
+    capture['headers'] = additional_headers
+    yield mock_ws
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    live_module = live.AsyncLive(api_client_mock)
+    async with live_module.connect(
+        model='test_model',
+    ):
+      pass
+
+  assert 'x-goog-api-key' in capture['headers'], "x-goog-api-key is missing from headers"
+  assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
+  assert 'BidiGenerateContent' in capture['uri']
