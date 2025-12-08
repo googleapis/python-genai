@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,18 @@ if sys.version_info >= (3, 10):
 else:
   VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
 
+
+__all__ = [
+    '_py_builtin_type_to_schema_type',
+    '_raise_for_unsupported_param',
+    '_handle_params_as_deferred_annotations',
+    '_add_unevaluated_items_to_fixed_len_tuple_schema',
+    '_is_builtin_primitive_or_compound',
+    '_is_default_value_compatible',
+    '_parse_schema_from_parameter',
+    '_get_required_fields',
+]
+
 _py_builtin_type_to_schema_type = {
     str: types.Type.STRING,
     int: types.Type.INTEGER,
@@ -37,7 +49,41 @@ _py_builtin_type_to_schema_type = {
     bool: types.Type.BOOLEAN,
     list: types.Type.ARRAY,
     dict: types.Type.OBJECT,
+    None: types.Type.NULL,
 }
+
+
+def _raise_for_unsupported_param(
+    param: inspect.Parameter, func_name: str, exception: Union[Exception, type[Exception]]
+) -> None:
+  raise ValueError(
+      f'Failed to parse the parameter {param} of function {func_name} for'
+      ' automatic function calling.Automatic function calling works best with'
+      ' simpler function signature schema, consider manually parsing your'
+      f' function declaration for function {func_name}.'
+  ) from exception
+
+
+def _handle_params_as_deferred_annotations(param: inspect.Parameter, annotation_under_future: dict[str, Any], name: str) -> inspect.Parameter:
+  """Catches the case when type hints are stored as strings."""
+  if isinstance(param.annotation, str):
+    param = param.replace(annotation=annotation_under_future[name])
+  return param
+
+
+def _add_unevaluated_items_to_fixed_len_tuple_schema(
+    json_schema: dict[str, Any]
+) -> dict[str, Any]:
+  if (
+      json_schema.get('maxItems')
+      and (
+          json_schema.get('prefixItems')
+          and len(json_schema['prefixItems']) == json_schema['maxItems']
+      )
+      and json_schema.get('type') == 'array'
+  ):
+    json_schema['unevaluatedItems'] = False
+  return json_schema
 
 
 def _is_builtin_primitive_or_compound(
@@ -91,7 +137,7 @@ def _is_default_value_compatible(
   return False
 
 
-def _parse_schema_from_parameter(
+def _parse_schema_from_parameter(  # type: ignore[return]
     api_option: Literal['VERTEX_AI', 'GEMINI_API'],
     param: inspect.Parameter,
     func_name: str,
@@ -266,12 +312,7 @@ def _parse_schema_from_parameter(
       )
     schema.required = _get_required_fields(schema)
     return schema
-  raise ValueError(
-      f'Failed to parse the parameter {param} of function {func_name} for'
-      ' automatic function calling.Automatic function calling works best with'
-      ' simpler function signature schema,consider manually parse your'
-      f' function declaration for function {func_name}.'
-  )
+  _raise_for_unsupported_param(param, func_name, ValueError)
 
 
 def _get_required_fields(schema: types.Schema) -> Optional[list[str]]:

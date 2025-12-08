@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_caches_get_with_mldev_cache_name_partial_1',
         exception_if_vertex='NOT_FOUND',
         parameters=types._GetCachedContentParameters(
-            name='cachedContents/op47f693jk6b'
+            name='cachedContents/o239k1gxzz0juy9wqstndhncr85krehehf551hqh'
         ),
     ),
 ]
@@ -68,27 +68,27 @@ async def test_async_get(client):
 def test_different_cache_name_formats(client):
   if client._api_client.vertexai:
     response1 = client.caches.get(
-        name='projects/801452371447/locations/us-central1/cachedContents/1739497763885809664'
+        name='projects/964831358985/locations/us-central1/cachedContents/2164089915711684608'
     )
     assert response1
     response2 = client.caches.get(
-        name='locations/us-central1/cachedContents/1739497763885809664'
+        name='locations/us-central1/cachedContents/2164089915711684608'
     )
     assert response2
     response3 = client.caches.get(
-        name='cachedContents/1739497763885809664'
+        name='cachedContents/2164089915711684608'
     )
     assert response3
     response4 = client.caches.get(
-        name='1739497763885809664'
+        name='2164089915711684608'
     )
     assert response4
   else:
     response1 = client.caches.get(
-        name='cachedContents/op47f693jk6b'
+        name='cachedContents/o239k1gxzz0juy9wqstndhncr85krehehf551hqh'
     )
     assert response1
     response2 = client.caches.get(
-        name='op47f693jk6b'
+        name='o239k1gxzz0juy9wqstndhncr85krehehf551hqh'
     )
     assert response2

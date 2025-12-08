@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ pytestmark = [
 
 def test_pager(client):
   cached_contents = client.caches.list(config={'page_size': 2})
-
+  assert 'content-type' in cached_contents.sdk_http_response.headers
   assert cached_contents.name == 'cached_contents'
   assert cached_contents.page_size == 2
   assert len(cached_contents) <= 2
@@ -56,6 +56,7 @@ def test_pager(client):
 async def test_async_pager(client):
   cached_contents = await client.aio.caches.list(config={'page_size': 2})
 
+  assert 'Content-Type' in cached_contents.sdk_http_response.headers
   assert cached_contents.name == 'cached_contents'
   assert cached_contents.page_size == 2
   assert len(cached_contents) <= 2

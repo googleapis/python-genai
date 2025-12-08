@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ pytestmark = pytest_helper.setup(
 def test_pager(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     files = client.files.list(config={'page_size': 2})
-
+    assert 'content-type' in files.sdk_http_response.headers
     assert files.name == 'files'
     assert files.page_size == 2
     assert len(files) <= 2
@@ -60,6 +60,7 @@ async def test_async_pager(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     files = await client.aio.files.list(config={'page_size': 2})
 
+    assert 'Content-Type' in files.sdk_http_response.headers
     assert files.name == 'files'
     assert files.page_size == 2
     assert len(files) <= 2

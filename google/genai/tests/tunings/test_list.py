@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ pytest_plugins = ('pytest_asyncio',)
 
 def test_pager(client):
   tuning_jobs = client.tunings.list(config={'page_size': 2})
-
+  assert 'content-type' in tuning_jobs.sdk_http_response.headers
   assert tuning_jobs.name == 'tuning_jobs'
   assert tuning_jobs.page_size == 2
   assert len(tuning_jobs) <= 2
@@ -63,6 +63,7 @@ def test_pager(client):
 async def test_async_pager(client):
   tuning_jobs = await client.aio.tunings.list(config={'page_size': 2})
 
+  assert 'Content-Type' in tuning_jobs.sdk_http_response.headers
   assert tuning_jobs.name == 'tuning_jobs'
   assert tuning_jobs.page_size == 2
   assert len(tuning_jobs) <= 2
