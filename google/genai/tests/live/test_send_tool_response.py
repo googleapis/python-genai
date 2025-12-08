@@ -15,6 +15,7 @@
 
 
 """Tests for live.py."""
+
 import contextlib
 import json
 from unittest import mock
@@ -23,7 +24,6 @@ import pytest
 from websockets import client
 
 from .. import pytest_helper
-
 from ... import client as gl_client
 from ... import live
 from ... import types
@@ -104,7 +104,12 @@ async def test_function_response(mock_websocket, vertexai):
 
   input = types.FunctionResponse(
       name='get_current_weather',
-      response={'temperature': 14.5, 'unit': 'C'},
+      response={
+          'temperature': 14.5,
+          'unit': 'C',
+          'user_name': 'test_user_name',
+          'userEmail': 'test_user_email',
+      },
   )
   if not vertexai:
     input.id = 'some-id'
@@ -119,14 +124,38 @@ async def test_function_response(mock_websocket, vertexai):
       == 'get_current_weather'
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response'][
-          'temperature'
-      ]
-      == 14.5
+      sent_data['tool_response']['functionResponses'][0]['response']
+      == input.response
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_function_response_scheduling(mock_websocket, vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+  session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
+
+  input = types.FunctionResponse(
+      name='get_current_weather',
+      response={'temperature': 14.5, 'unit': 'C'},
+      will_continue=True,
+      scheduling=types.FunctionResponseScheduling.SILENT,
+  )
+  if not vertexai:
+    input.id = 'some-id'
+
+  await session.send_tool_response(function_responses=input)
+
+  mock_websocket.send.assert_called_once()
+  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  assert 'tool_response' in sent_data
+
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['tool_response']['functionResponses'][0], 'will_continue'
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response']['unit']
-      == 'C'
+      sent_data['tool_response']['functionResponses'][0]['scheduling']
+      == 'SILENT'
   )
 
 
@@ -188,9 +217,6 @@ async def test_missing_id(mock_websocket, vertexai):
       'response': {'temperature': 99.9, 'unit': 'C'},
   }
 
-  if vertexai:
-    with pytest.raises(ValueError, match=".*not supported.*"):
-      await session.send_tool_response(function_responses=[input1, input2])
-  else:
+  if not vertexai:
     with pytest.raises(ValueError, match=".*must have.*"):
       await session.send_tool_response(function_responses=[input1, input2])

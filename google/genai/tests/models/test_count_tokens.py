@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,20 +17,21 @@
 import copy
 import pytest
 from ... import _transformers as t
+from ... import errors
 from ... import types
 from .. import pytest_helper
 from . import constants
 
 _COUNT_TOKENS_PARAMS = types._CountTokensParameters(
-    model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    model='gemini-2.5-flash',
+    contents=[t.t_content('Tell me a story in 300 words.')],
 )
 
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION = copy.deepcopy(
     _COUNT_TOKENS_PARAMS
 )
 _COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION.config = {
-    'system_instruction': t.t_content(None, 'you are a chatbot.')
+    'system_instruction': t.t_content('you are a chatbot.')
 }
 
 _COUNT_TOKENS_PARAMS_WITH_TOOLS = copy.deepcopy(_COUNT_TOKENS_PARAMS)
@@ -107,25 +108,52 @@ async def test_async(client):
 def test_different_model_names(client):
   if client._api_client.vertexai:
     response1 = client.models.count_tokens(
-        model='gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
+        model='gemini-2.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response1
     response3 = client.models.count_tokens(
-        model='publishers/google/models/gemini-1.5-flash',
+        model='publishers/google/models/gemini-2.5-flash',
         contents=_COUNT_TOKENS_PARAMS.contents,
     )
     assert response3
     response4 = client.models.count_tokens(
-        model='projects/vertexsdk/locations/us-central1/publishers/google/models/gemini-1.5-flash',
+        model='projects/vertexsdk/locations/us-central1/publishers/google/models/gemini-2.5-flash',
         contents=_COUNT_TOKENS_PARAMS.contents,
     )
     assert response4
   else:
     response1 = client.models.count_tokens(
-        model='gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
+        model='gemini-2.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response1
     response2 = client.models.count_tokens(
-        model='models/gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
+        model='models/gemini-2.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response2
+
+
+def test_extra_body(client):
+  config = {
+      'http_options': {
+          'extra_body': {
+              'systemInstruction': {
+                  'parts': [{'text': 'you are a chatbot.'}],
+                  'role': 'user',
+              }
+          }
+      }
+  }
+  if client._api_client.vertexai:
+    response = client.models.count_tokens(
+        model=_COUNT_TOKENS_PARAMS.model,
+        contents=_COUNT_TOKENS_PARAMS.contents,
+        config=config,
+    )
+    assert response.total_tokens
+  else:
+    with pytest.raises(errors.ClientError):
+      client.models.count_tokens(
+          model=_COUNT_TOKENS_PARAMS.model,
+          contents=_COUNT_TOKENS_PARAMS.contents,
+          config=config,
+      )

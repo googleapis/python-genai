@@ -26,7 +26,9 @@ import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, Optional, Sequence, Union  # type: ignore[attr-defined]
+from typing import Any, GenericAlias, List, Optional, Sequence, Union  # type: ignore[attr-defined]
+from ._mcp_utils import mcp_to_gemini_tool
+from ._common import get_value_by_path as getv
 
 if typing.TYPE_CHECKING:
   import PIL.Image
@@ -34,6 +36,7 @@ if typing.TYPE_CHECKING:
 import pydantic
 
 from . import _api_client
+from . import _common
 from . import types
 
 logger = logging.getLogger('google_genai._transformers')
@@ -46,6 +49,59 @@ else:
   VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
   _UNION_TYPES = (typing.Union,)
   from typing_extensions import TypeGuard
+
+if typing.TYPE_CHECKING:
+  from mcp import ClientSession as McpClientSession
+  from mcp.types import Tool as McpTool
+else:
+  McpClientSession: typing.Type = Any
+  McpTool: typing.Type = Any
+  try:
+    from mcp import ClientSession as McpClientSession
+    from mcp.types import Tool as McpTool
+  except ImportError:
+    McpClientSession = None
+    McpTool = None
+
+
+metric_name_sdk_api_map = {
+    'exact_match': 'exactMatchSpec',
+    'bleu': 'bleuSpec',
+    'rouge_spec': 'rougeSpec',
+}
+metric_name_api_sdk_map = {v: k for k, v in metric_name_sdk_api_map.items()}
+
+
+def _is_duck_type_of(obj: Any, cls: type[pydantic.BaseModel]) -> bool:
+  """Checks if an object has all of the fields of a Pydantic model.
+
+  This is a duck-typing alternative to `isinstance` to solve dual-import
+  problems. It returns False for dictionaries, which should be handled by
+  `isinstance(obj, dict)`.
+
+  Args:
+    obj: The object to check.
+    cls: The Pydantic model class to duck-type against.
+
+  Returns:
+    True if the object has all the fields defined in the Pydantic model, False
+    otherwise.
+  """
+  if isinstance(obj, dict) or not hasattr(cls, 'model_fields'):
+    return False
+
+  # Check if the object has all of the Pydantic model's defined fields.
+  all_matched = all(hasattr(obj, field) for field in cls.model_fields)
+  if not all_matched and isinstance(obj, pydantic.BaseModel):
+    # Check the other way around if obj is a Pydantic model.
+    # Check if the Pydantic model has all of the object's defined fields.
+    try:
+      obj_private = cls()
+      all_matched = all(hasattr(obj_private, f) for f in type(obj).model_fields)
+    except ValueError:
+      return False
+  return all_matched
+
 
 def _resource_name(
     client: _api_client.BaseApiClient,
@@ -143,6 +199,8 @@ def _resource_name(
 def t_model(client: _api_client.BaseApiClient, model: str) -> str:
   if not model:
     raise ValueError('model is required.')
+  if '..' in model or '?' in model or '&' in model:
+    raise ValueError('invalid model parameter.')
   if client.vertexai:
     if (
         model.startswith('projects/')
@@ -180,21 +238,20 @@ def t_models_url(
 
 
 def t_extract_models(
-    api_client: _api_client.BaseApiClient,
-    response: dict[str, Any],
-) -> list[dict[str, Any]]:
+    response: _common.StringDict,
+) -> list[_common.StringDict]:
   if not response:
     return []
 
-  models: Optional[list[dict[str, Any]]] = response.get('models')
+  models: Optional[list[_common.StringDict]] = response.get('models')
   if models is not None:
     return models
 
-  tuned_models: Optional[list[dict[str, Any]]] = response.get('tunedModels')
+  tuned_models: Optional[list[_common.StringDict]] = response.get('tunedModels')
   if tuned_models is not None:
     return tuned_models
 
-  publisher_models: Optional[list[dict[str, Any]]] = response.get(
+  publisher_models: Optional[list[_common.StringDict]] = response.get(
       'publisherModels'
   )
   if publisher_models is not None:
@@ -211,7 +268,9 @@ def t_extract_models(
     return []
 
 
-def t_caches_model(api_client: _api_client.BaseApiClient, model: str) -> Optional[str]:
+def t_caches_model(
+    api_client: _api_client.BaseApiClient, model: str
+) -> Optional[str]:
   model = t_model(api_client, model)
   if not model:
     return None
@@ -258,13 +317,14 @@ def t_function_response(
     raise ValueError('function_response is required.')
   if isinstance(function_response, dict):
     return types.FunctionResponse.model_validate(function_response)
-  elif isinstance(function_response, types.FunctionResponse):
+  elif _is_duck_type_of(function_response, types.FunctionResponse):
     return function_response
   else:
     raise TypeError(
-        f'Could not parse input as FunctionResponse. Unsupported'
+        'Could not parse input as FunctionResponse. Unsupported'
         f' function_response type: {type(function_response)}'
     )
+
 
 def t_function_responses(
     function_responses: Union[
@@ -281,87 +341,88 @@ def t_function_responses(
 
 
 def t_blobs(
-    api_client: _api_client.BaseApiClient,
     blobs: Union[types.BlobImageUnionDict, list[types.BlobImageUnionDict]],
 ) -> list[types.Blob]:
   if isinstance(blobs, list):
-    return [t_blob(api_client, blob) for blob in blobs]
+    return [t_blob(blob) for blob in blobs]
   else:
-    return [t_blob(api_client, blobs)]
+    return [t_blob(blobs)]
 
 
-def t_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
-) -> types.Blob:
-  try:
-    import PIL.Image
-
-    PIL_Image = PIL.Image.Image
-  except ImportError:
-    PIL_Image = None
-
+def t_blob(blob: types.BlobImageUnionDict) -> types.Blob:
   if not blob:
     raise ValueError('blob is required.')
 
-  if isinstance(blob, types.Blob):
-    return blob
+  if _is_duck_type_of(blob, types.Blob):
+    return blob  # type: ignore[return-value]
 
   if isinstance(blob, dict):
     return types.Blob.model_validate(blob)
 
-  if PIL_Image is not None and isinstance(blob, PIL_Image):
-    return pil_to_blob(blob)
+  if 'image' in blob.__class__.__name__.lower():
+    try:
+      import PIL.Image
+
+      PIL_Image = PIL.Image.Image
+    except ImportError:
+      PIL_Image = None
+
+    if PIL_Image is not None and isinstance(blob, PIL_Image):
+      return pil_to_blob(blob)
 
   raise TypeError(
       f'Could not parse input as Blob. Unsupported blob type: {type(blob)}'
   )
 
 
-def t_image_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobImageUnionDict
-) -> types.Blob:
-  blob = t_blob(api_client, blob)
+def t_image_blob(blob: types.BlobImageUnionDict) -> types.Blob:
+  blob = t_blob(blob)
   if blob.mime_type and blob.mime_type.startswith('image/'):
     return blob
   raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
 
 
-def t_audio_blob(
-    api_client: _api_client.BaseApiClient, blob: types.BlobOrDict
-) -> types.Blob:
-  blob = t_blob(api_client, blob)
+def t_audio_blob(blob: types.BlobOrDict) -> types.Blob:
+  blob = t_blob(blob)
   if blob.mime_type and blob.mime_type.startswith('audio/'):
     return blob
   raise ValueError(f'Unsupported mime type: {blob.mime_type!r}')
 
 
 def t_part(part: Optional[types.PartUnionDict]) -> types.Part:
-  try:
-    import PIL.Image
-
-    PIL_Image = PIL.Image.Image
-  except ImportError:
-    PIL_Image = None
-
   if part is None:
     raise ValueError('content part is required.')
   if isinstance(part, str):
     return types.Part(text=part)
-  if PIL_Image is not None and isinstance(part, PIL_Image):
-    return types.Part(inline_data=pil_to_blob(part))
-  if isinstance(part, types.File):
-    if not part.uri or not part.mime_type:
+  if _is_duck_type_of(part, types.File):
+    if not part.uri or not part.mime_type:  # type: ignore[union-attr]
       raise ValueError('file uri and mime_type are required.')
-    return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)
+    return types.Part.from_uri(file_uri=part.uri, mime_type=part.mime_type)  # type: ignore[union-attr]
   if isinstance(part, dict):
-    return types.Part.model_validate(part)
-  if isinstance(part, types.Part):
-    return part
+    try:
+      return types.Part.model_validate(part)
+    except pydantic.ValidationError:
+      return types.Part(file_data=types.FileData.model_validate(part))
+  if _is_duck_type_of(part, types.Part):
+    return part  # type: ignore[return-value]
+
+  if 'image' in part.__class__.__name__.lower():
+    try:
+      import PIL.Image
+
+      PIL_Image = PIL.Image.Image
+    except ImportError:
+      PIL_Image = None
+
+    if PIL_Image is not None and isinstance(part, PIL_Image):
+      return types.Part(inline_data=pil_to_blob(part))
   raise ValueError(f'Unsupported content part type: {type(part)}')
 
 
 def t_parts(
-    parts: Optional[Union[list[types.PartUnionDict], types.PartUnionDict, list[types.Part]]],
+    parts: Optional[
+        Union[list[types.PartUnionDict], types.PartUnionDict, list[types.Part]]
+    ],
 ) -> list[types.Part]:
   #
   if parts is None or (isinstance(parts, list) and not parts):
@@ -373,7 +434,6 @@ def t_parts(
 
 
 def t_image_predictions(
-    client: _api_client.BaseApiClient,
     predictions: Optional[Iterable[Mapping[str, Any]]],
 ) -> Optional[list[types.GeneratedImage]]:
   if not predictions:
@@ -396,30 +456,31 @@ ContentType = Union[types.Content, types.ContentDict, types.PartUnionDict]
 
 
 def t_content(
-    client: _api_client.BaseApiClient,
-    content: Optional[ContentType],
+    content: Union[ContentType, types.ContentDict, None],
 ) -> types.Content:
   if content is None:
     raise ValueError('content is required.')
-  if isinstance(content, types.Content):
-    return content
+  if _is_duck_type_of(content, types.Content):
+    return content  # type: ignore[return-value]
   if isinstance(content, dict):
     try:
       return types.Content.model_validate(content)
     except pydantic.ValidationError:
-      possible_part = types.Part.model_validate(content)
+      possible_part = t_part(content)  # type: ignore[arg-type]
       return (
           types.ModelContent(parts=[possible_part])
           if possible_part.function_call
           else types.UserContent(parts=[possible_part])
       )
-  if isinstance(content, types.Part):
+  if _is_duck_type_of(content, types.File):
+    return types.UserContent(parts=[t_part(content)])  # type: ignore[arg-type]
+  if _is_duck_type_of(content, types.Part):
     return (
-        types.ModelContent(parts=[content])
-        if content.function_call
-        else types.UserContent(parts=[content])
+        types.ModelContent(parts=[content])  # type: ignore[arg-type]
+        if content.function_call  # type: ignore[union-attr]
+        else types.UserContent(parts=[content])  # type: ignore[arg-type]
     )
-  return types.UserContent(parts=content)
+  return types.UserContent(parts=content)  # type: ignore[arg-type]
 
 
 def t_contents_for_embed(
@@ -427,9 +488,9 @@ def t_contents_for_embed(
     contents: Union[list[types.Content], list[types.ContentDict], ContentType],
 ) -> Union[list[str], list[types.Content]]:
   if isinstance(contents, list):
-    transformed_contents = [t_content(client, content) for content in contents]
+    transformed_contents = [t_content(content) for content in contents]
   else:
-    transformed_contents = [t_content(client, contents)]
+    transformed_contents = [t_content(contents)]
 
   if client.vertexai:
     text_parts = []
@@ -442,16 +503,13 @@ def t_contents_for_embed(
             if part.text:
               text_parts.append(part.text)
             else:
-              logger.warning(
-                  f'Non-text part found, only returning text parts.'
-              )
+              logger.warning(f'Non-text part found, only returning text parts.')
     return text_parts
   else:
     return transformed_contents
 
 
 def t_contents(
-    client: _api_client.BaseApiClient,
     contents: Optional[
         Union[types.ContentListUnion, types.ContentListUnionDict, types.Content]
     ],
@@ -459,33 +517,45 @@ def t_contents(
   if contents is None or (isinstance(contents, list) and not contents):
     raise ValueError('contents are required.')
   if not isinstance(contents, list):
-    return [t_content(client, contents)]
-
-  try:
-    import PIL.Image
-
-    PIL_Image = PIL.Image.Image
-  except ImportError:
-    PIL_Image = None
+    return [t_content(contents)]
 
   result: list[types.Content] = []
   accumulated_parts: list[types.Part] = []
 
-  def _is_part(part: Union[types.PartUnionDict, Any]) -> TypeGuard[types.PartUnionDict]:
+  def _is_part(
+      part: Union[types.PartUnionDict, Any],
+  ) -> TypeGuard[types.PartUnionDict]:
     if (
         isinstance(part, str)
-        or isinstance(part, types.File)
-        or (PIL_Image is not None and isinstance(part, PIL_Image))
-        or isinstance(part, types.Part)
+        or _is_duck_type_of(part, types.File)
+        or _is_duck_type_of(part, types.Part)
     ):
       return True
 
     if isinstance(part, dict):
+      if not part:
+        # Empty dict should be considered as Content, not Part.
+        return False
       try:
         types.Part.model_validate(part)
         return True
       except pydantic.ValidationError:
-        return False
+        try:
+          types.FileData.model_validate(part)
+          return True
+        except pydantic.ValidationError:
+          return False
+
+    if 'image' in part.__class__.__name__.lower():
+      try:
+        import PIL.Image
+
+        PIL_Image = PIL.Image.Image
+      except ImportError:
+        PIL_Image = None
+
+      if PIL_Image is not None and isinstance(part, PIL_Image):
+        return True
 
     return False
 
@@ -528,17 +598,13 @@ def t_contents(
   #   append to result
   # if list, we only accept a list of types.PartUnion
   for content in contents:
-    if (
-        isinstance(content, types.Content)
-        # only allowed inner list is a list of types.PartUnion
-        or isinstance(content, list)
-    ):
+    if _is_duck_type_of(content, types.Content) or isinstance(content, list):
       _append_accumulated_parts_as_content(result, accumulated_parts)
       if isinstance(content, list):
         result.append(types.UserContent(parts=content))  # type: ignore[arg-type]
       else:
-        result.append(content)
-    elif (_is_part(content)):
+        result.append(content)  # type: ignore[arg-type]
+    elif _is_part(content):
       _handle_current_part(result, accumulated_parts, content)
     elif isinstance(content, dict):
       # PactDict is already handled in _is_part
@@ -551,7 +617,7 @@ def t_contents(
   return result
 
 
-def handle_null_fields(schema: dict[str, Any]) -> None:
+def handle_null_fields(schema: _common.StringDict) -> None:
   """Process null fields in the schema so it is compatible with OpenAPI.
 
   The OpenAPI spec does not support 'type: 'null' in the schema. This function
@@ -610,10 +676,29 @@ def handle_null_fields(schema: dict[str, Any]) -> None:
           del schema['anyOf']
 
 
+def _raise_for_unsupported_schema_type(origin: Any) -> None:
+  """Raises an error if the schema type is unsupported."""
+  raise ValueError(f'Unsupported schema type: {origin}')
+
+
+def _raise_for_unsupported_mldev_properties(
+    schema: Any, client: Optional[_api_client.BaseApiClient]
+) -> None:
+  if (
+      client
+      and not client.vertexai
+      and (
+          schema.get('additionalProperties')
+          or schema.get('additional_properties')
+      )
+  ):
+    raise ValueError('additionalProperties is not supported in the Gemini API.')
+
+
 def process_schema(
-    schema: dict[str, Any],
-    client: _api_client.BaseApiClient,
-    defs: Optional[dict[str, Any]] = None,
+    schema: _common.StringDict,
+    client: Optional[_api_client.BaseApiClient],
+    defs: Optional[_common.StringDict] = None,
     *,
     order_properties: bool = True,
 ) -> None:
@@ -680,6 +765,8 @@ def process_schema(
   if schema.get('title') == 'PlaceholderLiteralEnum':
     del schema['title']
 
+  _raise_for_unsupported_mldev_properties(schema, client)
+
   # Standardize spelling for relevant schema fields.  For example, if a dict is
   # provided directly to response_schema, it may use `any_of` instead of `anyOf.
   # Otherwise, model_json_schema() uses `anyOf`.
@@ -710,7 +797,7 @@ def process_schema(
   if (ref := schema.pop('$ref', None)) is not None:
     schema.update(defs[ref.split('defs/')[-1]])
 
-  def _recurse(sub_schema: dict[str, Any]) -> dict[str, Any]:
+  def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
       sub_schema = defs[ref.split('defs/')[-1]]
@@ -724,7 +811,8 @@ def process_schema(
   schema_type = schema.get('type')
   if isinstance(schema_type, Enum):
     schema_type = schema_type.value
-  schema_type = schema_type.upper()
+  if isinstance(schema_type, str):
+    schema_type = schema_type.upper()
 
   # model_json_schema() returns a schema with a 'const' field when a Literal with one value is provided as a pydantic field
   # For example `genre: Literal['action']` becomes: {'const': 'action', 'title': 'Genre', 'type': 'string'}
@@ -759,17 +847,27 @@ def process_schema(
 
 
 def _process_enum(
-    enum: EnumMeta, client: _api_client.BaseApiClient
+    enum: EnumMeta, client: Optional[_api_client.BaseApiClient]
 ) -> types.Schema:
+  is_integer_enum = False
+
   for member in enum:  # type: ignore
-    if not isinstance(member.value, str):
+    if isinstance(member.value, int):
+      is_integer_enum = True
+    elif not isinstance(member.value, str):
       raise TypeError(
-          f'Enum member {member.name} value must be a string, got'
+          f'Enum member {member.name} value must be a string or integer, got'
           f' {type(member.value)}'
       )
 
+  enum_to_process = enum
+  if is_integer_enum:
+    str_members = [str(member.value) for member in enum]  # type: ignore
+    str_enum = Enum(enum.__name__, str_members, type=str)  # type: ignore
+    enum_to_process = str_enum
+
   class Placeholder(pydantic.BaseModel):
-    placeholder: enum  # type: ignore[valid-type]
+    placeholder: enum_to_process  # type: ignore[valid-type]
 
   enum_schema = Placeholder.model_json_schema()
   process_schema(enum_schema, client)
@@ -777,7 +875,9 @@ def _process_enum(
   return types.Schema.model_validate(enum_schema)
 
 
-def _is_type_dict_str_any(origin: Union[types.SchemaUnionDict, Any]) -> TypeGuard[dict[str, Any]]:
+def _is_type_dict_str_any(
+    origin: Union[types.SchemaUnionDict, Any],
+) -> TypeGuard[_common.StringDict]:
   """Verifies the schema is of type dict[str, Any] for mypy type checking."""
   return isinstance(origin, dict) and all(
       isinstance(key, str) for key in origin
@@ -785,7 +885,8 @@ def _is_type_dict_str_any(origin: Union[types.SchemaUnionDict, Any]) -> TypeGuar
 
 
 def t_schema(
-    client: _api_client.BaseApiClient, origin: Union[types.SchemaUnionDict, Any]
+    client: Optional[_api_client.BaseApiClient],
+    origin: Union[types.SchemaUnionDict, Any],
 ) -> Optional[types.Schema]:
   if not origin:
     return None
@@ -794,11 +895,12 @@ def t_schema(
     return types.Schema.model_validate(origin)
   if isinstance(origin, EnumMeta):
     return _process_enum(origin, client)
-  if isinstance(origin, types.Schema):
-    if dict(origin) == dict(types.Schema()):
-      # response_schema value was coerced to an empty Schema instance because it did not adhere to the Schema field annotation
-      raise ValueError(f'Unsupported schema type.')
-    schema = origin.model_dump(exclude_unset=True)
+  if _is_duck_type_of(origin, types.Schema):
+    if dict(origin) == dict(types.Schema()):  # type: ignore [arg-type]
+      # response_schema value was coerced to an empty Schema instance because
+      # it did not adhere to the Schema field annotation
+      _raise_for_unsupported_schema_type(origin)
+    schema = origin.model_dump(exclude_unset=True)  # type: ignore[union-attr]
     process_schema(schema, client)
     return types.Schema.model_validate(schema)
 
@@ -831,40 +933,43 @@ def t_schema(
 
 
 def t_speech_config(
-    _: _api_client.BaseApiClient,
     origin: Union[types.SpeechConfigUnionDict, Any],
 ) -> Optional[types.SpeechConfig]:
   if not origin:
     return None
-  if isinstance(origin, types.SpeechConfig):
-    return origin
+  if _is_duck_type_of(origin, types.SpeechConfig):
+    return origin  # type: ignore[return-value]
   if isinstance(origin, str):
     return types.SpeechConfig(
         voice_config=types.VoiceConfig(
             prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=origin)
         )
     )
-  if (
-      isinstance(origin, dict)
-      and 'voice_config' in origin
-      and origin['voice_config'] is not None
-      and 'prebuilt_voice_config' in origin['voice_config']
-      and origin['voice_config']['prebuilt_voice_config'] is not None
-      and 'voice_name' in origin['voice_config']['prebuilt_voice_config']
-  ):
-    return types.SpeechConfig(
-        voice_config=types.VoiceConfig(
-            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                voice_name=origin['voice_config']['prebuilt_voice_config'].get(
-                    'voice_name'
-                )
-            )
-        )
-    )
+  if isinstance(origin, dict):
+    return types.SpeechConfig.model_validate(origin)
+
   raise ValueError(f'Unsupported speechConfig type: {type(origin)}')
 
 
-def t_tool(client: _api_client.BaseApiClient, origin: Any) -> Optional[Union[types.Tool, Any]]:
+def t_live_speech_config(
+    origin: types.SpeechConfigOrDict,
+) -> Optional[types.SpeechConfig]:
+  if _is_duck_type_of(origin, types.SpeechConfig):
+    speech_config = origin
+  if isinstance(origin, dict):
+    speech_config = types.SpeechConfig.model_validate(origin)
+
+  if speech_config.multi_speaker_voice_config is not None:  # type: ignore[union-attr]
+    raise ValueError(
+        'multi_speaker_voice_config is not supported in the live API.'
+    )
+
+  return speech_config  # type: ignore[return-value]
+
+
+def t_tool(
+    client: _api_client.BaseApiClient, origin: Any
+) -> Optional[Union[types.Tool, Any]]:
   if not origin:
     return None
   if inspect.isfunction(origin) or inspect.ismethod(origin):
@@ -875,13 +980,14 @@ def t_tool(client: _api_client.BaseApiClient, origin: Any) -> Optional[Union[typ
             )
         ]
     )
+  elif McpTool is not None and _is_duck_type_of(origin, McpTool):
+    return mcp_to_gemini_tool(origin)
   elif isinstance(origin, dict):
     return types.Tool.model_validate(origin)
   else:
     return origin
 
 
-# Only support functions now.
 def t_tools(
     client: _api_client.BaseApiClient, origin: list[Any]
 ) -> list[types.Tool]:
@@ -911,47 +1017,156 @@ def t_cached_content_name(client: _api_client.BaseApiClient, name: str) -> str:
   return _resource_name(client, name, collection_identifier='cachedContents')
 
 
-def t_batch_job_source(client: _api_client.BaseApiClient, src: str) -> types.BatchJobSource:
-  if src.startswith('gs://'):
-    return types.BatchJobSource(
-        format='jsonl',
-        gcs_uri=[src],
+def t_batch_job_source(
+    client: _api_client.BaseApiClient,
+    src: types.BatchJobSourceUnionDict,
+) -> types.BatchJobSource:
+  if isinstance(src, dict):
+    src = types.BatchJobSource(**src)
+  if _is_duck_type_of(src, types.BatchJobSource):
+    vertex_sources = sum(
+        [src.gcs_uri is not None, src.bigquery_uri is not None]  # type: ignore[union-attr]
     )
-  elif src.startswith('bq://'):
-    return types.BatchJobSource(
-        format='bigquery',
-        bigquery_uri=src,
-    )
+    mldev_sources = sum([
+        src.inlined_requests is not None,  # type: ignore[union-attr]
+        src.file_name is not None,  # type: ignore[union-attr]
+    ])
+    if client.vertexai:
+      if mldev_sources or vertex_sources != 1:
+        raise ValueError(
+            'Exactly one of `gcs_uri` or `bigquery_uri` must be set, other '
+            'sources are not supported in Vertex AI.'
+        )
+    else:
+      if vertex_sources or mldev_sources != 1:
+        raise ValueError(
+            'Exactly one of `inlined_requests`, `file_name`, '
+            '`inlined_embed_content_requests`, or `embed_content_file_name` '
+            'must be set, other sources are not supported in Gemini API.'
+        )
+    return src  # type: ignore[return-value]
+
+  elif isinstance(src, list):
+    return types.BatchJobSource(inlined_requests=src)
+  elif isinstance(src, str):
+    if src.startswith('gs://'):
+      return types.BatchJobSource(
+          format='jsonl',
+          gcs_uri=[src],
+      )
+    elif src.startswith('bq://'):
+      return types.BatchJobSource(
+          format='bigquery',
+          bigquery_uri=src,
+      )
+    elif src.startswith('files/'):
+      return types.BatchJobSource(
+          file_name=src,
+      )
+
+  raise ValueError(f'Unsupported source: {src}')
+
+
+def t_embedding_batch_job_source(
+    client: _api_client.BaseApiClient,
+    src: types.EmbeddingsBatchJobSourceOrDict,
+) -> types.EmbeddingsBatchJobSource:
+  if isinstance(src, dict):
+    src = types.EmbeddingsBatchJobSource(**src)
+
+  if _is_duck_type_of(src, types.EmbeddingsBatchJobSource):
+    mldev_sources = sum([
+        src.inlined_requests is not None,
+        src.file_name is not None,
+    ])
+    if mldev_sources != 1:
+      raise ValueError(
+          'Exactly one of `inlined_requests`, `file_name`, '
+          '`inlined_embed_content_requests`, or `embed_content_file_name` '
+          'must be set, other sources are not supported in Gemini API.'
+      )
+    return src
   else:
-    raise ValueError(f'Unsupported source: {src}')
+    raise ValueError(f'Unsupported source type: {type(src)}')
 
 
-def t_batch_job_destination(client: _api_client.BaseApiClient, dest: str) -> types.BatchJobDestination:
-  if dest.startswith('gs://'):
-    return types.BatchJobDestination(
-        format='jsonl',
-        gcs_uri=dest,
-    )
-  elif dest.startswith('bq://'):
-    return types.BatchJobDestination(
-        format='bigquery',
-        bigquery_uri=dest,
-    )
+def t_batch_job_destination(
+    dest: Union[str, types.BatchJobDestinationOrDict],
+) -> types.BatchJobDestination:
+  if isinstance(dest, dict):
+    dest = types.BatchJobDestination(**dest)
+    return dest
+  elif isinstance(dest, str):
+    if dest.startswith('gs://'):
+      return types.BatchJobDestination(
+          format='jsonl',
+          gcs_uri=dest,
+      )
+    elif dest.startswith('bq://'):
+      return types.BatchJobDestination(
+          format='bigquery',
+          bigquery_uri=dest,
+      )
+    else:
+      raise ValueError(f'Unsupported destination: {dest}')
+  elif _is_duck_type_of(dest, types.BatchJobDestination):
+    return dest
   else:
     raise ValueError(f'Unsupported destination: {dest}')
 
 
+def t_recv_batch_job_destination(dest: dict[str, Any]) -> dict[str, Any]:
+  # Rename inlinedResponses if it looks like an embedding response.
+  inline_responses = dest.get('inlinedResponses', {}).get(
+      'inlinedResponses', []
+  )
+  if not inline_responses:
+    return dest
+  for response in inline_responses:
+    inner_response = response.get('response', {})
+    if not inner_response:
+      continue
+    if 'embedding' in inner_response:
+      dest['inlinedEmbedContentResponses'] = dest.pop('inlinedResponses')
+      break
+  return dest
+
+
 def t_batch_job_name(client: _api_client.BaseApiClient, name: str) -> str:
   if not client.vertexai:
-    return name
+    mldev_pattern = r'batches/[^/]+$'
+    if re.match(mldev_pattern, name):
+      return name.split('/')[-1]
+    else:
+      raise ValueError(f'Invalid batch job name: {name}.')
 
-  pattern = r'^projects/[^/]+/locations/[^/]+/batchPredictionJobs/[^/]+$'
-  if re.match(pattern, name):
+  vertex_pattern = r'^projects/[^/]+/locations/[^/]+/batchPredictionJobs/[^/]+$'
+
+  if re.match(vertex_pattern, name):
     return name.split('/')[-1]
   elif name.isdigit():
     return name
   else:
     raise ValueError(f'Invalid batch job name: {name}.')
+
+
+def t_job_state(state: str) -> str:
+  if state == 'BATCH_STATE_UNSPECIFIED':
+    return 'JOB_STATE_UNSPECIFIED'
+  elif state == 'BATCH_STATE_PENDING':
+    return 'JOB_STATE_PENDING'
+  elif state == 'BATCH_STATE_RUNNING':
+    return 'JOB_STATE_RUNNING'
+  elif state == 'BATCH_STATE_SUCCEEDED':
+    return 'JOB_STATE_SUCCEEDED'
+  elif state == 'BATCH_STATE_FAILED':
+    return 'JOB_STATE_FAILED'
+  elif state == 'BATCH_STATE_CANCELLED':
+    return 'JOB_STATE_CANCELLED'
+  elif state == 'BATCH_STATE_EXPIRED':
+    return 'JOB_STATE_EXPIRED'
+  else:
+    return state
 
 
 LRO_POLLING_INITIAL_DELAY_SECONDS = 1.0
@@ -960,9 +1175,11 @@ LRO_POLLING_TIMEOUT_SECONDS = 900.0
 LRO_POLLING_MULTIPLIER = 1.5
 
 
-def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict[str, Any]) -> Any:
+def t_resolve_operation(
+    api_client: _api_client.BaseApiClient, struct: _common.StringDict
+) -> Any:
   if (name := struct.get('name')) and '/operations/' in name:
-    operation: dict[str, Any] = struct
+    operation: _common.StringDict = struct
     total_seconds = 0.0
     delay_seconds = LRO_POLLING_INITIAL_DELAY_SECONDS
     while operation.get('done') != True:
@@ -989,17 +1206,16 @@ def t_resolve_operation(api_client: _api_client.BaseApiClient, struct: dict[str,
 
 
 def t_file_name(
-    api_client: _api_client.BaseApiClient,
     name: Optional[Union[str, types.File, types.Video, types.GeneratedVideo]],
 ) -> str:
   # Remove the files/ prefix since it's added to the url path.
-  if isinstance(name, types.File):
-    name = name.name
-  elif isinstance(name, types.Video):
-    name = name.uri
-  elif isinstance(name, types.GeneratedVideo):
-    if name.video is not None:
-      name = name.video.uri
+  if _is_duck_type_of(name, types.File):
+    name = name.name  # type: ignore[union-attr]
+  elif _is_duck_type_of(name, types.Video):
+    name = name.uri  # type: ignore[union-attr]
+  elif _is_duck_type_of(name, types.GeneratedVideo):
+    if name.video is not None:  # type: ignore[union-attr]
+      name = name.video.uri  # type: ignore[union-attr]
     else:
       name = None
 
@@ -1023,9 +1239,7 @@ def t_file_name(
   return name
 
 
-def t_tuning_job_status(
-    api_client: _api_client.BaseApiClient, status: str
-) -> Union[types.JobState, str]:
+def t_tuning_job_status(status: str) -> Union[types.JobState, str]:
   if status == 'STATE_UNSPECIFIED':
     return types.JobState.JOB_STATE_UNSPECIFIED
   elif status == 'CREATING':
@@ -1041,25 +1255,14 @@ def t_tuning_job_status(
     return status
 
 
-# Some fields don't accept url safe base64 encoding.
-# We shouldn't use this transformer if the backend adhere to Cloud Type
-# format https://cloud.google.com/docs/discovery/type-format.
-# TODO(b/389133914,b/390320301): Remove the hack after backend fix the issue.
-def t_bytes(api_client: _api_client.BaseApiClient, data: bytes) -> str:
-  if not isinstance(data, bytes):
-    return data
-  return base64.b64encode(data).decode('ascii')
-
-
 def t_content_strict(content: types.ContentOrDict) -> types.Content:
   if isinstance(content, dict):
     return types.Content.model_validate(content)
-  elif isinstance(content, types.Content):
+  elif _is_duck_type_of(content, types.Content):
     return content
   else:
     raise ValueError(
-        f'Could not convert input (type "{type(content)}") to '
-        '`types.Content`'
+        f'Could not convert input (type "{type(content)}") to `types.Content`'
     )
 
 
@@ -1111,3 +1314,57 @@ def t_tool_response(
         f'Could not convert input (type "{type(input)}") to '
         '`types.LiveClientToolResponse`'
     ) from e
+
+
+def t_metrics(
+    metrics: list[types.MetricSubclass]
+) -> list[dict[str, Any]]:
+    """Prepares the metric payload for the evaluation request.
+
+    Args:
+        request_dict: The dictionary containing the request details.
+        resolved_metrics: A list of resolved metric objects.
+
+    Returns:
+        The updated request dictionary with the prepared metric payload.
+    """
+    metrics_payload = []
+
+    for metric in metrics:
+      metric_payload_item: dict[str, Any] = {}
+      metric_payload_item['aggregation_metrics'] = [
+          'AVERAGE',
+          'STANDARD_DEVIATION',
+      ]
+
+      metric_name = getv(metric, ['name']).lower()
+
+      if metric_name == 'exact_match':
+        metric_payload_item['exact_match_spec'] = {}
+      elif metric_name == 'bleu':
+        metric_payload_item['bleu_spec'] = {}
+      elif metric_name.startswith('rouge'):
+        rouge_type = metric_name.replace("_", "")
+        metric_payload_item['rouge_spec'] = {'rouge_type': rouge_type}
+
+      elif hasattr(metric, 'prompt_template') and metric.prompt_template:
+        pointwise_spec = {'metric_prompt_template': metric.prompt_template}
+        system_instruction = getv(
+            metric, ['judge_model_system_instruction']
+        )
+        if system_instruction:
+          pointwise_spec['system_instruction'] = system_instruction
+        return_raw_output = getv(
+            metric, ['return_raw_output']
+        )
+        if return_raw_output:
+          pointwise_spec['custom_output_format_config'] = {  # type: ignore[assignment]
+              'return_raw_output': return_raw_output
+          }
+        metric_payload_item['pointwise_metric_spec'] = pointwise_spec
+      else:
+        raise ValueError(
+            'Unsupported metric type or invalid metric name:' f' {metric_name}'
+        )
+      metrics_payload.append(metric_payload_item)
+    return metrics_payload

@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,22 +15,42 @@
 
 """Extra utils depending on types that are shared between sync and async modules."""
 
+import asyncio
 import inspect
+import io
 import logging
 import sys
 import typing
 from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
-
+import mimetypes
+import os
 import pydantic
 
 from . import _common
+from . import _mcp_utils
+from . import _transformers as t
 from . import errors
 from . import types
+from ._adapters import McpToGenAiToolAdapter
+
 
 if sys.version_info >= (3, 10):
   from types import UnionType
 else:
   UnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
+
+if typing.TYPE_CHECKING:
+  from mcp import ClientSession as McpClientSession
+  from mcp.types import Tool as McpTool
+else:
+  McpClientSession: typing.Type = Any
+  McpTool: typing.Type = Any
+  try:
+    from mcp import ClientSession as McpClientSession
+    from mcp.types import Tool as McpTool
+  except ImportError:
+    McpClientSession = None
+    McpTool = None
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -46,15 +66,39 @@ def _create_generate_content_config_model(
     return config
 
 
+def _get_gcs_uri(
+    src: Union[str, types.BatchJobSourceOrDict]
+) -> Optional[str]:
+  """Extracts the first GCS URI from the source, if available."""
+  if isinstance(src, str) and src.startswith('gs://'):
+    return src
+  elif isinstance(src, dict) and src.get('gcs_uri'):
+    return src['gcs_uri'][0] if src['gcs_uri'] else None
+  elif isinstance(src, types.BatchJobSource) and src.gcs_uri:
+    return src.gcs_uri[0] if src.gcs_uri else None
+  return None
+
+
+def _get_bigquery_uri(
+    src: Union[str, types.BatchJobSourceOrDict]
+) -> Optional[str]:
+  """Extracts the BigQuery URI from the source, if available."""
+  if isinstance(src, str) and src.startswith('bq://'):
+    return src
+  elif isinstance(src, dict) and src.get('bigquery_uri'):
+    return src['bigquery_uri']
+  elif isinstance(src, types.BatchJobSource) and src.bigquery_uri:
+    return src.bigquery_uri
+  return None
+
+
 def format_destination(
-    src: str,
-    config: Optional[types.CreateBatchJobConfigOrDict] = None,
+    src: Union[str, types.BatchJobSource],
+    config: Optional[types.CreateBatchJobConfig] = None,
 ) -> types.CreateBatchJobConfig:
-  """Formats the destination uri based on the source uri."""
-  config = (
-      types._CreateBatchJobParameters(config=config).config
-      or types.CreateBatchJobConfig()
-  )
+  """Formats the destination uri based on the source uri for Vertex AI."""
+  if config is None:
+    config = types.CreateBatchJobConfig()
 
   unique_name = None
   if not config.display_name:
@@ -62,26 +106,56 @@ def format_destination(
     config.display_name = f'genai_batch_job_{unique_name}'
 
   if not config.dest:
-    if src.startswith('gs://') and src.endswith('.jsonl'):
-      # If source uri is "gs://bucket/path/to/src.jsonl", then the destination
-      # uri prefix will be "gs://bucket/path/to/src/dest".
-      config.dest = f'{src[:-6]}/dest'
-    elif src.startswith('bq://'):
-      # If source uri is "bq://project.dataset.src", then the destination
-      # uri will be "bq://project.dataset.src_dest_TIMESTAMP_UUID".
+    gcs_source_uri = _get_gcs_uri(src)
+    bigquery_source_uri = _get_bigquery_uri(src)
+
+    if gcs_source_uri and gcs_source_uri.endswith('.jsonl'):
+      config.dest = f'{gcs_source_uri[:-6]}/dest'
+    elif bigquery_source_uri:
       unique_name = unique_name or _common.timestamped_unique_name()
-      config.dest = f'{src}_dest_{unique_name}'
-    else:
-      raise ValueError(f'Unsupported source: {src}')
+      config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
+
   return config
+
+
+def find_afc_incompatible_tool_indexes(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> list[int]:
+  """Checks if the config contains any AFC incompatible tools.
+
+  A `types.Tool` object that contains `function_declarations` is considered a
+  non-AFC tool for this execution path.
+
+  Args:
+    config: The GenerateContentConfig to check for incompatible tools.
+
+  Returns:
+    A list of indexes of the incompatible tools in the config.
+  """
+  if not config:
+    return []
+  config_model = _create_generate_content_config_model(config)
+  incompatible_tools_indexes: list[int] = []
+
+  if not config_model or not config_model.tools:
+    return incompatible_tools_indexes
+
+  for index, tool in enumerate(config_model.tools):
+    if isinstance(tool, types.Tool) and tool.function_declarations:
+      incompatible_tools_indexes.append(index)
+
+  return incompatible_tools_indexes
 
 
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
+    mcp_to_genai_tool_adapters: Optional[
+        dict[str, McpToGenAiToolAdapter]
+    ] = None,
     is_caller_method_async: bool = False,
-) -> dict[str, Callable[..., Any]]:
+) -> dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]]:
   """Returns a function map from the config."""
-  function_map: dict[str, Callable[..., Any]] = {}
+  function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]] = {}
   if not config:
     return function_map
   config_model = _create_generate_content_config_model(config)
@@ -95,12 +169,23 @@ def get_function_map(
               f' invoke {tool.__name__} to get the function response.'
           )
         function_map[tool.__name__] = tool
+  if mcp_to_genai_tool_adapters:
+    if not is_caller_method_async:
+      raise errors.UnsupportedFunctionError(
+          'MCP tools are not supported in synchronous methods.'
+      )
+    for tool_name, _ in mcp_to_genai_tool_adapters.items():
+      if function_map.get(tool_name):
+        raise ValueError(
+            f'Tool {tool_name} is already defined for the request.'
+        )
+    function_map.update(mcp_to_genai_tool_adapters)
   return function_map
 
 
 def convert_number_values_for_dict_function_call_args(
-    args: dict[str, Any],
-) -> dict[str, Any]:
+    args: _common.StringDict,
+) -> _common.StringDict:
   """Converts float values in dict with no decimal to integers."""
   return {
       key: convert_number_values_for_function_call_args(value)
@@ -201,8 +286,8 @@ def convert_if_exist_pydantic_model(
 
 
 def convert_argument_from_function(
-    args: dict[str, Any], function: Callable[..., Any]
-) -> dict[str, Any]:
+    args: _common.StringDict, function: Callable[..., Any]
+) -> _common.StringDict:
   signature = inspect.signature(function)
   func_name = function.__name__
   converted_args = {}
@@ -218,7 +303,7 @@ def convert_argument_from_function(
 
 
 def invoke_function_from_dict_args(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -232,7 +317,7 @@ def invoke_function_from_dict_args(
 
 
 async def invoke_function_from_dict_args_async(
-    args: Dict[str, Any], function_to_invoke: Callable[..., Any]
+    args: _common.StringDict, function_to_invoke: Callable[..., Any]
 ) -> Any:
   converted_args = convert_argument_from_function(args, function_to_invoke)
   try:
@@ -247,7 +332,7 @@ async def invoke_function_from_dict_args_async(
 
 def get_function_response_parts(
     response: types.GenerateContentResponse,
-    function_map: dict[str, Callable[..., Any]],
+    function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]],
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []
@@ -265,11 +350,12 @@ def get_function_response_parts(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
-          func_response = {
-              'result': invoke_function_from_dict_args(args, func)
-          }
+          if not isinstance(func, McpToGenAiToolAdapter):
+            func_response = {
+                'result': invoke_function_from_dict_args(args, func)
+            }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}
         func_response_part = types.Part.from_function_response(
@@ -278,9 +364,10 @@ def get_function_response_parts(
         func_response_parts.append(func_response_part)
   return func_response_parts
 
+
 async def get_function_response_parts_async(
     response: types.GenerateContentResponse,
-    function_map: dict[str, Callable[..., Any]],
+    function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]],
 ) -> list[types.Part]:
   """Returns the function response parts from the response."""
   func_response_parts = []
@@ -298,15 +385,25 @@ async def get_function_response_parts_async(
         args = convert_number_values_for_dict_function_call_args(
             part.function_call.args
         )
-        func_response: dict[str, Any]
+        func_response: _common.StringDict
         try:
-          if inspect.iscoroutinefunction(func):
+          if isinstance(func, McpToGenAiToolAdapter):
+            mcp_tool_response = await func.call_tool(
+                types.FunctionCall(name=func_name, args=args)
+            )
+            if mcp_tool_response.isError:
+              func_response = {'error': mcp_tool_response}
+            else:
+              func_response = {'result': mcp_tool_response}
+          elif inspect.iscoroutinefunction(func):
             func_response = {
                 'result': await invoke_function_from_dict_args_async(args, func)
             }
           else:
             func_response = {
-                'result': invoke_function_from_dict_args(args, func)
+                'result': await asyncio.to_thread(
+                    invoke_function_from_dict_args, args, func
+                )
             }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}
@@ -392,6 +489,31 @@ def get_max_remote_calls_afc(
   return int(config_model.automatic_function_calling.maximum_remote_calls)
 
 
+def raise_error_for_afc_incompatible_config(config: Optional[types.GenerateContentConfig]
+) -> None:
+  """Raises an error if the config is not compatible with AFC."""
+  if (
+      not config
+      or not config.tool_config
+      or not config.tool_config.function_calling_config
+  ):
+    return
+  afc_config = config.automatic_function_calling
+  disable_afc_config = afc_config.disable if afc_config else False
+  stream_function_call = (
+      config.tool_config.function_calling_config.stream_function_call_arguments
+  )
+
+  if stream_function_call and not disable_afc_config:
+    raise ValueError(
+        'Running in streaming mode with stream_function_call_arguments'
+        ' enabled, this feature is not compatible with automatic function'
+        ' calling (AFC). Please set config.automatic_function_calling.disable'
+        ' to True to disable AFC or leave config.tool_config.'
+        ' function_calling_config.stream_function_call_arguments to be empty'
+        ' or set to False to disable streaming function call arguments.'
+    )
+
 def should_append_afc_history(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:
@@ -401,3 +523,154 @@ def should_append_afc_history(
   if not config_model.automatic_function_calling:
     return True
   return not config_model.automatic_function_calling.ignore_call_history
+
+
+def parse_config_for_mcp_usage(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> Optional[types.GenerateContentConfig]:
+  """Returns a parsed config with an appended MCP header if MCP tools or sessions are used."""
+  if not config:
+    return None
+  config_model = _create_generate_content_config_model(config)
+  # Create a copy of the config model with the tools field cleared since some
+  # tools may not be pickleable.
+  config_model_copy = config_model.model_copy(update={'tools': None})
+  config_model_copy.tools = config_model.tools
+  if config_model.tools and _mcp_utils.has_mcp_tool_usage(config_model.tools):
+    if config_model_copy.http_options is None:
+      config_model_copy.http_options = types.HttpOptions(headers={})
+    if config_model_copy.http_options.headers is None:
+      config_model_copy.http_options.headers = {}
+    _mcp_utils.set_mcp_usage_header(config_model_copy.http_options.headers)
+
+  return config_model_copy
+
+
+async def parse_config_for_mcp_sessions(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> tuple[
+    Optional[types.GenerateContentConfig],
+    dict[str, McpToGenAiToolAdapter],
+]:
+  """Returns a parsed config with MCP sessions converted to GenAI tools.
+
+  Also returns a map of MCP tools to GenAI tool adapters to be used for AFC.
+  """
+  mcp_to_genai_tool_adapters: dict[str, McpToGenAiToolAdapter] = {}
+  parsed_config = parse_config_for_mcp_usage(config)
+  if not parsed_config:
+    return None, mcp_to_genai_tool_adapters
+  # Create a copy of the config model with the tools field cleared as they will
+  # be replaced with the MCP tools converted to GenAI tools.
+  parsed_config_copy = parsed_config.model_copy(update={'tools': None})
+  if parsed_config.tools:
+    parsed_config_copy.tools = []
+    for tool in parsed_config.tools:
+      if McpClientSession is not None and isinstance(tool, McpClientSession):
+        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+            tool, await tool.list_tools()
+        )
+        # Extend the config with the MCP session tools converted to GenAI tools.
+        parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+        for genai_tool in mcp_to_genai_tool_adapter.tools:
+          if genai_tool.function_declarations:
+            for function_declaration in genai_tool.function_declarations:
+              if function_declaration.name:
+                if mcp_to_genai_tool_adapters.get(function_declaration.name):
+                  raise ValueError(
+                      f'Tool {function_declaration.name} is already defined for'
+                      ' the request.'
+                  )
+                mcp_to_genai_tool_adapters[function_declaration.name] = (
+                    mcp_to_genai_tool_adapter
+                )
+      else:
+        parsed_config_copy.tools.append(tool)
+
+  return parsed_config_copy, mcp_to_genai_tool_adapters
+
+
+def append_chunk_contents(
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+    chunk: types.GenerateContentResponse,
+) -> Union[types.ContentListUnion, types.ContentListUnionDict]:
+  """Appends the contents of the chunk to the contents list and returns it."""
+  if chunk is not None and chunk.candidates is not None:
+    chunk_content = chunk.candidates[0].content
+    contents = t.t_contents(contents)  # type: ignore[assignment]
+    if isinstance(contents, list) and chunk_content is not None:
+      contents.append(chunk_content)  # type: ignore[arg-type]
+  return contents
+
+
+def prepare_resumable_upload(
+    file: Union[str, os.PathLike[str], io.IOBase],
+    user_http_options: Optional[types.HttpOptionsOrDict] = None,
+    user_mime_type: Optional[str] = None,
+) -> tuple[
+    types.HttpOptions,
+    int,
+    str,
+]:
+  """Prepares the HTTP options, file bytes size and mime type for a resumable upload.
+
+  This function inspects a file (from a path or an in-memory object) to
+  determine its size and MIME type. It then constructs the necessary HTTP
+  headers and options required to initiate a resumable upload session.
+  """
+  size_bytes = None
+  mime_type = user_mime_type
+  if isinstance(file, io.IOBase):
+    if mime_type is None:
+      raise ValueError(
+          'Unknown mime type: Could not determine the mimetype for your'
+          ' file\n please set the `mime_type` argument'
+      )
+    if hasattr(file, 'mode'):
+      if 'b' not in file.mode:
+        raise ValueError('The file must be opened in binary mode.')
+    offset = file.tell()
+    file.seek(0, os.SEEK_END)
+    size_bytes = file.tell() - offset
+    file.seek(offset, os.SEEK_SET)
+  else:
+    fs_path = os.fspath(file)
+    if not fs_path or not os.path.isfile(fs_path):
+      raise FileNotFoundError(f'{file} is not a valid file path.')
+    size_bytes = os.path.getsize(fs_path)
+    if mime_type is None:
+      mime_type, _ = mimetypes.guess_type(fs_path)
+    if mime_type is None:
+      raise ValueError(
+          'Unknown mime type: Could not determine the mimetype for your'
+          ' file\n    please set the `mime_type` argument'
+      )
+  http_options: types.HttpOptions
+  if user_http_options:
+    if isinstance(user_http_options, dict):
+      user_http_options = types.HttpOptions(**user_http_options)
+    http_options = user_http_options
+    http_options.api_version = ''
+    http_options.headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Upload-Protocol': 'resumable',
+        'X-Goog-Upload-Command': 'start',
+        'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
+        'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+    }
+  else:
+    http_options = types.HttpOptions(
+        api_version='',
+        headers={
+            'Content-Type': 'application/json',
+            'X-Goog-Upload-Protocol': 'resumable',
+            'X-Goog-Upload-Command': 'start',
+            'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
+            'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+        },
+    )
+  if isinstance(file, (str, os.PathLike)):
+    if http_options.headers is None:
+        http_options.headers = {}
+    http_options.headers['X-Goog-Upload-File-Name'] = os.path.basename(file)
+  return http_options, size_bytes, mime_type

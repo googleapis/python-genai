@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,9 @@
 # limitations under the License.
 #
 
+import asyncio
 import os
+from types import TracebackType
 from typing import Optional, Union
 
 import google.auth
@@ -25,12 +27,14 @@ from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
 from .chats import AsyncChats, Chats
+from .file_search_stores import AsyncFileSearchStores, FileSearchStores
 from .files import AsyncFiles, Files
 from .live import AsyncLive
 from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
+from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
-from .types import HttpOptions, HttpOptionsDict
+from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
 
 
 class AsyncClient:
@@ -44,7 +48,9 @@ class AsyncClient:
     self._caches = AsyncCaches(self._api_client)
     self._batches = AsyncBatches(self._api_client)
     self._files = AsyncFiles(self._api_client)
+    self._file_search_stores = AsyncFileSearchStores(self._api_client)
     self._live = AsyncLive(self._api_client)
+    self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
 
   @property
@@ -58,6 +64,10 @@ class AsyncClient:
   @property
   def caches(self) -> AsyncCaches:
     return self._caches
+
+  @property
+  def file_search_stores(self) -> AsyncFileSearchStores:
+    return self._file_search_stores
 
   @property
   def batches(self) -> AsyncBatches:
@@ -76,8 +86,56 @@ class AsyncClient:
     return self._live
 
   @property
+  def auth_tokens(self) -> AsyncTokens:
+    return self._tokens
+
+  @property
   def operations(self) -> AsyncOperations:
     return self._operations
+
+  async def aclose(self) -> None:
+    """Closes the async client explicitly.
+
+    However, it doesn't close the sync client, which can be closed using the
+    Client.close() method or using the context manager.
+
+    Usage:
+    .. code-block:: python
+
+      from google.genai import Client
+
+      async_client = Client(
+          vertexai=True, project='my-project-id', location='us-central1'
+      ).aio
+      response_1 = await async_client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      response_2 = await async_client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      # Close the client to release resources.
+      await async_client.aclose()
+    """
+    await self._api_client.aclose()
+
+  async def __aenter__(self) -> 'AsyncClient':
+    return self
+
+  async def __aexit__(
+      self,
+      exc_type: Optional[Exception],
+      exc_value: Optional[Exception],
+      traceback: Optional[TracebackType],
+  ) -> None:
+    await self.aclose()
+
+  def __del__(self) -> None:
+    try:
+      asyncio.get_running_loop().create_task(self.aclose())
+    except Exception:
+      pass
 
 
 class DebugConfig(pydantic.BaseModel):
@@ -224,8 +282,10 @@ class Client:
     self._models = Models(self._api_client)
     self._tunings = Tunings(self._api_client)
     self._caches = Caches(self._api_client)
+    self._file_search_stores = FileSearchStores(self._api_client)
     self._batches = Batches(self._api_client)
     self._files = Files(self._api_client)
+    self._tokens = Tokens(self._api_client)
     self._operations = Operations(self._api_client)
 
   @staticmethod
@@ -285,12 +345,20 @@ class Client:
     return self._caches
 
   @property
+  def file_search_stores(self) -> FileSearchStores:
+    return self._file_search_stores
+
+  @property
   def batches(self) -> Batches:
     return self._batches
 
   @property
   def files(self) -> Files:
     return self._files
+
+  @property
+  def auth_tokens(self) -> Tokens:
+    return self._tokens
 
   @property
   def operations(self) -> Operations:
@@ -300,3 +368,47 @@ class Client:
   def vertexai(self) -> bool:
     """Returns whether the client is using the Vertex AI API."""
     return self._api_client.vertexai or False
+
+  def close(self) -> None:
+    """Closes the synchronous client explicitly.
+
+    However, it doesn't close the async client, which can be closed using the
+    Client.aio.aclose() method or using the async context manager.
+
+    Usage:
+    .. code-block:: python
+
+      from google.genai import Client
+
+      client = Client(
+          vertexai=True, project='my-project-id', location='us-central1'
+      )
+      response_1 = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      response_2 = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      # Close the client to release resources.
+      client.close()
+    """
+    self._api_client.close()
+
+  def __enter__(self) -> 'Client':
+    return self
+
+  def __exit__(
+      self,
+      exc_type: Optional[Exception],
+      exc_value: Optional[Exception],
+      traceback: Optional[TracebackType],
+  ) -> None:
+    self.close()
+
+  def __del__(self) -> None:
+    try:
+      self.close()
+    except Exception:
+      pass

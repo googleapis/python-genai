@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_generate_content_with_http_options',
         parameters=types._GenerateContentParameters(
-            model='models/gemini-1.5-flash',
-            contents=t.t_contents(None, 'how are you doing?'),
+            model='models/gemini-2.5-flash',
+            contents=t.t_contents('how are you doing?'),
         ),
         exception_if_vertex='404',
     ),

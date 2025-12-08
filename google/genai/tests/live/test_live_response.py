@@ -15,6 +15,7 @@
 
 """Tests for live response handling."""
 import json
+from typing import cast
 from unittest import mock
 from unittest.mock import AsyncMock
 
@@ -87,7 +88,16 @@ async def test_receive_server_content(mock_websocket, vertexai):
           "modelTurn": {
               "parts": [{"text": "This is a simple response."}]
           },
-          "turnComplete": True
+          "turnComplete": True,
+          "groundingMetadata": {
+              "web_search_queries": ["test query"],
+              "groundingChunks": [{
+                  "web": {
+                      "domain": "google.com",
+                      "title": "Search results",
+                  }
+              }]
+          }
       }
   })
   mock_websocket.recv.return_value = raw_response_json
@@ -105,7 +115,9 @@ async def test_receive_server_content(mock_websocket, vertexai):
       == "This is a simple response."
   )
   assert result.server_content.turn_complete
-
+  assert result.server_content.grounding_metadata.web_search_queries == ["test query"]
+  assert result.server_content.grounding_metadata.grounding_chunks[0].web.domain == "google.com"
+  assert result.server_content.grounding_metadata.grounding_chunks[0].web.title == "Search results"
   # Verify usageMetadata was parsed
   assert isinstance(result.usage_metadata, types.UsageMetadata)
   assert result.usage_metadata.prompt_token_count == 15
@@ -118,3 +130,34 @@ async def test_receive_server_content(mock_websocket, vertexai):
     # candidatesTokensDetails to responseTokensDetails.
     assert result.usage_metadata.response_token_count == 50
     assert result.usage_metadata.response_tokens_details[0].token_count == 10
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_receive_server_content_with_turn_reason(mock_websocket, vertexai):
+  """Tests parsing of LiveServerContent with turn_complete_reason and waiting_for_input."""
+
+  raw_response_json = json.dumps({
+      "serverContent": {
+          "modelTurn": {
+              "parts": [{"text": "Please provide more details."}]
+          },
+          "turnComplete": True,
+          "turnCompleteReason": "NEED_MORE_INPUT",
+          "waitingForInput": True
+      }
+  })
+  mock_websocket.recv.return_value = raw_response_json
+
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  result = await session._receive()
+
+  # Assert the results
+  assert isinstance(result, types.LiveServerMessage)
+  assert result.server_content is not None
+
+  assert result.server_content.model_turn.parts[0].text == "Please provide more details."
+  assert result.server_content.turn_complete is True
+  assert result.server_content.turn_complete_reason == types.TurnCompleteReason.NEED_MORE_INPUT
+  assert result.server_content.waiting_for_input is True
