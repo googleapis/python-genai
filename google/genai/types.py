@@ -9871,6 +9871,11 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""Compression quality of the generated videos.""",
   )
+  video_mode: Optional[str] = Field(
+      default=None,
+      description="""Output video mode. Only allowed for reference to video
+      generation. Supported values are: precise (default), expressive.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -9939,6 +9944,10 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   compression_quality: Optional[VideoCompressionQuality]
   """Compression quality of the generated videos."""
+
+  video_mode: Optional[str]
+  """Output video mode. Only allowed for reference to video
+      generation. Supported values are: precise (default), expressive."""
 
 
 GenerateVideosConfigOrDict = Union[
