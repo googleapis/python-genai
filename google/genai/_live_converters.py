@@ -1265,11 +1265,11 @@ def _SpeechConfig_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
   if getv(from_object, ['voice_config']) is not None:
     setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
 
   if getv(from_object, ['multi_speaker_voice_config']) is not None:
     raise ValueError(

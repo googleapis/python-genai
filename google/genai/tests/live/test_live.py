@@ -809,6 +809,44 @@ async def test_bidi_setup_error_if_multispeaker_voice_config(vertexai):
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncioasync
+async def test_replicated_voice_config(vertexai):
+  # Config is a dict
+  config_dict = {
+      'speech_config': {
+          'voice_config': {
+              'replicated_voice_config': {
+                  'mime_type': 'audio/pcm',
+                  ' voice_sample_audio ': bytes([0, 0, 0]),
+              },
+          },
+      },
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model',
+      config=config_dict,
+  )
+  assert (
+      result['setup']['generationConfig']['speechConfig']['voiceConfig'][
+          'replicatedVoiceConfig'
+      ]
+      == 'AAAA'
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncioasync
+async def test_explicit_vad(vertexai):
+  # Config is a dict
+  config_dict = {'explicit_vad_signal': True}
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+  )
+  assert result['setup']['explicitVadSignal'] == True
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_system_instruction_as_content_type(
     vertexai,
