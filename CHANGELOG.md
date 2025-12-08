@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.54.0](https://github.com/googleapis/python-genai/compare/v1.53.0...v1.54.0) (2025-12-08)
+
+
+### Features
+
+* Support ReplicatedVoiceConfig ([07c74dd](https://github.com/googleapis/python-genai/commit/07c74dd120ce19ce0aef697a8d12eaf6dc358e37))
+
+
+### Bug Fixes
+
+* Apply timeout to the total request duration in aiohttp ([a4f4205](https://github.com/googleapis/python-genai/commit/a4f4205dd9f09be418d298c71752f9c85980c9f9))
+* Make APIError class picklable (fixes [#1144](https://github.com/googleapis/python-genai/issues/1144)) ([e3d5712](https://github.com/googleapis/python-genai/commit/e3d5712d9faa2970ec0f652d2c819ae3ac049286))
+
+
+### Documentation
+
+* Regenerate docs for 1.53.0 ([3a2b970](https://github.com/googleapis/python-genai/commit/3a2b9702ec10b60b6d236e02f27f6a62f8350d4f))
+
 ## [1.53.0](https://github.com/googleapis/python-genai/compare/v1.52.0...v1.53.0) (2025-12-03)
 
 
