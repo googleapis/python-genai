@@ -5,8 +5,7 @@
 
 ### Features
 
-* Update data types from discovery doc. ([e16706a](https://github.com/googleapis/python-genai/commit/e16706ac54a8d68555335a543395f8f6a77a2138))
-* Update data types from discovery doc. ([443a970](https://github.com/googleapis/python-genai/commit/443a9707fceea575f378dec448d326dde7aa6c5e))
+* Support ReplicatedVoiceConfig ([07c74dd](https://github.com/googleapis/python-genai/commit/07c74dd120ce19ce0aef697a8d12eaf6dc358e37))
 
 
 ### Bug Fixes
