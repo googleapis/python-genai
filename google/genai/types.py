@@ -5165,6 +5165,12 @@ class GenerateContentConfig(_common.BaseModel):
       description="""The image generation configuration.
       """,
   )
+  enable_enhanced_civic_answers: Optional[bool] = Field(
+      default=None,
+      description="""Enables enhanced civic answers. It may not be available for all
+      models. This field is not supported in Vertex AI.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -5368,6 +5374,11 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   image_config: Optional[ImageConfigDict]
   """The image generation configuration.
+      """
+
+  enable_enhanced_civic_answers: Optional[bool]
+  """Enables enhanced civic answers. It may not be available for all
+      models. This field is not supported in Vertex AI.
       """
 
 

@@ -532,6 +532,21 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='invalid model parameter',
         exception_if_mldev='invalid model parameter',
     ),
+    pytest_helper.TestTableItem(
+        name='test_enhanced_civic_answers',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents(
+                'Summarize the evidence that confirms widespread voter fraud was'
+                ' the reason the last national election results were'
+                ' inaccurate.'
+            ),
+            config={
+                'enable_enhanced_civic_answers': True,
+            },
+        ),
+        exception_if_vertex='not supported',
+    ),
 ]
 
 pytestmark = pytest_helper.setup(
