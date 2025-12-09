@@ -857,6 +857,17 @@ class MediaModality(_common.CaseInSensitiveEnum):
   """Document, e.g. PDF."""
 
 
+class VadSignalType(_common.CaseInSensitiveEnum):
+  """The type of the VAD signal."""
+
+  VAD_SIGNAL_TYPE_UNSPECIFIED = 'VAD_SIGNAL_TYPE_UNSPECIFIED'
+  """The default is VAD_SIGNAL_TYPE_UNSPECIFIED."""
+  VAD_SIGNAL_TYPE_SOS = 'VAD_SIGNAL_TYPE_SOS'
+  """Start of sentence signal."""
+  VAD_SIGNAL_TYPE_EOS = 'VAD_SIGNAL_TYPE_EOS'
+  """End of sentence signal."""
+
+
 class StartSensitivity(_common.CaseInSensitiveEnum):
   """Start of speech sensitivity."""
 
@@ -16229,6 +16240,24 @@ LiveServerSessionResumptionUpdateOrDict = Union[
 ]
 
 
+class VoiceActivityDetectionSignal(_common.BaseModel):
+
+  vad_signal_type: Optional[VadSignalType] = Field(
+      default=None, description="""The type of the VAD signal."""
+  )
+
+
+class VoiceActivityDetectionSignalDict(TypedDict, total=False):
+
+  vad_signal_type: Optional[VadSignalType]
+  """The type of the VAD signal."""
+
+
+VoiceActivityDetectionSignalOrDict = Union[
+    VoiceActivityDetectionSignal, VoiceActivityDetectionSignalDict
+]
+
+
 class LiveServerMessage(_common.BaseModel):
   """Response message for API call."""
 
@@ -16259,6 +16288,9 @@ class LiveServerMessage(_common.BaseModel):
           default=None,
           description="""Update of the session resumption state.""",
       )
+  )
+  voice_activity_detection_signal: Optional[VoiceActivityDetectionSignal] = (
+      Field(default=None, description="""Voice activity detection signal.""")
   )
 
   @property
@@ -16355,6 +16387,9 @@ class LiveServerMessageDict(TypedDict, total=False):
 
   session_resumption_update: Optional[LiveServerSessionResumptionUpdateDict]
   """Update of the session resumption state."""
+
+  voice_activity_detection_signal: Optional[VoiceActivityDetectionSignalDict]
+  """Voice activity detection signal."""
 
 
 LiveServerMessageOrDict = Union[LiveServerMessage, LiveServerMessageDict]
@@ -16645,6 +16680,12 @@ class LiveClientSetup(_common.BaseModel):
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
+  explicit_vad_signal: Optional[bool] = Field(
+      default=None,
+      description="""Configures the explicit VAD signal. If enabled, the client will send
+      vad_signal to indicate the start and end of speech. This allows the server
+      to process the audio more efficiently.""",
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -16695,6 +16736,11 @@ class LiveClientSetupDict(TypedDict, total=False):
   proactivity: Optional[ProactivityConfigDict]
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
+
+  explicit_vad_signal: Optional[bool]
+  """Configures the explicit VAD signal. If enabled, the client will send
+      vad_signal to indicate the start and end of speech. This allows the server
+      to process the audio more efficiently."""
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -17180,6 +17226,12 @@ If included the server will send SessionResumptionUpdate messages.""",
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
+  explicit_vad_signal: Optional[bool] = Field(
+      default=None,
+      description="""Configures the explicit VAD signal. If enabled, the client will send
+      vad_signal to indicate the start and end of speech. This allows the server
+      to process the audio more efficiently.""",
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -17281,6 +17333,11 @@ If included the server will send SessionResumptionUpdate messages."""
   proactivity: Optional[ProactivityConfigDict]
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
+
+  explicit_vad_signal: Optional[bool]
+  """Configures the explicit VAD signal. If enabled, the client will send
+      vad_signal to indicate the start and end of speech. This allows the server
+      to process the audio more efficiently."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
