@@ -26,7 +26,7 @@ def test_config_is_none():
 
 
 def test_afc_config_unset():
-  assert should_disable_afc(types.GenerateContentConfig()) is False
+  assert should_disable_afc(types.GenerateContentConfig()) is True
 
 
 def test_afc_enable_unset_max_0():
@@ -65,6 +65,7 @@ def test_afc_enable_unset_max_0_0():
 
 
 def test_afc_enable_unset_max_1():
+  # Fixed: should disable AFC when no tools provided (GitHub issue #1818)
   assert (
       should_disable_afc(
           types.GenerateContentConfig(
@@ -73,16 +74,17 @@ def test_afc_enable_unset_max_1():
               ),
           )
       )
-      is False
+      is True
   )
 
 
 def test_afc_enable_unset_max_1_0():
+  # Fixed: should disable AFC when no tools provided (GitHub issue #1818)
   assert (
       should_disable_afc(
           {'automatic_function_calling': {'maximum_remote_calls': 1.0}}
       )
-      is False
+      is True
   )
 
 
@@ -151,6 +153,7 @@ def test_afc_enable_false_max_1():
 
 
 def test_afc_enable_true_max_unset():
+  # Fixed: should disable AFC when no tools provided (GitHub issue #1818)
   assert (
       should_disable_afc(
           types.GenerateContentConfig(
@@ -159,7 +162,7 @@ def test_afc_enable_true_max_unset():
               ),
           )
       )
-      is False
+      is True  # No tools = disabled, even if disable=False
   )
 
 
@@ -201,6 +204,7 @@ def test_afc_enable_true_max_0_0():
 
 
 def test_afc_enable_true_max_1():
+  # Fixed: should disable AFC when no tools provided (GitHub issue #1818)
   assert (
       should_disable_afc(
           types.GenerateContentConfig(
@@ -210,5 +214,5 @@ def test_afc_enable_true_max_1():
               ),
           )
       )
-      is False
+      is True  # No tools = disabled, even if disable=False
   )
