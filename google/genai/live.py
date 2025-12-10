@@ -975,8 +975,9 @@ class AsyncLive(_api_module.BaseModule):
               ).model_dump(exclude_none=True),
           )
       )
-      del request_dict['config']
 
+      del request_dict['config']
+      request_dict = _common.encode_unserializable_types(request_dict)
       setv(request_dict, ['setup', 'model'], transformed_model)
 
       request = json.dumps(request_dict)
@@ -998,7 +999,7 @@ class AsyncLive(_api_module.BaseModule):
           )
       )
       del request_dict['config']
-
+      request_dict = _common.encode_unserializable_types(request_dict)
       setv(request_dict, ['setup', 'model'], transformed_model)
 
       request = json.dumps(request_dict)
@@ -1061,7 +1062,7 @@ class AsyncLive(_api_module.BaseModule):
           )
       )
       del request_dict['config']
-
+      request_dict = _common.encode_unserializable_types(request_dict)
       if (
           getv(
               request_dict, ['setup', 'generationConfig', 'responseModalities']
