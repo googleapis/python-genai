@@ -355,6 +355,11 @@ def _LiveConnectConfig_to_mldev(
         getv(from_object, ['proactivity']),
     )
 
+  if getv(from_object, ['explicit_vad_signal']) is not None:
+    raise ValueError(
+        'explicit_vad_signal parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
