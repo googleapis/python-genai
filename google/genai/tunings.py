@@ -235,7 +235,6 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['validation_dataset']), to_object, root_object
           ),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['validation_dataset']) is not None:
       setv(
@@ -266,7 +265,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'epochCount'],
           getv(from_object, ['epoch_count']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['epoch_count']) is not None:
       setv(
@@ -285,7 +283,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'learningRateMultiplier'],
           getv(from_object, ['learning_rate_multiplier']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['learning_rate_multiplier']) is not None:
       setv(
@@ -308,7 +305,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'exportLastCheckpointOnly'],
           getv(from_object, ['export_last_checkpoint_only']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['export_last_checkpoint_only']) is not None:
       setv(
@@ -327,7 +323,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'adapterSize'],
           getv(from_object, ['adapter_size']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['adapter_size']) is not None:
       setv(
@@ -354,7 +349,6 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['evaluation_config']), to_object, root_object
           ),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['evaluation_config']) is not None:
       setv(
@@ -937,7 +931,6 @@ def _TuningDataset_to_vertex(
           ['supervisedTuningSpec', 'trainingDatasetUri'],
           getv(from_object, ['gcs_uri']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['gcs_uri']) is not None:
       setv(
@@ -956,7 +949,6 @@ def _TuningDataset_to_vertex(
           ['supervisedTuningSpec', 'trainingDatasetUri'],
           getv(from_object, ['vertex_dataset_resource']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['vertex_dataset_resource']) is not None:
       setv(
@@ -1257,10 +1249,14 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _TuningJob_from_mldev(response_dict)
+      response_dict = _TuningJob_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1319,10 +1315,14 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_vertex(response_dict)
+      response_dict = _ListTuningJobsResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(response_dict)
+      response_dict = _ListTuningJobsResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1393,10 +1393,14 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+      response_dict = _CancelTuningJobResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+      response_dict = _CancelTuningJobResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.CancelTuningJobResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1469,7 +1473,9 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1544,7 +1550,9 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _TuningOperation_from_mldev(response_dict)
+      response_dict = _TuningOperation_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1749,10 +1757,14 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _TuningJob_from_mldev(response_dict)
+      response_dict = _TuningJob_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1813,10 +1825,14 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_vertex(response_dict)
+      response_dict = _ListTuningJobsResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(response_dict)
+      response_dict = _ListTuningJobsResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1887,10 +1903,14 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+      response_dict = _CancelTuningJobResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+      response_dict = _CancelTuningJobResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.CancelTuningJobResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1963,7 +1983,9 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2038,7 +2060,9 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _TuningOperation_from_mldev(response_dict)
+      response_dict = _TuningOperation_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
