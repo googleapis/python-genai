@@ -376,6 +376,10 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """Image generation stopped because the generated images have prohibited content."""
   NO_IMAGE = 'NO_IMAGE'
   """The model was expected to generate an image, but none was generated."""
+  IMAGE_RECITATION = 'IMAGE_RECITATION'
+  """Image generation stopped because the generated image may be a recitation from a source."""
+  IMAGE_OTHER = 'IMAGE_OTHER'
+  """Image generation stopped for a reason not otherwise specified."""
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
