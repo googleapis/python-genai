@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.55.0](https://github.com/googleapis/python-genai/compare/v1.54.0...v1.55.0) (2025-12-11)
+
+
+### Features
+
+* Add enableEnhancedCivicAnswers feature in GenerateContentConfig ([15d1ea9](https://github.com/googleapis/python-genai/commit/15d1ea9fbb8eff3d2a252acb60b33f8f80da55c3))
+* Add IMAGE_RECITATION and IMAGE_OTHER enum values to FinishReason ([8bb4b9a](https://github.com/googleapis/python-genai/commit/8bb4b9a8b77b69904035337aa79d5147e52443b4))
+* Add voice activity detection signal. ([feae46d](https://github.com/googleapis/python-genai/commit/feae46dd766f6f7dbd30a43235a7a7a87e6c8ca0))
+
+
+### Bug Fixes
+
+* Replicated voice config bytes handling ([c9f8668](https://github.com/googleapis/python-genai/commit/c9f8668cea83dc285372a00e58cebd082d65e19a))
+
+
+### Documentation
+
+* Regenerate docs for 1.54.0 ([8bac8d2](https://github.com/googleapis/python-genai/commit/8bac8d2d92124067eee5eee10b04485e413ba9a3))
+
 ## [1.54.0](https://github.com/googleapis/python-genai/compare/v1.53.0...v1.54.0) (2025-12-08)
 
 
