@@ -36,6 +36,20 @@ from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
 from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
 
+import warnings
+import httpx
+
+from ._api_client import has_aiohttp
+
+from . import _common
+
+from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, DefaultAioHttpClient, GeminiNextGenAPIClient
+from ._interactions._models import FinalRequestOptions
+from ._interactions._types import Headers
+from ._interactions._utils import is_given
+from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
+_interactions_experimental_warned = False
+
 
 class AsyncClient:
   """Client for making asynchronous (non-blocking) requests."""
@@ -52,6 +66,113 @@ class AsyncClient:
     self._live = AsyncLive(self._api_client)
     self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
+    self._nextgen_client_instance: Optional[AsyncGeminiNextGenAPIClient] = None
+
+  @property
+  def _nextgen_client(self) -> AsyncGeminiNextGenAPIClient:
+    if self._nextgen_client_instance is not None:
+      return self._nextgen_client_instance
+
+    http_opts = self._api_client._http_options
+
+    if http_opts.extra_body:
+      warnings.warn(
+          'extra_body properties are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    retry_opts = http_opts.retry_options
+    if retry_opts is not None and (
+        retry_opts.initial_delay is not None
+        or retry_opts.max_delay is not None
+        or retry_opts.exp_base is not None
+        or retry_opts.jitter is not None
+        or retry_opts.http_status_codes is not None
+    ):
+      warnings.warn(
+          'Granular retry options are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    http_client: httpx.AsyncClient = self._api_client._async_httpx_client
+
+    async_client_args = self._api_client._http_options.async_client_args or {}
+    has_custom_transport = 'transport' in async_client_args
+
+    if has_aiohttp and not has_custom_transport:
+      warnings.warn(
+          'Async interactions client cannot use aiohttp, fallingback to httpx.',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    if retry_opts is not None and retry_opts.attempts is not None:
+      max_retries = retry_opts.attempts
+    else:
+      max_retries = DEFAULT_MAX_RETRIES + 1
+
+    self._nextgen_client_instance = AsyncGeminiNextGenAPIClient(
+        base_url=http_opts.base_url,
+        api_key=self._api_client.api_key,
+        default_headers=http_opts.headers,
+        http_client=http_client,
+        # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
+        timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+        max_retries=max_retries,
+    )
+
+    client = self._nextgen_client_instance
+    if self._api_client.vertexai:
+      client._is_vertex = True
+      client._vertex_project = self._api_client.project
+      client._vertex_location = self._api_client.location
+
+      async def prepare_options(options: FinalRequestOptions) -> FinalRequestOptions:
+        headers = {}
+        if is_given(options.headers):
+          headers = {**options.headers}
+
+        headers['Authorization'] = f'Bearer {await self._api_client._async_access_token()}'
+        if (
+            self._api_client._credentials
+            and self._api_client._credentials.quota_project_id
+        ):
+          headers['x-goog-user-project'] = (
+              self._api_client._credentials.quota_project_id
+          )
+        options.headers = headers
+
+        return options
+
+      if self._api_client.project or self._api_client.location:
+        client._prepare_options = prepare_options  # type: ignore[method-assign]
+
+    def validate_headers(headers: Headers, custom_headers: Headers) -> None:
+      return
+
+    client._validate_headers = validate_headers  # type: ignore[method-assign]
+    return self._nextgen_client_instance
+
+  @property
+  def interactions(self) -> AsyncNextGenInteractionsResource:
+    global _interactions_experimental_warned
+    if not _interactions_experimental_warned:
+      _interactions_experimental_warned = True
+      warnings.warn(
+          'Interactions usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    return self._nextgen_client.interactions
+
+  @property
+  def _has_nextgen_client(self) -> bool:
+    return (
+        hasattr(self, '_nextgen_client_instance') and
+        self._nextgen_client_instance is not None
+    )
 
   @property
   def models(self) -> AsyncModels:
@@ -119,6 +240,9 @@ class AsyncClient:
       await async_client.aclose()
     """
     await self._api_client.aclose()
+
+    if self._has_nextgen_client:
+      await self._nextgen_client.close()
 
   async def __aenter__(self) -> 'AsyncClient':
     return self
@@ -287,6 +411,7 @@ class Client:
     self._files = Files(self._api_client)
     self._tokens = Tokens(self._api_client)
     self._operations = Operations(self._api_client)
+    self._nextgen_client_instance: Optional[GeminiNextGenAPIClient] = None
 
   @staticmethod
   def _get_api_client(
@@ -322,6 +447,101 @@ class Client:
         project=project,
         location=location,
         http_options=http_options,
+    )
+
+  @property
+  def _nextgen_client(self) -> GeminiNextGenAPIClient:
+    if self._nextgen_client_instance is not None:
+      return self._nextgen_client_instance
+
+    http_opts = self._api_client._http_options
+
+    if http_opts.extra_body:
+      warnings.warn(
+          'extra_body properties are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    retry_opts = http_opts.retry_options
+    if retry_opts is not None and (
+        retry_opts.initial_delay is not None
+        or retry_opts.max_delay is not None
+        or retry_opts.exp_base is not None
+        or retry_opts.jitter is not None
+        or retry_opts.http_status_codes is not None
+    ):
+      warnings.warn(
+          'Granular retry options are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    if retry_opts is not None and retry_opts.attempts is not None:
+      max_retries = retry_opts.attempts
+    else:
+      max_retries = DEFAULT_MAX_RETRIES + 1
+
+    self._nextgen_client_instance = GeminiNextGenAPIClient(
+        base_url=http_opts.base_url,
+        api_key=self._api_client.api_key,
+        default_headers=http_opts.headers,
+        http_client=self._api_client._httpx_client,
+        # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
+        timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+        max_retries=max_retries,
+    )
+
+    client = self._nextgen_client_instance
+    if self.vertexai:
+      client._is_vertex = True
+      client._vertex_project = self._api_client.project
+      client._vertex_location = self._api_client.location
+
+      def prepare_options(options: FinalRequestOptions) -> FinalRequestOptions:
+        headers = {}
+        if is_given(options.headers):
+          headers = {**options.headers}
+        options.headers = headers
+
+        headers['Authorization'] = f'Bearer {self._api_client._access_token()}'
+        if (
+            self._api_client._credentials
+            and self._api_client._credentials.quota_project_id
+        ):
+          headers['x-goog-user-project'] = (
+              self._api_client._credentials.quota_project_id
+          )
+
+        return options
+
+      if self._api_client.project or self._api_client.location:
+        client._prepare_options = prepare_options  # type: ignore[method-assign]
+
+    def validate_headers(headers: Headers, custom_headers: Headers) -> None:
+      return
+
+    client._validate_headers = validate_headers  # type: ignore[method-assign]
+
+    return self._nextgen_client_instance
+
+  @property
+  def interactions(self) -> NextGenInteractionsResource:
+    global _interactions_experimental_warned
+    if not _interactions_experimental_warned:
+      _interactions_experimental_warned = True
+      warnings.warn(
+        'Interactions usage is experimental and may change in future versions.',
+        category=UserWarning,
+        stacklevel=2,
+      )
+    return self._nextgen_client.interactions
+
+  @property
+  def _has_nextgen_client(self) -> bool:
+    return (
+        hasattr(self, '_nextgen_client_instance') and
+        self._nextgen_client_instance is not None
     )
 
   @property
@@ -395,6 +615,9 @@ class Client:
       client.close()
     """
     self._api_client.close()
+
+    if self._has_nextgen_client:
+      self._nextgen_client.close()
 
   def __enter__(self) -> 'Client':
     return self

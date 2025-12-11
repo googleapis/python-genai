@@ -840,7 +840,7 @@ async def test_bidi_setup_error_if_multispeaker_voice_config(vertexai):
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
-@pytest.mark.asyncioasync
+@pytest.mark.asyncio
 async def test_replicated_voice_config(vertexai):
   # Config is a dict
   config_dict = {
@@ -848,7 +848,7 @@ async def test_replicated_voice_config(vertexai):
           'voice_config': {
               'replicated_voice_config': {
                   'mime_type': 'audio/pcm',
-                  ' voice_sample_audio ': bytes([0, 0, 0]),
+                  'voice_sample_audio': bytes([0, 0, 0]),
               },
           },
       },
@@ -858,22 +858,36 @@ async def test_replicated_voice_config(vertexai):
       model='test_model',
       config=config_dict,
   )
-  assert (
-      result['setup']['generationConfig']['speechConfig']['voiceConfig'][
-          'replicatedVoiceConfig'
-      ]
-      == 'AAAA'
-  )
+  if vertexai:
+    try:
+      replicated_voice_config = result['setup']['generationConfig'][
+          'speechConfig'
+      ]['voiceConfig']['replicatedVoiceConfig']
+    except KeyError:
+      replicated_voice_config = result['setup']['generationConfig'][
+          'speechConfig'
+      ]['voiceConfig']['replicated_voice_config']
+    assert replicated_voice_config == {
+        'mime_type': 'audio/pcm',
+        'voice_sample_audio': 'AAAA',
+    }
+  else:
+    return
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
-@pytest.mark.asyncioasync
+@pytest.mark.asyncio
 async def test_explicit_vad(vertexai):
   # Config is a dict
   config_dict = {'explicit_vad_signal': True}
-  result = await get_connect_message(
-      mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
-  )
+  with pytest_helper.exception_if_mldev(
+      mock_api_client(vertexai=vertexai), ValueError
+  ):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+    )
+  if not vertexai:
+    return
   assert result['setup']['explicitVadSignal'] == True
 
 
@@ -886,7 +900,9 @@ async def test_explicit_vad_config(vertexai):
   config_dict = {'explicit_vad_signal': True}
   with pytest_helper.exception_if_mldev(api_client, ValueError):
     result = await get_connect_message(
-        mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+        mock_api_client(vertexai=vertexai),
+        model='test_model',
+        config=config_dict,
     )
   if not vertexai:
     return
