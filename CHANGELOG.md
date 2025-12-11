@@ -5,6 +5,7 @@
 
 ### Features
 
+* Add the Interactions API ([836a3](https://github.com/googleapis/python-genai/commit/836a33c93f26f56349758ca22e59b8e46962dad4))
 * Add enableEnhancedCivicAnswers feature in GenerateContentConfig ([15d1ea9](https://github.com/googleapis/python-genai/commit/15d1ea9fbb8eff3d2a252acb60b33f8f80da55c3))
 * Add IMAGE_RECITATION and IMAGE_OTHER enum values to FinishReason ([8bb4b9a](https://github.com/googleapis/python-genai/commit/8bb4b9a8b77b69904035337aa79d5147e52443b4))
 * Add voice activity detection signal. ([feae46d](https://github.com/googleapis/python-genai/commit/feae46dd766f6f7dbd30a43235a7a7a87e6c8ca0))
