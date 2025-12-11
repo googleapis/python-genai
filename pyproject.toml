@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=
 
 [project]
 name = "google-genai"
-version = "1.55.0"
+version = "1.54.0"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = "Apache-2.0"
