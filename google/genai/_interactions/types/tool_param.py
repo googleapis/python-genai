@@ -49,10 +49,10 @@ class URLContext(TypedDict, total=False):
 class ComputerUse(TypedDict, total=False):
     """A tool that can be used by the model to interact with the computer."""
 
-    type: Required[Literal["computer_use"]]
-
-    environment: Literal["browser"]
+    environment: Required[Literal["browser"]]
     """The environment being operated."""
+
+    type: Required[Literal["computer_use"]]
 
     excluded_predefined_functions: Annotated[SequenceNotStr[str], PropertyInfo(alias="excludedPredefinedFunctions")]
     """The list of predefined functions that are excluded from the model call."""
