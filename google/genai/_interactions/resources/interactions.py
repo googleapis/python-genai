@@ -494,8 +494,9 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
-        """
-        Cancels an interaction based on its `Interaction.id`.
+        """Cancels an interaction by id.
+
+        This only applies to background interactions that are still running.
 
         Args:
           extra_headers: Send extra headers
@@ -1110,8 +1111,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
-        """
-        Cancels an interaction based on its `Interaction.id`.
+        """Cancels an interaction by id.
+
+        This only applies to background interactions that are still running.
 
         Args:
           extra_headers: Send extra headers
