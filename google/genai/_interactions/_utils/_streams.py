@@ -13,14 +13,15 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
-
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from typing import Any
+from typing_extensions import Iterator, AsyncIterator
 
 
-__version__ = version.__version__
+def consume_sync_iterator(iterator: Iterator[Any]) -> None:
+    for _ in iterator:
+        ...
 
-__all__ = ['Client']
+
+async def consume_async_iterator(iterator: AsyncIterator[Any]) -> None:
+    async for _ in iterator:
+        ...

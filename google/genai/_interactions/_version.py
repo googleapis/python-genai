@@ -13,14 +13,6 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+from ..version import __version__ as __version__
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
-
-
-__version__ = version.__version__
-
-__all__ = ['Client']
+__title__ = "google.genai._interactions"

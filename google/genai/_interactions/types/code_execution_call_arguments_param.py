@@ -13,14 +13,20 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import Literal, TypedDict
+
+__all__ = ["CodeExecutionCallArgumentsParam"]
 
 
-__version__ = version.__version__
+class CodeExecutionCallArgumentsParam(TypedDict, total=False):
+    """The arguments to pass to the code execution."""
 
-__all__ = ['Client']
+    code: str
+    """The code to be executed."""
+
+    language: Literal["python"]
+    """Programming language of the `code`."""

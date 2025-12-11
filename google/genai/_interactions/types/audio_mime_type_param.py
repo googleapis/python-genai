@@ -13,14 +13,15 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
 
+from typing import Union
+from typing_extensions import Literal, TypeAlias
 
-__version__ = version.__version__
+__all__ = ["AudioMimeTypeParam"]
 
-__all__ = ['Client']
+AudioMimeTypeParam: TypeAlias = Union[
+    Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"], str
+]

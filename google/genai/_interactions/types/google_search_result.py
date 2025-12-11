@@ -13,14 +13,23 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from typing import Optional
+
+from .._models import BaseModel
+
+__all__ = ["GoogleSearchResult"]
 
 
-__version__ = version.__version__
+class GoogleSearchResult(BaseModel):
+    """The result of the Google Search."""
 
-__all__ = ['Client']
+    rendered_content: Optional[str] = None
+    """Web content snippet that can be embedded in a web page or an app webview."""
+
+    title: Optional[str] = None
+    """Title of the search result."""
+
+    url: Optional[str] = None
+    """URI reference of the search result."""

@@ -13,14 +13,23 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import TypedDict
+
+__all__ = ["GoogleSearchResultParam"]
 
 
-__version__ = version.__version__
+class GoogleSearchResultParam(TypedDict, total=False):
+    """The result of the Google Search."""
 
-__all__ = ['Client']
+    rendered_content: str
+    """Web content snippet that can be embedded in a web page or an app webview."""
+
+    title: str
+    """Title of the search result."""
+
+    url: str
+    """URI reference of the search result."""

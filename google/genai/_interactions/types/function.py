@@ -13,14 +13,26 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from typing import Optional
+from typing_extensions import Literal
+
+from .._models import BaseModel
+
+__all__ = ["Function"]
 
 
-__version__ = version.__version__
+class Function(BaseModel):
+    """A tool that can be used by the model."""
 
-__all__ = ['Client']
+    type: Literal["function"]
+
+    description: Optional[str] = None
+    """A description of the function."""
+
+    name: Optional[str] = None
+    """The name of the function."""
+
+    parameters: Optional[object] = None
+    """The JSON Schema for the function's parameters."""

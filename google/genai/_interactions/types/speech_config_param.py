@@ -13,14 +13,23 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import TypedDict
+
+__all__ = ["SpeechConfigParam"]
 
 
-__version__ = version.__version__
+class SpeechConfigParam(TypedDict, total=False):
+    """The configuration for speech interaction."""
 
-__all__ = ['Client']
+    language: str
+    """The language of the speech."""
+
+    speaker: str
+    """The speaker's name, it should match the speaker name given in the prompt."""
+
+    voice: str
+    """The voice of the speaker."""

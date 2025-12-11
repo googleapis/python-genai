@@ -13,14 +13,20 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import Literal, TypedDict
+
+__all__ = ["DeepResearchAgentConfigParam"]
 
 
-__version__ = version.__version__
+class DeepResearchAgentConfigParam(TypedDict, total=False):
+    """Configuration for the Deep Research agent."""
 
-__all__ = ['Client']
+    thinking_summaries: Literal["auto", "none"]
+    """Whether to include thought summaries in the response."""
+
+    type: Literal["deep-research"]
+    """Used as the OpenAPI type discriminator for the content oneof."""

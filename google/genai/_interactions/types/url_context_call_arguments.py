@@ -13,14 +13,17 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from typing import List, Optional
+
+from .._models import BaseModel
+
+__all__ = ["URLContextCallArguments"]
 
 
-__version__ = version.__version__
+class URLContextCallArguments(BaseModel):
+    """The arguments to pass to the URL context."""
 
-__all__ = ['Client']
+    urls: Optional[List[str]] = None
+    """The URLs to fetch."""

@@ -13,14 +13,26 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from typing import Optional
+from typing_extensions import Literal
+
+from .._models import BaseModel
+from .audio_mime_type import AudioMimeType
+
+__all__ = ["AudioContent"]
 
 
-__version__ = version.__version__
+class AudioContent(BaseModel):
+    """An audio content block."""
 
-__all__ = ['Client']
+    type: Literal["audio"]
+    """Used as the OpenAPI type discriminator for the content oneof."""
+
+    data: Optional[str] = None
+
+    mime_type: Optional[AudioMimeType] = None
+    """The mime type of the audio."""
+
+    uri: Optional[str] = None

@@ -12,15 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Expose stainless types."""
 
-"""Google Gen AI SDK"""
-
-from . import interactions
-from . import types
-from . import version
-from .client import Client
-
-
-__version__ = version.__version__
-
-__all__ = ['Client']
+from ._interactions.types import *

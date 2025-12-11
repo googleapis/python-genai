@@ -13,14 +13,20 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import Literal, TypedDict
+
+__all__ = ["URLContextResultParam"]
 
 
-__version__ = version.__version__
+class URLContextResultParam(TypedDict, total=False):
+    """The result of the URL context."""
 
-__all__ = ['Client']
+    status: Literal["success", "error", "paywall", "unsafe"]
+    """The status of the URL retrieval."""
+
+    url: str
+    """The URL that was fetched."""

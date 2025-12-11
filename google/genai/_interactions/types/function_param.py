@@ -13,14 +13,25 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import Literal, Required, TypedDict
+
+__all__ = ["FunctionParam"]
 
 
-__version__ = version.__version__
+class FunctionParam(TypedDict, total=False):
+    """A tool that can be used by the model."""
 
-__all__ = ['Client']
+    type: Required[Literal["function"]]
+
+    description: str
+    """A description of the function."""
+
+    name: str
+    """The name of the function."""
+
+    parameters: object
+    """The JSON Schema for the function's parameters."""

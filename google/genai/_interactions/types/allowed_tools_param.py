@@ -13,14 +13,23 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import TypedDict
+
+from .._types import SequenceNotStr
+from .tool_choice_type import ToolChoiceType
+
+__all__ = ["AllowedToolsParam"]
 
 
-__version__ = version.__version__
+class AllowedToolsParam(TypedDict, total=False):
+    """The configuration for allowed tools."""
 
-__all__ = ['Client']
+    mode: ToolChoiceType
+    """The mode of the tool choice."""
+
+    tools: SequenceNotStr[str]
+    """The names of the allowed tools."""

@@ -13,14 +13,14 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from typing import Union
+from typing_extensions import TypeAlias
 
+from .tool_choice_type import ToolChoiceType
+from .tool_choice_config import ToolChoiceConfig
 
-__version__ = version.__version__
+__all__ = ["ToolChoice"]
 
-__all__ = ['Client']
+ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfig]

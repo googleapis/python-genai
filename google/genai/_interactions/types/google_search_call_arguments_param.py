@@ -13,14 +13,19 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing_extensions import TypedDict
+
+from .._types import SequenceNotStr
+
+__all__ = ["GoogleSearchCallArgumentsParam"]
 
 
-__version__ = version.__version__
+class GoogleSearchCallArgumentsParam(TypedDict, total=False):
+    """The arguments to pass to Google Search."""
 
-__all__ = ['Client']
+    queries: SequenceNotStr[str]
+    """Web search queries for the following-up web search."""

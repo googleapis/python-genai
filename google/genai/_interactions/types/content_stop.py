@@ -13,14 +13,23 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from typing import Optional
+from typing_extensions import Literal
+
+from .._models import BaseModel
+
+__all__ = ["ContentStop"]
 
 
-__version__ = version.__version__
+class ContentStop(BaseModel):
+    event_id: Optional[str] = None
+    """
+    The event_id token to be used to resume the interaction stream, from
+    this event.
+    """
 
-__all__ = ['Client']
+    event_type: Optional[Literal["content.stop"]] = None
+
+    index: Optional[int] = None

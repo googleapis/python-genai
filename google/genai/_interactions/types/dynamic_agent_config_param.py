@@ -13,14 +13,21 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
+
+from typing import Dict, Union
+from typing_extensions import Literal, TypeAlias, TypedDict
+
+__all__ = ["DynamicAgentConfigParam"]
 
 
-__version__ = version.__version__
+class DynamicAgentConfigParamTyped(TypedDict, total=False):
+    """Configuration for dynamic agents."""
 
-__all__ = ['Client']
+    type: Literal["dynamic"]
+    """Used as the OpenAPI type discriminator for the content oneof."""
+
+
+DynamicAgentConfigParam: TypeAlias = Union[DynamicAgentConfigParamTyped, Dict[str, object]]

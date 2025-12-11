@@ -13,14 +13,13 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from . import interactions
-from . import types
-from . import version
-from .client import Client
+from __future__ import annotations
 
+from typing import Union
+from typing_extensions import Literal, TypeAlias
 
-__version__ = version.__version__
+__all__ = ["ImageMimeTypeParam"]
 
-__all__ = ['Client']
+ImageMimeTypeParam: TypeAlias = Union[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"], str]
