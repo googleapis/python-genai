@@ -28,7 +28,6 @@ class URLContextCallContent(BaseModel):
     """URL context content."""
 
     type: Literal["url_context_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: Optional[str] = None
     """A unique ID for this specific tool call."""

@@ -40,7 +40,6 @@ class FileSearchResultContent(BaseModel):
     """File Search result content."""
 
     type: Literal["file_search_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     result: Optional[List[Result]] = None
     """The results of the File Search."""

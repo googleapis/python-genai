@@ -28,7 +28,6 @@ class VideoContent(BaseModel):
     """A video content block."""
 
     type: Literal["video"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 

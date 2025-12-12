@@ -28,7 +28,6 @@ class CodeExecutionCallContentParam(TypedDict, total=False):
     """Code execution content."""
 
     type: Required[Literal["code_execution_call"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: str
     """A unique ID for this specific tool call."""

@@ -39,4 +39,3 @@ class MCPServerToolCallContent(BaseModel):
     """The name of the used MCP server."""
 
     type: Literal["mcp_server_tool_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
