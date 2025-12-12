@@ -52,6 +52,7 @@ from ._exceptions import (
     GeminiNextGenAPIClientError,
 )
 from ._base_client import DefaultHttpxClient, DefaultAioHttpClient, DefaultAsyncHttpxClient
+from ._client_adapter import GeminiNextGenAPIClientAdapter
 from ._utils._logs import setup_logging as _setup_logging
 
 __all__ = [
@@ -96,6 +97,7 @@ __all__ = [
     "DefaultHttpxClient",
     "DefaultAsyncHttpxClient",
     "DefaultAioHttpClient",
+    "GeminiNextGenAPIClientAdapter",
 ]
 
 if not _t.TYPE_CHECKING:
