@@ -71,18 +71,24 @@ def test_afc_enable_unset_max_1():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   maximum_remote_calls=1,
               ),
+              tools=[types.Tool(function_declarations=[
+                  types.FunctionDeclaration(name='tool_name')
+              ])],
           )
       )
-      is True
+      is False
   )
 
 
 def test_afc_enable_unset_max_1_0():
   assert (
       should_disable_afc(
-          {'automatic_function_calling': {'maximum_remote_calls': 1.0}}
+          {
+              'automatic_function_calling': {'maximum_remote_calls': 1.0},
+              'tools': [{'function_declarations': [{'name': 'tool_name'}]}]
+          }
       )
-      is True
+      is False
   )
 
 
@@ -157,9 +163,12 @@ def test_afc_enable_true_max_unset():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   disable=False,
               ),
+              tools=[types.Tool(function_declarations=[
+                  types.FunctionDeclaration(name='tool_name')
+              ])],
           )
       )
-      is True
+      is False
   )
 
 
