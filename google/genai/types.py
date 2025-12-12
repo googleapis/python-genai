@@ -4484,24 +4484,19 @@ SpeakerVoiceConfigOrDict = Union[SpeakerVoiceConfig, SpeakerVoiceConfigDict]
 
 
 class MultiSpeakerVoiceConfig(_common.BaseModel):
-  """The configuration for the multi-speaker setup.
-
-  This data type is not supported in Vertex AI.
-  """
+  """Configuration for a multi-speaker text-to-speech request."""
 
   speaker_voice_configs: Optional[list[SpeakerVoiceConfig]] = Field(
-      default=None, description="""Required. All the enabled speaker voices."""
+      default=None,
+      description="""Required. A list of configurations for the voices of the speakers. Exactly two speaker voice configurations must be provided.""",
   )
 
 
 class MultiSpeakerVoiceConfigDict(TypedDict, total=False):
-  """The configuration for the multi-speaker setup.
-
-  This data type is not supported in Vertex AI.
-  """
+  """Configuration for a multi-speaker text-to-speech request."""
 
   speaker_voice_configs: Optional[list[SpeakerVoiceConfigDict]]
-  """Required. All the enabled speaker voices."""
+  """Required. A list of configurations for the voices of the speakers. Exactly two speaker voice configurations must be provided."""
 
 
 MultiSpeakerVoiceConfigOrDict = Union[
@@ -4521,7 +4516,7 @@ class SpeechConfig(_common.BaseModel):
   )
   multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfig] = Field(
       default=None,
-      description="""Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI.""",
+      description="""The configuration for a multi-speaker text-to-speech request. This field is mutually exclusive with `voice_config`.""",
   )
 
 
@@ -4534,7 +4529,7 @@ class SpeechConfigDict(TypedDict, total=False):
   """Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization."""
 
   multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfigDict]
-  """Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI."""
+  """The configuration for a multi-speaker text-to-speech request. This field is mutually exclusive with `voice_config`."""
 
 
 SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]
