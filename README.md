@@ -1523,6 +1523,205 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
+## Interactions (Preview)
+
+> **Warning:** The Interactions API is in **Beta**. This is a preview of an experimental feature. Features and schemas are subject to **breaking changes**.
+
+The Interactions API is a unified interface for interacting with Gemini models and agents. It simplifies state management, tool orchestration, and long-running tasks.
+
+See the [documentation site](https://ai.google.dev/gemini-api/docs/interactions) for more details.
+
+### Basic Interaction
+
+```python
+interaction = client.interactions.create(
+    model='gemini-2.5-flash',
+    input='Tell me a short joke about programming.'
+)
+print(interaction.outputs[-1].text)
+
+```
+
+### Stateful Conversation
+
+The Interactions API supports server-side state management. You can continue a conversation by referencing the `previous_interaction_id`.
+
+```python
+# 1. First turn
+interaction1 = client.interactions.create(
+    model='gemini-2.5-flash',
+    input='Hi, my name is Amir.'
+)
+print(f"Model: {interaction1.outputs[-1].text}")
+
+# 2. Second turn (passing previous_interaction_id)
+interaction2 = client.interactions.create(
+    model='gemini-2.5-flash',
+    input='What is my name?',
+    previous_interaction_id=interaction1.id
+)
+print(f"Model: {interaction2.outputs[-1].text}")
+
+```
+
+### Agents (Deep Research)
+
+You can use specialized agents like `deep-research-pro-preview-12-2025` for complex tasks.
+
+```python
+import time
+
+# 1. Start the Deep Research Agent
+initial_interaction = client.interactions.create(
+    input='Research the history of the Google TPUs with a focus on 2025 and 2026.',
+    agent='deep-research-pro-preview-12-2025',
+    background=True
+)
+print(f"Research started. Interaction ID: {initial_interaction.id}")
+
+# 2. Poll for results
+while True:
+    interaction = client.interactions.get(id=initial_interaction.id)
+    print(f"Status: {interaction.status}")
+
+    if interaction.status == "completed":
+        print("\nFinal Report:\n", interaction.outputs[-1].text)
+        break
+    elif interaction.status in ["failed", "cancelled"]:
+        print(f"Failed with status: {interaction.status}")
+        break
+
+    time.sleep(10)
+
+```
+
+### Multimodal Input
+
+You can provide multimodal data (text, images, audio, etc.) in the input list.
+
+```python
+import base64
+
+# Assuming you have an image loaded as bytes
+# base64_image = ...
+
+interaction = client.interactions.create(
+    model='gemini-2.5-flash',
+    input=[
+        {'type': 'text', 'text': 'Describe the image.'},
+        {'type': 'image', 'data': base64_image, 'mime_type': 'image/png'}
+    ]
+)
+print(interaction.outputs[-1].text)
+
+```
+
+### Function Calling
+
+You can define custom functions for the model to use. The Interactions API handles the tool selection, and you provide the execution result back to the model.
+
+```python
+# 1. Define the tool
+def get_weather(location: str):
+    """Gets the weather for a given location."""
+    return f"The weather in {location} is sunny."
+
+weather_tool = {
+    'type': 'function',
+    'name': 'get_weather',
+    'description': 'Gets the weather for a given location.',
+    'parameters': {
+        'type': 'object',
+        'properties': {
+            'location': {'type': 'string', 'description': 'The city and state, e.g. San Francisco, CA'}
+        },
+        'required': ['location']
+    }
+}
+
+# 2. Send the request with tools
+interaction = client.interactions.create(
+    model='gemini-2.5-flash',
+    input='What is the weather in Mountain View, CA?',
+    tools=[weather_tool]
+)
+
+# 3. Handle the tool call
+for output in interaction.outputs:
+    if output.type == 'function_call':
+        print(f"Tool Call: {output.name}({output.arguments})")
+
+        # Execute your actual function here
+        result = get_weather(**output.arguments)
+
+        # Send result back to the model
+        interaction = client.interactions.create(
+            model='gemini-2.5-flash',
+            previous_interaction_id=interaction.id,
+            input=[{
+                'type': 'function_result',
+                'name': output.name,
+                'call_id': output.id,
+                'result': result
+            }]
+        )
+        print(f"Response: {interaction.outputs[-1].text}")
+
+```
+
+### Built-in Tools
+You can also use Google's built-in tools, such as **Google Search** or **Code Execution**.
+
+#### Grounding with Google Search
+
+```python
+interaction = client.interactions.create(
+    model='gemini-2.5-flash',
+    input='Who won the last Super Bowl?',
+    tools=[{'type': 'google_search'}]
+)
+
+# Find the text output (not the GoogleSearchResultContent)
+text_output = next((o for o in interaction.outputs if o.type == 'text'), None)
+if text_output:
+    print(text_output.text)
+
+```
+
+#### Code Execution
+
+```python
+interaction = client.interactions.create(
+    model='gemini-2.5-flash',
+    input='Calculate the 50th Fibonacci number.',
+    tools=[{'type': 'code_execution'}]
+)
+print(interaction.outputs[-1].text)
+
+```
+
+### Multimodal Output
+
+The Interactions API can generate multimodal outputs, such as images. You must specify the `response_modalities`.
+
+```python
+import base64
+
+interaction = client.interactions.create(
+    model='gemini-3-pro-image-preview',
+    input='Generate an image of a futuristic city.',
+    response_modalities=['IMAGE']
+)
+
+for output in interaction.outputs:
+    if output.type == 'image':
+        print(f"Generated image with mime_type: {output.mime_type}")
+        # Save the image
+        with open("generated_city.png", "wb") as f:
+            f.write(base64.b64decode(output.data))
+
+```
+
 ## Tunings
 
 `client.tunings` contains tuning job APIs and supports supervised fine

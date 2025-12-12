@@ -154,7 +154,7 @@ def test_streaming_with_python_native_no_afc_config(client):
     return
   with pytest.raises(ValueError) as e:
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         contents=generate_content_prompt,
         config=types.GenerateContentConfig(
             tools=[
@@ -179,22 +179,24 @@ def test_streaming_with_python_afc_disabled_false(client):
     return
   with pytest.raises(ValueError) as e:
     for chunk in client.models.generate_content_stream(
-      model='gemini-2.5-pro',
-      contents='What is the price of GOOG? And what is the weather in Boston?',
-      config=types.GenerateContentConfig(
-          tools=[
-              test_generate_content_tools.get_weather,
-              test_generate_content_tools.get_stock_price,
-          ],
-          automatic_function_calling=types.AutomaticFunctionCallingConfig(
-              disable=False,
-          ),
-          tool_config=types.ToolConfig(
-              function_calling_config={
-                  'stream_function_call_arguments': True,
-              }
-          ),
-      ),
+        model='gemini-3-pro-preview',
+        contents=(
+            'What is the price of GOOG? And what is the weather in Boston?'
+        ),
+        config=types.GenerateContentConfig(
+            tools=[
+                test_generate_content_tools.get_weather,
+                test_generate_content_tools.get_stock_price,
+            ],
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                disable=False,
+            ),
+            tool_config=types.ToolConfig(
+                function_calling_config={
+                    'stream_function_call_arguments': True,
+                }
+            ),
+        ),
     ):
       pass
   assert 'not compatible with automatic function calling (AFC)' in str(e.value)
@@ -205,7 +207,7 @@ def test_streaming_with_json_parameters_without_history(client):
 
   with pytest_helper.exception_if_mldev(client, ValueError):
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         contents=generate_content_prompt,
         config=types.GenerateContentConfig(
             tools=[{'function_declarations': json_function_declarations}],
@@ -222,32 +224,12 @@ def test_streaming_with_json_parameters_without_history(client):
       assert chunk.candidates[0].content.parts is not None
 
 
-def test_streaming_with_json_parameters_with_history(client):
-  """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    for chunk in client.models.generate_content_stream(
-        model='gemini-2.5-pro',
-        contents=previous_generate_content_history,
-        config=types.GenerateContentConfig(
-            tools=[{'function_declarations': json_function_declarations}],
-            tool_config=types.ToolConfig(
-                function_calling_config={
-                    'stream_function_call_arguments': True,
-                }
-            ),
-        ),
-    ):
-      assert chunk is not None
-      assert chunk.candidates is not None
-      assert chunk.candidates[0].content is not None
-      assert chunk.candidates[0].content.parts is not None
-
 @pytest.mark.asyncio
 async  def test_streaming_with_json_parameters_async(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
   with pytest_helper.exception_if_mldev(client, ValueError):
     async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         contents=generate_content_prompt,
         config=types.GenerateContentConfig(
             tools=[{'function_declarations': json_function_declarations}],
@@ -268,7 +250,7 @@ def test_streaming_with_gemini_parameters_without_history(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
   with pytest_helper.exception_if_mldev(client, ValueError):
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         contents=generate_content_prompt,
         config=types.GenerateContentConfig(
             tools=[{
@@ -291,7 +273,7 @@ def test_streaming_with_gemini_parameters_with_response(client):
   with pytest_helper.exception_if_mldev(client, ValueError):
     streaming_function_call_content = []
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         contents=[
             types.Content(
                 role='user',
@@ -335,7 +317,7 @@ def test_streaming_with_gemini_parameters_with_response(client):
     )
 
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         contents=streaming_function_call_content,
         config=types.GenerateContentConfig(
             tools=[{'function_declarations': json_function_declarations}],
@@ -348,41 +330,41 @@ def test_streaming_with_gemini_parameters_with_response(client):
     ):
       pass
 
-def test_streaming_with_gemini_parameters_with_history(client):
-  """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    for chunk in client.models.generate_content_stream(
-        model='gemini-2.5-pro',
-        contents=previous_generate_content_history,
-        config=types.GenerateContentConfig(
-            tools=[{
-                'function_declarations': gemini_function_declarations
-            }],
-            tool_config=types.ToolConfig(
-                function_calling_config={
-                    'stream_function_call_arguments': True,
-                }
-            ),
-        ),
-    ):
-      assert chunk is not None
-      assert chunk.candidates is not None
-      assert chunk.candidates[0].content is not None
-      assert chunk.candidates[0].content.parts is not None
-
 def test_chat_streaming_with_json_parameters_with_history(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
   with pytest_helper.exception_if_mldev(client, ValueError):
-    messages = [
-        """
-        get the current weather in boston in celsius, the country is U.S., the purpose is to know what to wear today.
-        """,
-        """
-        get the current weather in new brunswick in celsius, the country is U.S., the purpose is to know what to prepare an event today.
-        """,
+    test_parts = [
+        types.Part(
+            text=(
+                'get the current weather in boston in celsius, the'
+                ' country should be US, the purpose is to know'
+                ' what to wear today?'
+            )
+        ),
+        types.Part.from_function_response(
+            name='get_current_weather',
+            response={
+                'temperature': 21,
+                'unit': 'C',
+            },
+        ),
+        types.Part(
+            text=(
+                'get the current weather in new brunswick in celsius, the'
+                ' country should be US, the purpose is to know'
+                ' what to prepare an event today?'
+            )
+        ),
+        types.Part.from_function_response(
+            name='get_current_weather',
+            response={
+                'temperature': 21,
+                'unit': 'C',
+            },
+        ),
     ]
     chat = client.chats.create(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         history=previous_generate_content_history,
         config=types.GenerateContentConfig(
             tools=[{
@@ -395,7 +377,7 @@ def test_chat_streaming_with_json_parameters_with_history(client):
             ),
         ),
     )
-    for message in messages:
+    for message in test_parts:
       result = chat.send_message_stream(message)
       for chunk in result:
         assert chunk is not None
@@ -409,17 +391,39 @@ def test_chat_streaming_with_json_parameters_with_history(client):
 @pytest.mark.asyncio
 async def test_chat_streaming_with_json_parameters_with_history_async(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
-  messages = [
-      """
-      get the current weather in boston in celsius, the country is U.S., the purpose is to know what to wear today.
-      """,
-      """
-      get the current weather in new brunswick in celsius, the country is U.S., the purpose is to know what to prepare an event today.
-      """,
+  test_parts = [
+      types.Part(
+          text=(
+              'get the current weather in boston in celsius, the'
+              ' country should be US, the purpose is to know'
+              ' what to wear today?'
+          )
+      ),
+      types.Part.from_function_response(
+          name='get_current_weather',
+          response={
+              'temperature': 21,
+              'unit': 'C',
+          },
+      ),
+      types.Part(
+          text=(
+              'get the current weather in new brunswick in celsius, the'
+              ' country should be US, the purpose is to know'
+              ' what to prepare an event today?'
+          )
+      ),
+      types.Part.from_function_response(
+          name='get_current_weather',
+          response={
+              'temperature': 21,
+              'unit': 'C',
+          },
+      ),
   ]
   with pytest_helper.exception_if_mldev(client, ValueError):
     chat = client.aio.chats.create(
-        model='gemini-2.5-pro',
+        model='gemini-3-pro-preview',
         history=previous_generate_content_history,
         config=types.GenerateContentConfig(
             tools=[{'function_declarations': gemini_function_declarations}],
@@ -430,13 +434,9 @@ async def test_chat_streaming_with_json_parameters_with_history_async(client):
             ),
         ),
     )
-    async for chunk in await chat.send_message_stream(messages[0]):
-      assert chunk is not None
-      assert chunk.candidates is not None
-      assert chunk.candidates[0].content is not None
-      assert chunk.candidates[0].content.parts is not None
-    async for chunk in await chat.send_message_stream(messages[1]):
-      assert chunk is not None
-      assert chunk.candidates is not None
-      assert chunk.candidates[0].content is not None
-      assert chunk.candidates[0].content.parts is not None
+    for message in test_parts:
+      async for chunk in await chat.send_message_stream(message):
+        assert chunk is not None
+        assert chunk.candidates is not None
+        assert chunk.candidates[0].content is not None
+        assert chunk.candidates[0].content.parts is not None

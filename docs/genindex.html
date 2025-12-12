@@ -2042,9 +2042,13 @@
           <li><a href="genai.html#genai.types.ControlReferenceConfigDict.enable_control_image_computation">(genai.types.ControlReferenceConfigDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.GenerationConfig.enable_enhanced_civic_answers">enable_enhanced_civic_answers (genai.types.GenerationConfig attribute)</a>
+        <li><a href="genai.html#genai.types.GenerateContentConfig.enable_enhanced_civic_answers">enable_enhanced_civic_answers (genai.types.GenerateContentConfig attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.GenerateContentConfigDict.enable_enhanced_civic_answers">(genai.types.GenerateContentConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.GenerationConfig.enable_enhanced_civic_answers">(genai.types.GenerationConfig attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.GenerationConfigDict.enable_enhanced_civic_answers">(genai.types.GenerationConfigDict attribute)</a>
 </li>
         </ul></li>
@@ -2170,8 +2174,6 @@
 </li>
         <li><a href="genai.html#genai.types.EntityLabelDict">EntityLabelDict (class in genai.types)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.JSONSchema.enum">enum (genai.types.JSONSchema attribute)</a>
 
         <ul>
@@ -2180,6 +2182,8 @@
           <li><a href="genai.html#genai.types.SchemaDict.enum">(genai.types.SchemaDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.Environment">Environment (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.ComputerUse.environment">environment (genai.types.ComputerUse attribute)</a>
@@ -2354,6 +2358,16 @@
           <li><a href="genai.html#genai.types.UpdateCachedContentConfig.expire_time">(genai.types.UpdateCachedContentConfig attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.UpdateCachedContentConfigDict.expire_time">(genai.types.UpdateCachedContentConfigDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.LiveClientSetup.explicit_vad_signal">explicit_vad_signal (genai.types.LiveClientSetup attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.LiveClientSetupDict.explicit_vad_signal">(genai.types.LiveClientSetupDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.LiveConnectConfig.explicit_vad_signal">(genai.types.LiveConnectConfig attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.LiveConnectConfigDict.explicit_vad_signal">(genai.types.LiveConnectConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.CreateTuningJobConfig.export_last_checkpoint_only">export_last_checkpoint_only (genai.types.CreateTuningJobConfig attribute)</a>
@@ -3606,6 +3620,8 @@
           <li><a href="genai.html#genai.types.CachedContentUsageMetadataDict.image_count">(genai.types.CachedContentUsageMetadataDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.FinishReason.IMAGE_OTHER">IMAGE_OTHER (genai.types.FinishReason attribute)</a>
+</li>
         <li><a href="genai.html#genai.types.UpscaleImageConfig.image_preservation_factor">image_preservation_factor (genai.types.UpscaleImageConfig attribute)</a>
 
         <ul>
@@ -3613,6 +3629,8 @@
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.FinishReason.IMAGE_PROHIBITED_CONTENT">IMAGE_PROHIBITED_CONTENT (genai.types.FinishReason attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.FinishReason.IMAGE_RECITATION">IMAGE_RECITATION (genai.types.FinishReason attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.BlockedReason.IMAGE_SAFETY">IMAGE_SAFETY (genai.types.BlockedReason attribute)</a>
 
@@ -8221,6 +8239,20 @@
   <h2>V</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="genai.html#genai.types.VoiceActivityDetectionSignal.vad_signal_type">vad_signal_type (genai.types.VoiceActivityDetectionSignal attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.VoiceActivityDetectionSignalDict.vad_signal_type">(genai.types.VoiceActivityDetectionSignalDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.VadSignalType.VAD_SIGNAL_TYPE_EOS">VAD_SIGNAL_TYPE_EOS (genai.types.VadSignalType attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.VadSignalType.VAD_SIGNAL_TYPE_SOS">VAD_SIGNAL_TYPE_SOS (genai.types.VadSignalType attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.VadSignalType.VAD_SIGNAL_TYPE_UNSPECIFIED">VAD_SIGNAL_TYPE_UNSPECIFIED (genai.types.VadSignalType attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.VadSignalType">VadSignalType (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.Metric.validate_name">validate_name() (genai.types.Metric method)</a>
 </li>
         <li><a href="genai.html#genai.types.FunctionCallingConfigMode.VALIDATED">VALIDATED (genai.types.FunctionCallingConfigMode attribute)</a>
@@ -8315,10 +8347,10 @@
           <li><a href="genai.html#id0">(genai.client.Client property)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.VertexAISearchDataStoreSpecDict">VertexAISearchDataStoreSpecDict (class in genai.types)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="genai.html#genai.types.VertexAISearchDataStoreSpecDict">VertexAISearchDataStoreSpecDict (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.VertexAISearchDict">VertexAISearchDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.VertexRagStoreDict">VertexRagStoreDict (class in genai.types)</a>
@@ -8383,6 +8415,12 @@
 </li>
         <li><a href="genai.html#genai.types.MusicGenerationMode.VOCALIZATION">VOCALIZATION (genai.types.MusicGenerationMode attribute)</a>
 </li>
+        <li><a href="genai.html#genai.types.LiveServerMessage.voice_activity_detection_signal">voice_activity_detection_signal (genai.types.LiveServerMessage attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.LiveServerMessageDict.voice_activity_detection_signal">(genai.types.LiveServerMessageDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.SpeakerVoiceConfig.voice_config">voice_config (genai.types.SpeakerVoiceConfig attribute)</a>
 
         <ul>
@@ -8405,6 +8443,8 @@
           <li><a href="genai.html#genai.types.ReplicatedVoiceConfigDict.voice_sample_audio">(genai.types.ReplicatedVoiceConfigDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.VoiceActivityDetectionSignalDict">VoiceActivityDetectionSignalDict (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.VoiceConfigDict">VoiceConfigDict (class in genai.types)</a>
 </li>
     </ul></td>
