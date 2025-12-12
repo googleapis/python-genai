@@ -43,15 +43,13 @@ from ._api_client import has_aiohttp
 
 from . import _common
 
-from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, DefaultAioHttpClient, GeminiNextGenAPIClient
-from ._interactions._models import FinalRequestOptions
-from ._interactions._types import Headers
-from ._interactions._utils import is_given
+from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, DefaultAioHttpClient, GeminiNextGenAPIClient, GeminiNextGenAPIClientAdapter
+
 from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
 _interactions_experimental_warned = False
 
 
-class AsyncClient:
+class AsyncClient(GeminiNextGenAPIClientAdapter):
   """Client for making asynchronous (non-blocking) requests."""
 
   def __init__(self, api_client: BaseApiClient):
@@ -67,6 +65,21 @@ class AsyncClient:
     self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
     self._nextgen_client_instance: Optional[AsyncGeminiNextGenAPIClient] = None
+
+  def is_vertex_ai(self) -> bool:
+    return self._api_client.vertexai or False
+
+  def get_project(self) -> str | None:
+    return self._api_client.project
+
+  def get_location(self) -> str | None:
+    return self._api_client.location
+
+  def get_auth_headers(self) -> dict[str, str]:
+    access_token = asyncio.run(self._api_client._async_access_token())
+    return {
+      "Authorization": f"Bearer {access_token}"
+    }
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPIClient:
@@ -121,6 +134,7 @@ class AsyncClient:
         # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
         timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
         max_retries=max_retries,
+        client_adapter=self
     )
 
     client = self._nextgen_client_instance
@@ -129,30 +143,6 @@ class AsyncClient:
       client._vertex_project = self._api_client.project
       client._vertex_location = self._api_client.location
 
-      async def prepare_options(options: FinalRequestOptions) -> FinalRequestOptions:
-        headers = {}
-        if is_given(options.headers):
-          headers = {**options.headers}
-
-        headers['Authorization'] = f'Bearer {await self._api_client._async_access_token()}'
-        if (
-            self._api_client._credentials
-            and self._api_client._credentials.quota_project_id
-        ):
-          headers['x-goog-user-project'] = (
-              self._api_client._credentials.quota_project_id
-          )
-        options.headers = headers
-
-        return options
-
-      if self._api_client.project or self._api_client.location:
-        client._prepare_options = prepare_options  # type: ignore[method-assign]
-
-    def validate_headers(headers: Headers, custom_headers: Headers) -> None:
-      return
-
-    client._validate_headers = validate_headers  # type: ignore[method-assign]
     return self._nextgen_client_instance
 
   @property
@@ -278,7 +268,7 @@ class DebugConfig(pydantic.BaseModel):
   )
 
 
-class Client:
+class Client(GeminiNextGenAPIClientAdapter):
   """Client for making synchronous requests.
 
   Use this client to make a request to the Gemini Developer API or Vertex AI
@@ -449,6 +439,20 @@ class Client:
         http_options=http_options,
     )
 
+  def is_vertex_ai(self) -> bool:
+    return self._api_client.vertexai or False
+
+  def get_project(self) -> str | None:
+    return self._api_client.project
+
+  def get_location(self) -> str | None:
+    return self._api_client.location
+
+  def get_auth_headers(self) -> dict[str, str]:
+    return {
+      "Authorization": f"Bearer {self._api_client._access_token()}"
+    }
+
   @property
   def _nextgen_client(self) -> GeminiNextGenAPIClient:
     if self._nextgen_client_instance is not None:
@@ -490,38 +494,14 @@ class Client:
         # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
         timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
         max_retries=max_retries,
+        client_adapter=self
     )
 
     client = self._nextgen_client_instance
-    if self.vertexai:
+    if self._api_client.vertexai:
       client._is_vertex = True
       client._vertex_project = self._api_client.project
       client._vertex_location = self._api_client.location
-
-      def prepare_options(options: FinalRequestOptions) -> FinalRequestOptions:
-        headers = {}
-        if is_given(options.headers):
-          headers = {**options.headers}
-        options.headers = headers
-
-        headers['Authorization'] = f'Bearer {self._api_client._access_token()}'
-        if (
-            self._api_client._credentials
-            and self._api_client._credentials.quota_project_id
-        ):
-          headers['x-goog-user-project'] = (
-              self._api_client._credentials.quota_project_id
-          )
-
-        return options
-
-      if self._api_client.project or self._api_client.location:
-        client._prepare_options = prepare_options  # type: ignore[method-assign]
-
-    def validate_headers(headers: Headers, custom_headers: Headers) -> None:
-      return
-
-    client._validate_headers = validate_headers  # type: ignore[method-assign]
 
     return self._nextgen_client_instance
 
