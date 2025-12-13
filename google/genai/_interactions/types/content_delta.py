@@ -160,7 +160,7 @@ class DeltaFunctionCallDelta(BaseModel):
     name: Optional[str] = None
 
 
-DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent]
+DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class DeltaFunctionResultDeltaResultItems(BaseModel):
@@ -274,7 +274,7 @@ class DeltaMCPServerToolCallDelta(BaseModel):
     server_name: Optional[str] = None
 
 
-DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent]
+DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class DeltaMCPServerToolResultDeltaResultItems(BaseModel):
