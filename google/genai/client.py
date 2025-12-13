@@ -16,7 +16,7 @@
 import asyncio
 import os
 from types import TracebackType
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
 import google.auth
 import pydantic
@@ -116,6 +116,7 @@ class AsyncClient:
     self._nextgen_client_instance = AsyncGeminiNextGenAPIClient(
         base_url=http_opts.base_url,
         api_key=self._api_client.api_key,
+        api_version=http_opts.api_version,
         default_headers=http_opts.headers,
         http_client=http_client,
         # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
@@ -485,6 +486,7 @@ class Client:
     self._nextgen_client_instance = GeminiNextGenAPIClient(
         base_url=http_opts.base_url,
         api_key=self._api_client.api_key,
+        api_version=http_opts.api_version,
         default_headers=http_opts.headers,
         http_client=self._api_client._httpx_client,
         # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.

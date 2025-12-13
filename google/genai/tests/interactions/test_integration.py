@@ -50,6 +50,7 @@ def test_client_timeout():
     mock_nextgen_client.assert_called_once_with(
         base_url=mock.ANY,
         api_key="placeholder",
+        api_version="v1alpha",
         default_headers=mock.ANY,
         http_client=mock.ANY,
         timeout=5.0,
@@ -73,6 +74,7 @@ async def test_async_client_timeout():
     mock_nextgen_client.assert_called_once_with(
         base_url=mock.ANY,
         api_key="placeholder",
+        api_version="v1alpha",
         default_headers=mock.ANY,
         http_client=mock.ANY,
         timeout=5.0,
