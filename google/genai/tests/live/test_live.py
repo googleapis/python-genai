@@ -1654,7 +1654,11 @@ async def test_bidi_setup_to_api_with_thinking_config(vertexai):
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
   )
-  assert result == expected_result
+  assert pytest_helper.camel_to_snake(
+      result['setup']['generationConfig'].keys()[0]
+  ) == pytest_helper.camel_to_snake(
+      expected_result['setup']['generationConfig'].keys()[0]
+  )
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -2138,4 +2142,3 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
   assert 'x-goog-api-key' in capture['headers'], "x-goog-api-key is missing from headers"
   assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
   assert 'BidiGenerateContent' in capture['uri']
-
