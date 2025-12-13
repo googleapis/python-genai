@@ -29,7 +29,6 @@ class DynamicAgentConfig(BaseModel):
     """Configuration for dynamic agents."""
 
     type: Optional[Literal["dynamic"]] = None
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     if TYPE_CHECKING:
         # Some versions of Pydantic <2.8.0 have a bug and don’t allow assigning a

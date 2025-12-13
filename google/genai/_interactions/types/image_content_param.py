@@ -32,7 +32,6 @@ class ImageContentParam(TypedDict, total=False):
     """An image content block."""
 
     type: Required[Literal["image"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
 

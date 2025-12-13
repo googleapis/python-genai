@@ -28,7 +28,6 @@ class ImageContent(BaseModel):
     """An image content block."""
 
     type: Literal["image"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
