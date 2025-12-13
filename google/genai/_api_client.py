@@ -733,6 +733,15 @@ class BaseApiClient:
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
 
+  def convert_uri_to_string(self, obj: Union[dict[str, object], bytes, object]) -> Any:
+      if isinstance(obj, dict):
+          return {k: self.convert_uri_to_string(v) for k, v in obj.items()}
+      elif isinstance(obj, list):
+          return [self.convert_uri_to_string(i) for i in obj]
+      elif hasattr(obj, "__str__") and type(obj).__name__ == "AnyUrl":
+          return str(obj)
+      return obj
+
   async def _get_aiohttp_session(self) -> 'aiohttp.ClientSession':
     """Returns the aiohttp client session."""
     if (
@@ -1169,11 +1178,11 @@ class BaseApiClient:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
+      data = json.dumps(self.convert_uri_to_string(http_request.data)) if http_request.data else None
     else:
       if http_request.data:
         if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
+          data = json.dumps(self.convert_uri_to_string(http_request.data)) if http_request.data else None
         else:
           data = http_request.data
 
@@ -1237,11 +1246,11 @@ class BaseApiClient:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
+      data = json.dumps(self.convert_uri_to_string(http_request.data)) if http_request.data else None
     else:
       if http_request.data:
         if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
+          data = json.dumps(self.convert_uri_to_string(http_request.data)) if http_request.data else None
         else:
           data = http_request.data
 
