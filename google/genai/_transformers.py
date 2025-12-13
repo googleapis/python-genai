@@ -21,6 +21,7 @@ from enum import Enum, EnumMeta
 import inspect
 import io
 import logging
+import pathlib
 import re
 import sys
 import time
@@ -286,28 +287,23 @@ def t_caches_model(
 
 
 def pil_to_blob(img: Any) -> types.Blob:
-  PngImagePlugin: Optional[builtin_types.ModuleType]
-  try:
-    import PIL.PngImagePlugin
+  def _blob_from_file() -> Optional[types.Blob]:
+    filepath = pathlib.Path(getattr(img, 'filename', ''))
+    if not filepath.is_file():
+      return None
+    # Return source bytes unchanged
+    image_bytes = filepath.read_bytes()
+    mime_type = img.get_format_mimetype()
+    return types.Blob(data=image_bytes, mime_type=mime_type)
 
-    PngImagePlugin = PIL.PngImagePlugin
-  except ImportError:
-    PngImagePlugin = None
-
-  bytesio = io.BytesIO()
-  if (
-      PngImagePlugin is not None
-      and isinstance(img, PngImagePlugin.PngImageFile)
-      or img.mode == 'RGBA'
-  ):
-    img.save(bytesio, format='PNG')
+  def _blob_from_lossless_memory_image() -> types.Blob:
+    image_io = io.BytesIO()
+    img.save(image_io, format='PNG')
+    image_bytes = image_io.getvalue()
     mime_type = 'image/png'
-  else:
-    img.save(bytesio, format='JPEG')
-    mime_type = 'image/jpeg'
-  bytesio.seek(0)
-  data = bytesio.read()
-  return types.Blob(mime_type=mime_type, data=data)
+    return types.Blob(data=image_bytes, mime_type=mime_type)
+
+  return _blob_from_file() or _blob_from_lossless_memory_image()
 
 
 def t_function_response(
