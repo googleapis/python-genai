@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.56.0](https://github.com/googleapis/python-genai/compare/v1.55.0...v1.56.0) (2025-12-13)
+
+
+### Features
+
+* Support multi speaker for Vertex AI ([ecb00c2](https://github.com/googleapis/python-genai/commit/ecb00c22414dc578cf7db760591a4086a541d72a))
+
+
+### Bug Fixes
+
+* Api version handling for interactions. ([436ca2e](https://github.com/googleapis/python-genai/commit/436ca2e1d536d57d662284b6b1079215de3d787f))
+
+
+### Documentation
+
+* Add documentation for the new Interactions API (Preview). ([e28a69c](https://github.com/googleapis/python-genai/commit/e28a69c92a7c770400b329cad714c2b612829fe0))
+* Update docs for 1.55 ([1cc43e7](https://github.com/googleapis/python-genai/commit/1cc43e7d066eeb95c77409d01fd8f5652d32847a))
+
 ## [1.55.0](https://github.com/googleapis/python-genai/compare/v1.54.0...v1.55.0) (2025-12-11)
 
 
