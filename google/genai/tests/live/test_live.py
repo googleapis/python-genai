@@ -1654,6 +1654,8 @@ async def test_bidi_setup_to_api_with_thinking_config(vertexai):
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
   )
+  result = pytest_helper.camel_to_snake_all_keys(result)
+  expected_result = pytest_helper.camel_to_snake_all_keys(expected_result)
   assert result == expected_result
 
 
