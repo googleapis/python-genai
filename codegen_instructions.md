@@ -1,46 +1,3 @@
-# About this file (for humans only)
-
-This file provides curated prompts to help generative AI models like Gemini and
-Claude produce code using the latest Gemini APIs.
-
-Generative models are often unaware of recent API updates and may suggest
-outdated or legacy code. You can copy and paste the instructions from this file
-into your development environment to provide the model with the necessary
-context.
-
-> **Note: This is an Alpha (v0.2) Release** This is an early and experimental
-> collection of prompts. It's intended for testing and to gather feedback from
-> the community. Results are not guaranteed, and we expect frequent updates.
-
-## Disclaimer
-
-Please be aware that generative models can generate incorrect or unexpected
-outputs. You should always verify the results.
-
-## Scope
-
-To maintain a manageable context size, this guide does not cover the full range
-of the Gemini API's features. Refer to our [developer
-documentation](https://ai.google.dev/gemini-api/docs) for comprehensive feature
-guides.
-
-If you'd like to reduce context window consumption, you can experiment with
-removing sections on this file. You can let us know how it works at our
-[community forums](https://discuss.ai.google.dev/c/gemini-api).
-
-Note: These instructions are for the [Gemini
-API](https://ai.google.dev/gemini-api/docs). Vertex AI developers should note
-that while the APIs are similar, there may be minor differences, and the
-[official Vertex AI documentation](https://cloud.google.com/vertex-ai/docs)
-should be used for definitive guidance
-
-## Contributions
-
-We welcome suggestions for improvement. Please feel free to open an issue or
-send a pull request.
-
-You can copy paste the next section.
-
 # Gemini API Coding Guidelines (Python)
 
 You are a Gemini API coding expert. Help me with writing code using the Gemini
@@ -48,14 +5,13 @@ API calling the official libraries and SDKs.
 
 Please follow the following guidelines when generating code.
 
-You can find the official SDK documentation and code samples here:
-https://ai.google.dev/gemini-api/docs
+**Official Documentation:** [ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)
 
 ## Golden Rule: Use the Correct and Current SDK
 
-Always use the Google GenAI SDK to call the Gemini models, which became the
-standard library for all Gemini API interactions as of 2025. Do not use legacy
-libraries and SDKs.
+Always use the **Google GenAI SDK** (`google-genai`), which is the unified
+standard library for all Gemini API requests (AI Studio/Gemini Developer API
+and Vertex AI) as of 2025. Do not use legacy libraries and SDKs.
 
 -   **Library Name:** Google GenAI SDK
 -   **Python Package:** `google-genai`
@@ -94,13 +50,23 @@ libraries and SDKs.
     **Correct:** `from google.genai.errors import APIError`
 -   **Incorrect:** `types.ResponseModality.TEXT`
 
-## Initialization and API key
+## Initialization and API Key
 
 The `google-genai` library requires creating a client object for all API calls.
 
 -   Always use `client = genai.Client()` to create a client object.
--   Set `GEMINI_API_KEY` environment variable, which will be picked up
+-   Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) environment variable, which will be picked up
     automatically.
+
+```python
+from google import genai
+
+# Best practice: implicitly use env variable
+client = genai.Client()
+
+# Alternative: explicit key (avoid hardcoding in production)
+# client = genai.Client(api_key='YOUR_API_KEY')
+```
 
 ## Models
 
@@ -127,6 +93,7 @@ The `google-genai` library requires creating a client object for all API calls.
 ## Basic Inference (Text Generation)
 
 Here's how to generate a response from a text prompt.
+Calls are stateless using the `client.models` accessor.
 
 ```python
 from google import genai
@@ -135,79 +102,122 @@ client = genai.Client()
 
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    contents='why is the sky blue?',
+    contents='Why is the sky blue?',
 )
 
-print(response.text) # output is often markdown
+print(response.text)  # output is often markdown
 ```
 
-Multimodal inputs are supported by passing a PIL Image in the `contents` list:
+## Multimodal Inputs
+
+Pass images directly as PIL objects, bytes, or file URIs.
+
+### Using PIL Images
 
 ```python
 from google import genai
 from PIL import Image
 
 client = genai.Client()
-
-image = Image.open(img_path)
-
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents=[image, 'explain that image'],
-)
-
-print(response.text) # The output often is markdown
-```
-
-You can also use `Part.from_bytes` type to pass a variety of data types (images,
-audio, video, pdf).
-
-```python
-from google.genai import types
-
-with open('path/to/small-sample.jpg', 'rb') as f:
-    image_bytes = f.read()
+image = Image.open('image.jpg')
 
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    contents=[
-        types.Part.from_bytes(
-            data=image_bytes,
-            mime_type='image/jpeg',
-        ),
-        'Caption this image.'
-    ]
+    contents=[image, 'Describe this image in detail.'],
 )
 
 print(response.text)
 ```
 
-For larger files, use `client.files.upload`:
+### Using Bytes (Best for Web/API Backends)
+
+You can also use `Part.from_bytes` type to pass a variety of data types (images,
+audio, video, pdf).
 
 ```python
-f = client.files.upload(file=img_path)
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+with open('audio_sample.mp3', 'rb') as f:
+    audio_bytes = f.read()
 
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    contents=[f, 'can you describe this image?']
+    contents=[
+        types.Part.from_bytes(
+            data=audio_bytes,
+            mime_type='audio/mp3',
+        ),
+        'Transcribe this audio.'
+    ]
 )
+print(response.text)
 ```
 
-You can delete files after use like this:
+### File API (For Large Files)
+
+For video files or long audio, upload to the File API first.
 
 ```python
-myfile = client.files.upload(file='path/to/sample.mp3')
-client.files.delete(name=myfile.name)
+# Upload
+my_file = client.files.upload(file='video.mp4')
+
+# Generate
+response = client.models.generate_content(
+    model='gemini-2.5-flash',
+    contents=[my_file, 'What happens in this video?']
+)
+print(response.text)
+
+# You can delete files after use like this:
+client.files.delete(name=my_file.name)
 ```
 
-## Additional Capabilities and Configurations
+## Advanced Capabilities
 
-Below are examples of advanced configurations.
+### Thinking (Reasoning)
 
-### Thinking
+Gemini 2.5 and 3 series models support explicit "thinking" for complex logic.
 
-Gemini 2.5 series models support thinking, which is on by default for
-`gemini-2.5-flash`. It can be adjusted by using `thinking_budget` setting.
+#### Gemini 3
+
+Thinking is on by default for `gemini-3-pro-preview`. It can be adjusted by
+using the `thinking_level` parameter.
+
+- **Low**: Minimizes latency and cost. Best for simple instruction following or chat.
+- **High**: (Default) Maximizes reasoning depth. The model may take significantly longer to reach a first token, but the output will be more thoroughly vetted.
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+response = client.models.generate_content(
+    model='gemini-3-pro-preview',
+    contents='What is AI?',
+    config=types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(
+            thinking_level=types.ThinkingLevel.HIGH
+        )
+    )
+)
+
+# Access thoughts if returned
+for part in response.candidates[0].content.parts:
+    if part.thought:
+        print(f"Thought: {part.text}")
+    else:
+        print(f"Response: {part.text}")
+```
+
+#### Gemini 2.5
+
+Thinking is on by default for
+`gemini-2.5-pro` and `gemini-2.5-flash`.
+It can be adjusted by using `thinking_budget` setting.
 Setting it to zero turns thinking off, and will reduce latency.
 
 ```python
@@ -216,8 +226,8 @@ from google.genai import types
 
 client = genai.Client()
 
-client.models.generate_content(
-    model='gemini-2.5-flash',
+response = client.models.generate_content(
+    model='gemini-2.5-pro',
     contents='What is AI?',
     config=types.GenerateContentConfig(
         thinking_config=types.ThinkingConfig(
@@ -225,18 +235,25 @@ client.models.generate_content(
         )
     )
 )
+
+# Access thoughts if returned
+for part in response.candidates[0].content.parts:
+    if part.thought:
+        print(f"Thought: {part.text}")
+    else:
+        print(f"Response: {part.text}")
 ```
 
 IMPORTANT NOTES:
 
 -   Minimum thinking budget for `gemini-2.5-pro` is `128` and thinking can not
     be turned off for that model.
--   No models (apart from Gemini 2.5 series) support thinking or thinking
-    budgets APIs. Do not try to adjust thinking budgets other models (such as
-    `gemini-2.0-flash` or `gemini-2.0-pro`) otherwise it will cause syntax
+-   No models (apart from Gemini 2.5/3 series) support thinking or thinking
+    budgets APIs. Do not try to adjust thinking budgets for other models (such as
+    `gemini-2.0-flash` or `gemini-2.0-pro`), otherwise it will cause syntax
     errors.
 
-### System instructions
+### System Instructions
 
 Use system instructions to guide model's behavior.
 
@@ -246,15 +263,13 @@ from google.genai import types
 
 client = genai.Client()
 
-config = types.GenerateContentConfig(
-    system_instruction='You are a pirate',
-)
-
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    config=config,
+    contents='Explain quantum physics.',
+    config=types.GenerateContentConfig(
+        system_instruction='You are a pirate',
+    )
 )
-
 print(response.text)
 ```
 
@@ -296,7 +311,7 @@ print(response.text)
 
 ### Streaming
 
-It is possible to stream responses to reduce user perceived latency:
+Use `generate_content_stream` to reduce time-to-first-token.
 
 ```python
 from google import genai
@@ -305,8 +320,9 @@ client = genai.Client()
 
 response = client.models.generate_content_stream(
     model='gemini-2.5-flash',
-    contents=['Explain how AI works']
+    contents='Write a long story about a space pirate.'
 )
+
 for chunk in response:
     print(chunk.text, end='')
 ```
@@ -322,37 +338,35 @@ from google import genai
 client = genai.Client()
 chat = client.chats.create(model='gemini-2.5-flash')
 
-response = chat.send_message('I have 2 dogs in my house.')
-print(response.text)
+response1 = chat.send_message('I have a cat named Whiskers.')
+print(response1.text)
 
-response = chat.send_message('How many paws are in my house?')
-print(response.text)
+response2 = chat.send_message('What is the name of my pet?')
+print(response2.text)
 
+# To access specific elements in chat history
 for message in chat.get_history():
     print(f'role - {message.role}', end=': ')
     print(message.parts[0].text)
 ```
 
-### Structured outputs
+### Structured Outputs (Pydantic)
 
-Use structured outputs to force the model to return a response that conforms to
-a specific Pydantic schema.
+Enforce a specific JSON schema using standard Python type hints or Pydantic models.
 
 ```python
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
-client = genai.Client()
-
-# Define the desired output structure using Pydantic
 class Recipe(BaseModel):
-    recipe_name: str
+    name: str
     description: str
     ingredients: list[str]
     steps: list[str]
 
-# Request the model to populate the schema
+client = genai.Client()
+
 response = client.models.generate_content(
     model='gemini-2.5-flash',
     contents='Provide a classic recipe for chocolate chip cookies.',
@@ -362,11 +376,14 @@ response = client.models.generate_content(
     ),
 )
 
-# The response.text will be a valid JSON string matching the Recipe schema
+# response.text is guaranteed to be valid JSON matching the schema
 print(response.text)
+
+# Access the response as a Pydantic object
+parsed_response = response.parsed
 ```
 
-#### Function Calling (Tools)
+### Function Calling
 
 You can provide the model with tools (functions) it can use to bring in external
 information to answer a question or act on a request outside the model.
@@ -374,8 +391,6 @@ information to answer a question or act on a request outside the model.
 ```python
 from google import genai
 from google.genai import types
-
-client = genai.Client()
 
 # Define a function that the model can call (to access external information)
 def get_current_weather(city: str) -> str:
@@ -385,14 +400,17 @@ def get_current_weather(city: str) -> str:
     else:
         return f'Weather data for {city} is not available.'
 
-# Make the function available to the model as a tool
+client = genai.Client()
+
 response = client.models.generate_content(
     model='gemini-2.5-flash',
-    contents='What is the weather like in Boston?',
+    contents='What is the weather in Boston?',
     config=types.GenerateContentConfig(
-        tools=[get_current_weather]
+        tools=[get_current_weather] # Make the function available to the model as a tool
+
     ),
 )
+
 # The model may respond with a request to call the function
 if response.function_calls:
     print('Function calls requested by the model:')
@@ -404,10 +422,44 @@ else:
     print(response.text)
 ```
 
+### Grounding (Google Search)
+
+Connect the model to real-time web data.
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+response = client.models.generate_content(
+    model='gemini-2.5-flash',
+    contents='What was the score of the latest Olympique Lyonais game?',
+    config=types.GenerateContentConfig(
+        tools=[
+            types.Tool(google_search=types.GoogleSearch())
+        ]
+    ),
+)
+
+print(response.text)
+# Search details
+print(f'Search Query: {response.candidates[0].grounding_metadata.web_search_queries}')
+# Inspect grounding metadata
+print(response.candidates[0].grounding_metadata.search_entry_point.rendered_content)
+# Urls used for grounding
+print(f"Search Pages: {', '.join([site.web.title for site in response.candidates[0].grounding_metadata.grounding_chunks])}")
+```
+
+The output `response.text` will likely not be in JSON format, do not attempt to
+parse it as JSON.
+
+## Media Generation
+
 ### Generate Images
 
 Here's how to generate images using the Nano Banana models. Start with the
-Gemini 2.5 Flash image (Nano Banana) model as it should cover most use-cases.
+Gemini 2.5 Flash Image (Nano Banana) model as it should cover most use-cases.
 
 ```python
 from google import genai
@@ -453,7 +505,10 @@ response = client.models.generate_content(
             aspect_ratio=aspect_ratio,
             image_size=resolution
         ),
-        tools=[{"google_search": {}}]
+        # Optional
+        tools=[
+            types.Tool(google_search=types.GoogleSearch())
+        ]
     )
 )
 
@@ -499,9 +554,9 @@ for i, part in enumerate(response.candidates[0].content.parts):
 chat.send_message('Can you make it a bananas foster?')
 ```
 
-### Generate Videos
+### Video Generation (Veo)
 
-Here's how to generate videos using the Veo models. Usage of Veo can be costly,
+Use the Veo models for video generation. Usage of Veo can be costly,
 so after generating code for it, give user a heads up to check pricing for Veo.
 Start with the fast model since the result quality is usually sufficient, and
 swap to the larger model if needed.
@@ -516,6 +571,7 @@ client = genai.Client()
 
 image = Image.open('path/to/image.png') # Optional
 
+# Video generation is an async operation
 operation = client.models.generate_videos(
     model='veo-3.0-fast-generate-001',
     prompt='Panning wide shot of a calico kitten sleeping in the sunshine',
@@ -528,6 +584,7 @@ operation = client.models.generate_videos(
     ),
 )
 
+# Poll for completion
 while not operation.done:
     time.sleep(20)
     operation = client.operations.get(operation)
@@ -537,41 +594,7 @@ for n, generated_video in enumerate(operation.response.generated_videos):
     generated_video.video.save(f'video{n}.mp4')  # saves the video
 ```
 
-### Search Grounding
-
-Google Search can be used as a tool for grounding queries that with up to date
-information from the web.
-
-**Correct**
-
-```python
-from google import genai
-from google.genai import types
-
-client = genai.Client()
-
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents='What was the score of the latest Olympique Lyonais game?',
-    config=types.GenerateContentConfig(
-        tools=[
-            types.Tool(google_search=types.GoogleSearch())
-        ]
-    ),
-)
-
-# Response
-print(f'Response:\n {response.text}')
-# Search details
-print(f'Search Query: {response.candidates[0].grounding_metadata.web_search_queries}')
-# Urls used for grounding
-print(f"Search Pages: {', '.join([site.web.title for site in response.candidates[0].grounding_metadata.grounding_chunks])}")
-```
-
-The output `response.text` will likely not be in JSON format, do not attempt to
-parse it as JSON.
-
-### Content and Part Hierarchy
+## Content and Part Hierarchy
 
 While the simpler API call is often sufficient, you may run into scenarios where
 you need to work directly with the underlying `Content` and `Part` objects for
