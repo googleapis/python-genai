@@ -86,11 +86,6 @@ else:
 
 if typing.TYPE_CHECKING:
   import yaml
-else:
-  try:
-    import yaml
-  except ImportError:
-    yaml = None
 
 _is_httpx_imported = False
 if typing.TYPE_CHECKING:
@@ -10646,7 +10641,9 @@ class Metric(_common.BaseModel):
     Raises:
         ImportError: If the pyyaml library is not installed.
     """
-    if yaml is None:
+    try:
+      import yaml
+    except ImportError:
       raise ImportError(
           'YAML serialization requires the pyyaml library. Please install'
           " it using 'pip install google-cloud-aiplatform[evaluation]'."
