@@ -577,6 +577,8 @@ class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """Media resolution set to medium."""
   MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
   """Media resolution set to high."""
+  MEDIA_RESOLUTION_ULTRA_HIGH = 'MEDIA_RESOLUTION_ULTRA_HIGH'
+  """Media resolution set to ultra high."""
 
 
 class ResourceScope(_common.CaseInSensitiveEnum):
