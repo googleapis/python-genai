@@ -267,14 +267,18 @@ class PhishBlockThreshold(_common.CaseInSensitiveEnum):
 
 
 class ThinkingLevel(_common.CaseInSensitiveEnum):
-  """The level of thoughts tokens that the model should generate."""
+  """The number of thoughts tokens that the model should generate."""
 
   THINKING_LEVEL_UNSPECIFIED = 'THINKING_LEVEL_UNSPECIFIED'
-  """Default value."""
+  """Unspecified thinking level."""
   LOW = 'LOW'
   """Low thinking level."""
+  MEDIUM = 'MEDIUM'
+  """Medium thinking level."""
   HIGH = 'HIGH'
   """High thinking level."""
+  MINIMAL = 'MINIMAL'
+  """MINIMAL thinking level."""
 
 
 class HarmCategory(_common.CaseInSensitiveEnum):
@@ -577,6 +581,8 @@ class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """Media resolution set to medium."""
   MEDIA_RESOLUTION_HIGH = 'MEDIA_RESOLUTION_HIGH'
   """Media resolution set to high."""
+  MEDIA_RESOLUTION_ULTRA_HIGH = 'MEDIA_RESOLUTION_ULTRA_HIGH'
+  """Media resolution set to ultra high."""
 
 
 class ResourceScope(_common.CaseInSensitiveEnum):
@@ -4609,7 +4615,7 @@ class ThinkingConfig(_common.BaseModel):
   )
   thinking_level: Optional[ThinkingLevel] = Field(
       default=None,
-      description="""Optional. The level of thoughts tokens that the model should generate.""",
+      description="""Optional. The number of thoughts tokens that the model should generate.""",
   )
 
 
@@ -4625,7 +4631,7 @@ class ThinkingConfigDict(TypedDict, total=False):
       """
 
   thinking_level: Optional[ThinkingLevel]
-  """Optional. The level of thoughts tokens that the model should generate."""
+  """Optional. The number of thoughts tokens that the model should generate."""
 
 
 ThinkingConfigOrDict = Union[ThinkingConfig, ThinkingConfigDict]

@@ -227,3 +227,20 @@ def camel_to_snake(camel_str: str) -> str:
 def get_value_ignore_key_case(obj, key):
   """Returns the value of the key in the object, converting to camelCase or snake_case if necessary."""
   return obj.get(snake_to_camel(key), obj.get(camel_to_snake(key), None))
+
+
+def camel_to_snake_all_keys(data):
+  """Converts all keys in a dictionary or list to snake_case."""
+  if isinstance(data, dict):
+    new_dict = {}
+    for key, value in data.items():
+      if isinstance(key, str):
+        new_key = camel_to_snake(key)
+      else:
+        new_key = key
+      new_dict[new_key] = camel_to_snake_all_keys(value)
+    return new_dict
+  elif isinstance(data, list):
+    return [camel_to_snake_all_keys(item) for item in data]
+  else:
+    return data

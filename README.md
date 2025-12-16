@@ -19,11 +19,7 @@ APIs.
 
 Generative models are often unaware of recent API and SDK updates and may suggest outdated or legacy code.
 
-We recommend using our Code Generation instructions [codegen_instructions.md](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md) when generating Google Gen AI SDK code to guide your model towards using the more recent SDK features.
-
-Copy and paste the instructions from [this file](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md)
-into your development environment to provide the model with the necessary
-context
+We recommend using our Code Generation instructions [`codegen_instructions.md`](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md) when generating Google Gen AI SDK code to guide your model towards using the more recent SDK features. Copy and paste the instructions into your development environment to provide the model with the necessary context.
 
 ## Installation
 
@@ -136,7 +132,7 @@ client = genai.Client()
 ## Close a client
 
 Explicitly close the sync client to ensure that resources, such as the
- underlying HTTP connections, are properly cleaned up and closed.
+underlying HTTP connections, are properly cleaned up and closed.
 
 ```python
 from google.genai import Client
@@ -177,7 +173,7 @@ await aclient.aclose()
 ## Client context managers
 
 By using the sync client context manager, it will close the underlying
- sync client when exiting the with block and avoid httpx "client has been closed" error like [issues#1763](https://github.com/googleapis/python-genai/issues/1763).
+sync client when exiting the with block and avoid httpx "client has been closed" error like [issues#1763](https://github.com/googleapis/python-genai/issues/1763).
 
 ```python
 from google.genai import Client
@@ -248,7 +244,7 @@ client = genai.Client(
 By default we use httpx for both sync and async client implementations. In order
 to have faster performance, you may install `google-genai[aiohttp]`. In Gen AI
 SDK we configure `trust_env=True` to match with the default behavior of httpx.
-Additional args of `aiohttp.ClientSession.request()` ([see _RequestOptions args](https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170)) can be passed
+Additional args of `aiohttp.ClientSession.request()` ([see `_RequestOptions` args](https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170)) can be passed
 through the following way:
 
 ```python
@@ -263,7 +259,7 @@ client=Client(..., http_options=http_options)
 
 Both httpx and aiohttp libraries use `urllib.request.getproxies` from
 environment variables. Before client initialization, you may set proxy (and
-optional SSL_CERT_FILE) by setting the environment variables:
+optional `SSL_CERT_FILE`) by setting the environment variables:
 
 ```bash
 export HTTPS_PROXY='http://username:password@proxy_uri:port'
@@ -286,7 +282,7 @@ client=Client(..., http_options=http_options)
 ### Custom base url
 
 In some cases you might need a custom base url (for example, API gateway proxy
- server) and bypass some authentication checks for project, location, or API key.
+server) and bypass some authentication checks for project, location, or API key.
 You may pass the custom base url like this:
 
 ```python
@@ -345,7 +341,8 @@ for part in response.parts:
 ```
 
 #### with uploaded file (Gemini Developer API only)
-download the file in console.
+
+Download the file in console.
 
 ```sh
 !wget -q https://storage.googleapis.com/generativeai-downloads/data/a11.txt
@@ -363,11 +360,13 @@ print(response.text)
 ```
 
 #### How to structure `contents` argument for `generate_content`
+
 The SDK always converts the inputs to the `contents` argument into
 `list[types.Content]`.
 The following shows some common ways to provide your inputs.
 
 ##### Provide a `list[types.Content]`
+
 This is the canonical way to provide contents, SDK will not do any conversion.
 
 ##### Provide a `types.Content` instance
@@ -413,7 +412,7 @@ The SDK will assume this is a text part, and it converts this into the following
 Where a `types.UserContent` is a subclass of `types.Content`, it sets the
 `role` field to be `user`.
 
-##### Provide a list of string
+##### Provide a list of strings
 
 ```python
 contents=['Why is the sky blue?', 'Why is the cloud white?']
@@ -482,7 +481,7 @@ contents = [
 ]
 ```
 
-The SDK converts a list of function call parts to the a content with a `model` role:
+The SDK converts a list of function call parts to a content with a `model` role:
 
 ```python
 [
@@ -674,7 +673,9 @@ response = client.models.generate_content(
 
 print(response.text)
 ```
+
 #### Disabling automatic function calling
+
 If you pass in a python function as a tool directly, and do not want
 automatic function calling, you can disable automatic function calling
 as follows:
@@ -906,7 +907,9 @@ including by giving examples of expected JSON output. If you do, the generated
 output might be lower in quality.
 
 #### JSON Schema support
+
 Schemas can be provided as standard JSON schema.
+
 ```python
 user_profile = {
     'properties': {
@@ -1033,7 +1036,7 @@ print(response.text)
 
 #### JSON Response
 
-You can also set response_mime_type to 'application/json', the response will be
+You can also set `response_mime_type` to `'application/json'`, the response will be
 identical but in quotes.
 
 ```python
@@ -1917,13 +1920,14 @@ job
 ```
 
 In order to create a batch job with file name. Need to upload a json file.
-For example myrequests.json:
+For example `myrequests.json`:
 
-```
+```json
 {"key":"request_1", "request": {"contents": [{"parts": [{"text":
  "Explain how AI works in a few words"}]}], "generation_config": {"response_modalities": ["TEXT"]}}}
 {"key":"request_2", "request": {"contents": [{"parts": [{"text": "Explain how Crypto works in a few words"}]}]}}
 ```
+
 Then upload the file.
 
 ```python
@@ -1939,7 +1943,6 @@ batch_job = client.batches.create(
     src="files/test-json",
 )
 ```
-
 
 ```python
 # Get a job by name
@@ -2011,7 +2014,7 @@ delete_job
 
 ## Error Handling
 
-To handle errors raised by the model service, the SDK provides this [APIError](https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py) class.
+To handle errors raised by the model service, the SDK provides this [`APIError`](https://github.com/googleapis/python-genai/blob/main/google/genai/errors.py) class.
 
 ```python
 from google.genai import errors
@@ -2033,8 +2036,8 @@ properties to include in the request body. This can be used to access new or
 experimental backend features that are not yet formally supported in the SDK.
 The structure of the dictionary must match the backend API's request structure.
 
-- VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
-- GeminiAPI backend API docs: https://ai.google.dev/api/rest
+- Vertex AI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+- Gemini API backend API docs: https://ai.google.dev/api/rest
 
 ```python
 response = client.models.generate_content(
