@@ -38,7 +38,7 @@ class VideoContentParam(TypedDict, total=False):
     mime_type: VideoMimeTypeParam
     """The mime type of the video."""
 
-    resolution: Literal["low", "medium", "high"]
+    resolution: Literal["low", "medium", "high", "ultra_high"]
     """The resolution of the media."""
 
     uri: str

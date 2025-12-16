@@ -82,7 +82,7 @@ class DeltaImageDelta(BaseModel):
     mime_type: Optional[ImageMimeType] = None
     """The mime type of the image."""
 
-    resolution: Optional[Literal["low", "medium", "high"]] = None
+    resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
 
     uri: Optional[str] = None
@@ -118,7 +118,7 @@ class DeltaVideoDelta(BaseModel):
     mime_type: Optional[VideoMimeType] = None
     """The mime type of the video."""
 
-    resolution: Optional[Literal["low", "medium", "high"]] = None
+    resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
 
     uri: Optional[str] = None

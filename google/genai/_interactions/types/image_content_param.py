@@ -38,7 +38,7 @@ class ImageContentParam(TypedDict, total=False):
     mime_type: ImageMimeTypeParam
     """The mime type of the image."""
 
-    resolution: Literal["low", "medium", "high"]
+    resolution: Literal["low", "medium", "high", "ultra_high"]
     """The resolution of the media."""
 
     uri: str
