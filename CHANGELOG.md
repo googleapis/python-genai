@@ -6,8 +6,6 @@
 ### Features
 
 * Add minimal and medium thinking levels. ([96d644c](https://github.com/googleapis/python-genai/commit/96d644cd52a300063040c6d7bf70e2939b735e6f))
-* Add minimal and medium thinking levels. ([4385e16](https://github.com/googleapis/python-genai/commit/4385e16c90f667ecdedb29ef58e14aab24f29f3e))
-* Add minimal and medium thinking levels. ([cec3646](https://github.com/googleapis/python-genai/commit/cec3646e0dc05641727775d4782625e563c6d317))
 * Add support for Struct in ToolResult Content. ([8fd4886](https://github.com/googleapis/python-genai/commit/8fd4886a04396683f75a54887f768c312e1b73b7))
 * Add ultra high resolution to the media resolution in Parts. ([356c320](https://github.com/googleapis/python-genai/commit/356c320566a7ff512c680bcf60b678648b342829))
 * Add ULTRA_HIGH MediaResolution and new ThinkingLevel enums ([336b823](https://github.com/googleapis/python-genai/commit/336b8236c0e7c16d581226ed3438453dddf66119))
