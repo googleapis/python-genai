@@ -15,23 +15,9 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
-from typing_extensions import Literal
+from typing import Union
+from typing_extensions import Literal, TypeAlias
 
-from .._models import BaseModel
-from .document_mime_type import DocumentMimeType
+__all__ = ["DocumentMimeType"]
 
-__all__ = ["DocumentContent"]
-
-
-class DocumentContent(BaseModel):
-    """A document content block."""
-
-    type: Literal["document"]
-
-    data: Optional[str] = None
-
-    mime_type: Optional[DocumentMimeType] = None
-    """The mime type of the document."""
-
-    uri: Optional[str] = None
+DocumentMimeType: TypeAlias = Union[str, Literal["application/pdf"]]

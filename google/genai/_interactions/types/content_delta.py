@@ -26,6 +26,7 @@ from .image_content import ImageContent
 from .audio_mime_type import AudioMimeType
 from .image_mime_type import ImageMimeType
 from .video_mime_type import VideoMimeType
+from .document_mime_type import DocumentMimeType
 from .url_context_result import URLContextResult
 from .google_search_result import GoogleSearchResult
 from .url_context_call_arguments import URLContextCallArguments
@@ -103,7 +104,8 @@ class DeltaDocumentDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[str] = None
+    mime_type: Optional[DocumentMimeType] = None
+    """The mime type of the document."""
 
     uri: Optional[str] = None
 

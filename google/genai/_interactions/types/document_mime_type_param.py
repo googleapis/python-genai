@@ -18,27 +18,8 @@
 from __future__ import annotations
 
 from typing import Union
-from typing_extensions import Literal, Required, Annotated, TypedDict
+from typing_extensions import Literal, TypeAlias
 
-from .._types import Base64FileInput
-from .._utils import PropertyInfo
-from .._models import set_pydantic_config
-from .document_mime_type_param import DocumentMimeTypeParam
+__all__ = ["DocumentMimeTypeParam"]
 
-__all__ = ["DocumentContentParam"]
-
-
-class DocumentContentParam(TypedDict, total=False):
-    """A document content block."""
-
-    type: Required[Literal["document"]]
-
-    data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
-
-    mime_type: DocumentMimeTypeParam
-    """The mime type of the document."""
-
-    uri: str
-
-
-set_pydantic_config(DocumentContentParam, {"arbitrary_types_allowed": True})
+DocumentMimeTypeParam: TypeAlias = Union[str, Literal["application/pdf"]]
