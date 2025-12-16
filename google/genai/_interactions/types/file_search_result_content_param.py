@@ -40,7 +40,6 @@ class FileSearchResultContentParam(TypedDict, total=False):
     """File Search result content."""
 
     type: Required[Literal["file_search_result"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     result: Iterable[Result]
     """The results of the File Search."""

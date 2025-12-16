@@ -32,7 +32,6 @@ class VideoContentParam(TypedDict, total=False):
     """A video content block."""
 
     type: Required[Literal["video"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
 

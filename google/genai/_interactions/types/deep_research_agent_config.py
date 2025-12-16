@@ -30,4 +30,3 @@ class DeepResearchAgentConfig(BaseModel):
     """Whether to include thought summaries in the response."""
 
     type: Optional[Literal["deep-research"]] = None
-    """Used as the OpenAPI type discriminator for the content oneof."""

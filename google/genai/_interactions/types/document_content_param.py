@@ -31,7 +31,6 @@ class DocumentContentParam(TypedDict, total=False):
     """A document content block."""
 
     type: Required[Literal["document"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
 

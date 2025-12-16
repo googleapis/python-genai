@@ -43,7 +43,6 @@ class FunctionResultContent(BaseModel):
     """The result of the tool call."""
 
     type: Literal["function_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     is_error: Optional[bool] = None
     """Whether the tool call resulted in an error."""

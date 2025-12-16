@@ -29,4 +29,3 @@ class DeepResearchAgentConfigParam(TypedDict, total=False):
     """Whether to include thought summaries in the response."""
 
     type: Literal["deep-research"]
-    """Used as the OpenAPI type discriminator for the content oneof."""

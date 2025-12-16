@@ -27,7 +27,6 @@ class DocumentContent(BaseModel):
     """A document content block."""
 
     type: Literal["document"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
