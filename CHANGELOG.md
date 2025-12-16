@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.56.0](https://github.com/googleapis/python-genai/compare/v1.55.0...v1.56.0) (2025-12-16)
+
+
+### Features
+
+* Add minimal and medium thinking levels. ([96d644c](https://github.com/googleapis/python-genai/commit/96d644cd52a300063040c6d7bf70e2939b735e6f))
+* Add minimal and medium thinking levels. ([4385e16](https://github.com/googleapis/python-genai/commit/4385e16c90f667ecdedb29ef58e14aab24f29f3e))
+* Add minimal and medium thinking levels. ([cec3646](https://github.com/googleapis/python-genai/commit/cec3646e0dc05641727775d4782625e563c6d317))
+* Add support for Struct in ToolResult Content. ([8fd4886](https://github.com/googleapis/python-genai/commit/8fd4886a04396683f75a54887f768c312e1b73b7))
+* Add ultra high resolution to the media resolution in Parts. ([356c320](https://github.com/googleapis/python-genai/commit/356c320566a7ff512c680bcf60b678648b342829))
+* Add ULTRA_HIGH MediaResolution and new ThinkingLevel enums ([336b823](https://github.com/googleapis/python-genai/commit/336b8236c0e7c16d581226ed3438453dddf66119))
+* Define and use DocumentMimeType for DocumentContent ([dc7f00f](https://github.com/googleapis/python-genai/commit/dc7f00f78b74bfdeab4b20121a4c2c2ba3065daa))
+* Support multi speaker for Vertex AI ([ecb00c2](https://github.com/googleapis/python-genai/commit/ecb00c22414dc578cf7db760591a4086a541d72a))
+
+
+### Bug Fixes
+
+* Api version handling for interactions. ([436ca2e](https://github.com/googleapis/python-genai/commit/436ca2e1d536d57d662284b6b1079215de3d787f))
+
+
+### Documentation
+
+* Add documentation for the new Interactions API (Preview). ([e28a69c](https://github.com/googleapis/python-genai/commit/e28a69c92a7c770400b329cad714c2b612829fe0))
+* Update and restructure codegen_instructions ([00422de](https://github.com/googleapis/python-genai/commit/00422de07b133a19246f91ac77e7da41dc471e74))
+* Update docs for 1.55 ([1cc43e7](https://github.com/googleapis/python-genai/commit/1cc43e7d066eeb95c77409d01fd8f5652d32847a))
+
 ## [1.55.0](https://github.com/googleapis/python-genai/compare/v1.54.0...v1.55.0) (2025-12-11)
 
 
