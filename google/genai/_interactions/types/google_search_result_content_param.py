@@ -29,7 +29,6 @@ class GoogleSearchResultContentParam(TypedDict, total=False):
     """Google Search result content."""
 
     type: Required[Literal["google_search_result"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: str
     """ID to match the ID from the google search call block."""

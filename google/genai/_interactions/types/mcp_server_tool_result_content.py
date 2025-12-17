@@ -43,7 +43,6 @@ class MCPServerToolResultContent(BaseModel):
     """The result of the tool call."""
 
     type: Literal["mcp_server_tool_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     name: Optional[str] = None
     """Name of the tool which is called for this specific tool call."""

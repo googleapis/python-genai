@@ -39,4 +39,3 @@ class MCPServerToolCallContentParam(TypedDict, total=False):
     """The name of the used MCP server."""
 
     type: Required[Literal["mcp_server_tool_call"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""

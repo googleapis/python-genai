@@ -86,11 +86,6 @@ else:
 
 if typing.TYPE_CHECKING:
   import yaml
-else:
-  try:
-    import yaml
-  except ImportError:
-    yaml = None
 
 _is_httpx_imported = False
 if typing.TYPE_CHECKING:
@@ -4651,6 +4646,11 @@ class ImageConfig(_common.BaseModel):
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`.""",
   )
+  person_generation: Optional[str] = Field(
+      default=None,
+      description="""Controls the generation of people. Supported values are:
+      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE.""",
+  )
   output_mime_type: Optional[str] = Field(
       default=None,
       description="""MIME type of the generated image. This field is not
@@ -4674,6 +4674,10 @@ class ImageConfigDict(TypedDict, total=False):
   """Optional. Specifies the size of generated images. Supported
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`."""
+
+  person_generation: Optional[str]
+  """Controls the generation of people. Supported values are:
+      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE."""
 
   output_mime_type: Optional[str]
   """MIME type of the generated image. This field is not
@@ -10646,7 +10650,9 @@ class Metric(_common.BaseModel):
     Raises:
         ImportError: If the pyyaml library is not installed.
     """
-    if yaml is None:
+    try:
+      import yaml
+    except ImportError:
       raise ImportError(
           'YAML serialization requires the pyyaml library. Please install'
           " it using 'pip install google-cloud-aiplatform[evaluation]'."

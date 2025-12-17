@@ -36,4 +36,3 @@ class FunctionCallContentParam(TypedDict, total=False):
     """The name of the tool to call."""
 
     type: Required[Literal["function_call"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""

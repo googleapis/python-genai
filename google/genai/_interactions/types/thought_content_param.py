@@ -35,7 +35,6 @@ class ThoughtContentParam(TypedDict, total=False):
     """A thought content block."""
 
     type: Required[Literal["thought"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """Signature to match the backend source to be part of the generation."""

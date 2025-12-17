@@ -29,7 +29,6 @@ class TextContentParam(TypedDict, total=False):
     """A text content block."""
 
     type: Required[Literal["text"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     annotations: Iterable[AnnotationParam]
     """Citation information for model-generated content."""

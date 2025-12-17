@@ -1131,6 +1131,11 @@ def _ImageConfig_to_mldev(
   if getv(from_object, ['image_size']) is not None:
     setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
 
+  if getv(from_object, ['person_generation']) is not None:
+    raise ValueError(
+        'person_generation parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['output_mime_type']) is not None:
     raise ValueError(
         'output_mime_type parameter is not supported in Gemini API.'

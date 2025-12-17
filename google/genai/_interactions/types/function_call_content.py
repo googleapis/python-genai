@@ -36,4 +36,3 @@ class FunctionCallContent(BaseModel):
     """The name of the tool to call."""
 
     type: Literal["function_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""

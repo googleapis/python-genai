@@ -19,6 +19,7 @@ from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
+from .document_mime_type import DocumentMimeType
 
 __all__ = ["DocumentContent"]
 
@@ -27,10 +28,10 @@ class DocumentContent(BaseModel):
     """A document content block."""
 
     type: Literal["document"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
-    mime_type: Optional[str] = None
+    mime_type: Optional[DocumentMimeType] = None
+    """The mime type of the document."""
 
     uri: Optional[str] = None

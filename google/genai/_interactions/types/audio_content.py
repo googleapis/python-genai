@@ -28,7 +28,6 @@ class AudioContent(BaseModel):
     """An audio content block."""
 
     type: Literal["audio"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 

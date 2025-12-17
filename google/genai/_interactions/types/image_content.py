@@ -28,14 +28,13 @@ class ImageContent(BaseModel):
     """An image content block."""
 
     type: Literal["image"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
     mime_type: Optional[ImageMimeType] = None
     """The mime type of the image."""
 
-    resolution: Optional[Literal["low", "medium", "high"]] = None
+    resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
 
     uri: Optional[str] = None

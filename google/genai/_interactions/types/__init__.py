@@ -51,6 +51,7 @@ from .tool_choice_type import ToolChoiceType as ToolChoiceType
 from .generation_config import GenerationConfig as GenerationConfig
 from .interaction_event import InteractionEvent as InteractionEvent
 from .tool_choice_param import ToolChoiceParam as ToolChoiceParam
+from .document_mime_type import DocumentMimeType as DocumentMimeType
 from .text_content_param import TextContentParam as TextContentParam
 from .tool_choice_config import ToolChoiceConfig as ToolChoiceConfig
 from .url_context_result import URLContextResult as URLContextResult
@@ -71,6 +72,7 @@ from .document_content_param import DocumentContentParam as DocumentContentParam
 from .interaction_get_params import InteractionGetParams as InteractionGetParams
 from .function_result_content import FunctionResultContent as FunctionResultContent
 from .generation_config_param import GenerationConfigParam as GenerationConfigParam
+from .document_mime_type_param import DocumentMimeTypeParam as DocumentMimeTypeParam
 from .tool_choice_config_param import ToolChoiceConfigParam as ToolChoiceConfigParam
 from .url_context_call_content import URLContextCallContent as URLContextCallContent
 from .url_context_result_param import URLContextResultParam as URLContextResultParam

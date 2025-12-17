@@ -26,7 +26,6 @@ class CodeExecutionResultContentParam(TypedDict, total=False):
     """Code execution result content."""
 
     type: Required[Literal["code_execution_result"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: str
     """ID to match the ID from the code execution call block."""

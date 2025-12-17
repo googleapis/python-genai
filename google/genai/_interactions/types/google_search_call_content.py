@@ -28,7 +28,6 @@ class GoogleSearchCallContent(BaseModel):
     """Google Search content."""
 
     type: Literal["google_search_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: Optional[str] = None
     """A unique ID for this specific tool call."""
