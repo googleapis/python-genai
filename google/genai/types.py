@@ -4646,6 +4646,11 @@ class ImageConfig(_common.BaseModel):
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`.""",
   )
+  person_generation: Optional[str] = Field(
+      default=None,
+      description="""Controls the generation of people. Supported values are:
+      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE.""",
+  )
   output_mime_type: Optional[str] = Field(
       default=None,
       description="""MIME type of the generated image. This field is not
@@ -4669,6 +4674,10 @@ class ImageConfigDict(TypedDict, total=False):
   """Optional. Specifies the size of generated images. Supported
       values are `1K`, `2K`, `4K`. If not specified, the model will use default
       value `1K`."""
+
+  person_generation: Optional[str]
+  """Controls the generation of people. Supported values are:
+      ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE."""
 
   output_mime_type: Optional[str]
   """MIME type of the generated image. This field is not
