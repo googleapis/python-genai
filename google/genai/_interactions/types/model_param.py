@@ -33,6 +33,7 @@ ModelParam: TypeAlias = Union[
         "gemini-2.5-flash-image-preview",
         "gemini-2.5-pro-preview-tts",
         "gemini-3-pro-preview",
+        "gemini-3-flash-preview",
     ],
     str,
 ]
