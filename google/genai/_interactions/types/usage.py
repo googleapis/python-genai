@@ -93,7 +93,7 @@ class Usage(BaseModel):
     total_output_tokens: Optional[int] = None
     """Total number of tokens across all the generated responses."""
 
-    total_reasoning_tokens: Optional[int] = None
+    total_thought_tokens: Optional[int] = None
     """Number of tokens of thoughts for thinking models."""
 
     total_tokens: Optional[int] = None
