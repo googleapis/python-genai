@@ -93,7 +93,7 @@ class UsageParam(TypedDict, total=False):
     total_output_tokens: int
     """Total number of tokens across all the generated responses."""
 
-    total_reasoning_tokens: int
+    total_thought_tokens: int
     """Number of tokens of thoughts for thinking models."""
 
     total_tokens: int

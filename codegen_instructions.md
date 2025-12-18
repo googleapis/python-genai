@@ -71,7 +71,7 @@ client = genai.Client()
 ## Models
 
 -   By default, use the following models when using `google-genai`:
-    -   **General Text & Multimodal Tasks:** `gemini-2.5-flash`
+    -   **General Text & Multimodal Tasks:** `gemini-3-flash-preview`
     -   **Coding and Complex Reasoning Tasks:** `gemini-3-pro-preview`
     -   **Low Latency & High Volume Tasks:** `gemini-2.5-flash-lite`
     -   **Fast Image Generation and Editing:** `gemini-2.5-flash-image` (aka Nano Banana)
@@ -83,6 +83,7 @@ client = genai.Client()
 -   It is also acceptable to use following models if explicitly requested by the
     user:
     -   **Gemini 2.0 Series**: `gemini-2.0-flash`, `gemini-2.0-flash-lite`
+    -   **Gemini 2.5 Series**: `gemini-2.5-flash`, `gemini-2.5-pro`
 
 -   Do not use the following deprecated models (or their variants like
     `gemini-1.5-flash-latest`):
@@ -101,7 +102,7 @@ from google import genai
 client = genai.Client()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents='Why is the sky blue?',
 )
 
@@ -122,7 +123,7 @@ client = genai.Client()
 image = Image.open('image.jpg')
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents=[image, 'Describe this image in detail.'],
 )
 
@@ -144,7 +145,7 @@ with open('audio_sample.mp3', 'rb') as f:
     audio_bytes = f.read()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents=[
         types.Part.from_bytes(
             data=audio_bytes,
@@ -166,7 +167,7 @@ my_file = client.files.upload(file='video.mp4')
 
 # Generate
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents=[my_file, 'What happens in this video?']
 )
 print(response.text)
@@ -183,11 +184,13 @@ Gemini 2.5 and 3 series models support explicit "thinking" for complex logic.
 
 #### Gemini 3
 
-Thinking is on by default for `gemini-3-pro-preview`. It can be adjusted by
-using the `thinking_level` parameter.
+Thinking is on by default for `gemini-3-pro-preview` and `gemini-3-flash-preview`.
+It can be adjusted by using the `thinking_level` parameter.
 
-- **Low**: Minimizes latency and cost. Best for simple instruction following or chat.
-- **High**: (Default) Maximizes reasoning depth. The model may take significantly longer to reach a first token, but the output will be more thoroughly vetted.
+- **`MINIMAL`:** (Gemini 3 Flash Only) Constrains the model to use as few tokens as possible for thinking and is best used for low-complexity tasks that wouldn't benefit from extensive reasoning.
+- **`LOW`**: Constrains the model to use fewer tokens for thinking and is suitable for simpler tasks where extensive reasoning is not required.
+- **`MEDIUM`**: (Gemini 3 Flash only) Offers a balanced approach suitable for tasks of moderate complexity that benefit from reasoning but don't require deep, multi-step planning.
+- **`HIGH`**: (Default) Maximizes reasoning depth. The model may take significantly longer to reach a first token, but the output will be more thoroughly vetted.
 
 ```python
 from google import genai
@@ -264,7 +267,7 @@ from google.genai import types
 client = genai.Client()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents='Explain quantum physics.',
     config=types.GenerateContentConfig(
         system_instruction='You are a pirate',
@@ -319,7 +322,7 @@ from google import genai
 client = genai.Client()
 
 response = client.models.generate_content_stream(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents='Write a long story about a space pirate.'
 )
 
@@ -336,7 +339,7 @@ history.
 from google import genai
 
 client = genai.Client()
-chat = client.chats.create(model='gemini-2.5-flash')
+chat = client.chats.create(model='gemini-3-flash-preview')
 
 response1 = chat.send_message('I have a cat named Whiskers.')
 print(response1.text)
@@ -368,7 +371,7 @@ class Recipe(BaseModel):
 client = genai.Client()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents='Provide a classic recipe for chocolate chip cookies.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -403,7 +406,7 @@ def get_current_weather(city: str) -> str:
 client = genai.Client()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents='What is the weather in Boston?',
     config=types.GenerateContentConfig(
         tools=[get_current_weather] # Make the function available to the model as a tool
@@ -433,7 +436,7 @@ from google.genai import types
 client = genai.Client()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents='What was the score of the latest Olympique Lyonais game?',
     config=types.GenerateContentConfig(
         tools=[
@@ -609,7 +612,7 @@ from google import genai
 client = genai.Client()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents='How does AI work?'
 )
 print(response.text)
@@ -624,7 +627,7 @@ from google.genai import types
 client = genai.Client()
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3-flash-preview',
     contents=[
         types.Content(role='user', parts=[types.Part.from_text(text='How does AI work?')]),
     ]

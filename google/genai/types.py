@@ -182,15 +182,6 @@ class Type(_common.CaseInSensitiveEnum):
   """Null type"""
 
 
-class Mode(_common.CaseInSensitiveEnum):
-  """The mode of the predictor to be used in dynamic retrieval."""
-
-  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
-  """Always trigger retrieval."""
-  MODE_DYNAMIC = 'MODE_DYNAMIC'
-  """Run retrieval only when system decides it is necessary."""
-
-
 class ApiSpec(_common.CaseInSensitiveEnum):
   """The API spec that the external API implements.
 
@@ -259,6 +250,45 @@ class PhishBlockThreshold(_common.CaseInSensitiveEnum):
   """Blocks Very high and above confidence URL that is risky."""
   BLOCK_ONLY_EXTREMELY_HIGH = 'BLOCK_ONLY_EXTREMELY_HIGH'
   """Blocks Extremely high confidence URL that is risky."""
+
+
+class Behavior(_common.CaseInSensitiveEnum):
+  """Specifies the function Behavior.
+
+  Currently only supported by the BidiGenerateContent method. This enum is not
+  supported in Vertex AI.
+  """
+
+  UNSPECIFIED = 'UNSPECIFIED'
+  """This value is unused."""
+  BLOCKING = 'BLOCKING'
+  """If set, the system will wait to receive the function response before continuing the conversation."""
+  NON_BLOCKING = 'NON_BLOCKING'
+  """If set, the system will not wait to receive the function response. Instead, it will attempt to handle function responses as they become available while maintaining the conversation between the user and the model."""
+
+
+class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Always trigger retrieval."""
+  MODE_DYNAMIC = 'MODE_DYNAMIC'
+  """Run retrieval only when system decides it is necessary."""
+
+
+class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
+  """Function calling mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Unspecified function calling mode. This value should not be used."""
+  AUTO = 'AUTO'
+  """Default model behavior, model decides to predict either function calls or natural language response."""
+  ANY = 'ANY'
+  """Model is constrained to always predicting function calls only. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
+  NONE = 'NONE'
+  """Model will not predict any function calls. Model behavior is same as when not passing any function declarations."""
+  VALIDATED = 'VALIDATED'
+  """Model is constrained to predict either function calls or natural language response. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
 
 
 class ThinkingLevel(_common.CaseInSensitiveEnum):
@@ -618,26 +648,6 @@ class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   PRIORITIZE_COST = 'PRIORITIZE_COST'
 
 
-class Behavior(_common.CaseInSensitiveEnum):
-  """Defines the function behavior. Defaults to `BLOCKING`."""
-
-  UNSPECIFIED = 'UNSPECIFIED'
-  """This value is unused."""
-  BLOCKING = 'BLOCKING'
-  """If set, the system will wait to receive the function response before continuing the conversation."""
-  NON_BLOCKING = 'NON_BLOCKING'
-  """If set, the system will not wait to receive the function response. Instead, it will attempt to handle function responses as they become available while maintaining the conversation between the user and the model."""
-
-
-class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
-  """Config for the dynamic retrieval config mode."""
-
-  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
-  """Always trigger retrieval."""
-  MODE_DYNAMIC = 'MODE_DYNAMIC'
-  """Run retrieval only when system decides it is necessary."""
-
-
 class Environment(_common.CaseInSensitiveEnum):
   """The environment being operated."""
 
@@ -645,21 +655,6 @@ class Environment(_common.CaseInSensitiveEnum):
   """Defaults to browser."""
   ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
   """Operates in a web browser."""
-
-
-class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
-  """Config for the function calling config mode."""
-
-  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
-  """The function calling config mode is unspecified. Should not be used."""
-  AUTO = 'AUTO'
-  """Default model behavior, model decides to predict either function calls or natural language response."""
-  ANY = 'ANY'
-  """Model is constrained to always predicting function calls only. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
-  NONE = 'NONE'
-  """Model will not predict any function calls. Model behavior is same as when not passing any function declarations."""
-  VALIDATED = 'VALIDATED'
-  """Model decides to predict either a function call or a natural language response, but will validate function calls with constrained decoding. If "allowed_function_names" are set, the predicted function call will be limited to any one of "allowed_function_names", else the predicted function call will be any one of the provided "function_declarations"."""
 
 
 class SafetyFilterLevel(_common.CaseInSensitiveEnum):
@@ -2805,315 +2800,6 @@ ModelSelectionConfigOrDict = Union[
 ]
 
 
-class FunctionDeclaration(_common.BaseModel):
-  """Defines a function that the model can generate JSON inputs for.
-
-  The inputs are based on `OpenAPI 3.0 specifications
-  <https://spec.openapis.org/oas/v3.0.3>`_.
-  """
-
-  behavior: Optional[Behavior] = Field(
-      default=None, description="""Defines the function behavior."""
-  )
-  description: Optional[str] = Field(
-      default=None,
-      description="""Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function.""",
-  )
-  name: Optional[str] = Field(
-      default=None,
-      description="""Required. The name of the function to call. Must start with a letter or an underscore. Must be a-z, A-Z, 0-9, or contain underscores, dots and dashes, with a maximum length of 64.""",
-  )
-  parameters: Optional[Schema] = Field(
-      default=None,
-      description="""Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1""",
-  )
-  parameters_json_schema: Optional[Any] = Field(
-      default=None,
-      description="""Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example: ``` { "type": "object", "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }, "additionalProperties": false, "required": ["name", "age"], "propertyOrdering": ["name", "age"] } ``` This field is mutually exclusive with `parameters`.""",
-  )
-  response: Optional[Schema] = Field(
-      default=None,
-      description="""Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function.""",
-  )
-  response_json_schema: Optional[Any] = Field(
-      default=None,
-      description="""Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`.""",
-  )
-
-  @classmethod
-  def from_callable_with_api_option(
-      cls,
-      *,
-      callable: Callable[..., Any],
-      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
-      behavior: Optional[Behavior] = None,
-  ) -> 'FunctionDeclaration':
-    """Converts a Callable to a FunctionDeclaration based on the API option.
-
-    Supported API option is 'VERTEX_AI' or 'GEMINI_API'. If api_option is unset,
-    it will default to 'GEMINI_API'. If unsupported api_option is provided, it
-    will raise ValueError.
-    """
-    supported_api_options = ['VERTEX_AI', 'GEMINI_API']
-    if api_option not in supported_api_options:
-      raise ValueError(
-          f'Unsupported api_option value: {api_option}. Supported api_option'
-          f' value is one of: {supported_api_options}.'
-      )
-    from . import _automatic_function_calling_util
-
-    parameters_properties = {}
-    parameters_json_schema = {}
-    annotation_under_future = typing.get_type_hints(callable)
-    try:
-      for name, param in inspect.signature(callable).parameters.items():
-        if param.kind in (
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            inspect.Parameter.KEYWORD_ONLY,
-            inspect.Parameter.POSITIONAL_ONLY,
-        ):
-          param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
-              param, annotation_under_future, name
-          )
-          schema = (
-              _automatic_function_calling_util._parse_schema_from_parameter(
-                  api_option, param, callable.__name__
-              )
-          )
-          parameters_properties[name] = schema
-    except ValueError:
-      parameters_properties = {}
-      for name, param in inspect.signature(callable).parameters.items():
-        if param.kind in (
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            inspect.Parameter.KEYWORD_ONLY,
-            inspect.Parameter.POSITIONAL_ONLY,
-        ):
-          try:
-            param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
-                param, annotation_under_future, name
-            )
-            param_schema_adapter = pydantic.TypeAdapter(
-                param.annotation,
-                config=pydantic.ConfigDict(arbitrary_types_allowed=True),
-            )
-            json_schema_dict = param_schema_adapter.json_schema()
-            json_schema_dict = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
-                json_schema_dict
-            )
-            if 'prefixItems' in json_schema_dict:
-              parameters_json_schema[name] = json_schema_dict
-              continue
-
-            union_args = typing.get_args(param.annotation)
-            has_primitive = any(
-                _automatic_function_calling_util._is_builtin_primitive_or_compound(
-                    arg
-                )
-                for arg in union_args
-            )
-            if (
-                '$ref' in json_schema_dict or '$defs' in json_schema_dict
-            ) and has_primitive:
-              # This is a complex schema with a primitive (e.g., str | MyModel)
-              # that is better represented by raw JSON schema.
-              parameters_json_schema[name] = json_schema_dict
-              continue
-
-            schema = Schema.from_json_schema(
-                json_schema=JSONSchema(**json_schema_dict),
-                api_option=api_option,
-            )
-            if param.default is not inspect.Parameter.empty:
-              schema.default = param.default
-            parameters_properties[name] = schema
-          except Exception as e:
-            _automatic_function_calling_util._raise_for_unsupported_param(
-                param, callable.__name__, e
-            )
-
-    declaration = FunctionDeclaration(
-        name=callable.__name__,
-        description=inspect.cleandoc(callable.__doc__)
-        if callable.__doc__
-        else callable.__doc__,
-        behavior=behavior,
-    )
-    if parameters_properties:
-      declaration.parameters = Schema(
-          type='OBJECT',
-          properties=parameters_properties,
-      )
-      declaration.parameters.required = (
-          _automatic_function_calling_util._get_required_fields(
-              declaration.parameters
-          )
-      )
-    elif parameters_json_schema:
-      declaration.parameters_json_schema = parameters_json_schema
-    # TODO: b/421991354 - Remove this check once the bug is fixed.
-    if api_option == 'GEMINI_API':
-      return declaration
-
-    return_annotation = inspect.signature(callable).return_annotation
-    if return_annotation is inspect._empty:
-      return declaration
-
-    return_value = inspect.Parameter(
-        'return_value',
-        inspect.Parameter.POSITIONAL_OR_KEYWORD,
-        annotation=return_annotation,
-    )
-
-    # This snippet catches the case when type hints are stored as strings
-    if isinstance(return_value.annotation, str):
-      return_value = return_value.replace(
-          annotation=annotation_under_future['return']
-      )
-    response_schema: Optional[Schema] = None
-    response_json_schema: Optional[Union[dict[str, Any], Schema]] = {}
-    try:
-      response_schema = (
-          _automatic_function_calling_util._parse_schema_from_parameter(
-              api_option,
-              return_value,
-              callable.__name__,
-          )
-      )
-      if response_schema.any_of is not None:
-        # To handle any_of, we need to use responseJsonSchema
-        response_json_schema = response_schema
-        response_schema = None
-    except ValueError:
-      try:
-        return_value_schema_adapter = pydantic.TypeAdapter(
-            return_value.annotation,
-            config=pydantic.ConfigDict(arbitrary_types_allowed=True),
-        )
-        response_json_schema = return_value_schema_adapter.json_schema()
-        response_json_schema = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
-            response_json_schema
-        )
-      except Exception as e:
-        _automatic_function_calling_util._raise_for_unsupported_param(
-            return_value, callable.__name__, e
-        )
-
-    if response_schema:
-      declaration.response = response_schema
-    elif response_json_schema:
-      declaration.response_json_schema = response_json_schema
-    return declaration
-
-  @classmethod
-  def from_callable(
-      cls,
-      *,
-      client: 'BaseApiClient',
-      callable: Callable[..., Any],
-      behavior: Optional[Behavior] = None,
-  ) -> 'FunctionDeclaration':
-    """Converts a Callable to a FunctionDeclaration based on the client.
-
-    Note: For best results prefer
-    [Google-style
-    docstring](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods)
-    when describing arguments. This function does **not** parse argument
-    descriptions into the property description slots of the resulting structure.
-    Instead it sends the whole docstring in the top-level function description.
-    Google-style docstring are closest to what the model is trained on.
-    """
-    if client.vertexai:
-      return cls.from_callable_with_api_option(
-          callable=callable, api_option='VERTEX_AI', behavior=behavior
-      )
-    else:
-      return cls.from_callable_with_api_option(
-          callable=callable, api_option='GEMINI_API', behavior=behavior
-      )
-
-
-class FunctionDeclarationDict(TypedDict, total=False):
-  """Defines a function that the model can generate JSON inputs for.
-
-  The inputs are based on `OpenAPI 3.0 specifications
-  <https://spec.openapis.org/oas/v3.0.3>`_.
-  """
-
-  behavior: Optional[Behavior]
-  """Defines the function behavior."""
-
-  description: Optional[str]
-  """Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function."""
-
-  name: Optional[str]
-  """Required. The name of the function to call. Must start with a letter or an underscore. Must be a-z, A-Z, 0-9, or contain underscores, dots and dashes, with a maximum length of 64."""
-
-  parameters: Optional[SchemaDict]
-  """Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1"""
-
-  parameters_json_schema: Optional[Any]
-  """Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example: ``` { "type": "object", "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }, "additionalProperties": false, "required": ["name", "age"], "propertyOrdering": ["name", "age"] } ``` This field is mutually exclusive with `parameters`."""
-
-  response: Optional[SchemaDict]
-  """Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function."""
-
-  response_json_schema: Optional[Any]
-  """Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`."""
-
-
-FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
-
-
-class DynamicRetrievalConfig(_common.BaseModel):
-  """Describes the options to customize dynamic retrieval."""
-
-  mode: Optional[DynamicRetrievalConfigMode] = Field(
-      default=None,
-      description="""The mode of the predictor to be used in dynamic retrieval.""",
-  )
-  dynamic_threshold: Optional[float] = Field(
-      default=None,
-      description="""Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used.""",
-  )
-
-
-class DynamicRetrievalConfigDict(TypedDict, total=False):
-  """Describes the options to customize dynamic retrieval."""
-
-  mode: Optional[DynamicRetrievalConfigMode]
-  """The mode of the predictor to be used in dynamic retrieval."""
-
-  dynamic_threshold: Optional[float]
-  """Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used."""
-
-
-DynamicRetrievalConfigOrDict = Union[
-    DynamicRetrievalConfig, DynamicRetrievalConfigDict
-]
-
-
-class GoogleSearchRetrieval(_common.BaseModel):
-  """Tool to retrieve public web data for grounding, powered by Google."""
-
-  dynamic_retrieval_config: Optional[DynamicRetrievalConfig] = Field(
-      default=None,
-      description="""Specifies the dynamic retrieval configuration for the given source.""",
-  )
-
-
-class GoogleSearchRetrievalDict(TypedDict, total=False):
-  """Tool to retrieve public web data for grounding, powered by Google."""
-
-  dynamic_retrieval_config: Optional[DynamicRetrievalConfigDict]
-  """Specifies the dynamic retrieval configuration for the given source."""
-
-
-GoogleSearchRetrievalOrDict = Union[
-    GoogleSearchRetrieval, GoogleSearchRetrievalDict
-]
-
-
 class ComputerUse(_common.BaseModel):
   """Tool to support computer use."""
 
@@ -4040,6 +3726,269 @@ class EnterpriseWebSearchDict(TypedDict, total=False):
 EnterpriseWebSearchOrDict = Union[EnterpriseWebSearch, EnterpriseWebSearchDict]
 
 
+class FunctionDeclaration(_common.BaseModel):
+  """Structured representation of a function declaration as defined by the [OpenAPI 3.0 specification](https://spec.openapis.org/oas/v3.0.3).
+
+  Included in this declaration are the function name, description, parameters
+  and response type. This FunctionDeclaration is a representation of a block of
+  code that can be used as a `Tool` by the model and executed by the client.
+  """
+
+  description: Optional[str] = Field(
+      default=None,
+      description="""Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function.""",
+  )
+  name: Optional[str] = Field(
+      default=None,
+      description="""Required. The name of the function to call. Must start with a letter or an underscore. Must be a-z, A-Z, 0-9, or contain underscores, dots and dashes, with a maximum length of 64.""",
+  )
+  parameters: Optional[Schema] = Field(
+      default=None,
+      description="""Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1""",
+  )
+  parameters_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example: ``` { "type": "object", "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }, "additionalProperties": false, "required": ["name", "age"], "propertyOrdering": ["name", "age"] } ``` This field is mutually exclusive with `parameters`.""",
+  )
+  response: Optional[Schema] = Field(
+      default=None,
+      description="""Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function.""",
+  )
+  response_json_schema: Optional[Any] = Field(
+      default=None,
+      description="""Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`.""",
+  )
+  behavior: Optional[Behavior] = Field(
+      default=None,
+      description="""Optional. Specifies the function Behavior. Currently only supported by the BidiGenerateContent method. This field is not supported in Vertex AI.""",
+  )
+
+  @classmethod
+  def from_callable_with_api_option(
+      cls,
+      *,
+      callable: Callable[..., Any],
+      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
+      behavior: Optional[Behavior] = None,
+  ) -> 'FunctionDeclaration':
+    """Converts a Callable to a FunctionDeclaration based on the API option.
+
+    Supported API option is 'VERTEX_AI' or 'GEMINI_API'. If api_option is unset,
+    it will default to 'GEMINI_API'. If unsupported api_option is provided, it
+    will raise ValueError.
+    """
+    supported_api_options = ['VERTEX_AI', 'GEMINI_API']
+    if api_option not in supported_api_options:
+      raise ValueError(
+          f'Unsupported api_option value: {api_option}. Supported api_option'
+          f' value is one of: {supported_api_options}.'
+      )
+    from . import _automatic_function_calling_util
+
+    parameters_properties = {}
+    parameters_json_schema = {}
+    annotation_under_future = typing.get_type_hints(callable)
+    try:
+      for name, param in inspect.signature(callable).parameters.items():
+        if param.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+            inspect.Parameter.POSITIONAL_ONLY,
+        ):
+          param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
+              param, annotation_under_future, name
+          )
+          schema = (
+              _automatic_function_calling_util._parse_schema_from_parameter(
+                  api_option, param, callable.__name__
+              )
+          )
+          parameters_properties[name] = schema
+    except ValueError:
+      parameters_properties = {}
+      for name, param in inspect.signature(callable).parameters.items():
+        if param.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+            inspect.Parameter.POSITIONAL_ONLY,
+        ):
+          try:
+            param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
+                param, annotation_under_future, name
+            )
+            param_schema_adapter = pydantic.TypeAdapter(
+                param.annotation,
+                config=pydantic.ConfigDict(arbitrary_types_allowed=True),
+            )
+            json_schema_dict = param_schema_adapter.json_schema()
+            json_schema_dict = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
+                json_schema_dict
+            )
+            if 'prefixItems' in json_schema_dict:
+              parameters_json_schema[name] = json_schema_dict
+              continue
+
+            union_args = typing.get_args(param.annotation)
+            has_primitive = any(
+                _automatic_function_calling_util._is_builtin_primitive_or_compound(
+                    arg
+                )
+                for arg in union_args
+            )
+            if (
+                '$ref' in json_schema_dict or '$defs' in json_schema_dict
+            ) and has_primitive:
+              # This is a complex schema with a primitive (e.g., str | MyModel)
+              # that is better represented by raw JSON schema.
+              parameters_json_schema[name] = json_schema_dict
+              continue
+
+            schema = Schema.from_json_schema(
+                json_schema=JSONSchema(**json_schema_dict),
+                api_option=api_option,
+            )
+            if param.default is not inspect.Parameter.empty:
+              schema.default = param.default
+            parameters_properties[name] = schema
+          except Exception as e:
+            _automatic_function_calling_util._raise_for_unsupported_param(
+                param, callable.__name__, e
+            )
+
+    declaration = FunctionDeclaration(
+        name=callable.__name__,
+        description=inspect.cleandoc(callable.__doc__)
+        if callable.__doc__
+        else callable.__doc__,
+        behavior=behavior,
+    )
+    if parameters_properties:
+      declaration.parameters = Schema(
+          type='OBJECT',
+          properties=parameters_properties,
+      )
+      declaration.parameters.required = (
+          _automatic_function_calling_util._get_required_fields(
+              declaration.parameters
+          )
+      )
+    elif parameters_json_schema:
+      declaration.parameters_json_schema = parameters_json_schema
+    # TODO: b/421991354 - Remove this check once the bug is fixed.
+    if api_option == 'GEMINI_API':
+      return declaration
+
+    return_annotation = inspect.signature(callable).return_annotation
+    if return_annotation is inspect._empty:
+      return declaration
+
+    return_value = inspect.Parameter(
+        'return_value',
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        annotation=return_annotation,
+    )
+
+    # This snippet catches the case when type hints are stored as strings
+    if isinstance(return_value.annotation, str):
+      return_value = return_value.replace(
+          annotation=annotation_under_future['return']
+      )
+    response_schema: Optional[Schema] = None
+    response_json_schema: Optional[Union[dict[str, Any], Schema]] = {}
+    try:
+      response_schema = (
+          _automatic_function_calling_util._parse_schema_from_parameter(
+              api_option,
+              return_value,
+              callable.__name__,
+          )
+      )
+      if response_schema.any_of is not None:
+        # To handle any_of, we need to use responseJsonSchema
+        response_json_schema = response_schema
+        response_schema = None
+    except ValueError:
+      try:
+        return_value_schema_adapter = pydantic.TypeAdapter(
+            return_value.annotation,
+            config=pydantic.ConfigDict(arbitrary_types_allowed=True),
+        )
+        response_json_schema = return_value_schema_adapter.json_schema()
+        response_json_schema = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
+            response_json_schema
+        )
+      except Exception as e:
+        _automatic_function_calling_util._raise_for_unsupported_param(
+            return_value, callable.__name__, e
+        )
+
+    if response_schema:
+      declaration.response = response_schema
+    elif response_json_schema:
+      declaration.response_json_schema = response_json_schema
+    return declaration
+
+  @classmethod
+  def from_callable(
+      cls,
+      *,
+      client: 'BaseApiClient',
+      callable: Callable[..., Any],
+      behavior: Optional[Behavior] = None,
+  ) -> 'FunctionDeclaration':
+    """Converts a Callable to a FunctionDeclaration based on the client.
+
+    Note: For best results prefer
+    [Google-style
+    docstring](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods)
+    when describing arguments. This function does **not** parse argument
+    descriptions into the property description slots of the resulting structure.
+    Instead it sends the whole docstring in the top-level function description.
+    Google-style docstring are closest to what the model is trained on.
+    """
+    if client.vertexai:
+      return cls.from_callable_with_api_option(
+          callable=callable, api_option='VERTEX_AI', behavior=behavior
+      )
+    else:
+      return cls.from_callable_with_api_option(
+          callable=callable, api_option='GEMINI_API', behavior=behavior
+      )
+
+
+class FunctionDeclarationDict(TypedDict, total=False):
+  """Structured representation of a function declaration as defined by the [OpenAPI 3.0 specification](https://spec.openapis.org/oas/v3.0.3).
+
+  Included in this declaration are the function name, description, parameters
+  and response type. This FunctionDeclaration is a representation of a block of
+  code that can be used as a `Tool` by the model and executed by the client.
+  """
+
+  description: Optional[str]
+  """Optional. Description and purpose of the function. Model uses it to decide how and whether to call the function."""
+
+  name: Optional[str]
+  """Required. The name of the function to call. Must start with a letter or an underscore. Must be a-z, A-Z, 0-9, or contain underscores, dots and dashes, with a maximum length of 64."""
+
+  parameters: Optional[SchemaDict]
+  """Optional. Describes the parameters to this function in JSON Schema Object format. Reflects the Open API 3.03 Parameter Object. string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. For function with no parameters, this can be left unset. Parameter names must start with a letter or an underscore and must only contain chars a-z, A-Z, 0-9, or underscores with a maximum length of 64. Example with 1 required and 1 optional parameter: type: OBJECT properties: param1: type: STRING param2: type: INTEGER required: - param1"""
+
+  parameters_json_schema: Optional[Any]
+  """Optional. Describes the parameters to the function in JSON Schema format. The schema must describe an object where the properties are the parameters to the function. For example: ``` { "type": "object", "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }, "additionalProperties": false, "required": ["name", "age"], "propertyOrdering": ["name", "age"] } ``` This field is mutually exclusive with `parameters`."""
+
+  response: Optional[SchemaDict]
+  """Optional. Describes the output from this function in JSON Schema format. Reflects the Open API 3.03 Response Object. The Schema defines the type used for the response value of the function."""
+
+  response_json_schema: Optional[Any]
+  """Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`."""
+
+  behavior: Optional[Behavior]
+  """Optional. Specifies the function Behavior. Currently only supported by the BidiGenerateContent method. This field is not supported in Vertex AI."""
+
+
+FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
+
+
 class GoogleMaps(_common.BaseModel):
   """Tool to retrieve public maps data for grounding, powered by Google."""
 
@@ -4141,6 +4090,55 @@ class GoogleSearchDict(TypedDict, total=False):
 GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
 
 
+class DynamicRetrievalConfig(_common.BaseModel):
+  """Describes the options to customize dynamic retrieval."""
+
+  dynamic_threshold: Optional[float] = Field(
+      default=None,
+      description="""Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used.""",
+  )
+  mode: Optional[DynamicRetrievalConfigMode] = Field(
+      default=None,
+      description="""The mode of the predictor to be used in dynamic retrieval.""",
+  )
+
+
+class DynamicRetrievalConfigDict(TypedDict, total=False):
+  """Describes the options to customize dynamic retrieval."""
+
+  dynamic_threshold: Optional[float]
+  """Optional. The threshold to be used in dynamic retrieval. If not set, a system default value is used."""
+
+  mode: Optional[DynamicRetrievalConfigMode]
+  """The mode of the predictor to be used in dynamic retrieval."""
+
+
+DynamicRetrievalConfigOrDict = Union[
+    DynamicRetrievalConfig, DynamicRetrievalConfigDict
+]
+
+
+class GoogleSearchRetrieval(_common.BaseModel):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfig] = Field(
+      default=None,
+      description="""Specifies the dynamic retrieval configuration for the given source.""",
+  )
+
+
+class GoogleSearchRetrievalDict(TypedDict, total=False):
+  """Tool to retrieve public web data for grounding, powered by Google."""
+
+  dynamic_retrieval_config: Optional[DynamicRetrievalConfigDict]
+  """Specifies the dynamic retrieval configuration for the given source."""
+
+
+GoogleSearchRetrievalOrDict = Union[
+    GoogleSearchRetrieval, GoogleSearchRetrievalDict
+]
+
+
 class UrlContext(_common.BaseModel):
   """Tool to support URL context."""
 
@@ -4159,17 +4157,9 @@ UrlContextOrDict = Union[UrlContext, UrlContextDict]
 class Tool(_common.BaseModel):
   """Tool details of a tool that the model may use to generate a response."""
 
-  function_declarations: Optional[list[FunctionDeclaration]] = Field(
-      default=None,
-      description="""List of function declarations that the tool supports.""",
-  )
   retrieval: Optional[Retrieval] = Field(
       default=None,
       description="""Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API.""",
-  )
-  google_search_retrieval: Optional[GoogleSearchRetrieval] = Field(
-      default=None,
-      description="""Optional. Specialized retrieval tool that is powered by Google Search.""",
   )
   computer_use: Optional[ComputerUse] = Field(
       default=None,
@@ -4189,6 +4179,10 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. Tool to support searching public web data, powered by Vertex AI Search and Sec4 compliance. This field is not supported in Gemini API.""",
   )
+  function_declarations: Optional[list[FunctionDeclaration]] = Field(
+      default=None,
+      description="""Optional. Function tool type. One or more function declarations to be passed to the model along with the current user query. Model may decide to call a subset of these functions by populating FunctionCall in the response. User should provide a FunctionResponse for each function call in the next turn. Based on the function responses, Model will generate the final response back to the user. Maximum 512 function declarations can be provided.""",
+  )
   google_maps: Optional[GoogleMaps] = Field(
       default=None,
       description="""Optional. GoogleMaps tool type. Tool to support Google Maps in Model.""",
@@ -4196,6 +4190,10 @@ class Tool(_common.BaseModel):
   google_search: Optional[GoogleSearch] = Field(
       default=None,
       description="""Optional. GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google.""",
+  )
+  google_search_retrieval: Optional[GoogleSearchRetrieval] = Field(
+      default=None,
+      description="""Optional. Specialized retrieval tool that is powered by Google Search.""",
   )
   url_context: Optional[UrlContext] = Field(
       default=None,
@@ -4206,14 +4204,8 @@ class Tool(_common.BaseModel):
 class ToolDict(TypedDict, total=False):
   """Tool details of a tool that the model may use to generate a response."""
 
-  function_declarations: Optional[list[FunctionDeclarationDict]]
-  """List of function declarations that the tool supports."""
-
   retrieval: Optional[RetrievalDict]
   """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API."""
-
-  google_search_retrieval: Optional[GoogleSearchRetrievalDict]
-  """Optional. Specialized retrieval tool that is powered by Google Search."""
 
   computer_use: Optional[ComputerUseDict]
   """Optional. Tool to support the model interacting directly with the
@@ -4229,11 +4221,17 @@ class ToolDict(TypedDict, total=False):
   enterprise_web_search: Optional[EnterpriseWebSearchDict]
   """Optional. Tool to support searching public web data, powered by Vertex AI Search and Sec4 compliance. This field is not supported in Gemini API."""
 
+  function_declarations: Optional[list[FunctionDeclarationDict]]
+  """Optional. Function tool type. One or more function declarations to be passed to the model along with the current user query. Model may decide to call a subset of these functions by populating FunctionCall in the response. User should provide a FunctionResponse for each function call in the next turn. Based on the function responses, Model will generate the final response back to the user. Maximum 512 function declarations can be provided."""
+
   google_maps: Optional[GoogleMapsDict]
   """Optional. GoogleMaps tool type. Tool to support Google Maps in Model."""
 
   google_search: Optional[GoogleSearchDict]
   """Optional. GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google."""
+
+  google_search_retrieval: Optional[GoogleSearchRetrievalDict]
+  """Optional. Specialized retrieval tool that is powered by Google Search."""
 
   url_context: Optional[UrlContextDict]
   """Optional. Tool to support URL context retrieval."""
@@ -4256,40 +4254,6 @@ SchemaUnion = Union[
     dict[Any, Any], type, Schema, builtin_types.GenericAlias, VersionedUnionType  # type: ignore[valid-type]
 ]
 SchemaUnionDict = Union[SchemaUnion, SchemaDict]
-
-
-class FunctionCallingConfig(_common.BaseModel):
-  """Function calling config."""
-
-  mode: Optional[FunctionCallingConfigMode] = Field(
-      default=None, description="""Optional. Function calling mode."""
-  )
-  allowed_function_names: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided.""",
-  )
-  stream_function_call_arguments: Optional[bool] = Field(
-      default=None,
-      description="""Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API.""",
-  )
-
-
-class FunctionCallingConfigDict(TypedDict, total=False):
-  """Function calling config."""
-
-  mode: Optional[FunctionCallingConfigMode]
-  """Optional. Function calling mode."""
-
-  allowed_function_names: Optional[list[str]]
-  """Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided."""
-
-  stream_function_call_arguments: Optional[bool]
-  """Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API."""
-
-
-FunctionCallingConfigOrDict = Union[
-    FunctionCallingConfig, FunctionCallingConfigDict
-]
 
 
 class LatLng(_common.BaseModel):
@@ -4354,17 +4318,51 @@ class RetrievalConfigDict(TypedDict, total=False):
 RetrievalConfigOrDict = Union[RetrievalConfig, RetrievalConfigDict]
 
 
+class FunctionCallingConfig(_common.BaseModel):
+  """Function calling config."""
+
+  allowed_function_names: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided.""",
+  )
+  mode: Optional[FunctionCallingConfigMode] = Field(
+      default=None, description="""Optional. Function calling mode."""
+  )
+  stream_function_call_arguments: Optional[bool] = Field(
+      default=None,
+      description="""Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API.""",
+  )
+
+
+class FunctionCallingConfigDict(TypedDict, total=False):
+  """Function calling config."""
+
+  allowed_function_names: Optional[list[str]]
+  """Optional. Function names to call. Only set when the Mode is ANY. Function names should match [FunctionDeclaration.name]. With mode set to ANY, model will predict a function call from the set of function names provided."""
+
+  mode: Optional[FunctionCallingConfigMode]
+  """Optional. Function calling mode."""
+
+  stream_function_call_arguments: Optional[bool]
+  """Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the [FunctionCall.partial_args] field. This field is not supported in Gemini API."""
+
+
+FunctionCallingConfigOrDict = Union[
+    FunctionCallingConfig, FunctionCallingConfigDict
+]
+
+
 class ToolConfig(_common.BaseModel):
   """Tool config.
 
   This config is shared for all tools provided in the request.
   """
 
-  function_calling_config: Optional[FunctionCallingConfig] = Field(
-      default=None, description="""Optional. Function calling config."""
-  )
   retrieval_config: Optional[RetrievalConfig] = Field(
       default=None, description="""Optional. Retrieval config."""
+  )
+  function_calling_config: Optional[FunctionCallingConfig] = Field(
+      default=None, description="""Optional. Function calling config."""
   )
 
 
@@ -4374,11 +4372,11 @@ class ToolConfigDict(TypedDict, total=False):
   This config is shared for all tools provided in the request.
   """
 
-  function_calling_config: Optional[FunctionCallingConfigDict]
-  """Optional. Function calling config."""
-
   retrieval_config: Optional[RetrievalConfigDict]
   """Optional. Retrieval config."""
+
+  function_calling_config: Optional[FunctionCallingConfigDict]
+  """Optional. Function calling config."""
 
 
 ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
