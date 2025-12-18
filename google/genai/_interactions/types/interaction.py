@@ -142,9 +142,6 @@ class Interaction(BaseModel):
     model: Optional[Model] = None
     """The name of the `Model` used for generating the interaction."""
 
-    object: Optional[Literal["interaction"]] = None
-    """Output only. The object type of the interaction. Always set to `interaction`."""
-
     outputs: Optional[List[Output]] = None
     """Output only. Responses from the model."""
 
