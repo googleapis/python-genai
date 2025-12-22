@@ -49,10 +49,10 @@ class URLContext(BaseModel):
 class ComputerUse(BaseModel):
     """A tool that can be used by the model to interact with the computer."""
 
-    type: Literal["computer_use"]
-
-    environment: Optional[Literal["browser"]] = None
+    environment: Literal["browser"]
     """The environment being operated."""
+
+    type: Literal["computer_use"]
 
     excluded_predefined_functions: Optional[List[str]] = FieldInfo(alias="excludedPredefinedFunctions", default=None)
     """The list of predefined functions that are excluded from the model call."""
