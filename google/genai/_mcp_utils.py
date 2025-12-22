@@ -42,11 +42,7 @@ def mcp_to_gemini_tool(tool: McpTool) -> types.Tool:
       function_declarations=[{
           "name": tool.name,
           "description": tool.description,
-          "parameters": types.Schema.from_json_schema(
-              json_schema=types.JSONSchema(
-                  **_filter_to_supported_schema(tool.inputSchema)
-              )
-          ),
+          "parameters_json_schema": tool.inputSchema,
       }]
   )
 
