@@ -17,6 +17,7 @@
 
 from . import interactions
 from . import types
+from . import keras
 from . import version
 from .client import Client
 
