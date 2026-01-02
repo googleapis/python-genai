@@ -32,6 +32,11 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.tunings')
 
 
+def _ThinkingLevel_to_vertex_enum_validate(enum_value: Any) -> None:
+  if enum_value in set(['MINIMAL', 'MEDIUM']):
+    raise ValueError(f'{enum_value} enum value is not supported in Vertex AI.')
+
+
 def _AutoraterConfig_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -683,7 +688,13 @@ def _GenerationConfig_to_vertex(
     setv(to_object, ['temperature'], getv(from_object, ['temperature']))
 
   if getv(from_object, ['thinking_config']) is not None:
-    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+    setv(
+        to_object,
+        ['thinkingConfig'],
+        _ThinkingConfig_to_vertex(
+            getv(from_object, ['thinking_config']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['top_k']) is not None:
     setv(to_object, ['topK'], getv(from_object, ['top_k']))
@@ -851,6 +862,29 @@ def _ListTuningJobsResponse_from_vertex(
             for item in getv(from_object, ['tuningJobs'])
         ],
     )
+
+  return to_object
+
+
+def _ThinkingConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['include_thoughts']) is not None:
+    setv(
+        to_object, ['includeThoughts'], getv(from_object, ['include_thoughts'])
+    )
+
+  if getv(from_object, ['thinking_budget']) is not None:
+    setv(to_object, ['thinkingBudget'], getv(from_object, ['thinking_budget']))
+
+  if getv(from_object, ['thinking_level']) is not None:
+    _ThinkingLevel_to_vertex_enum_validate(
+        getv(from_object, ['thinking_level'])
+    )
+    setv(to_object, ['thinkingLevel'], getv(from_object, ['thinking_level']))
 
   return to_object
 
@@ -1095,8 +1129,22 @@ def _TuningJob_from_vertex(
         to_object, ['custom_base_model'], getv(from_object, ['customBaseModel'])
     )
 
+  if getv(from_object, ['evaluateDatasetRuns']) is not None:
+    setv(
+        to_object,
+        ['evaluate_dataset_runs'],
+        [item for item in getv(from_object, ['evaluateDatasetRuns'])],
+    )
+
   if getv(from_object, ['experiment']) is not None:
     setv(to_object, ['experiment'], getv(from_object, ['experiment']))
+
+  if getv(from_object, ['fullFineTuningSpec']) is not None:
+    setv(
+        to_object,
+        ['full_fine_tuning_spec'],
+        getv(from_object, ['fullFineTuningSpec']),
+    )
 
   if getv(from_object, ['labels']) is not None:
     setv(to_object, ['labels'], getv(from_object, ['labels']))
@@ -1116,6 +1164,9 @@ def _TuningJob_from_vertex(
         ['tuned_model_display_name'],
         getv(from_object, ['tunedModelDisplayName']),
     )
+
+  if getv(from_object, ['tuningJobState']) is not None:
+    setv(to_object, ['tuning_job_state'], getv(from_object, ['tuningJobState']))
 
   if getv(from_object, ['veoTuningSpec']) is not None:
     setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
