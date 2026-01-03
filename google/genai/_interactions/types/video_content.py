@@ -28,14 +28,13 @@ class VideoContent(BaseModel):
     """A video content block."""
 
     type: Literal["video"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
     mime_type: Optional[VideoMimeType] = None
     """The mime type of the video."""
 
-    resolution: Optional[Literal["low", "medium", "high"]] = None
+    resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
 
     uri: Optional[str] = None

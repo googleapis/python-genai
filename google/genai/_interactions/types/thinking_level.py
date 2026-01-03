@@ -19,4 +19,4 @@ from typing_extensions import Literal, TypeAlias
 
 __all__ = ["ThinkingLevel"]
 
-ThinkingLevel: TypeAlias = Literal["low", "high"]
+ThinkingLevel: TypeAlias = Literal["minimal", "low", "medium", "high"]

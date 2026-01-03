@@ -891,15 +891,15 @@ def _FunctionCallingConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
         ['allowedFunctionNames'],
         getv(from_object, ['allowed_function_names']),
     )
+
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
 
   if getv(from_object, ['stream_function_call_arguments']) is not None:
     raise ValueError(
@@ -915,9 +915,6 @@ def _FunctionDeclaration_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
-
   if getv(from_object, ['description']) is not None:
     setv(to_object, ['description'], getv(from_object, ['description']))
 
@@ -943,6 +940,9 @@ def _FunctionDeclaration_to_vertex(
         ['responseJsonSchema'],
         getv(from_object, ['response_json_schema']),
     )
+
+  if getv(from_object, ['behavior']) is not None:
+    raise ValueError('behavior parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -1258,9 +1258,7 @@ def _GenerateContentConfig_to_vertex(
     setv(
         to_object,
         ['speechConfig'],
-        _SpeechConfig_to_vertex(
-            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
-        ),
+        t.t_speech_config(getv(from_object, ['speech_config'])),
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
@@ -2446,13 +2444,7 @@ def _GenerationConfig_to_vertex(
     setv(to_object, ['seed'], getv(from_object, ['seed']))
 
   if getv(from_object, ['speech_config']) is not None:
-    setv(
-        to_object,
-        ['speechConfig'],
-        _SpeechConfig_to_vertex(
-            getv(from_object, ['speech_config']), to_object
-        ),
-    )
+    setv(to_object, ['speechConfig'], getv(from_object, ['speech_config']))
 
   if getv(from_object, ['stop_sequences']) is not None:
     setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
@@ -2557,6 +2549,11 @@ def _ImageConfig_to_mldev(
   if getv(from_object, ['image_size']) is not None:
     setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
 
+  if getv(from_object, ['person_generation']) is not None:
+    raise ValueError(
+        'person_generation parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['output_mime_type']) is not None:
     raise ValueError(
         'output_mime_type parameter is not supported in Gemini API.'
@@ -2580,6 +2577,13 @@ def _ImageConfig_to_vertex(
 
   if getv(from_object, ['image_size']) is not None:
     setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        to_object,
+        ['personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
 
   if getv(from_object, ['output_mime_type']) is not None:
     setv(
@@ -3427,30 +3431,16 @@ def _SegmentImageSource_to_vertex(
   return to_object
 
 
-def _SpeechConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['voice_config']) is not None:
-    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
-
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    raise ValueError(
-        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
-    )
-
-  return to_object
-
-
 def _ToolConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
@@ -3458,11 +3448,6 @@ def _ToolConfig_to_mldev(
         _FunctionCallingConfig_to_mldev(
             getv(from_object, ['function_calling_config']), to_object
         ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -3473,22 +3458,8 @@ def _Tool_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [item for item in getv(from_object, ['function_declarations'])],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
-    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
@@ -3502,6 +3473,13 @@ def _Tool_to_mldev(
   if getv(from_object, ['enterprise_web_search']) is not None:
     raise ValueError(
         'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
     )
 
   if getv(from_object, ['google_maps']) is not None:
@@ -3518,6 +3496,13 @@ def _Tool_to_mldev(
         _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
@@ -3529,25 +3514,8 @@ def _Tool_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
-    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
@@ -3565,11 +3533,28 @@ def _Tool_to_vertex(
         getv(from_object, ['enterprise_web_search']),
     )
 
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_vertex(item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
+
   if getv(from_object, ['google_maps']) is not None:
     setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['google_search']) is not None:
     setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))

@@ -28,7 +28,6 @@ class URLContextResultContent(BaseModel):
     """URL context result content."""
 
     type: Literal["url_context_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: Optional[str] = None
     """ID to match the ID from the url context call block."""

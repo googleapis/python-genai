@@ -23,7 +23,7 @@ from .image_content import ImageContent
 
 __all__ = ["MCPServerToolResultContent", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContent]
+ResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class ResultItems(BaseModel):
@@ -43,7 +43,6 @@ class MCPServerToolResultContent(BaseModel):
     """The result of the tool call."""
 
     type: Literal["mcp_server_tool_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     name: Optional[str] = None
     """Name of the tool which is called for this specific tool call."""

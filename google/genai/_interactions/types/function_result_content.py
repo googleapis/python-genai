@@ -23,7 +23,7 @@ from .image_content import ImageContent
 
 __all__ = ["FunctionResultContent", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContent]
+ResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class ResultItems(BaseModel):
@@ -43,7 +43,6 @@ class FunctionResultContent(BaseModel):
     """The result of the tool call."""
 
     type: Literal["function_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     is_error: Optional[bool] = None
     """Whether the tool call resulted in an error."""

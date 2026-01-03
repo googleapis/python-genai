@@ -32,14 +32,13 @@ class VideoContentParam(TypedDict, total=False):
     """A video content block."""
 
     type: Required[Literal["video"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
 
     mime_type: VideoMimeTypeParam
     """The mime type of the video."""
 
-    resolution: Literal["low", "medium", "high"]
+    resolution: Literal["low", "medium", "high", "ultra_high"]
     """The resolution of the media."""
 
     uri: str

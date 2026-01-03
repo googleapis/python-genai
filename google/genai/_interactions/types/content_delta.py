@@ -26,6 +26,7 @@ from .image_content import ImageContent
 from .audio_mime_type import AudioMimeType
 from .image_mime_type import ImageMimeType
 from .video_mime_type import VideoMimeType
+from .document_mime_type import DocumentMimeType
 from .url_context_result import URLContextResult
 from .google_search_result import GoogleSearchResult
 from .url_context_call_arguments import URLContextCallArguments
@@ -66,7 +67,6 @@ __all__ = [
 
 class DeltaTextDelta(BaseModel):
     type: Literal["text"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     annotations: Optional[List[Annotation]] = None
     """Citation information for model-generated content."""
@@ -76,14 +76,13 @@ class DeltaTextDelta(BaseModel):
 
 class DeltaImageDelta(BaseModel):
     type: Literal["image"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
     mime_type: Optional[ImageMimeType] = None
     """The mime type of the image."""
 
-    resolution: Optional[Literal["low", "medium", "high"]] = None
+    resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
 
     uri: Optional[str] = None
@@ -91,7 +90,6 @@ class DeltaImageDelta(BaseModel):
 
 class DeltaAudioDelta(BaseModel):
     type: Literal["audio"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
@@ -103,25 +101,24 @@ class DeltaAudioDelta(BaseModel):
 
 class DeltaDocumentDelta(BaseModel):
     type: Literal["document"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
-    mime_type: Optional[str] = None
+    mime_type: Optional[DocumentMimeType] = None
+    """The mime type of the document."""
 
     uri: Optional[str] = None
 
 
 class DeltaVideoDelta(BaseModel):
     type: Literal["video"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Optional[str] = None
 
     mime_type: Optional[VideoMimeType] = None
     """The mime type of the video."""
 
-    resolution: Optional[Literal["low", "medium", "high"]] = None
+    resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
 
     uri: Optional[str] = None
@@ -134,7 +131,6 @@ DeltaThoughtSummaryDeltaContent: TypeAlias = Annotated[
 
 class DeltaThoughtSummaryDelta(BaseModel):
     type: Literal["thought_summary"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     content: Optional[DeltaThoughtSummaryDeltaContent] = None
     """A text content block."""
@@ -142,7 +138,6 @@ class DeltaThoughtSummaryDelta(BaseModel):
 
 class DeltaThoughtSignatureDelta(BaseModel):
     type: Literal["thought_signature"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     signature: Optional[str] = None
     """Signature to match the backend source to be part of the generation."""
@@ -150,7 +145,6 @@ class DeltaThoughtSignatureDelta(BaseModel):
 
 class DeltaFunctionCallDelta(BaseModel):
     type: Literal["function_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: Optional[str] = None
     """A unique ID for this specific tool call."""
@@ -160,7 +154,7 @@ class DeltaFunctionCallDelta(BaseModel):
     name: Optional[str] = None
 
 
-DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent]
+DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class DeltaFunctionResultDeltaResultItems(BaseModel):
@@ -172,7 +166,6 @@ DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResult
 
 class DeltaFunctionResultDelta(BaseModel):
     type: Literal["function_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: Optional[str] = None
     """ID to match the ID from the function call block."""
@@ -187,7 +180,6 @@ class DeltaFunctionResultDelta(BaseModel):
 
 class DeltaCodeExecutionCallDelta(BaseModel):
     type: Literal["code_execution_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: Optional[str] = None
     """A unique ID for this specific tool call."""
@@ -198,7 +190,6 @@ class DeltaCodeExecutionCallDelta(BaseModel):
 
 class DeltaCodeExecutionResultDelta(BaseModel):
     type: Literal["code_execution_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: Optional[str] = None
     """ID to match the ID from the function call block."""
@@ -212,7 +203,6 @@ class DeltaCodeExecutionResultDelta(BaseModel):
 
 class DeltaURLContextCallDelta(BaseModel):
     type: Literal["url_context_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: Optional[str] = None
     """A unique ID for this specific tool call."""
@@ -223,7 +213,6 @@ class DeltaURLContextCallDelta(BaseModel):
 
 class DeltaURLContextResultDelta(BaseModel):
     type: Literal["url_context_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: Optional[str] = None
     """ID to match the ID from the function call block."""
@@ -237,7 +226,6 @@ class DeltaURLContextResultDelta(BaseModel):
 
 class DeltaGoogleSearchCallDelta(BaseModel):
     type: Literal["google_search_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: Optional[str] = None
     """A unique ID for this specific tool call."""
@@ -248,7 +236,6 @@ class DeltaGoogleSearchCallDelta(BaseModel):
 
 class DeltaGoogleSearchResultDelta(BaseModel):
     type: Literal["google_search_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: Optional[str] = None
     """ID to match the ID from the function call block."""
@@ -262,7 +249,6 @@ class DeltaGoogleSearchResultDelta(BaseModel):
 
 class DeltaMCPServerToolCallDelta(BaseModel):
     type: Literal["mcp_server_tool_call"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: Optional[str] = None
     """A unique ID for this specific tool call."""
@@ -274,7 +260,7 @@ class DeltaMCPServerToolCallDelta(BaseModel):
     server_name: Optional[str] = None
 
 
-DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent]
+DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class DeltaMCPServerToolResultDeltaResultItems(BaseModel):
@@ -286,7 +272,6 @@ DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultD
 
 class DeltaMCPServerToolResultDelta(BaseModel):
     type: Literal["mcp_server_tool_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: Optional[str] = None
     """ID to match the ID from the function call block."""
@@ -314,7 +299,6 @@ class DeltaFileSearchResultDeltaResult(BaseModel):
 
 class DeltaFileSearchResultDelta(BaseModel):
     type: Literal["file_search_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     result: Optional[List[DeltaFileSearchResultDeltaResult]] = None
 

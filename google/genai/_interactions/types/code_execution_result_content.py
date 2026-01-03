@@ -27,7 +27,6 @@ class CodeExecutionResultContent(BaseModel):
     """Code execution result content."""
 
     type: Literal["code_execution_result"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     call_id: Optional[str] = None
     """ID to match the ID from the code execution call block."""

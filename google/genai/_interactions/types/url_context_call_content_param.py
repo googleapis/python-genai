@@ -28,7 +28,6 @@ class URLContextCallContentParam(TypedDict, total=False):
     """URL context content."""
 
     type: Required[Literal["url_context_call"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     id: str
     """A unique ID for this specific tool call."""

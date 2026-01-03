@@ -475,7 +475,7 @@ class InteractionsResource(SyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return self._delete(
-            f"/{api_version}/interactions/{id}",
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -514,7 +514,7 @@ class InteractionsResource(SyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return self._post(
-            f"/{api_version}/interactions/{id}/cancel",
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -641,7 +641,7 @@ class InteractionsResource(SyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return self._get(
-            f"/{api_version}/interactions/{id}",
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -1092,7 +1092,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return await self._delete(
-            f"/{api_version}/interactions/{id}",
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -1131,7 +1131,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return await self._post(
-            f"/{api_version}/interactions/{id}/cancel",
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -1258,7 +1258,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return await self._get(
-            f"/{api_version}/interactions/{id}",
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,

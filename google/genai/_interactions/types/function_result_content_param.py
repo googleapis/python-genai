@@ -25,7 +25,7 @@ from .image_content_param import ImageContentParam
 
 __all__ = ["FunctionResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContentParam]
+ResultItemsItem: TypeAlias = Union[str, ImageContentParam, object]
 
 
 class ResultItems(TypedDict, total=False):
@@ -45,7 +45,6 @@ class FunctionResultContentParam(TypedDict, total=False):
     """The result of the tool call."""
 
     type: Required[Literal["function_result"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     is_error: bool
     """Whether the tool call resulted in an error."""

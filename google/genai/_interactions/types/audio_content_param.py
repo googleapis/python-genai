@@ -32,7 +32,6 @@ class AudioContentParam(TypedDict, total=False):
     """An audio content block."""
 
     type: Required[Literal["audio"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
 

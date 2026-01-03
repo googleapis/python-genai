@@ -25,7 +25,7 @@ from .image_content_param import ImageContentParam
 
 __all__ = ["MCPServerToolResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContentParam]
+ResultItemsItem: TypeAlias = Union[str, ImageContentParam, object]
 
 
 class ResultItems(TypedDict, total=False):
@@ -45,7 +45,6 @@ class MCPServerToolResultContentParam(TypedDict, total=False):
     """The result of the tool call."""
 
     type: Required[Literal["mcp_server_tool_result"]]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     name: str
     """Name of the tool which is called for this specific tool call."""

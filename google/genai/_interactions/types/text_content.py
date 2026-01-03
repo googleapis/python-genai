@@ -28,7 +28,6 @@ class TextContent(BaseModel):
     """A text content block."""
 
     type: Literal["text"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     annotations: Optional[List[Annotation]] = None
     """Citation information for model-generated content."""

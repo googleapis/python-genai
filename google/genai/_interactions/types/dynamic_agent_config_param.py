@@ -27,7 +27,6 @@ class DynamicAgentConfigParamTyped(TypedDict, total=False):
     """Configuration for dynamic agents."""
 
     type: Literal["dynamic"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
 
 DynamicAgentConfigParam: TypeAlias = Union[DynamicAgentConfigParamTyped, Dict[str, object]]

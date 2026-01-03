@@ -32,7 +32,6 @@ class ThoughtContent(BaseModel):
     """A thought content block."""
 
     type: Literal["thought"]
-    """Used as the OpenAPI type discriminator for the content oneof."""
 
     signature: Optional[str] = None
     """Signature to match the backend source to be part of the generation."""
