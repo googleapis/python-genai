@@ -21,6 +21,7 @@ from .tool import Tool as Tool
 from .turn import Turn as Turn
 from .model import Model as Model
 from .usage import Usage as Usage
+from .content import Content as Content
 from .function import Function as Function
 from .annotation import Annotation as Annotation
 from .tool_param import ToolParam as ToolParam
@@ -35,6 +36,7 @@ from .text_content import TextContent as TextContent
 from .allowed_tools import AllowedTools as AllowedTools
 from .audio_content import AudioContent as AudioContent
 from .content_delta import ContentDelta as ContentDelta
+from .content_param import ContentParam as ContentParam
 from .content_start import ContentStart as ContentStart
 from .image_content import ImageContent as ImageContent
 from .speech_config import SpeechConfig as SpeechConfig
