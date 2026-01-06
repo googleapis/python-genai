@@ -14026,7 +14026,7 @@ class RegisterFilesConfigDict(TypedDict, total=False):
 RegisterFilesConfigOrDict = Union[RegisterFilesConfig, RegisterFilesConfigDict]
 
 
-class _RegisterFilesParameters(_common.BaseModel):
+class _InternalRegisterFilesParameters(_common.BaseModel):
   """Generates the parameters for the private _Register method."""
 
   uris: Optional[list[str]] = Field(
@@ -14039,7 +14039,7 @@ class _RegisterFilesParameters(_common.BaseModel):
   )
 
 
-class _RegisterFilesParametersDict(TypedDict, total=False):
+class _InternalRegisterFilesParametersDict(TypedDict, total=False):
   """Generates the parameters for the private _Register method."""
 
   uris: Optional[list[str]]
@@ -14049,8 +14049,8 @@ class _RegisterFilesParametersDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
 
-_RegisterFilesParametersOrDict = Union[
-    _RegisterFilesParameters, _RegisterFilesParametersDict
+_InternalRegisterFilesParametersOrDict = Union[
+    _InternalRegisterFilesParameters, _InternalRegisterFilesParametersDict
 ]
 
 
