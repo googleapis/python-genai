@@ -77,8 +77,8 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
 
     response_format: object
     """
-    Enforces that the generated response is a JSON object that complies with
-    the JSON schema specified in this field.
+    Enforces that the generated response is a JSON object that complies with the
+    JSON schema specified in this field.
     """
 
     response_mime_type: str
@@ -141,8 +141,8 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
 
     response_format: object
     """
-    Enforces that the generated response is a JSON object that complies with
-    the JSON schema specified in this field.
+    Enforces that the generated response is a JSON object that complies with the
+    JSON schema specified in this field.
     """
 
     response_mime_type: str
