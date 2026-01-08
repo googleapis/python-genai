@@ -7,7 +7,7 @@ charset-normalizer==3.4.0
 coverage==7.6.9
 distro==1.9.0
 httpx==0.28.1
-google-auth==2.45.0
+google-auth==2.47.0
 idna==3.10
 iniconfig==2.0.0
 packaging==24.2

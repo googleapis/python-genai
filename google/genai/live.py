@@ -1036,7 +1036,7 @@ class AsyncLive(_api_module.BaseModule):
           if requests is None:
             raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
           auth_req = requests.Request()  # type: ignore
-          creds.refresh(auth_req)
+          creds.refresh(auth_req)  # type: ignore[no-untyped-call]
         bearer_token = creds.token
 
         original_headers = self._api_client._http_options.headers
