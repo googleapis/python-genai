@@ -60,6 +60,7 @@ __all__ = [
     "DeltaMCPServerToolResultDeltaResult",
     "DeltaMCPServerToolResultDeltaResultItems",
     "DeltaMCPServerToolResultDeltaResultItemsItem",
+    "DeltaFileSearchCallDelta",
     "DeltaFileSearchResultDelta",
     "DeltaFileSearchResultDeltaResult",
 ]
@@ -284,6 +285,13 @@ class DeltaMCPServerToolResultDelta(BaseModel):
     server_name: Optional[str] = None
 
 
+class DeltaFileSearchCallDelta(BaseModel):
+    type: Literal["file_search_call"]
+
+    id: Optional[str] = None
+    """A unique ID for this specific tool call."""
+
+
 class DeltaFileSearchResultDeltaResult(BaseModel):
     """The result of the File Search."""
 
@@ -322,6 +330,7 @@ Delta: TypeAlias = Annotated[
         DeltaGoogleSearchResultDelta,
         DeltaMCPServerToolCallDelta,
         DeltaMCPServerToolResultDelta,
+        DeltaFileSearchCallDelta,
         DeltaFileSearchResultDelta,
     ],
     PropertyInfo(discriminator="type"),

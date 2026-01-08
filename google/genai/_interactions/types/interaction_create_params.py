@@ -34,6 +34,7 @@ from .generation_config_param import GenerationConfigParam
 from .dynamic_agent_config_param import DynamicAgentConfigParam
 from .function_call_content_param import FunctionCallContentParam
 from .function_result_content_param import FunctionResultContentParam
+from .file_search_call_content_param import FileSearchCallContentParam
 from .url_context_call_content_param import URLContextCallContentParam
 from .deep_research_agent_config_param import DeepResearchAgentConfigParam
 from .file_search_result_content_param import FileSearchResultContentParam
@@ -117,6 +118,7 @@ Input: TypeAlias = Union[
     GoogleSearchResultContentParam,
     MCPServerToolCallContentParam,
     MCPServerToolResultContentParam,
+    FileSearchCallContentParam,
     FileSearchResultContentParam,
 ]
 
