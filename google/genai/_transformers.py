@@ -285,29 +285,23 @@ def t_caches_model(
     return model
 
 
-def pil_to_blob(img: Any) -> types.Blob:
-  PngImagePlugin: Optional[builtin_types.ModuleType]
-  try:
-    import PIL.PngImagePlugin
-
-    PngImagePlugin = PIL.PngImagePlugin
-  except ImportError:
-    PngImagePlugin = None
-
-  bytesio = io.BytesIO()
+def pil_to_blob(image: Any) -> types.Blob:
+  image_format = 'PNG'
+  save_params: dict[str, Any] = dict()
   if (
-      PngImagePlugin is not None
-      and isinstance(img, PngImagePlugin.PngImageFile)
-      or img.mode == 'RGBA'
+      image.format == 'JPEG'
+      and getattr(image, 'filename', '')
+      and image.mode in ['1', 'L', 'RGB', 'RGBX', 'CMYK']
   ):
-    img.save(bytesio, format='PNG')
-    mime_type = 'image/png'
-  else:
-    img.save(bytesio, format='JPEG')
-    mime_type = 'image/jpeg'
-  bytesio.seek(0)
-  data = bytesio.read()
-  return types.Blob(mime_type=mime_type, data=data)
+    image_format = 'JPEG'
+    save_params.update(quality='keep')
+
+  image_io = io.BytesIO()
+  image.save(image_io, image_format, **save_params)
+  image_bytes = image_io.getvalue()
+  mime_type = f'image/{image_format.lower()}'
+
+  return types.Blob(data=image_bytes, mime_type=mime_type)
 
 
 def t_function_response(
