@@ -159,9 +159,7 @@ class GeminiNextGenAPIClient(SyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get("x-goog-api-key"):
-            return
-        if isinstance(custom_headers.get("x-goog-api-key"), Omit):
+        if headers.get("x-goog-api-key") or isinstance(custom_headers.get("x-goog-api-key"), Omit):
             return
 
         raise TypeError(
@@ -355,9 +353,7 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get("x-goog-api-key"):
-            return
-        if isinstance(custom_headers.get("x-goog-api-key"), Omit):
+        if headers.get("x-goog-api-key") or isinstance(custom_headers.get("x-goog-api-key"), Omit):
             return
 
         raise TypeError(
