@@ -2509,6 +2509,10 @@
 </li>
           <li><a href="genai.html#genai.types.ListFilesResponseDict.files">(genai.types.ListFilesResponseDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.RegisterFilesResponse.files">(genai.types.RegisterFilesResponse attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.RegisterFilesResponseDict.files">(genai.types.RegisterFilesResponseDict attribute)</a>
+</li>
         </ul></li>
         <li><a href="genai.html#genai.types.FileSearchDict">FileSearchDict (class in genai.types)</a>
 </li>
@@ -2580,14 +2584,14 @@
         </ul></li>
         <li><a href="genai.html#genai.types.FinishReason">FinishReason (class in genai.types)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.RagChunkPageSpan.first_page">first_page (genai.types.RagChunkPageSpan attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.RagChunkPageSpanDict.first_page">(genai.types.RagChunkPageSpanDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.GroundingChunkMapsPlaceAnswerSources.flag_content_uri">flag_content_uri (genai.types.GroundingChunkMapsPlaceAnswerSources attribute)</a>
 
         <ul>
@@ -3452,6 +3456,10 @@
           <li><a href="genai.html#genai.types.RecontextImageConfig.http_options">(genai.types.RecontextImageConfig attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.RecontextImageConfigDict.http_options">(genai.types.RecontextImageConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.RegisterFilesConfig.http_options">(genai.types.RegisterFilesConfig attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.RegisterFilesConfigDict.http_options">(genai.types.RegisterFilesConfigDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.SegmentImageConfig.http_options">(genai.types.SegmentImageConfig attribute)</a>
 </li>
@@ -4700,8 +4708,6 @@
         </ul></li>
         <li><a href="genai.html#genai.types.ModalityTokenCountDict">ModalityTokenCountDict (class in genai.types)</a>
 </li>
-        <li><a href="genai.html#genai.types.Mode">Mode (class in genai.types)</a>
-</li>
         <li><a href="genai.html#genai.types.DynamicRetrievalConfig.mode">mode (genai.types.DynamicRetrievalConfig attribute)</a>
 
         <ul>
@@ -4717,17 +4723,11 @@
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.DynamicRetrievalConfigMode.MODE_DYNAMIC">MODE_DYNAMIC (genai.types.DynamicRetrievalConfigMode attribute)</a>
-
-        <ul>
-          <li><a href="genai.html#genai.types.Mode.MODE_DYNAMIC">(genai.types.Mode attribute)</a>
 </li>
-        </ul></li>
         <li><a href="genai.html#genai.types.DynamicRetrievalConfigMode.MODE_UNSPECIFIED">MODE_UNSPECIFIED (genai.types.DynamicRetrievalConfigMode attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.FunctionCallingConfigMode.MODE_UNSPECIFIED">(genai.types.FunctionCallingConfigMode attribute)</a>
-</li>
-          <li><a href="genai.html#genai.types.Mode.MODE_UNSPECIFIED">(genai.types.Mode attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.BatchJob.model">model (genai.types.BatchJob attribute)</a>
@@ -5564,6 +5564,10 @@
 </li>
           <li><a href="genai.html#genai.types.GenerateVideosConfigDict.person_generation">(genai.types.GenerateVideosConfigDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.ImageConfig.person_generation">(genai.types.ImageConfig attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.ImageConfigDict.person_generation">(genai.types.ImageConfigDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.RecontextImageConfig.person_generation">(genai.types.RecontextImageConfig attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.RecontextImageConfigDict.person_generation">(genai.types.RecontextImageConfigDict attribute)</a>
@@ -5581,10 +5585,10 @@
         </ul></li>
         <li><a href="genai.html#genai.types.PersonGeneration">PersonGeneration (class in genai.types)</a>
 </li>
-        <li><a href="genai.html#genai.types.PhishBlockThreshold.PHISH_BLOCK_THRESHOLD_UNSPECIFIED">PHISH_BLOCK_THRESHOLD_UNSPECIFIED (genai.types.PhishBlockThreshold attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="genai.html#genai.types.PhishBlockThreshold.PHISH_BLOCK_THRESHOLD_UNSPECIFIED">PHISH_BLOCK_THRESHOLD_UNSPECIFIED (genai.types.PhishBlockThreshold attribute)</a>
+</li>
         <li><a href="genai.html#genai.types.PhishBlockThreshold">PhishBlockThreshold (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution.photo_uri">photo_uri (genai.types.GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution attribute)</a>
@@ -6065,6 +6069,18 @@
           <li><a href="genai.html#genai.types.VideoGenerationReferenceImageDict.reference_type">(genai.types.VideoGenerationReferenceImageDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.files.AsyncFiles.register_files">register_files() (genai.files.AsyncFiles method)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.files.Files.register_files">(genai.files.Files method)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.FileSource.REGISTERED">REGISTERED (genai.types.FileSource attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.RegisterFilesConfigDict">RegisterFilesConfigDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.RegisterFilesResponseDict">RegisterFilesResponseDict (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.GroundingChunkMapsPlaceAnswerSourcesReviewSnippet.relative_publish_time_description">relative_publish_time_description (genai.types.GroundingChunkMapsPlaceAnswerSourcesReviewSnippet attribute)</a>
 
         <ul>
@@ -6097,6 +6113,8 @@
 </li>
         <li><a href="genai.html#genai.types.ReplayResponseDict">ReplayResponseDict (class in genai.types)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.client.DebugConfig.replays_directory">replays_directory (genai.client.DebugConfig attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.VoiceConfig.replicated_voice_config">replicated_voice_config (genai.types.VoiceConfig attribute)</a>
@@ -6105,8 +6123,6 @@
           <li><a href="genai.html#genai.types.VoiceConfigDict.replicated_voice_config">(genai.types.VoiceConfigDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.ReplicatedVoiceConfigDict">ReplicatedVoiceConfigDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.ReplayInteraction.request">request (genai.types.ReplayInteraction attribute)</a>
@@ -6582,6 +6598,10 @@
 </li>
           <li><a href="genai.html#genai.types.ListTuningJobsResponseDict.sdk_http_response">(genai.types.ListTuningJobsResponseDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.RegisterFilesResponse.sdk_http_response">(genai.types.RegisterFilesResponse attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.RegisterFilesResponseDict.sdk_http_response">(genai.types.RegisterFilesResponseDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.TuningJob.sdk_http_response">(genai.types.TuningJob attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.TuningJobDict.sdk_http_response">(genai.types.TuningJobDict attribute)</a>
@@ -6809,6 +6829,10 @@
           <li><a href="genai.html#genai.types.GenerateContentConfig.should_return_http_response">(genai.types.GenerateContentConfig attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.GenerateContentConfigDict.should_return_http_response">(genai.types.GenerateContentConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.RegisterFilesConfig.should_return_http_response">(genai.types.RegisterFilesConfig attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.RegisterFilesConfigDict.should_return_http_response">(genai.types.RegisterFilesConfigDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.UploadToFileSearchStoreConfig.should_return_http_response">(genai.types.UploadToFileSearchStoreConfig attribute)</a>
 </li>

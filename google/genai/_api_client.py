@@ -984,12 +984,7 @@ class BaseApiClient:
           self.project = project
 
       if self._credentials:
-        if self._credentials.expired or not self._credentials.token:
-          # Only refresh when it needs to. Default expiration is 3600 seconds.
-          refresh_auth(self._credentials)
-        if not self._credentials.token:
-          raise RuntimeError('Could not resolve API token from the environment')
-        return self._credentials.token  # type: ignore[no-any-return]
+        return get_token_from_credentials(self, self._credentials)  # type: ignore[no-any-return]
       else:
         raise RuntimeError('Could not resolve API token from the environment')
 
@@ -1034,18 +1029,10 @@ class BaseApiClient:
             self.project = project
 
     if self._credentials:
-      if self._credentials.expired or not self._credentials.token:
-        # Only refresh when it needs to. Default expiration is 3600 seconds.
-        async_auth_lock = await self._get_async_auth_lock()
-        async with async_auth_lock:
-          if self._credentials.expired or not self._credentials.token:
-            # Double check that the credentials expired before refreshing.
-            await asyncio.to_thread(refresh_auth, self._credentials)
-
-      if not self._credentials.token:
-        raise RuntimeError('Could not resolve API token from the environment')
-
-      return self._credentials.token
+      return await async_get_token_from_credentials(
+          self,
+          self._credentials
+      )  # type: ignore[no-any-return]
     else:
       raise RuntimeError('Could not resolve API token from the environment')
 
@@ -1925,3 +1912,35 @@ class BaseApiClient:
       asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
+
+def get_token_from_credentials(
+    client: 'BaseApiClient',
+    credentials: google.auth.credentials.Credentials
+) -> str:
+  """Refreshes the authentication token for the given credentials."""
+  if credentials.expired or not credentials.token:
+    # Only refresh when it needs to. Default expiration is 3600 seconds.
+    refresh_auth(credentials)
+  if not credentials.token:
+    raise RuntimeError('Could not resolve API token from the environment')
+  return credentials.token  # type: ignore[no-any-return]
+
+async def async_get_token_from_credentials(
+    client: 'BaseApiClient',
+    credentials: google.auth.credentials.Credentials
+) -> str:
+  """Refreshes the authentication token for the given credentials."""
+  if credentials.expired or not credentials.token:
+    # Only refresh when it needs to. Default expiration is 3600 seconds.
+    async_auth_lock = await client._get_async_auth_lock()
+    async with async_auth_lock:
+      if credentials.expired or not credentials.token:
+        # Double check that the credentials expired before refreshing.
+        await asyncio.to_thread(refresh_auth, credentials)
+
+  if not credentials.token:
+    raise RuntimeError('Could not resolve API token from the environment')
+
+  return credentials.token    # type: ignore[no-any-return]
+
+
