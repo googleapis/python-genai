@@ -30,8 +30,4 @@ class TurnParam(TypedDict, total=False):
     """The content of the turn."""
 
     role: str
-    """The originator of this turn.
-
-    Must be user for input or model for
-    model output.
-    """
+    """The originator of this turn. Must be user for input or model for model output."""
