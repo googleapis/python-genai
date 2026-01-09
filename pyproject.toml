@@ -1,5 +1,6 @@
 [build-system]
 requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=1.12.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "google-genai"
@@ -39,7 +40,7 @@ dependencies = [
 
 [project.optional-dependencies]
 aiohttp = ["aiohttp<3.13.3"]
-local-tokenizer = ["sentencepiece>=0.2.0", "protobuf"]
+local-tokenizer = ["sentencepiece>=0.2.0", "protobuf>"]
 
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
