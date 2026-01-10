@@ -1,3 +1,4 @@
+
 /*
  * Base JavaScript utilities for all Sphinx HTML documentation.
  */
