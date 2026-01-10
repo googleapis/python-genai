@@ -20,6 +20,7 @@ from typing_extensions import Literal
 
 from .._models import BaseModel
 from .tool_choice import ToolChoice
+from .image_config import ImageConfig
 from .speech_config import SpeechConfig
 from .thinking_level import ThinkingLevel
 
@@ -28,6 +29,9 @@ __all__ = ["GenerationConfig"]
 
 class GenerationConfig(BaseModel):
     """Configuration parameters for model interactions."""
+
+    image_config: Optional[ImageConfig] = None
+    """Configuration for image interaction."""
 
     max_output_tokens: Optional[int] = None
     """The maximum number of tokens to include in the response."""
