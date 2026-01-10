@@ -214,7 +214,7 @@ def test_interactions_vertex_auth_refresh_on_retry():
             headers = mock_send.call_args_list[i][0][0].headers
             assert headers['authorization'] == f'Bearer {token_values[i]}'
 
-@pytest.mark.xfail(reason="extra_headers don't override default auth")
+
 def test_interactions_vertex_extra_headers_override():
     from ..._api_client import BaseApiClient
     from httpx import Client as HTTPClient
@@ -358,8 +358,6 @@ async def test_async_interactions_vertex_auth_header():
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_key_no_auth_header():
   from ..._api_client import BaseApiClient
-  from ..._api_client import AsyncHttpxClient
-  creds = mock.Mock()
   client = Client(vertexai=True, api_key='test-api-key')
 
   with (
@@ -436,7 +434,6 @@ async def test_async_interactions_vertex_auth_refresh_on_retry():
             headers = mock_send.call_args_list[i][0][0].headers
             assert headers['authorization'] == f'Bearer {token_values[i]}'
 
-@pytest.mark.xfail(reason="extra_headers don't override default auth")
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_extra_headers_override():
     from ..._api_client import BaseApiClient

@@ -23,6 +23,7 @@ from typing_extensions import Literal, TypedDict
 from .._types import SequenceNotStr
 from .thinking_level import ThinkingLevel
 from .tool_choice_param import ToolChoiceParam
+from .image_config_param import ImageConfigParam
 from .speech_config_param import SpeechConfigParam
 
 __all__ = ["GenerationConfigParam"]
@@ -30,6 +31,9 @@ __all__ = ["GenerationConfigParam"]
 
 class GenerationConfigParam(TypedDict, total=False):
     """Configuration parameters for model interactions."""
+
+    image_config: ImageConfigParam
+    """Configuration for image interaction."""
 
     max_output_tokens: int
     """The maximum number of tokens to include in the response."""
