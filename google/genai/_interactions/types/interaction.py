@@ -23,6 +23,7 @@ from .turn import Turn
 from .model import Model
 from .usage import Usage
 from .._utils import PropertyInfo
+from .content import Content
 from .._models import BaseModel
 from .text_content import TextContent
 from .audio_content import AudioContent
@@ -33,6 +34,7 @@ from .document_content import DocumentContent
 from .dynamic_agent_config import DynamicAgentConfig
 from .function_call_content import FunctionCallContent
 from .function_result_content import FunctionResultContent
+from .file_search_call_content import FileSearchCallContent
 from .url_context_call_content import URLContextCallContent
 from .deep_research_agent_config import DeepResearchAgentConfig
 from .file_search_result_content import FileSearchResultContent
@@ -44,38 +46,15 @@ from .mcp_server_tool_call_content import MCPServerToolCallContent
 from .code_execution_result_content import CodeExecutionResultContent
 from .mcp_server_tool_result_content import MCPServerToolResultContent
 
-__all__ = ["Interaction", "AgentConfig", "Input", "InputContentList", "Output"]
+__all__ = ["Interaction", "AgentConfig", "Input"]
 
 AgentConfig: TypeAlias = Annotated[
     Union[DynamicAgentConfig, DeepResearchAgentConfig], PropertyInfo(discriminator="type")
 ]
 
-InputContentList: TypeAlias = Annotated[
-    Union[
-        TextContent,
-        ImageContent,
-        AudioContent,
-        DocumentContent,
-        VideoContent,
-        ThoughtContent,
-        FunctionCallContent,
-        FunctionResultContent,
-        CodeExecutionCallContent,
-        CodeExecutionResultContent,
-        URLContextCallContent,
-        URLContextResultContent,
-        GoogleSearchCallContent,
-        GoogleSearchResultContent,
-        MCPServerToolCallContent,
-        MCPServerToolResultContent,
-        FileSearchResultContent,
-    ],
-    PropertyInfo(discriminator="type"),
-]
-
 Input: TypeAlias = Union[
     str,
-    List[InputContentList],
+    List[Content],
     List[Turn],
     TextContent,
     ImageContent,
@@ -93,30 +72,8 @@ Input: TypeAlias = Union[
     GoogleSearchResultContent,
     MCPServerToolCallContent,
     MCPServerToolResultContent,
+    FileSearchCallContent,
     FileSearchResultContent,
-]
-
-Output: TypeAlias = Annotated[
-    Union[
-        TextContent,
-        ImageContent,
-        AudioContent,
-        DocumentContent,
-        VideoContent,
-        ThoughtContent,
-        FunctionCallContent,
-        FunctionResultContent,
-        CodeExecutionCallContent,
-        CodeExecutionResultContent,
-        URLContextCallContent,
-        URLContextResultContent,
-        GoogleSearchCallContent,
-        GoogleSearchResultContent,
-        MCPServerToolCallContent,
-        MCPServerToolResultContent,
-        FileSearchResultContent,
-    ],
-    PropertyInfo(discriminator="type"),
 ]
 
 
@@ -142,7 +99,7 @@ class Interaction(BaseModel):
     model: Optional[Model] = None
     """The name of the `Model` used for generating the interaction."""
 
-    outputs: Optional[List[Output]] = None
+    outputs: Optional[List[Content]] = None
     """Output only. Responses from the model."""
 
     previous_interaction_id: Optional[str] = None

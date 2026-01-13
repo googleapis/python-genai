@@ -23,6 +23,7 @@ from typing_extensions import Literal, Required, TypeAlias, TypedDict
 from .tool_param import ToolParam
 from .turn_param import TurnParam
 from .model_param import ModelParam
+from .content_param import ContentParam
 from .text_content_param import TextContentParam
 from .audio_content_param import AudioContentParam
 from .image_content_param import ImageContentParam
@@ -33,6 +34,7 @@ from .generation_config_param import GenerationConfigParam
 from .dynamic_agent_config_param import DynamicAgentConfigParam
 from .function_call_content_param import FunctionCallContentParam
 from .function_result_content_param import FunctionResultContentParam
+from .file_search_call_content_param import FileSearchCallContentParam
 from .url_context_call_content_param import URLContextCallContentParam
 from .deep_research_agent_config_param import DeepResearchAgentConfigParam
 from .file_search_result_content_param import FileSearchResultContentParam
@@ -47,7 +49,6 @@ from .mcp_server_tool_result_content_param import MCPServerToolResultContentPara
 __all__ = [
     "BaseCreateModelInteractionParams",
     "Input",
-    "ContentList",
     "BaseCreateAgentInteractionParams",
     "AgentConfig",
     "CreateModelInteractionParamsNonStreaming",
@@ -97,29 +98,9 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     """A list of tool declarations the model may call during interaction."""
 
 
-ContentList: TypeAlias = Union[
-    TextContentParam,
-    ImageContentParam,
-    AudioContentParam,
-    DocumentContentParam,
-    VideoContentParam,
-    ThoughtContentParam,
-    FunctionCallContentParam,
-    FunctionResultContentParam,
-    CodeExecutionCallContentParam,
-    CodeExecutionResultContentParam,
-    URLContextCallContentParam,
-    URLContextResultContentParam,
-    GoogleSearchCallContentParam,
-    GoogleSearchResultContentParam,
-    MCPServerToolCallContentParam,
-    MCPServerToolResultContentParam,
-    FileSearchResultContentParam,
-]
-
 Input: TypeAlias = Union[
     str,
-    Iterable[ContentList],
+    Iterable[ContentParam],
     Iterable[TurnParam],
     TextContentParam,
     ImageContentParam,
@@ -137,6 +118,7 @@ Input: TypeAlias = Union[
     GoogleSearchResultContentParam,
     MCPServerToolCallContentParam,
     MCPServerToolResultContentParam,
+    FileSearchCallContentParam,
     FileSearchResultContentParam,
 ]
 

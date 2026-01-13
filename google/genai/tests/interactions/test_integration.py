@@ -55,6 +55,7 @@ def test_client_timeout():
         http_client=mock.ANY,
         timeout=5.0,
         max_retries=mock.ANY,
+        client_adapter=mock.ANY,
     )
 
 
@@ -79,4 +80,5 @@ async def test_async_client_timeout():
         http_client=mock.ANY,
         timeout=5.0,
         max_retries=mock.ANY,
+        client_adapter=mock.ANY,
     )

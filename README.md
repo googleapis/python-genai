@@ -74,7 +74,7 @@ Below is an example `generate_content()` call using types from the types module:
 
 ```python
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents=types.Part.from_text(text='Why is the sky blue?'),
     config=types.GenerateContentConfig(
         temperature=0,
@@ -89,7 +89,7 @@ types:
 
 ```python
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents={'text': 'Why is the sky blue?'},
     config={
         'temperature': 0,
@@ -583,7 +583,7 @@ and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models) respectively
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='high',
     config=types.GenerateContentConfig(
         system_instruction='I say high, you say low',
@@ -1200,7 +1200,6 @@ print(response)
 ```python
 from google.genai import types
 
-# multiple contents with config
 response = client.models.embed_content(
     model='gemini-embedding-001',
     contents=['why is the sky blue?', 'What is your age?'],
@@ -1214,12 +1213,9 @@ print(response)
 
 #### Generate Images
 
-Support for generate images in Gemini Developer API is behind an allowlist
-
 ```python
 from google.genai import types
 
-# Generate Image
 response1 = client.models.generate_images(
     model='imagen-4.0-generate-001',
     prompt='An umbrella in the foreground, and a rainy night sky in the background',
@@ -1239,7 +1235,6 @@ Upscale image is only supported in Vertex AI.
 ```python
 from google.genai import types
 
-# Upscale the generated image from above
 response2 = client.models.upscale_image(
     model='imagen-4.0-upscale-preview',
     image=response1.generated_images[0].image,
@@ -1939,7 +1934,7 @@ file = client.files.upload(
 
 # Create a batch job with file name
 batch_job = client.batches.create(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     src="files/test-json",
 )
 ```

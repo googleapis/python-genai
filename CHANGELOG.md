@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.57.0](https://github.com/googleapis/python-genai/compare/v1.56.0...v1.57.0) (2026-01-07)
+
+
+### Features
+
+* [Python] add RegisterFiles so gcs files can be used with genai. ([68fa075](https://github.com/googleapis/python-genai/commit/68fa0754290bcbd84c1c34806eedfdad28890921))
+* Add gemini-3-pro-preview support for local tokenizer ([48f8256](https://github.com/googleapis/python-genai/commit/48f8256202a9ea3abfb7790fa80fcbf68e541131))
+* Add PersonGeneration to ImageConfig for Vertex Gempix ([c66e0ce](https://github.com/googleapis/python-genai/commit/c66e0ce16bc1385969b66d3f266269ac9aafad73))
+
+
+### Bug Fixes
+
+* Remove validation for empty text parts on Chat, this will support keeping the history in chat when the API yields back such a part. ([215c852](https://github.com/googleapis/python-genai/commit/215c8524659c0b2ca945b6cd7887b3501db61be4))
+
+
+### Documentation
+
+* Regenerate docs for 1.56.0 ([b4c063e](https://github.com/googleapis/python-genai/commit/b4c063e7f213092e5cb25a7ad0783540dc7a982e))
+* Update `codegen_instructions.md` for Gemini 3 Flash ([22500b5](https://github.com/googleapis/python-genai/commit/22500b5ef99fb8e2d3f476da10164b08e8485a6f))
+* Update Virtual Try-On model id in samples and docstrings ([5bf4d62](https://github.com/googleapis/python-genai/commit/5bf4d625f3b3965260ea5dcc1427f8b6a6845eab))
+
 ## [1.56.0](https://github.com/googleapis/python-genai/compare/v1.55.0...v1.56.0) (2025-12-16)
 
 

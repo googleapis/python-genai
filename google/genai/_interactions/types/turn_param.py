@@ -18,51 +18,15 @@
 from __future__ import annotations
 
 from typing import Union, Iterable
-from typing_extensions import TypeAlias, TypedDict
+from typing_extensions import TypedDict
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .thought_content_param import ThoughtContentParam
-from .document_content_param import DocumentContentParam
-from .function_call_content_param import FunctionCallContentParam
-from .function_result_content_param import FunctionResultContentParam
-from .url_context_call_content_param import URLContextCallContentParam
-from .file_search_result_content_param import FileSearchResultContentParam
-from .google_search_call_content_param import GoogleSearchCallContentParam
-from .url_context_result_content_param import URLContextResultContentParam
-from .code_execution_call_content_param import CodeExecutionCallContentParam
-from .google_search_result_content_param import GoogleSearchResultContentParam
-from .mcp_server_tool_call_content_param import MCPServerToolCallContentParam
-from .code_execution_result_content_param import CodeExecutionResultContentParam
-from .mcp_server_tool_result_content_param import MCPServerToolResultContentParam
+from .content_param import ContentParam
 
-__all__ = ["TurnParam", "ContentUnionMember1"]
-
-ContentUnionMember1: TypeAlias = Union[
-    TextContentParam,
-    ImageContentParam,
-    AudioContentParam,
-    DocumentContentParam,
-    VideoContentParam,
-    ThoughtContentParam,
-    FunctionCallContentParam,
-    FunctionResultContentParam,
-    CodeExecutionCallContentParam,
-    CodeExecutionResultContentParam,
-    URLContextCallContentParam,
-    URLContextResultContentParam,
-    GoogleSearchCallContentParam,
-    GoogleSearchResultContentParam,
-    MCPServerToolCallContentParam,
-    MCPServerToolResultContentParam,
-    FileSearchResultContentParam,
-]
+__all__ = ["TurnParam"]
 
 
 class TurnParam(TypedDict, total=False):
-    content: Union[str, Iterable[ContentUnionMember1]]
+    content: Union[str, Iterable[ContentParam]]
     """The content of the turn."""
 
     role: str

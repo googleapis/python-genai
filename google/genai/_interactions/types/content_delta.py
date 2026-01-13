@@ -60,6 +60,7 @@ __all__ = [
     "DeltaMCPServerToolResultDeltaResult",
     "DeltaMCPServerToolResultDeltaResultItems",
     "DeltaMCPServerToolResultDeltaResultItemsItem",
+    "DeltaFileSearchCallDelta",
     "DeltaFileSearchResultDelta",
     "DeltaFileSearchResultDeltaResult",
 ]
@@ -284,6 +285,13 @@ class DeltaMCPServerToolResultDelta(BaseModel):
     server_name: Optional[str] = None
 
 
+class DeltaFileSearchCallDelta(BaseModel):
+    type: Literal["file_search_call"]
+
+    id: Optional[str] = None
+    """A unique ID for this specific tool call."""
+
+
 class DeltaFileSearchResultDeltaResult(BaseModel):
     """The result of the File Search."""
 
@@ -322,6 +330,7 @@ Delta: TypeAlias = Annotated[
         DeltaGoogleSearchResultDelta,
         DeltaMCPServerToolCallDelta,
         DeltaMCPServerToolResultDelta,
+        DeltaFileSearchCallDelta,
         DeltaFileSearchResultDelta,
     ],
     PropertyInfo(discriminator="type"),
@@ -333,8 +342,7 @@ class ContentDelta(BaseModel):
 
     event_id: Optional[str] = None
     """
-    The event_id token to be used to resume the interaction stream, from
-    this event.
+    The event_id token to be used to resume the interaction stream, from this event.
     """
 
     event_type: Optional[Literal["content.delta"]] = None
