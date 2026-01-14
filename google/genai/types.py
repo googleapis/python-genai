@@ -108,6 +108,20 @@ else:
     HttpxClient = None
     HttpxAsyncClient = None
 
+_is_aiohttp_imported = False
+if typing.TYPE_CHECKING:
+  from aiohttp import ClientSession
+
+  _is_aiohttp_imported = True
+else:
+  ClientSession: typing.Type = Any
+  try:
+    from aiohttp import ClientSession
+
+    _is_aiohttp_imported = True
+  except ImportError:
+    ClientSession = None
+
 logger = logging.getLogger('google_genai.types')
 _from_json_schema_warning_logged = False
 _json_schema_warning_logged = False
@@ -1935,6 +1949,10 @@ class HttpOptions(_common.BaseModel):
   httpx_async_client: Optional['HttpxAsyncClient'] = Field(
       default=None,
       description="""A custom httpx async client to be used for the request.""",
+  )
+  aiohttp_client: Optional['ClientSession'] = Field(
+      default=None,
+      description="""A custom aiohttp client session to be used for the request.""",
   )
 
 

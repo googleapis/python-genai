@@ -715,18 +715,22 @@ class BaseApiClient:
       self._async_httpx_client = self._http_options.httpx_async_client
     else:
       self._async_httpx_client = AsyncHttpxClient(**async_client_args)
-    if self._use_aiohttp():
-      try:
-        import aiohttp  # pylint: disable=g-import-not-at-top
-        # Do it once at the genai.Client level. Share among all requests.
-        self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
-            self._http_options
-        )
-      except ImportError:
-        pass
 
     # Initialize the aiohttp client session.
     self._aiohttp_session: Optional[aiohttp.ClientSession] = None
+    if self._use_aiohttp():
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
+
+        if self._http_options.aiohttp_client:
+          self._aiohttp_session = self._http_options.aiohttp_client
+        else:
+          # Do it once at the genai.Client level. Share among all requests.
+          self._async_client_session_request_args = (
+              self._ensure_aiohttp_ssl_ctx(self._http_options)
+          )
+      except ImportError:
+        pass
 
     retry_kwargs = retry_args(self._http_options.retry_options)
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
@@ -1892,7 +1896,7 @@ class BaseApiClient:
     # close the client when the object is garbage collected.
     if not self._http_options.httpx_async_client:
       await self._async_httpx_client.aclose()
-    if self._aiohttp_session:
+    if self._aiohttp_session and not self._http_options.aiohttp_client:
       await self._aiohttp_session.close()
 
   def __del__(self) -> None:
