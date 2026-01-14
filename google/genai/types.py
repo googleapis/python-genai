@@ -4251,9 +4251,14 @@ else:
 ToolListUnion = list[ToolUnion]
 ToolListUnionDict = list[ToolUnionDict]
 
-SchemaUnion = Union[
-    dict[Any, Any], type, Schema, builtin_types.GenericAlias, VersionedUnionType  # type: ignore[valid-type]
-]
+if sys.version_info >= (3, 10):
+  SchemaUnion = Union[
+      dict[Any, Any], type, Schema, builtin_types.GenericAlias, builtin_types.UnionType, type(Union[int, str])
+  ]
+else:
+  SchemaUnion = Union[
+      dict[Any, Any], type, Schema, builtin_types.GenericAlias, type(Union[int, str])
+  ]
 SchemaUnionDict = Union[SchemaUnion, SchemaDict]
 
 
