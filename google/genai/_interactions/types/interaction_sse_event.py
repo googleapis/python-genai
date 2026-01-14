@@ -16,8 +16,9 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from typing import Union
-from typing_extensions import TypeAlias
+from typing_extensions import Annotated, TypeAlias
 
+from .._utils import PropertyInfo
 from .error_event import ErrorEvent
 from .content_stop import ContentStop
 from .content_delta import ContentDelta
@@ -27,6 +28,7 @@ from .interaction_status_update import InteractionStatusUpdate
 
 __all__ = ["InteractionSSEEvent"]
 
-InteractionSSEEvent: TypeAlias = Union[
-    InteractionEvent, InteractionStatusUpdate, ContentStart, ContentDelta, ContentStop, ErrorEvent
+InteractionSSEEvent: TypeAlias = Annotated[
+    Union[InteractionEvent, InteractionStatusUpdate, ContentStart, ContentDelta, ContentStop, ErrorEvent],
+    PropertyInfo(discriminator="event_type"),
 ]

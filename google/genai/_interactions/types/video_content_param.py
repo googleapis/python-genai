@@ -34,6 +34,7 @@ class VideoContentParam(TypedDict, total=False):
     type: Required[Literal["video"]]
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """The video content."""
 
     mime_type: VideoMimeTypeParam
     """The mime type of the video."""
@@ -42,6 +43,7 @@ class VideoContentParam(TypedDict, total=False):
     """The resolution of the media."""
 
     uri: str
+    """The URI of the video."""
 
 
 set_pydantic_config(VideoContentParam, {"arbitrary_types_allowed": True})
