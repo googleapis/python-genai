@@ -30,8 +30,10 @@ class DocumentContent(BaseModel):
     type: Literal["document"]
 
     data: Optional[str] = None
+    """The document content."""
 
     mime_type: Optional[DocumentMimeType] = None
     """The mime type of the document."""
 
     uri: Optional[str] = None
+    """The URI of the document."""

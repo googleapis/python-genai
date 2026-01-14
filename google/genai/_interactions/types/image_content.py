@@ -30,6 +30,7 @@ class ImageContent(BaseModel):
     type: Literal["image"]
 
     data: Optional[str] = None
+    """The image content."""
 
     mime_type: Optional[ImageMimeType] = None
     """The mime type of the image."""
@@ -38,3 +39,4 @@ class ImageContent(BaseModel):
     """The resolution of the media."""
 
     uri: Optional[str] = None
+    """The URI of the image."""

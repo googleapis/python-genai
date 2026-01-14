@@ -30,6 +30,7 @@ class VideoContent(BaseModel):
     type: Literal["video"]
 
     data: Optional[str] = None
+    """The video content."""
 
     mime_type: Optional[VideoMimeType] = None
     """The mime type of the video."""
@@ -38,3 +39,4 @@ class VideoContent(BaseModel):
     """The resolution of the media."""
 
     uri: Optional[str] = None
+    """The URI of the video."""

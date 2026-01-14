@@ -30,8 +30,10 @@ class AudioContent(BaseModel):
     type: Literal["audio"]
 
     data: Optional[str] = None
+    """The audio content."""
 
     mime_type: Optional[AudioMimeType] = None
     """The mime type of the audio."""
 
     uri: Optional[str] = None
+    """The URI of the audio."""
