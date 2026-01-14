@@ -539,7 +539,8 @@ class BaseApiClient:
   """Client for calling HTTP APIs sending and receiving JSON."""
 
   ## Set GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES to false
-  ## to disable bound token sharing.
+  ## to disable bound token sharing. Tracking on
+  ## https://github.com/googleapis/python-genai/issues/1956
   os.environ['GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES'] = (
       'false'
   )
