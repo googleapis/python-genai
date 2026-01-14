@@ -92,7 +92,9 @@ def _extract_items(
         if is_list(obj):
             files: list[tuple[str, FileTypes]] = []
             for entry in obj:
-                assert_is_file_content(entry, key=flattened_key + "[]" if flattened_key else "")
+                assert_is_file_content(
+                    entry, key=flattened_key + "[]" if flattened_key else ""
+                )
                 files.append((flattened_key + "[]", cast(FileTypes, entry)))
             return files
 
@@ -132,7 +134,9 @@ def _extract_items(
                     item,
                     path,
                     index=index,
-                    flattened_key=flattened_key + "[]" if flattened_key is not None else "[]",
+                    flattened_key=flattened_key + "[]"
+                    if flattened_key is not None
+                    else "[]",
                 )
                 for item in obj
             ]
@@ -282,7 +286,12 @@ def required_args(*variants: Sequence[str]) -> Callable[[CallableT], CallableT]:
             else:  # no break
                 if len(variants) > 1:
                     variations = human_join(
-                        ["(" + human_join([quote(arg) for arg in variant], final="and") + ")" for variant in variants]
+                        [
+                            "("
+                            + human_join([quote(arg) for arg in variant], final="and")
+                            + ")"
+                            for variant in variants
+                        ]
                     )
                     msg = f"Missing required arguments; Expected either {variations} arguments to be given"
                 else:
@@ -380,9 +389,8 @@ def removesuffix(string: str, suffix: str) -> str:
 
 
 def file_from_path(path: str) -> FileTypes:
-    contents = Path(path).read_bytes()
     file_name = os.path.basename(path)
-    return (file_name, contents)
+    return (file_name, open(Path(path), "rb"))
 
 
 def get_required_header(headers: HeadersLike, header: str) -> str:
@@ -394,7 +402,11 @@ def get_required_header(headers: HeadersLike, header: str) -> str:
                 return v
 
     # to deal with the case where the header looks like Stainless-Event-Id
-    intercaps_header = re.sub(r"([^\w])(\w)", lambda pat: pat.group(1) + pat.group(2).upper(), header.capitalize())
+    intercaps_header = re.sub(
+        r"([^\w])(\w)",
+        lambda pat: pat.group(1) + pat.group(2).upper(),
+        header.capitalize(),
+    )
 
     for normalized_header in [header, lower_header, header.upper(), intercaps_header]:
         value = headers.get(normalized_header)
