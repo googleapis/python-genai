@@ -540,7 +540,9 @@ class BaseApiClient:
 
   ## Set GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES to false
   ## to disable bound token sharing.
-  os.setenv('GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES', 'false')
+  os.environ['GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES'] = (
+      'false'
+  )
 
   def __init__(
       self,
