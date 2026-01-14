@@ -869,6 +869,17 @@ class VadSignalType(_common.CaseInSensitiveEnum):
   """End of sentence signal."""
 
 
+class VoiceActivityType(_common.CaseInSensitiveEnum):
+  """The type of the voice activity signal."""
+
+  TYPE_UNSPECIFIED = 'TYPE_UNSPECIFIED'
+  """The default is VOICE_ACTIVITY_TYPE_UNSPECIFIED."""
+  ACTIVITY_START = 'ACTIVITY_START'
+  """Start of sentence signal."""
+  ACTIVITY_END = 'ACTIVITY_END'
+  """End of sentence signal."""
+
+
 class StartSensitivity(_common.CaseInSensitiveEnum):
   """Start of speech sensitivity."""
 
@@ -16347,6 +16358,24 @@ VoiceActivityDetectionSignalOrDict = Union[
 ]
 
 
+class VoiceActivity(_common.BaseModel):
+  """Voice activity signal."""
+
+  voice_activity_type: Optional[VoiceActivityType] = Field(
+      default=None, description="""The type of the voice activity signal."""
+  )
+
+
+class VoiceActivityDict(TypedDict, total=False):
+  """Voice activity signal."""
+
+  voice_activity_type: Optional[VoiceActivityType]
+  """The type of the voice activity signal."""
+
+
+VoiceActivityOrDict = Union[VoiceActivity, VoiceActivityDict]
+
+
 class LiveServerMessage(_common.BaseModel):
   """Response message for API call."""
 
@@ -16379,7 +16408,13 @@ class LiveServerMessage(_common.BaseModel):
       )
   )
   voice_activity_detection_signal: Optional[VoiceActivityDetectionSignal] = (
-      Field(default=None, description="""Voice activity detection signal.""")
+      Field(
+          default=None,
+          description="""Voice activity detection signal. Allowlisted only.""",
+      )
+  )
+  voice_activity: Optional[VoiceActivity] = Field(
+      default=None, description="""Voice activity signal."""
   )
 
   @property
@@ -16478,7 +16513,10 @@ class LiveServerMessageDict(TypedDict, total=False):
   """Update of the session resumption state."""
 
   voice_activity_detection_signal: Optional[VoiceActivityDetectionSignalDict]
-  """Voice activity detection signal."""
+  """Voice activity detection signal. Allowlisted only."""
+
+  voice_activity: Optional[VoiceActivityDict]
+  """Voice activity signal."""
 
 
 LiveServerMessageOrDict = Union[LiveServerMessage, LiveServerMessageDict]
