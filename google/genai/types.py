@@ -825,6 +825,7 @@ class FileSource(_common.CaseInSensitiveEnum):
   SOURCE_UNSPECIFIED = 'SOURCE_UNSPECIFIED'
   UPLOADED = 'UPLOADED'
   GENERATED = 'GENERATED'
+  REGISTERED = 'REGISTERED'
 
 
 class TurnCompleteReason(_common.CaseInSensitiveEnum):
@@ -13926,6 +13927,85 @@ class DeleteFileResponseDict(TypedDict, total=False):
 
 
 DeleteFileResponseOrDict = Union[DeleteFileResponse, DeleteFileResponseDict]
+
+
+class RegisterFilesConfig(_common.BaseModel):
+  """Used to override the default configuration."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+  should_return_http_response: Optional[bool] = Field(
+      default=None,
+      description=""" If true, the raw HTTP response will be returned in the 'sdk_http_response' field.""",
+  )
+
+
+class RegisterFilesConfigDict(TypedDict, total=False):
+  """Used to override the default configuration."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+  should_return_http_response: Optional[bool]
+  """ If true, the raw HTTP response will be returned in the 'sdk_http_response' field."""
+
+
+RegisterFilesConfigOrDict = Union[RegisterFilesConfig, RegisterFilesConfigDict]
+
+
+class _RegisterFilesParameters(_common.BaseModel):
+  """Generates the parameters for the private _Register method."""
+
+  uris: Optional[list[str]] = Field(
+      default=None,
+      description="""The Google Cloud Storage URIs to register. Example: `gs://bucket/object`.""",
+  )
+  config: Optional[RegisterFilesConfig] = Field(
+      default=None,
+      description="""Used to override the default configuration.""",
+  )
+
+
+class _RegisterFilesParametersDict(TypedDict, total=False):
+  """Generates the parameters for the private _Register method."""
+
+  uris: Optional[list[str]]
+  """The Google Cloud Storage URIs to register. Example: `gs://bucket/object`."""
+
+  config: Optional[RegisterFilesConfigDict]
+  """Used to override the default configuration."""
+
+
+_RegisterFilesParametersOrDict = Union[
+    _RegisterFilesParameters, _RegisterFilesParametersDict
+]
+
+
+class RegisterFilesResponse(_common.BaseModel):
+  """Response for the _register file method."""
+
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
+  files: Optional[list[File]] = Field(
+      default=None, description="""The registered files."""
+  )
+
+
+class RegisterFilesResponseDict(TypedDict, total=False):
+  """Response for the _register file method."""
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
+
+  files: Optional[list[FileDict]]
+  """The registered files."""
+
+
+RegisterFilesResponseOrDict = Union[
+    RegisterFilesResponse, RegisterFilesResponseDict
+]
 
 
 class InlinedRequest(_common.BaseModel):

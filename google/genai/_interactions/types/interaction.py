@@ -34,6 +34,7 @@ from .document_content import DocumentContent
 from .dynamic_agent_config import DynamicAgentConfig
 from .function_call_content import FunctionCallContent
 from .function_result_content import FunctionResultContent
+from .file_search_call_content import FileSearchCallContent
 from .url_context_call_content import URLContextCallContent
 from .deep_research_agent_config import DeepResearchAgentConfig
 from .file_search_result_content import FileSearchResultContent
@@ -71,6 +72,7 @@ Input: TypeAlias = Union[
     GoogleSearchResultContent,
     MCPServerToolCallContent,
     MCPServerToolResultContent,
+    FileSearchCallContent,
     FileSearchResultContent,
 ]
 

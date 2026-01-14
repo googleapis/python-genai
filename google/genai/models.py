@@ -4439,7 +4439,7 @@ class Models(_api_module.BaseModule):
       image = product_recontext_response.generated_images[0].image
 
       virtual_try_on_response = client.models.recontext_image(
-          model="virtual-try-on-preview-08-04",
+          model="virtual-try-on-001",
           source=types.RecontextImageSource(
               person_image=types.Image.from_file(IMAGE1_FILE_PATH),
               product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
@@ -6283,7 +6283,7 @@ class AsyncModels(_api_module.BaseModule):
       image = product_recontext_response.generated_images[0].image
 
       virtual_try_on_response = client.models.recontext_image(
-          model="virtual-try-on-preview-08-04",
+          model="virtual-try-on-001",
           source=types.RecontextImageSource(
               person_image=types.Image.from_file(IMAGE1_FILE_PATH),
               product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],

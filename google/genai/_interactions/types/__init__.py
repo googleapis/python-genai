@@ -32,6 +32,7 @@ from .model_param import ModelParam as ModelParam
 from .tool_choice import ToolChoice as ToolChoice
 from .usage_param import UsageParam as UsageParam
 from .content_stop import ContentStop as ContentStop
+from .image_config import ImageConfig as ImageConfig
 from .text_content import TextContent as TextContent
 from .allowed_tools import AllowedTools as AllowedTools
 from .audio_content import AudioContent as AudioContent
@@ -54,6 +55,7 @@ from .generation_config import GenerationConfig as GenerationConfig
 from .interaction_event import InteractionEvent as InteractionEvent
 from .tool_choice_param import ToolChoiceParam as ToolChoiceParam
 from .document_mime_type import DocumentMimeType as DocumentMimeType
+from .image_config_param import ImageConfigParam as ImageConfigParam
 from .text_content_param import TextContentParam as TextContentParam
 from .tool_choice_config import ToolChoiceConfig as ToolChoiceConfig
 from .url_context_result import URLContextResult as URLContextResult
@@ -75,6 +77,7 @@ from .interaction_get_params import InteractionGetParams as InteractionGetParams
 from .function_result_content import FunctionResultContent as FunctionResultContent
 from .generation_config_param import GenerationConfigParam as GenerationConfigParam
 from .document_mime_type_param import DocumentMimeTypeParam as DocumentMimeTypeParam
+from .file_search_call_content import FileSearchCallContent as FileSearchCallContent
 from .tool_choice_config_param import ToolChoiceConfigParam as ToolChoiceConfigParam
 from .url_context_call_content import URLContextCallContent as URLContextCallContent
 from .url_context_result_param import URLContextResultParam as URLContextResultParam
@@ -95,6 +98,7 @@ from .mcp_server_tool_call_content import MCPServerToolCallContent as MCPServerT
 from .code_execution_call_arguments import CodeExecutionCallArguments as CodeExecutionCallArguments
 from .code_execution_result_content import CodeExecutionResultContent as CodeExecutionResultContent
 from .function_result_content_param import FunctionResultContentParam as FunctionResultContentParam
+from .file_search_call_content_param import FileSearchCallContentParam as FileSearchCallContentParam
 from .mcp_server_tool_result_content import MCPServerToolResultContent as MCPServerToolResultContent
 from .url_context_call_content_param import URLContextCallContentParam as URLContextCallContentParam
 from .deep_research_agent_config_param import DeepResearchAgentConfigParam as DeepResearchAgentConfigParam

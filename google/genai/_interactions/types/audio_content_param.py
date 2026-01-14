@@ -34,11 +34,13 @@ class AudioContentParam(TypedDict, total=False):
     type: Required[Literal["audio"]]
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """The audio content."""
 
     mime_type: AudioMimeTypeParam
     """The mime type of the audio."""
 
     uri: str
+    """The URI of the audio."""
 
 
 set_pydantic_config(AudioContentParam, {"arbitrary_types_allowed": True})
