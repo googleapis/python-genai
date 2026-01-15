@@ -181,6 +181,13 @@ def join_url_path(base_url: str, path: str) -> str:
 
 def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   """Loads google auth credentials and project id."""
+
+  ## Set GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES to false
+  ## to disable bound token sharing. Tracking on
+  ## https://github.com/googleapis/python-genai/issues/1956
+  os.environ['GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES'] = (
+      'false'
+  )
   credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
       scopes=['https://www.googleapis.com/auth/cloud-platform'],
   )
@@ -1946,5 +1953,3 @@ async def async_get_token_from_credentials(
     raise RuntimeError('Could not resolve API token from the environment')
 
   return credentials.token    # type: ignore[no-any-return]
-
-
