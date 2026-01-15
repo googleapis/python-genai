@@ -849,49 +849,22 @@ def _GenerateContentConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['system_instruction']) is not None:
-    setv(
-        parent_object,
-        ['systemInstruction'],
-        _Content_to_mldev(
-            t.t_content(getv(from_object, ['system_instruction'])), to_object
-        ),
+  if getv(from_object, ['model_selection_config']) is not None:
+    raise ValueError(
+        'model_selection_config parameter is not supported in Gemini API.'
     )
 
-  if getv(from_object, ['temperature']) is not None:
-    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
-
-  if getv(from_object, ['top_p']) is not None:
-    setv(to_object, ['topP'], getv(from_object, ['top_p']))
-
-  if getv(from_object, ['top_k']) is not None:
-    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+  if getv(from_object, ['audio_timestamp']) is not None:
+    raise ValueError(
+        'audio_timestamp parameter is not supported in Gemini API.'
+    )
 
   if getv(from_object, ['candidate_count']) is not None:
     setv(to_object, ['candidateCount'], getv(from_object, ['candidate_count']))
 
-  if getv(from_object, ['max_output_tokens']) is not None:
-    setv(
-        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
-    )
-
-  if getv(from_object, ['stop_sequences']) is not None:
-    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
-
-  if getv(from_object, ['response_logprobs']) is not None:
-    setv(
-        to_object,
-        ['responseLogprobs'],
-        getv(from_object, ['response_logprobs']),
-    )
-
-  if getv(from_object, ['logprobs']) is not None:
-    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
-
-  if getv(from_object, ['presence_penalty']) is not None:
-    setv(
-        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
+  if getv(from_object, ['enable_affective_dialog']) is not None:
+    raise ValueError(
+        'enable_affective_dialog parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['frequency_penalty']) is not None:
@@ -901,21 +874,22 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['frequency_penalty']),
     )
 
-  if getv(from_object, ['seed']) is not None:
-    setv(to_object, ['seed'], getv(from_object, ['seed']))
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
 
-  if getv(from_object, ['response_mime_type']) is not None:
+  if getv(from_object, ['max_output_tokens']) is not None:
     setv(
-        to_object,
-        ['responseMimeType'],
-        getv(from_object, ['response_mime_type']),
+        to_object, ['maxOutputTokens'], getv(from_object, ['max_output_tokens'])
     )
 
-  if getv(from_object, ['response_schema']) is not None:
+  if getv(from_object, ['media_resolution']) is not None:
     setv(
-        to_object,
-        ['responseSchema'],
-        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['presence_penalty']) is not None:
+    setv(
+        to_object, ['presencePenalty'], getv(from_object, ['presence_penalty'])
     )
 
   if getv(from_object, ['response_json_schema']) is not None:
@@ -925,12 +899,76 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['response_json_schema']),
     )
 
+  if getv(from_object, ['response_logprobs']) is not None:
+    setv(
+        to_object,
+        ['responseLogprobs'],
+        getv(from_object, ['response_logprobs']),
+    )
+
+  if getv(from_object, ['response_mime_type']) is not None:
+    setv(
+        to_object,
+        ['responseMimeType'],
+        getv(from_object, ['response_mime_type']),
+    )
+
+  if getv(from_object, ['response_modalities']) is not None:
+    setv(
+        to_object,
+        ['responseModalities'],
+        getv(from_object, ['response_modalities']),
+    )
+
+  if getv(from_object, ['response_schema']) is not None:
+    setv(
+        to_object,
+        ['responseSchema'],
+        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+    )
+
   if getv(from_object, ['routing_config']) is not None:
     raise ValueError('routing_config parameter is not supported in Gemini API.')
 
-  if getv(from_object, ['model_selection_config']) is not None:
-    raise ValueError(
-        'model_selection_config parameter is not supported in Gemini API.'
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['speech_config']) is not None:
+    setv(
+        to_object,
+        ['speechConfig'],
+        t.t_speech_config(getv(from_object, ['speech_config'])),
+    )
+
+  if getv(from_object, ['stop_sequences']) is not None:
+    setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['thinking_config']) is not None:
+    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
+
+  if getv(from_object, ['top_k']) is not None:
+    setv(to_object, ['topK'], getv(from_object, ['top_k']))
+
+  if getv(from_object, ['top_p']) is not None:
+    setv(to_object, ['topP'], getv(from_object, ['top_p']))
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    setv(
+        to_object,
+        ['enableEnhancedCivicAnswers'],
+        getv(from_object, ['enable_enhanced_civic_answers']),
+    )
+
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        parent_object,
+        ['systemInstruction'],
+        _Content_to_mldev(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
     )
 
   if getv(from_object, ['safety_settings']) is not None:
@@ -972,45 +1010,11 @@ def _GenerateContentConfig_to_mldev(
         ),
     )
 
-  if getv(from_object, ['response_modalities']) is not None:
-    setv(
-        to_object,
-        ['responseModalities'],
-        getv(from_object, ['response_modalities']),
-    )
-
-  if getv(from_object, ['media_resolution']) is not None:
-    setv(
-        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
-    )
-
-  if getv(from_object, ['speech_config']) is not None:
-    setv(
-        to_object,
-        ['speechConfig'],
-        t.t_speech_config(getv(from_object, ['speech_config'])),
-    )
-
-  if getv(from_object, ['audio_timestamp']) is not None:
-    raise ValueError(
-        'audio_timestamp parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['thinking_config']) is not None:
-    setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
-
   if getv(from_object, ['image_config']) is not None:
     setv(
         to_object,
         ['imageConfig'],
         _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
-    )
-
-  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
-    setv(
-        to_object,
-        ['enableEnhancedCivicAnswers'],
-        getv(from_object, ['enable_enhanced_civic_answers']),
     )
 
   return to_object
