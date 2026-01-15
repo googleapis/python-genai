@@ -68,7 +68,7 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     api_version: str
 
     background: bool
-    """Whether to run the model interaction in the background."""
+    """Input only. Whether to run the model interaction in the background."""
 
     generation_config: GenerationConfigParam
     """Input only. Configuration parameters for the model interaction."""
@@ -136,7 +136,7 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     """Configuration for the agent."""
 
     background: bool
-    """Whether to run the model interaction in the background."""
+    """Input only. Whether to run the model interaction in the background."""
 
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
