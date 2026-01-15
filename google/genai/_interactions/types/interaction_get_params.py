@@ -29,7 +29,8 @@ class InteractionGetParamsBase(TypedDict, total=False):
     last_event_id: str
     """Optional.
 
-    If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+    If set, resumes the interaction stream from the next chunk after the event
+    marked by the event id. Can only be used if `stream` is true.
     """
 
 
