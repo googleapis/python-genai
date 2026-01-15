@@ -20,7 +20,8 @@ import base64
 import contextlib
 import json
 import logging
-from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union, cast, get_args
+import typing
+from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
 import google.auth
@@ -29,24 +30,50 @@ from websockets import ConnectionClosed
 
 from . import _api_module
 from . import _common
+from . import _live_converters as live_converters
+from . import _mcp_utils
 from . import _transformers as t
-from . import client
+from . import errors
 from . import types
 from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
-from . import _live_converters as live_converters
+from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
-from .models import _Content_to_vertex
 
 
 try:
   from websockets.asyncio.client import ClientConnection
-  from websockets.asyncio.client import connect
+  from websockets.asyncio.client import connect as ws_connect
 except ModuleNotFoundError:
   # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
   from websockets.client import ClientConnection  # type: ignore
-  from websockets.client import connect  # type: ignore
+  from websockets.client import connect as ws_connect  # type: ignore
+
+try:
+  from google.auth.transport import requests
+except ImportError:
+  requests = None  # type: ignore[assignment]
+
+if typing.TYPE_CHECKING:
+  from mcp import ClientSession as McpClientSession
+  from mcp.types import Tool as McpTool
+  from ._adapters import McpToGenAiToolAdapter
+  from ._mcp_utils import mcp_to_gemini_tool
+else:
+  McpClientSession: typing.Type = Any
+  McpTool: typing.Type = Any
+  McpToGenAiToolAdapter: typing.Type = Any
+  try:
+    from mcp import ClientSession as McpClientSession
+    from mcp.types import Tool as McpTool
+    from ._adapters import McpToGenAiToolAdapter
+    from ._mcp_utils import mcp_to_gemini_tool
+  except ImportError:
+    McpClientSession = None
+    McpTool = None
+    McpToGenAiToolAdapter = None
+    mcp_to_gemini_tool = None
 
 logger = logging.getLogger('google_genai.live')
 
@@ -60,10 +87,14 @@ class AsyncSession:
   """[Preview] AsyncSession."""
 
   def __init__(
-      self, api_client: BaseApiClient, websocket: ClientConnection
+      self,
+      api_client: BaseApiClient,
+      websocket: ClientConnection,
+      session_id: Optional[str] = None,
   ):
     self._api_client = api_client
     self._ws = websocket
+    self.session_id = session_id
 
   async def send(
       self,
@@ -123,7 +154,7 @@ class AsyncSession:
           Union[
               types.Content,
               types.ContentDict,
-              list[Union[types.Content, types.ContentDict]]
+              list[Union[types.Content, types.ContentDict]],
           ]
       ] = None,
       turn_complete: bool = True,
@@ -166,39 +197,42 @@ class AsyncSession:
         and will not return until you send `turn_complete=True`.
 
     Example:
-    ```
-    import google.genai
-    from google.genai import types
-    import os
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+    .. code-block:: python
 
-    client = genai.Client()
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]}
-    ) as session:
-      await session.send_client_content(
-          turns=types.Content(
-              role='user',
-              parts=[types.Part(text="Hello world!")]))
-      async for msg in session.receive():
-        if msg.text:
-          print(msg.text)
-    ```
+      import google.genai
+      from google.genai import types
+      import os
+
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
+
+      client = genai.Client()
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]}
+      ) as session:
+        await session.send_client_content(
+            turns=types.Content(
+                role='user',
+                parts=[types.Part(text="Hello world!")]))
+        async for msg in session.receive():
+          if msg.text:
+            print(msg.text)
     """
-    client_content = t.t_client_content(turns, turn_complete)
+    client_content = t.t_client_content(turns, turn_complete).model_dump(
+        mode='json', exclude_none=True
+    )
 
     if self._api_client.vertexai:
-      client_content_dict = live_converters._LiveClientContent_to_vertex(
-          api_client=self._api_client, from_object=client_content
+      client_content_dict = _common.convert_to_dict(
+          client_content, convert_keys=True
       )
     else:
       client_content_dict = live_converters._LiveClientContent_to_mldev(
-          api_client=self._api_client, from_object=client_content
+          from_object=client_content
       )
 
     await self._ws.send(json.dumps({'client_content': client_content_dict}))
@@ -230,41 +264,42 @@ class AsyncSession:
       media: A `Blob`-like object, the realtime media to send.
 
     Example:
-    ```
-    from pathlib import Path
 
-    from google import genai
-    from google.genai import types
+    .. code-block:: python
 
-    import PIL.Image
+      from pathlib import Path
 
-    import os
+      from google import genai
+      from google.genai import types
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      import PIL.Image
+
+      import os
+
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
 
-    client = genai.Client()
+      client = genai.Client()
 
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]},
-    ) as session:
-      await session.send_realtime_input(
-          media=PIL.Image.open('image.jpg'))
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]},
+      ) as session:
+        await session.send_realtime_input(
+            media=PIL.Image.open('image.jpg'))
 
-      audio_bytes = Path('audio.pcm').read_bytes()
-      await session.send_realtime_input(
-          media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
+        audio_bytes = Path('audio.pcm').read_bytes()
+        await session.send_realtime_input(
+            media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
 
-      async for msg in session.receive():
-        if msg.text is not None:
-          print(f'{msg.text}')
-    ```
+        async for msg in session.receive():
+          if msg.text is not None:
+            print(f'{msg.text}')
     """
-    kwargs:dict[str, Any] = {}
+    kwargs: _common.StringDict = {}
     if media is not None:
       kwargs['media'] = media
     if audio is not None:
@@ -292,13 +327,13 @@ class AsyncSession:
     if self._api_client.vertexai:
       realtime_input_dict = (
           live_converters._LiveSendRealtimeInputParameters_to_vertex(
-              api_client=self._api_client, from_object=realtime_input
+              from_object=realtime_input
           )
       )
     else:
       realtime_input_dict = (
           live_converters._LiveSendRealtimeInputParameters_to_mldev(
-              api_client=self._api_client, from_object=realtime_input
+              from_object=realtime_input
           )
       )
     realtime_input_dict = _common.convert_to_dict(realtime_input_dict)
@@ -328,61 +363,63 @@ class AsyncSession:
         `FunctionResponse`-like objects.
 
     Example:
-    ```
-    from google import genai
-    from google.genai import types
 
-    import os
+    .. code-block:: python
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      from google import genai
+      from google.genai import types
 
-    client = genai.Client()
+      import os
 
-    tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
-    config = {
-        "tools": tools,
-        "response_modalities": ['TEXT']
-    }
+      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
-    async with client.aio.live.connect(
-        model='models/gemini-2.0-flash-live-001',
-        config=config
-    ) as session:
-      prompt = "Turn on the lights please"
-      await session.send_client_content(
-          turns={"parts": [{'text': prompt}]}
-      )
+      client = genai.Client()
 
-      async for chunk in session.receive():
-          if chunk.server_content:
-            if chunk.text is not None:
-              print(chunk.text)
-          elif chunk.tool_call:
-            print(chunk.tool_call)
-            print('_'*80)
-            function_response=types.FunctionResponse(
-                    name='turn_on_the_lights',
-                    response={'result': 'ok'},
-                    id=chunk.tool_call.function_calls[0].id,
-                )
-            print(function_response)
-            await session.send_tool_response(
-                function_responses=function_response
-            )
+      tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
+      config = {
+          "tools": tools,
+          "response_modalities": ['TEXT']
+      }
 
-            print('_'*80)
+      async with client.aio.live.connect(
+          model='models/gemini-live-2.5-flash-preview',
+          config=config
+      ) as session:
+        prompt = "Turn on the lights please"
+        await session.send_client_content(
+            turns={"parts": [{'text': prompt}]}
+        )
+
+        async for chunk in session.receive():
+            if chunk.server_content:
+              if chunk.text is not None:
+                print(chunk.text)
+            elif chunk.tool_call:
+              print(chunk.tool_call)
+              print('_'*80)
+              function_response=types.FunctionResponse(
+                      name='turn_on_the_lights',
+                      response={'result': 'ok'},
+                      id=chunk.tool_call.function_calls[0].id,
+                  )
+              print(function_response)
+              await session.send_tool_response(
+                  function_responses=function_response
+              )
+
+              print('_'*80)
     """
     tool_response = t.t_tool_response(function_responses)
     if self._api_client.vertexai:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_vertex(
-          api_client=self._api_client, from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
     else:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_mldev(
-          api_client=self._api_client, from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
       for response in tool_response_dict.get('functionResponses', []):
         if response.get('id') is None:
@@ -506,9 +543,9 @@ class AsyncSession:
       response = {}
 
     if self._api_client.vertexai:
-      response_dict = live_converters._LiveServerMessage_from_vertex(self._api_client, response)
+      response_dict = live_converters._LiveServerMessage_from_vertex(response)
     else:
-      response_dict = live_converters._LiveServerMessage_from_mldev(self._api_client, response)
+      response_dict = response
 
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -522,7 +559,7 @@ class AsyncSession:
   ) -> None:
     async for data in data_stream:
       model_input = types.LiveClientRealtimeInput(
-        media_chunks=[types.Blob(data=data, mime_type=mime_type)]
+          media_chunks=[types.Blob(data=data, mime_type=mime_type)]
       )
       await self.send(input=model_input)
       # Give a chance for the receive loop to process responses.
@@ -560,9 +597,8 @@ class AsyncSession:
         raise ValueError(
             f'Unsupported input type "{type(input)}" or input content "{input}"'
         )
-      if (
-          isinstance(blob_input, types.Blob)
-          and isinstance(blob_input.data, bytes)
+      if isinstance(blob_input, types.Blob) and isinstance(
+          blob_input.data, bytes
       ):
         formatted_input = [
             blob_input.model_dump(mode='json', exclude_none=True)
@@ -616,20 +652,20 @@ class AsyncSession:
     elif isinstance(formatted_input, Sequence) and any(
         isinstance(c, str) for c in formatted_input
     ):
-      to_object: dict[str, Any] = {}
+      to_object: _common.StringDict = {}
       content_input_parts: list[types.PartUnion] = []
       for item in formatted_input:
         if isinstance(item, get_args(types.PartUnion)):
           content_input_parts.append(item)
       if self._api_client.vertexai:
         contents = [
-            _Content_to_vertex(self._api_client, item, to_object)
-            for item in t.t_contents(self._api_client, content_input_parts)
+            _common.convert_to_dict(item, convert_keys=True)
+            for item in t.t_contents(content_input_parts)
         ]
       else:
         contents = [
-            _Content_to_mldev(self._api_client, item, to_object)
-            for item in t.t_contents(self._api_client, content_input_parts)
+            _Content_to_mldev(item, to_object)
+            for item in t.t_contents(content_input_parts)
         ]
 
       content_dict_list: list[types.ContentDict] = []
@@ -841,6 +877,13 @@ class AsyncSession:
 class AsyncLive(_api_module.BaseModule):
   """[Preview] AsyncLive."""
 
+  def __init__(self, api_client: BaseApiClient):
+    super().__init__(api_client)
+    self._music = AsyncLiveMusic(api_client)
+
+  @property
+  def music(self) -> AsyncLiveMusic:
+    return self._music
 
   @contextlib.asynccontextmanager
   async def connect(
@@ -860,58 +903,152 @@ class AsyncLive(_api_module.BaseModule):
       client = genai.Client(api_key=API_KEY)
       config = {}
       async with client.aio.live.connect(model='...', config=config) as session:
-        await session.send(input='Hello world!', end_of_turn=True)
+        await session.send_client_content(
+          turns=types.Content(
+            role='user',
+            parts=[types.Part(text='hello!')]
+          ),
+          turn_complete=True
+        )
         async for message in session.receive():
           print(message)
+
+    Args:
+      model: The model to use for the live session.
+      config: The configuration for the live session.
+      **kwargs: additional keyword arguments.
+
+    Yields:
+      An AsyncSession object.
     """
+    # TODO(b/404946570): Support per request http options.
+    if isinstance(config, dict):
+      config = types.LiveConnectConfig(**config)
+    if config and config.http_options:
+      raise ValueError(
+          'google.genai.client.aio.live.connect() does not support'
+          ' http_options at request-level in LiveConnectConfig yet. Please use'
+          ' the client-level http_options configuration instead.'
+      )
+
     base_url = self._api_client._websocket_base_url()
     if isinstance(base_url, bytes):
       base_url = base_url.decode('utf-8')
-    transformed_model = t.t_model(self._api_client, model)
+    transformed_model = t.t_model(self._api_client, model)  # type: ignore
 
-    parameter_model = _t_live_connect_config(self._api_client, config)
+    parameter_model = await _t_live_connect_config(self._api_client, config)
 
-    if self._api_client.api_key:
-      api_key = self._api_client.api_key
+    if self._api_client.api_key and not self._api_client.vertexai:
       version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateContent?key={api_key}'
-      headers = self._api_client._http_options.headers
+      api_key = self._api_client.api_key
+      method = 'BidiGenerateContent'
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
+      if api_key.startswith('auth_tokens/'):
+        warnings.warn(
+            message=(
+                "The SDK's ephemeral token support is experimental, and may"
+                ' change in future versions.'
+            ),
+            category=errors.ExperimentalWarning,
+        )
+        method = 'BidiGenerateContentConstrained'
+        headers['Authorization'] = f'Token {api_key}'
+        if version != 'v1alpha':
+          warnings.warn(
+              message=(
+                  "The SDK's ephemeral token support is in v1alpha only."
+                  'Please use client = genai.Client(api_key=token.name, '
+                  'http_options=types.HttpOptions(api_version="v1alpha"))'
+                  ' before session connection.'
+              ),
+              category=errors.ExperimentalWarning,
+          )
+      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_mldev(
               api_client=self._api_client,
               from_object=types.LiveConnectParameters(
-                model=transformed_model,
-                config=parameter_model,
-              ).model_dump(exclude_none=True)
+                  model=transformed_model,
+                  config=parameter_model,
+              ).model_dump(exclude_none=True),
+          )
+      )
+
+      del request_dict['config']
+      request_dict = _common.encode_unserializable_types(request_dict)
+      setv(request_dict, ['setup', 'model'], transformed_model)
+
+      request = json.dumps(request_dict)
+    elif self._api_client.api_key and self._api_client.vertexai:
+      # Headers already contains api key for express mode.
+      api_key = self._api_client.api_key
+      version = self._api_client._http_options.api_version
+      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
+
+      request_dict = _common.convert_to_dict(
+          live_converters._LiveConnectParameters_to_vertex(
+              api_client=self._api_client,
+              from_object=types.LiveConnectParameters(
+                  model=transformed_model,
+                  config=parameter_model,
+              ).model_dump(exclude_none=True),
           )
       )
       del request_dict['config']
-
+      request_dict = _common.encode_unserializable_types(request_dict)
       setv(request_dict, ['setup', 'model'], transformed_model)
 
       request = json.dumps(request_dict)
     else:
-      # Get bearer token through Application Default Credentials.
-      creds, _ = google.auth.default(  # type: ignore[no-untyped-call]
-          scopes=['https://www.googleapis.com/auth/cloud-platform']
-      )
-
-      # creds.valid is False, and creds.token is None
-      # Need to refresh credentials to populate those
-      auth_req = google.auth.transport.requests.Request()  # type: ignore[no-untyped-call]
-      creds.refresh(auth_req)
-      bearer_token = creds.token
-      headers = self._api_client._http_options.headers
-      if headers is not None:
-        headers.update({
-            'Authorization': 'Bearer {}'.format(bearer_token),
-        })
       version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+      has_sufficient_auth = (
+          self._api_client.project and self._api_client.location
+      )
+      if self._api_client.custom_base_url and not has_sufficient_auth:
+        # API gateway proxy can use the auth in custom headers, not url.
+        # Enable custom url if auth is not sufficient.
+        uri = self._api_client.custom_base_url
+        # Keep the model as is.
+        transformed_model = model
+        # Do not get credentials for custom url.
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+
+      else:
+        uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+
+        if not self._api_client._credentials:
+          # Get bearer token through Application Default Credentials.
+          creds, _ = google.auth.default(  # type: ignore
+              scopes=['https://www.googleapis.com/auth/cloud-platform']
+          )
+        else:
+          creds = self._api_client._credentials
+        # creds.valid is False, and creds.token is None
+        # Need to refresh credentials to populate those
+        if not (creds.token and creds.valid):
+          if requests is None:
+            raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
+          auth_req = requests.Request()  # type: ignore
+          creds.refresh(auth_req)  # type: ignore[no-untyped-call]
+        bearer_token = creds.token
+
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+        if not headers.get('Authorization'):
+          headers['Authorization'] = f'Bearer {bearer_token}'
+
       location = self._api_client.location
       project = self._api_client.project
-      if transformed_model.startswith('publishers/'):
+      if transformed_model.startswith('publishers/') and project and location:
         transformed_model = (
             f'projects/{project}/locations/{location}/' + transformed_model
         )
@@ -919,34 +1056,71 @@ class AsyncLive(_api_module.BaseModule):
           live_converters._LiveConnectParameters_to_vertex(
               api_client=self._api_client,
               from_object=types.LiveConnectParameters(
-                model=transformed_model,
-                config=parameter_model,
-              ).model_dump(exclude_none=True)
+                  model=transformed_model,
+                  config=parameter_model,
+              ).model_dump(exclude_none=True),
           )
       )
       del request_dict['config']
-
-      if getv(request_dict, ['setup', 'generationConfig', 'responseModalities']) is None:
-        setv(request_dict, ['setup', 'generationConfig', 'responseModalities'], ['AUDIO'])
+      request_dict = _common.encode_unserializable_types(request_dict)
+      if (
+          getv(
+              request_dict, ['setup', 'generationConfig', 'responseModalities']
+          )
+          is None
+      ):
+        setv(
+            request_dict,
+            ['setup', 'generationConfig', 'responseModalities'],
+            ['AUDIO'],
+        )
 
       request = json.dumps(request_dict)
 
-    try:
-      async with connect(uri, additional_headers=headers) as ws:
-        await ws.send(request)
-        logger.info(await ws.recv(decode=False))
+    if parameter_model.tools and _mcp_utils.has_mcp_tool_usage(
+        parameter_model.tools
+    ):
+      if headers is None:
+        headers = {}
+      _mcp_utils.set_mcp_usage_header(headers)
 
-        yield AsyncSession(api_client=self._api_client, websocket=ws)
-    except TypeError:
-      # Try with the older websockets API
-      async with connect(uri, extra_headers=headers) as ws:
-        await ws.send(request)
-        logger.info(await ws.recv())
+    async with ws_connect(
+        uri, additional_headers=headers, **self._api_client._websocket_ssl_ctx
+    ) as ws:
+      await ws.send(request)
+      try:
+        # websockets 14.0+
+        raw_response = await ws.recv(decode=False)
+      except TypeError:
+        raw_response = await ws.recv()  # type: ignore[assignment]
+      if raw_response:
+        try:
+          response = json.loads(raw_response)
+        except json.decoder.JSONDecodeError:
+          raise ValueError(f'Failed to parse response: {raw_response!r}')
+      else:
+        response = {}
 
-        yield AsyncSession(api_client=self._api_client, websocket=ws)
+      if self._api_client.vertexai:
+        response_dict = live_converters._LiveServerMessage_from_vertex(response)
+      else:
+        response_dict = response
+
+      setup_response = types.LiveServerMessage._from_response(
+          response=response_dict, kwargs=parameter_model.model_dump()
+      )
+      if setup_response.setup_complete:
+        session_id = setup_response.setup_complete.session_id
+      else:
+        session_id = None
+      yield AsyncSession(
+          api_client=self._api_client,
+          websocket=ws,
+          session_id=session_id,
+      )
 
 
-def _t_live_connect_config(
+async def _t_live_connect_config(
     api_client: BaseApiClient,
     config: Optional[types.LiveConnectConfigOrDict],
 ) -> types.LiveConnectConfig:
@@ -956,7 +1130,7 @@ def _t_live_connect_config(
   elif isinstance(config, dict):
     if getv(config, ['system_instruction']) is not None:
       converted_system_instruction = t.t_content(
-          api_client, getv(config, ['system_instruction'])
+          getv(config, ['system_instruction'])
       )
     else:
       converted_system_instruction = None
@@ -966,13 +1140,28 @@ def _t_live_connect_config(
     if config.system_instruction is None:
       system_instruction = None
     else:
-      system_instruction = t.t_content(
-          api_client, getv(config, ['system_instruction'])
-      )
+      system_instruction = t.t_content(getv(config, ['system_instruction']))
     parameter_model = config
     parameter_model.system_instruction = system_instruction
 
-  if parameter_model.generation_config is not None:
+  # Create a copy of the config model with the tools field cleared as they will
+  # be replaced with the MCP tools converted to GenAI tools.
+  parameter_model_copy = parameter_model.model_copy(update={'tools': None})
+  if parameter_model.tools:
+    parameter_model_copy.tools = []
+    for tool in parameter_model.tools:
+      if McpClientSession is not None and isinstance(tool, McpClientSession):
+        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+            tool, await tool.list_tools()
+        )
+        # Extend the config with the MCP session tools converted to GenAI tools.
+        parameter_model_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+      elif McpTool is not None and isinstance(tool, McpTool):
+        parameter_model_copy.tools.append(mcp_to_gemini_tool(tool))
+      else:
+        parameter_model_copy.tools.append(tool)
+
+  if parameter_model_copy.generation_config is not None:
     warnings.warn(
         'Setting `LiveConnectConfig.generation_config` is deprecated, '
         'please set the fields on `LiveConnectConfig` directly. This will '
@@ -981,4 +1170,4 @@ def _t_live_connect_config(
         stacklevel=4,
     )
 
-  return parameter_model
+  return parameter_model_copy

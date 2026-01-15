@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 """Constants for caches tests."""
 
-CACHED_CONTENT_NAME_MLDEV = 'cachedContents/op47f693jk6b'
-CACHED_CONTENT_NAME_VERTEX = 'cachedContents/1899938500610883584'
+CACHED_CONTENT_NAME_MLDEV = 'cachedContents/o239k1gxzz0juy9wqstndhncr85krehehf551hqh'
+CACHED_CONTENT_NAME_VERTEX = 'cachedContents/2164089915711684608'
 
 VERTEX_HTTP_OPTIONS = {
     'api_version': 'v1beta1',

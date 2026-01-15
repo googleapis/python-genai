@@ -539,14 +539,21 @@ def test_process_schema_order_properties_propagates_into_additional_properties(
       },
   }
 
-  _transformers.process_schema(
-      schema, client, order_properties=order_properties
-  )
+  if client.vertexai:
+    _transformers.process_schema(
+        schema, client, order_properties=order_properties
+    )
 
-  if order_properties:
-    assert schema == schema_with_property_ordering
+    if order_properties:
+      assert schema == schema_with_property_ordering
+    else:
+      assert schema == schema_without_property_ordering
   else:
-    assert schema == schema_without_property_ordering
+    with pytest.raises(ValueError) as e:
+      _transformers.process_schema(
+          schema, client, order_properties=order_properties
+      )
+    assert 'additionalProperties is not supported in the Gemini API.' in str(e)
 
 
 @pytest.mark.parametrize(
@@ -605,17 +612,25 @@ def test_t_schema_does_not_change_property_ordering_if_set(client):
   assert transformed_schema.property_ordering == custom_property_ordering
 
 
-def test_t_schema_does_not_set_property_ordering_for_json_schema(client):
-  """Tests t_schema doesn't set the property_ordering field for json schemas."""
+def test_t_schema_sets_property_ordering_for_json_schema(client):
+  """Tests t_schema sets the property_ordering field for json schemas."""
 
   schema = CountryInfo.model_json_schema()
 
   transformed_schema = _transformers.t_schema(client, schema)
-  assert transformed_schema.property_ordering is None
+  assert transformed_schema.property_ordering == [
+      'name',
+      'population',
+      'capital',
+      'continent',
+      'gdp',
+      'official_language',
+      'total_area_sq_mi',
+  ]
 
 
-def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
-  """Tests t_schema doesn't set the property_ordering field for Schema types."""
+def test_t_schema_sets_property_ordering_for_schema_type(client):
+  """Tests t_schema sets the property_ordering field for Schema types."""
 
   schema = types.Schema(
       properties={
@@ -635,4 +650,4 @@ def test_t_schema_does_not_set_property_ordering_for_schema_type(client):
   )
 
   transformed_schema = _transformers.t_schema(client, schema)
-  assert transformed_schema.property_ordering is None
+  assert transformed_schema.property_ordering == ['name', 'population']

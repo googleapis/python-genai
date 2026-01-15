@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,12 @@ from .. import pytest_helper
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_delete',
-        parameters=types._DeleteFileParameters(name='files/1vx8znuf0yje'),
+        parameters=types._DeleteFileParameters(name='files/1g583ke2xdsn'),
         exception_if_vertex='only supported in the Gemini Developer client',
+        skip_in_api_mode=(
+            'The files have a TTL, they cannot be reliably retrieved for a long'
+            ' time.'
+        ),
     ),
 ]
 
@@ -39,4 +43,4 @@ pytestmark = pytest_helper.setup(
 @pytest.mark.asyncio
 async def test_async(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
-    file = await client.aio.files.get(name='files/vjvu9fwk2qj8')
+    file = await client.aio.files.get(name='files/n1gls7dyh90q')

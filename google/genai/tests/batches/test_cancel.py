@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,11 +22,14 @@ from ... import types
 from .. import pytest_helper
 
 
-_BATCH_JOB_NAME = '2803006536245313536'
+# Vertex AI batch job name.
+_BATCH_JOB_NAME = '6339625664542408704'
 _BATCH_JOB_FULL_RESOURCE_NAME = (
     'projects/964831358985/locations/us-central1/'
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
+# MLDev batch operation name.
+_MLDEV_BATCH_OPERATION_NAME = 'batches/0yew7plxupyybd7appsrq5vw7w0lp3l79lab'
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
 
 
@@ -37,22 +40,22 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._CancelBatchJobParameters(
             name=_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
+        skip_in_api_mode=('Cannot cancel a batch job multiple times in Vertex'),
     ),
     pytest_helper.TestTableItem(
-        name='test_cancel_batch_job_full_resource_name',
-        override_replay_id='test_cancel_batch_job',
+        name='test_cancel_batch_operation',
         parameters=types._CancelBatchJobParameters(
-            name=_BATCH_JOB_FULL_RESOURCE_NAME,
+            name=_MLDEV_BATCH_OPERATION_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_vertex='Invalid batch job name',
     ),
     pytest_helper.TestTableItem(
         name='test_cancel_batch_job_with_invalid_name',
         parameters=types._CancelBatchJobParameters(
             name=_INVALID_BATCH_JOB_NAME,
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev='Invalid batch job name',
         exception_if_vertex='Invalid batch job name',
     ),
 ]
@@ -67,5 +70,8 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_async_cancel(client):
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    await client.aio.batches.cancel(name=_BATCH_JOB_NAME)
+  if client.vertexai:
+    name = _BATCH_JOB_NAME
+  else:
+    name = _MLDEV_BATCH_OPERATION_NAME
+  await client.aio.batches.cancel(name=name)

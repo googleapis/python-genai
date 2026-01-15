@@ -326,6 +326,39 @@ def test_generate_content_stream_with_function_tools_used(
     ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
 
 
+def test_generate_content_stream_with_thought_summaries(
+    mock_generate_content_stream_with_afc,
+    mock_get_function_response_parts,
+):
+  """Test when function tools are provided and thought summaries are enabled.
+
+  Expected to answer weather based on function response.
+  """
+  models_instance = models.Models(api_client_=mock_api_client)
+  config = types.GenerateContentConfig(
+      tools=[get_current_weather],
+      thinking_config=types.ThinkingConfig(include_thoughts=True),
+  )
+  stream = models_instance.generate_content_stream(
+      model='test_model',
+      contents='what is the weather in San Francisco?',
+      config=config,
+  )
+
+  chunk = None
+  for chunk in stream:
+    assert chunk.text == TEST_AFC_TEXT_PART.text
+
+  assert mock_generate_content_stream_with_afc.call_count == 2
+  assert mock_get_function_response_parts.call_count == 2
+
+  assert chunk is not None
+  for i in range(len(chunk.automatic_function_calling_history)):
+    assert chunk.automatic_function_calling_history[i].model_dump(
+        exclude_none=True
+    ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
+
+
 @pytest.mark.asyncio
 async def test_generate_content_stream_no_function_map_async(
     mock_generate_content_stream_no_afc,
@@ -421,7 +454,7 @@ async def test_generate_content_stream_with_function_tools_used_async(
 
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
-  assert mock_get_function_response_parts_async.call_count == 1
+  assert mock_get_function_response_parts_async.call_count == 2
 
   assert chunk is not None
   for i in range(len(chunk.automatic_function_calling_history)):
@@ -453,7 +486,42 @@ async def test_generate_content_stream_with_function_async_function_used_async(
 
   assert mock_generate_content_stream_with_afc_async.call_count == 2
 
-  assert mock_get_function_response_parts_async.call_count == 1
+  assert mock_get_function_response_parts_async.call_count == 2
+
+  assert chunk is not None
+  for i in range(len(chunk.automatic_function_calling_history)):
+    assert chunk.automatic_function_calling_history[i].model_dump(
+        exclude_none=True
+    ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
+
+
+@pytest.mark.asyncio
+async def test_generate_content_stream_with_thought_summaries_async(
+    mock_generate_content_stream_with_afc_async,
+    mock_get_function_response_parts_async,
+):
+  """Test when function tools are provided and thought summaries are enabled.
+
+  Expected to answer weather based on function response.
+  """
+  models_instance = models.AsyncModels(api_client_=mock_api_client)
+  config = types.GenerateContentConfig(
+      tools=[get_current_weather],
+      thinking_config=types.ThinkingConfig(include_thoughts=True),
+  )
+  stream = await models_instance.generate_content_stream(
+      model='test_model',
+      contents='what is the weather in San Francisco?',
+      config=config,
+  )
+
+  chunk = None
+  async for chunk in stream:
+    assert chunk.text == TEST_AFC_TEXT_PART.text
+
+  assert mock_generate_content_stream_with_afc_async.call_count == 2
+
+  assert mock_get_function_response_parts_async.call_count == 2
 
   assert chunk is not None
   for i in range(len(chunk.automatic_function_calling_history)):

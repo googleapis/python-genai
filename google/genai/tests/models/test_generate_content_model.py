@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,50 +22,40 @@ from ... import types
 from .. import pytest_helper
 
 tuned_model_endpoint = (
-    'projects/964831358985/locations/us-central1/endpoints/7226683110069370880'
+    'projects/801452371447/locations/us-central1/endpoints/4095574160837705728'
 )
 
-tuned_model_with_model_name = 'tunedModels/generate-num-8498'
 
 test_table: list[pytest_helper.TestTableItem] = [
-    pytest_helper.TestTableItem(
-        name='test_tuned_model_with_model_name',
-        parameters=types._GenerateContentParameters(
-            model=tuned_model_with_model_name,
-            contents=t.t_contents(None, 'how are you doing?'),
-        ),
-        exception_if_vertex='404',
-        skip_in_api_mode='It requires a specific ML Dev account.',
-    ),
     pytest_helper.TestTableItem(
         name='test_tuned_model',
         parameters=types._GenerateContentParameters(
             model=tuned_model_endpoint,
-            contents=t.t_contents(None, 'Tell me a story in 300 words.'),
+            contents=t.t_contents('Tell me a story in 300 words.'),
         ),
         exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
         name='test_start_with_publishers',
         parameters=types._GenerateContentParameters(
-            model='publishers/google/models/gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            model='publishers/google/models/gemini-2.5-flash',
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
         name='test_start_with_models',
         parameters=types._GenerateContentParameters(
-            model='models/gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            model='models/gemini-2.5-flash',
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_vertex='404',
     ),
     pytest_helper.TestTableItem(
         name='test_publisher_model',
         parameters=types._GenerateContentParameters(
-            model='google/gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            model='google/gemini-2.5-flash',
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_mldev='404',
     ),
@@ -73,7 +63,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_empty_model',
         parameters=types._GenerateContentParameters(
             model='',
-            contents=t.t_contents(None, 'Tell me a story in 50 words.'),
+            contents=t.t_contents('Tell me a story in 50 words.'),
         ),
         exception_if_mldev='model',
         exception_if_vertex='model',
@@ -102,35 +92,23 @@ def test_tuned_model_stream(client):
     assert chunks >= 2
 
 
-def test_tuned_model_with_model_name_stream(client):
+def test_start_with_models_stream(client):
+  # vertex ai require publishers/ prefix for gemini
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     chunks = 0
     for chunk in client.models.generate_content_stream(
-        model=tuned_model_with_model_name,
-        contents='Tell me a story in 300 words.',
+        model='models/gemini-2.5-flash',
+        contents='Tell me a story in 50 words.',
     ):
       chunks += 1
       assert chunk.text is not None or chunk.candidates[0].finish_reason
     assert chunks >= 2
 
 
-def test_start_with_models_stream(client):
-  # vertex ai require publishers/ prefix for gemini
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
-    chunks = 0
-    for chunk in client.models.generate_content_stream(
-        model='models/gemini-1.5-flash',
-        contents='Tell me a story in 50 words.',
-    ):
-      chunks += 1
-      assert chunk.text is not None or chunk.candidates[0].finish_reason
-    assert chunks > 2
-
-
 def test_models_stream_with_non_empty_last_chunk(client):
   chunks = list(
       client.models.generate_content_stream(
-          model='gemini-1.5-flash',
+          model='gemini-2.5-flash',
           contents='Tell me a story in 300 words.',
       )
   )
@@ -143,7 +121,7 @@ async def test_start_with_models_stream_async(client):
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     chunks = 0
     async for chunk in await client.aio.models.generate_content_stream(
-        model='models/gemini-1.5-flash',
+        model='models/gemini-2.5-flash',
         contents='Tell me a story in 300 words.',
     ):
       chunks += 1
@@ -156,6 +134,6 @@ async def test_start_with_models_async(client):
   # vertex ai require publishers/ prefix for gemini
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     await client.aio.models.generate_content(
-        model='models/gemini-1.5-flash',
+        model='models/gemini-2.5-flash',
         contents='Tell me a story in 50 words.',
     )

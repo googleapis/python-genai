@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,11 @@
 # limitations under the License.
 #
 
-import base64
-import enum
 import os
+import pathlib
 
-import PIL.Image
-from pydantic import BaseModel, ValidationError, Field
-from typing import Literal, List, Optional, Union
+from pydantic import BaseModel, ValidationError, Field, ConfigDict
+from typing import Literal, List, Optional, Union, Set
 from datetime import datetime
 import pytest
 import json
@@ -31,13 +29,16 @@ from ... import types
 from .. import pytest_helper
 from enum import Enum
 
-IMAGE_PNG_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.png')
-)
-image_png = PIL.Image.open(IMAGE_PNG_FILE_PATH)
+GEMINI_FLASH_LATEST = 'gemini-2.5-flash'
+GEMINI_FLASH_2_0 = 'gemini-2.0-flash-001'
+GEMINI_FLASH_IMAGE_LATEST = 'gemini-2.5-flash-image'
 
-with open(IMAGE_PNG_FILE_PATH, 'rb') as image_file:
-  image_bytes = image_file.read()
+IMAGE_PNG_FILE_PATH = pathlib.Path(__file__).parent / '../data/google.png'
+image_bytes = IMAGE_PNG_FILE_PATH.read_bytes()
+
+AUDIO_WAV_FILE_PATH = pathlib.Path(__file__).parent / '../data/voice_sample.wav'
+audio_bytes = AUDIO_WAV_FILE_PATH.read_bytes()
+
 
 safety_settings_with_method = [
     {
@@ -67,8 +68,8 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_http_options_in_method',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
             config={
                 'http_options': test_http_options,
             },
@@ -78,7 +79,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_union_contents_is_string',
         override_replay_id='test_sync',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash', contents='Tell me a story in 300 words.'
+            model=GEMINI_FLASH_LATEST, contents='Tell me a story in 300 words.'
         ),
         has_union=True,
     ),
@@ -86,7 +87,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_union_contents_is_content',
         override_replay_id='test_sync',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model=GEMINI_FLASH_LATEST,
             contents=types.Content(
                 role='user',
                 parts=[types.Part(text='Tell me a story in 300 words.')],
@@ -98,7 +99,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_union_contents_is_parts',
         override_replay_id='test_sync',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model=GEMINI_FLASH_LATEST,
             contents=[types.Part(text='Tell me a story in 300 words.')],
         ),
         has_union=True,
@@ -107,7 +108,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_union_contents_is_part',
         override_replay_id='test_sync',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model=GEMINI_FLASH_LATEST,
             contents=types.Part(text='Tell me a story in 300 words.'),
         ),
         has_union=True,
@@ -116,7 +117,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_sync_content_list',
         override_replay_id='test_sync',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
+            model=GEMINI_FLASH_LATEST,
             contents=[
                 types.Content(
                     role='user',
@@ -130,7 +131,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_llama',
         parameters=types._GenerateContentParameters(
             model='meta/llama-3.2-90b-vision-instruct-maas',
-            contents=t.t_contents(None, 'What is your name?'),
+            contents=t.t_contents('What is your name?'),
         ),
         exception_if_mldev='404',
         skip_in_api_mode='it will encounter 403 for api mode',
@@ -138,11 +139,11 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_system_instructions',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'high'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('high'),
             config={
                 'system_instruction': t.t_content(
-                    None, 'I say high, you say low'
+                    'I say high, you say low'
                 )
             },
         ),
@@ -151,8 +152,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_labels',
         exception_if_mldev='not supported',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
             config={
                 'labels': {'label1': 'value1', 'label2': 'value2'},
             },
@@ -161,8 +162,8 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_simple_shared_generation_config',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'What is your name?'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
             config={
                 'max_output_tokens': 100,
                 'top_k': 2,
@@ -176,10 +177,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
-        name='test_2_candidates_gemini_1_5_flash',
+        name='test_2_candidates_gemini_2_5_flash',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 30 words.'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Tell me a story in 30 words.'),
             config={
                 'candidate_count': 2,
             },
@@ -188,8 +189,8 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_safety_settings_on_difference',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'What is your name?'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
             config={
                 'safety_settings': safety_settings_with_method,
             },
@@ -199,8 +200,8 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_penalty',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash-002',
-            contents=t.t_contents(None, 'Tell me a story in 30 words.'),
+            model=GEMINI_FLASH_2_0,
+            contents=t.t_contents('Tell me a story in 30 words.'),
             config={
                 'presence_penalty': 0.5,
                 'frequency_penalty': 0.5,
@@ -208,10 +209,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
-        name='test_penalty_gemini_1_5_flash',
+        name='test_penalty_gemini_2_0_flash',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'Tell me a story in 30 words.'),
+            model=GEMINI_FLASH_2_0,
+            contents=t.t_contents('Tell me a story in 30 words.'),
             config={
                 'presence_penalty': 0.5,
                 'frequency_penalty': 0.5,
@@ -221,19 +222,143 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_google_search_tool',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-exp',
-            contents=t.t_contents(None, 'Why is the sky blue?'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Why is the sky blue?'),
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())]
             ),
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_maps_tool',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Find restaurants near me.'),
+            config=types.GenerateContentConfig(
+                tools=[{'google_maps': {}}],
+                tool_config={
+                    "retrieval_config": {
+                        "lat_lng": {
+                            "latitude": 37.421993,
+                            "longitude": -122.079725,
+                        }
+                    }
+                }
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_time_range_filter',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is the QQQ stock price?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            time_range_filter=types.Interval(
+                                start_time=datetime.fromisoformat(
+                                    '2025-05-01T00:00:00Z'
+                                ),
+                                end_time=datetime.fromisoformat(
+                                    '2025-05-03T00:00:00Z'
+                                ),
+                            )
+                        )
+                    )
+                ]
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_google_search_tool_with_blocking_confidence',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(
+                            blocking_confidence=types.PhishBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch()
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool_with_exclude_domains',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch(
+                            exclude_domains=['amazon.com', 'facebook.com']
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enterprise_web_search_tool_with_blocking_confidence',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        enterprise_web_search=types.EnterpriseWebSearch(
+                            blocking_confidence=types.PhishBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                        )
+                    )
+                ]
+            ),
+        ),
+        exception_if_mldev='not supported in',
+    ),
+    pytest_helper.TestTableItem(
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.5-flash-preview-tts',
             contents=t.t_contents(
-                None, 'Produce a speech response saying "Cheese"'
+                'Produce a speech response saying "Cheese"'
             ),
             config=types.GenerateContentConfig(
                 response_modalities=['audio'],
@@ -242,15 +367,90 @@ test_table: list[pytest_helper.TestTableItem] = [
                         prebuilt_voice_config=types.PrebuiltVoiceConfig(
                             voice_name='charon'
                         )
-                        )
                     )
                 ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_speech_with_multi_speaker_voice_config',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents(
+                'Alice says "Hi", Bob replies with "what\'s up"?'
+            ),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
+                        speaker_voice_configs=[
+                            types.SpeakerVoiceConfig(
+                                speaker='Alice',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='leda'
+                                    )
+                                ),
+                            ),
+                            types.SpeakerVoiceConfig(
+                                speaker='Bob',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='kore'
+                                    )
+                                ),
+                            ),
+                        ],
+                    )
+                ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_speech_error_with_speech_config_and_multi_speech_config',
+        exception_if_vertex='mutually exclusive',
+        exception_if_mldev='mutually exclusive',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents(
+                'Alice says "Hi", Bob replies with "what\'s up"?'
+            ),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='puck'
+                        )
+                    ),
+                    multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
+                        speaker_voice_configs=[
+                            types.SpeakerVoiceConfig(
+                                speaker='Alice',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='leda'
+                                    )
+                                ),
+                            ),
+                            types.SpeakerVoiceConfig(
+                                speaker='Bob',
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                        voice_name='kore'
+                                    )
+                                ),
+                            ),
+                        ],
+                    ),
+                ),
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
         name='test_union_speech_string_config',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.5-flash-preview-tts',
             contents='Say hello!',
             config=types.GenerateContentConfig(
                 response_modalities=['audio'], speech_config='charon'
@@ -261,18 +461,25 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_audio_timestamp',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
-            contents=[types.Content(
-                role='user',
-                parts=[
-                    types.Part(
-                        file_data=types.FileData(
-                            file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
-                            mime_type='audio/mpeg')),
-                    types.Part(text="""Can you transcribe this interview, in the
+            model=GEMINI_FLASH_LATEST,
+            contents=[
+                types.Content(
+                    role='user',
+                    parts=[
+                        types.Part(
+                            file_data=types.FileData(
+                                file_uri='gs://cloud-samples-data/generative-ai/audio/pixel.mp3',
+                                mime_type='audio/mpeg',
+                            )
+                        ),
+                        types.Part(
+                            text="""Can you transcribe this interview, in the
                            format of timecode, speaker, caption. Use speaker A, 
-                           speaker B, etc. to identify speakers."""),]
-            )],
+                           speaker B, etc. to identify speakers."""
+                        ),
+                    ],
+                )
+            ],
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
         exception_if_mldev='not supported',
@@ -280,8 +487,8 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_response_schema_with_default',
         parameters=types._GenerateContentParameters(
-            model='gemini-1.5-flash',
-            contents=t.t_contents(None, 'What is your name?'),
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
             config={
                 'response_mime_type': 'application/json',
                 'response_schema': {
@@ -297,6 +504,48 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         ignore_keys=['parsed'],
     ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_path',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash/../../upload/v1beta/files',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_question_mark',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash?',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_invalid_model_parameter_ampersand',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash&',
+            contents=t.t_contents('What is your name?'),
+        ),
+        exception_if_vertex='invalid model parameter',
+        exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enhanced_civic_answers',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents(
+                'Summarize the evidence that confirms widespread voter fraud was'
+                ' the reason the last national election results were'
+                ' inaccurate.'
+            ),
+            config={
+                'enable_enhanced_civic_answers': True,
+            },
+        ),
+        exception_if_vertex='not supported',
+    ),
 ]
 
 pytestmark = pytest_helper.setup(
@@ -308,10 +557,35 @@ pytestmark = pytest_helper.setup(
 pytest_plugins = ('pytest_asyncio',)
 
 
+def test_sync_with_headers(client):
+  response = client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a story in 300 words.',
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is None
+
+
+def test_sync_with_full_response(client):
+  response = client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  print(response.sdk_http_response.body)
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Tell me a story in 300 words.',
       config={
           'http_options': test_http_options,
@@ -320,9 +594,36 @@ async def test_async(client):
   assert response.text
 
 
+@pytest.mark.asyncio
+async def test_async_with_headers(client):
+  response = await client.aio.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a story in 300 words.',
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is None
+
+
+@pytest.mark.asyncio
+async def test_async_with_full_response(client):
+  response = await client.aio.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a story in 300 words.',
+      config={
+          'should_return_http_response': True,
+      },
+  )
+  assert response.sdk_http_response.headers is not None
+  assert response.sdk_http_response.body is not None
+  assert 'candidates' in response.sdk_http_response.body
+  assert 'content' in response.sdk_http_response.body
+  assert 'parts' in response.sdk_http_response.body
+  assert 'usageMetadata' in response.sdk_http_response.body
+
+
 def test_sync_stream(client):
   response = client.models.generate_content_stream(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Tell me a story in 300 words.',
       config={
           'http_options': test_http_options,
@@ -333,14 +634,52 @@ def test_sync_stream(client):
     chunks += 1
     assert part.text is not None or part.candidates[0].finish_reason
 
-  assert chunks > 2
+  assert chunks >= 1
+
+
+def test_sync_stream_with_should_return_http_headers(client):
+  response = client.models.generate_content_stream(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+      },
+  )
+  chunks = 0
+  for part in response:
+    chunks += 1
+    assert part.text is not None or part.candidates[0].finish_reason
+    assert part.sdk_http_response.headers is not None
+  assert chunks >= 1
+
+
+def test_sync_stream_with_non_text_modality(client):
+  response = client.models.generate_content_stream(
+      model='gemini-2.0-flash-preview-image-generation',
+      contents=(
+          'Generate an image of the Eiffel tower with fireworks in the'
+          ' background.'
+      ),
+      config={
+          'response_modalities': ['IMAGE', 'TEXT'],
+      },
+  )
+  chunks = 0
+  for chunk in response:
+    chunks += 1
+    if chunk.candidates[0].finish_reason is not None:
+      continue
+    for part in chunk.parts:
+      assert part.text is not None or part.inline_data is not None
+
+  assert chunks >= 1
 
 
 @pytest.mark.asyncio
 async def test_async_stream(client):
   chunks = 0
   async for part in await client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash', contents='Tell me a story in 300 words.',
+      model=GEMINI_FLASH_LATEST, contents='Tell me a story in 300 words.',
       config={
           'http_options': test_http_options,
       },
@@ -348,16 +687,54 @@ async def test_async_stream(client):
     chunks += 1
     assert part.text is not None or part.candidates[0].finish_reason
 
-  assert chunks > 2
+  assert chunks >= 1
+
+
+@pytest.mark.asyncio
+async def test_async_stream_with_headers(client):
+  chunks = 0
+  async for part in await client.aio.models.generate_content_stream(
+      model=GEMINI_FLASH_LATEST, contents='Tell me a story in 300 words.',
+      config={
+          'http_options': test_http_options,
+      },
+  ):
+    chunks += 1
+    assert part.text is not None or part.candidates[0].finish_reason
+    assert part.sdk_http_response.headers is not None
+
+  assert chunks >= 1
+
+
+@pytest.mark.asyncio
+async def test_async_stream_with_non_text_modality(client):
+  chunks = 0
+  async for chunk in await client.aio.models.generate_content_stream(
+      model=GEMINI_FLASH_IMAGE_LATEST,
+      contents=(
+          'Generate an image of the Eiffel tower with fireworks in the'
+          ' background.'
+      ),
+      config={
+          'response_modalities': ['IMAGE', 'TEXT'],
+      },
+  ):
+    chunks += 1
+    if chunk.candidates[0].finish_reason is not None:
+      continue
+    for part in chunk.parts:
+      assert part.text is not None or part.inline_data is not None
+
+  assert chunks >= 1
 
 
 def test_simple_shared_generation_config_stream(client):
   chunks = 0
   for chunk in client.models.generate_content_stream(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='tell me a story in 300 words',
       config={
-          'max_output_tokens': 400,
+          'max_output_tokens': 1000,
           'top_k': 2,
           'temperature': 0.5,
           'top_p': 0.5,
@@ -370,16 +747,16 @@ def test_simple_shared_generation_config_stream(client):
     assert (
         chunk.text is not None or chunk.candidates[0].finish_reason
     ), f'vertexai: {client._api_client.vertexai}, {chunk.candidate[0]}'
-  assert chunks >= 2
+  assert chunks >= 1
 
 
 @pytest.mark.asyncio
 async def test_simple_shared_generation_config_async(client):
   response = await client.aio.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='tell me a story in 300 words',
       config={
-          'max_output_tokens': 400,
+          'max_output_tokens': 4000,
           'top_k': 2,
           'temperature': 0.5,
           'top_p': 0.5,
@@ -394,7 +771,7 @@ async def test_simple_shared_generation_config_async(client):
 async def test_simple_shared_generation_config_stream_async(client):
   chunks = 0
   async for part in await client.aio.models.generate_content_stream(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_2_0,
       contents='tell me a story in 300 words',
       config={
           'max_output_tokens': 400,
@@ -408,32 +785,28 @@ async def test_simple_shared_generation_config_stream_async(client):
   ):
     chunks += 1
     assert part.text is not None or part.candidates[0].finish_reason
-  assert chunks >= 2
+  assert chunks >= 1
 
 
 def test_log_probs(client):
-  # ML DEV discovery doc supports response_logprobs but the backend
-  # does not.
-  # TODO: update replay test json files when ML Dev backend is updated.
-  with pytest_helper.exception_if_mldev(client, errors.ClientError):
-    client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='What is your name?',
-        config={
-            'logprobs': 2,
-            'presence_penalty': 0.5,
-            'frequency_penalty': 0.5,
-            'response_logprobs': True,
-        },
-    )
+  client.models.generate_content(
+      model=GEMINI_FLASH_2_0,
+      contents='What is your name?',
+      config={
+          'logprobs': 2,
+          'presence_penalty': 0.5,
+          'frequency_penalty': 0.5,
+          'response_logprobs': True,
+      },
+  )
 
 
 def test_simple_config(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='What is your name?',
       config={
-          'max_output_tokens': 3,
+          'max_output_tokens': 300,
           'top_k': 2,
       },
   )
@@ -444,7 +817,7 @@ def test_model_selection_config_dict(client):
   if not client.vertexai:
     return
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me a Taylor Swift lyric and explain its meaning.',
       config={
           'model_selection_config': {
@@ -459,7 +832,7 @@ def test_model_selection_config_pydantic(client):
   if not client.vertexai:
     return
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me a Taylor Swift lyric and explain its meaning.',
       config=types.GenerateContentConfig(
           model_selection_config=types.ModelSelectionConfig(
@@ -470,12 +843,15 @@ def test_model_selection_config_pydantic(client):
   assert response.text
 
 
-def test_sdk_logger_logs_warnings(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='gemini_sdk_logger')
-  sdk_logger = logging.getLogger('gemini_sdk_logger')
-  sdk_logger.setLevel(logging.WARNING)
+def test_sdk_logger_logs_warnings_once(client, caplog):
+  from ... import types as types_module
+
+  types_module._response_text_warning_logged = False
+
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Tell me a 50 word story about cheese.',
       config={
         'candidate_count': 2,
@@ -484,15 +860,26 @@ def test_sdk_logger_logs_warnings(client, caplog):
   assert response.text
   assert 'WARNING' in caplog.text
   assert 'there are 2 candidates' in caplog.text
+  caplog_after_first_call = caplog.text
+  assert len(caplog.records) == 1
+  client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a 50 word story about cheese.',
+      config={
+        'candidate_count': 2,
+      }
+  )
+  assert caplog.text == caplog_after_first_call
+  assert len(caplog.records) == 1
 
 
 def test_response_create_time_and_response_id(client):
   if client.vertexai:
     response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model=GEMINI_FLASH_LATEST,
         contents='What is your name?',
         config={
-            'max_output_tokens': 3,
+            'max_output_tokens': 300,
             'top_k': 2,
         },
     )
@@ -504,7 +891,7 @@ def test_response_create_time_and_response_id(client):
 
 def test_safety_settings(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='What is your name?',
       config={
           'safety_settings': [{
@@ -531,7 +918,7 @@ def test_safety_settings_on_difference_stream(client):
   ]
   if client._api_client.vertexai:
     for part in client.models.generate_content_stream(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_LATEST,
         contents='What is your name?',
         config={
             'safety_settings': safety_settings,
@@ -541,7 +928,7 @@ def test_safety_settings_on_difference_stream(client):
   else:
     with pytest.raises(ValueError) as e:
       for part in client.models.generate_content_stream(
-          model='gemini-1.5-flash',
+          model=GEMINI_FLASH_LATEST,
           contents='What is your name?',
           config={
               'safety_settings': safety_settings,
@@ -566,7 +953,7 @@ def test_safety_settings_on_difference_stream_with_lower_enum(client):
   ]
   if client._api_client.vertexai:
     for part in client.models.generate_content_stream(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_LATEST,
         contents='What is your name?',
         config={
             'safety_settings': safety_settings,
@@ -576,7 +963,7 @@ def test_safety_settings_on_difference_stream_with_lower_enum(client):
   else:
     with pytest.raises(ValueError) as e:
       for part in client.models.generate_content_stream(
-          model='gemini-1.5-flash',
+          model=GEMINI_FLASH_LATEST,
           contents='What is your name?',
           config={
               'safety_settings': safety_settings,
@@ -599,7 +986,7 @@ def test_pydantic_schema(client):
     total_area_sq_mi: int
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -607,6 +994,34 @@ def test_pydantic_schema(client):
       },
   )
   assert isinstance(response.parsed, CountryInfo)
+
+def test_json_schema_fields(client):
+  class UserRole(str, Enum):
+    ADMIN = "admin"
+    VIEWER = "viewer"
+  class Address(BaseModel):
+    street: str
+    city: str
+  class UserProfile(BaseModel):
+    username: str = Field(description="User's unique name")
+    age: Optional[int] = Field(ge=0, le=20)
+    roles: Set[UserRole] = Field(min_items=1)
+    contact: Union[Address, str]
+
+    model_config = ConfigDict(
+        title="User Schema", description="A user profile"
+    )  # This is the title of the schema
+
+  response = client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Give me information of the United States.',
+      config={
+          'response_mime_type': 'application/json',
+          'response_json_schema': UserProfile.model_json_schema(),
+      },
+  )
+  print(response.parsed)
+  assert response.parsed != None
 
 
 def test_pydantic_schema_orders_properties(client):
@@ -616,7 +1031,7 @@ def test_pydantic_schema_orders_properties(client):
     fun_fact: str
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information about a restaurant in Boston.',
       config={
           'response_mime_type': 'application/json',
@@ -636,7 +1051,7 @@ def test_pydantic_schema_with_default_value(client):
     city: Optional[str] = 'New York'
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Can you recommend a restaurant for me?',
       config={
           'response_mime_type': 'application/json',
@@ -657,7 +1072,7 @@ def test_repeated_pydantic_schema(client):
     person2: Person
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Create a couple.',
       config={
           'response_mime_type': 'application/json',
@@ -669,7 +1084,7 @@ def test_repeated_pydantic_schema(client):
 
 def test_int_schema(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents="what's your favorite number?",
       config={
           'response_mime_type': 'application/json',
@@ -681,7 +1096,7 @@ def test_int_schema(client):
 
 def test_nested_list_of_int_schema(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents="Can you return two matrices, a 2x3 and a 3x4?",
       config={
           'response_mime_type': 'application/json',
@@ -693,7 +1108,7 @@ def test_nested_list_of_int_schema(client):
 
 def test_literal_schema(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Which ice cream flavor should I order?',
       config={
           'response_mime_type': 'application/json',
@@ -709,7 +1124,7 @@ def test_literal_schema(client):
 def test_literal_schema_with_non_string_types_raises(client):
   with pytest.raises(ValueError) as e:
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_LATEST,
         contents='Which ice cream flavor should I order?',
         config={
             'response_mime_type': 'application/json',
@@ -729,7 +1144,7 @@ def test_pydantic_schema_with_literal(client):
     genre: Literal['action', 'comedy', 'drama']
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information about the movie "Mean Girls"',
       config={
           'response_mime_type': 'application/json',
@@ -751,7 +1166,7 @@ def test_pydantic_schema_with_single_value_literal(client):
     genre: Literal['action']
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information about the movie "The Matrix"',
       config={
           'response_mime_type': 'application/json',
@@ -772,7 +1187,7 @@ def test_pydantic_schema_with_none(client):
     total_area_sq_mi: int | None = None
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -789,7 +1204,7 @@ def test_pydantic_schema_with_optional_none(client):
     total_area_sq_mi: Optional[int] = None
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States but don\'t include the total area.',
       config={
           'response_mime_type': 'application/json',
@@ -813,7 +1228,7 @@ def test_pydantic_schema_from_json(client):
   schema = types.Schema.model_validate(CountryInfo.model_json_schema())
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -830,7 +1245,7 @@ def test_pydantic_schema_from_json(client):
 )
 def test_schema_with_union_type(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me a random number, either as an integers or written out as words.',
       config=types.GenerateContentConfig.model_validate(dict(
           response_mime_type='application/json',
@@ -842,7 +1257,7 @@ def test_schema_with_union_type(client):
 
 def test_schema_with_union_type_all_py_versions(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents="Give me a random number, either an integer or a float.",
       config={
           'response_mime_type': 'application/json',
@@ -858,7 +1273,7 @@ def test_schema_with_union_type_all_py_versions(client):
 )
 def test_list_schema_with_union_type(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me a list of 5 random numbers, including some integers and some written out as words.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -871,7 +1286,7 @@ def test_list_schema_with_union_type(client):
 
 def test_list_schema_with_union_type_all_py_versions(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me a list of 5 random numbers, including some integers and some written out as words.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -893,7 +1308,7 @@ def test_pydantic_schema_with_optional_generic_alias(client):
     total_area_sq_mi: int
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -933,7 +1348,7 @@ def test_pydantic_schema_with_optional_pydantic(client):
   """
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents=test_prompt,
       config={
           'response_mime_type': 'application/json',
@@ -955,7 +1370,7 @@ def test_list_of_pydantic_schema(client):
     total_area_sq_mi: int
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States, Canada, and Mexico.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -973,7 +1388,7 @@ def test_nested_list_of_pydantic_schema(client):
     cook_time: str
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents="I\'m writing three recipe books, one each for United States, Canada, and Mexico. "
                "Can you give some recipe ideas, at least 2 per book?",
       config=types.GenerateContentConfig(
@@ -997,7 +1412,7 @@ def test_list_of_pydantic_schema_with_dict_config(client):
     total_area_sq_mi: int
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States, Canada, and Mexico.',
       config={
           'response_mime_type': 'application/json',
@@ -1018,7 +1433,7 @@ def test_pydantic_schema_with_nested_class(client):
     currency: CurrencyInfo
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1040,7 +1455,7 @@ def test_pydantic_schema_with_union_type(client):
     restaurants_per_capita: int | float
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1058,7 +1473,7 @@ def test_pydantic_schema_with_union_type_all_py_versions(client):
     restaurants_per_capita: Union[int, float]
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1084,7 +1499,7 @@ def test_union_of_pydantic_schema(client):
     fun_fact: str
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Can you give me a Taylor Swift song lyric or a fun fact?',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1105,7 +1520,7 @@ def test_union_of_pydantic_schema_all_py_versions(client):
     fun_fact: str
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Can you give me a Taylor Swift song lyric or a fun fact?',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1130,7 +1545,7 @@ def test_pydantic_schema_with_nested_enum(client):
     continent: Continent
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1150,7 +1565,7 @@ def test_pydantic_schema_with_nested_list_class(client):
     currency: list[CurrencyInfo]
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1178,7 +1593,7 @@ def test_list_of_pydantic_schema_with_nested_class(client):
     currency: CurrencyInfo
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States, Canada, and Mexico.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1207,7 +1622,7 @@ def test_list_of_pydantic_schema_with_nested_list_class(client):
     currency: list[CurrencyInfo]
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information for the United States, Canada, and Mexico.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1220,7 +1635,7 @@ def test_list_of_pydantic_schema_with_nested_list_class(client):
   assert isinstance(response.parsed[0].currency[0], CurrencyInfo)
 
 
-def test_response_schema_with_unsupported_type_raises(client):
+def test_response_schema_with_dict_of_pydantic_schema(client):
   class CountryInfo(BaseModel):
     population: int
     capital: str
@@ -1229,22 +1644,44 @@ def test_response_schema_with_unsupported_type_raises(client):
     official_language: str
     total_area_sq_mi: int
 
-  with pytest.raises(ValueError) as e:
-    client.models.generate_content(
-        model='gemini-1.5-flash',
+  if not client.vertexai:
+    with pytest.raises(ValueError) as e:
+      client.models.generate_content(
+          model=GEMINI_FLASH_LATEST,
+          contents='Give me information for the United States, Canada, and Mexico.',
+          config=types.GenerateContentConfig(
+              response_mime_type='application/json',
+              response_schema=dict[str, CountryInfo],
+          )
+      )
+  else:
+    response = client.models.generate_content(
+        model=GEMINI_FLASH_LATEST,
         contents='Give me information for the United States, Canada, and Mexico.',
         config=types.GenerateContentConfig(
             response_mime_type='application/json',
             response_schema=dict[str, CountryInfo],
         )
     )
-    assert 'Unsupported schema type' in str(e)
-    assert 'GenericAlias' in str(e)
+    assert response.text
+
+
+def test_schema_with_unsupported_type_raises(client):
+  with pytest.raises(ValueError) as e:
+    client.models.generate_content(
+        model=GEMINI_FLASH_LATEST,
+        contents='Give me information for the United States, Canada, and Mexico.',
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=types.Schema(),
+        )
+    )
+  assert 'Unsupported schema type' in str(e)
 
 
 def test_enum_schema_with_enum_mime_type(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_2_0,
       contents='What instrument plays multiple notes at once?',
       config={
           'response_mime_type': 'text/x.enum',
@@ -1261,7 +1698,7 @@ def test_enum_schema_with_enum_mime_type(client):
 def test_list_of_enum_schema_with_enum_mime_type(client):
   with pytest.raises(errors.ClientError) as e:
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_2_0,
         contents='What instrument plays single note at once?',
         config={
             'response_mime_type': 'text/x.enum',
@@ -1273,7 +1710,7 @@ def test_list_of_enum_schema_with_enum_mime_type(client):
 
 def test_list_of_enum_schema_with_json_mime_type(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='What instrument plays single note at once?',
       config={
           'response_mime_type': 'application/json',
@@ -1293,7 +1730,7 @@ def test_optional_enum_in_pydantic_schema_with_json_mime_type(client):
     fun_fact: str
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='What instrument plays single note at once? Include the name of the instrument in your response.',
       config={
           'response_mime_type': 'application/json',
@@ -1307,7 +1744,7 @@ def test_optional_enum_in_pydantic_schema_with_json_mime_type(client):
 
 def test_enum_schema_with_json_mime_type(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='What instrument plays multiple notes at once?',
       config={
           'response_mime_type': 'application/json',
@@ -1330,22 +1767,23 @@ def test_non_string_enum_schema_with_enum_mime_type(client):
     BRASS = 4
     KEYBOARD = 5
 
-  with pytest.raises(TypeError) as e:
-    client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents='What instrument plays multiple notes at once?',
-        config={
-            'response_mime_type': 'text/x.enum',
-            'response_schema': IntegerEnum,
-        },
-    )
+  response =client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='What instrument plays multiple notes at once?',
+      config={
+          'response_mime_type': 'text/x.enum',
+          'response_schema': IntegerEnum,
+      },
+  )
 
-    assert 'value must be a string' in str(e)
+  instrument_values = {str(member.value) for member in IntegerEnum}
+
+  assert response.text in instrument_values
 
 
 def test_json_schema(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -1377,7 +1815,7 @@ def test_json_schema(client):
 
 def test_json_schema_with_lower_enum(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -1409,7 +1847,7 @@ def test_json_schema_with_lower_enum(client):
 
 def test_json_schema_with_any_of(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me a fruit basket.',
       config={
           'response_mime_type': 'application/json',
@@ -1526,7 +1964,7 @@ def test_schema_with_any_of(client):
       required=['fruit'],
   )
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me a fruit basket.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1539,10 +1977,31 @@ def test_schema_with_any_of(client):
   assert 'type' in response.parsed['fruit'][0]
 
 
+def test_replicated_voice_config(client):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+      client.models.generate_content(
+          model='gemini-2.5-flash-preview-tts-voice-replication-rev22-2025-10-28',
+          contents=t.t_contents(
+              'Produce a speech response saying "Cheese"'
+          ),
+          config=types.GenerateContentConfig(
+              response_modalities=['audio'],
+              speech_config=types.SpeechConfig(
+                  voice_config=types.VoiceConfig(
+                      replicated_voice_config=types.ReplicatedVoiceConfig(
+                          voice_sample_audio=audio_bytes,
+                          mime_type='audio/wav',
+                      )
+                  )
+              ),
+          ),
+      )
+
+
 def test_json_schema_with_streaming(client):
 
   response = client.models.generate_content_stream(
-      model='gemini-2.0-flash-exp',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -1562,7 +2021,7 @@ def test_json_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1579,7 +2038,7 @@ def test_pydantic_schema_with_streaming(client):
     total_area_sq_mi: int
 
   response = client.models.generate_content_stream(
-      model='gemini-2.0-flash-exp',
+      model=GEMINI_FLASH_LATEST,
       contents='Give me information of the United States.',
       config={
           'response_mime_type': 'application/json',
@@ -1588,7 +2047,7 @@ def test_pydantic_schema_with_streaming(client):
   )
 
   for r in response:
-    parts = r.candidates[0].content.parts
+    parts = r.parts
     for p in parts:
       assert p.text
 
@@ -1603,7 +2062,7 @@ def test_schema_from_json(client):
   schema = types.Schema.model_validate(Foo.model_json_schema())
 
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
+      model=GEMINI_FLASH_LATEST,
       contents='Fill in the Foo.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1622,7 +2081,7 @@ def test_schema_from_model_schema(client):
     qux: list[str]
 
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
+      model=GEMINI_FLASH_LATEST,
       contents='Fill in the Foo.',
       config=types.GenerateContentConfig(
           response_mime_type='application/json',
@@ -1633,13 +2092,43 @@ def test_schema_from_model_schema(client):
   response.text
 
 
+def test_schema_with_additional_properties(client):
+
+  class Foo(BaseModel):
+    bar: str
+    baz: int
+    qux: dict[str, str]
+
+  if client.vertexai:
+    response = client.models.generate_content(
+        model=GEMINI_FLASH_LATEST,
+        contents='What is your name?',
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=Foo,
+        ),
+    )
+    assert response.text
+  else:
+    with pytest.raises(ValueError) as e:
+      client.models.generate_content(
+          model=GEMINI_FLASH_LATEST,
+          contents='What is your name?',
+          config=types.GenerateContentConfig(
+              response_mime_type='application/json',
+              response_schema=Foo,
+          ),
+      )
+    assert 'additionalProperties is not supported in the Gemini API.' in str(e)
+
+
 def test_function(client):
   def get_weather(city: str) -> str:
     """Returns the weather in a city."""
     return f'The weather in {city} is sunny and 100 degrees.'
 
   response = client.models.generate_content(
-      model='gemini-2.0-flash',
+      model=GEMINI_FLASH_LATEST,
       contents=(
           'What is the weather like in Sunnyvale? Answer in very short'
           ' sentence.'
@@ -1654,7 +2143,7 @@ def test_function(client):
 def test_invalid_input_without_transformer(client):
   with pytest.raises(ValidationError) as e:
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_LATEST,
         contents='What is your name',
         config={
             'input_that_does_not_exist': 'what_ever_value',
@@ -1667,7 +2156,7 @@ def test_invalid_input_without_transformer(client):
 def test_invalid_input_with_transformer_dict(client):
   with pytest.raises(ValidationError) as e:
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_LATEST,
         contents={'invalid_key': 'invalid_value'},
     )
   assert 'invalid_key' in str(e.value)
@@ -1676,7 +2165,7 @@ def test_invalid_input_with_transformer_dict(client):
 def test_invalid_input_with_transformer_list(client):
   with pytest.raises(ValidationError) as e:
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_LATEST,
         contents=[{'invalid_key': 'invalid_value'}],
     )
   assert 'invalid_key' in str(e.value)
@@ -1694,7 +2183,7 @@ def test_invalid_input_for_simple_parameter(client):
 def test_catch_stack_trace_in_error_handling(client):
   try:
     client.models.generate_content(
-        model='gemini-1.5-flash',
+        model=GEMINI_FLASH_LATEST,
         contents='What is your name?',
         config={'response_modalities': ['AUDIO']},
     )
@@ -1730,7 +2219,7 @@ def test_multiple_strings(client):
     person: str
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents=[
           "Summarize Shakespeare's life work in a few sentences",
           "Summarize Hemingway's life work",
@@ -1753,7 +2242,7 @@ def test_multiple_parts(client):
     person: str
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents=[
           types.Part(
               text="Summarize Shakespeare's life work in a few sentences"
@@ -1774,7 +2263,7 @@ def test_multiple_parts(client):
 
 def test_multiple_function_calls(client):
   response = client.models.generate_content(
-      model='gemini-1.5-flash',
+      model=GEMINI_FLASH_LATEST,
       contents=[
           'What is the weather in Boston?',
           'What is the stock price of GOOG?',
@@ -1834,6 +2323,7 @@ def test_multiple_function_calls(client):
   assert '100 degrees' in response.text
   assert '$100' in response.text
 
+
 def test_usage_metadata_part_types(client):
   contents = [
       'Hello world.',
@@ -1844,7 +2334,7 @@ def test_usage_metadata_part_types(client):
   ]
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash', contents=contents
+      model=GEMINI_FLASH_2_0, contents=contents
   )
   usage_metadata = response.usage_metadata
 
@@ -1865,40 +2355,13 @@ def test_usage_metadata_part_types(client):
   assert modalities == ['IMAGE', 'TEXT']
 
 
-def test_warning_log_includes_parsed_for_multi_candidate_response(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='google_genai')
-
-  class CountryInfo(BaseModel):
-    name: str
-    population: int
-    capital: str
-    continent: str
-    major_cities: list[str]
-    gdp: int
-    official_language: str
-    total_area_sq_mi: int
-
-  response = client.models.generate_content(
-      model='gemini-2.0-flash',
-      contents='Give me information of the United States.',
-      config={
-          'response_mime_type': 'application/json',
-          'response_schema': CountryInfo,
-          'candidate_count': 2,
-      },
-  )
-  assert response.parsed
-  assert len(response.candidates) == 2
-  assert 'parsed' in caplog.text
-
-
 def test_error_handling_stream(client):
   if client.vertexai:
     return
 
   try:
     for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash-exp-image-generation',
+        model=GEMINI_FLASH_IMAGE_LATEST,
         contents=[
             types.Content(
                 role='user',
@@ -1922,7 +2385,7 @@ def test_error_handling_stream(client):
     assert (
         e.message
         == 'Developer instruction is not enabled for'
-        ' models/gemini-2.0-flash-exp-image-generation'
+        ' models/gemini-2.5-flash-image'
     )
 
 
@@ -1932,7 +2395,7 @@ def test_error_handling_unary(client):
 
   try:
     client.models.generate_content(
-        model='gemini-2.0-flash-exp-image-generation',
+        model=GEMINI_FLASH_IMAGE_LATEST,
         contents=[
             types.Content(
                 role='user',
@@ -1955,13 +2418,13 @@ def test_error_handling_unary(client):
     assert (
         e.message
         == 'Developer instruction is not enabled for'
-        ' models/gemini-2.0-flash-exp-image-generation'
+        ' models/gemini-2.5-flash-image'
     )
 
 
 def test_provisioned_output_dedicated(client):
   response = client.models.generate_content(
-      model='gemini-2.0-flash',
+      model=GEMINI_FLASH_LATEST,
       contents='What is 1 + 1?',
       config=types.GenerateContentConfig(
           http_options={'headers': {'X-Vertex-AI-LLM-Request-Type': 'dedicated'}}
@@ -1980,7 +2443,7 @@ async def test_error_handling_unary_async(client):
 
   try:
     await client.aio.models.generate_content(
-        model='gemini-2.0-flash-exp-image-generation',
+        model=GEMINI_FLASH_IMAGE_LATEST,
         contents=[
             types.Content(
                 role='user',
@@ -2003,7 +2466,7 @@ async def test_error_handling_unary_async(client):
     assert (
         e.message
         == 'Developer instruction is not enabled for'
-        ' models/gemini-2.0-flash-exp-image-generation'
+        ' models/gemini-2.5-flash-image'
     )
 
 
@@ -2014,7 +2477,7 @@ async def test_error_handling_stream_async(client):
 
   try:
     async for part in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash-exp-image-generation',
+        model=GEMINI_FLASH_IMAGE_LATEST,
         contents=[
             types.Content(
                 role='user',
@@ -2035,8 +2498,4 @@ async def test_error_handling_stream_async(client):
       continue
 
   except errors.ClientError as e:
-    assert (
-        e.message
-        == 'Developer instruction is not enabled for'
-        ' models/gemini-2.0-flash-exp-image-generation'
-    )
+    assert ('Developer instruction is not enabled' in e.message)
