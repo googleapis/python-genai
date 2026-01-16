@@ -28,7 +28,7 @@ import typing
 from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Union
 import pydantic
 from pydantic import ConfigDict, Field, PrivateAttr, model_validator
-from typing_extensions import Self, TypedDict
+from typing_extensions import Self, TypeAlias, TypedDict
 from . import _common
 from ._operations_converters import (
     _GenerateVideosOperation_from_mldev,
@@ -4251,15 +4251,22 @@ else:
 ToolListUnion = list[ToolUnion]
 ToolListUnionDict = list[ToolUnionDict]
 
-if sys.version_info >= (3, 10):
-  SchemaUnion = Union[
+if typing.TYPE_CHECKING:
+  # For type checkers, use the most complete type (Python 3.10+)
+  SchemaUnion: TypeAlias = Union[
       dict[Any, Any], type, Schema, builtin_types.GenericAlias, builtin_types.UnionType, type(Union[int, str])
   ]
 else:
-  SchemaUnion = Union[
-      dict[Any, Any], type, Schema, builtin_types.GenericAlias, type(Union[int, str])
-  ]
-SchemaUnionDict = Union[SchemaUnion, SchemaDict]
+  # At runtime, use version-appropriate types
+  if sys.version_info >= (3, 10):
+    SchemaUnion: TypeAlias = Union[
+        dict[Any, Any], type, Schema, builtin_types.GenericAlias, builtin_types.UnionType, type(Union[int, str])
+    ]
+  else:
+    SchemaUnion: TypeAlias = Union[
+        dict[Any, Any], type, Schema, builtin_types.GenericAlias, type(Union[int, str])
+    ]
+SchemaUnionDict: TypeAlias = Union[SchemaUnion, SchemaDict]
 
 
 class LatLng(_common.BaseModel):
