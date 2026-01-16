@@ -662,7 +662,10 @@ class BaseApiClient:
         if not self._credentials:
           self._credentials = credentials
 
-      has_sufficient_auth = (self.project and self.location) or self.api_key
+      if self.project and not self.location:
+        self.location = 'us-central1'
+
+      has_sufficient_auth = self.project or self.api_key
 
       if not has_sufficient_auth and not self.custom_base_url:
         # Skip sufficient auth check if base url is provided in http options.
