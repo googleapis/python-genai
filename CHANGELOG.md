@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.60.0](https://github.com/googleapis/python-genai/compare/v1.59.0...v1.60.0) (2026-01-16)
+
+
+### Features
+
+* Add ModelArmorConfig support for prompt and response sanitization via the Model Armor service ([8d1091a](https://github.com/googleapis/python-genai/commit/8d1091a7e8d8eef774984ff2202cb87fa674e92e))
+
+
+### Documentation
+
+* Regenerate docs for 1.59.0 ([351e490](https://github.com/googleapis/python-genai/commit/351e4901c7c8178a2bbb876148cbe441a77b071e))
+
 ## [1.59.0](https://github.com/googleapis/python-genai/compare/v1.58.0...v1.59.0) (2026-01-15)
 
 
