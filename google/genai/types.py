@@ -5003,6 +5003,38 @@ SpeechConfigUnion = Union[str, SpeechConfig]
 SpeechConfigUnionDict = Union[str, SpeechConfig, SpeechConfigDict]
 
 
+class ModelArmorConfig(_common.BaseModel):
+  """Configuration for Model Armor integrations of prompt and responses.
+
+  This data type is not supported in Gemini API.
+  """
+
+  prompt_template_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The name of the Model Armor template to use for prompt sanitization.""",
+  )
+  response_template_name: Optional[str] = Field(
+      default=None,
+      description="""Optional. The name of the Model Armor template to use for response sanitization.""",
+  )
+
+
+class ModelArmorConfigDict(TypedDict, total=False):
+  """Configuration for Model Armor integrations of prompt and responses.
+
+  This data type is not supported in Gemini API.
+  """
+
+  prompt_template_name: Optional[str]
+  """Optional. The name of the Model Armor template to use for prompt sanitization."""
+
+  response_template_name: Optional[str]
+  """Optional. The name of the Model Armor template to use for response sanitization."""
+
+
+ModelArmorConfigOrDict = Union[ModelArmorConfig, ModelArmorConfigDict]
+
+
 class GenerateContentConfig(_common.BaseModel):
   """Optional model configuration parameters.
 
@@ -5219,6 +5251,12 @@ class GenerateContentConfig(_common.BaseModel):
       models. This field is not supported in Vertex AI.
       """,
   )
+  model_armor_config: Optional[ModelArmorConfig] = Field(
+      default=None,
+      description="""Settings for prompt and response sanitization using the Model Armor
+      service. If supplied, safety_settings must not be supplied.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -5427,6 +5465,11 @@ class GenerateContentConfigDict(TypedDict, total=False):
   enable_enhanced_civic_answers: Optional[bool]
   """Enables enhanced civic answers. It may not be available for all
       models. This field is not supported in Vertex AI.
+      """
+
+  model_armor_config: Optional[ModelArmorConfigDict]
+  """Settings for prompt and response sanitization using the Model Armor
+      service. If supplied, safety_settings must not be supplied.
       """
 
 

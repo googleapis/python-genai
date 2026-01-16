@@ -1117,6 +1117,11 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['enable_enhanced_civic_answers']),
     )
 
+  if getv(from_object, ['model_armor_config']) is not None:
+    raise ValueError(
+        'model_armor_config parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -1277,6 +1282,13 @@ def _GenerateContentConfig_to_vertex(
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
         'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['model_armor_config']) is not None:
+    setv(
+        parent_object,
+        ['modelArmorConfig'],
+        getv(from_object, ['model_armor_config']),
     )
 
   return to_object
