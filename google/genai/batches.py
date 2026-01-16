@@ -1013,6 +1013,11 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['enable_enhanced_civic_answers']),
     )
 
+  if getv(from_object, ['model_armor_config']) is not None:
+    raise ValueError(
+        'model_armor_config parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 

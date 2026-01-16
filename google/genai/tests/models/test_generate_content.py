@@ -546,6 +546,22 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_vertex='not supported',
     ),
+    pytest_helper.TestTableItem(
+        name='test_model_armor_config',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'model_armor_config': {
+                    'prompt_template_name': '',
+                    'response_template_name': '',
+                    # Intentionally left blank just to test that the SDK doesn't
+                    # throw an exception.
+                },
+            },
+        ),
+        exception_if_mldev='not supported',
+    ),
 ]
 
 pytestmark = pytest_helper.setup(
