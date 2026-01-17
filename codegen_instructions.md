@@ -59,14 +59,41 @@ The `google-genai` library requires creating a client object for all API calls.
     automatically.
 
 ```python
+
 from google import genai
 
 # Best practice: implicitly use env variable
+
 client = genai.Client()
 
 # Alternative: explicit key (avoid hardcoding in production)
+
 # client = genai.Client(api_key='YOUR_API_KEY')
+
 ```
+
+## Customizing API Endpoint (Base URL)
+
+For advanced use cases, such as using a proxy or a private Vertex AI endpoint, you can customize the base URL for API requests. This is done by passing an `HttpOptions` object to the client constructor.
+
+```python
+from google import genai
+from google.genai import types
+
+# Configure the custom base URL
+http_opts = types.HttpOptions(
+    base_url="https://my.custom.proxy/or/endpoint"
+)
+
+client = genai.Client(http_options=http_opts)
+response = client.models.generate_content(
+  model='gemini-2.5-flash',
+  contents='why is the sky blue?',
+)
+
+print(response.text)
+```
+
 
 ## Models
 
