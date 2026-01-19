@@ -75,3 +75,30 @@ def test_constructor_with_httpx_clients():
   assert not mldev_client.models._api_client._use_aiohttp()
 
 
+# Aiohttp
+@requires_aiohttp
+@pytest.mark.asyncio
+@pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason='aiohttp is not installed, skipping test.'
+)
+async def test_constructor_with_aiohttp_clients():
+  api_client.has_aiohttp = True
+  mldev_http_options = {
+      'aiohttp_client': aiohttp.ClientSession(trust_env=False),
+  }
+  vertexai_http_options = {
+      'aiohttp_client': aiohttp.ClientSession(trust_env=False),
+  }
+  mldev_client = Client(
+      api_key='google_api_key', http_options=mldev_http_options
+  )
+  assert not mldev_client.models._api_client._aiohttp_session.trust_env
+
+  vertexai_client = Client(
+      vertexai=True,
+      project='fake_project_id',
+      location='fake-location',
+      http_options=vertexai_http_options,
+  )
+  assert not vertexai_client.models._api_client._aiohttp_session.trust_env
+

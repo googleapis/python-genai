@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.59.0](https://github.com/googleapis/python-genai/compare/v1.58.0...v1.59.0) (2026-01-15)
+
+
+### Features
+
+* Set the environment variable GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES to 'false' within BaseApiClient to disable bound token sharing. ([79ac880](https://github.com/googleapis/python-genai/commit/79ac88081ab3629f2eaab72bd004a3481affeac0))
+* Support 4:5 and 5:4 aspect ratio in Interactions ([1ddd9f1](https://github.com/googleapis/python-genai/commit/1ddd9f1dfd2fecc53941dab04d5fc2f2891203e3))
+
+
+### Documentation
+
+* Regenerate docs for 1.58.0 ([39a8b06](https://github.com/googleapis/python-genai/commit/39a8b064ca5e6f2c80d313ead9ef1e0e8192a513))
+
+## [1.58.0](https://github.com/googleapis/python-genai/compare/v1.57.0...v1.58.0) (2026-01-14)
+
+
+### Features
+
+* Add FileSearchCallContent to Interactions ([a882dea](https://github.com/googleapis/python-genai/commit/a882deab12a03d9390e2dd83243afc767e78c789))
+* Add ImageConfig to GenerationConfig for image generation in Interactions ([b61163f](https://github.com/googleapis/python-genai/commit/b61163f463f0b452d6fc01a5ad23ff16b65f23db))
+* Support passing the custom aiohttp.ClientSession through HttpOptions.aiohttp_client ([750648f](https://github.com/googleapis/python-genai/commit/750648fe0b2b5acb35233dec4e4dda4c03e96f31)), closes [#1662](https://github.com/googleapis/python-genai/issues/1662)
+* Voice activity support ([b7b1c2e](https://github.com/googleapis/python-genai/commit/b7b1c2e8b3ce825f08481c27b477abe6d26d0f2b))
+
+
+### Bug Fixes
+
+* Serialize Pillow images losslessly by default ([8d7c74d](https://github.com/googleapis/python-genai/commit/8d7c74d4579408714f4c9a5cc40d4772e670fae5))
+
+
+### Documentation
+
+* Regenerate docs for 1.57.0 ([65018b6](https://github.com/googleapis/python-genai/commit/65018b655dbb6038b6daac5860c89974b8ae125e))
+
 ## [1.57.0](https://github.com/googleapis/python-genai/compare/v1.56.0...v1.57.0) (2026-01-07)
 
 

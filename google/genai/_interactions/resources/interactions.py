@@ -96,7 +96,7 @@ class InteractionsResource(SyncAPIResource):
 
           model: The name of the `Model` used for generating the interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
@@ -161,7 +161,7 @@ class InteractionsResource(SyncAPIResource):
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
@@ -224,7 +224,7 @@ class InteractionsResource(SyncAPIResource):
 
           agent_config: Configuration for the agent.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -289,7 +289,7 @@ class InteractionsResource(SyncAPIResource):
 
           agent_config: Configuration for the agent.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -350,7 +350,7 @@ class InteractionsResource(SyncAPIResource):
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
@@ -713,7 +713,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           model: The name of the `Model` used for generating the interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
@@ -778,7 +778,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
@@ -841,7 +841,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           agent_config: Configuration for the agent.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -906,7 +906,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           agent_config: Configuration for the agent.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -967,7 +967,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
