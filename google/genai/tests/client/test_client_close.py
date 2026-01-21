@@ -90,7 +90,6 @@ async def test_async_httpx_client_context_manager():
   assert async_client._api_client._async_httpx_client.is_closed
 
 
-@requires_aiohttp
 @pytest.fixture
 def mock_request():
   mock_aiohttp_response = mock.Mock(spec=aiohttp.ClientSession.request)
