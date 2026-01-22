@@ -26,7 +26,14 @@ def test_config_is_none():
 
 
 def test_afc_unset_max_unset():
-  assert get_max_remote_calls_afc(types.GenerateContentConfig()) == 10
+  assert (
+      get_max_remote_calls_afc(
+          types.GenerateContentConfig(
+              tools=[types.Tool(retrieval=types.Retrieval())]
+          )
+      )
+      == 10
+  )
 
 
 def test_afc_unset_max_set():
@@ -36,6 +43,7 @@ def test_afc_unset_max_set():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   maximum_remote_calls=20,
               ),
+              tools=[types.Tool(retrieval=types.Retrieval())],
           )
       )
       == 20
@@ -72,6 +80,7 @@ def test_afc_d_max_unset():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   disable=False,
               ),
+              tools=[types.Tool(retrieval=types.Retrieval())],
           )
       )
       == 10
@@ -86,6 +95,7 @@ def test_afc_d_max_set():
                   disable=False,
                   maximum_remote_calls=5,
               ),
+              tools=[types.Tool(retrieval=types.Retrieval())],
           )
       )
       == 5
@@ -96,10 +106,11 @@ def test_afc_enabled_max_set_to_zero():
   with pytest.raises(ValueError):
     get_max_remote_calls_afc(
         types.GenerateContentConfig(
-          automatic_function_calling=types.AutomaticFunctionCallingConfig(
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
                 disable=False,
                 maximum_remote_calls=0,
             ),
+            tools=[types.Tool(retrieval=types.Retrieval())],
         )
     )
 
@@ -124,6 +135,7 @@ def test_afc_enabled_max_set_to_float():
                   disable=False,
                   maximum_remote_calls=5.0,
               ),
+              tools=[types.Tool(retrieval=types.Retrieval())],
           )
       )
       == 5
