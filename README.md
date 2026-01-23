@@ -1429,8 +1429,8 @@ Files are only supported in Gemini Developer API. See the 'Create a client'
 section above to initialize a client.
 
 ```sh
-!gsutil cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
-!gsutil cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
+!gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
+!gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
 ```
 
 ### Upload
