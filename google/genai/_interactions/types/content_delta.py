@@ -155,7 +155,7 @@ class DeltaFunctionCallDelta(BaseModel):
     name: Optional[str] = None
 
 
-DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
+DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent, object]
 
 
 class DeltaFunctionResultDeltaResultItems(BaseModel):
