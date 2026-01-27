@@ -73,10 +73,7 @@ class MCPServer(BaseModel):
     """The name of the MCPServer."""
 
     url: Optional[str] = None
-    """
-    The full URL for the MCPServer endpoint.
-    Example: "https://api.example.com/mcp"
-    """
+    """The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp" """
 
 
 class FileSearch(BaseModel):

@@ -31,8 +31,7 @@ class Annotation(BaseModel):
     source: Optional[str] = None
     """Source attributed for a portion of the text.
 
-    Could be a URL, title, or
-    other identifier.
+    Could be a URL, title, or other identifier.
     """
 
     start_index: Optional[int] = None
