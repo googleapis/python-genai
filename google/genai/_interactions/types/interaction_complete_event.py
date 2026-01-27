@@ -21,16 +21,16 @@ from typing_extensions import Literal
 from .._models import BaseModel
 from .interaction import Interaction
 
-__all__ = ["InteractionEvent"]
+__all__ = ["InteractionCompleteEvent"]
 
 
-class InteractionEvent(BaseModel):
+class InteractionCompleteEvent(BaseModel):
     event_id: Optional[str] = None
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
 
-    event_type: Optional[Literal["interaction.start", "interaction.complete"]] = None
+    event_type: Optional[Literal["interaction.complete"]] = None
 
     interaction: Optional[Interaction] = None
     """The Interaction resource."""
