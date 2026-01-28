@@ -5576,6 +5576,62 @@ class Models(_api_module.BaseModule):
         config=config,
     )
 
+  def edit_image(
+      self,
+      *,
+      model: str,
+      prompt: str,
+      reference_images: list[types._ReferenceImageAPIOrDict],
+      config: Optional[types.EditImageConfigOrDict] = None,
+  ) -> types.EditImageResponse:
+    """Edits an image based on a text description and configuration.
+
+    Args:
+      model (str): The model to use.
+      prompt (str): A text description of the edit to apply to the image.
+        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
+        ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
+        reference images for editing.
+      config (EditImageConfig): Configuration for editing.
+
+    Usage:
+
+    .. code-block:: python
+
+      from google.genai.types import RawReferenceImage, MaskReferenceImage
+
+      raw_ref_image = RawReferenceImage(
+        reference_id=1,
+        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
+      )
+
+      mask_ref_image = MaskReferenceImage(
+        reference_id=2,
+        config=types.MaskReferenceConfig(
+            mask_mode='MASK_MODE_FOREGROUND',
+            mask_dilation=0.06,
+        ),
+      )
+      response = client.models.edit_image(
+        model='imagen-3.0-capability-001',
+        prompt='man with dog',
+        reference_images=[raw_ref_image, mask_ref_image],
+        config=types.EditImageConfig(
+            edit_mode= "EDIT_MODE_INPAINT_INSERTION",
+            number_of_images= 1,
+            include_rai_reason= True,
+        )
+      )
+      response.generated_images[0].image.show()
+      # Shows a man with a dog instead of a cat.
+    """
+    return self._edit_image(
+        model=model,
+        prompt=prompt,
+        reference_images=reference_images,
+        config=config,
+    )
+
   def upscale_image(
       self,
       *,
@@ -7303,6 +7359,62 @@ class AsyncModels(_api_module.BaseModule):
         automatic_function_calling_history.append(func_response_content)
 
     return async_generator(model, contents, parsed_config)  # type: ignore[no-untyped-call, no-any-return]
+
+  async def edit_image(
+      self,
+      *,
+      model: str,
+      prompt: str,
+      reference_images: list[types._ReferenceImageAPIOrDict],
+      config: Optional[types.EditImageConfigOrDict] = None,
+  ) -> types.EditImageResponse:
+    """Edits an image based on a text description and configuration.
+
+    Args:
+      model (str): The model to use.
+      prompt (str): A text description of the edit to apply to the image.
+        reference_images (list[Union[RawReferenceImage, MaskReferenceImage,
+        ControlReferenceImage, StyleReferenceImage, SubjectReferenceImage]): The
+        reference images for editing.
+      config (EditImageConfig): Configuration for editing.
+
+    Usage:
+
+    .. code-block:: python
+
+      from google.genai.types import RawReferenceImage, MaskReferenceImage
+
+      raw_ref_image = RawReferenceImage(
+        reference_id=1,
+        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
+      )
+
+      mask_ref_image = MaskReferenceImage(
+        reference_id=2,
+        config=types.MaskReferenceConfig(
+            mask_mode='MASK_MODE_FOREGROUND',
+            mask_dilation=0.06,
+        ),
+      )
+      response = await client.aio.models.edit_image(
+        model='imagen-3.0-capability-001',
+        prompt='man with dog',
+        reference_images=[raw_ref_image, mask_ref_image],
+        config=types.EditImageConfig(
+            edit_mode= "EDIT_MODE_INPAINT_INSERTION",
+            number_of_images= 1,
+            include_rai_reason= True,
+        )
+      )
+      response.generated_images[0].image.show()
+      # Shows a man with a dog instead of a cat.
+    """
+    return await self._edit_image(
+        model=model,
+        prompt=prompt,
+        reference_images=reference_images,
+        config=config,
+    )
 
   async def edit_image(
       self,
