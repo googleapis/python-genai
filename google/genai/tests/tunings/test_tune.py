@@ -20,6 +20,12 @@ from ... import types as genai_types
 from .. import pytest_helper
 import pytest
 
+
+VERTEX_HTTP_OPTIONS = {
+    'api_version': 'v1beta1',
+    'base_url': 'https://us-central1-autopush-aiplatform.sandbox.googleapis.com/',
+}
+
 evaluation_config=genai_types.EvaluationConfig(
     metrics=[
         genai_types.Metric(name="bleu", prompt_template="test prompt template")
@@ -157,6 +163,26 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev="vertex_dataset_resource parameter is not supported in Gemini API.",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_distillation",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                method="DISTILLATION",
+                base_teacher_model="deepseek-ai/deepseek-v3.1-maas",
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="parameter is not supported in Gemini API.",
     ),
 ]
 

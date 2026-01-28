@@ -213,6 +213,24 @@ def _CreateTuningJobConfig_to_mldev(
   if getv(from_object, ['beta']) is not None:
     raise ValueError('beta parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['base_teacher_model']) is not None:
+    raise ValueError(
+        'base_teacher_model parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['tuned_teacher_model_source']) is not None:
+    raise ValueError(
+        'tuned_teacher_model_source parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['sft_loss_weight_multiplier']) is not None:
+    raise ValueError(
+        'sft_loss_weight_multiplier parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['output_uri']) is not None:
+    raise ValueError('output_uri parameter is not supported in Gemini API.')
+
   return to_object
 
 
@@ -241,6 +259,16 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['preferenceOptimizationSpec'],
+          _TuningValidationDataset_to_vertex(
+              getv(from_object, ['validation_dataset']), to_object, root_object
+          ),
+      )
+
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['validation_dataset']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec'],
           _TuningValidationDataset_to_vertex(
               getv(from_object, ['validation_dataset']), to_object, root_object
           ),
@@ -275,6 +303,14 @@ def _CreateTuningJobConfig_to_vertex(
           getv(from_object, ['epoch_count']),
       )
 
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['epoch_count']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'hyperParameters', 'epochCount'],
+          getv(from_object, ['epoch_count']),
+      )
+
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
     discriminator = 'SUPERVISED_FINE_TUNING'
@@ -298,6 +334,14 @@ def _CreateTuningJobConfig_to_vertex(
           getv(from_object, ['learning_rate_multiplier']),
       )
 
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['learning_rate_multiplier']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'hyperParameters', 'learningRateMultiplier'],
+          getv(from_object, ['learning_rate_multiplier']),
+      )
+
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
     discriminator = 'SUPERVISED_FINE_TUNING'
@@ -317,6 +361,14 @@ def _CreateTuningJobConfig_to_vertex(
           getv(from_object, ['export_last_checkpoint_only']),
       )
 
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['export_last_checkpoint_only']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'exportLastCheckpointOnly'],
+          getv(from_object, ['export_last_checkpoint_only']),
+      )
+
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
     discriminator = 'SUPERVISED_FINE_TUNING'
@@ -333,6 +385,14 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['preferenceOptimizationSpec', 'hyperParameters', 'adapterSize'],
+          getv(from_object, ['adapter_size']),
+      )
+
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['adapter_size']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'hyperParameters', 'adapterSize'],
           getv(from_object, ['adapter_size']),
       )
 
@@ -365,6 +425,16 @@ def _CreateTuningJobConfig_to_vertex(
           ),
       )
 
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['evaluation_config']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'evaluationConfig'],
+          _EvaluationConfig_to_vertex(
+              getv(from_object, ['evaluation_config']), to_object, root_object
+          ),
+      )
+
   if getv(from_object, ['labels']) is not None:
     setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
@@ -374,6 +444,30 @@ def _CreateTuningJobConfig_to_vertex(
         ['preferenceOptimizationSpec', 'hyperParameters', 'beta'],
         getv(from_object, ['beta']),
     )
+
+  if getv(from_object, ['base_teacher_model']) is not None:
+    setv(
+        parent_object,
+        ['distillationSpec', 'baseTeacherModel'],
+        getv(from_object, ['base_teacher_model']),
+    )
+
+  if getv(from_object, ['tuned_teacher_model_source']) is not None:
+    setv(
+        parent_object,
+        ['distillationSpec', 'tunedTeacherModelSource'],
+        getv(from_object, ['tuned_teacher_model_source']),
+    )
+
+  if getv(from_object, ['sft_loss_weight_multiplier']) is not None:
+    setv(
+        parent_object,
+        ['distillationSpec', 'hyperParameters', 'sftLossWeightMultiplier'],
+        getv(from_object, ['sft_loss_weight_multiplier']),
+    )
+
+  if getv(from_object, ['output_uri']) is not None:
+    setv(parent_object, ['outputUri'], getv(from_object, ['output_uri']))
 
   return to_object
 
@@ -920,6 +1014,14 @@ def _TuningDataset_to_vertex(
           getv(from_object, ['gcs_uri']),
       )
 
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['gcs_uri']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'promptDatasetUri'],
+          getv(from_object, ['gcs_uri']),
+      )
+
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
     discriminator = 'SUPERVISED_FINE_TUNING'
@@ -936,6 +1038,14 @@ def _TuningDataset_to_vertex(
       setv(
           parent_object,
           ['preferenceOptimizationSpec', 'trainingDatasetUri'],
+          getv(from_object, ['vertex_dataset_resource']),
+      )
+
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['vertex_dataset_resource']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'promptDatasetUri'],
           getv(from_object, ['vertex_dataset_resource']),
       )
 
@@ -1064,6 +1174,13 @@ def _TuningJob_from_vertex(
         to_object,
         ['preference_optimization_spec'],
         getv(from_object, ['preferenceOptimizationSpec']),
+    )
+
+  if getv(from_object, ['distillationSpec']) is not None:
+    setv(
+        to_object,
+        ['distillation_spec'],
+        getv(from_object, ['distillationSpec']),
     )
 
   if getv(from_object, ['tuningDataStats']) is not None:
