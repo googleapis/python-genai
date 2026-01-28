@@ -38,7 +38,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-aiohttp = ["aiohttp<3.13.3"]
+aiohttp = ["aiohttp>=3.13.3,<4"]
 local-tokenizer = ["sentencepiece>=0.2.0", "protobuf"]
 
 [project.urls]
