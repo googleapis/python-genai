@@ -267,7 +267,13 @@ class HttpResponse:
 
   @property
   def json(self) -> Any:
-    if not self.response_stream[0]:  # Empty response
+    # Handle case where response_stream is not a list (e.g., aiohttp.ClientResponse)
+    # This can happen when the API returns an error and the response object
+    # is passed directly instead of being wrapped in a list.
+    # See: https://github.com/googleapis/python-genai/issues/1897
+    if not isinstance(self.response_stream, list):
+      return None
+    if not self.response_stream or not self.response_stream[0]:  # Empty response
       return ''
     return self._load_json_from_response(self.response_stream[0])
 
