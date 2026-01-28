@@ -527,6 +527,7 @@ class InteractionsResource(SyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -540,6 +541,8 @@ class InteractionsResource(SyncAPIResource):
         Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
+          include_input: If set to true, includes the input in the response.
+
           last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
 
           stream: If set to true, the generated content will be streamed incrementally.
@@ -561,6 +564,7 @@ class InteractionsResource(SyncAPIResource):
         *,
         stream: Literal[True],
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -574,6 +578,8 @@ class InteractionsResource(SyncAPIResource):
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
+
+          include_input: If set to true, includes the input in the response.
 
           last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
 
@@ -594,6 +600,7 @@ class InteractionsResource(SyncAPIResource):
         *,
         stream: bool,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -607,6 +614,8 @@ class InteractionsResource(SyncAPIResource):
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
+
+          include_input: If set to true, includes the input in the response.
 
           last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
 
@@ -625,6 +634,7 @@ class InteractionsResource(SyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -649,6 +659,7 @@ class InteractionsResource(SyncAPIResource):
                 timeout=timeout,
                 query=maybe_transform(
                     {
+                        "include_input": include_input,
                         "last_event_id": last_event_id,
                         "stream": stream,
                     },
@@ -1144,6 +1155,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1157,6 +1169,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
+          include_input: If set to true, includes the input in the response.
+
           last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
 
           stream: If set to true, the generated content will be streamed incrementally.
@@ -1178,6 +1192,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         *,
         stream: Literal[True],
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1191,6 +1206,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
+
+          include_input: If set to true, includes the input in the response.
 
           last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
 
@@ -1211,6 +1228,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         *,
         stream: bool,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1224,6 +1242,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
+
+          include_input: If set to true, includes the input in the response.
 
           last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
 
@@ -1242,6 +1262,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1266,6 +1287,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
                 timeout=timeout,
                 query=await async_maybe_transform(
                     {
+                        "include_input": include_input,
                         "last_event_id": last_event_id,
                         "stream": stream,
                     },
