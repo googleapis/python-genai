@@ -59,13 +59,13 @@ __all__ = [
 
 
 class BaseCreateModelInteractionParams(TypedDict, total=False):
+    api_version: str
+
     input: Required[Input]
     """The inputs for the interaction."""
 
     model: Required[ModelParam]
     """The name of the `Model` used for generating the interaction."""
-
-    api_version: str
 
     background: bool
     """Input only. Whether to run the model interaction in the background."""
@@ -124,13 +124,13 @@ Input: TypeAlias = Union[
 
 
 class BaseCreateAgentInteractionParams(TypedDict, total=False):
+    api_version: str
+
     agent: Required[Union[str, Literal["deep-research-pro-preview-12-2025"]]]
     """The name of the `Agent` used for generating the interaction."""
 
     input: Required[Input]
     """The inputs for the interaction."""
-
-    api_version: str
 
     agent_config: AgentConfig
     """Configuration for the agent."""

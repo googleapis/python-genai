@@ -68,9 +68,9 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -131,10 +131,10 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: Literal[True],
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -194,9 +194,9 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
         input: interaction_create_params.Input,
-        api_version: str | None = None,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -257,10 +257,10 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
         input: interaction_create_params.Input,
         stream: Literal[True],
-        api_version: str | None = None,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -320,10 +320,10 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: bool,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -383,9 +383,9 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam | Omit = omit,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -468,12 +468,12 @@ class InteractionsResource(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._delete(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -507,12 +507,12 @@ class InteractionsResource(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._post(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
             options=make_request_options(
@@ -562,8 +562,8 @@ class InteractionsResource(SyncAPIResource):
         self,
         id: str,
         *,
-        stream: Literal[True],
         api_version: str | None = None,
+        stream: Literal[True],
         include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -598,8 +598,8 @@ class InteractionsResource(SyncAPIResource):
         self,
         id: str,
         *,
-        stream: bool,
         api_version: str | None = None,
+        stream: bool,
         include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -644,12 +644,12 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._get(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -696,9 +696,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -759,10 +759,10 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: Literal[True],
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -822,9 +822,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
         input: interaction_create_params.Input,
-        api_version: str | None = None,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -885,10 +885,10 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
         input: interaction_create_params.Input,
         stream: Literal[True],
-        api_version: str | None = None,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -948,10 +948,10 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: bool,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -1011,9 +1011,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam | Omit = omit,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -1096,12 +1096,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._delete(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -1135,12 +1135,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._post(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
             options=make_request_options(
@@ -1190,8 +1190,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
         self,
         id: str,
         *,
-        stream: Literal[True],
         api_version: str | None = None,
+        stream: Literal[True],
         include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1226,8 +1226,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
         self,
         id: str,
         *,
-        stream: bool,
         api_version: str | None = None,
+        stream: bool,
         include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1272,12 +1272,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._get(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
