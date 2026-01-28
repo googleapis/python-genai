@@ -42,7 +42,7 @@ def get_headers():
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_register',
-        parameters=types._RegisterFilesParameters(uris=['gs://unified-genai-dev/image.jpg']),
+        parameters=types._InternalRegisterFilesParameters(uris=['gs://unified-genai-dev/image.jpg']),
         exception_if_vertex='only supported in the Gemini Developer client',
         skip_in_api_mode=(
             'The files have a TTL, they cannot be reliably retrieved for a long'
