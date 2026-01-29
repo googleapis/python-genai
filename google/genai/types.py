@@ -12268,7 +12268,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   learning_rate_multiplier: Optional[float] = Field(
       default=None,
-      description="""Multiplier for adjusting the default learning rate.""",
+      description="""Multiplier for adjusting the default learning rate. 1P models only. Mutually exclusive with learning_rate.""",
   )
   export_last_checkpoint_only: Optional[bool] = Field(
       default=None,
@@ -12281,13 +12281,20 @@ class CreateTuningJobConfig(_common.BaseModel):
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Adapter size for tuning."""
   )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode for SFT tuning."""
+  )
+  custom_base_model: Optional[str] = Field(
+      default=None,
+      description="""Custom base model for tuning. This is only supported for OSS models in Vertex.""",
+  )
   batch_size: Optional[int] = Field(
       default=None,
-      description="""The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples.""",
+      description="""The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex.""",
   )
   learning_rate: Optional[float] = Field(
       default=None,
-      description="""The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples.""",
+      description="""The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier.""",
   )
   evaluation_config: Optional[EvaluationConfig] = Field(
       default=None, description="""Evaluation config for the tuning job."""
@@ -12340,7 +12347,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Number of complete passes the model makes over the entire training dataset during training."""
 
   learning_rate_multiplier: Optional[float]
-  """Multiplier for adjusting the default learning rate."""
+  """Multiplier for adjusting the default learning rate. 1P models only. Mutually exclusive with learning_rate."""
 
   export_last_checkpoint_only: Optional[bool]
   """If set to true, disable intermediate checkpoints and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints."""
@@ -12351,11 +12358,17 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   adapter_size: Optional[AdapterSize]
   """Adapter size for tuning."""
 
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode for SFT tuning."""
+
+  custom_base_model: Optional[str]
+  """Custom base model for tuning. This is only supported for OSS models in Vertex."""
+
   batch_size: Optional[int]
-  """The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples."""
+  """The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex."""
 
   learning_rate: Optional[float]
-  """The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples."""
+  """The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier."""
 
   evaluation_config: Optional[EvaluationConfigDict]
   """Evaluation config for the tuning job."""

@@ -188,6 +188,14 @@ def _CreateTuningJobConfig_to_mldev(
   if getv(from_object, ['adapter_size']) is not None:
     raise ValueError('adapter_size parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['tuning_mode']) is not None:
+    raise ValueError('tuning_mode parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['custom_base_model']) is not None:
+    raise ValueError(
+        'custom_base_model parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['batch_size']) is not None:
     setv(
         parent_object,
@@ -396,11 +404,45 @@ def _CreateTuningJobConfig_to_vertex(
           getv(from_object, ['adapter_size']),
       )
 
-  if getv(from_object, ['batch_size']) is not None:
-    raise ValueError('batch_size parameter is not supported in Vertex AI.')
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['tuning_mode']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'tuningMode'],
+          getv(from_object, ['tuning_mode']),
+      )
 
-  if getv(from_object, ['learning_rate']) is not None:
-    raise ValueError('learning_rate parameter is not supported in Vertex AI.')
+  if getv(from_object, ['custom_base_model']) is not None:
+    setv(
+        parent_object,
+        ['customBaseModel'],
+        getv(from_object, ['custom_base_model']),
+    )
+
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['batch_size']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'hyperParameters', 'batchSize'],
+          getv(from_object, ['batch_size']),
+      )
+
+  discriminator = getv(root_object, ['config', 'method'])
+  if discriminator is None:
+    discriminator = 'SUPERVISED_FINE_TUNING'
+  if discriminator == 'SUPERVISED_FINE_TUNING':
+    if getv(from_object, ['learning_rate']) is not None:
+      setv(
+          parent_object,
+          ['supervisedTuningSpec', 'hyperParameters', 'learningRate'],
+          getv(from_object, ['learning_rate']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
