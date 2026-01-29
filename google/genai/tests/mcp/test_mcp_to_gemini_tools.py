@@ -39,16 +39,17 @@ def test_empty_mcp_tools_list():
 
 def test_unknown_field_conversion():
   """Test conversion of MCP tools with unknown fields to Gemini tools."""
+  inputSchema = {
+      'type': 'object',
+      'properties': {},
+      'unknown_field': 'unknownField',
+      'unknown_object': {},
+  }
   mcp_tools = [
       mcp_types.Tool(
           name='tool',
           description='tool-description',
-          inputSchema={
-              'type': 'object',
-              'properties': {},
-              'unknown_field': 'unknownField',
-              'unknown_object': {},
-          },
+          inputSchema=inputSchema,
       ),
   ]
   result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
@@ -58,10 +59,7 @@ def test_unknown_field_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      properties={},
-                  ),
+                  parameters_json_schema=inputSchema,
               ),
           ],
       ),
@@ -70,24 +68,25 @@ def test_unknown_field_conversion():
 
 def test_items_conversion():
   """Test conversion of MCP tools with items to Gemini tools."""
+  inputSchema = {
+      'type': 'array',
+      'items': {
+          'type': 'object',
+          'properties': {
+              'key1': {
+                  'type': 'string',
+              },
+              'key2': {
+                  'type': 'number',
+              },
+          },
+      },
+  }
   mcp_tools = [
       mcp_types.Tool(
           name='tool',
           description='tool-description',
-          inputSchema={
-              'type': 'array',
-              'items': {
-                  'type': 'object',
-                  'properties': {
-                      'key1': {
-                          'type': 'string',
-                      },
-                      'key2': {
-                          'type': 'number',
-                      },
-                  },
-              },
-          },
+          inputSchema=inputSchema,
       ),
   ]
   result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
@@ -97,16 +96,7 @@ def test_items_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='ARRAY',
-                      items=types.Schema(
-                          type='OBJECT',
-                          properties={
-                              'key1': types.Schema(type='STRING'),
-                              'key2': types.Schema(type='NUMBER'),
-                          },
-                      ),
-                  ),
+                  parameters_json_schema=inputSchema,
               ),
           ],
       ),
@@ -115,21 +105,24 @@ def test_items_conversion():
 
 def test_any_of_conversion():
   """Test conversion of MCP tools with any_of to Gemini tools."""
+  
+  inputSchema = {
+      'type': 'object',
+      'any_of': [
+          {
+              'type': 'string',
+          },
+          {
+              'type': 'number',
+          },
+      ],
+  }
+
   mcp_tools = [
       mcp_types.Tool(
           name='tool',
           description='tool-description',
-          inputSchema={
-              'type': 'object',
-              'any_of': [
-                  {
-                      'type': 'string',
-                  },
-                  {
-                      'type': 'number',
-                  },
-              ],
-          },
+          inputSchema=inputSchema,
       ),
   ]
   result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
@@ -139,13 +132,7 @@ def test_any_of_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      any_of=[
-                          types.Schema(type='STRING'),
-                          types.Schema(type='NUMBER'),
-                      ],
-                  ),
+                  parameters_json_schema=inputSchema,
               ),
           ],
       ),
@@ -154,21 +141,22 @@ def test_any_of_conversion():
 
 def test_properties_conversion():
   """Test conversion of MCP tools with properties to Gemini tools."""
+  inputSchema = {
+      'type': 'object',
+      'properties': {
+          'key1': {
+              'type': 'string',
+          },
+          'key2': {
+              'type': 'number',
+          },
+      },
+  }
   mcp_tools = [
       mcp_types.Tool(
           name='tool',
           description='tool-description',
-          inputSchema={
-              'type': 'object',
-              'properties': {
-                  'key1': {
-                      'type': 'string',
-                  },
-                  'key2': {
-                      'type': 'number',
-                  },
-              },
-          },
+          inputSchema=inputSchema,
       ),
   ]
   result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
@@ -178,13 +166,7 @@ def test_properties_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      properties={
-                          'key1': types.Schema(type='STRING'),
-                          'key2': types.Schema(type='NUMBER'),
-                      },
-                  ),
+                  parameters_json_schema=inputSchema,
               ),
           ],
       ),
