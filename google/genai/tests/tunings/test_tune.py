@@ -184,6 +184,67 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev="parameter is not supported in Gemini API.",
     ),
+    pytest_helper.TestTableItem(
+        name="test_tune_oss_sft",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                custom_base_model="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder/postprocess/node-0/checkpoints/final",
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="not supported in Gemini API",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_oss_sft_hyperparams",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                learning_rate=2.5e-4,
+                tuning_mode="TUNING_MODE_FULL",
+                custom_base_model="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder/postprocess/node-0/checkpoints/final",
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="not supported in Gemini API",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_oss_distillation",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                method="DISTILLATION",
+                base_teacher_model="deepseek-ai/deepseek-v3.1-maas",
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                custom_base_model="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder/postprocess/node-0/checkpoints/final",
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="not supported in Gemini API",
+    ),
 ]
 
 pytestmark = pytest_helper.setup(
