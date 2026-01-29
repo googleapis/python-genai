@@ -1208,6 +1208,9 @@ def _InlinedResponse_from_mldev(
         ),
     )
 
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
   if getv(from_object, ['error']) is not None:
     setv(to_object, ['error'], getv(from_object, ['error']))
 
