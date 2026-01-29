@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.61.0](https://github.com/googleapis/python-genai/compare/v1.60.0...v1.61.0) (2026-01-29)
+
+
+### Features
+
+* Add `include_input` query parameter to Get Interaction endpoint. ([a0240d9](https://github.com/googleapis/python-genai/commit/a0240d9cf4c817d1737cb2cf818d405addabeed8))
+* Add registerFiles for you can use gcs files with mldev. ([965395b](https://github.com/googleapis/python-genai/commit/965395b2f640a7d92a6df3d03020f4d15fe6b2fa))
+* Support distillation tuning ([9e49d71](https://github.com/googleapis/python-genai/commit/9e49d71c5aa70066cb0c81c7bef9770294dbcceb))
+
 ## [1.60.0](https://github.com/googleapis/python-genai/compare/v1.59.0...v1.60.0) (2026-01-21)
 
 
