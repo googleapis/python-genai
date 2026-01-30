@@ -40,7 +40,11 @@ def test_patch_http_options_with_copies_all_fields():
 
   for key in http_options_keys:
     assert hasattr(patched, key)
-    if key not in ['httpx_client', 'httpx_async_client', 'aiohttp_client']:
+    if key not in [
+        'httpx_client',
+        'httpx_async_client',
+        'aiohttp_client',
+    ]:
       assert getattr(patched, key) is not None
   assert patched.base_url == 'https://fake-url.com/'
   assert patched.api_version == 'v1'
