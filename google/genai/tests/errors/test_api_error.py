@@ -23,6 +23,7 @@ import pickle
 
 import httpx
 import pytest
+import websockets
 
 from ... import errors
 
@@ -255,6 +256,43 @@ def test_constructor_message_not_present():
           'status': 'INVALID_ARGUMENT',
       }
   }
+
+
+def test_constructor_with_websocket_connection_closed_error():
+  actual_error = errors.APIError(
+      1007,
+      'At most one response modality can be specified in the setup request.'
+      ' To enable simultaneous transcription and audio output,',
+      None,
+  )
+  assert actual_error.code == 1007
+  assert (
+      actual_error.details
+      == 'At most one response modality can be specified in the setup request.'
+      ' To enable simultaneous transcription and audio output,',
+  )
+  assert actual_error.status == None
+  assert actual_error.message == None
+
+
+def test_raise_for_websocket_connection_closed_error():
+  try:
+    errors.APIError.raise_error(
+        1007,
+        'At most one response modality can be specified in the setup request.'
+        ' To enable simultaneous transcription and audio output,',
+        None,
+    )
+  except errors.APIError as actual_error:
+    assert actual_error.code == 1007
+    assert (
+        actual_error.details
+        == 'At most one response modality can be specified in the setup'
+        ' request.'
+        ' To enable simultaneous transcription and audio output,'
+    )
+    assert actual_error.status == None
+    assert actual_error.message == None
 
 
 def test_raise_for_response_code_exist_json_decoder_error():
