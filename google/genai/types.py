@@ -813,6 +813,8 @@ class TuningMethod(_common.CaseInSensitiveEnum):
   """Supervised fine tuning."""
   PREFERENCE_TUNING = 'PREFERENCE_TUNING'
   """Preference optimization tuning."""
+  DISTILLATION = 'DISTILLATION'
+  """Distillation tuning."""
 
 
 class DocumentState(_common.CaseInSensitiveEnum):
@@ -10546,6 +10548,114 @@ PreferenceOptimizationSpecOrDict = Union[
 ]
 
 
+class DistillationHyperParameters(_common.BaseModel):
+  """Hyperparameters for Distillation.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None, description="""Optional. Adapter size for distillation."""
+  )
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate.""",
+  )
+
+
+class DistillationHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Distillation.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize]
+  """Optional. Adapter size for distillation."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate."""
+
+
+DistillationHyperParametersOrDict = Union[
+    DistillationHyperParameters, DistillationHyperParametersDict
+]
+
+
+class DistillationSpec(_common.BaseModel):
+  """Distillation tuning spec for tuning."""
+
+  prompt_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""The GCS URI of the prompt dataset to use during distillation.""",
+  )
+  base_teacher_model: Optional[str] = Field(
+      default=None,
+      description="""The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).""",
+  )
+  hyper_parameters: Optional[DistillationHyperParameters] = Field(
+      default=None,
+      description="""Optional. Hyperparameters for Distillation.""",
+  )
+  pipeline_root_directory: Optional[str] = Field(
+      default=None,
+      description="""Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts.""",
+  )
+  student_model: Optional[str] = Field(
+      default=None,
+      description="""The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead.""",
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+  tuned_teacher_model_source: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+class DistillationSpecDict(TypedDict, total=False):
+  """Distillation tuning spec for tuning."""
+
+  prompt_dataset_uri: Optional[str]
+  """The GCS URI of the prompt dataset to use during distillation."""
+
+  base_teacher_model: Optional[str]
+  """The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models)."""
+
+  hyper_parameters: Optional[DistillationHyperParametersDict]
+  """Optional. Hyperparameters for Distillation."""
+
+  pipeline_root_directory: Optional[str]
+  """Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts."""
+
+  student_model: Optional[str]
+  """The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead."""
+
+  training_dataset_uri: Optional[str]
+  """Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+  tuned_teacher_model_source: Optional[str]
+  """The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+
+DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
+
+
 class GcsDestination(_common.BaseModel):
   """The Google Cloud Storage location where the output is to be written to."""
 
@@ -11742,6 +11852,9 @@ class TuningJob(_common.BaseModel):
   preference_optimization_spec: Optional[PreferenceOptimizationSpec] = Field(
       default=None, description="""Tuning Spec for Preference Optimization."""
   )
+  distillation_spec: Optional[DistillationSpec] = Field(
+      default=None, description="""Tuning Spec for Distillation."""
+  )
   tuning_data_stats: Optional[TuningDataStats] = Field(
       default=None,
       description="""Output only. The tuning data statistics associated with this TuningJob.""",
@@ -11844,6 +11957,9 @@ class TuningJobDict(TypedDict, total=False):
 
   preference_optimization_spec: Optional[PreferenceOptimizationSpecDict]
   """Tuning Spec for Preference Optimization."""
+
+  distillation_spec: Optional[DistillationSpecDict]
+  """Tuning Spec for Distillation."""
 
   tuning_data_stats: Optional[TuningDataStatsDict]
   """Output only. The tuning data statistics associated with this TuningJob."""
@@ -12133,7 +12249,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   method: Optional[TuningMethod] = Field(
       default=None,
-      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING). If not set, the default method (SFT) will be used.""",
+      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used.""",
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
@@ -12152,7 +12268,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   learning_rate_multiplier: Optional[float] = Field(
       default=None,
-      description="""Multiplier for adjusting the default learning rate.""",
+      description="""Multiplier for adjusting the default learning rate. 1P models only. Mutually exclusive with learning_rate.""",
   )
   export_last_checkpoint_only: Optional[bool] = Field(
       default=None,
@@ -12165,13 +12281,20 @@ class CreateTuningJobConfig(_common.BaseModel):
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Adapter size for tuning."""
   )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode for SFT tuning."""
+  )
+  custom_base_model: Optional[str] = Field(
+      default=None,
+      description="""Custom base model for tuning. This is only supported for OSS models in Vertex.""",
+  )
   batch_size: Optional[int] = Field(
       default=None,
-      description="""The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples.""",
+      description="""The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex.""",
   )
   learning_rate: Optional[float] = Field(
       default=None,
-      description="""The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples.""",
+      description="""The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier.""",
   )
   evaluation_config: Optional[EvaluationConfig] = Field(
       default=None, description="""Evaluation config for the tuning job."""
@@ -12184,6 +12307,22 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""Weight for KL Divergence regularization, Preference Optimization tuning only.""",
   )
+  base_teacher_model: Optional[str] = Field(
+      default=None,
+      description="""The base teacher model that is being distilled. Distillation only.""",
+  )
+  tuned_teacher_model_source: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Tuned teacher model. Distillation only.""",
+  )
+  sft_loss_weight_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Multiplier for adjusting the weight of the SFT loss. Distillation only.""",
+  )
+  output_uri: Optional[str] = Field(
+      default=None,
+      description="""The Google Cloud Storage location where the tuning job outputs are written.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -12193,7 +12332,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   method: Optional[TuningMethod]
-  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING). If not set, the default method (SFT) will be used."""
+  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
   """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -12208,7 +12347,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Number of complete passes the model makes over the entire training dataset during training."""
 
   learning_rate_multiplier: Optional[float]
-  """Multiplier for adjusting the default learning rate."""
+  """Multiplier for adjusting the default learning rate. 1P models only. Mutually exclusive with learning_rate."""
 
   export_last_checkpoint_only: Optional[bool]
   """If set to true, disable intermediate checkpoints and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints."""
@@ -12219,11 +12358,17 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   adapter_size: Optional[AdapterSize]
   """Adapter size for tuning."""
 
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode for SFT tuning."""
+
+  custom_base_model: Optional[str]
+  """Custom base model for tuning. This is only supported for OSS models in Vertex."""
+
   batch_size: Optional[int]
-  """The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples."""
+  """The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex."""
 
   learning_rate: Optional[float]
-  """The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples."""
+  """The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier."""
 
   evaluation_config: Optional[EvaluationConfigDict]
   """Evaluation config for the tuning job."""
@@ -12233,6 +12378,18 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   beta: Optional[float]
   """Weight for KL Divergence regularization, Preference Optimization tuning only."""
+
+  base_teacher_model: Optional[str]
+  """The base teacher model that is being distilled. Distillation only."""
+
+  tuned_teacher_model_source: Optional[str]
+  """The resource name of the Tuned teacher model. Distillation only."""
+
+  sft_loss_weight_multiplier: Optional[float]
+  """Multiplier for adjusting the weight of the SFT loss. Distillation only."""
+
+  output_uri: Optional[str]
+  """The Google Cloud Storage location where the tuning job outputs are written."""
 
 
 CreateTuningJobConfigOrDict = Union[
