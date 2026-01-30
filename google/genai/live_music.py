@@ -19,15 +19,18 @@ import contextlib
 import json
 import logging
 from typing import AsyncIterator
+import websockets
 
 from . import _api_module
 from . import _common
 from . import _live_converters as live_converters
 from . import _transformers as t
+from . import errors
 from . import types
 from ._api_client import BaseApiClient
 from ._common import set_value_by_path as setv
 
+ConnectionClosed = websockets.ConnectionClosed
 
 try:
   from websockets.asyncio.client import ClientConnection
@@ -122,6 +125,14 @@ class AsyncMusicSession:
       raw_response = await self._ws.recv(decode=False)
     except TypeError:
       raw_response = await self._ws.recv()  # type: ignore[assignment]
+    except ConnectionClosed as e:
+      if e.rcvd:
+        code = e.rcvd.code
+        reason = e.rcvd.reason
+      else:
+        code = 1006
+        reason = websockets.frames.CLOSE_CODE_EXPLANATIONS.get(code, 'Abnormal closure.')
+      errors.APIError.raise_error(code, reason, None)
     if raw_response:
       try:
         response = json.loads(raw_response)
@@ -134,7 +145,9 @@ class AsyncMusicSession:
       raise NotImplementedError('Live music generation is not supported in Vertex AI.')
     else:
       response_dict = response
-
+    if not response_dict and response:
+      # Error handling.
+      errors.APIError.raise_error(response.get('code'), response, None)
     return types.LiveMusicServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
