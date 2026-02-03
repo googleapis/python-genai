@@ -16,7 +16,7 @@
 """Tests for closing the clients and context managers."""
 import asyncio
 from unittest import mock
-
+import gc
 from google.oauth2 import credentials
 import pytest
 try:
@@ -194,3 +194,26 @@ def test_aiohttp_session_context_manager(mock_request):
       assert async_client._api_client._aiohttp_session.closed
 
   asyncio.run(run())
+
+
+def test_partial_init_validation_error_sync_safety():
+  """Verifies that BaseApiClient.close() does not crash on a partially initialized client."""
+
+  with pytest.raises(ValueError):
+    api_client.BaseApiClient(api_key=None, vertexai=False)
+
+  # force GC to trigger __del__
+  gc.collect()
+
+@pytest.mark.asyncio
+async def test_partial_init_validation_error_async_safety():
+  """Verifies that BaseApiClient.aclose() does not crash the event loop on a partially initialized client."""
+
+  with pytest.raises(ValueError):
+    api_client.BaseApiClient(api_key=None, vertexai=False)
+
+  # force GC to trigger __del__
+  gc.collect()
+
+  # make sure the event loop runs to completion
+  await asyncio.sleep(0)
