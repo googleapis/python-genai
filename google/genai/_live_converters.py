@@ -23,6 +23,40 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError('api_key_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError('auth_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError('oauth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError('oidc_config parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -51,6 +85,27 @@ def _Content_to_mldev(
         ['parts'],
         [
             _Part_to_mldev(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['role']) is not None:
+    setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
+def _Content_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _Part_to_vertex(item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -257,7 +312,11 @@ def _GoogleMaps_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(getv(from_object, ['auth_config']), to_object),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
@@ -270,14 +329,14 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
-
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -299,6 +358,27 @@ def _LiveClientContent_to_mldev(
         ['turns'],
         [
             _Content_to_mldev(item, to_object)
+            for item in getv(from_object, ['turns'])
+        ],
+    )
+
+  if getv(from_object, ['turn_complete']) is not None:
+    setv(to_object, ['turnComplete'], getv(from_object, ['turn_complete']))
+
+  return to_object
+
+
+def _LiveClientContent_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['turns']) is not None:
+    setv(
+        to_object,
+        ['turns'],
+        [
+            _Content_to_vertex(item, to_object)
             for item in getv(from_object, ['turns'])
         ],
     )
@@ -364,7 +444,13 @@ def _LiveClientMessage_to_vertex(
     )
 
   if getv(from_object, ['client_content']) is not None:
-    setv(to_object, ['clientContent'], getv(from_object, ['client_content']))
+    setv(
+        to_object,
+        ['clientContent'],
+        _LiveClientContent_to_vertex(
+            getv(from_object, ['client_content']), to_object
+        ),
+    )
 
   if getv(from_object, ['realtime_input']) is not None:
     setv(
@@ -558,7 +644,9 @@ def _LiveClientSetup_to_vertex(
     setv(
         to_object,
         ['systemInstruction'],
-        t.t_content(getv(from_object, ['system_instruction'])),
+        _Content_to_vertex(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
     )
 
   if getv(from_object, ['tools']) is not None:
@@ -857,7 +945,9 @@ def _LiveConnectConfig_to_vertex(
     setv(
         parent_object,
         ['setup', 'systemInstruction'],
-        t.t_content(getv(from_object, ['system_instruction'])),
+        _Content_to_vertex(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
     )
 
   if getv(from_object, ['tools']) is not None:
@@ -1327,6 +1417,67 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  return to_object
+
+
+def _Part_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['part_metadata']) is not None:
+    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
+
   return to_object
 
 
@@ -1358,6 +1509,13 @@ def _Tool_to_mldev(
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
+  if getv(from_object, ['google_maps']) is not None:
+    setv(
+        to_object,
+        ['googleMaps'],
+        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
+    )
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
@@ -1371,13 +1529,6 @@ def _Tool_to_mldev(
         to_object,
         ['functionDeclarations'],
         [item for item in getv(from_object, ['function_declarations'])],
-    )
-
-  if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
   if getv(from_object, ['google_search']) is not None:
@@ -1394,8 +1545,20 @@ def _Tool_to_mldev(
         getv(from_object, ['google_search_retrieval']),
     )
 
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    raise ValueError(
+        'parallel_ai_search parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
 
   return to_object
 
@@ -1413,6 +1576,9 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError('file_search parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['google_maps']) is not None:
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -1434,9 +1600,6 @@ def _Tool_to_vertex(
         ],
     )
 
-  if getv(from_object, ['google_maps']) is not None:
-    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
-
   if getv(from_object, ['google_search']) is not None:
     setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
 
@@ -1447,8 +1610,18 @@ def _Tool_to_vertex(
         getv(from_object, ['google_search_retrieval']),
     )
 
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    setv(
+        to_object,
+        ['parallelAiSearch'],
+        getv(from_object, ['parallel_ai_search']),
+    )
+
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
 
   return to_object
 
