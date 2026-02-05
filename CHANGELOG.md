@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.62.0](https://github.com/googleapis/python-genai/compare/v1.61.0...v1.62.0) (2026-02-04)
+
+
+### Features
+
+* Update data types from discovery doc. ([089ba97](https://github.com/googleapis/python-genai/commit/089ba97d7ee2e084134354d7a69421eaba176894))
+
+
+### Bug Fixes
+
+* Add error handling for live and live music APIs ([1148276](https://github.com/googleapis/python-genai/commit/114827682339fcc3c81543c008d9716b1a6b8401)), closes [#668](https://github.com/googleapis/python-genai/issues/668)
+
+## [1.61.0](https://github.com/googleapis/python-genai/compare/v1.60.0...v1.61.0) (2026-01-30)
+
+
+### Features
+
+* Add `include_input` query parameter to Get Interaction endpoint. ([a0240d9](https://github.com/googleapis/python-genai/commit/a0240d9cf4c817d1737cb2cf818d405addabeed8))
+* Add registerFiles for you can use gcs files with mldev. ([965395b](https://github.com/googleapis/python-genai/commit/965395b2f640a7d92a6df3d03020f4d15fe6b2fa))
+* Support distillation tuning ([9e49d71](https://github.com/googleapis/python-genai/commit/9e49d71c5aa70066cb0c81c7bef9770294dbcceb))
+* Support OSS Tuning in GenAI SDK ([51748a7](https://github.com/googleapis/python-genai/commit/51748a7559fb038f2cd5ce290025d6259bb61ae0))
+
+
+### Bug Fixes
+
+* Add metadata in batch inlined response ([08c47aa](https://github.com/googleapis/python-genai/commit/08c47aa1a4237daed90d86d38ccb4590c25c8ab8))
+
 ## [1.60.0](https://github.com/googleapis/python-genai/compare/v1.59.0...v1.60.0) (2026-01-21)
 
 

@@ -1390,10 +1390,14 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _TuningJob_from_mldev(response_dict)
+      response_dict = _TuningJob_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1452,10 +1456,14 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_vertex(response_dict)
+      response_dict = _ListTuningJobsResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(response_dict)
+      response_dict = _ListTuningJobsResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1526,10 +1534,14 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+      response_dict = _CancelTuningJobResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+      response_dict = _CancelTuningJobResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.CancelTuningJobResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1602,7 +1614,9 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1677,7 +1691,9 @@ class Tunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _TuningOperation_from_mldev(response_dict)
+      response_dict = _TuningOperation_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1882,10 +1898,14 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _TuningJob_from_mldev(response_dict)
+      response_dict = _TuningJob_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -1946,10 +1966,14 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_vertex(response_dict)
+      response_dict = _ListTuningJobsResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(response_dict)
+      response_dict = _ListTuningJobsResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ListTuningJobsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2020,10 +2044,14 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_vertex(response_dict)
+      response_dict = _CancelTuningJobResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _CancelTuningJobResponse_from_mldev(response_dict)
+      response_dict = _CancelTuningJobResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.CancelTuningJobResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2096,7 +2124,9 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _TuningJob_from_vertex(response_dict)
+      response_dict = _TuningJob_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningJob._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -2171,7 +2201,9 @@ class AsyncTunings(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _TuningOperation_from_mldev(response_dict)
+      response_dict = _TuningOperation_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.TuningOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()

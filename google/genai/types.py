@@ -14382,6 +14382,10 @@ class InlinedResponse(_common.BaseModel):
       description="""The response to the request.
       """,
   )
+  metadata: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""The metadata to be associated with the request.""",
+  )
   error: Optional[JobError] = Field(
       default=None,
       description="""The error encountered while processing the request.
@@ -14395,6 +14399,9 @@ class InlinedResponseDict(TypedDict, total=False):
   response: Optional[GenerateContentResponseDict]
   """The response to the request.
       """
+
+  metadata: Optional[dict[str, str]]
+  """The metadata to be associated with the request."""
 
   error: Optional[JobErrorDict]
   """The error encountered while processing the request.
