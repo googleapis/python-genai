@@ -245,6 +245,21 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev="not supported in Gemini API",
     ),
+    pytest_helper.TestTableItem(
+        name="test_tune_encryption_spec",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="gemini-2.5-flash",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                encryption_spec=genai_types.EncryptionSpec(
+                    kms_key_name="projects/vertex-sdk-dev/locations/us-central1/keyRings/ayush-test-key/cryptoKeys/ayush-key",
+                ),
+            ),
+        ),
+        exception_if_mldev="not supported in Gemini API",
+    ),
 ]
 
 pytestmark = pytest_helper.setup(

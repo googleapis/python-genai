@@ -12323,6 +12323,10 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""The Google Cloud Storage location where the tuning job outputs are written.""",
   )
+  encryption_spec: Optional[EncryptionSpec] = Field(
+      default=None,
+      description="""The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -12390,6 +12394,9 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   output_uri: Optional[str]
   """The Google Cloud Storage location where the tuning job outputs are written."""
+
+  encryption_spec: Optional[EncryptionSpecDict]
+  """The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key."""
 
 
 CreateTuningJobConfigOrDict = Union[
