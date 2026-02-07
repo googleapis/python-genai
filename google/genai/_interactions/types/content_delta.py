@@ -155,14 +155,14 @@ class DeltaFunctionCallDelta(BaseModel):
     name: Optional[str] = None
 
 
-DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
+DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent, object]
 
 
 class DeltaFunctionResultDeltaResultItems(BaseModel):
     items: Optional[List[DeltaFunctionResultDeltaResultItemsItem]] = None
 
 
-DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResultItems, str, object]
+DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResultItems, str]
 
 
 class DeltaFunctionResultDelta(BaseModel):
@@ -261,14 +261,14 @@ class DeltaMCPServerToolCallDelta(BaseModel):
     server_name: Optional[str] = None
 
 
-DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
+DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class DeltaMCPServerToolResultDeltaResultItems(BaseModel):
     items: Optional[List[DeltaMCPServerToolResultDeltaResultItemsItem]] = None
 
 
-DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultDeltaResultItems, str, object]
+DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultDeltaResultItems, str]
 
 
 class DeltaMCPServerToolResultDelta(BaseModel):

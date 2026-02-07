@@ -17,19 +17,19 @@
 
 from __future__ import annotations
 
-from typing import Union, Iterable
+from typing import Union
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-from .text_content_param import TextContentParam
+from .._types import SequenceNotStr
 from .image_content_param import ImageContentParam
 
 __all__ = ["MCPServerToolResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[TextContentParam, ImageContentParam]
+ResultItemsItem: TypeAlias = Union[str, ImageContentParam, object]
 
 
 class ResultItems(TypedDict, total=False):
-    items: Iterable[ResultItemsItem]
+    items: SequenceNotStr[ResultItemsItem]
 
 
 Result: TypeAlias = Union[ResultItems, str, object]

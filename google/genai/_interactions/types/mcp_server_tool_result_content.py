@@ -19,12 +19,11 @@ from typing import List, Union, Optional
 from typing_extensions import Literal, TypeAlias
 
 from .._models import BaseModel
-from .text_content import TextContent
 from .image_content import ImageContent
 
 __all__ = ["MCPServerToolResultContent", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
+ResultItemsItem: TypeAlias = Union[str, ImageContent, object]
 
 
 class ResultItems(BaseModel):

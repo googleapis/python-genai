@@ -25,7 +25,7 @@ from .image_content_param import ImageContentParam
 
 __all__ = ["FunctionResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[TextContentParam, ImageContentParam]
+ResultItemsItem: TypeAlias = Union[TextContentParam, ImageContentParam, object]
 
 
 class ResultItems(TypedDict, total=False):
