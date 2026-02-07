@@ -24,7 +24,7 @@ from .image_content import ImageContent
 
 __all__ = ["FunctionResultContent", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[TextContent, ImageContent, object]
+ResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
 
 class ResultItems(BaseModel):
