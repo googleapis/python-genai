@@ -239,6 +239,11 @@ def _CreateTuningJobConfig_to_mldev(
   if getv(from_object, ['output_uri']) is not None:
     raise ValueError('output_uri parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['encryption_spec']) is not None:
+    raise ValueError(
+        'encryption_spec parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -510,6 +515,13 @@ def _CreateTuningJobConfig_to_vertex(
 
   if getv(from_object, ['output_uri']) is not None:
     setv(parent_object, ['outputUri'], getv(from_object, ['output_uri']))
+
+  if getv(from_object, ['encryption_spec']) is not None:
+    setv(
+        parent_object,
+        ['encryptionSpec'],
+        getv(from_object, ['encryption_spec']),
+    )
 
   return to_object
 
