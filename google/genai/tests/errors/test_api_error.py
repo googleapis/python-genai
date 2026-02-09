@@ -23,7 +23,6 @@ import pickle
 
 import httpx
 import pytest
-import websockets
 
 from ... import errors
 
