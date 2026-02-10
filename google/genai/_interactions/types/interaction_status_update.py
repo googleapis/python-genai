@@ -33,4 +33,4 @@ class InteractionStatusUpdate(BaseModel):
 
     interaction_id: Optional[str] = None
 
-    status: Optional[Literal["in_progress", "requires_action", "completed", "failed", "cancelled"]] = None
+    status: Optional[Literal["in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete"]] = None
