@@ -592,7 +592,6 @@ class BaseApiClient:
       raise ValueError(
           'base_url must be set when base_url_resource_scope is set.'
       )
-    print('validated_http_options: ', validated_http_options)
 
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
