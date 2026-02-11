@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.63.0](https://github.com/googleapis/python-genai/compare/v1.62.0...v1.63.0) (2026-02-11)
+
+
+### Features
+
+* Add INCOMPLETE status to Interaction. ([1a84605](https://github.com/googleapis/python-genai/commit/1a84605bcac5445c8e13658b8bd7ff1860f10f1b))
+* Support encryption_spec in tuning job creation configuration for GenAI SDK ([057d6f0](https://github.com/googleapis/python-genai/commit/057d6f077b0a6d13c843fff0479027f5f7369113))
+
+
+### Bug Fixes
+
+* Base_url and global location parsing ([2c40555](https://github.com/googleapis/python-genai/commit/2c40555c54267b1e9ba10dfafe1bc73f0cca43d4))
+* Remove build warning due to extra comma: assertion on a tuple is always true ([1cc2c2d](https://github.com/googleapis/python-genai/commit/1cc2c2d411576e9858d4a4ae33bbf12975700a9f))
+* Remove debug print statement. ([60c0a2f](https://github.com/googleapis/python-genai/commit/60c0a2ffb4c1e87374c02958b1cb42748ba84ff1))
+* Remove unused import of `websockets` ([3b82b5f](https://github.com/googleapis/python-genai/commit/3b82b5f382c6fe9fa820a59c3938d04cef3ae24e))
+
+
+### Documentation
+
+* Add docstrings to C# and Python SDK Operations methods. ([f2e85a3](https://github.com/googleapis/python-genai/commit/f2e85a3911c431d4494a4e3712d0eed1a2e6c069))
+* Regenerate docs for 1.62.0 ([455ec26](https://github.com/googleapis/python-genai/commit/455ec260be3deef68d59eda6d7ed2b53505d3a4f))
+
 ## [1.62.0](https://github.com/googleapis/python-genai/compare/v1.61.0...v1.62.0) (2026-02-04)
 
 
