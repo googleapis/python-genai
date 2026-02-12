@@ -2155,6 +2155,9 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['labels']) is not None:
     raise ValueError('labels parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['resize_mode']) is not None:
+    raise ValueError('resize_mode parameter is not supported in Gemini API.')
+
   return to_object
 
 
@@ -2280,6 +2283,13 @@ def _GenerateVideosConfig_to_vertex(
 
   if getv(from_object, ['labels']) is not None:
     setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  if getv(from_object, ['resize_mode']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'resizeMode'],
+        getv(from_object, ['resize_mode']),
+    )
 
   return to_object
 
