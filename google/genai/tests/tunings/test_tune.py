@@ -348,6 +348,114 @@ def test_eval_config_with_metrics(client):
     "config.getoption('--private')",
     reason="Skipping in pre-public tests"
 )
+def test_eval_config_with_unified_metrics(client):
+  """Tests tuning with eval config metrics."""
+  if client._api_client.vertexai:
+    evaluation_config=genai_types.EvaluationConfig(
+        metrics=[
+            genai_types.UnifiedMetric(
+                pointwise_metric_spec=genai_types.PointwiseMetricSpec(
+                  metric_prompt_template=(
+                      "How well does the response address the prompt?: "
+                      "PROMPT: {request}\n RESPONSE: {response}\n"
+                  ),
+                  system_instruction=(
+                      "You are a cat. Make all evaluations from this perspective."
+                  ),
+                  custom_output_format_config=genai_types.CustomOutputFormatConfig(
+                      return_raw_output=True
+                  ),
+                )
+            ),
+            genai_types.UnifiedMetric(
+                bleu_spec=genai_types.BleuSpec(use_effective_order=True)
+            ),
+            genai_types.UnifiedMetric(
+                rouge_spec=genai_types.RougeSpec(rouge_type="rouge1")
+            ),
+        ],
+        output_config=genai_types.OutputConfig(
+            gcs_destination=genai_types.GcsDestination(
+                output_uri_prefix="gs://sararob_test/"
+            )
+        ),
+        autorater_config=genai_types.AutoraterConfig(
+            sampling_count=1,
+            autorater_model="test-model",
+        ),
+    )
+    tuning_job = client.tunings.tune(
+      base_model="gemini-2.5-flash",
+      training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
+      config=genai_types.CreateTuningJobConfig(
+          tuned_model_display_name="tuning job with eval config",
+          epoch_count=1,
+          learning_rate_multiplier=1.0,
+          adapter_size="ADAPTER_SIZE_ONE",
+          validation_dataset=genai_types.TuningValidationDataset(
+              gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_validation_data.jsonl"
+          ),
+          evaluation_config=evaluation_config,
+      ),
+    )
+    assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
+
+
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="Skipping in pre-public tests"
+)
+def test_eval_config_with_metrics_dict(client):
+  """Tests tuning with eval config metrics."""
+  if client._api_client.vertexai:
+    evaluation_config=genai_types.EvaluationConfig(
+        metrics = [
+            {
+                "name": "prompt-relevance",
+                "prompt_template": "How well does the response address the prompt?: PROMPT: {request}\n RESPONSE: {response}\n",
+                "return_raw_output": True,
+                "judge_model_system_instruction": "You are a cat. Make all evaluations from this perspective.",
+            },
+            {"name": "bleu"},
+            {"name": "rouge_1"},
+            {
+                "bleu_spec": {
+                    "use_effective_order": True
+                }
+            },
+        ],
+        output_config=genai_types.OutputConfig(
+            gcs_destination=genai_types.GcsDestination(
+                output_uri_prefix="gs://sararob_test/"
+            )
+        ),
+        autorater_config=genai_types.AutoraterConfig(
+            sampling_count=1,
+            autorater_model="test-model",
+        ),
+    )
+    tuning_job = client.tunings.tune(
+      base_model="gemini-2.5-flash",
+      training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
+      config=genai_types.CreateTuningJobConfig(
+          tuned_model_display_name="tuning job with eval config",
+          epoch_count=1,
+          learning_rate_multiplier=1.0,
+          adapter_size="ADAPTER_SIZE_ONE",
+          validation_dataset=genai_types.TuningValidationDataset(
+              gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_validation_data.jsonl"
+          ),
+          evaluation_config=evaluation_config,
+      ),
+    )
+    assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
+
+
+
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="Skipping in pre-public tests"
+)
 @pytest.mark.asyncio
 async def test_eval_config_async(client):
   """Tests tuning with eval config."""
