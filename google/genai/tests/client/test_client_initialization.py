@@ -449,6 +449,42 @@ def test_vertexai_default_location_to_global_with_explicit_project_and_env_apike
     assert not client.models._api_client.api_key
 
 
+def test_vertexai_default_location_to_global_with_vertexai_base_url(
+    monkeypatch,
+):
+  # Test case 4: When project and vertex base url are set
+  project_id = "env_project_id"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+    client = Client(
+        vertexai=True,
+        http_options={'base_url': 'https://fake-url.googleapis.com'},
+    )
+    # Implicit project takes precedence over implicit api_key
+    assert client.models._api_client.location == "global"
+    assert client.models._api_client.project == project_id
+
+
+def test_vertexai_default_location_to_global_with_arbitrary_base_url(
+    monkeypatch,
+):
+  # Test case 5: When project and arbitrary base url (proxy) are set
+  project_id = "env_project_id"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+    client = Client(
+        vertexai=True,
+        http_options={'base_url': 'https://fake-url.com'},
+    )
+    # Implicit project takes precedence over implicit api_key
+    assert not client.models._api_client.location
+    assert not client.models._api_client.project
+
+
 def test_vertexai_default_location_to_global_with_env_project_and_env_apikey(
     monkeypatch,
 ):

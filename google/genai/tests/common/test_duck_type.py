@@ -2,7 +2,7 @@ import unittest
 
 import pydantic
 
-from ... import _transformers
+from ... import _common
 
 
 class TestIsDuckTypeOf(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestIsDuckTypeOf(unittest.TestCase):
         field4="c",
         field5="d",
     )
-    self.assertTrue(_transformers._is_duck_type_of(obj, self.FakePydanticModel))
+    self.assertTrue(_common.is_duck_type_of(obj, self.FakePydanticModel))
 
   def test_is_duck_type_of_true_for_duck_typed_object(self):
     class DuckTypedObject:
@@ -41,7 +41,7 @@ class TestIsDuckTypeOf(unittest.TestCase):
         self.field5 = "d"
 
     obj = DuckTypedObject()
-    self.assertTrue(_transformers._is_duck_type_of(obj, self.FakePydanticModel))
+    self.assertTrue(_common.is_duck_type_of(obj, self.FakePydanticModel))
 
   def test_is_duck_type_of_false_for_different_many_fields(self):
     class DifferentFieldsObject:
@@ -51,7 +51,7 @@ class TestIsDuckTypeOf(unittest.TestCase):
 
     obj = DifferentFieldsObject()
     self.assertFalse(
-        _transformers._is_duck_type_of(obj, self.FakePydanticModel)
+        _common.is_duck_type_of(obj, self.FakePydanticModel)
     )
 
   def test_is_duck_type_of_false_for_missing_fields(self):
@@ -59,12 +59,12 @@ class TestIsDuckTypeOf(unittest.TestCase):
     obj = self.FakePydanticModelWithLessFields(
         field1="a", field2=1, field3="b", field4="c"
     )
-    self.assertFalse(_transformers._is_duck_type_of(obj, self.FakePydanticModel))
+    self.assertFalse(_common.is_duck_type_of(obj, self.FakePydanticModel))
 
   def test_is_duck_type_of_false_for_dict(self):
     obj = {"field1": "a", "field2": 1}
     self.assertFalse(
-        _transformers._is_duck_type_of(obj, self.FakePydanticModel)
+        _common.is_duck_type_of(obj, self.FakePydanticModel)
     )
 
   def test_is_duck_type_of_false_for_non_pydantic_class(self):
@@ -75,7 +75,7 @@ class TestIsDuckTypeOf(unittest.TestCase):
       pass
 
     obj = SomeObject()
-    self.assertFalse(_transformers._is_duck_type_of(obj, NonPydanticModel))
+    self.assertFalse(_common.is_duck_type_of(obj, NonPydanticModel))
 
   def test_is_duck_type_of_true_with_extra_fields(self):
     class ExtraFieldsObject:
@@ -89,7 +89,7 @@ class TestIsDuckTypeOf(unittest.TestCase):
         self.field6 = "extra"
 
     obj = ExtraFieldsObject()
-    self.assertTrue(_transformers._is_duck_type_of(obj, self.FakePydanticModel))
+    self.assertTrue(_common.is_duck_type_of(obj, self.FakePydanticModel))
 
 
 if __name__ == "__main__":

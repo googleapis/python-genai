@@ -23,7 +23,6 @@ import pickle
 
 import httpx
 import pytest
-import websockets
 
 from ... import errors
 
@@ -269,7 +268,7 @@ def test_constructor_with_websocket_connection_closed_error():
   assert (
       actual_error.details
       == 'At most one response modality can be specified in the setup request.'
-      ' To enable simultaneous transcription and audio output,',
+      ' To enable simultaneous transcription and audio output,'
   )
   assert actual_error.status == None
   assert actual_error.message == None

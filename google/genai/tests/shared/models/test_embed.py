@@ -23,7 +23,7 @@ from ... import pytest_helper
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_embed',
-        parameters=genai_types._EmbedContentParameters(
+        parameters=genai_types.EmbedContentParameters(
             model='text-embedding-004',
             contents='Hello world!',
         ),
