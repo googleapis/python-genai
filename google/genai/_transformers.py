@@ -1348,3 +1348,12 @@ def t_metrics(
         )
       metrics_payload.append(metric_payload_item)
     return metrics_payload
+
+
+def t_is_vertex_embed_content_model(model: str) -> bool:
+  return (
+      # Gemini Embeddings except gemini-embedding-001.
+      'gemini' in model and model != 'gemini-embedding-001'
+      # Open-source MaaS embedding models.
+      or 'maas' in model
+  )

@@ -684,6 +684,15 @@ class Environment(_common.CaseInSensitiveEnum):
   """Operates in a web browser."""
 
 
+class EmbeddingApiType(_common.CaseInSensitiveEnum):
+  """Enum representing the Vertex embedding API to use."""
+
+  PREDICT = 'PREDICT'
+  """predict API endpoint (default)"""
+  EMBED_CONTENT = 'EMBED_CONTENT'
+  """embedContent API Endpoint"""
+
+
 class SafetyFilterLevel(_common.CaseInSensitiveEnum):
   """Enum that controls the safety filter level for objectionable content."""
 
@@ -7193,8 +7202,8 @@ class EmbedContentConfigDict(TypedDict, total=False):
 EmbedContentConfigOrDict = Union[EmbedContentConfig, EmbedContentConfigDict]
 
 
-class _EmbedContentParameters(_common.BaseModel):
-  """Parameters for the embed_content method."""
+class _EmbedContentParametersPrivate(_common.BaseModel):
+  """Parameters for the _embed_content method."""
 
   model: Optional[str] = Field(
       default=None,
@@ -7206,6 +7215,16 @@ class _EmbedContentParameters(_common.BaseModel):
       description="""The content to embed. Only the `parts.text` fields will be counted.
       """,
   )
+  content: Optional[ContentUnion] = Field(
+      default=None,
+      description="""The single content to embed. Only the `parts.text` fields will be counted.
+      """,
+  )
+  embedding_api_type: Optional[EmbeddingApiType] = Field(
+      default=None,
+      description="""The Vertex embedding API to use.
+      """,
+  )
   config: Optional[EmbedContentConfig] = Field(
       default=None,
       description="""Configuration that contains optional parameters.
@@ -7213,8 +7232,8 @@ class _EmbedContentParameters(_common.BaseModel):
   )
 
 
-class _EmbedContentParametersDict(TypedDict, total=False):
-  """Parameters for the embed_content method."""
+class _EmbedContentParametersPrivateDict(TypedDict, total=False):
+  """Parameters for the _embed_content method."""
 
   model: Optional[str]
   """ID of the model to use. For a list of models, see `Google models
@@ -7224,13 +7243,21 @@ class _EmbedContentParametersDict(TypedDict, total=False):
   """The content to embed. Only the `parts.text` fields will be counted.
       """
 
+  content: Optional[ContentUnionDict]
+  """The single content to embed. Only the `parts.text` fields will be counted.
+      """
+
+  embedding_api_type: Optional[EmbeddingApiType]
+  """The Vertex embedding API to use.
+      """
+
   config: Optional[EmbedContentConfigDict]
   """Configuration that contains optional parameters.
       """
 
 
-_EmbedContentParametersOrDict = Union[
-    _EmbedContentParameters, _EmbedContentParametersDict
+_EmbedContentParametersPrivateOrDict = Union[
+    _EmbedContentParametersPrivate, _EmbedContentParametersPrivateDict
 ]
 
 
@@ -18303,6 +18330,47 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
 
 CreateTuningJobParametersOrDict = Union[
     CreateTuningJobParameters, CreateTuningJobParametersDict
+]
+
+
+class EmbedContentParameters(_common.BaseModel):
+  """Parameters for the embed_content method."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""The content to embed. Only the `parts.text` fields will be counted.
+      """,
+  )
+  config: Optional[EmbedContentConfig] = Field(
+      default=None,
+      description="""Configuration that contains optional parameters.
+      """,
+  )
+
+
+class EmbedContentParametersDict(TypedDict, total=False):
+  """Parameters for the embed_content method."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  contents: Optional[ContentListUnionDict]
+  """The content to embed. Only the `parts.text` fields will be counted.
+      """
+
+  config: Optional[EmbedContentConfigDict]
+  """Configuration that contains optional parameters.
+      """
+
+
+EmbedContentParametersOrDict = Union[
+    EmbedContentParameters, EmbedContentParametersDict
 ]
 
 

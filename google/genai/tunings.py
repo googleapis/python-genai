@@ -266,7 +266,6 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['validation_dataset']), to_object, root_object
           ),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['validation_dataset']) is not None:
       setv(
@@ -276,7 +275,6 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['validation_dataset']), to_object, root_object
           ),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['validation_dataset']) is not None:
       setv(
@@ -307,7 +305,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'epochCount'],
           getv(from_object, ['epoch_count']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['epoch_count']) is not None:
       setv(
@@ -315,7 +312,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['preferenceOptimizationSpec', 'hyperParameters', 'epochCount'],
           getv(from_object, ['epoch_count']),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['epoch_count']) is not None:
       setv(
@@ -334,7 +330,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'learningRateMultiplier'],
           getv(from_object, ['learning_rate_multiplier']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['learning_rate_multiplier']) is not None:
       setv(
@@ -346,7 +341,6 @@ def _CreateTuningJobConfig_to_vertex(
           ],
           getv(from_object, ['learning_rate_multiplier']),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['learning_rate_multiplier']) is not None:
       setv(
@@ -365,7 +359,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'exportLastCheckpointOnly'],
           getv(from_object, ['export_last_checkpoint_only']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['export_last_checkpoint_only']) is not None:
       setv(
@@ -373,7 +366,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['preferenceOptimizationSpec', 'exportLastCheckpointOnly'],
           getv(from_object, ['export_last_checkpoint_only']),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['export_last_checkpoint_only']) is not None:
       setv(
@@ -392,7 +384,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'adapterSize'],
           getv(from_object, ['adapter_size']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['adapter_size']) is not None:
       setv(
@@ -400,7 +391,6 @@ def _CreateTuningJobConfig_to_vertex(
           ['preferenceOptimizationSpec', 'hyperParameters', 'adapterSize'],
           getv(from_object, ['adapter_size']),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['adapter_size']) is not None:
       setv(
@@ -461,7 +451,6 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['evaluation_config']), to_object, root_object
           ),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['evaluation_config']) is not None:
       setv(
@@ -471,7 +460,6 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['evaluation_config']), to_object, root_object
           ),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['evaluation_config']) is not None:
       setv(
@@ -1059,7 +1047,6 @@ def _TuningDataset_to_vertex(
           ['supervisedTuningSpec', 'trainingDatasetUri'],
           getv(from_object, ['gcs_uri']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['gcs_uri']) is not None:
       setv(
@@ -1067,7 +1054,6 @@ def _TuningDataset_to_vertex(
           ['preferenceOptimizationSpec', 'trainingDatasetUri'],
           getv(from_object, ['gcs_uri']),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['gcs_uri']) is not None:
       setv(
@@ -1086,7 +1072,6 @@ def _TuningDataset_to_vertex(
           ['supervisedTuningSpec', 'trainingDatasetUri'],
           getv(from_object, ['vertex_dataset_resource']),
       )
-
   elif discriminator == 'PREFERENCE_TUNING':
     if getv(from_object, ['vertex_dataset_resource']) is not None:
       setv(
@@ -1094,7 +1079,6 @@ def _TuningDataset_to_vertex(
           ['preferenceOptimizationSpec', 'trainingDatasetUri'],
           getv(from_object, ['vertex_dataset_resource']),
       )
-
   elif discriminator == 'DISTILLATION':
     if getv(from_object, ['vertex_dataset_resource']) is not None:
       setv(

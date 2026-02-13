@@ -710,41 +710,81 @@ def _EmbedContentConfig_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
-  if getv(from_object, ['task_type']) is not None:
-    setv(
-        parent_object,
-        ['instances[]', 'task_type'],
-        getv(from_object, ['task_type']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['task_type']) is not None:
+      setv(
+          parent_object,
+          ['instances[]', 'task_type'],
+          getv(from_object, ['task_type']),
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['task_type']) is not None:
+      setv(parent_object, ['taskType'], getv(from_object, ['task_type']))
 
-  if getv(from_object, ['title']) is not None:
-    setv(parent_object, ['instances[]', 'title'], getv(from_object, ['title']))
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['title']) is not None:
+      setv(
+          parent_object, ['instances[]', 'title'], getv(from_object, ['title'])
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['title']) is not None:
+      setv(parent_object, ['title'], getv(from_object, ['title']))
 
-  if getv(from_object, ['output_dimensionality']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'outputDimensionality'],
-        getv(from_object, ['output_dimensionality']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['output_dimensionality']) is not None:
+      setv(
+          parent_object,
+          ['parameters', 'outputDimensionality'],
+          getv(from_object, ['output_dimensionality']),
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['output_dimensionality']) is not None:
+      setv(
+          parent_object,
+          ['outputDimensionality'],
+          getv(from_object, ['output_dimensionality']),
+      )
 
-  if getv(from_object, ['mime_type']) is not None:
-    setv(
-        parent_object,
-        ['instances[]', 'mimeType'],
-        getv(from_object, ['mime_type']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['mime_type']) is not None:
+      setv(
+          parent_object,
+          ['instances[]', 'mimeType'],
+          getv(from_object, ['mime_type']),
+      )
 
-  if getv(from_object, ['auto_truncate']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'autoTruncate'],
-        getv(from_object, ['auto_truncate']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['auto_truncate']) is not None:
+      setv(
+          parent_object,
+          ['parameters', 'autoTruncate'],
+          getv(from_object, ['auto_truncate']),
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['auto_truncate']) is not None:
+      setv(
+          parent_object, ['autoTruncate'], getv(from_object, ['auto_truncate'])
+      )
 
   return to_object
 
 
-def _EmbedContentParameters_to_mldev(
+def _EmbedContentParametersPrivate_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -770,6 +810,11 @@ def _EmbedContentParameters_to_mldev(
         ],
     )
 
+  if getv(from_object, ['content']) is not None:
+    _Content_to_mldev(
+        t.t_content(getv(from_object, ['content'])), to_object, root_object
+    )
+
   if getv(from_object, ['config']) is not None:
     _EmbedContentConfig_to_mldev(
         getv(from_object, ['config']), to_object, root_object
@@ -783,7 +828,7 @@ def _EmbedContentParameters_to_mldev(
   return to_object
 
 
-def _EmbedContentParameters_to_vertex(
+def _EmbedContentParametersPrivate_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -797,17 +842,28 @@ def _EmbedContentParameters_to_vertex(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['instances[]', 'content'],
-        [
-            item
-            for item in t.t_contents_for_embed(
-                api_client, getv(from_object, ['contents'])
-            )
-        ],
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['contents']) is not None:
+      setv(
+          to_object,
+          ['instances[]', 'content'],
+          [
+              item
+              for item in t.t_contents_for_embed(
+                  api_client, getv(from_object, ['contents'])
+              )
+          ],
+      )
+
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['content']) is not None:
+      setv(to_object, ['content'], t.t_content(getv(from_object, ['content'])))
 
   if getv(from_object, ['config']) is not None:
     _EmbedContentConfig_to_vertex(
@@ -864,6 +920,19 @@ def _EmbedContentResponse_from_vertex(
 
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(root_object, ['embedding_api_type']) == 'EMBED_CONTENT':
+    embedding = getv(from_object, ['embedding'])
+    usage_metadata = getv(from_object, ['usageMetadata'])
+    truncated = getv(from_object, ['truncated'])
+    if embedding:
+      stats = {}
+      if usage_metadata and usage_metadata.get('promptTokenCount'):
+        stats['token_count'] = usage_metadata['promptTokenCount']
+      if truncated:
+        stats['truncated'] = truncated
+      embedding['statistics'] = stats
+      setv(to_object, ['embeddings'], [embedding])
 
   return to_object
 
@@ -4329,11 +4398,17 @@ class Models(_api_module.BaseModule):
       self._api_client._verify_response(return_value)
       yield return_value
 
-  def embed_content(
+  def _embed_content(
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: Optional[
+          Union[types.ContentListUnion, types.ContentListUnionDict]
+      ] = None,
+      content: Optional[
+          Union[types.ContentUnion, types.ContentUnionDict]
+      ] = None,
+      embedding_api_type: Optional[types.EmbeddingApiType] = None,
       config: Optional[types.EmbedContentConfigOrDict] = None,
   ) -> types.EmbedContentResponse:
     """Calculates embeddings for the given contents. Only text is supported.
@@ -4359,25 +4434,28 @@ class Models(_api_module.BaseModule):
       )
     """
 
-    parameter_model = types._EmbedContentParameters(
+    parameter_model = types._EmbedContentParametersPrivate(
         model=model,
         contents=contents,
+        content=content,
+        embedding_api_type=embedding_api_type,
         config=config,
     )
 
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _EmbedContentParameters_to_vertex(
+      request_dict = _EmbedContentParametersPrivate_to_vertex(
           self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
+      endpoint_url = '{model}:embedContent' if t.t_is_vertex_embed_content_model(parameter_model.model) else '{model}:predict'  # type: ignore[arg-type]
       if request_url_dict:
-        path = '{model}:predict'.format_map(request_url_dict)
+        path = endpoint_url.format_map(request_url_dict)
       else:
-        path = '{model}:predict'
+        path = endpoint_url
     else:
-      request_dict = _EmbedContentParameters_to_mldev(
+      request_dict = _EmbedContentParametersPrivate_to_mldev(
           self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
@@ -5357,6 +5435,75 @@ class Models(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  def embed_content(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.EmbedContentConfigOrDict] = None,
+  ) -> types.EmbedContentResponse:
+    """Calculates embeddings for the given contents.
+
+    Args:
+      model (str): The model to use.
+      contents (list[Content]): The contents to embed.
+      config (EmbedContentConfig): Optional configuration for embeddings.
+
+    Usage:
+
+    .. code-block:: python
+
+      embeddings = client.models.embed_content(
+          model= 'text-embedding-004',
+          contents=[
+              'What is your name?',
+              'What is your favorite color?',
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+
+      # Multimodal embeddings are only supported for the Vertex AI API.
+      multimodal_embeddings = client.models.embed_content(
+          model='gemini-embedding-2-exp-11-2025',
+          contents=[
+              types.Part.from_uri(
+                  file_uri='gs://generativeai-downloads/images/scones.jpg',
+                  mime_type='image/jpeg',
+              ),
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+    """
+    if not self._api_client.vertexai:
+      return self._embed_content(model=model, contents=contents, config=config)
+
+    if t.t_is_vertex_embed_content_model(model):
+      normalized_contents = t.t_contents(contents)
+      if len(normalized_contents) > 1:
+        raise ValueError(
+            'The embedContent API for this model only supports one content at a'
+            ' time.'
+        )
+      return self._embed_content(
+          model=model,
+          contents=None,
+          content=normalized_contents[0],
+          embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
+          config=config,
+      )
+    else:
+      return self._embed_content(
+          model=model,
+          content=None,
+          contents=contents,
+          embedding_api_type=types.EmbeddingApiType.PREDICT,
+          config=config,
+      )
+
   def generate_content(
       self,
       *,
@@ -6215,11 +6362,17 @@ class AsyncModels(_api_module.BaseModule):
 
     return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 
-  async def embed_content(
+  async def _embed_content(
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: Optional[
+          Union[types.ContentListUnion, types.ContentListUnionDict]
+      ] = None,
+      content: Optional[
+          Union[types.ContentUnion, types.ContentUnionDict]
+      ] = None,
+      embedding_api_type: Optional[types.EmbeddingApiType] = None,
       config: Optional[types.EmbedContentConfigOrDict] = None,
   ) -> types.EmbedContentResponse:
     """Calculates embeddings for the given contents. Only text is supported.
@@ -6245,25 +6398,28 @@ class AsyncModels(_api_module.BaseModule):
       )
     """
 
-    parameter_model = types._EmbedContentParameters(
+    parameter_model = types._EmbedContentParametersPrivate(
         model=model,
         contents=contents,
+        content=content,
+        embedding_api_type=embedding_api_type,
         config=config,
     )
 
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _EmbedContentParameters_to_vertex(
+      request_dict = _EmbedContentParametersPrivate_to_vertex(
           self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
+      endpoint_url = '{model}:embedContent' if t.t_is_vertex_embed_content_model(parameter_model.model) else '{model}:predict'  # type: ignore[arg-type]
       if request_url_dict:
-        path = '{model}:predict'.format_map(request_url_dict)
+        path = endpoint_url.format_map(request_url_dict)
       else:
-        path = '{model}:predict'
+        path = endpoint_url
     else:
-      request_dict = _EmbedContentParameters_to_mldev(
+      request_dict = _EmbedContentParametersPrivate_to_mldev(
           self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
@@ -7922,3 +8078,72 @@ class AsyncModels(_api_module.BaseModule):
         source=source,
         config=config,
     )
+
+  async def embed_content(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.EmbedContentConfigOrDict] = None,
+  ) -> types.EmbedContentResponse:
+    """Calculates embeddings for the given contents.
+
+    Args:
+      model (str): The model to use.
+      contents (list[Content]): The contents to embed.
+      config (EmbedContentConfig): Optional configuration for embeddings.
+
+    Usage:
+
+    .. code-block:: python
+
+      embeddings = await client.aio.models.embed_content(
+          model= 'text-embedding-004',
+          contents=[
+              'What is your name?',
+              'What is your favorite color?',
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+
+      # Multimodal embeddings are only supported for the Vertex AI API.
+      multimodal_embeddings = await client.aio.models.embed_content(
+          model='gemini-embedding-2-exp-11-2025',
+          contents=[
+              types.Part.from_uri(
+                  file_uri='gs://generativeai-downloads/images/scones.jpg',
+                  mime_type='image/jpeg',
+              ),
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+    """
+    if not self._api_client.vertexai:
+      return await self._embed_content(
+          model=model, contents=contents, config=config
+      )
+    if t.t_is_vertex_embed_content_model(model):
+      normalized_contents = t.t_contents(contents)
+      if len(normalized_contents) > 1:
+        raise ValueError(
+            'The embedContent API for this model only supports one content at a'
+            ' time.'
+        )
+      return await self._embed_content(
+          model=model,
+          contents=contents,
+          content=normalized_contents[0],
+          embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
+          config=config,
+      )
+    else:
+      return await self._embed_content(
+          model=model,
+          contents=contents,
+          embedding_api_type=types.EmbeddingApiType.PREDICT,
+          config=config,
+      )
