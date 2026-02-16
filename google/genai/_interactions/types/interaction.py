@@ -54,8 +54,8 @@ AgentConfig: TypeAlias = Annotated[
 ]
 
 Input: TypeAlias = Union[
-    str,
     List[Content],
+    str,
     List[Turn],
     TextContent,
     ImageContent,
@@ -105,10 +105,10 @@ class Interaction(BaseModel):
     """The name of the `Agent` used for generating the interaction."""
 
     agent_config: Optional[AgentConfig] = None
-    """Configuration for the agent."""
+    """Configuration parameters for the agent interaction."""
 
     input: Optional[Input] = None
-    """The inputs for the interaction."""
+    """The input for the interaction."""
 
     model: Optional[Model] = None
     """The name of the `Model` used for generating the interaction."""

@@ -62,7 +62,7 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     api_version: str
 
     input: Required[Input]
-    """The inputs for the interaction."""
+    """The input for the interaction."""
 
     model: Required[ModelParam]
     """The name of the `Model` used for generating the interaction."""
@@ -99,8 +99,8 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
 
 
 Input: TypeAlias = Union[
-    str,
     Iterable[ContentParam],
+    str,
     Iterable[TurnParam],
     TextContentParam,
     ImageContentParam,
@@ -130,10 +130,10 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     """The name of the `Agent` used for generating the interaction."""
 
     input: Required[Input]
-    """The inputs for the interaction."""
+    """The input for the interaction."""
 
     agent_config: AgentConfig
-    """Configuration for the agent."""
+    """Configuration parameters for the agent interaction."""
 
     background: bool
     """Input only. Whether to run the model interaction in the background."""
