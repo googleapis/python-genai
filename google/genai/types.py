@@ -11116,6 +11116,9 @@ class EvaluationConfig(_common.BaseModel):
   autorater_config: Optional[AutoraterConfig] = Field(
       default=None, description="""Autorater config for evaluation."""
   )
+  inference_generation_config: Optional[GenerationConfig] = Field(
+      default=None, description="""Generation config for inference."""
+  )
 
 
 class EvaluationConfigDict(TypedDict, total=False):
@@ -11129,6 +11132,9 @@ class EvaluationConfigDict(TypedDict, total=False):
 
   autorater_config: Optional[AutoraterConfigDict]
   """Autorater config for evaluation."""
+
+  inference_generation_config: Optional[GenerationConfigDict]
+  """Generation config for inference."""
 
 
 EvaluationConfigOrDict = Union[EvaluationConfig, EvaluationConfigDict]
