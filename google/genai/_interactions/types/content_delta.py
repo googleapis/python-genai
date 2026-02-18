@@ -162,7 +162,7 @@ class DeltaFunctionResultDeltaResultItems(BaseModel):
     items: Optional[List[DeltaFunctionResultDeltaResultItemsItem]] = None
 
 
-DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResultItems, str, object]
+DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResultItems, str]
 
 
 class DeltaFunctionResultDelta(BaseModel):
@@ -268,7 +268,7 @@ class DeltaMCPServerToolResultDeltaResultItems(BaseModel):
     items: Optional[List[DeltaMCPServerToolResultDeltaResultItemsItem]] = None
 
 
-DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultDeltaResultItems, str, object]
+DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultDeltaResultItems, str]
 
 
 class DeltaMCPServerToolResultDelta(BaseModel):

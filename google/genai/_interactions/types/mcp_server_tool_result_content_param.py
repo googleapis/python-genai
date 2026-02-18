@@ -32,7 +32,7 @@ class ResultItems(TypedDict, total=False):
     items: Iterable[ResultItemsItem]
 
 
-Result: TypeAlias = Union[ResultItems, str, object]
+Result: TypeAlias = Union[ResultItems, str]
 
 
 class MCPServerToolResultContentParam(TypedDict, total=False):

@@ -31,7 +31,7 @@ class ResultItems(BaseModel):
     items: Optional[List[ResultItemsItem]] = None
 
 
-Result: TypeAlias = Union[ResultItems, str, object]
+Result: TypeAlias = Union[ResultItems, str]
 
 
 class MCPServerToolResultContent(BaseModel):
