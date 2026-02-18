@@ -26,7 +26,7 @@ __all__ = ["DeepResearchAgentConfig"]
 class DeepResearchAgentConfig(BaseModel):
     """Configuration for the Deep Research agent."""
 
+    type: Literal["deep-research"]
+
     thinking_summaries: Optional[Literal["auto", "none"]] = None
     """Whether to include thought summaries in the response."""
-
-    type: Optional[Literal["deep-research"]] = None

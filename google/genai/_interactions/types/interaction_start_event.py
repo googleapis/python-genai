@@ -25,12 +25,12 @@ __all__ = ["InteractionStartEvent"]
 
 
 class InteractionStartEvent(BaseModel):
+    event_type: Literal["interaction.start"]
+
     event_id: Optional[str] = None
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    event_type: Optional[Literal["interaction.start"]] = None
 
     interaction: Optional[Interaction] = None
     """The Interaction resource."""
