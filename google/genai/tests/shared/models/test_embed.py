@@ -24,7 +24,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_embed',
         parameters=genai_types.EmbedContentParameters(
-            model='text-embedding-004',
+            model='gemini-embedding-001',
             contents='Hello world!',
         ),
     ),
