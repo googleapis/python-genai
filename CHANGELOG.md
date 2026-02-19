@@ -1,13 +1,5 @@
 # Changelog
 
-## [1.64.0](https://github.com/googleapis/python-genai/compare/v1.63.0...v1.64.0) (2026-02-18)
-
-
-### Features
-
-* Add UnifiedMetric support to Vertex Tuning evaluation config ([9a9908a](https://github.com/googleapis/python-genai/commit/9a9908a9605756a94404359187cad09b21c094e0))
-* Support multimodal embedding for Gemini Embedding 2.0 and support MaaS models in Models.embed_content() (Vertex AI API) ([af40cc6](https://github.com/googleapis/python-genai/commit/af40cc629751b2d389eecb75741e9c3531cc8e6e))
-
 ## [1.63.0](https://github.com/googleapis/python-genai/compare/v1.62.0...v1.63.0) (2026-02-11)
 
 

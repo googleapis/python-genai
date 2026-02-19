@@ -939,7 +939,7 @@ response = client.models.generate_content(
         'response_json_schema': user_profile
     },
 )
-print(response.parsed)
+print(response.text)
 ```
 
 #### Pydantic Model Schema support
@@ -966,7 +966,7 @@ response = client.models.generate_content(
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
-        response_schema=CountryInfo,
+        response_json_schema=CountryInfo.model_json_schema(),
     ),
 )
 print(response.text)
@@ -980,7 +980,7 @@ response = client.models.generate_content(
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
-        response_schema={
+        response_json_schema={
             'required': [
                 'name',
                 'population',
@@ -1002,60 +1002,6 @@ response = client.models.generate_content(
             'type': 'OBJECT',
         },
     ),
-)
-print(response.text)
-```
-
-### Enum Response Schema
-
-#### Text Response
-
-You can set response_mime_type to 'text/x.enum' to return one of those enum
-values as the response.
-
-```python
-from enum import Enum
-
-class InstrumentEnum(Enum):
-    PERCUSSION = 'Percussion'
-    STRING = 'String'
-    WOODWIND = 'Woodwind'
-    BRASS = 'Brass'
-    KEYBOARD = 'Keyboard'
-
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents='What instrument plays multiple notes at once?',
-    config={
-        'response_mime_type': 'text/x.enum',
-        'response_schema': InstrumentEnum,
-    },
-)
-print(response.text)
-```
-
-#### JSON Response
-
-You can also set `response_mime_type` to `'application/json'`, the response will be
-identical but in quotes.
-
-```python
-from enum import Enum
-
-class InstrumentEnum(Enum):
-    PERCUSSION = 'Percussion'
-    STRING = 'String'
-    WOODWIND = 'Woodwind'
-    BRASS = 'Brass'
-    KEYBOARD = 'Keyboard'
-
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents='What instrument plays multiple notes at once?',
-    config={
-        'response_mime_type': 'application/json',
-        'response_schema': InstrumentEnum,
-    },
 )
 print(response.text)
 ```
