@@ -101,6 +101,17 @@ def _GetFileParameters_to_mldev(
   return to_object
 
 
+def _InternalRegisterFilesParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['uris']) is not None:
+    setv(to_object, ['uris'], getv(from_object, ['uris']))
+
+  return to_object
+
+
 def _ListFilesConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -148,17 +159,6 @@ def _ListFilesResponse_from_mldev(
 
   if getv(from_object, ['files']) is not None:
     setv(to_object, ['files'], [item for item in getv(from_object, ['files'])])
-
-  return to_object
-
-
-def _RegisterFilesParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uris']) is not None:
-    setv(to_object, ['uris'], getv(from_object, ['uris']))
 
   return to_object
 
@@ -438,7 +438,7 @@ class Files(_api_module.BaseModule):
       uris: list[str],
       config: Optional[types.RegisterFilesConfigOrDict] = None,
   ) -> types.RegisterFilesResponse:
-    parameter_model = types._RegisterFilesParameters(
+    parameter_model = types._InternalRegisterFilesParameters(
         uris=uris,
         config=config,
     )
@@ -449,7 +449,7 @@ class Files(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _RegisterFilesParameters_to_mldev(parameter_model)
+      request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files:register'.format_map(request_url_dict)
@@ -977,7 +977,7 @@ class AsyncFiles(_api_module.BaseModule):
       uris: list[str],
       config: Optional[types.RegisterFilesConfigOrDict] = None,
   ) -> types.RegisterFilesResponse:
-    parameter_model = types._RegisterFilesParameters(
+    parameter_model = types._InternalRegisterFilesParameters(
         uris=uris,
         config=config,
     )
@@ -988,7 +988,7 @@ class AsyncFiles(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _RegisterFilesParameters_to_mldev(parameter_model)
+      request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files:register'.format_map(request_url_dict)

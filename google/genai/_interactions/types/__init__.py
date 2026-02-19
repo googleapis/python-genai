@@ -52,7 +52,6 @@ from .annotation_param import AnnotationParam as AnnotationParam
 from .document_content import DocumentContent as DocumentContent
 from .tool_choice_type import ToolChoiceType as ToolChoiceType
 from .generation_config import GenerationConfig as GenerationConfig
-from .interaction_event import InteractionEvent as InteractionEvent
 from .tool_choice_param import ToolChoiceParam as ToolChoiceParam
 from .document_mime_type import DocumentMimeType as DocumentMimeType
 from .image_config_param import ImageConfigParam as ImageConfigParam
@@ -76,6 +75,7 @@ from .document_content_param import DocumentContentParam as DocumentContentParam
 from .interaction_get_params import InteractionGetParams as InteractionGetParams
 from .function_result_content import FunctionResultContent as FunctionResultContent
 from .generation_config_param import GenerationConfigParam as GenerationConfigParam
+from .interaction_start_event import InteractionStartEvent as InteractionStartEvent
 from .document_mime_type_param import DocumentMimeTypeParam as DocumentMimeTypeParam
 from .file_search_call_content import FileSearchCallContent as FileSearchCallContent
 from .tool_choice_config_param import ToolChoiceConfigParam as ToolChoiceConfigParam
@@ -88,6 +88,7 @@ from .dynamic_agent_config_param import DynamicAgentConfigParam as DynamicAgentC
 from .file_search_result_content import FileSearchResultContent as FileSearchResultContent
 from .google_search_call_content import GoogleSearchCallContent as GoogleSearchCallContent
 from .google_search_result_param import GoogleSearchResultParam as GoogleSearchResultParam
+from .interaction_complete_event import InteractionCompleteEvent as InteractionCompleteEvent
 from .url_context_call_arguments import URLContextCallArguments as URLContextCallArguments
 from .url_context_result_content import URLContextResultContent as URLContextResultContent
 from .code_execution_call_content import CodeExecutionCallContent as CodeExecutionCallContent

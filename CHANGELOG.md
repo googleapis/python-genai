@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.63.0](https://github.com/googleapis/python-genai/compare/v1.62.0...v1.63.0) (2026-02-11)
+
+
+### Features
+
+* Add INCOMPLETE status to Interaction. ([1a84605](https://github.com/googleapis/python-genai/commit/1a84605bcac5445c8e13658b8bd7ff1860f10f1b))
+* Support encryption_spec in tuning job creation configuration for GenAI SDK ([057d6f0](https://github.com/googleapis/python-genai/commit/057d6f077b0a6d13c843fff0479027f5f7369113))
+
+
+### Bug Fixes
+
+* Base_url and global location parsing ([2c40555](https://github.com/googleapis/python-genai/commit/2c40555c54267b1e9ba10dfafe1bc73f0cca43d4))
+* Remove build warning due to extra comma: assertion on a tuple is always true ([1cc2c2d](https://github.com/googleapis/python-genai/commit/1cc2c2d411576e9858d4a4ae33bbf12975700a9f))
+* Remove debug print statement. ([60c0a2f](https://github.com/googleapis/python-genai/commit/60c0a2ffb4c1e87374c02958b1cb42748ba84ff1))
+* Remove unused import of `websockets` ([3b82b5f](https://github.com/googleapis/python-genai/commit/3b82b5f382c6fe9fa820a59c3938d04cef3ae24e))
+
+
+### Documentation
+
+* Add docstrings to C# and Python SDK Operations methods. ([f2e85a3](https://github.com/googleapis/python-genai/commit/f2e85a3911c431d4494a4e3712d0eed1a2e6c069))
+* Regenerate docs for 1.62.0 ([455ec26](https://github.com/googleapis/python-genai/commit/455ec260be3deef68d59eda6d7ed2b53505d3a4f))
+
+## [1.62.0](https://github.com/googleapis/python-genai/compare/v1.61.0...v1.62.0) (2026-02-04)
+
+
+### Features
+
+* Update data types from discovery doc. ([089ba97](https://github.com/googleapis/python-genai/commit/089ba97d7ee2e084134354d7a69421eaba176894))
+
+
+### Bug Fixes
+
+* Add error handling for live and live music APIs ([1148276](https://github.com/googleapis/python-genai/commit/114827682339fcc3c81543c008d9716b1a6b8401)), closes [#668](https://github.com/googleapis/python-genai/issues/668)
+
+## [1.61.0](https://github.com/googleapis/python-genai/compare/v1.60.0...v1.61.0) (2026-01-30)
+
+
+### Features
+
+* Add `include_input` query parameter to Get Interaction endpoint. ([a0240d9](https://github.com/googleapis/python-genai/commit/a0240d9cf4c817d1737cb2cf818d405addabeed8))
+* Add registerFiles for you can use gcs files with mldev. ([965395b](https://github.com/googleapis/python-genai/commit/965395b2f640a7d92a6df3d03020f4d15fe6b2fa))
+* Support distillation tuning ([9e49d71](https://github.com/googleapis/python-genai/commit/9e49d71c5aa70066cb0c81c7bef9770294dbcceb))
+* Support OSS Tuning in GenAI SDK ([51748a7](https://github.com/googleapis/python-genai/commit/51748a7559fb038f2cd5ce290025d6259bb61ae0))
+
+
+### Bug Fixes
+
+* Add metadata in batch inlined response ([08c47aa](https://github.com/googleapis/python-genai/commit/08c47aa1a4237daed90d86d38ccb4590c25c8ab8))
+
+## [1.60.0](https://github.com/googleapis/python-genai/compare/v1.59.0...v1.60.0) (2026-01-21)
+
+
+### Features
+
+* Add ModelArmorConfig support for prompt and response sanitization via the Model Armor service ([8d1091a](https://github.com/googleapis/python-genai/commit/8d1091a7e8d8eef774984ff2202cb87fa674e92e))
+* Update data types from discovery doc. ([4209289](https://github.com/googleapis/python-genai/commit/42092898071f8462d307105830a72bfe48db0935))
+* Update data types from discovery doc. ([7db2c2d](https://github.com/googleapis/python-genai/commit/7db2c2d5b341782ffd2ed775c4a8196971cdad72))
+
+
+### Documentation
+
+* Regenerate docs for 1.59.0 ([351e490](https://github.com/googleapis/python-genai/commit/351e4901c7c8178a2bbb876148cbe441a77b071e))
+* Update docs to include interactions and file_search_stores module ([a21841c](https://github.com/googleapis/python-genai/commit/a21841cad53b73a54eef322a66cebd2c42c57bea))
+
 ## [1.59.0](https://github.com/googleapis/python-genai/compare/v1.58.0...v1.59.0) (2026-01-15)
 
 
