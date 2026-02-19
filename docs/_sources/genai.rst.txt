@@ -33,10 +33,26 @@ genai.chats module
    :undoc-members:
    :show-inheritance:
 
+genai.file_search_stores module
+-------------------------------
+
+.. automodule:: genai.file_search_stores
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 genai.files module
 ------------------
 
 .. automodule:: genai.files
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+genai.interactions module
+-------------------------------------------------
+
+.. automodule:: genai._interactions.resources.interactions
    :members:
    :undoc-members:
    :show-inheritance:

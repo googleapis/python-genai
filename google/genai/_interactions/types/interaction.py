@@ -83,7 +83,7 @@ class Interaction(BaseModel):
     id: str
     """Output only. A unique identifier for the interaction completion."""
 
-    status: Literal["in_progress", "requires_action", "completed", "failed", "cancelled"]
+    status: Literal["in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete"]
     """Output only. The status of the interaction."""
 
     agent: Union[str, Literal["deep-research-pro-preview-12-2025"], None] = None

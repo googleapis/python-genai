@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, TypedDict
+from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["DeepResearchAgentConfigParam"]
 
@@ -25,7 +25,7 @@ __all__ = ["DeepResearchAgentConfigParam"]
 class DeepResearchAgentConfigParam(TypedDict, total=False):
     """Configuration for the Deep Research agent."""
 
+    type: Required[Literal["deep-research"]]
+
     thinking_summaries: Literal["auto", "none"]
     """Whether to include thought summaries in the response."""
-
-    type: Literal["deep-research"]

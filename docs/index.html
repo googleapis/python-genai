@@ -213,7 +213,9 @@
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.batches">genai.batches module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.caches">genai.caches module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.chats">genai.chats module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.file_search_stores">genai.file_search_stores module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.files">genai.files module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai._interactions.resources.interactions">genai.interactions module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.live">genai.live module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.models">genai.models module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.tokens">genai.tokens module</a></li>
@@ -1587,8 +1589,8 @@ conversation). See the ‘Create a client’ section above to initialize a clien
 <h1>Files<a class="headerlink" href="#files" title="Link to this heading">¶</a></h1>
 <p>Files are only supported in Gemini Developer API.  See the ‘Create a client’
 section above to initialize a client.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">gsutil cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .</span>
-<span class="go">gsutil cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .</span>
+<span class="go">gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .</span>
 </pre></div>
 </div>
 <section id="upload">
@@ -2142,6 +2144,29 @@ The structure of the dictionary must match the backend API’s request structure
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.file_search_stores">genai.file_search_stores module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.create"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.delete"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.documents"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.documents</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.get"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.import_file"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.import_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.list"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.upload_to_file_search_store"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.upload_to_file_search_store()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores"><code class="docutils literal notranslate"><span class="pre">FileSearchStores</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.create"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.delete"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.documents"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.documents</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.get"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.import_file"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.import_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.list"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.upload_to_file_search_store"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.upload_to_file_search_store()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.files">genai.files module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.files.AsyncFiles"><code class="docutils literal notranslate"><span class="pre">AsyncFiles</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.files.AsyncFiles.delete"><code class="docutils literal notranslate"><span class="pre">AsyncFiles.delete()</span></code></a></li>
@@ -2159,6 +2184,27 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.files.Files.list"><code class="docutils literal notranslate"><span class="pre">Files.list()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.files.Files.register_files"><code class="docutils literal notranslate"><span class="pre">Files.register_files()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.files.Files.upload"><code class="docutils literal notranslate"><span class="pre">Files.upload()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai._interactions.resources.interactions">genai.interactions module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource"><code class="docutils literal notranslate"><span class="pre">AsyncInteractionsResource</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.cancel"><code class="docutils literal notranslate"><span class="pre">AsyncInteractionsResource.cancel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.create"><code class="docutils literal notranslate"><span class="pre">AsyncInteractionsResource.create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.delete"><code class="docutils literal notranslate"><span class="pre">AsyncInteractionsResource.delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.get"><code class="docutils literal notranslate"><span class="pre">AsyncInteractionsResource.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.with_raw_response"><code class="docutils literal notranslate"><span class="pre">AsyncInteractionsResource.with_raw_response</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.with_streaming_response"><code class="docutils literal notranslate"><span class="pre">AsyncInteractionsResource.with_streaming_response</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.InteractionsResource"><code class="docutils literal notranslate"><span class="pre">InteractionsResource</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.InteractionsResource.cancel"><code class="docutils literal notranslate"><span class="pre">InteractionsResource.cancel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.InteractionsResource.create"><code class="docutils literal notranslate"><span class="pre">InteractionsResource.create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.InteractionsResource.delete"><code class="docutils literal notranslate"><span class="pre">InteractionsResource.delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.InteractionsResource.get"><code class="docutils literal notranslate"><span class="pre">InteractionsResource.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.InteractionsResource.with_raw_response"><code class="docutils literal notranslate"><span class="pre">InteractionsResource.with_raw_response</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai._interactions.resources.interactions.InteractionsResource.with_streaming_response"><code class="docutils literal notranslate"><span class="pre">InteractionsResource.with_streaming_response</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2951,8 +2997,10 @@ The structure of the dictionary must match the backend API’s request structure
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.adapter_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.adapter_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.base_teacher_model"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.base_teacher_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.batch_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.batch_size</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.beta"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.beta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.custom_base_model"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.custom_base_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.description"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.epoch_count"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.epoch_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.evaluation_config"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.evaluation_config</span></code></a></li>
@@ -2962,15 +3010,21 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.learning_rate"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.learning_rate</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.learning_rate_multiplier</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.method"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.method</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.output_uri"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.output_uri</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.pre_tuned_model_checkpoint_id"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.pre_tuned_model_checkpoint_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.sft_loss_weight_multiplier"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.sft_loss_weight_multiplier</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.tuned_model_display_name"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.tuned_model_display_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.tuned_teacher_model_source"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.tuned_teacher_model_source</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.tuning_mode"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.tuning_mode</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfig.validation_dataset"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfig.validation_dataset</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.adapter_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.adapter_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.base_teacher_model"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.base_teacher_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.batch_size"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.batch_size</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.beta"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.beta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.custom_base_model"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.custom_base_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.description"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.description</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.epoch_count"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.epoch_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.evaluation_config"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.evaluation_config</span></code></a></li>
@@ -2980,8 +3034,12 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.learning_rate"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.learning_rate</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.learning_rate_multiplier</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.method"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.method</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.output_uri"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.output_uri</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.pre_tuned_model_checkpoint_id"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.pre_tuned_model_checkpoint_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.sft_loss_weight_multiplier"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.sft_loss_weight_multiplier</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.tuned_model_display_name"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.tuned_model_display_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.tuned_teacher_model_source"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.tuned_teacher_model_source</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.tuning_mode"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.tuning_mode</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateTuningJobConfigDict.validation_dataset"><code class="docutils literal notranslate"><span class="pre">CreateTuningJobConfigDict.validation_dataset</span></code></a></li>
 </ul>
 </li>
@@ -3171,6 +3229,40 @@ The structure of the dictionary must match the backend API’s request structure
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DistillationDataStatsDict"><code class="docutils literal notranslate"><span class="pre">DistillationDataStatsDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationDataStatsDict.training_dataset_stats"><code class="docutils literal notranslate"><span class="pre">DistillationDataStatsDict.training_dataset_stats</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParameters"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParameters.adapter_size"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParameters.adapter_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParameters.epoch_count"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParameters.epoch_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParameters.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParameters.learning_rate_multiplier</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParametersDict"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParametersDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParametersDict.adapter_size"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParametersDict.adapter_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParametersDict.epoch_count"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParametersDict.epoch_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationHyperParametersDict.learning_rate_multiplier"><code class="docutils literal notranslate"><span class="pre">DistillationHyperParametersDict.learning_rate_multiplier</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DistillationSpec"><code class="docutils literal notranslate"><span class="pre">DistillationSpec</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.base_teacher_model"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.base_teacher_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.hyper_parameters"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.hyper_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.pipeline_root_directory"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.pipeline_root_directory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.prompt_dataset_uri"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.prompt_dataset_uri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.student_model"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.student_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.training_dataset_uri"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.training_dataset_uri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.tuned_teacher_model_source"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.tuned_teacher_model_source</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpec.validation_dataset_uri"><code class="docutils literal notranslate"><span class="pre">DistillationSpec.validation_dataset_uri</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.base_teacher_model"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.base_teacher_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.hyper_parameters"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.hyper_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.pipeline_root_directory"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.pipeline_root_directory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.prompt_dataset_uri"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.prompt_dataset_uri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.student_model"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.student_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.training_dataset_uri"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.training_dataset_uri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.tuned_teacher_model_source"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.tuned_teacher_model_source</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DistillationSpecDict.validation_dataset_uri"><code class="docutils literal notranslate"><span class="pre">DistillationSpecDict.validation_dataset_uri</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.Document"><code class="docutils literal notranslate"><span class="pre">Document</span></code></a><ul>
@@ -3751,6 +3843,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig.logprobs"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig.logprobs</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig.max_output_tokens"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig.max_output_tokens</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig.media_resolution"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig.media_resolution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig.model_armor_config"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig.model_armor_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig.model_selection_config"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig.model_selection_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig.presence_penalty"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig.presence_penalty</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfig.response_json_schema"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfig.response_json_schema</span></code></a></li>
@@ -3786,6 +3879,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfigDict.logprobs"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfigDict.logprobs</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfigDict.max_output_tokens"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfigDict.max_output_tokens</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfigDict.media_resolution"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfigDict.media_resolution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfigDict.model_armor_config"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfigDict.model_armor_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfigDict.model_selection_config"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfigDict.model_selection_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfigDict.presence_penalty"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfigDict.presence_penalty</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateContentConfigDict.response_json_schema"><code class="docutils literal notranslate"><span class="pre">GenerateContentConfigDict.response_json_schema</span></code></a></li>
@@ -4584,11 +4678,13 @@ The structure of the dictionary must match the backend API’s request structure
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.InlinedResponse"><code class="docutils literal notranslate"><span class="pre">InlinedResponse</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.InlinedResponse.error"><code class="docutils literal notranslate"><span class="pre">InlinedResponse.error</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.InlinedResponse.metadata"><code class="docutils literal notranslate"><span class="pre">InlinedResponse.metadata</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.InlinedResponse.response"><code class="docutils literal notranslate"><span class="pre">InlinedResponse.response</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.InlinedResponseDict"><code class="docutils literal notranslate"><span class="pre">InlinedResponseDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.InlinedResponseDict.error"><code class="docutils literal notranslate"><span class="pre">InlinedResponseDict.error</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.InlinedResponseDict.metadata"><code class="docutils literal notranslate"><span class="pre">InlinedResponseDict.metadata</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.InlinedResponseDict.response"><code class="docutils literal notranslate"><span class="pre">InlinedResponseDict.response</span></code></a></li>
 </ul>
 </li>
@@ -5391,6 +5487,16 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Model.top_p"><code class="docutils literal notranslate"><span class="pre">Model.top_p</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Model.tuned_model_info"><code class="docutils literal notranslate"><span class="pre">Model.tuned_model_info</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Model.version"><code class="docutils literal notranslate"><span class="pre">Model.version</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ModelArmorConfig"><code class="docutils literal notranslate"><span class="pre">ModelArmorConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ModelArmorConfig.prompt_template_name"><code class="docutils literal notranslate"><span class="pre">ModelArmorConfig.prompt_template_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ModelArmorConfig.response_template_name"><code class="docutils literal notranslate"><span class="pre">ModelArmorConfig.response_template_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ModelArmorConfigDict"><code class="docutils literal notranslate"><span class="pre">ModelArmorConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ModelArmorConfigDict.prompt_template_name"><code class="docutils literal notranslate"><span class="pre">ModelArmorConfigDict.prompt_template_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.ModelArmorConfigDict.response_template_name"><code class="docutils literal notranslate"><span class="pre">ModelArmorConfigDict.response_template_name</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ModelContent"><code class="docutils literal notranslate"><span class="pre">ModelContent</span></code></a><ul>
@@ -6589,6 +6695,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.create_time"><code class="docutils literal notranslate"><span class="pre">TuningJob.create_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.custom_base_model"><code class="docutils literal notranslate"><span class="pre">TuningJob.custom_base_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.description"><code class="docutils literal notranslate"><span class="pre">TuningJob.description</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.distillation_spec"><code class="docutils literal notranslate"><span class="pre">TuningJob.distillation_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.encryption_spec"><code class="docutils literal notranslate"><span class="pre">TuningJob.encryption_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.end_time"><code class="docutils literal notranslate"><span class="pre">TuningJob.end_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJob.error"><code class="docutils literal notranslate"><span class="pre">TuningJob.error</span></code></a></li>
@@ -6620,6 +6727,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.create_time"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.create_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.custom_base_model"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.custom_base_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.description"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.description</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.distillation_spec"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.distillation_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.encryption_spec"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.encryption_spec</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.end_time"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.end_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningJobDict.error"><code class="docutils literal notranslate"><span class="pre">TuningJobDict.error</span></code></a></li>
@@ -6645,6 +6753,7 @@ The structure of the dictionary must match the backend API’s request structure
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TuningMethod"><code class="docutils literal notranslate"><span class="pre">TuningMethod</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningMethod.DISTILLATION"><code class="docutils literal notranslate"><span class="pre">TuningMethod.DISTILLATION</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningMethod.PREFERENCE_TUNING"><code class="docutils literal notranslate"><span class="pre">TuningMethod.PREFERENCE_TUNING</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TuningMethod.SUPERVISED_FINE_TUNING"><code class="docutils literal notranslate"><span class="pre">TuningMethod.SUPERVISED_FINE_TUNING</span></code></a></li>
 </ul>

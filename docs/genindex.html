@@ -211,7 +211,9 @@
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.batches">genai.batches module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.caches">genai.caches module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.chats">genai.chats module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.file_search_stores">genai.file_search_stores module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.files">genai.files module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai._interactions.resources.interactions">genai.interactions module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.live">genai.live module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.models">genai.models module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genai.html#module-genai.tokens">genai.tokens module</a></li>
@@ -320,6 +322,10 @@
 
         <ul>
           <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.adapter_size">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationHyperParameters.adapter_size">(genai.types.DistillationHyperParameters attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationHyperParametersDict.adapter_size">(genai.types.DistillationHyperParametersDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationHyperParameters.adapter_size">(genai.types.PreferenceOptimizationHyperParameters attribute)</a>
 </li>
@@ -528,7 +534,11 @@
 </li>
         <li><a href="genai.html#genai.files.AsyncFiles">AsyncFiles (class in genai.files)</a>
 </li>
+        <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores">AsyncFileSearchStores (class in genai.file_search_stores)</a>
+</li>
         <li><a href="genai.html#genai.client.AsyncGeminiNextGenAPIClientAdapter">AsyncGeminiNextGenAPIClientAdapter (class in genai.client)</a>
+</li>
+        <li><a href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource">AsyncInteractionsResource (class in genai._interactions.resources.interactions)</a>
 </li>
         <li><a href="genai.html#genai.live.AsyncLive">AsyncLive (class in genai.live)</a>
 </li>
@@ -740,6 +750,16 @@
           <li><a href="genai.html#genai.types.RecontextImageConfigDict.base_steps">(genai.types.RecontextImageConfigDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.base_teacher_model">base_teacher_model (genai.types.CreateTuningJobConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.base_teacher_model">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationSpec.base_teacher_model">(genai.types.DistillationSpec attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.base_teacher_model">(genai.types.DistillationSpecDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.HttpOptions.base_url">base_url (genai.types.HttpOptions attribute)</a>
 
         <ul>
@@ -828,14 +848,14 @@
           <li><a href="genai.html#genai.types.SupervisedTuningDatasetDistributionDict.billable_sum">(genai.types.SupervisedTuningDatasetDistributionDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.SegmentImageConfig.binary_color_threshold">binary_color_threshold (genai.types.SegmentImageConfig attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.SegmentImageConfigDict.binary_color_threshold">(genai.types.SegmentImageConfigDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.BleuSpecDict">BleuSpecDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.BlobDict">BlobDict (class in genai.types)</a>
@@ -1024,9 +1044,13 @@
           <li><a href="genai.html#genai.client.Client.caches">(genai.client.Client property)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.batches.AsyncBatches.cancel">cancel() (genai.batches.AsyncBatches method)</a>
+        <li><a href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.cancel">cancel() (genai._interactions.resources.interactions.AsyncInteractionsResource method)</a>
 
         <ul>
+          <li><a href="genai.html#genai._interactions.resources.interactions.InteractionsResource.cancel">(genai._interactions.resources.interactions.InteractionsResource method)</a>
+</li>
+          <li><a href="genai.html#genai.batches.AsyncBatches.cancel">(genai.batches.AsyncBatches method)</a>
+</li>
           <li><a href="genai.html#genai.batches.Batches.cancel">(genai.batches.Batches method)</a>
 </li>
           <li><a href="genai.html#genai.tunings.AsyncTunings.cancel">(genai.tunings.AsyncTunings method)</a>
@@ -1284,14 +1308,14 @@
 </li>
         <li><a href="genai.html#genai.types.ComputeTokensResultDict">ComputeTokensResultDict (class in genai.types)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.GroundingSupport.confidence_scores">confidence_scores (genai.types.GroundingSupport attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.GroundingSupportDict.confidence_scores">(genai.types.GroundingSupportDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.SegmentImageConfig.confidence_threshold">confidence_threshold (genai.types.SegmentImageConfig attribute)</a>
 
         <ul>
@@ -1440,9 +1464,13 @@
 </li>
         <li><a href="genai.html#genai.types.CountTokensResultDict">CountTokensResultDict (class in genai.types)</a>
 </li>
-        <li><a href="genai.html#genai.batches.AsyncBatches.create">create() (genai.batches.AsyncBatches method)</a>
+        <li><a href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.create">create() (genai._interactions.resources.interactions.AsyncInteractionsResource method)</a>
 
         <ul>
+          <li><a href="genai.html#genai._interactions.resources.interactions.InteractionsResource.create">(genai._interactions.resources.interactions.InteractionsResource method)</a>
+</li>
+          <li><a href="genai.html#genai.batches.AsyncBatches.create">(genai.batches.AsyncBatches method)</a>
+</li>
           <li><a href="genai.html#genai.batches.Batches.create">(genai.batches.Batches method)</a>
 </li>
           <li><a href="genai.html#genai.caches.AsyncCaches.create">(genai.caches.AsyncCaches method)</a>
@@ -1452,6 +1480,10 @@
           <li><a href="genai.html#genai.chats.AsyncChats.create">(genai.chats.AsyncChats method)</a>
 </li>
           <li><a href="genai.html#genai.chats.Chats.create">(genai.chats.Chats method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores.create">(genai.file_search_stores.AsyncFileSearchStores method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.FileSearchStores.create">(genai.file_search_stores.FileSearchStores method)</a>
 </li>
           <li><a href="genai.html#genai.tokens.AsyncTokens.create">(genai.tokens.AsyncTokens method)</a>
 </li>
@@ -1526,9 +1558,13 @@
         </ul></li>
         <li><a href="genai.html#genai.client.Client.credentials">credentials (genai.client.Client attribute)</a>
 </li>
-        <li><a href="genai.html#genai.types.TuningJob.custom_base_model">custom_base_model (genai.types.TuningJob attribute)</a>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.custom_base_model">custom_base_model (genai.types.CreateTuningJobConfig attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.custom_base_model">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.TuningJob.custom_base_model">(genai.types.TuningJob attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.TuningJobDict.custom_base_model">(genai.types.TuningJobDict attribute)</a>
 </li>
         </ul></li>
@@ -1652,14 +1688,22 @@
           <li><a href="genai.html#genai.types.SchemaDict.defs">(genai.types.SchemaDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.batches.AsyncBatches.delete">delete() (genai.batches.AsyncBatches method)</a>
+        <li><a href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.delete">delete() (genai._interactions.resources.interactions.AsyncInteractionsResource method)</a>
 
         <ul>
+          <li><a href="genai.html#genai._interactions.resources.interactions.InteractionsResource.delete">(genai._interactions.resources.interactions.InteractionsResource method)</a>
+</li>
+          <li><a href="genai.html#genai.batches.AsyncBatches.delete">(genai.batches.AsyncBatches method)</a>
+</li>
           <li><a href="genai.html#genai.batches.Batches.delete">(genai.batches.Batches method)</a>
 </li>
           <li><a href="genai.html#genai.caches.AsyncCaches.delete">(genai.caches.AsyncCaches method)</a>
 </li>
           <li><a href="genai.html#genai.caches.Caches.delete">(genai.caches.Caches method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores.delete">(genai.file_search_stores.AsyncFileSearchStores method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.FileSearchStores.delete">(genai.file_search_stores.FileSearchStores method)</a>
 </li>
           <li><a href="genai.html#genai.files.AsyncFiles.delete">(genai.files.AsyncFiles method)</a>
 </li>
@@ -1766,14 +1810,14 @@
           <li><a href="genai.html#genai.types.RetrievalDict.disable_attribution">(genai.types.RetrievalDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.AutomaticActivityDetection.disabled">disabled (genai.types.AutomaticActivityDetection attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.AutomaticActivityDetectionDict.disabled">(genai.types.AutomaticActivityDetectionDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.BatchJob.display_name">display_name (genai.types.BatchJob attribute)</a>
 
         <ul>
@@ -1848,13 +1892,25 @@
           <li><a href="genai.html#genai.types.UploadToFileSearchStoreConfigDict.display_name">(genai.types.UploadToFileSearchStoreConfigDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.TuningMethod.DISTILLATION">DISTILLATION (genai.types.TuningMethod attribute)</a>
+</li>
         <li><a href="genai.html#genai.types.TuningDataStats.distillation_data_stats">distillation_data_stats (genai.types.TuningDataStats attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.TuningDataStatsDict.distillation_data_stats">(genai.types.TuningDataStatsDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.TuningJob.distillation_spec">distillation_spec (genai.types.TuningJob attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.TuningJobDict.distillation_spec">(genai.types.TuningJobDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.DistillationDataStatsDict">DistillationDataStatsDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.DistillationHyperParametersDict">DistillationHyperParametersDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.DistillationSpecDict">DistillationSpecDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.MusicGenerationMode.DIVERSITY">DIVERSITY (genai.types.MusicGenerationMode attribute)</a>
 </li>
@@ -1876,9 +1932,13 @@
         </ul></li>
         <li><a href="genai.html#genai.types.DocumentDict">DocumentDict (class in genai.types)</a>
 </li>
-        <li><a href="genai.html#genai.types.ListDocumentsResponse.documents">documents (genai.types.ListDocumentsResponse attribute)</a>
+        <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores.documents">documents (genai.file_search_stores.AsyncFileSearchStores property)</a>
 
         <ul>
+          <li><a href="genai.html#genai.file_search_stores.FileSearchStores.documents">(genai.file_search_stores.FileSearchStores property)</a>
+</li>
+          <li><a href="genai.html#genai.types.ListDocumentsResponse.documents">(genai.types.ListDocumentsResponse attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.ListDocumentsResponseDict.documents">(genai.types.ListDocumentsResponseDict attribute)</a>
 </li>
         </ul></li>
@@ -2221,6 +2281,10 @@
         <ul>
           <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.epoch_count">(genai.types.CreateTuningJobConfigDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.DistillationHyperParameters.epoch_count">(genai.types.DistillationHyperParameters attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationHyperParametersDict.epoch_count">(genai.types.DistillationHyperParametersDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationHyperParameters.epoch_count">(genai.types.PreferenceOptimizationHyperParameters attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationHyperParametersDict.epoch_count">(genai.types.PreferenceOptimizationHyperParametersDict attribute)</a>
@@ -2528,6 +2592,8 @@
 </li>
         <li><a href="genai.html#genai.types.FileSearchStoreDict">FileSearchStoreDict (class in genai.types)</a>
 </li>
+        <li><a href="genai.html#genai.file_search_stores.FileSearchStores">FileSearchStores (class in genai.file_search_stores)</a>
+</li>
         <li><a href="genai.html#genai.types.FileSource">FileSource (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.FileState">FileState (class in genai.types)</a>
@@ -2592,10 +2658,10 @@
           <li><a href="genai.html#genai.types.TranscriptionDict.finished">(genai.types.TranscriptionDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.FinishReason">FinishReason (class in genai.types)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="genai.html#genai.types.FinishReason">FinishReason (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.RagChunkPageSpan.first_page">first_page (genai.types.RagChunkPageSpan attribute)</a>
 
         <ul>
@@ -2821,6 +2887,13 @@
         <li><a href="genai.html#genai.types.GeminiPreferenceExampleDict">GeminiPreferenceExampleDict (class in genai.types)</a>
 </li>
         <li>
+    genai._interactions.resources.interactions
+
+        <ul>
+          <li><a href="genai.html#module-genai._interactions.resources.interactions">module</a>
+</li>
+        </ul></li>
+        <li>
     genai.batches
 
         <ul>
@@ -2846,6 +2919,13 @@
 
         <ul>
           <li><a href="genai.html#module-genai.client">module</a>
+</li>
+        </ul></li>
+        <li>
+    genai.file_search_stores
+
+        <ul>
+          <li><a href="genai.html#module-genai.file_search_stores">module</a>
 </li>
         </ul></li>
         <li>
@@ -3012,14 +3092,22 @@
 </li>
         <li><a href="genai.html#genai.types.GenerationConfigThinkingConfigDict">GenerationConfigThinkingConfigDict (class in genai.types)</a>
 </li>
-        <li><a href="genai.html#genai.batches.AsyncBatches.get">get() (genai.batches.AsyncBatches method)</a>
+        <li><a href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.get">get() (genai._interactions.resources.interactions.AsyncInteractionsResource method)</a>
 
         <ul>
+          <li><a href="genai.html#genai._interactions.resources.interactions.InteractionsResource.get">(genai._interactions.resources.interactions.InteractionsResource method)</a>
+</li>
+          <li><a href="genai.html#genai.batches.AsyncBatches.get">(genai.batches.AsyncBatches method)</a>
+</li>
           <li><a href="genai.html#genai.batches.Batches.get">(genai.batches.Batches method)</a>
 </li>
           <li><a href="genai.html#genai.caches.AsyncCaches.get">(genai.caches.AsyncCaches method)</a>
 </li>
           <li><a href="genai.html#genai.caches.Caches.get">(genai.caches.Caches method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores.get">(genai.file_search_stores.AsyncFileSearchStores method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.FileSearchStores.get">(genai.file_search_stores.FileSearchStores method)</a>
 </li>
           <li><a href="genai.html#genai.files.AsyncFiles.get">(genai.files.AsyncFiles method)</a>
 </li>
@@ -3538,9 +3626,13 @@
           <li><a href="genai.html#genai.types.RagRetrievalConfigDict.hybrid_search">(genai.types.RagRetrievalConfigDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.PartnerModelTuningSpec.hyper_parameters">hyper_parameters (genai.types.PartnerModelTuningSpec attribute)</a>
+        <li><a href="genai.html#genai.types.DistillationSpec.hyper_parameters">hyper_parameters (genai.types.DistillationSpec attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.hyper_parameters">(genai.types.DistillationSpecDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.PartnerModelTuningSpec.hyper_parameters">(genai.types.PartnerModelTuningSpec attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.PartnerModelTuningSpecDict.hyper_parameters">(genai.types.PartnerModelTuningSpecDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationSpec.hyper_parameters">(genai.types.PreferenceOptimizationSpec attribute)</a>
@@ -3690,6 +3782,12 @@
 </li>
         <li><a href="genai.html#genai.types.GenerateImagesResponse.images">images (genai.types.GenerateImagesResponse property)</a>
 </li>
+        <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores.import_file">import_file() (genai.file_search_stores.AsyncFileSearchStores method)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.file_search_stores.FileSearchStores.import_file">(genai.file_search_stores.FileSearchStores method)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.ImportFileConfigDict">ImportFileConfigDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.ImportFileResponseDict">ImportFileResponseDict (class in genai.types)</a>
@@ -3828,6 +3926,8 @@
           <li><a href="genai.html#genai.types.ReplayFileDict.interactions">(genai.types.ReplayFileDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai._interactions.resources.interactions.InteractionsResource">InteractionsResource (class in genai._interactions.resources.interactions)</a>
+</li>
         <li><a href="genai.html#genai.types.SegmentMode.INTERACTIVE">INTERACTIVE (genai.types.SegmentMode attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.FunctionResponseScheduling.INTERRUPT">INTERRUPT (genai.types.FunctionResponseScheduling attribute)</a>
@@ -4079,6 +4179,10 @@
         <ul>
           <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.learning_rate_multiplier">(genai.types.CreateTuningJobConfigDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.DistillationHyperParameters.learning_rate_multiplier">(genai.types.DistillationHyperParameters attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationHyperParametersDict.learning_rate_multiplier">(genai.types.DistillationHyperParametersDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationHyperParameters.learning_rate_multiplier">(genai.types.PreferenceOptimizationHyperParameters attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationHyperParametersDict.learning_rate_multiplier">(genai.types.PreferenceOptimizationHyperParametersDict attribute)</a>
@@ -4122,6 +4226,10 @@
           <li><a href="genai.html#genai.caches.AsyncCaches.list">(genai.caches.AsyncCaches method)</a>
 </li>
           <li><a href="genai.html#genai.caches.Caches.list">(genai.caches.Caches method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores.list">(genai.file_search_stores.AsyncFileSearchStores method)</a>
+</li>
+          <li><a href="genai.html#genai.file_search_stores.FileSearchStores.list">(genai.file_search_stores.FileSearchStores method)</a>
 </li>
           <li><a href="genai.html#genai.files.AsyncFiles.list">(genai.files.AsyncFiles method)</a>
 </li>
@@ -4571,6 +4679,10 @@
 </li>
           <li><a href="genai.html#genai.types.InlinedRequestDict.metadata">(genai.types.InlinedRequestDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.InlinedResponse.metadata">(genai.types.InlinedResponse attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.InlinedResponseDict.metadata">(genai.types.InlinedResponseDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.Operation.metadata">(genai.types.Operation attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.ProjectOperation.metadata">(genai.types.ProjectOperation attribute)</a>
@@ -4806,6 +4918,12 @@
         </ul></li>
         <li><a href="genai.html#genai.types.BlockedReason.MODEL_ARMOR">MODEL_ARMOR (genai.types.BlockedReason attribute)</a>
 </li>
+        <li><a href="genai.html#genai.types.GenerateContentConfig.model_armor_config">model_armor_config (genai.types.GenerateContentConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.GenerateContentConfigDict.model_armor_config">(genai.types.GenerateContentConfigDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.GenerationConfigRoutingConfigManualRoutingMode.model_name">model_name (genai.types.GenerationConfigRoutingConfigManualRoutingMode attribute)</a>
 
         <ul>
@@ -4854,6 +4972,8 @@
           <li><a href="genai.html#genai.types.GenerateContentResponseDict.model_version">(genai.types.GenerateContentResponseDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.ModelArmorConfigDict">ModelArmorConfigDict (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.ModelDict">ModelDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.models.Models">Models (class in genai.models)</a>
@@ -4874,6 +4994,8 @@
     module
 
         <ul>
+          <li><a href="genai.html#module-genai._interactions.resources.interactions">genai._interactions.resources.interactions</a>
+</li>
           <li><a href="genai.html#module-genai.batches">genai.batches</a>
 </li>
           <li><a href="genai.html#module-genai.caches">genai.caches</a>
@@ -4881,6 +5003,8 @@
           <li><a href="genai.html#module-genai.chats">genai.chats</a>
 </li>
           <li><a href="genai.html#module-genai.client">genai.client</a>
+</li>
+          <li><a href="genai.html#module-genai.file_search_stores">genai.file_search_stores</a>
 </li>
           <li><a href="genai.html#module-genai.files">genai.files</a>
 </li>
@@ -5361,9 +5485,13 @@
           <li><a href="genai.html#genai.types.LiveServerContentDict.output_transcription">(genai.types.LiveServerContentDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.TuningJob.output_uri">output_uri (genai.types.TuningJob attribute)</a>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.output_uri">output_uri (genai.types.CreateTuningJobConfig attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.output_uri">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.TuningJob.output_uri">(genai.types.TuningJob attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.TuningJobDict.output_uri">(genai.types.TuningJobDict attribute)</a>
 </li>
         </ul></li>
@@ -5617,8 +5745,6 @@
         </ul></li>
         <li><a href="genai.html#genai.types.PersonGeneration">PersonGeneration (class in genai.types)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.PhishBlockThreshold.PHISH_BLOCK_THRESHOLD_UNSPECIFIED">PHISH_BLOCK_THRESHOLD_UNSPECIFIED (genai.types.PhishBlockThreshold attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.PhishBlockThreshold">PhishBlockThreshold (class in genai.types)</a>
@@ -5629,10 +5755,18 @@
           <li><a href="genai.html#genai.types.GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionDict.photo_uri">(genai.types.GroundingChunkMapsPlaceAnswerSourcesAuthorAttributionDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.TuningJob.pipeline_job">pipeline_job (genai.types.TuningJob attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.TuningJobDict.pipeline_job">(genai.types.TuningJobDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.DistillationSpec.pipeline_root_directory">pipeline_root_directory (genai.types.DistillationSpec attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.pipeline_root_directory">(genai.types.DistillationSpecDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.GroundingChunkMaps.place_answer_sources">place_answer_sources (genai.types.GroundingChunkMaps attribute)</a>
@@ -5801,6 +5935,12 @@
         </ul></li>
         <li><a href="genai.html#genai.types.SegmentMode.PROMPT">PROMPT (genai.types.SegmentMode attribute)</a>
 </li>
+        <li><a href="genai.html#genai.types.DistillationSpec.prompt_dataset_uri">prompt_dataset_uri (genai.types.DistillationSpec attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.prompt_dataset_uri">(genai.types.DistillationSpecDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.GenerateContentResponse.prompt_feedback">prompt_feedback (genai.types.GenerateContentResponse attribute)</a>
 
         <ul>
@@ -5811,6 +5951,12 @@
 
         <ul>
           <li><a href="genai.html#genai.types.MetricDict.prompt_template">(genai.types.MetricDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.ModelArmorConfig.prompt_template_name">prompt_template_name (genai.types.ModelArmorConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.ModelArmorConfigDict.prompt_template_name">(genai.types.ModelArmorConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.GenerateContentResponseUsageMetadata.prompt_token_count">prompt_token_count (genai.types.GenerateContentResponseUsageMetadata attribute)</a>
@@ -6145,10 +6291,10 @@
 </li>
         <li><a href="genai.html#genai.types.ReplayResponseDict">ReplayResponseDict (class in genai.types)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.client.DebugConfig.replays_directory">replays_directory (genai.client.DebugConfig attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.VoiceConfig.replicated_voice_config">replicated_voice_config (genai.types.VoiceConfig attribute)</a>
 
         <ul>
@@ -6273,6 +6419,12 @@
           <li><a href="genai.html#genai.types.GenerationConfig.response_schema">(genai.types.GenerationConfig attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.GenerationConfigDict.response_schema">(genai.types.GenerationConfigDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.ModelArmorConfig.response_template_name">response_template_name (genai.types.ModelArmorConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.ModelArmorConfigDict.response_template_name">(genai.types.ModelArmorConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.UsageMetadata.response_token_count">response_token_count (genai.types.UsageMetadata attribute)</a>
@@ -6833,18 +6985,24 @@
         </ul></li>
         <li><a href="genai.html#genai.types.HarmBlockMethod.SEVERITY">SEVERITY (genai.types.HarmBlockMethod attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.SafetyRating.severity">severity (genai.types.SafetyRating attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.SafetyRatingDict.severity">(genai.types.SafetyRatingDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.SafetyRating.severity_score">severity_score (genai.types.SafetyRating attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.SafetyRatingDict.severity_score">(genai.types.SafetyRatingDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.sft_loss_weight_multiplier">sft_loss_weight_multiplier (genai.types.CreateTuningJobConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.sft_loss_weight_multiplier">(genai.types.CreateTuningJobConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.File.sha256_hash">sha256_hash (genai.types.File attribute)</a>
@@ -7151,6 +7309,12 @@
         </ul></li>
         <li><a href="genai.html#genai.types.StringListDict">StringListDict (class in genai.types)</a>
 </li>
+        <li><a href="genai.html#genai.types.DistillationSpec.student_model">student_model (genai.types.DistillationSpec attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.student_model">(genai.types.DistillationSpecDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.VideoGenerationReferenceType.STYLE">STYLE (genai.types.VideoGenerationReferenceType attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.StyleReferenceConfig.style_description">style_description (genai.types.StyleReferenceConfig attribute)</a>
@@ -7659,8 +7823,6 @@
           <li><a href="genai.html#genai.types.LogprobsResultDict.top_candidates">(genai.types.LogprobsResultDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.FileSearch.top_k">top_k (genai.types.FileSearch attribute)</a>
 
         <ul>
@@ -7691,6 +7853,8 @@
           <li><a href="genai.html#genai.types.RagRetrievalConfigDict.top_k">(genai.types.RagRetrievalConfigDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.GenerateContentConfig.top_p">top_p (genai.types.GenerateContentConfig attribute)</a>
 
         <ul>
@@ -7795,9 +7959,13 @@
           <li><a href="genai.html#genai.types.DistillationDataStatsDict.training_dataset_stats">(genai.types.DistillationDataStatsDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.PartnerModelTuningSpec.training_dataset_uri">training_dataset_uri (genai.types.PartnerModelTuningSpec attribute)</a>
+        <li><a href="genai.html#genai.types.DistillationSpec.training_dataset_uri">training_dataset_uri (genai.types.DistillationSpec attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.training_dataset_uri">(genai.types.DistillationSpecDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.PartnerModelTuningSpec.training_dataset_uri">(genai.types.PartnerModelTuningSpec attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.PartnerModelTuningSpecDict.training_dataset_uri">(genai.types.PartnerModelTuningSpecDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationSpec.training_dataset_uri">(genai.types.PreferenceOptimizationSpec attribute)</a>
@@ -7883,6 +8051,16 @@
           <li><a href="genai.html#genai.types.PreTunedModelDict.tuned_model_name">(genai.types.PreTunedModelDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.tuned_teacher_model_source">tuned_teacher_model_source (genai.types.CreateTuningJobConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.tuned_teacher_model_source">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationSpec.tuned_teacher_model_source">(genai.types.DistillationSpec attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.tuned_teacher_model_source">(genai.types.DistillationSpecDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.TunedModelCheckpointDict">TunedModelCheckpointDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.TunedModelDict">TunedModelDict (class in genai.types)</a>
@@ -7915,9 +8093,13 @@
           <li><a href="genai.html#genai.types.ListTuningJobsResponseDict.tuning_jobs">(genai.types.ListTuningJobsResponseDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.SupervisedTuningSpec.tuning_mode">tuning_mode (genai.types.SupervisedTuningSpec attribute)</a>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.tuning_mode">tuning_mode (genai.types.CreateTuningJobConfig attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.tuning_mode">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.SupervisedTuningSpec.tuning_mode">(genai.types.SupervisedTuningSpec attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.SupervisedTuningSpecDict.tuning_mode">(genai.types.SupervisedTuningSpecDict attribute)</a>
 </li>
         </ul></li>
@@ -8099,6 +8281,12 @@
 
         <ul>
           <li><a href="genai.html#genai.files.Files.upload">(genai.files.Files method)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.file_search_stores.AsyncFileSearchStores.upload_to_file_search_store">upload_to_file_search_store() (genai.file_search_stores.AsyncFileSearchStores method)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.file_search_stores.FileSearchStores.upload_to_file_search_store">(genai.file_search_stores.FileSearchStores method)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.FileSource.UPLOADED">UPLOADED (genai.types.FileSource attribute)</a>
@@ -8331,9 +8519,13 @@
           <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.validation_dataset">(genai.types.CreateTuningJobConfigDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.PartnerModelTuningSpec.validation_dataset_uri">validation_dataset_uri (genai.types.PartnerModelTuningSpec attribute)</a>
+        <li><a href="genai.html#genai.types.DistillationSpec.validation_dataset_uri">validation_dataset_uri (genai.types.DistillationSpec attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.DistillationSpecDict.validation_dataset_uri">(genai.types.DistillationSpecDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.PartnerModelTuningSpec.validation_dataset_uri">(genai.types.PartnerModelTuningSpec attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.PartnerModelTuningSpecDict.validation_dataset_uri">(genai.types.PartnerModelTuningSpecDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PreferenceOptimizationSpec.validation_dataset_uri">(genai.types.PreferenceOptimizationSpec attribute)</a>
@@ -8417,10 +8609,10 @@
         </ul></li>
         <li><a href="genai.html#genai.types.VertexAISearchDataStoreSpecDict">VertexAISearchDataStoreSpecDict (class in genai.types)</a>
 </li>
-        <li><a href="genai.html#genai.types.VertexAISearchDict">VertexAISearchDict (class in genai.types)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="genai.html#genai.types.VertexAISearchDict">VertexAISearchDict (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.VertexRagStoreDict">VertexRagStoreDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.VertexRagStoreRagResourceDict">VertexRagStoreRagResourceDict (class in genai.types)</a>
@@ -8573,10 +8765,10 @@
           <li><a href="genai.html#genai.types.LiveMusicSetWeightedPromptsParametersDict.weighted_prompts">(genai.types.LiveMusicSetWeightedPromptsParametersDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.WeightedPromptDict">WeightedPromptDict (class in genai.types)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.FunctionResponseScheduling.WHEN_IDLE">WHEN_IDLE (genai.types.FunctionResponseScheduling attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.ChunkingConfig.white_space_config">white_space_config (genai.types.ChunkingConfig attribute)</a>
@@ -8599,6 +8791,18 @@
           <li><a href="genai.html#genai.types.PartialArg.will_continue">(genai.types.PartialArg attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PartialArgDict.will_continue">(genai.types.PartialArgDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.with_raw_response">with_raw_response (genai._interactions.resources.interactions.AsyncInteractionsResource property)</a>
+
+        <ul>
+          <li><a href="genai.html#genai._interactions.resources.interactions.InteractionsResource.with_raw_response">(genai._interactions.resources.interactions.InteractionsResource property)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai._interactions.resources.interactions.AsyncInteractionsResource.with_streaming_response">with_streaming_response (genai._interactions.resources.interactions.AsyncInteractionsResource property)</a>
+
+        <ul>
+          <li><a href="genai.html#genai._interactions.resources.interactions.InteractionsResource.with_streaming_response">(genai._interactions.resources.interactions.InteractionsResource property)</a>
 </li>
         </ul></li>
     </ul></td>

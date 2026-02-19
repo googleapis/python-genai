@@ -609,6 +609,19 @@ class TuningTask(_common.CaseInSensitiveEnum):
   """Tuning task for reference to video."""
 
 
+class RubricContentType(_common.CaseInSensitiveEnum):
+  """Represents the rubric content type."""
+
+  RUBRIC_CONTENT_TYPE_UNSPECIFIED = 'RUBRIC_CONTENT_TYPE_UNSPECIFIED'
+  """Rubric content type is unspecified."""
+  PROPERTY = 'PROPERTY'
+  """Generate rubrics based on properties."""
+  NL_QUESTION_ANSWER = 'NL_QUESTION_ANSWER'
+  """Generate rubrics in an NL question answer format."""
+  PYTHON_CODE_ASSERTION = 'PYTHON_CODE_ASSERTION'
+  """Generate rubrics in a unit test format."""
+
+
 class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """The tokenization quality used for given media."""
 
@@ -669,6 +682,15 @@ class Environment(_common.CaseInSensitiveEnum):
   """Defaults to browser."""
   ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
   """Operates in a web browser."""
+
+
+class EmbeddingApiType(_common.CaseInSensitiveEnum):
+  """Enum representing the Vertex embedding API to use."""
+
+  PREDICT = 'PREDICT'
+  """predict API endpoint (default)"""
+  EMBED_CONTENT = 'EMBED_CONTENT'
+  """embedContent API Endpoint"""
 
 
 class SafetyFilterLevel(_common.CaseInSensitiveEnum):
@@ -813,6 +835,8 @@ class TuningMethod(_common.CaseInSensitiveEnum):
   """Supervised fine tuning."""
   PREFERENCE_TUNING = 'PREFERENCE_TUNING'
   """Preference optimization tuning."""
+  DISTILLATION = 'DISTILLATION'
+  """Distillation tuning."""
 
 
 class DocumentState(_common.CaseInSensitiveEnum):
@@ -1000,6 +1024,21 @@ class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
   RESET_CONTEXT = 'RESET_CONTEXT'
   """Reset the context of the music generation without stopping it.
       Retains the current prompts and config."""
+
+
+class ComputationBasedMetricType(_common.CaseInSensitiveEnum):
+  """Represents the type of the computation based metric."""
+
+  COMPUTATION_BASED_METRIC_TYPE_UNSPECIFIED = (
+      'COMPUTATION_BASED_METRIC_TYPE_UNSPECIFIED'
+  )
+  """Computation based metric type is unspecified."""
+  EXACT_MATCH = 'EXACT_MATCH'
+  """Exact match metric."""
+  BLEU = 'BLEU'
+  """BLEU metric."""
+  ROUGE = 'ROUGE'
+  """ROUGE metric."""
 
 
 class PartMediaResolution(_common.BaseModel):
@@ -5679,6 +5718,10 @@ class CitationMetadata(_common.BaseModel):
     return data
 
 
+MetricUnion = Union['Metric', 'UnifiedMetric']
+MetricUnionDict = Union['MetricDict', 'UnifiedMetricDict']
+
+
 class CitationMetadataDict(TypedDict, total=False):
   """Citation information when the model quotes another source."""
 
@@ -7159,8 +7202,8 @@ class EmbedContentConfigDict(TypedDict, total=False):
 EmbedContentConfigOrDict = Union[EmbedContentConfig, EmbedContentConfigDict]
 
 
-class _EmbedContentParameters(_common.BaseModel):
-  """Parameters for the embed_content method."""
+class _EmbedContentParametersPrivate(_common.BaseModel):
+  """Parameters for the _embed_content method."""
 
   model: Optional[str] = Field(
       default=None,
@@ -7172,6 +7215,16 @@ class _EmbedContentParameters(_common.BaseModel):
       description="""The content to embed. Only the `parts.text` fields will be counted.
       """,
   )
+  content: Optional[ContentUnion] = Field(
+      default=None,
+      description="""The single content to embed. Only the `parts.text` fields will be counted.
+      """,
+  )
+  embedding_api_type: Optional[EmbeddingApiType] = Field(
+      default=None,
+      description="""The Vertex embedding API to use.
+      """,
+  )
   config: Optional[EmbedContentConfig] = Field(
       default=None,
       description="""Configuration that contains optional parameters.
@@ -7179,8 +7232,8 @@ class _EmbedContentParameters(_common.BaseModel):
   )
 
 
-class _EmbedContentParametersDict(TypedDict, total=False):
-  """Parameters for the embed_content method."""
+class _EmbedContentParametersPrivateDict(TypedDict, total=False):
+  """Parameters for the _embed_content method."""
 
   model: Optional[str]
   """ID of the model to use. For a list of models, see `Google models
@@ -7190,13 +7243,21 @@ class _EmbedContentParametersDict(TypedDict, total=False):
   """The content to embed. Only the `parts.text` fields will be counted.
       """
 
+  content: Optional[ContentUnionDict]
+  """The single content to embed. Only the `parts.text` fields will be counted.
+      """
+
+  embedding_api_type: Optional[EmbeddingApiType]
+  """The Vertex embedding API to use.
+      """
+
   config: Optional[EmbedContentConfigDict]
   """Configuration that contains optional parameters.
       """
 
 
-_EmbedContentParametersOrDict = Union[
-    _EmbedContentParameters, _EmbedContentParametersDict
+_EmbedContentParametersPrivateOrDict = Union[
+    _EmbedContentParametersPrivate, _EmbedContentParametersPrivateDict
 ]
 
 
@@ -10546,6 +10607,114 @@ PreferenceOptimizationSpecOrDict = Union[
 ]
 
 
+class DistillationHyperParameters(_common.BaseModel):
+  """Hyperparameters for Distillation.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None, description="""Optional. Adapter size for distillation."""
+  )
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate.""",
+  )
+
+
+class DistillationHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Distillation.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize]
+  """Optional. Adapter size for distillation."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate."""
+
+
+DistillationHyperParametersOrDict = Union[
+    DistillationHyperParameters, DistillationHyperParametersDict
+]
+
+
+class DistillationSpec(_common.BaseModel):
+  """Distillation tuning spec for tuning."""
+
+  prompt_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""The GCS URI of the prompt dataset to use during distillation.""",
+  )
+  base_teacher_model: Optional[str] = Field(
+      default=None,
+      description="""The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).""",
+  )
+  hyper_parameters: Optional[DistillationHyperParameters] = Field(
+      default=None,
+      description="""Optional. Hyperparameters for Distillation.""",
+  )
+  pipeline_root_directory: Optional[str] = Field(
+      default=None,
+      description="""Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts.""",
+  )
+  student_model: Optional[str] = Field(
+      default=None,
+      description="""The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead.""",
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+  tuned_teacher_model_source: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+class DistillationSpecDict(TypedDict, total=False):
+  """Distillation tuning spec for tuning."""
+
+  prompt_dataset_uri: Optional[str]
+  """The GCS URI of the prompt dataset to use during distillation."""
+
+  base_teacher_model: Optional[str]
+  """The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models)."""
+
+  hyper_parameters: Optional[DistillationHyperParametersDict]
+  """Optional. Hyperparameters for Distillation."""
+
+  pipeline_root_directory: Optional[str]
+  """Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts."""
+
+  student_model: Optional[str]
+  """The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated. Use base_model instead."""
+
+  training_dataset_uri: Optional[str]
+  """Deprecated. Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+  tuned_teacher_model_source: Optional[str]
+  """The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+
+DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
+
+
 class GcsDestination(_common.BaseModel):
   """The Google Cloud Storage location where the output is to be written to."""
 
@@ -10662,140 +10831,10 @@ class AutoraterConfigDict(TypedDict, total=False):
 AutoraterConfigOrDict = Union[AutoraterConfig, AutoraterConfigDict]
 
 
-class Metric(_common.BaseModel):
-  """The metric used for evaluation."""
-
-  name: Optional[str] = Field(
-      default=None, description="""The name of the metric."""
-  )
-  custom_function: Optional[Callable[..., Any]] = Field(
-      default=None,
-      description="""The custom function that defines the end-to-end logic for metric computation.""",
-  )
-  prompt_template: Optional[str] = Field(
-      default=None, description="""The prompt template for the metric."""
-  )
-  judge_model_system_instruction: Optional[str] = Field(
-      default=None,
-      description="""The system instruction for the judge model.""",
-  )
-  return_raw_output: Optional[bool] = Field(
-      default=None,
-      description="""Whether to return the raw output from the judge model.""",
-  )
-  parse_and_reduce_fn: Optional[Callable[..., Any]] = Field(
-      default=None,
-      description="""The parse and reduce function for the judge model.""",
-  )
-  aggregate_summary_fn: Optional[Callable[..., Any]] = Field(
-      default=None,
-      description="""The aggregate summary function for the judge model.""",
-  )
-
-  # Allow extra fields to support metric-specific config fields.
-  model_config = ConfigDict(extra='allow')
-
-  _is_predefined: bool = PrivateAttr(default=False)
-  """A boolean indicating whether the metric is predefined."""
-
-  _config_source: Optional[str] = PrivateAttr(default=None)
-  """An optional string indicating the source of the metric configuration."""
-
-  _version: Optional[str] = PrivateAttr(default=None)
-  """An optional string indicating the version of the metric."""
-
-  @model_validator(mode='after')  # type: ignore[arg-type]
-  def validate_name(self) -> 'Metric':
-    if not self.name:
-      raise ValueError('Metric name cannot be empty.')
-    self.name = self.name.lower()
-    return self
-
-  def to_yaml_file(self, file_path: str, version: Optional[str] = None) -> None:
-    """Dumps the metric object to a YAML file.
-
-    Args:
-        file_path: The path to the YAML file.
-        version: Optional version string to include in the YAML output.
-
-    Raises:
-        ImportError: If the pyyaml library is not installed.
-    """
-    try:
-      import yaml
-    except ImportError:
-      raise ImportError(
-          'YAML serialization requires the pyyaml library. Please install'
-          " it using 'pip install google-cloud-aiplatform[evaluation]'."
-      )
-
-    fields_to_exclude_callables = set()
-    for field_name, field_info in self.model_fields.items():
-      annotation = field_info.annotation
-      origin = typing.get_origin(annotation)
-
-      is_field_callable_type = False
-      if annotation is Callable or origin is Callable:  # type: ignore[comparison-overlap]
-        is_field_callable_type = True
-      elif origin is Union:
-        args = typing.get_args(annotation)
-        if any(
-            arg is Callable or typing.get_origin(arg) is Callable
-            for arg in args
-        ):
-          is_field_callable_type = True
-
-      if is_field_callable_type:
-        fields_to_exclude_callables.add(field_name)
-
-    data_to_dump = self.model_dump(
-        exclude_unset=True,
-        exclude_none=True,
-        mode='json',
-        exclude=fields_to_exclude_callables
-        if fields_to_exclude_callables
-        else None,
-    )
-
-    if version:
-      data_to_dump['version'] = version
-
-    with open(file_path, 'w', encoding='utf-8') as f:
-      yaml.dump(data_to_dump, f, sort_keys=False, allow_unicode=True)
-
-
-class MetricDict(TypedDict, total=False):
-  """The metric used for evaluation."""
-
-  name: Optional[str]
-  """The name of the metric."""
-
-  custom_function: Optional[Callable[..., Any]]
-  """The custom function that defines the end-to-end logic for metric computation."""
-
-  prompt_template: Optional[str]
-  """The prompt template for the metric."""
-
-  judge_model_system_instruction: Optional[str]
-  """The system instruction for the judge model."""
-
-  return_raw_output: Optional[bool]
-  """Whether to return the raw output from the judge model."""
-
-  parse_and_reduce_fn: Optional[Callable[..., Any]]
-  """The parse and reduce function for the judge model."""
-
-  aggregate_summary_fn: Optional[Callable[..., Any]]
-  """The aggregate summary function for the judge model."""
-
-
-MetricOrDict = Union[Metric, MetricDict]
-
-
 class EvaluationConfig(_common.BaseModel):
   """Evaluation config for tuning."""
 
-  metrics: Optional[list[Metric]] = Field(
+  metrics: Optional[list[MetricUnion]] = Field(
       default=None, description="""The metrics used for evaluation."""
   )
   output_config: Optional[OutputConfig] = Field(
@@ -10809,7 +10848,7 @@ class EvaluationConfig(_common.BaseModel):
 class EvaluationConfigDict(TypedDict, total=False):
   """Evaluation config for tuning."""
 
-  metrics: Optional[list[MetricDict]]
+  metrics: Optional[list[MetricUnionDict]]
   """The metrics used for evaluation."""
 
   output_config: Optional[OutputConfigDict]
@@ -11742,6 +11781,9 @@ class TuningJob(_common.BaseModel):
   preference_optimization_spec: Optional[PreferenceOptimizationSpec] = Field(
       default=None, description="""Tuning Spec for Preference Optimization."""
   )
+  distillation_spec: Optional[DistillationSpec] = Field(
+      default=None, description="""Tuning Spec for Distillation."""
+  )
   tuning_data_stats: Optional[TuningDataStats] = Field(
       default=None,
       description="""Output only. The tuning data statistics associated with this TuningJob.""",
@@ -11844,6 +11886,9 @@ class TuningJobDict(TypedDict, total=False):
 
   preference_optimization_spec: Optional[PreferenceOptimizationSpecDict]
   """Tuning Spec for Preference Optimization."""
+
+  distillation_spec: Optional[DistillationSpecDict]
+  """Tuning Spec for Distillation."""
 
   tuning_data_stats: Optional[TuningDataStatsDict]
   """Output only. The tuning data statistics associated with this TuningJob."""
@@ -12133,7 +12178,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   method: Optional[TuningMethod] = Field(
       default=None,
-      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING). If not set, the default method (SFT) will be used.""",
+      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used.""",
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
@@ -12152,7 +12197,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   learning_rate_multiplier: Optional[float] = Field(
       default=None,
-      description="""Multiplier for adjusting the default learning rate.""",
+      description="""Multiplier for adjusting the default learning rate. 1P models only. Mutually exclusive with learning_rate.""",
   )
   export_last_checkpoint_only: Optional[bool] = Field(
       default=None,
@@ -12165,13 +12210,20 @@ class CreateTuningJobConfig(_common.BaseModel):
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Adapter size for tuning."""
   )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode for SFT tuning."""
+  )
+  custom_base_model: Optional[str] = Field(
+      default=None,
+      description="""Custom base model for tuning. This is only supported for OSS models in Vertex.""",
+  )
   batch_size: Optional[int] = Field(
       default=None,
-      description="""The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples.""",
+      description="""The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex.""",
   )
   learning_rate: Optional[float] = Field(
       default=None,
-      description="""The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples.""",
+      description="""The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier.""",
   )
   evaluation_config: Optional[EvaluationConfig] = Field(
       default=None, description="""Evaluation config for the tuning job."""
@@ -12184,6 +12236,26 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""Weight for KL Divergence regularization, Preference Optimization tuning only.""",
   )
+  base_teacher_model: Optional[str] = Field(
+      default=None,
+      description="""The base teacher model that is being distilled. Distillation only.""",
+  )
+  tuned_teacher_model_source: Optional[str] = Field(
+      default=None,
+      description="""The resource name of the Tuned teacher model. Distillation only.""",
+  )
+  sft_loss_weight_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Multiplier for adjusting the weight of the SFT loss. Distillation only.""",
+  )
+  output_uri: Optional[str] = Field(
+      default=None,
+      description="""The Google Cloud Storage location where the tuning job outputs are written.""",
+  )
+  encryption_spec: Optional[EncryptionSpec] = Field(
+      default=None,
+      description="""The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -12193,7 +12265,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   method: Optional[TuningMethod]
-  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING). If not set, the default method (SFT) will be used."""
+  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
   """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -12208,7 +12280,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Number of complete passes the model makes over the entire training dataset during training."""
 
   learning_rate_multiplier: Optional[float]
-  """Multiplier for adjusting the default learning rate."""
+  """Multiplier for adjusting the default learning rate. 1P models only. Mutually exclusive with learning_rate."""
 
   export_last_checkpoint_only: Optional[bool]
   """If set to true, disable intermediate checkpoints and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints."""
@@ -12219,11 +12291,17 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   adapter_size: Optional[AdapterSize]
   """Adapter size for tuning."""
 
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode for SFT tuning."""
+
+  custom_base_model: Optional[str]
+  """Custom base model for tuning. This is only supported for OSS models in Vertex."""
+
   batch_size: Optional[int]
-  """The batch size hyperparameter for tuning. If not set, a default of 4 or 16 will be used based on the number of training examples."""
+  """The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex."""
 
   learning_rate: Optional[float]
-  """The learning rate hyperparameter for tuning. If not set, a default of 0.001 or 0.0002 will be calculated based on the number of training examples."""
+  """The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier."""
 
   evaluation_config: Optional[EvaluationConfigDict]
   """Evaluation config for the tuning job."""
@@ -12233,6 +12311,21 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   beta: Optional[float]
   """Weight for KL Divergence regularization, Preference Optimization tuning only."""
+
+  base_teacher_model: Optional[str]
+  """The base teacher model that is being distilled. Distillation only."""
+
+  tuned_teacher_model_source: Optional[str]
+  """The resource name of the Tuned teacher model. Distillation only."""
+
+  sft_loss_weight_multiplier: Optional[float]
+  """Multiplier for adjusting the weight of the SFT loss. Distillation only."""
+
+  output_uri: Optional[str]
+  """The Google Cloud Storage location where the tuning job outputs are written."""
+
+  encryption_spec: Optional[EncryptionSpecDict]
+  """The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key."""
 
 
 CreateTuningJobConfigOrDict = Union[
@@ -14026,8 +14119,8 @@ class RegisterFilesConfigDict(TypedDict, total=False):
 RegisterFilesConfigOrDict = Union[RegisterFilesConfig, RegisterFilesConfigDict]
 
 
-class _RegisterFilesParameters(_common.BaseModel):
-  """Generates the parameters for the private _Register method."""
+class _InternalRegisterFilesParameters(_common.BaseModel):
+  """Parameters for the private _Register method."""
 
   uris: Optional[list[str]] = Field(
       default=None,
@@ -14039,8 +14132,8 @@ class _RegisterFilesParameters(_common.BaseModel):
   )
 
 
-class _RegisterFilesParametersDict(TypedDict, total=False):
-  """Generates the parameters for the private _Register method."""
+class _InternalRegisterFilesParametersDict(TypedDict, total=False):
+  """Parameters for the private _Register method."""
 
   uris: Optional[list[str]]
   """The Google Cloud Storage URIs to register. Example: `gs://bucket/object`."""
@@ -14049,8 +14142,8 @@ class _RegisterFilesParametersDict(TypedDict, total=False):
   """Used to override the default configuration."""
 
 
-_RegisterFilesParametersOrDict = Union[
-    _RegisterFilesParameters, _RegisterFilesParametersDict
+_InternalRegisterFilesParametersOrDict = Union[
+    _InternalRegisterFilesParameters, _InternalRegisterFilesParametersDict
 ]
 
 
@@ -14225,6 +14318,10 @@ class InlinedResponse(_common.BaseModel):
       description="""The response to the request.
       """,
   )
+  metadata: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""The metadata to be associated with the request.""",
+  )
   error: Optional[JobError] = Field(
       default=None,
       description="""The error encountered while processing the request.
@@ -14242,6 +14339,9 @@ class InlinedResponseDict(TypedDict, total=False):
   response: Optional[GenerateContentResponseDict]
   """The response to the request.
       """
+
+  metadata: Optional[dict[str, str]]
+  """The metadata to be associated with the request."""
 
   error: Optional[JobErrorDict]
   """The error encountered while processing the request.
@@ -18240,6 +18340,47 @@ CreateTuningJobParametersOrDict = Union[
 ]
 
 
+class EmbedContentParameters(_common.BaseModel):
+  """Parameters for the embed_content method."""
+
+  model: Optional[str] = Field(
+      default=None,
+      description="""ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
+  )
+  contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""The content to embed. Only the `parts.text` fields will be counted.
+      """,
+  )
+  config: Optional[EmbedContentConfig] = Field(
+      default=None,
+      description="""Configuration that contains optional parameters.
+      """,
+  )
+
+
+class EmbedContentParametersDict(TypedDict, total=False):
+  """Parameters for the embed_content method."""
+
+  model: Optional[str]
+  """ID of the model to use. For a list of models, see `Google models
+    <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
+
+  contents: Optional[ContentListUnionDict]
+  """The content to embed. Only the `parts.text` fields will be counted.
+      """
+
+  config: Optional[EmbedContentConfigDict]
+  """Configuration that contains optional parameters.
+      """
+
+
+EmbedContentParametersOrDict = Union[
+    EmbedContentParameters, EmbedContentParametersDict
+]
+
+
 class UserContent(Content):
   """UserContent facilitates the creation of a Content object with a user role.
 
@@ -18338,6 +18479,136 @@ class BleuSpecDict(TypedDict, total=False):
 
 
 BleuSpecOrDict = Union[BleuSpec, BleuSpecDict]
+
+
+class Metric(_common.BaseModel):
+  """The metric used for evaluation."""
+
+  name: Optional[str] = Field(
+      default=None, description="""The name of the metric."""
+  )
+  custom_function: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The custom function that defines the end-to-end logic for metric computation.""",
+  )
+  prompt_template: Optional[str] = Field(
+      default=None, description="""The prompt template for the metric."""
+  )
+  judge_model_system_instruction: Optional[str] = Field(
+      default=None,
+      description="""The system instruction for the judge model.""",
+  )
+  return_raw_output: Optional[bool] = Field(
+      default=None,
+      description="""Whether to return the raw output from the judge model.""",
+  )
+  parse_and_reduce_fn: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The parse and reduce function for the judge model.""",
+  )
+  aggregate_summary_fn: Optional[Callable[..., Any]] = Field(
+      default=None,
+      description="""The aggregate summary function for the judge model.""",
+  )
+
+  # Allow extra fields to support metric-specific config fields.
+  model_config = ConfigDict(extra='allow')
+
+  _is_predefined: bool = PrivateAttr(default=False)
+  """A boolean indicating whether the metric is predefined."""
+
+  _config_source: Optional[str] = PrivateAttr(default=None)
+  """An optional string indicating the source of the metric configuration."""
+
+  _version: Optional[str] = PrivateAttr(default=None)
+  """An optional string indicating the version of the metric."""
+
+  @model_validator(mode='after')  # type: ignore[arg-type]
+  def validate_name(self) -> 'Metric':
+    if not self.name:
+      raise ValueError('Metric name cannot be empty.')
+    self.name = self.name.lower()
+    return self
+
+  def to_yaml_file(self, file_path: str, version: Optional[str] = None) -> None:
+    """Dumps the metric object to a YAML file.
+
+    Args:
+        file_path: The path to the YAML file.
+        version: Optional version string to include in the YAML output.
+
+    Raises:
+        ImportError: If the pyyaml library is not installed.
+    """
+    try:
+      import yaml
+    except ImportError:
+      raise ImportError(
+          'YAML serialization requires the pyyaml library. Please install'
+          " it using 'pip install google-cloud-aiplatform[evaluation]'."
+      )
+
+    fields_to_exclude_callables = set()
+    for field_name, field_info in self.model_fields.items():
+      annotation = field_info.annotation
+      origin = typing.get_origin(annotation)
+
+      is_field_callable_type = False
+      if annotation is Callable or origin is Callable:  # type: ignore[comparison-overlap]
+        is_field_callable_type = True
+      elif origin is Union:
+        args = typing.get_args(annotation)
+        if any(
+            arg is Callable or typing.get_origin(arg) is Callable
+            for arg in args
+        ):
+          is_field_callable_type = True
+
+      if is_field_callable_type:
+        fields_to_exclude_callables.add(field_name)
+
+    data_to_dump = self.model_dump(
+        exclude_unset=True,
+        exclude_none=True,
+        mode='json',
+        exclude=fields_to_exclude_callables
+        if fields_to_exclude_callables
+        else None,
+    )
+
+    if version:
+      data_to_dump['version'] = version
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+      yaml.dump(data_to_dump, f, sort_keys=False, allow_unicode=True)
+
+
+class MetricDict(TypedDict, total=False):
+  """The metric used for evaluation."""
+
+  name: Optional[str]
+  """The name of the metric."""
+
+  custom_function: Optional[Callable[..., Any]]
+  """The custom function that defines the end-to-end logic for metric computation."""
+
+  prompt_template: Optional[str]
+  """The prompt template for the metric."""
+
+  judge_model_system_instruction: Optional[str]
+  """The system instruction for the judge model."""
+
+  return_raw_output: Optional[bool]
+  """Whether to return the raw output from the judge model."""
+
+  parse_and_reduce_fn: Optional[Callable[..., Any]]
+  """The parse and reduce function for the judge model."""
+
+  aggregate_summary_fn: Optional[Callable[..., Any]]
+  """The aggregate summary function for the judge model."""
+
+
+MetricOrDict = Union[Metric, MetricDict]
 
 
 class PairwiseMetricSpec(_common.BaseModel):
@@ -18451,6 +18722,250 @@ class RougeSpecDict(TypedDict, total=False):
 
 
 RougeSpecOrDict = Union[RougeSpec, RougeSpecDict]
+
+
+class PredefinedMetricSpec(_common.BaseModel):
+  """Spec for predefined metric."""
+
+  metric_spec_name: Optional[str] = Field(
+      default=None,
+      description="""The name of a pre-defined metric, such as "instruction_following_v1" or
+      "text_quality_v1".""",
+  )
+  metric_spec_parameters: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""The parameters needed to run the pre-defined metric.""",
+  )
+
+
+class PredefinedMetricSpecDict(TypedDict, total=False):
+  """Spec for predefined metric."""
+
+  metric_spec_name: Optional[str]
+  """The name of a pre-defined metric, such as "instruction_following_v1" or
+      "text_quality_v1"."""
+
+  metric_spec_parameters: Optional[dict[str, Any]]
+  """The parameters needed to run the pre-defined metric."""
+
+
+PredefinedMetricSpecOrDict = Union[
+    PredefinedMetricSpec, PredefinedMetricSpecDict
+]
+
+
+class RubricGenerationSpec(_common.BaseModel):
+  """Specification for how rubrics should be generated."""
+
+  prompt_template: Optional[str] = Field(
+      default=None,
+      description="""Template for the prompt used to generate rubrics.""",
+  )
+  rubric_content_type: Optional[RubricContentType] = Field(
+      default=None,
+      description="""The type of rubric content to be generated.""",
+  )
+  rubric_type_ontology: Optional[list[str]] = Field(
+      default=None,
+      description="""An optional, pre-defined list of allowed types for generated rubrics.
+      If this field is provided, it implies `include_rubric_type` should be true,
+      and the generated rubric types should be chosen from this ontology.""",
+  )
+
+
+class RubricGenerationSpecDict(TypedDict, total=False):
+  """Specification for how rubrics should be generated."""
+
+  prompt_template: Optional[str]
+  """Template for the prompt used to generate rubrics."""
+
+  rubric_content_type: Optional[RubricContentType]
+  """The type of rubric content to be generated."""
+
+  rubric_type_ontology: Optional[list[str]]
+  """An optional, pre-defined list of allowed types for generated rubrics.
+      If this field is provided, it implies `include_rubric_type` should be true,
+      and the generated rubric types should be chosen from this ontology."""
+
+
+RubricGenerationSpecOrDict = Union[
+    RubricGenerationSpec, RubricGenerationSpecDict
+]
+
+
+class LLMBasedMetricSpec(_common.BaseModel):
+  """Specification for an LLM based metric."""
+
+  metric_prompt_template: Optional[str] = Field(
+      default=None,
+      description="""Template for the prompt sent to the judge model.""",
+  )
+  system_instruction: Optional[str] = Field(
+      default=None, description="""System instruction for the judge model."""
+  )
+  judge_autorater_config: Optional[AutoraterConfig] = Field(
+      default=None,
+      description="""Optional configuration for the judge LLM (Autorater).""",
+  )
+  rubric_group_key: Optional[str] = Field(
+      default=None,
+      description="""Use a pre-defined group of rubrics associated with the input.
+      Refers to a key in the rubric_groups map of EvaluationInstance.""",
+  )
+  predefined_rubric_generation_spec: Optional[PredefinedMetricSpec] = Field(
+      default=None,
+      description="""Dynamically generate rubrics using a predefined spec.""",
+  )
+  rubric_generation_spec: Optional[RubricGenerationSpec] = Field(
+      default=None,
+      description="""Dynamically generate rubrics using this specification.""",
+  )
+  additional_config: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Optional. Optional additional configuration for the metric.""",
+  )
+
+
+class LLMBasedMetricSpecDict(TypedDict, total=False):
+  """Specification for an LLM based metric."""
+
+  metric_prompt_template: Optional[str]
+  """Template for the prompt sent to the judge model."""
+
+  system_instruction: Optional[str]
+  """System instruction for the judge model."""
+
+  judge_autorater_config: Optional[AutoraterConfigDict]
+  """Optional configuration for the judge LLM (Autorater)."""
+
+  rubric_group_key: Optional[str]
+  """Use a pre-defined group of rubrics associated with the input.
+      Refers to a key in the rubric_groups map of EvaluationInstance."""
+
+  predefined_rubric_generation_spec: Optional[PredefinedMetricSpecDict]
+  """Dynamically generate rubrics using a predefined spec."""
+
+  rubric_generation_spec: Optional[RubricGenerationSpecDict]
+  """Dynamically generate rubrics using this specification."""
+
+  additional_config: Optional[dict[str, Any]]
+  """Optional. Optional additional configuration for the metric."""
+
+
+LLMBasedMetricSpecOrDict = Union[LLMBasedMetricSpec, LLMBasedMetricSpecDict]
+
+
+class CustomCodeExecutionSpec(_common.BaseModel):
+  """Specificies a metric that is computed by running user-defined Python functions remotely."""
+
+  evaluation_function: Optional[str] = Field(
+      default=None,
+      description="""A string representing a user-defined function for evaluation.
+  Expected user to define the following function, e.g.:
+    def evaluate(instance: dict[str, Any]) -> float:
+  Please include this function signature in the code snippet.
+  Instance is the evaluation instance, any fields populated in the instance
+  are available to the function as instance[field_name].""",
+  )
+
+
+class CustomCodeExecutionSpecDict(TypedDict, total=False):
+  """Specificies a metric that is computed by running user-defined Python functions remotely."""
+
+  evaluation_function: Optional[str]
+  """A string representing a user-defined function for evaluation.
+  Expected user to define the following function, e.g.:
+    def evaluate(instance: dict[str, Any]) -> float:
+  Please include this function signature in the code snippet.
+  Instance is the evaluation instance, any fields populated in the instance
+  are available to the function as instance[field_name]."""
+
+
+CustomCodeExecutionSpecOrDict = Union[
+    CustomCodeExecutionSpec, CustomCodeExecutionSpecDict
+]
+
+
+class ComputationBasedMetricSpec(_common.BaseModel):
+  """Specification for a computation based metric."""
+
+  type: Optional[ComputationBasedMetricType] = Field(
+      default=None, description="""The type of the computation based metric."""
+  )
+  parameters: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""A map of parameters for the metric. ROUGE example: {"rouge_type": "rougeL", "split_summaries": True, "use_stemmer": True}. BLEU example: {"use_effective_order": True}.""",
+  )
+
+
+class ComputationBasedMetricSpecDict(TypedDict, total=False):
+  """Specification for a computation based metric."""
+
+  type: Optional[ComputationBasedMetricType]
+  """The type of the computation based metric."""
+
+  parameters: Optional[dict[str, Any]]
+  """A map of parameters for the metric. ROUGE example: {"rouge_type": "rougeL", "split_summaries": True, "use_stemmer": True}. BLEU example: {"use_effective_order": True}."""
+
+
+ComputationBasedMetricSpecOrDict = Union[
+    ComputationBasedMetricSpec, ComputationBasedMetricSpecDict
+]
+
+
+class UnifiedMetric(_common.BaseModel):
+  """The unified metric used for evaluation."""
+
+  bleu_spec: Optional[BleuSpec] = Field(
+      default=None, description="""The Bleu metric spec."""
+  )
+  rouge_spec: Optional[RougeSpec] = Field(
+      default=None, description="""The rouge metric spec."""
+  )
+  pointwise_metric_spec: Optional[PointwiseMetricSpec] = Field(
+      default=None, description="""The pointwise metric spec."""
+  )
+  llm_based_metric_spec: Optional[LLMBasedMetricSpec] = Field(
+      default=None, description="""The spec for an LLM based metric."""
+  )
+  custom_code_execution_spec: Optional[CustomCodeExecutionSpec] = Field(
+      default=None,
+      description="""The spec for a custom code execution metric.""",
+  )
+  predefined_metric_spec: Optional[PredefinedMetricSpec] = Field(
+      default=None, description="""The spec for a pre-defined metric."""
+  )
+  computation_based_metric_spec: Optional[ComputationBasedMetricSpec] = Field(
+      default=None, description="""The spec for a computation based metric."""
+  )
+
+
+class UnifiedMetricDict(TypedDict, total=False):
+  """The unified metric used for evaluation."""
+
+  bleu_spec: Optional[BleuSpecDict]
+  """The Bleu metric spec."""
+
+  rouge_spec: Optional[RougeSpecDict]
+  """The rouge metric spec."""
+
+  pointwise_metric_spec: Optional[PointwiseMetricSpecDict]
+  """The pointwise metric spec."""
+
+  llm_based_metric_spec: Optional[LLMBasedMetricSpecDict]
+  """The spec for an LLM based metric."""
+
+  custom_code_execution_spec: Optional[CustomCodeExecutionSpecDict]
+  """The spec for a custom code execution metric."""
+
+  predefined_metric_spec: Optional[PredefinedMetricSpecDict]
+  """The spec for a pre-defined metric."""
+
+  computation_based_metric_spec: Optional[ComputationBasedMetricSpecDict]
+  """The spec for a computation based metric."""
+
+
+UnifiedMetricOrDict = Union[UnifiedMetric, UnifiedMetricDict]
 
 
 class UploadToFileSearchStoreResponse(_common.BaseModel):

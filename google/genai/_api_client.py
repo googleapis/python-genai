@@ -584,7 +584,7 @@ class BaseApiClient:
         validated_http_options = HttpOptions.model_validate(http_options)
       except ValidationError as e:
         raise ValueError('Invalid http_options') from e
-    elif isinstance(http_options, HttpOptions):
+    elif http_options and _common.is_duck_type_of(http_options, HttpOptions):
       validated_http_options = http_options
 
     if validated_http_options.base_url_resource_scope and not validated_http_options.base_url:
@@ -649,7 +649,13 @@ class BaseApiClient:
           else None
       )
 
-      if not self.location and not self.api_key and not self.custom_base_url:
+      if (
+          not self.location
+          and not self.api_key
+      ):
+        if not self.custom_base_url:
+          self.location = 'global'
+        elif self.custom_base_url.endswith('.googleapis.com'):
           self.location = 'global'
 
       # Skip fetching project from ADC if base url is provided in http options.
@@ -667,12 +673,16 @@ class BaseApiClient:
       if not has_sufficient_auth and not self.custom_base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
-            'Project or API key must be set when using the Vertex '
-            'AI API.'
+            'Project or API key must be set when using the Vertex AI API.'
         )
-      if self.api_key or self.location == 'global':
+      if (
+          self.api_key or self.location == 'global'
+      ) and not self.custom_base_url:
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif self.custom_base_url and not ((project and location) or api_key):
+      elif (
+          self.custom_base_url
+          and not self.custom_base_url.endswith('.googleapis.com')
+      ) and not ((project and location) or api_key):
         # Avoid setting default base url and api version if base_url provided.
         # API gateway proxy can use the auth in custom headers, not url.
         # Enable custom url if auth is not sufficient.

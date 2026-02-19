@@ -19,11 +19,12 @@ from typing import List, Union, Optional
 from typing_extensions import Literal, TypeAlias
 
 from .._models import BaseModel
+from .text_content import TextContent
 from .image_content import ImageContent
 
 __all__ = ["FunctionResultContent", "Result", "ResultItems", "ResultItemsItem"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContent, object]
+ResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
 
 class ResultItems(BaseModel):

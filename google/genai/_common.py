@@ -814,3 +814,34 @@ def recursive_dict_update(
       target_dict[key] = value
     else:
       target_dict[key] = value
+
+
+def is_duck_type_of(obj: Any, cls: type[pydantic.BaseModel]) -> bool:
+  """Checks if an object has all of the fields of a Pydantic model.
+
+  This is a duck-typing alternative to `isinstance` to solve dual-import
+  problems. It returns False for dictionaries, which should be handled by
+  `isinstance(obj, dict)`.
+
+  Args:
+    obj: The object to check.
+    cls: The Pydantic model class to duck-type against.
+
+  Returns:
+    True if the object has all the fields defined in the Pydantic model, False
+    otherwise.
+  """
+  if isinstance(obj, dict) or not hasattr(cls, 'model_fields'):
+    return False
+
+  # Check if the object has all of the Pydantic model's defined fields.
+  all_matched = all(hasattr(obj, field) for field in cls.model_fields)
+  if not all_matched and isinstance(obj, pydantic.BaseModel):
+    # Check the other way around if obj is a Pydantic model.
+    # Check if the Pydantic model has all of the object's defined fields.
+    try:
+      obj_private = cls()
+      all_matched = all(hasattr(obj_private, f) for f in type(obj).model_fields)
+    except ValueError:
+      return False
+  return all_matched
