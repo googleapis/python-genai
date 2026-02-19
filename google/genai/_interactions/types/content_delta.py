@@ -338,13 +338,13 @@ Delta: TypeAlias = Annotated[
 
 
 class ContentDelta(BaseModel):
+    event_type: Literal["content.delta"]
+
     delta: Optional[Delta] = None
 
     event_id: Optional[str] = None
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    event_type: Optional[Literal["content.delta"]] = None
 
     index: Optional[int] = None

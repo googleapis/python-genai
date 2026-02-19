@@ -24,12 +24,12 @@ __all__ = ["InteractionStatusUpdate"]
 
 
 class InteractionStatusUpdate(BaseModel):
+    event_type: Literal["interaction.status_update"]
+
     event_id: Optional[str] = None
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    event_type: Optional[Literal["interaction.status_update"]] = None
 
     interaction_id: Optional[str] = None
 
