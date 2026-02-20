@@ -34,16 +34,9 @@ def _get_bytes_from_file(relative_path: str) -> bytes:
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name='test_single_text',
-        parameters=types.EmbedContentParameters(
-            model='text-embedding-004',
-            contents=t.t_contents('What is your name?'),
-        ),
-    ),
-    pytest_helper.TestTableItem(
         name='test_multi_texts_with_config',
         parameters=types.EmbedContentParameters(
-            model='text-embedding-004',
+            model='gemini-embedding-001',
             contents=[
                 t.t_content('What is your name?'),
                 t.t_content('I am a model.'),
@@ -61,7 +54,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_single_text_with_mime_type_not_supported_in_mldev',
         parameters=types.EmbedContentParameters(
-            model='text-embedding-004',
+            model='gemini-embedding-001',
             contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 10,
@@ -73,7 +66,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_single_text_with_auto_truncate_not_supported_in_mldev',
         parameters=types.EmbedContentParameters(
-            model='text-embedding-004',
+            model='gemini-embedding-001',
             contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 10,
@@ -201,7 +194,7 @@ pytestmark = pytest_helper.setup(
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.embed_content(
-      model='text-embedding-004',
+      model='gemini-embedding-001',
       contents='What is your name?',
       config={'output_dimensionality': 10},
   )
