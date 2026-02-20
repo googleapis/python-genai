@@ -4223,6 +4223,92 @@ class UrlContextDict(TypedDict, total=False):
 UrlContextOrDict = Union[UrlContext, UrlContextDict]
 
 
+class StreamableHttpTransport(_common.BaseModel):
+  """A transport that can stream HTTP requests and responses.
+
+  Next ID: 6. This data type is not supported in Vertex AI.
+  """
+
+  headers: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Optional: Fields for authentication headers, timeouts, etc., if needed.""",
+  )
+  sse_read_timeout: Optional[str] = Field(
+      default=None, description="""Timeout for SSE read operations."""
+  )
+  terminate_on_close: Optional[bool] = Field(
+      default=None,
+      description="""Whether to close the client session when the transport closes.""",
+  )
+  timeout: Optional[str] = Field(
+      default=None, description="""HTTP timeout for regular operations."""
+  )
+  url: Optional[str] = Field(
+      default=None,
+      description="""The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp".""",
+  )
+
+
+class StreamableHttpTransportDict(TypedDict, total=False):
+  """A transport that can stream HTTP requests and responses.
+
+  Next ID: 6. This data type is not supported in Vertex AI.
+  """
+
+  headers: Optional[dict[str, str]]
+  """Optional: Fields for authentication headers, timeouts, etc., if needed."""
+
+  sse_read_timeout: Optional[str]
+  """Timeout for SSE read operations."""
+
+  terminate_on_close: Optional[bool]
+  """Whether to close the client session when the transport closes."""
+
+  timeout: Optional[str]
+  """HTTP timeout for regular operations."""
+
+  url: Optional[str]
+  """The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp"."""
+
+
+StreamableHttpTransportOrDict = Union[
+    StreamableHttpTransport, StreamableHttpTransportDict
+]
+
+
+class McpServer(_common.BaseModel):
+  """A MCPServer is a server that can be called by the model to perform actions.
+
+  It is a server that implements the MCP protocol. Next ID: 5. This data type is
+  not supported in Vertex AI.
+  """
+
+  name: Optional[str] = Field(
+      default=None, description="""The name of the MCPServer."""
+  )
+  streamable_http_transport: Optional[StreamableHttpTransport] = Field(
+      default=None,
+      description="""A transport that can stream HTTP requests and responses.""",
+  )
+
+
+class McpServerDict(TypedDict, total=False):
+  """A MCPServer is a server that can be called by the model to perform actions.
+
+  It is a server that implements the MCP protocol. Next ID: 5. This data type is
+  not supported in Vertex AI.
+  """
+
+  name: Optional[str]
+  """The name of the MCPServer."""
+
+  streamable_http_transport: Optional[StreamableHttpTransportDict]
+  """A transport that can stream HTTP requests and responses."""
+
+
+McpServerOrDict = Union[McpServer, McpServerDict]
+
+
 class Tool(_common.BaseModel):
   """Tool details of a tool that the model may use to generate a response."""
 
@@ -4268,6 +4354,10 @@ class Tool(_common.BaseModel):
       default=None,
       description="""Optional. Tool to support URL context retrieval.""",
   )
+  mcp_servers: Optional[list[McpServer]] = Field(
+      default=None,
+      description="""Optional. MCP Servers to connect to. This field is not supported in Vertex AI.""",
+  )
 
 
 class ToolDict(TypedDict, total=False):
@@ -4304,6 +4394,9 @@ class ToolDict(TypedDict, total=False):
 
   url_context: Optional[UrlContextDict]
   """Optional. Tool to support URL context retrieval."""
+
+  mcp_servers: Optional[list[McpServerDict]]
+  """Optional. MCP Servers to connect to. This field is not supported in Vertex AI."""
 
 
 ToolOrDict = Union[Tool, ToolDict]

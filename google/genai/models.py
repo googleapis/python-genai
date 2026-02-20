@@ -3770,6 +3770,13 @@ def _Tool_to_mldev(
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
   return to_object
 
 
@@ -3823,6 +3830,9 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -5600,7 +5610,7 @@ class Models(_api_module.BaseModule):
             'Tools at indices [%s] are not compatible with automatic function '
             'calling (AFC). AFC is disabled. If AFC is intended, please '
             'include python callables in the tool list, and do not include '
-            'function declaration in the tool list.',
+            'function declaration and MCP server in the tool list.',
             indices_str,
         )
       return self._generate_content(
@@ -7469,7 +7479,7 @@ class AsyncModels(_api_module.BaseModule):
             'Tools at indices [%s] are not compatible with automatic function '
             'calling (AFC). AFC is disabled. If AFC is intended, please '
             'include python callables in the tool list, and do not include '
-            'function declaration in the tool list.',
+            'function declaration and MCP server in the tool list.',
             indices_str,
         )
       return await self._generate_content(
@@ -7633,7 +7643,7 @@ class AsyncModels(_api_module.BaseModule):
             'Tools at indices [%s] are not compatible with automatic function '
             'calling (AFC). AFC is disabled. If AFC is intended, please '
             'include python callables in the tool list, and do not include '
-            'function declaration in the tool list.',
+            'function declaration and MCP server in the tool list.',
             indices_str,
         )
       response = await self._generate_content_stream(
