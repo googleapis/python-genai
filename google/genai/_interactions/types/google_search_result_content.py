@@ -27,16 +27,16 @@ __all__ = ["GoogleSearchResultContent"]
 class GoogleSearchResultContent(BaseModel):
     """Google Search result content."""
 
-    type: Literal["google_search_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the google search call block."""
+
+    result: List[GoogleSearchResult]
+    """The results of the Google Search."""
+
+    type: Literal["google_search_result"]
 
     is_error: Optional[bool] = None
     """Whether the Google Search resulted in an error."""
-
-    result: Optional[List[GoogleSearchResult]] = None
-    """The results of the Google Search."""
 
     signature: Optional[str] = None
     """The signature of the Google Search result."""

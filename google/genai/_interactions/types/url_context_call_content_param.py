@@ -27,10 +27,10 @@ __all__ = ["URLContextCallContentParam"]
 class URLContextCallContentParam(TypedDict, total=False):
     """URL context content."""
 
-    type: Required[Literal["url_context_call"]]
-
-    id: str
+    id: Required[str]
     """A unique ID for this specific tool call."""
 
-    arguments: URLContextCallArgumentsParam
+    arguments: Required[URLContextCallArgumentsParam]
     """The arguments to pass to the URL context."""
+
+    type: Required[Literal["url_context_call"]]

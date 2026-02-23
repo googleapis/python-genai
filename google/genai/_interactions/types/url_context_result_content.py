@@ -27,16 +27,16 @@ __all__ = ["URLContextResultContent"]
 class URLContextResultContent(BaseModel):
     """URL context result content."""
 
-    type: Literal["url_context_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the url context call block."""
+
+    result: List[URLContextResult]
+    """The results of the URL context."""
+
+    type: Literal["url_context_result"]
 
     is_error: Optional[bool] = None
     """Whether the URL context resulted in an error."""
-
-    result: Optional[List[URLContextResult]] = None
-    """The results of the URL context."""
 
     signature: Optional[str] = None
     """The signature of the URL context result."""

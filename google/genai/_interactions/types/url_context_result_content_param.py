@@ -28,16 +28,16 @@ __all__ = ["URLContextResultContentParam"]
 class URLContextResultContentParam(TypedDict, total=False):
     """URL context result content."""
 
-    type: Required[Literal["url_context_result"]]
-
-    call_id: str
+    call_id: Required[str]
     """ID to match the ID from the url context call block."""
+
+    result: Required[Iterable[URLContextResultParam]]
+    """The results of the URL context."""
+
+    type: Required[Literal["url_context_result"]]
 
     is_error: bool
     """Whether the URL context resulted in an error."""
-
-    result: Iterable[URLContextResultParam]
-    """The results of the URL context."""
 
     signature: str
     """The signature of the URL context result."""

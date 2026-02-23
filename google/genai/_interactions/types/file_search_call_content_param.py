@@ -25,7 +25,7 @@ __all__ = ["FileSearchCallContentParam"]
 class FileSearchCallContentParam(TypedDict, total=False):
     """File Search content."""
 
-    type: Required[Literal["file_search_call"]]
-
-    id: str
+    id: Required[str]
     """A unique ID for this specific tool call."""
+
+    type: Required[Literal["file_search_call"]]

@@ -26,9 +26,9 @@ __all__ = ["ContentStop"]
 class ContentStop(BaseModel):
     event_type: Literal["content.stop"]
 
+    index: int
+
     event_id: Optional[str] = None
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    index: Optional[int] = None

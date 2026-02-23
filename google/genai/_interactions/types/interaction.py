@@ -84,21 +84,28 @@ class Interaction(BaseModel):
     id: str
     """Output only. A unique identifier for the interaction completion."""
 
+    created: datetime
+    """Output only.
+
+    The time at which the response was created in ISO 8601 format
+    (YYYY-MM-DDThh:mm:ssZ).
+    """
+
     status: Literal["in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete"]
     """Output only. The status of the interaction."""
+
+    updated: datetime
+    """Output only.
+
+    The time at which the response was last updated in ISO 8601 format
+    (YYYY-MM-DDThh:mm:ssZ).
+    """
 
     agent: Union[str, Literal["deep-research-pro-preview-12-2025"], None] = None
     """The name of the `Agent` used for generating the interaction."""
 
     agent_config: Optional[AgentConfig] = None
     """Configuration for the agent."""
-
-    created: Optional[datetime] = None
-    """Output only.
-
-    The time at which the response was created in ISO 8601 format
-    (YYYY-MM-DDThh:mm:ssZ).
-    """
 
     input: Optional[Input] = None
     """The inputs for the interaction."""
@@ -132,13 +139,6 @@ class Interaction(BaseModel):
 
     tools: Optional[List[Tool]] = None
     """A list of tool declarations the model may call during interaction."""
-
-    updated: Optional[datetime] = None
-    """Output only.
-
-    The time at which the response was last updated in ISO 8601 format
-    (YYYY-MM-DDThh:mm:ssZ).
-    """
 
     usage: Optional[Usage] = None
     """Output only. Statistics on the interaction request's token usage."""

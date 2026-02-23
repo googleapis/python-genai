@@ -25,16 +25,16 @@ __all__ = ["CodeExecutionResultContentParam"]
 class CodeExecutionResultContentParam(TypedDict, total=False):
     """Code execution result content."""
 
-    type: Required[Literal["code_execution_result"]]
-
-    call_id: str
+    call_id: Required[str]
     """ID to match the ID from the code execution call block."""
+
+    result: Required[str]
+    """The output of the code execution."""
+
+    type: Required[Literal["code_execution_result"]]
 
     is_error: bool
     """Whether the code execution resulted in an error."""
-
-    result: str
-    """The output of the code execution."""
 
     signature: str
     """A signature hash for backend validation."""

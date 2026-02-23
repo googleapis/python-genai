@@ -15,7 +15,6 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -26,7 +25,7 @@ __all__ = ["FileSearchCallContent"]
 class FileSearchCallContent(BaseModel):
     """File Search content."""
 
-    type: Literal["file_search_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
+
+    type: Literal["file_search_call"]

@@ -63,12 +63,12 @@ __all__ = [
 
 
 class DeltaTextDelta(BaseModel):
+    text: str
+
     type: Literal["text"]
 
     annotations: Optional[List[Annotation]] = None
     """Citation information for model-generated content."""
-
-    text: Optional[str] = None
 
 
 class DeltaImageDelta(BaseModel):
@@ -149,14 +149,14 @@ class DeltaThoughtSignatureDelta(BaseModel):
 
 
 class DeltaFunctionCallDelta(BaseModel):
-    type: Literal["function_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[Dict[str, object]] = None
+    arguments: Dict[str, object]
 
-    name: Optional[str] = None
+    name: str
+
+    type: Literal["function_call"]
 
 
 DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
@@ -170,99 +170,99 @@ DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResult
 
 
 class DeltaFunctionResultDelta(BaseModel):
-    type: Literal["function_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
+
+    result: DeltaFunctionResultDeltaResult
+    """Tool call result delta."""
+
+    type: Literal["function_result"]
 
     is_error: Optional[bool] = None
 
     name: Optional[str] = None
 
-    result: Optional[DeltaFunctionResultDeltaResult] = None
-    """Tool call result delta."""
-
 
 class DeltaCodeExecutionCallDelta(BaseModel):
-    type: Literal["code_execution_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[CodeExecutionCallArguments] = None
+    arguments: CodeExecutionCallArguments
     """The arguments to pass to the code execution."""
+
+    type: Literal["code_execution_call"]
 
 
 class DeltaCodeExecutionResultDelta(BaseModel):
-    type: Literal["code_execution_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
 
-    is_error: Optional[bool] = None
+    result: str
 
-    result: Optional[str] = None
+    type: Literal["code_execution_result"]
+
+    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
 
 
 class DeltaURLContextCallDelta(BaseModel):
-    type: Literal["url_context_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[URLContextCallArguments] = None
+    arguments: URLContextCallArguments
     """The arguments to pass to the URL context."""
+
+    type: Literal["url_context_call"]
 
 
 class DeltaURLContextResultDelta(BaseModel):
-    type: Literal["url_context_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
 
-    is_error: Optional[bool] = None
+    result: List[URLContextResult]
 
-    result: Optional[List[URLContextResult]] = None
+    type: Literal["url_context_result"]
+
+    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
 
 
 class DeltaGoogleSearchCallDelta(BaseModel):
-    type: Literal["google_search_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[GoogleSearchCallArguments] = None
+    arguments: GoogleSearchCallArguments
     """The arguments to pass to Google Search."""
+
+    type: Literal["google_search_call"]
 
 
 class DeltaGoogleSearchResultDelta(BaseModel):
-    type: Literal["google_search_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
 
-    is_error: Optional[bool] = None
+    result: List[GoogleSearchResult]
 
-    result: Optional[List[GoogleSearchResult]] = None
+    type: Literal["google_search_result"]
+
+    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
 
 
 class DeltaMCPServerToolCallDelta(BaseModel):
-    type: Literal["mcp_server_tool_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[Dict[str, object]] = None
+    arguments: Dict[str, object]
 
-    name: Optional[str] = None
+    name: str
 
-    server_name: Optional[str] = None
+    server_name: str
+
+    type: Literal["mcp_server_tool_call"]
 
 
 DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
@@ -276,24 +276,24 @@ DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultD
 
 
 class DeltaMCPServerToolResultDelta(BaseModel):
-    type: Literal["mcp_server_tool_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
 
-    name: Optional[str] = None
-
-    result: Optional[DeltaMCPServerToolResultDeltaResult] = None
+    result: DeltaMCPServerToolResultDeltaResult
     """Tool call result delta."""
+
+    type: Literal["mcp_server_tool_result"]
+
+    name: Optional[str] = None
 
     server_name: Optional[str] = None
 
 
 class DeltaFileSearchCallDelta(BaseModel):
-    type: Literal["file_search_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
+
+    type: Literal["file_search_call"]
 
 
 class DeltaFileSearchResultDeltaResult(BaseModel):
@@ -342,13 +342,13 @@ Delta: TypeAlias = Annotated[
 
 
 class ContentDelta(BaseModel):
+    delta: Delta
+
     event_type: Literal["content.delta"]
 
-    delta: Optional[Delta] = None
+    index: int
 
     event_id: Optional[str] = None
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    index: Optional[int] = None

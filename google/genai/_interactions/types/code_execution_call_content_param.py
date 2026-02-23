@@ -27,10 +27,10 @@ __all__ = ["CodeExecutionCallContentParam"]
 class CodeExecutionCallContentParam(TypedDict, total=False):
     """Code execution content."""
 
-    type: Required[Literal["code_execution_call"]]
-
-    id: str
+    id: Required[str]
     """A unique ID for this specific tool call."""
 
-    arguments: CodeExecutionCallArgumentsParam
+    arguments: Required[CodeExecutionCallArgumentsParam]
     """The arguments to pass to the code execution."""
+
+    type: Required[Literal["code_execution_call"]]
