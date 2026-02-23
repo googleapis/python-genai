@@ -19,7 +19,6 @@ from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
-from .video_mime_type import VideoMimeType
 
 __all__ = ["VideoContent"]
 
@@ -32,7 +31,19 @@ class VideoContent(BaseModel):
     data: Optional[str] = None
     """The video content."""
 
-    mime_type: Optional[VideoMimeType] = None
+    mime_type: Optional[
+        Literal[
+            "video/mp4",
+            "video/mpeg",
+            "video/mpg",
+            "video/mov",
+            "video/avi",
+            "video/x-flv",
+            "video/webm",
+            "video/wmv",
+            "video/3gpp",
+        ]
+    ] = None
     """The mime type of the video."""
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None

@@ -19,7 +19,6 @@ from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
-from .document_mime_type import DocumentMimeType
 
 __all__ = ["DocumentContent"]
 
@@ -32,7 +31,7 @@ class DocumentContent(BaseModel):
     data: Optional[str] = None
     """The document content."""
 
-    mime_type: Optional[DocumentMimeType] = None
+    mime_type: Optional[Literal["application/pdf"]] = None
     """The mime type of the document."""
 
     uri: Optional[str] = None

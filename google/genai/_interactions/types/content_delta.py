@@ -23,10 +23,6 @@ from .._models import BaseModel
 from .annotation import Annotation
 from .text_content import TextContent
 from .image_content import ImageContent
-from .audio_mime_type import AudioMimeType
-from .image_mime_type import ImageMimeType
-from .video_mime_type import VideoMimeType
-from .document_mime_type import DocumentMimeType
 from .url_context_result import URLContextResult
 from .google_search_result import GoogleSearchResult
 from .url_context_call_arguments import URLContextCallArguments
@@ -80,8 +76,7 @@ class DeltaImageDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[ImageMimeType] = None
-    """The mime type of the image."""
+    mime_type: Optional[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]] = None
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
@@ -94,8 +89,7 @@ class DeltaAudioDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[AudioMimeType] = None
-    """The mime type of the audio."""
+    mime_type: Optional[Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"]] = None
 
     uri: Optional[str] = None
 
@@ -105,8 +99,7 @@ class DeltaDocumentDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[DocumentMimeType] = None
-    """The mime type of the document."""
+    mime_type: Optional[Literal["application/pdf"]] = None
 
     uri: Optional[str] = None
 
@@ -116,8 +109,19 @@ class DeltaVideoDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[VideoMimeType] = None
-    """The mime type of the video."""
+    mime_type: Optional[
+        Literal[
+            "video/mp4",
+            "video/mpeg",
+            "video/mpg",
+            "video/mov",
+            "video/avi",
+            "video/x-flv",
+            "video/webm",
+            "video/wmv",
+            "video/3gpp",
+        ]
+    ] = None
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""

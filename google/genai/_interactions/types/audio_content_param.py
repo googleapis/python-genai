@@ -23,7 +23,6 @@ from typing_extensions import Literal, Required, Annotated, TypedDict
 from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
-from .audio_mime_type_param import AudioMimeTypeParam
 
 __all__ = ["AudioContentParam"]
 
@@ -36,7 +35,7 @@ class AudioContentParam(TypedDict, total=False):
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """The audio content."""
 
-    mime_type: AudioMimeTypeParam
+    mime_type: Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"]
     """The mime type of the audio."""
 
     uri: str
