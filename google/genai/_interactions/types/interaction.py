@@ -19,6 +19,7 @@ from typing import List, Union, Optional
 from datetime import datetime
 from typing_extensions import Literal, Annotated, TypeAlias
 
+from .tool import Tool
 from .turn import Turn
 from .model import Model
 from .usage import Usage
@@ -89,12 +90,18 @@ class Interaction(BaseModel):
     agent: Union[str, Literal["deep-research-pro-preview-12-2025"], None] = None
     """The name of the `Agent` used for generating the interaction."""
 
+    agent_config: Optional[AgentConfig] = None
+    """Configuration for the agent."""
+
     created: Optional[datetime] = None
     """Output only.
 
     The time at which the response was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
+
+    input: Optional[Input] = None
+    """The inputs for the interaction."""
 
     model: Optional[Model] = None
     """The name of the `Model` used for generating the interaction."""
@@ -105,8 +112,26 @@ class Interaction(BaseModel):
     previous_interaction_id: Optional[str] = None
     """The ID of the previous interaction, if any."""
 
+    response_format: Optional[object] = None
+    """
+    Enforces that the generated response is a JSON object that complies with
+    the JSON schema specified in this field.
+    """
+
+    response_mime_type: Optional[str] = None
+    """The mime type of the response. This is required if response_format is set."""
+
+    response_modalities: Optional[List[Literal["text", "image", "audio"]]] = None
+    """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
+
     role: Optional[str] = None
     """Output only. The role of the interaction."""
+
+    system_instruction: Optional[str] = None
+    """System instruction for the interaction."""
+
+    tools: Optional[List[Tool]] = None
+    """A list of tool declarations the model may call during interaction."""
 
     updated: Optional[datetime] = None
     """Output only.
