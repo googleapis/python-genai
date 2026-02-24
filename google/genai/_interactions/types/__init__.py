@@ -29,7 +29,6 @@ from .turn_param import TurnParam as TurnParam
 from .error_event import ErrorEvent as ErrorEvent
 from .interaction import Interaction as Interaction
 from .model_param import ModelParam as ModelParam
-from .tool_choice import ToolChoice as ToolChoice
 from .usage_param import UsageParam as UsageParam
 from .content_stop import ContentStop as ContentStop
 from .image_config import ImageConfig as ImageConfig
@@ -49,7 +48,6 @@ from .annotation_param import AnnotationParam as AnnotationParam
 from .document_content import DocumentContent as DocumentContent
 from .tool_choice_type import ToolChoiceType as ToolChoiceType
 from .generation_config import GenerationConfig as GenerationConfig
-from .tool_choice_param import ToolChoiceParam as ToolChoiceParam
 from .image_config_param import ImageConfigParam as ImageConfigParam
 from .text_content_param import TextContentParam as TextContentParam
 from .tool_choice_config import ToolChoiceConfig as ToolChoiceConfig
