@@ -1151,6 +1151,59 @@ def _LiveSendRealtimeInputParameters_to_vertex(
   return to_object
 
 
+def _LiveServerMessage_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['setupComplete']) is not None:
+    setv(to_object, ['setup_complete'], getv(from_object, ['setupComplete']))
+
+  if getv(from_object, ['serverContent']) is not None:
+    setv(to_object, ['server_content'], getv(from_object, ['serverContent']))
+
+  if getv(from_object, ['toolCall']) is not None:
+    setv(to_object, ['tool_call'], getv(from_object, ['toolCall']))
+
+  if getv(from_object, ['toolCallCancellation']) is not None:
+    setv(
+        to_object,
+        ['tool_call_cancellation'],
+        getv(from_object, ['toolCallCancellation']),
+    )
+
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
+  if getv(from_object, ['goAway']) is not None:
+    setv(to_object, ['go_away'], getv(from_object, ['goAway']))
+
+  if getv(from_object, ['sessionResumptionUpdate']) is not None:
+    setv(
+        to_object,
+        ['session_resumption_update'],
+        getv(from_object, ['sessionResumptionUpdate']),
+    )
+
+  if getv(from_object, ['voiceActivityDetectionSignal']) is not None:
+    setv(
+        to_object,
+        ['voice_activity_detection_signal'],
+        getv(from_object, ['voiceActivityDetectionSignal']),
+    )
+
+  if getv(from_object, ['voiceActivity']) is not None:
+    setv(
+        to_object,
+        ['voice_activity'],
+        _VoiceActivity_from_mldev(
+            getv(from_object, ['voiceActivity']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _LiveServerMessage_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1196,6 +1249,15 @@ def _LiveServerMessage_from_vertex(
         to_object,
         ['voice_activity_detection_signal'],
         getv(from_object, ['voiceActivityDetectionSignal']),
+    )
+
+  if getv(from_object, ['voiceActivity']) is not None:
+    setv(
+        to_object,
+        ['voice_activity'],
+        _VoiceActivity_from_vertex(
+            getv(from_object, ['voiceActivity']), to_object
+        ),
     )
 
   return to_object
@@ -1335,6 +1397,13 @@ def _Tool_to_mldev(
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
   return to_object
 
 
@@ -1387,6 +1456,9 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -1466,5 +1538,27 @@ def _UsageMetadata_from_vertex(
 
   if getv(from_object, ['trafficType']) is not None:
     setv(to_object, ['traffic_type'], getv(from_object, ['trafficType']))
+
+  return to_object
+
+
+def _VoiceActivity_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['type']) is not None:
+    setv(to_object, ['voice_activity_type'], getv(from_object, ['type']))
+
+  return to_object
+
+
+def _VoiceActivity_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['type']) is not None:
+    setv(to_object, ['voice_activity_type'], getv(from_object, ['type']))
 
   return to_object

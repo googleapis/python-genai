@@ -27,10 +27,10 @@ __all__ = ["GoogleSearchCallContentParam"]
 class GoogleSearchCallContentParam(TypedDict, total=False):
     """Google Search content."""
 
-    type: Required[Literal["google_search_call"]]
-
-    id: str
+    id: Required[str]
     """A unique ID for this specific tool call."""
 
-    arguments: GoogleSearchCallArgumentsParam
+    arguments: Required[GoogleSearchCallArgumentsParam]
     """The arguments to pass to Google Search."""
+
+    type: Required[Literal["google_search_call"]]

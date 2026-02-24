@@ -19,7 +19,6 @@ from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
-from .image_mime_type import ImageMimeType
 
 __all__ = ["ImageContent"]
 
@@ -30,11 +29,13 @@ class ImageContent(BaseModel):
     type: Literal["image"]
 
     data: Optional[str] = None
+    """The image content."""
 
-    mime_type: Optional[ImageMimeType] = None
+    mime_type: Optional[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]] = None
     """The mime type of the image."""
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
 
     uri: Optional[str] = None
+    """The URI of the image."""

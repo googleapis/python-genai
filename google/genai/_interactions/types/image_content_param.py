@@ -23,7 +23,6 @@ from typing_extensions import Literal, Required, Annotated, TypedDict
 from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
-from .image_mime_type_param import ImageMimeTypeParam
 
 __all__ = ["ImageContentParam"]
 
@@ -34,14 +33,16 @@ class ImageContentParam(TypedDict, total=False):
     type: Required[Literal["image"]]
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """The image content."""
 
-    mime_type: ImageMimeTypeParam
+    mime_type: Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]
     """The mime type of the image."""
 
     resolution: Literal["low", "medium", "high", "ultra_high"]
     """The resolution of the media."""
 
     uri: str
+    """The URI of the image."""
 
 
 set_pydantic_config(ImageContentParam, {"arbitrary_types_allowed": True})

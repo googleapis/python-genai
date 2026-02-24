@@ -26,6 +26,9 @@ __all__ = ["InteractionGetParamsBase", "InteractionGetParamsNonStreaming", "Inte
 class InteractionGetParamsBase(TypedDict, total=False):
     api_version: str
 
+    include_input: bool
+    """If set to true, includes the input in the response."""
+
     last_event_id: str
     """Optional.
 

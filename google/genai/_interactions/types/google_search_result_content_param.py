@@ -28,16 +28,16 @@ __all__ = ["GoogleSearchResultContentParam"]
 class GoogleSearchResultContentParam(TypedDict, total=False):
     """Google Search result content."""
 
-    type: Required[Literal["google_search_result"]]
-
-    call_id: str
+    call_id: Required[str]
     """ID to match the ID from the google search call block."""
+
+    result: Required[Iterable[GoogleSearchResultParam]]
+    """The results of the Google Search."""
+
+    type: Required[Literal["google_search_result"]]
 
     is_error: bool
     """Whether the Google Search resulted in an error."""
-
-    result: Iterable[GoogleSearchResultParam]
-    """The results of the Google Search."""
 
     signature: str
     """The signature of the Google Search result."""

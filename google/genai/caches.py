@@ -704,6 +704,13 @@ def _Tool_to_mldev(
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
   return to_object
 
 
@@ -756,6 +763,9 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
 
   return to_object
 

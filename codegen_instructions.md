@@ -375,7 +375,7 @@ response = client.models.generate_content(
     contents='Provide a classic recipe for chocolate chip cookies.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
-        response_schema=Recipe,
+        response_json_schema=Recipe,
     ),
 )
 
@@ -383,7 +383,7 @@ response = client.models.generate_content(
 print(response.text)
 
 # Access the response as a Pydantic object
-parsed_response = response.parsed
+recipe = Recipe.model_validate_json(response.text)
 ```
 
 ### Function Calling

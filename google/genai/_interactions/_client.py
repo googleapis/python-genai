@@ -37,6 +37,7 @@ from ._types import (
 )
 from ._utils import is_given, get_async_library
 from ._compat import cached_property
+from ._models import FinalRequestOptions
 from ._version import __version__
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError
@@ -45,6 +46,7 @@ from ._base_client import (
     SyncAPIClient,
     AsyncAPIClient,
 )
+from ._client_adapter import GeminiNextGenAPIClientAdapter, AsyncGeminiNextGenAPIClientAdapter
 
 if TYPE_CHECKING:
     from .resources import interactions
@@ -66,6 +68,7 @@ class GeminiNextGenAPIClient(SyncAPIClient):
     # client options
     api_key: str | None
     api_version: str
+    client_adapter: GeminiNextGenAPIClientAdapter | None
 
     def __init__(
         self,
@@ -81,6 +84,7 @@ class GeminiNextGenAPIClient(SyncAPIClient):
         # We provide a `DefaultHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
         # See the [httpx documentation](https://www.python-httpx.org/api/#client) for more details.
         http_client: httpx.Client | None = None,
+        client_adapter: GeminiNextGenAPIClientAdapter | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
         # if the API responds with invalid data for the expected schema.
@@ -107,6 +111,8 @@ class GeminiNextGenAPIClient(SyncAPIClient):
             base_url = os.environ.get("GEMINI_NEXT_GEN_API_BASE_URL")
         if base_url is None:
             base_url = f"https://generativelanguage.googleapis.com"
+
+        self.client_adapter = client_adapter
 
         super().__init__(
             version=__version__,
@@ -159,15 +165,35 @@ class GeminiNextGenAPIClient(SyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
+        if headers.get("Authorization") or custom_headers.get("Authorization") or isinstance(custom_headers.get("Authorization"), Omit):
+            return
         if self.api_key and headers.get("x-goog-api-key"):
             return
-        if isinstance(custom_headers.get("x-goog-api-key"), Omit):
+        if custom_headers.get("x-goog-api-key") or isinstance(custom_headers.get("x-goog-api-key"), Omit):
             return
 
         raise TypeError(
             '"Could not resolve authentication method. Expected the api_key to be set. Or for the `x-goog-api-key` headers to be explicitly omitted"'
         )
+    
+    @override
+    def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
+        if not self.client_adapter or not self.client_adapter.is_vertex_ai():
+            return options
 
+        headers = options.headers or {}
+        has_auth = headers.get("Authorization") or headers.get("x-goog-api-key")   # pytype: disable=attribute-error
+        if has_auth:
+            return options
+
+        adapted_headers = self.client_adapter.get_auth_headers()
+        if adapted_headers:
+            options.headers = {
+                **adapted_headers,
+                **headers
+            }
+        return options
+    
     def copy(
         self,
         *,
@@ -181,6 +207,7 @@ class GeminiNextGenAPIClient(SyncAPIClient):
         set_default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
         set_default_query: Mapping[str, object] | None = None,
+        client_adapter: GeminiNextGenAPIClientAdapter | None = None,
         _extra_kwargs: Mapping[str, Any] = {},
     ) -> Self:
         """
@@ -214,6 +241,7 @@ class GeminiNextGenAPIClient(SyncAPIClient):
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
             default_headers=headers,
             default_query=params,
+            client_adapter=self.client_adapter or client_adapter,
             **_extra_kwargs,
         )
 
@@ -262,6 +290,7 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
     # client options
     api_key: str | None
     api_version: str
+    client_adapter: AsyncGeminiNextGenAPIClientAdapter | None
 
     def __init__(
         self,
@@ -277,6 +306,7 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
         # We provide a `DefaultAsyncHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
         # See the [httpx documentation](https://www.python-httpx.org/api/#asyncclient) for more details.
         http_client: httpx.AsyncClient | None = None,
+        client_adapter: AsyncGeminiNextGenAPIClientAdapter | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
         # if the API responds with invalid data for the expected schema.
@@ -303,6 +333,8 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
             base_url = os.environ.get("GEMINI_NEXT_GEN_API_BASE_URL")
         if base_url is None:
             base_url = f"https://generativelanguage.googleapis.com"
+
+        self.client_adapter = client_adapter
 
         super().__init__(
             version=__version__,
@@ -355,14 +387,34 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
+        if headers.get("Authorization") or custom_headers.get("Authorization") or isinstance(custom_headers.get("Authorization"), Omit):
+            return
         if self.api_key and headers.get("x-goog-api-key"):
             return
-        if isinstance(custom_headers.get("x-goog-api-key"), Omit):
+        if custom_headers.get("x-goog-api-key") or isinstance(custom_headers.get("x-goog-api-key"), Omit):
             return
 
         raise TypeError(
             '"Could not resolve authentication method. Expected the api_key to be set. Or for the `x-goog-api-key` headers to be explicitly omitted"'
         )
+    
+    @override
+    async def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
+        if not self.client_adapter or not self.client_adapter.is_vertex_ai():
+            return options
+
+        headers = options.headers or {}
+        has_auth = headers.get("Authorization") or headers.get("x-goog-api-key")     # pytype: disable=attribute-error
+        if has_auth:
+            return options
+
+        adapted_headers = await self.client_adapter.async_get_auth_headers()
+        if adapted_headers:
+            options.headers = {
+                **adapted_headers,
+                **headers
+            }
+        return options
 
     def copy(
         self,
@@ -377,6 +429,7 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
         set_default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
         set_default_query: Mapping[str, object] | None = None,
+        client_adapter: AsyncGeminiNextGenAPIClientAdapter | None = None,
         _extra_kwargs: Mapping[str, Any] = {},
     ) -> Self:
         """
@@ -410,6 +463,7 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
             default_headers=headers,
             default_query=params,
+            client_adapter=self.client_adapter or client_adapter,
             **_extra_kwargs,
         )
 

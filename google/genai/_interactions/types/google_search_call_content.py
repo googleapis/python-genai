@@ -15,7 +15,6 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -27,10 +26,10 @@ __all__ = ["GoogleSearchCallContent"]
 class GoogleSearchCallContent(BaseModel):
     """Google Search content."""
 
-    type: Literal["google_search_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[GoogleSearchCallArguments] = None
+    arguments: GoogleSearchCallArguments
     """The arguments to pass to Google Search."""
+
+    type: Literal["google_search_call"]

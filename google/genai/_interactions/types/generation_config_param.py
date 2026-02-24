@@ -17,19 +17,26 @@
 
 from __future__ import annotations
 
-from typing import Iterable
-from typing_extensions import Literal, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, TypeAlias, TypedDict
 
 from .._types import SequenceNotStr
 from .thinking_level import ThinkingLevel
-from .tool_choice_param import ToolChoiceParam
+from .tool_choice_type import ToolChoiceType
+from .image_config_param import ImageConfigParam
 from .speech_config_param import SpeechConfigParam
+from .tool_choice_config_param import ToolChoiceConfigParam
 
-__all__ = ["GenerationConfigParam"]
+__all__ = ["GenerationConfigParam", "ToolChoice"]
+
+ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfigParam]
 
 
 class GenerationConfigParam(TypedDict, total=False):
     """Configuration parameters for model interactions."""
+
+    image_config: ImageConfigParam
+    """Configuration for image interaction."""
 
     max_output_tokens: int
     """The maximum number of tokens to include in the response."""
@@ -52,7 +59,7 @@ class GenerationConfigParam(TypedDict, total=False):
     thinking_summaries: Literal["auto", "none"]
     """Whether to include thought summaries in the response."""
 
-    tool_choice: ToolChoiceParam
+    tool_choice: ToolChoice
     """The tool choice for the interaction."""
 
     top_p: float

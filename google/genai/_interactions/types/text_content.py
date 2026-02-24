@@ -27,10 +27,10 @@ __all__ = ["TextContent"]
 class TextContent(BaseModel):
     """A text content block."""
 
+    text: str
+    """The text content."""
+
     type: Literal["text"]
 
     annotations: Optional[List[Annotation]] = None
     """Citation information for model-generated content."""
-
-    text: Optional[str] = None
-    """The text content."""

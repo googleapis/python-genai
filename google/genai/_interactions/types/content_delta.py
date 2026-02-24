@@ -23,10 +23,6 @@ from .._models import BaseModel
 from .annotation import Annotation
 from .text_content import TextContent
 from .image_content import ImageContent
-from .audio_mime_type import AudioMimeType
-from .image_mime_type import ImageMimeType
-from .video_mime_type import VideoMimeType
-from .document_mime_type import DocumentMimeType
 from .url_context_result import URLContextResult
 from .google_search_result import GoogleSearchResult
 from .url_context_call_arguments import URLContextCallArguments
@@ -60,18 +56,19 @@ __all__ = [
     "DeltaMCPServerToolResultDeltaResult",
     "DeltaMCPServerToolResultDeltaResultItems",
     "DeltaMCPServerToolResultDeltaResultItemsItem",
+    "DeltaFileSearchCallDelta",
     "DeltaFileSearchResultDelta",
     "DeltaFileSearchResultDeltaResult",
 ]
 
 
 class DeltaTextDelta(BaseModel):
+    text: str
+
     type: Literal["text"]
 
     annotations: Optional[List[Annotation]] = None
     """Citation information for model-generated content."""
-
-    text: Optional[str] = None
 
 
 class DeltaImageDelta(BaseModel):
@@ -79,8 +76,7 @@ class DeltaImageDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[ImageMimeType] = None
-    """The mime type of the image."""
+    mime_type: Optional[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]] = None
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
@@ -93,8 +89,7 @@ class DeltaAudioDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[AudioMimeType] = None
-    """The mime type of the audio."""
+    mime_type: Optional[Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"]] = None
 
     uri: Optional[str] = None
 
@@ -104,8 +99,7 @@ class DeltaDocumentDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[DocumentMimeType] = None
-    """The mime type of the document."""
+    mime_type: Optional[Literal["application/pdf"]] = None
 
     uri: Optional[str] = None
 
@@ -115,8 +109,19 @@ class DeltaVideoDelta(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[VideoMimeType] = None
-    """The mime type of the video."""
+    mime_type: Optional[
+        Literal[
+            "video/mp4",
+            "video/mpeg",
+            "video/mpg",
+            "video/mov",
+            "video/avi",
+            "video/x-flv",
+            "video/webm",
+            "video/wmv",
+            "video/3gpp",
+        ]
+    ] = None
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
@@ -144,144 +149,151 @@ class DeltaThoughtSignatureDelta(BaseModel):
 
 
 class DeltaFunctionCallDelta(BaseModel):
-    type: Literal["function_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[Dict[str, object]] = None
+    arguments: Dict[str, object]
 
-    name: Optional[str] = None
+    name: str
+
+    type: Literal["function_call"]
 
 
-DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
+DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
 
 class DeltaFunctionResultDeltaResultItems(BaseModel):
     items: Optional[List[DeltaFunctionResultDeltaResultItemsItem]] = None
 
 
-DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResultItems, str]
+DeltaFunctionResultDeltaResult: TypeAlias = Union[DeltaFunctionResultDeltaResultItems, str, object]
 
 
 class DeltaFunctionResultDelta(BaseModel):
-    type: Literal["function_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
+
+    result: DeltaFunctionResultDeltaResult
+    """Tool call result delta."""
+
+    type: Literal["function_result"]
 
     is_error: Optional[bool] = None
 
     name: Optional[str] = None
 
-    result: Optional[DeltaFunctionResultDeltaResult] = None
-    """Tool call result delta."""
-
 
 class DeltaCodeExecutionCallDelta(BaseModel):
-    type: Literal["code_execution_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[CodeExecutionCallArguments] = None
+    arguments: CodeExecutionCallArguments
     """The arguments to pass to the code execution."""
+
+    type: Literal["code_execution_call"]
 
 
 class DeltaCodeExecutionResultDelta(BaseModel):
-    type: Literal["code_execution_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
 
-    is_error: Optional[bool] = None
+    result: str
 
-    result: Optional[str] = None
+    type: Literal["code_execution_result"]
+
+    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
 
 
 class DeltaURLContextCallDelta(BaseModel):
-    type: Literal["url_context_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[URLContextCallArguments] = None
+    arguments: URLContextCallArguments
     """The arguments to pass to the URL context."""
+
+    type: Literal["url_context_call"]
 
 
 class DeltaURLContextResultDelta(BaseModel):
-    type: Literal["url_context_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
 
-    is_error: Optional[bool] = None
+    result: List[URLContextResult]
 
-    result: Optional[List[URLContextResult]] = None
+    type: Literal["url_context_result"]
+
+    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
 
 
 class DeltaGoogleSearchCallDelta(BaseModel):
-    type: Literal["google_search_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[GoogleSearchCallArguments] = None
+    arguments: GoogleSearchCallArguments
     """The arguments to pass to Google Search."""
+
+    type: Literal["google_search_call"]
 
 
 class DeltaGoogleSearchResultDelta(BaseModel):
-    type: Literal["google_search_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
 
-    is_error: Optional[bool] = None
+    result: List[GoogleSearchResult]
 
-    result: Optional[List[GoogleSearchResult]] = None
+    type: Literal["google_search_result"]
+
+    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
 
 
 class DeltaMCPServerToolCallDelta(BaseModel):
-    type: Literal["mcp_server_tool_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[Dict[str, object]] = None
+    arguments: Dict[str, object]
 
-    name: Optional[str] = None
+    name: str
 
-    server_name: Optional[str] = None
+    server_name: str
+
+    type: Literal["mcp_server_tool_call"]
 
 
-DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[str, ImageContent, object]
+DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
 
 class DeltaMCPServerToolResultDeltaResultItems(BaseModel):
     items: Optional[List[DeltaMCPServerToolResultDeltaResultItemsItem]] = None
 
 
-DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultDeltaResultItems, str]
+DeltaMCPServerToolResultDeltaResult: TypeAlias = Union[DeltaMCPServerToolResultDeltaResultItems, str, object]
 
 
 class DeltaMCPServerToolResultDelta(BaseModel):
-    type: Literal["mcp_server_tool_result"]
-
-    call_id: Optional[str] = None
+    call_id: str
     """ID to match the ID from the function call block."""
+
+    result: DeltaMCPServerToolResultDeltaResult
+    """Tool call result delta."""
+
+    type: Literal["mcp_server_tool_result"]
 
     name: Optional[str] = None
 
-    result: Optional[DeltaMCPServerToolResultDeltaResult] = None
-    """Tool call result delta."""
-
     server_name: Optional[str] = None
+
+
+class DeltaFileSearchCallDelta(BaseModel):
+    id: str
+    """A unique ID for this specific tool call."""
+
+    type: Literal["file_search_call"]
 
 
 class DeltaFileSearchResultDeltaResult(BaseModel):
@@ -322,6 +334,7 @@ Delta: TypeAlias = Annotated[
         DeltaGoogleSearchResultDelta,
         DeltaMCPServerToolCallDelta,
         DeltaMCPServerToolResultDelta,
+        DeltaFileSearchCallDelta,
         DeltaFileSearchResultDelta,
     ],
     PropertyInfo(discriminator="type"),
@@ -329,14 +342,13 @@ Delta: TypeAlias = Annotated[
 
 
 class ContentDelta(BaseModel):
-    delta: Optional[Delta] = None
+    delta: Delta
+
+    event_type: Literal["content.delta"]
+
+    index: int
 
     event_id: Optional[str] = None
     """
-    The event_id token to be used to resume the interaction stream, from
-    this event.
+    The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    event_type: Optional[Literal["content.delta"]] = None
-
-    index: Optional[int] = None

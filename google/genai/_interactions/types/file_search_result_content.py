@@ -39,6 +39,9 @@ class Result(BaseModel):
 class FileSearchResultContent(BaseModel):
     """File Search result content."""
 
+    call_id: str
+    """ID to match the ID from the file search call block."""
+
     type: Literal["file_search_result"]
 
     result: Optional[List[Result]] = None

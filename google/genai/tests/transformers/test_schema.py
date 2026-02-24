@@ -79,7 +79,6 @@ class CountryInfoWithAnyOf(pydantic.BaseModel):
 
 
 @pytest.fixture
-@pytest.mark.parametrize('use_vertex', [True, False])
 def client(use_vertex):
   if use_vertex:
     yield google_genai_client_module.Client(
@@ -91,6 +90,7 @@ def client(use_vertex):
     )
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_build_schema_for_list_of_pydantic_schema(client):
   """Tests _build_schema() when list[pydantic.BaseModel] is provided to response_schema."""
 
@@ -112,6 +112,7 @@ def test_build_schema_for_list_of_pydantic_schema(client):
     assert list_schema['required'] == list(country_info_fields.keys())
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_build_schema_for_list_of_nested_pydantic_schema(client):
   """Tests _build_schema() when list[pydantic.BaseModel] is provided to response_schema and the pydantic.BaseModel has nested pydantic fields."""
   list_schema = _transformers.t_schema(
@@ -132,6 +133,7 @@ def test_build_schema_for_list_of_nested_pydantic_schema(client):
     assert field_name in currency_info_fields
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_t_schema_for_pydantic_schema(client):
   """Tests t_schema when pydantic.BaseModel is passed to response_schema."""
   transformed_schema = _transformers.t_schema(client, CountryInfo)
@@ -143,6 +145,7 @@ def test_t_schema_for_pydantic_schema(client):
     )
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_t_schema_for_list_of_pydantic_schema(client):
   """Tests t_schema when list[pydantic.BaseModel] is passed to response_schema."""
   transformed_schema = _transformers.t_schema(client, list[CountryInfo])
@@ -156,6 +159,7 @@ def test_t_schema_for_list_of_pydantic_schema(client):
     )
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_t_schema_for_null_fields(client):
   """Tests t_schema when null fields are present."""
   transformed_schema = _transformers.t_schema(client, CountryInfoWithNullFields)
@@ -163,6 +167,7 @@ def test_t_schema_for_null_fields(client):
   assert transformed_schema.properties['population'].nullable
 
 
+#@pytest.mark.parametrize('use_vertex', [True, False])
 def test_schema_with_no_null_fields_is_unchanged():
   """Tests handle_null_fields() doesn't change anything when no null fields are present."""
   test_properties = {
@@ -207,6 +212,7 @@ def test_schema_with_default_value(client):
   assert transformed_schema == expected_schema
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_schema_with_any_of(client):
   transformed_schema = _transformers.t_schema(client, CountryInfoWithAnyOf)
   expected_schema = types.Schema(
@@ -601,6 +607,7 @@ def test_process_schema_order_properties_propagates_into_any_of(
     assert schema == schema_without_property_ordering
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_t_schema_does_not_change_property_ordering_if_set(client):
   """Tests t_schema doesn't overwrite the property_ordering field if already set."""
 
@@ -612,6 +619,7 @@ def test_t_schema_does_not_change_property_ordering_if_set(client):
   assert transformed_schema.property_ordering == custom_property_ordering
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_t_schema_sets_property_ordering_for_json_schema(client):
   """Tests t_schema sets the property_ordering field for json schemas."""
 
@@ -629,6 +637,7 @@ def test_t_schema_sets_property_ordering_for_json_schema(client):
   ]
 
 
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_t_schema_sets_property_ordering_for_schema_type(client):
   """Tests t_schema sets the property_ordering field for Schema types."""
 

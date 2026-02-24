@@ -247,6 +247,9 @@ def test_none_empty_text():
 
 
 def test_non_text_part_text(caplog, generate_content_response):
+  from ... import types as types_module
+  types_module._response_text_non_text_warning_logged = False
+
   generate_content_response.candidates = [
       types.Candidate(
           content=types.Content(
@@ -256,7 +259,6 @@ def test_non_text_part_text(caplog, generate_content_response):
           )
       ),
   ]
-
   assert generate_content_response.text is None
   assert any(
       record.levelname == 'WARNING'

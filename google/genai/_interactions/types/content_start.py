@@ -15,65 +15,24 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Union, Optional
-from typing_extensions import Literal, Annotated, TypeAlias
+from typing import Optional
+from typing_extensions import Literal
 
-from .._utils import PropertyInfo
+from .content import Content
 from .._models import BaseModel
-from .text_content import TextContent
-from .audio_content import AudioContent
-from .image_content import ImageContent
-from .video_content import VideoContent
-from .thought_content import ThoughtContent
-from .document_content import DocumentContent
-from .function_call_content import FunctionCallContent
-from .function_result_content import FunctionResultContent
-from .url_context_call_content import URLContextCallContent
-from .file_search_result_content import FileSearchResultContent
-from .google_search_call_content import GoogleSearchCallContent
-from .url_context_result_content import URLContextResultContent
-from .code_execution_call_content import CodeExecutionCallContent
-from .google_search_result_content import GoogleSearchResultContent
-from .mcp_server_tool_call_content import MCPServerToolCallContent
-from .code_execution_result_content import CodeExecutionResultContent
-from .mcp_server_tool_result_content import MCPServerToolResultContent
 
-__all__ = ["ContentStart", "Content"]
-
-Content: TypeAlias = Annotated[
-    Union[
-        TextContent,
-        ImageContent,
-        AudioContent,
-        DocumentContent,
-        VideoContent,
-        ThoughtContent,
-        FunctionCallContent,
-        FunctionResultContent,
-        CodeExecutionCallContent,
-        CodeExecutionResultContent,
-        URLContextCallContent,
-        URLContextResultContent,
-        GoogleSearchCallContent,
-        GoogleSearchResultContent,
-        MCPServerToolCallContent,
-        MCPServerToolResultContent,
-        FileSearchResultContent,
-    ],
-    PropertyInfo(discriminator="type"),
-]
+__all__ = ["ContentStart"]
 
 
 class ContentStart(BaseModel):
-    content: Optional[Content] = None
+    content: Content
     """The content of the response."""
+
+    event_type: Literal["content.start"]
+
+    index: int
 
     event_id: Optional[str] = None
     """
-    The event_id token to be used to resume the interaction stream, from
-    this event.
+    The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    event_type: Optional[Literal["content.start"]] = None
-
-    index: Optional[int] = None

@@ -15,19 +15,26 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import List, Optional
-from typing_extensions import Literal
+from typing import List, Union, Optional
+from typing_extensions import Literal, TypeAlias
 
 from .._models import BaseModel
-from .tool_choice import ToolChoice
+from .image_config import ImageConfig
 from .speech_config import SpeechConfig
 from .thinking_level import ThinkingLevel
+from .tool_choice_type import ToolChoiceType
+from .tool_choice_config import ToolChoiceConfig
 
-__all__ = ["GenerationConfig"]
+__all__ = ["GenerationConfig", "ToolChoice"]
+
+ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfig]
 
 
 class GenerationConfig(BaseModel):
     """Configuration parameters for model interactions."""
+
+    image_config: Optional[ImageConfig] = None
+    """Configuration for image interaction."""
 
     max_output_tokens: Optional[int] = None
     """The maximum number of tokens to include in the response."""

@@ -74,7 +74,7 @@ Below is an example `generate_content()` call using types from the types module:
 
 ```python
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents=types.Part.from_text(text='Why is the sky blue?'),
     config=types.GenerateContentConfig(
         temperature=0,
@@ -89,7 +89,7 @@ types:
 
 ```python
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents={'text': 'Why is the sky blue?'},
     config={
         'temperature': 0,
@@ -583,7 +583,7 @@ and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models) respectively
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
+    model='gemini-2.5-flash',
     contents='high',
     config=types.GenerateContentConfig(
         system_instruction='I say high, you say low',
@@ -939,7 +939,7 @@ response = client.models.generate_content(
         'response_json_schema': user_profile
     },
 )
-print(response.parsed)
+print(response.text)
 ```
 
 #### Pydantic Model Schema support
@@ -966,7 +966,7 @@ response = client.models.generate_content(
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
-        response_schema=CountryInfo,
+        response_json_schema=CountryInfo.model_json_schema(),
     ),
 )
 print(response.text)
@@ -980,7 +980,7 @@ response = client.models.generate_content(
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
-        response_schema={
+        response_json_schema={
             'required': [
                 'name',
                 'population',
@@ -1002,60 +1002,6 @@ response = client.models.generate_content(
             'type': 'OBJECT',
         },
     ),
-)
-print(response.text)
-```
-
-### Enum Response Schema
-
-#### Text Response
-
-You can set response_mime_type to 'text/x.enum' to return one of those enum
-values as the response.
-
-```python
-from enum import Enum
-
-class InstrumentEnum(Enum):
-    PERCUSSION = 'Percussion'
-    STRING = 'String'
-    WOODWIND = 'Woodwind'
-    BRASS = 'Brass'
-    KEYBOARD = 'Keyboard'
-
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents='What instrument plays multiple notes at once?',
-    config={
-        'response_mime_type': 'text/x.enum',
-        'response_schema': InstrumentEnum,
-    },
-)
-print(response.text)
-```
-
-#### JSON Response
-
-You can also set `response_mime_type` to `'application/json'`, the response will be
-identical but in quotes.
-
-```python
-from enum import Enum
-
-class InstrumentEnum(Enum):
-    PERCUSSION = 'Percussion'
-    STRING = 'String'
-    WOODWIND = 'Woodwind'
-    BRASS = 'Brass'
-    KEYBOARD = 'Keyboard'
-
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents='What instrument plays multiple notes at once?',
-    config={
-        'response_mime_type': 'application/json',
-        'response_schema': InstrumentEnum,
-    },
 )
 print(response.text)
 ```
@@ -1200,7 +1146,6 @@ print(response)
 ```python
 from google.genai import types
 
-# multiple contents with config
 response = client.models.embed_content(
     model='gemini-embedding-001',
     contents=['why is the sky blue?', 'What is your age?'],
@@ -1214,12 +1159,9 @@ print(response)
 
 #### Generate Images
 
-Support for generate images in Gemini Developer API is behind an allowlist
-
 ```python
 from google.genai import types
 
-# Generate Image
 response1 = client.models.generate_images(
     model='imagen-4.0-generate-001',
     prompt='An umbrella in the foreground, and a rainy night sky in the background',
@@ -1239,7 +1181,6 @@ Upscale image is only supported in Vertex AI.
 ```python
 from google.genai import types
 
-# Upscale the generated image from above
 response2 = client.models.upscale_image(
     model='imagen-4.0-upscale-preview',
     image=response1.generated_images[0].image,
@@ -1434,8 +1375,8 @@ Files are only supported in Gemini Developer API. See the 'Create a client'
 section above to initialize a client.
 
 ```sh
-!gsutil cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
-!gsutil cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
+!gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
+!gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
 ```
 
 ### Upload
@@ -1939,7 +1880,7 @@ file = client.files.upload(
 
 # Create a batch job with file name
 batch_job = client.batches.create(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     src="files/test-json",
 )
 ```

@@ -15,7 +15,6 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -27,10 +26,10 @@ __all__ = ["URLContextCallContent"]
 class URLContextCallContent(BaseModel):
     """URL context content."""
 
-    type: Literal["url_context_call"]
-
-    id: Optional[str] = None
+    id: str
     """A unique ID for this specific tool call."""
 
-    arguments: Optional[URLContextCallArguments] = None
+    arguments: URLContextCallArguments
     """The arguments to pass to the URL context."""
+
+    type: Literal["url_context_call"]

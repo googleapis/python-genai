@@ -22,6 +22,9 @@ import os
 from typing import Any, Optional, Union
 from urllib.parse import urlencode
 
+import google.auth
+
+from . import _api_client
 from . import _api_module
 from . import _common
 from . import _extra_utils
@@ -98,6 +101,17 @@ def _GetFileParameters_to_mldev(
   return to_object
 
 
+def _InternalRegisterFilesParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['uris']) is not None:
+    setv(to_object, ['uris'], getv(from_object, ['uris']))
+
+  return to_object
+
+
 def _ListFilesConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -142,6 +156,22 @@ def _ListFilesResponse_from_mldev(
 
   if getv(from_object, ['nextPageToken']) is not None:
     setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
+
+  if getv(from_object, ['files']) is not None:
+    setv(to_object, ['files'], [item for item in getv(from_object, ['files'])])
+
+  return to_object
+
+
+def _RegisterFilesResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
 
   if getv(from_object, ['files']) is not None:
     setv(to_object, ['files'], [item for item in getv(from_object, ['files'])])
@@ -402,6 +432,69 @@ class Files(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  def _register_files(
+      self,
+      *,
+      uris: list[str],
+      config: Optional[types.RegisterFilesConfigOrDict] = None,
+  ) -> types.RegisterFilesResponse:
+    parameter_model = types._InternalRegisterFilesParameters(
+        uris=uris,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+    else:
+      request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'files:register'.format_map(request_url_dict)
+      else:
+        path = 'files:register'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
+    if config is not None and getattr(
+        config, 'should_return_http_response', None
+    ):
+      return_value = types.RegisterFilesResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
+      return return_value
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if not self._api_client.vertexai:
+      response_dict = _RegisterFilesResponse_from_mldev(response_dict)
+
+    return_value = types.RegisterFilesResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
   def upload(
       self,
       *,
@@ -558,6 +651,39 @@ class Files(_api_module.BaseModule):
       file.video.video_bytes = data
 
     return data
+
+  def register_files(
+      self,
+      *,
+      auth: google.auth.credentials.Credentials,
+      uris: list[str],
+      config: Optional[types.RegisterFilesConfigOrDict] = None,
+  ) -> types.RegisterFilesResponse:
+    """Registers gcs files with the file service."""
+    if not isinstance(auth, google.auth.credentials.Credentials):
+      raise ValueError(
+          'auth must be a google.auth.credentials.Credentials object.'
+      )
+    if config is None:
+      config = types.RegisterFilesConfig()
+    else:
+      config = types.RegisterFilesConfig.model_validate(config)
+      config = config.model_copy(deep=True)
+
+    http_options = config.http_options or types.HttpOptions()
+    headers = http_options.headers or {}
+    headers = {k.lower(): v for k, v in headers.items()}
+
+    token = _api_client.get_token_from_credentials(self._api_client, auth)
+    headers['authorization'] = f'Bearer {token}'
+
+    if auth.quota_project_id:
+      headers['x-goog-user-project'] = auth.quota_project_id
+
+    http_options.headers = headers
+    config.http_options = http_options
+
+    return self._register_files(uris=uris, config=config)
 
   def list(
       self, *, config: Optional[types.ListFilesConfigOrDict] = None
@@ -845,6 +971,69 @@ class AsyncFiles(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  async def _register_files(
+      self,
+      *,
+      uris: list[str],
+      config: Optional[types.RegisterFilesConfigOrDict] = None,
+  ) -> types.RegisterFilesResponse:
+    parameter_model = types._InternalRegisterFilesParameters(
+        uris=uris,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+    else:
+      request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'files:register'.format_map(request_url_dict)
+      else:
+        path = 'files:register'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
+
+    if config is not None and getattr(
+        config, 'should_return_http_response', None
+    ):
+      return_value = types.RegisterFilesResponse(sdk_http_response=response)
+      self._api_client._verify_response(return_value)
+      return return_value
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if not self._api_client.vertexai:
+      response_dict = _RegisterFilesResponse_from_mldev(response_dict)
+
+    return_value = types.RegisterFilesResponse._from_response(
+        response=response_dict, kwargs=parameter_model.model_dump()
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
+
   async def upload(
       self,
       *,
@@ -991,6 +1180,41 @@ class AsyncFiles(_api_module.BaseModule):
     )
 
     return data
+
+  async def register_files(
+      self,
+      *,
+      auth: google.auth.credentials.Credentials,
+      uris: list[str],
+      config: Optional[types.RegisterFilesConfigOrDict] = None,
+  ) -> types.RegisterFilesResponse:
+    """Registers gcs files with the file service."""
+    if not isinstance(auth, google.auth.credentials.Credentials):
+      raise ValueError(
+          'auth must be a google.auth.credentials.Credentials object.'
+      )
+    if config is None:
+      config = types.RegisterFilesConfig()
+    else:
+      config = types.RegisterFilesConfig.model_validate(config)
+      config = config.model_copy(deep=True)
+
+    http_options = config.http_options or types.HttpOptions()
+    headers = http_options.headers or {}
+    headers = {k.lower(): v for k, v in headers.items()}
+
+    token = await _api_client.async_get_token_from_credentials(
+        self._api_client, auth
+    )
+    headers['authorization'] = f'Bearer {token}'
+
+    if auth.quota_project_id:
+      headers['x-goog-user-project'] = auth.quota_project_id
+
+    http_options.headers = headers
+    config.http_options = http_options
+
+    return await self._register_files(uris=uris, config=config)
 
   async def list(
       self, *, config: Optional[types.ListFilesConfigOrDict] = None

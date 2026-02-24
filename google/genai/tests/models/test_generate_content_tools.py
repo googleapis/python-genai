@@ -1759,3 +1759,68 @@ async def test_function_declaration_with_callable_async_stream(client):
         },
     ):
       pass
+
+def test_server_side_mcp_only(client):
+  """Test server side mcp, happy path."""
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    response = client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents=('What is the weather like in New York (NY) on 02/02/2026?'),
+        config=types.GenerateContentConfig(
+            tools=[types.Tool(
+                mcp_servers=[types.McpServer(
+                    name='get_weather',
+                    streamable_http_transport=types.StreamableHttpTransport(
+                        url='https://gemini-api-demos.uc.r.appspot.com/mcp',
+                        headers={'AUTHORIZATION': 'Bearer github_pat_XXXX'},
+                    ),
+                )]
+            )]
+        )
+    )
+    assert response.text
+
+@pytest.mark.asyncio
+async def test_server_side_mcp_only_async(client):
+  """Test server side mcp, happy path."""
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    response = await client.aio.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=(
+            'What is the weather like in New York on 02/02/2026?'
+        ),
+        config=types.GenerateContentConfig(
+            tools=[types.Tool(
+                mcp_servers=[types.McpServer(
+                    name='get_weather',
+                    streamable_http_transport=types.StreamableHttpTransport(
+                        url='https://gemini-api-demos.uc.r.appspot.com/mcp',
+                        headers={'AUTHORIZATION': 'Bearer github_pat_XXXX'},
+                    ),
+                )]
+
+            )]
+        )
+    )
+    assert response.text
+
+def test_server_side_mcp_only_stream(client):
+  """Test server side mcp, happy path."""
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    response = client.models.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents=('What is the weather like in New York (NY) on 02/02/2026?'),
+        config=types.GenerateContentConfig(
+            tools=[types.Tool(
+                mcp_servers=[types.McpServer(
+                    name='get_weather',
+                    streamable_http_transport=types.StreamableHttpTransport(
+                        url='https://gemini-api-demos.uc.r.appspot.com/mcp',
+                        headers={'AUTHORIZATION': 'Bearer github_pat_XXXX'},
+                    ),
+                )]
+            )]
+        )
+    )
+    for chunk in response:
+      pass

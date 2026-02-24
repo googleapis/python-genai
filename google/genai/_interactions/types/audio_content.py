@@ -19,7 +19,6 @@ from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
-from .audio_mime_type import AudioMimeType
 
 __all__ = ["AudioContent"]
 
@@ -30,8 +29,10 @@ class AudioContent(BaseModel):
     type: Literal["audio"]
 
     data: Optional[str] = None
+    """The audio content."""
 
-    mime_type: Optional[AudioMimeType] = None
+    mime_type: Optional[Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"]] = None
     """The mime type of the audio."""
 
     uri: Optional[str] = None
+    """The URI of the audio."""

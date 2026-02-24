@@ -39,6 +39,9 @@ class Result(TypedDict, total=False):
 class FileSearchResultContentParam(TypedDict, total=False):
     """File Search result content."""
 
+    call_id: Required[str]
+    """ID to match the ID from the file search call block."""
+
     type: Required[Literal["file_search_result"]]
 
     result: Iterable[Result]

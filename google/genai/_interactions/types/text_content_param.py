@@ -28,10 +28,10 @@ __all__ = ["TextContentParam"]
 class TextContentParam(TypedDict, total=False):
     """A text content block."""
 
+    text: Required[str]
+    """The text content."""
+
     type: Required[Literal["text"]]
 
     annotations: Iterable[AnnotationParam]
     """Citation information for model-generated content."""
-
-    text: str
-    """The text content."""

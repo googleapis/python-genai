@@ -1013,6 +1013,11 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['enable_enhanced_civic_answers']),
     )
 
+  if getv(from_object, ['model_armor_config']) is not None:
+    raise ValueError(
+        'model_armor_config parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -1202,6 +1207,9 @@ def _InlinedResponse_from_mldev(
             getv(from_object, ['response']), to_object
         ),
     )
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
   if getv(from_object, ['error']) is not None:
     setv(to_object, ['error'], getv(from_object, ['error']))
@@ -1489,6 +1497,13 @@ def _Tool_to_mldev(
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
 
   return to_object
 
