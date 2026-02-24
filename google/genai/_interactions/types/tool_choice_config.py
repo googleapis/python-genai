@@ -24,7 +24,5 @@ __all__ = ["ToolChoiceConfig"]
 
 
 class ToolChoiceConfig(BaseModel):
-    """The tool choice configuration containing allowed tools."""
-
     allowed_tools: Optional[AllowedTools] = None
-    """The allowed tools."""
+    """The configuration for allowed tools."""
