@@ -34,3 +34,6 @@ class GoogleSearchCallContentParam(TypedDict, total=False):
     """The arguments to pass to Google Search."""
 
     type: Required[Literal["google_search_call"]]
+
+    search_type: Literal["web_search", "image_search"]
+    """The type of search grounding enabled."""
