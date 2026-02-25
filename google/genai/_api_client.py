@@ -702,7 +702,21 @@ class BaseApiClient:
         )
       self._http_options.api_version = 'v1beta1'
     else:  # Implicit initialization or missing arguments.
-      if not self.api_key:
+      if env_api_key and api_key:
+        # Explicit api_key takes precedence over implicit api_key.
+        logger.info(
+            'The client initializer api_key argument takes '
+            'precedence over the API key from the environment variable.'
+        )
+      if credentials:
+        if env_api_key:
+          logger.info(
+              'The user `credentials` argument will take precedence over the'
+              ' api key from the environment variables.'
+          )
+          self.api_key = None
+
+      if not self.api_key and not credentials:
         raise ValueError(
             'No API key was provided. Please pass a valid API key. Learn how to'
             ' create an API key at'
@@ -1175,20 +1189,21 @@ class BaseApiClient:
       stream: bool = False,
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
-    # If using proj/location, fetch ADC
-    if self.vertexai and (self.project or self.location):
+
+    uses_vertex_creds = self.vertexai and (self.project or self.location)
+    uses_mldev_creds = not self.vertexai and self._credentials
+    if (uses_vertex_creds or uses_mldev_creds):
       http_request.headers['Authorization'] = f'Bearer {self._access_token()}'
       if self._credentials and self._credentials.quota_project_id:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
-    else:
-      if http_request.data:
-        if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
-        else:
-          data = http_request.data
+
+    if http_request.data:
+      if not isinstance(http_request.data, bytes):
+        data = json.dumps(http_request.data)
+      else:
+        data = http_request.data
 
     if stream:
       httpx_request = self._httpx_client.build_request(
@@ -1241,8 +1256,9 @@ class BaseApiClient:
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
 
-    # If using proj/location, fetch ADC
-    if self.vertexai and (self.project or self.location):
+    uses_vertex_creds = self.vertexai and (self.project or self.location)
+    uses_mldev_creds = not self.vertexai and self._credentials
+    if (uses_vertex_creds or uses_mldev_creds):
       http_request.headers['Authorization'] = (
           f'Bearer {await self._async_access_token()}'
       )
@@ -1250,13 +1266,12 @@ class BaseApiClient:
         http_request.headers['x-goog-user-project'] = (
             self._credentials.quota_project_id
         )
-      data = json.dumps(http_request.data) if http_request.data else None
-    else:
-      if http_request.data:
-        if not isinstance(http_request.data, bytes):
-          data = json.dumps(http_request.data) if http_request.data else None
-        else:
-          data = http_request.data
+
+    if http_request.data:
+      if not isinstance(http_request.data, bytes):
+        data = json.dumps(http_request.data)
+      else:
+        data = http_request.data
 
     if stream:
       if self._use_aiohttp():
