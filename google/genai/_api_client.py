@@ -747,11 +747,10 @@ class BaseApiClient:
 
         if self._http_options.aiohttp_client:
           self._aiohttp_session = self._http_options.aiohttp_client
-        else:
-          # Do it once at the genai.Client level. Share among all requests.
-          self._async_client_session_request_args = (
-              self._ensure_aiohttp_ssl_ctx(self._http_options)
-          )
+        # Do it once at the genai.Client level. Share among all requests.
+        self._async_client_session_request_args = (
+            self._ensure_aiohttp_ssl_ctx(self._http_options)
+        )
       except ImportError:
         pass
 
