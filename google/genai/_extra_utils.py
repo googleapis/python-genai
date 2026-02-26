@@ -16,15 +16,19 @@
 """Extra utils depending on types that are shared between sync and async modules."""
 
 import asyncio
+from collections.abc import Callable, MutableMapping
 import inspect
 import io
 import logging
 import sys
 import typing
-from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
+from typing import Any, Optional, Union, get_args, get_origin
 import mimetypes
 import os
 import pydantic
+
+import google.auth.transport.requests
+
 
 from . import _common
 from . import _mcp_utils
@@ -677,3 +681,18 @@ def prepare_resumable_upload(
         http_options.headers = {}
     http_options.headers['X-Goog-Upload-File-Name'] = os.path.basename(file)
   return http_options, size_bytes, mime_type
+
+
+async def _maybe_update_and_insert_auth_token(
+    headers:MutableMapping[str, str],
+    creds: google.auth.credentials.Credentials) -> None:
+  # Refresh credentials to ensure token is valid
+  if not (creds.token and creds.valid):
+      try:
+          auth_req = google.auth.transport.requests.Request()  # type: ignore[no-untyped-call]
+          await asyncio.to_thread(creds.refresh, auth_req)
+      except Exception as e:
+          raise ConnectionError(f"Failed to refresh credentials") from e
+
+  if not headers.get('Authorization'):
+      headers['Authorization'] = f'Bearer {creds.token}'
