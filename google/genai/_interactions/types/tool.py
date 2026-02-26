@@ -33,6 +33,9 @@ class GoogleSearch(BaseModel):
 
     type: Literal["google_search"]
 
+    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
+    """The types of search grounding to enable."""
+
 
 class CodeExecution(BaseModel):
     """A tool that can be used by the model to execute code."""

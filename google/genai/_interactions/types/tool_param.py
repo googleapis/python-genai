@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Union, Iterable
+from typing import Dict, List, Union, Iterable
 from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
 
 from .._types import SequenceNotStr
@@ -32,6 +32,9 @@ class GoogleSearch(TypedDict, total=False):
     """A tool that can be used by the model to search Google."""
 
     type: Required[Literal["google_search"]]
+
+    search_types: List[Literal["web_search", "image_search"]]
+    """The types of search grounding to enable."""
 
 
 class CodeExecution(TypedDict, total=False):

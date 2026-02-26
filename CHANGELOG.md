@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.65.0](https://github.com/googleapis/python-genai/compare/v1.64.0...v1.65.0) (2026-02-26)
+
+
+### Features
+
+* Add gemini-3.1-pro-preview to list of models in Interactions ([fe86870](https://github.com/googleapis/python-genai/commit/fe86870752ca8cc66d140d3942e9b07f19ca092c))
+* Add Image Grounding support to GoogleSearch tool ([0035182](https://github.com/googleapis/python-genai/commit/0035182ec4eaf1ce2503a09f290b1e48a2e1ee1f))
+* Enable server side MCP and disable all other AFC when server side MCP is configured. ([4dd7b16](https://github.com/googleapis/python-genai/commit/4dd7b165dc54d3ae75367f68d05f9d9951688f54))
+* Support more image sizes and resolutions ([8b2a4e0](https://github.com/googleapis/python-genai/commit/8b2a4e04707c86e5f7d46e0483a88457fbf6d533))
+
+
+### Bug Fixes
+
+* Change interactions media mime type to enum (breaking change for experimental feature) ([e0f3378](https://github.com/googleapis/python-genai/commit/e0f33786f76a1af6ac3ad1938ab57961833bf0a1))
+* Handle non-list response_stream in HttpResponse.json property ([006042d](https://github.com/googleapis/python-genai/commit/006042db8379d957ac1ac0e57993983a21f7e1d1))
+* Handle non-list response_stream in HttpResponse.json property ([#1903](https://github.com/googleapis/python-genai/issues/1903)) ([61aec34](https://github.com/googleapis/python-genai/commit/61aec3455e886a1c700fb0ba21ed40f59bba65ff))
+* Make aiohttp an optional dependency, bump aiohttp version upperbound, and ensure HttpOptions.async_client_args propagates to custom aiohttp.ClientSession request args for proxy etc. ([b28d144](https://github.com/googleapis/python-genai/commit/b28d1445bb6c2c46c495ffd1b03a622d9d6942f6)), closes [#2090](https://github.com/googleapis/python-genai/issues/2090) [#2051](https://github.com/googleapis/python-genai/issues/2051) [#1950](https://github.com/googleapis/python-genai/issues/1950)
+
+
+### Documentation
+
+* Regenerate docs for 1.64.0 ([a023141](https://github.com/googleapis/python-genai/commit/a02314197d0dc72e854fa3ea79247f53421511ba))
+* Update README and codegen_instructions for structured outputs ([4d5a978](https://github.com/googleapis/python-genai/commit/4d5a978932e9aacd2569f3058ce5af527ae18210))
+
 ## [1.64.0](https://github.com/googleapis/python-genai/compare/v1.63.0...v1.64.0) (2026-02-18)
 
 

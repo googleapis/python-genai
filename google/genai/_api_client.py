@@ -704,9 +704,9 @@ class BaseApiClient:
     else:  # Implicit initialization or missing arguments.
       if not self.api_key:
         raise ValueError(
-            'Missing key inputs argument! To use the Google AI API,'
-            ' provide (`api_key`) arguments. To use the Google Cloud API,'
-            ' provide (`vertexai`, `project` & `location`) arguments.'
+            'No API key was provided. Please pass a valid API key. Learn how to'
+            ' create an API key at'
+            ' https://ai.google.dev/gemini-api/docs/api-key.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
       self._http_options.api_version = 'v1beta'
@@ -747,11 +747,10 @@ class BaseApiClient:
 
         if self._http_options.aiohttp_client:
           self._aiohttp_session = self._http_options.aiohttp_client
-        else:
-          # Do it once at the genai.Client level. Share among all requests.
-          self._async_client_session_request_args = (
-              self._ensure_aiohttp_ssl_ctx(self._http_options)
-          )
+        # Do it once at the genai.Client level. Share among all requests.
+        self._async_client_session_request_args = (
+            self._ensure_aiohttp_ssl_ctx(self._http_options)
+        )
       except ImportError:
         pass
 

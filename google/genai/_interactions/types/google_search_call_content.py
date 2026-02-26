@@ -15,6 +15,7 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -33,3 +34,6 @@ class GoogleSearchCallContent(BaseModel):
     """The arguments to pass to Google Search."""
 
     type: Literal["google_search_call"]
+
+    search_type: Optional[Literal["web_search", "image_search"]] = None
+    """The type of search grounding enabled."""

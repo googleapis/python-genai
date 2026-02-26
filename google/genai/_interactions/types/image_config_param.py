@@ -25,6 +25,8 @@ __all__ = ["ImageConfigParam"]
 class ImageConfigParam(TypedDict, total=False):
     """The configuration for image interaction."""
 
-    aspect_ratio: Literal["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"]
+    aspect_ratio: Literal[
+        "1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "1:8", "8:1", "1:4", "4:1"
+    ]
 
-    image_size: Literal["1K", "2K", "4K"]
+    image_size: Literal["1K", "2K", "4K", "512"]

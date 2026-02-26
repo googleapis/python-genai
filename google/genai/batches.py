@@ -408,15 +408,15 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
   if getv(from_object, ['groundingMetadata']) is not None:
     setv(
         to_object,
         ['grounding_metadata'],
         getv(from_object, ['groundingMetadata']),
     )
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
   if getv(from_object, ['index']) is not None:
     setv(to_object, ['index'], getv(from_object, ['index']))
@@ -1107,6 +1107,9 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
+
   if getv(from_object, ['exclude_domains']) is not None:
     raise ValueError(
         'exclude_domains parameter is not supported in Gemini API.'
@@ -1139,6 +1142,11 @@ def _ImageConfig_to_mldev(
   if getv(from_object, ['person_generation']) is not None:
     raise ValueError(
         'person_generation parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['prominent_people']) is not None:
+    raise ValueError(
+        'prominent_people parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['output_mime_type']) is not None:
@@ -1459,6 +1467,13 @@ def _Tool_to_mldev(
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+    )
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
@@ -1479,13 +1494,6 @@ def _Tool_to_mldev(
         to_object,
         ['googleMaps'],
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
-    )
-
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_search_retrieval']) is not None:
