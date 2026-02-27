@@ -35,7 +35,7 @@ from ._types import (
     RequestOptions,
     not_given,
 )
-from ._utils import is_given, get_async_library
+from ._utils import is_given
 from ._compat import cached_property
 from ._models import FinalRequestOptions
 from ._version import __version__
@@ -159,7 +159,6 @@ class GeminiNextGenAPIClient(SyncAPIClient):
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "X-Stainless-Async": "false",
             **self._custom_headers,
         }
 
@@ -381,7 +380,6 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "X-Stainless-Async": f"async:{get_async_library()}",
             **self._custom_headers,
         }
 
