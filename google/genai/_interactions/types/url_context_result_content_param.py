@@ -40,4 +40,4 @@ class URLContextResultContentParam(TypedDict, total=False):
     """Whether the URL context resulted in an error."""
 
     signature: str
-    """The signature of the URL context result."""
+    """A signature hash for backend validation."""

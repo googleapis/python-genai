@@ -51,3 +51,6 @@ class MCPServerToolResultContentParam(TypedDict, total=False):
 
     server_name: str
     """The name of the used MCP server."""
+
+    signature: str
+    """A signature hash for backend validation."""
