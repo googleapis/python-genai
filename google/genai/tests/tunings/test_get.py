@@ -23,7 +23,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_vertexai",
         parameters=genai_types._GetTuningJobParameters(
-            name="projects/801452371447/locations/us-central1/tuningJobs/4303478340632707072"
+            name="projects/964831358985/locations/us-central1/tuningJobs/1882551459384393728"
         ),
         exception_if_mldev="Not Found",
     ),
@@ -56,11 +56,11 @@ pytest_plugins = ("pytest_asyncio",)
 def test_helper_properties(client):
   if client._api_client.vertexai:
     job = client.tunings.get(
-        name="projects/801452371447/locations/us-central1/tuningJobs/4303478340632707072",
+        name="projects/964831358985/locations/us-central1/tuningJobs/1882551459384393728",
     )
   else:
     job = client.tunings.get(
-        name="tunedModels/testdatasetexamples-model-j0fpgpaksvri"
+        name="tunedModels/generate-num-1896"
     )
 
   assert job.has_ended
