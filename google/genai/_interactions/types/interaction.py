@@ -47,6 +47,8 @@ from .mcp_server_tool_call_content import MCPServerToolCallContent
 from .code_execution_result_content import CodeExecutionResultContent
 from .mcp_server_tool_result_content import MCPServerToolResultContent
 
+from pydantic import Field as FieldInfo
+
 __all__ = ["Interaction", "AgentConfig", "Input"]
 
 AgentConfig: TypeAlias = Annotated[
@@ -104,7 +106,7 @@ class Interaction(BaseModel):
     agent: Union[str, Literal["deep-research-pro-preview-12-2025"], None] = None
     """The name of the `Agent` used for generating the interaction."""
 
-    agent_config: Optional[AgentConfig] = None
+    agent_config: Optional[AgentConfig] = FieldInfo(alias="agentConfig", default=None)
     """Configuration for the agent."""
 
     input: Optional[Input] = None
@@ -116,25 +118,27 @@ class Interaction(BaseModel):
     outputs: Optional[List[Content]] = None
     """Output only. Responses from the model."""
 
-    previous_interaction_id: Optional[str] = None
+    previous_interaction_id: Optional[str] = FieldInfo(alias="previousInteractionId", default=None)
     """The ID of the previous interaction, if any."""
 
-    response_format: Optional[object] = None
+    response_format: Optional[object] = FieldInfo(alias="responseFormat", default=None)
     """
     Enforces that the generated response is a JSON object that complies with
     the JSON schema specified in this field.
     """
 
-    response_mime_type: Optional[str] = None
+    response_mime_type: Optional[str] = FieldInfo(alias="responseMimeType", default=None)
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: Optional[List[Literal["text", "image", "audio"]]] = None
+    response_modalities: Optional[List[Literal["text", "image", "audio"]]] = FieldInfo(
+        alias="responseModalities", default=None
+    )
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     role: Optional[str] = None
     """Output only. The role of the interaction."""
 
-    system_instruction: Optional[str] = None
+    system_instruction: Optional[str] = FieldInfo(alias="systemInstruction", default=None)
     """System instruction for the interaction."""
 
     tools: Optional[List[Tool]] = None
