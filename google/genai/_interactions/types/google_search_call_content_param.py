@@ -37,3 +37,6 @@ class GoogleSearchCallContentParam(TypedDict, total=False):
 
     search_type: Literal["web_search", "image_search"]
     """The type of search grounding enabled."""
+
+    signature: str
+    """A signature hash for backend validation."""
