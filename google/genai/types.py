@@ -1821,6 +1821,24 @@ class Part(_common.BaseModel):
     code_execution_result = CodeExecutionResult(outcome=outcome, output=output)
     return cls(code_execution_result=code_execution_result)
 
+  @pydantic.model_validator(mode='after')
+  def check_exactly_one_field_set(self) -> 'Part':
+    """
+    Validates that exactly one of the optional fields is set.
+    """
+    # Get all fields defined in this model (excluding potential private attributes)
+    # In Pydantic V2, self.model_fields gives the definitions
+    # We need the actual values, which are instance attributes
+    field_names = self.model_fields.keys()
+
+    # Count how many fields are set (not None)
+    set_fields_count = sum(1 for field_name in field_names if getattr(self, field_name) is not None)
+
+    # Check if the count is exactly 1
+    if set_fields_count != 1:
+        raise ValueError(f"Exactly one of the fields {list(field_names)} must be set. Found {set_fields_count} set.")
+
+    return self
 
 class PartDict(TypedDict, total=False):
   """A datatype containing media content.
