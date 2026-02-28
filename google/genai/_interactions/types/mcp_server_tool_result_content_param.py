@@ -23,16 +23,9 @@ from typing_extensions import Literal, Required, TypeAlias, TypedDict
 from .text_content_param import TextContentParam
 from .image_content_param import ImageContentParam
 
-__all__ = ["MCPServerToolResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
+__all__ = ["MCPServerToolResultContentParam", "ResultFunctionResultSubcontentList"]
 
-ResultItemsItem: TypeAlias = Union[TextContentParam, ImageContentParam]
-
-
-class ResultItems(TypedDict, total=False):
-    items: Iterable[ResultItemsItem]
-
-
-Result: TypeAlias = Union[ResultItems, str, object]
+ResultFunctionResultSubcontentList: TypeAlias = Union[TextContentParam, ImageContentParam]
 
 
 class MCPServerToolResultContentParam(TypedDict, total=False):
@@ -41,8 +34,8 @@ class MCPServerToolResultContentParam(TypedDict, total=False):
     call_id: Required[str]
     """ID to match the ID from the MCP server tool call block."""
 
-    result: Required[Result]
-    """The result of the tool call."""
+    result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
+    """The output from the MCP server call. Can be simple text or rich content."""
 
     type: Required[Literal["mcp_server_tool_result"]]
 

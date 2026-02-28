@@ -16,22 +16,18 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from typing import List, Union, Optional
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import Literal, Annotated, TypeAlias
 
+from .._utils import PropertyInfo
 from .._models import BaseModel
 from .text_content import TextContent
 from .image_content import ImageContent
 
-__all__ = ["FunctionResultContent", "Result", "ResultItems", "ResultItemsItem"]
+__all__ = ["FunctionResultContent", "ResultFunctionResultSubcontentList"]
 
-ResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
-
-
-class ResultItems(BaseModel):
-    items: Optional[List[ResultItemsItem]] = None
-
-
-Result: TypeAlias = Union[ResultItems, str, object]
+ResultFunctionResultSubcontentList: TypeAlias = Annotated[
+    Union[TextContent, ImageContent], PropertyInfo(discriminator="type")
+]
 
 
 class FunctionResultContent(BaseModel):
@@ -40,7 +36,7 @@ class FunctionResultContent(BaseModel):
     call_id: str
     """ID to match the ID from the function call block."""
 
-    result: Result
+    result: Union[List[ResultFunctionResultSubcontentList], str, object]
     """The result of the tool call."""
 
     type: Literal["function_result"]

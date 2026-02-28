@@ -25,16 +25,7 @@ from .._models import BaseModel
 from .function import Function
 from .allowed_tools import AllowedTools
 
-__all__ = ["Tool", "GoogleSearch", "CodeExecution", "URLContext", "ComputerUse", "MCPServer", "FileSearch"]
-
-
-class GoogleSearch(BaseModel):
-    """A tool that can be used by the model to search Google."""
-
-    type: Literal["google_search"]
-
-    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
-    """The types of search grounding to enable."""
+__all__ = ["Tool", "CodeExecution", "URLContext", "ComputerUse", "MCPServer", "GoogleSearch", "FileSearch"]
 
 
 class CodeExecution(BaseModel):
@@ -82,6 +73,15 @@ class MCPServer(BaseModel):
     """
 
 
+class GoogleSearch(BaseModel):
+    """A tool that can be used by the model to search Google."""
+
+    type: Literal["google_search"]
+
+    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
+    """The types of search grounding to enable."""
+
+
 class FileSearch(BaseModel):
     """A tool that can be used by the model to search files."""
 
@@ -98,6 +98,6 @@ class FileSearch(BaseModel):
 
 
 Tool: TypeAlias = Annotated[
-    Union[Function, GoogleSearch, CodeExecution, URLContext, ComputerUse, MCPServer, FileSearch],
+    Union[Function, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch],
     PropertyInfo(discriminator="type"),
 ]

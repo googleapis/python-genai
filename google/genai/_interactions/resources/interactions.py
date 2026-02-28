@@ -92,7 +92,7 @@ class InteractionsResource(SyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
@@ -155,7 +155,7 @@ class InteractionsResource(SyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
@@ -220,9 +220,9 @@ class InteractionsResource(SyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
 
@@ -283,11 +283,11 @@ class InteractionsResource(SyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
 
@@ -344,7 +344,7 @@ class InteractionsResource(SyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
@@ -720,7 +720,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
@@ -783,7 +783,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
@@ -848,9 +848,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
 
@@ -911,11 +911,11 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
 
@@ -972,7 +972,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 

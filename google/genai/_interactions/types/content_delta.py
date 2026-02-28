@@ -138,7 +138,7 @@ class DeltaThoughtSummaryDelta(BaseModel):
     type: Literal["thought_summary"]
 
     content: Optional[DeltaThoughtSummaryDeltaContent] = None
-    """A text content block."""
+    """A new summary item to be added to the thought."""
 
 
 class DeltaThoughtSignatureDelta(BaseModel):
