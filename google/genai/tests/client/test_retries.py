@@ -18,6 +18,7 @@
 import asyncio
 from collections.abc import Sequence
 import datetime
+import json
 from unittest import mock
 import pytest
 try:
@@ -61,11 +62,14 @@ def _final_codes(retried_codes: Sequence[int] = _RETRIED_CODES):
   return [code for code in range(100, 600) if code not in retried_codes]
 
 
-def _httpx_response(code: int):
+def _httpx_response(code: int, response_json=None):
+  content = b''
+  if response_json is not None:
+    content = json.dumps(response_json).encode('utf-8')
   return httpx.Response(
       status_code=code,
       headers={'status-code': str(code)},
-      content=b'',
+      content=content,
   )
 
 
@@ -142,6 +146,99 @@ def test_retry_wait():
   assert timestamps[2] - timestamps[1] >= datetime.timedelta(seconds=2)
   assert timestamps[3] - timestamps[2] >= datetime.timedelta(seconds=4)
   assert timestamps[4] - timestamps[3] >= datetime.timedelta(seconds=8)
+
+
+_RETRY_OPTIONS_NO_JITTER = types.HttpRetryOptions(
+    attempts=2,
+    initial_delay=0.25,
+    max_delay=10,
+    exp_base=2,
+    jitter=0,
+)
+
+
+def _resource_exhausted_error_payload(
+    retry_delay: str,
+    *,
+    status: str = 'RESOURCE_EXHAUSTED',
+    wrapped: bool = True,
+):
+  details = {
+      'code': 429,
+      'message': 'Resource exhausted.',
+      'status': status,
+      'details': [
+          {
+              '@type': 'type.googleapis.com/google.rpc.RetryInfo',
+              'retryDelay': retry_delay,
+          }
+      ],
+  }
+  if wrapped:
+    return {'error': details}
+  return details
+
+
+def _retry_and_capture_sleep(status_code: int, error_payload: dict[str, object]):
+  def fn():
+    errors.APIError.raise_for_response(_httpx_response(status_code, error_payload))
+
+  retrying = tenacity.Retrying(
+      **api_client.retry_args(_RETRY_OPTIONS_NO_JITTER)
+  )
+  with mock.patch('tenacity.wait.random.uniform', return_value=0.0):
+    with mock.patch('tenacity.nap.time.sleep') as mock_sleep:
+      with pytest.raises(errors.APIError):
+        retrying(fn)
+    assert mock_sleep.call_count == 1
+    return mock_sleep.call_args.args[0]
+
+
+def test_retry_wait_uses_retry_info_for_429_resource_exhausted():
+  retry_delay_seconds = _retry_and_capture_sleep(
+      429,
+      _resource_exhausted_error_payload('21.943984799s'),
+  )
+  assert retry_delay_seconds == pytest.approx(22.943984799)
+
+
+def test_retry_wait_ignores_retry_info_when_status_not_resource_exhausted():
+  retry_delay_seconds = _retry_and_capture_sleep(
+      429,
+      _resource_exhausted_error_payload(
+          '9s', status='UNAVAILABLE'
+      ),
+  )
+  assert retry_delay_seconds == 0.25
+
+
+def test_retry_wait_ignores_retry_info_when_code_not_429():
+  retry_delay_seconds = _retry_and_capture_sleep(
+      500,
+      _resource_exhausted_error_payload('9s'),
+  )
+  assert retry_delay_seconds == 0.25
+
+
+def test_retry_wait_falls_back_on_malformed_retry_delay():
+  retry_delay_seconds = _retry_and_capture_sleep(
+      429,
+      _resource_exhausted_error_payload('invalid-delay'),
+  )
+  assert retry_delay_seconds == 0.25
+
+
+def test_retry_wait_supports_error_details_with_or_without_error_wrapper():
+  wrapped_retry_delay = _retry_and_capture_sleep(
+      429,
+      _resource_exhausted_error_payload('3.5s', wrapped=True),
+  )
+  unwrapped_retry_delay = _retry_and_capture_sleep(
+      429,
+      _resource_exhausted_error_payload('3.5s', wrapped=False),
+  )
+  assert wrapped_retry_delay == pytest.approx(4.5)
+  assert unwrapped_retry_delay == pytest.approx(4.5)
 
 
 def test_retry_args_enabled_with_custom_values_are_not_overridden():

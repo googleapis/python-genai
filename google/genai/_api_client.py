@@ -474,6 +474,44 @@ _RETRY_HTTP_STATUS_CODES = (
 )
 
 
+def _extract_retry_info_delay_seconds(
+    api_error: errors.APIError,
+) -> Optional[float]:
+  if api_error.code != 429 or api_error.status != 'RESOURCE_EXHAUSTED':
+    return None
+
+  if not isinstance(api_error.details, dict):
+    return None
+
+  for path in (['error', 'details'], ['details']):
+    details = _common.get_value_by_path(api_error.details, path)
+    if not isinstance(details, list):
+      continue
+
+    for detail in details:
+      if not isinstance(detail, dict):
+        continue
+      detail_type = detail.get('@type')
+      if (
+          not isinstance(detail_type, str)
+          or not detail_type.endswith('google.rpc.RetryInfo')
+      ):
+        continue
+      retry_delay = _common.get_value_by_path(detail, ['retryDelay'])
+      if not isinstance(retry_delay, str):
+        continue
+      retry_delay = retry_delay.strip()
+      if not retry_delay.endswith('s'):
+        continue
+      try:
+        retry_delay_seconds = float(retry_delay[:-1])
+      except ValueError:
+        continue
+      if retry_delay_seconds >= 0:
+        return retry_delay_seconds
+  return None
+
+
 def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   """Returns the retry args for the given http retry options.
 
@@ -498,11 +536,28 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
       exp_base=options.exp_base or _RETRY_EXP_BASE,
       jitter=options.jitter or _RETRY_JITTER,
   )
+  fallback_wait = wait
+
+  def wait_with_retry_info(retry_state: tenacity.RetryCallState) -> float:
+    if retry_state.outcome is not None and retry_state.outcome.failed:
+      exception = retry_state.outcome.exception()
+      if isinstance(exception, errors.APIError):
+        retry_delay_seconds = _extract_retry_info_delay_seconds(exception)
+        if retry_delay_seconds is not None:
+          # Add one second because RetryInfo delay can be truncated.
+          return retry_delay_seconds + 1
+    return fallback_wait(retry_state)
+
+  # Preserve standard attributes.
+  wait_with_retry_info.initial = wait.initial
+  wait_with_retry_info.max = wait.max
+  wait_with_retry_info.exp_base = wait.exp_base
+  wait_with_retry_info.jitter = wait.jitter
   return {
       'stop': stop,
       'retry': retry,
       'reraise': True,
-      'wait': wait,
+      'wait': wait_with_retry_info,
       'before_sleep': tenacity.before_sleep_log(logger, logging.INFO),
   }
 
