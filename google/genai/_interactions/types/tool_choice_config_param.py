@@ -25,7 +25,5 @@ __all__ = ["ToolChoiceConfigParam"]
 
 
 class ToolChoiceConfigParam(TypedDict, total=False):
-    """The tool choice configuration containing allowed tools."""
-
     allowed_tools: AllowedToolsParam
-    """The allowed tools."""
+    """The configuration for allowed tools."""
