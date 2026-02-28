@@ -474,3 +474,64 @@ async def test_async_interactions_vertex_extra_headers_override():
         assert headers['x-goog-api-key'] == 'manual-key'
         assert 'authorization' not in headers
         mock_access_token.assert_not_called()
+
+def test_interactions_mldev_auth_header():
+  from ..._api_client import BaseApiClient
+  from httpx import Client as HTTPClient
+
+  creds = mock.Mock()
+  creds.quota_project_id = "test-quota-project"
+  client = Client(vertexai=False, credentials=creds)
+
+  with (
+      mock.patch.object(
+          BaseApiClient, "_access_token", return_value='fake-mldev-token'
+      ) as  mock_access_token,
+      mock.patch.object(
+          HTTPClient, "send",
+          return_value=mock.Mock(),
+      ) as mock_send,
+  ):
+
+    client.interactions.create(
+        model='gemini-3-flash-preview',
+        input='Hello',
+    )
+
+    mock_send.assert_called_once()
+    mock_access_token.assert_called_once()
+    args, kwargs = mock_send.call_args
+    headers = args[0].headers
+    assert headers['authorization'] == 'Bearer fake-mldev-token'
+    assert headers['x-goog-user-project'] == 'test-quota-project'
+
+@pytest.mark.asyncio
+async def test_async_interactions_mldev_auth_header():
+  from ..._api_client import BaseApiClient
+  from ..._api_client import AsyncHttpxClient
+
+  creds = mock.Mock()
+  creds.quota_project_id = "test-quota-project"
+  client = Client(vertexai=False, credentials=creds)
+
+  with (
+      mock.patch.object(
+          BaseApiClient, "_async_access_token", return_value='fake-mldev-token'
+      ) as  mock_access_token,
+      mock.patch.object(
+          AsyncHttpxClient, "send",
+          return_value=mock.Mock(),
+      ) as mock_send,
+  ):
+
+    await client.aio.interactions.create(
+        model='gemini-3-flash-preview',
+        input='Hello',
+    )
+
+    mock_send.assert_called_once()
+    mock_access_token.assert_called_once()
+    args, kwargs = mock_send.call_args
+    headers = args[0].headers
+    assert headers['authorization'] == 'Bearer fake-mldev-token'
+    assert headers['x-goog-user-project'] == 'test-quota-project'

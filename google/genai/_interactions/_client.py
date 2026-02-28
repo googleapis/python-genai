@@ -178,7 +178,7 @@ class GeminiNextGenAPIClient(SyncAPIClient):
     
     @override
     def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
-        if not self.client_adapter or not self.client_adapter.is_vertex_ai():
+        if not self.client_adapter:
             return options
 
         headers = options.headers or {}
@@ -400,7 +400,7 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
     
     @override
     async def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
-        if not self.client_adapter or not self.client_adapter.is_vertex_ai():
+        if not self.client_adapter:
             return options
 
         headers = options.headers or {}
