@@ -5909,10 +5909,10 @@ GenerateContentConfigOrDict = Union[
 ]
 
 
-ContentListUnion = Union[ContentUnion, list[ContentUnion]]
+ContentListUnion = Union[ContentUnion, Sequence[ContentUnion]]
 
 
-ContentListUnionDict = Union[ContentUnionDict, list[ContentUnionDict]]
+ContentListUnionDict = Union[ContentUnionDict, Sequence[ContentUnionDict]]
 
 
 class _GenerateContentParameters(_common.BaseModel):
