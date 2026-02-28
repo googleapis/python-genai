@@ -1250,8 +1250,22 @@ def _TuningJob_from_vertex(
         to_object, ['custom_base_model'], getv(from_object, ['customBaseModel'])
     )
 
+  if getv(from_object, ['evaluateDatasetRuns']) is not None:
+    setv(
+        to_object,
+        ['evaluate_dataset_runs'],
+        [item for item in getv(from_object, ['evaluateDatasetRuns'])],
+    )
+
   if getv(from_object, ['experiment']) is not None:
     setv(to_object, ['experiment'], getv(from_object, ['experiment']))
+
+  if getv(from_object, ['fullFineTuningSpec']) is not None:
+    setv(
+        to_object,
+        ['full_fine_tuning_spec'],
+        getv(from_object, ['fullFineTuningSpec']),
+    )
 
   if getv(from_object, ['labels']) is not None:
     setv(to_object, ['labels'], getv(from_object, ['labels']))
@@ -1271,6 +1285,9 @@ def _TuningJob_from_vertex(
         ['tuned_model_display_name'],
         getv(from_object, ['tunedModelDisplayName']),
     )
+
+  if getv(from_object, ['tuningJobState']) is not None:
+    setv(to_object, ['tuning_job_state'], getv(from_object, ['tuningJobState']))
 
   if getv(from_object, ['veoTuningSpec']) is not None:
     setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))

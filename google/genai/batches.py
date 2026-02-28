@@ -35,6 +35,40 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.batches')
 
 
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError('api_key_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError('auth_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError('oauth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError('oidc_config parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _BatchJobDestination_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1094,7 +1128,11 @@ def _GoogleMaps_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(getv(from_object, ['auth_config']), to_object),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
@@ -1110,14 +1148,14 @@ def _GoogleSearch_to_mldev(
   if getv(from_object, ['search_types']) is not None:
     setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
 
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
-
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -1157,6 +1195,11 @@ def _ImageConfig_to_mldev(
   if getv(from_object, ['output_compression_quality']) is not None:
     raise ValueError(
         'output_compression_quality parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['image_output_options']) is not None:
+    raise ValueError(
+        'image_output_options parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -1474,6 +1517,13 @@ def _Tool_to_mldev(
         _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
+  if getv(from_object, ['google_maps']) is not None:
+    setv(
+        to_object,
+        ['googleMaps'],
+        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
+    )
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
 
@@ -1489,18 +1539,16 @@ def _Tool_to_mldev(
         [item for item in getv(from_object, ['function_declarations'])],
     )
 
-  if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
-    )
-
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
         to_object,
         ['googleSearchRetrieval'],
         getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    raise ValueError(
+        'parallel_ai_search parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['url_context']) is not None:
