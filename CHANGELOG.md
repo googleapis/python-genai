@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.66.0](https://github.com/googleapis/python-genai/compare/v1.65.0...v1.66.0) (2026-02-28)
+
+
+### Features
+
+* Add gemini-3.1-flash-image-preview model ([dd52cc2](https://github.com/googleapis/python-genai/commit/dd52cc288be297e74cb689be9260b917ea90e06b))
+* Support signature for all Interaction tool types ([abb388e](https://github.com/googleapis/python-genai/commit/abb388e9058fd8fa0d53bc0b265d68ce93a6f184))
+* Update data types from discovery doc. ([15666c0](https://github.com/googleapis/python-genai/commit/15666c063488fcb4589624ef44b4c80281a9ee7b))
+
 ## [1.65.0](https://github.com/googleapis/python-genai/compare/v1.64.0...v1.65.0) (2026-02-26)
 
 
