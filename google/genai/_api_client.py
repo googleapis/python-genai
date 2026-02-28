@@ -1398,6 +1398,8 @@ class BaseApiClient:
     http_request = self._build_request(
         http_method, path, request_dict, http_options
     )
+    print("+++++++2222")
+    print("http_request: ", http_request)
     response = self._request(http_request, http_options, stream=False)
     response_body = (
         response.response_stream[0] if response.response_stream else ''
