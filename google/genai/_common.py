@@ -627,10 +627,12 @@ class BaseModel(pydantic.BaseModel):
         and 'include_all_fields' in kwargs['config']
         and kwargs['config']['include_all_fields']
     )
-
+    print('resp1', response)
     if not should_skip_removing_fields:
       _remove_extra_fields(cls, response)
+    print('resp2', response)
     validated_response = cls.model_validate(response)
+    print('resp3', validated_response)
     return validated_response
 
   def to_json_dict(self) -> dict[str, object]:
