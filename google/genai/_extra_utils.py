@@ -441,6 +441,8 @@ def should_disable_afc(
     return True
 
   # Default to enable AFC if not specified.
+  if not config_model.tools or len(config_model.tools) == 0:
+    return True
   if (
       not config_model.automatic_function_calling
       or config_model.automatic_function_calling.disable is None
