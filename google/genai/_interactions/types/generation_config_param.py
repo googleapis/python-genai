@@ -18,9 +18,10 @@
 from __future__ import annotations
 
 from typing import Union, Iterable
-from typing_extensions import Literal, TypeAlias, TypedDict
+from typing_extensions import Literal, Annotated, TypeAlias, TypedDict
 
 from .._types import SequenceNotStr
+from .._utils import PropertyInfo
 from .thinking_level import ThinkingLevel
 from .tool_choice_type import ToolChoiceType
 from .image_config_param import ImageConfigParam
@@ -35,32 +36,32 @@ ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfigParam]
 class GenerationConfigParam(TypedDict, total=False):
     """Configuration parameters for model interactions."""
 
-    image_config: ImageConfigParam
+    image_config: Annotated[ImageConfigParam, PropertyInfo(alias="imageConfig")]
     """Configuration for image interaction."""
 
-    max_output_tokens: int
+    max_output_tokens: Annotated[int, PropertyInfo(alias="maxOutputTokens")]
     """The maximum number of tokens to include in the response."""
 
     seed: int
     """Seed used in decoding for reproducibility."""
 
-    speech_config: Iterable[SpeechConfigParam]
+    speech_config: Annotated[Iterable[SpeechConfigParam], PropertyInfo(alias="speechConfig")]
     """Configuration for speech interaction."""
 
-    stop_sequences: SequenceNotStr[str]
+    stop_sequences: Annotated[SequenceNotStr[str], PropertyInfo(alias="stopSequences")]
     """A list of character sequences that will stop output interaction."""
 
     temperature: float
     """Controls the randomness of the output."""
 
-    thinking_level: ThinkingLevel
+    thinking_level: Annotated[ThinkingLevel, PropertyInfo(alias="thinkingLevel")]
     """The level of thought tokens that the model should generate."""
 
-    thinking_summaries: Literal["auto", "none"]
+    thinking_summaries: Annotated[Literal["auto", "none"], PropertyInfo(alias="thinkingSummaries")]
     """Whether to include thought summaries in the response."""
 
-    tool_choice: ToolChoice
+    tool_choice: Annotated[ToolChoice, PropertyInfo(alias="toolChoice")]
     """The tool choice for the interaction."""
 
-    top_p: float
+    top_p: Annotated[float, PropertyInfo(alias="topP")]
     """The maximum cumulative probability of tokens to consider when sampling."""

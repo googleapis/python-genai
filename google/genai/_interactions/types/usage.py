@@ -18,6 +18,8 @@
 from typing import List, Optional
 from typing_extensions import Literal
 
+from pydantic import Field as FieldInfo
+
 from .._models import BaseModel
 
 __all__ = [
@@ -72,35 +74,43 @@ class ToolUseTokensByModality(BaseModel):
 class Usage(BaseModel):
     """Statistics on the interaction request's token usage."""
 
-    cached_tokens_by_modality: Optional[List[CachedTokensByModality]] = None
+    cached_tokens_by_modality: Optional[List[CachedTokensByModality]] = FieldInfo(
+        alias="cachedTokensByModality", default=None
+    )
     """A breakdown of cached token usage by modality."""
 
-    input_tokens_by_modality: Optional[List[InputTokensByModality]] = None
+    input_tokens_by_modality: Optional[List[InputTokensByModality]] = FieldInfo(
+        alias="inputTokensByModality", default=None
+    )
     """A breakdown of input token usage by modality."""
 
-    output_tokens_by_modality: Optional[List[OutputTokensByModality]] = None
+    output_tokens_by_modality: Optional[List[OutputTokensByModality]] = FieldInfo(
+        alias="outputTokensByModality", default=None
+    )
     """A breakdown of output token usage by modality."""
 
-    tool_use_tokens_by_modality: Optional[List[ToolUseTokensByModality]] = None
+    tool_use_tokens_by_modality: Optional[List[ToolUseTokensByModality]] = FieldInfo(
+        alias="toolUseTokensByModality", default=None
+    )
     """A breakdown of tool-use token usage by modality."""
 
-    total_cached_tokens: Optional[int] = None
+    total_cached_tokens: Optional[int] = FieldInfo(alias="totalCachedTokens", default=None)
     """Number of tokens in the cached part of the prompt (the cached content)."""
 
-    total_input_tokens: Optional[int] = None
+    total_input_tokens: Optional[int] = FieldInfo(alias="totalInputTokens", default=None)
     """Number of tokens in the prompt (context)."""
 
-    total_output_tokens: Optional[int] = None
+    total_output_tokens: Optional[int] = FieldInfo(alias="totalOutputTokens", default=None)
     """Total number of tokens across all the generated responses."""
 
-    total_thought_tokens: Optional[int] = None
+    total_thought_tokens: Optional[int] = FieldInfo(alias="totalThoughtTokens", default=None)
     """Number of tokens of thoughts for thinking models."""
 
-    total_tokens: Optional[int] = None
+    total_tokens: Optional[int] = FieldInfo(alias="totalTokens", default=None)
     """
     Total token count for the interaction request (prompt + responses + other
     internal tokens).
     """
 
-    total_tool_use_tokens: Optional[int] = None
+    total_tool_use_tokens: Optional[int] = FieldInfo(alias="totalToolUseTokens", default=None)
     """Number of tokens present in tool-use prompt(s)."""

@@ -18,7 +18,9 @@
 from __future__ import annotations
 
 from typing import List, Union, Iterable
-from typing_extensions import Literal, Required, TypeAlias, TypedDict
+from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
+
+from .._utils import PropertyInfo
 
 from .tool_param import ToolParam
 from .turn_param import TurnParam
@@ -59,7 +61,7 @@ __all__ = [
 
 
 class BaseCreateModelInteractionParams(TypedDict, total=False):
-    api_version: str
+    api_version: Annotated[str, PropertyInfo(alias="apiVersion")]
 
     input: Required[Input]
     """The inputs for the interaction."""
@@ -70,28 +72,28 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     background: bool
     """Input only. Whether to run the model interaction in the background."""
 
-    generation_config: GenerationConfigParam
+    generation_config: Annotated[GenerationConfigParam, PropertyInfo(alias="generationConfig")]
     """Input only. Configuration parameters for the model interaction."""
 
-    previous_interaction_id: str
+    previous_interaction_id: Annotated[str, PropertyInfo(alias="previousInteractionId")]
     """The ID of the previous interaction, if any."""
 
-    response_format: object
+    response_format: Annotated[object, PropertyInfo(alias="responseFormat")]
     """
     Enforces that the generated response is a JSON object that complies with
     the JSON schema specified in this field.
     """
 
-    response_mime_type: str
+    response_mime_type: Annotated[str, PropertyInfo(alias="responseMimeType")]
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: List[Literal["text", "image", "audio"]]
+    response_modalities: Annotated[List[Literal["text", "image", "audio"]], PropertyInfo(alias="responseModalities")]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     store: bool
     """Input only. Whether to store the response and request for later retrieval."""
 
-    system_instruction: str
+    system_instruction: Annotated[str, PropertyInfo(alias="systemInstruction")]
     """System instruction for the interaction."""
 
     tools: Iterable[ToolParam]
@@ -124,7 +126,7 @@ Input: TypeAlias = Union[
 
 
 class BaseCreateAgentInteractionParams(TypedDict, total=False):
-    api_version: str
+    api_version: Annotated[str, PropertyInfo(alias="apiVersion")]
 
     agent: Required[Union[str, Literal["deep-research-pro-preview-12-2025"]]]
     """The name of the `Agent` used for generating the interaction."""
@@ -132,31 +134,31 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     input: Required[Input]
     """The inputs for the interaction."""
 
-    agent_config: AgentConfig
+    agent_config: Annotated[AgentConfig, PropertyInfo(alias="agentConfig")]
     """Configuration for the agent."""
 
     background: bool
     """Input only. Whether to run the model interaction in the background."""
 
-    previous_interaction_id: str
+    previous_interaction_id: Annotated[str, PropertyInfo(alias="previousInteractionId")]
     """The ID of the previous interaction, if any."""
 
-    response_format: object
+    response_format: Annotated[object, PropertyInfo(alias="responseFormat")]
     """
     Enforces that the generated response is a JSON object that complies with
     the JSON schema specified in this field.
     """
 
-    response_mime_type: str
+    response_mime_type: Annotated[str, PropertyInfo(alias="responseMimeType")]
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: List[Literal["text", "image", "audio"]]
+    response_modalities: Annotated[List[Literal["text", "image", "audio"]], PropertyInfo(alias="responseModalities")]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     store: bool
     """Input only. Whether to store the response and request for later retrieval."""
 
-    system_instruction: str
+    system_instruction: Annotated[str, PropertyInfo(alias="systemInstruction")]
     """System instruction for the interaction."""
 
     tools: Iterable[ToolParam]
