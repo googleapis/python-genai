@@ -105,33 +105,29 @@ def test_mcp_tool(client):
   if not _is_mcp_imported:
     return
 
+  inputSchema = {
+      'type': 'object',
+      'properties': {
+          'key1': {
+              'type': 'string',
+          },
+          'key2': {
+              'type': 'number',
+          },
+      },
+  }
+
   mcp_tool = mcp_types.Tool(
       name='tool',
       description='tool-description',
-      inputSchema={
-          'type': 'object',
-          'properties': {
-              'key1': {
-                  'type': 'string',
-              },
-              'key2': {
-                  'type': 'number',
-              },
-          },
-      },
+      inputSchema=inputSchema,
   )
   assert t.t_tool(client, mcp_tool) == types.Tool(
       function_declarations=[
           types.FunctionDeclaration(
               name='tool',
               description='tool-description',
-              parameters=types.Schema(
-                  type='OBJECT',
-                  properties={
-                      'key1': types.Schema(type='STRING'),
-                      'key2': types.Schema(type='NUMBER'),
-                  },
-              ),
+              parameters_json_schema=inputSchema,
           )
       ]
   )
