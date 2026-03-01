@@ -285,12 +285,6 @@ class AsyncClient:
   ) -> None:
     await self.aclose()
 
-  def __del__(self) -> None:
-    try:
-      asyncio.get_running_loop().create_task(self.aclose())
-    except Exception:
-      pass
-
 
 class DebugConfig(pydantic.BaseModel):
   """Configuration options that change client network behavior when testing."""
