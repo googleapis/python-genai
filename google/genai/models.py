@@ -2046,6 +2046,13 @@ def _GenerateVideosConfig_to_mldev(
         'compression_quality parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['resize_mode']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'resizeMode'],
+        getv(from_object, ['resize_mode']),
+    )
+
   return to_object
 
 
@@ -2167,6 +2174,13 @@ def _GenerateVideosConfig_to_vertex(
         parent_object,
         ['parameters', 'compressionQuality'],
         getv(from_object, ['compression_quality']),
+    )
+
+  if getv(from_object, ['resize_mode']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'resizeMode'],
+        getv(from_object, ['resize_mode']),
     )
 
   return to_object
