@@ -140,6 +140,16 @@ T = typing.TypeVar('T', bound='GenerateContentResponse')
 MetricSubclass = typing.TypeVar('MetricSubclass', bound='Metric')
 
 
+class Role(_common.CaseInSensitiveEnum):
+  """Role of a Genai Part."""
+  UNSPECIFIED = 'UNSPECIFIED'
+  """Unspecified role. This value should not be used."""
+  USER = 'USER'
+  """User role."""
+  MODEL = 'MODEL'
+  """Model role."""
+
+
 class Outcome(_common.CaseInSensitiveEnum):
   """Outcome of the code execution."""
 
@@ -1972,7 +1982,7 @@ class Content(_common.BaseModel):
       description="""List of parts that constitute a single message. Each part may have
       a different IANA MIME type.""",
   )
-  role: Optional[str] = Field(
+  role: Optional[Role] = Field(
       default=None,
       description="""Optional. The producer of the content. Must be either 'user' or 'model'. If not set, the service will default to 'user'.""",
   )
