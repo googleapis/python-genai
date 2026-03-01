@@ -25,19 +25,11 @@ from .. import pytest_helper
 from ... import errors
 from ... import types
 
-try:
+import typing
+
+if typing.TYPE_CHECKING:
   from mcp import types as mcp_types
   from mcp import ClientSession as McpClientSession
-except ImportError as e:
-  import sys
-
-  if sys.version_info < (3, 10):
-    raise ImportError(
-        'MCP Tool requires Python 3.10 or above. Please upgrade your Python'
-        ' version.'
-    ) from e
-  else:
-    raise e
 
 
 pytestmark = pytest_helper.setup(
