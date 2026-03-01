@@ -26,7 +26,41 @@ def test_config_is_none():
 
 
 def test_afc_config_unset():
-  assert should_disable_afc(types.GenerateContentConfig()) is False
+  assert should_disable_afc(types.GenerateContentConfig()) is True
+
+
+def test_afc_config_with_tools():
+  assert (
+      should_disable_afc(
+          types.GenerateContentConfig(
+              tools=[types.Tool(retrieval=types.Retrieval())]
+          )
+      )
+      is False
+  )
+
+
+def test_afc_config_with_empty_tools_when_afc_is_enabled():
+  assert (
+      should_disable_afc(
+          types.GenerateContentConfig(
+              automatic_function_calling=types.AutomaticFunctionCallingConfig(),
+              tools=[],
+          )
+      )
+      is True
+  )
+
+
+def test_afc_config_without_tools_when_afc_is_enabled():
+  assert (
+      should_disable_afc(
+          types.GenerateContentConfig(
+              automatic_function_calling=types.AutomaticFunctionCallingConfig()
+          )
+      )
+      is True
+  )
 
 
 def test_afc_enable_unset_max_0():
@@ -71,6 +105,7 @@ def test_afc_enable_unset_max_1():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   maximum_remote_calls=1,
               ),
+              tools=[types.Tool(retrieval=types.Retrieval())],
           )
       )
       is False
@@ -80,9 +115,11 @@ def test_afc_enable_unset_max_1():
 def test_afc_enable_unset_max_1_0():
   assert (
       should_disable_afc(
-          {'automatic_function_calling': {'maximum_remote_calls': 1.0}}
+          {
+              'automatic_function_calling': {'maximum_remote_calls': 1.0},
+          }
       )
-      is False
+      is True
   )
 
 
@@ -157,6 +194,7 @@ def test_afc_enable_true_max_unset():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   disable=False,
               ),
+              tools=[types.Tool(retrieval=types.Retrieval())],
           )
       )
       is False
@@ -208,6 +246,7 @@ def test_afc_enable_true_max_1():
                   disable=False,
                   maximum_remote_calls=1,
               ),
+              tools=[types.Tool(retrieval=types.Retrieval())],
           )
       )
       is False

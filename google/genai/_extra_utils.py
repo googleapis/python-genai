@@ -440,6 +440,15 @@ def should_disable_afc(
     )
     return True
 
+  # If there are no tools, disable AFC.
+  if not config_model.tools:
+    if config_model.automatic_function_calling:
+      logger.warning(
+          'No tools are specified in the config, but automatic_function_calling'
+          ' is enabled. Therefore, automatic function calling is disabled.'
+      )
+    return True
+
   # Default to enable AFC if not specified.
   if (
       not config_model.automatic_function_calling
