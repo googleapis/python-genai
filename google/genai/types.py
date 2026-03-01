@@ -4925,7 +4925,7 @@ class AutomaticFunctionCallingConfig(_common.BaseModel):
       """,
   )
   maximum_remote_calls: Optional[int] = Field(
-      default=10,
+      default=None,
       description="""If automatic function calling is enabled,
       maximum number of remote calls for automatic function calling.
       This number should be a positive integer.
