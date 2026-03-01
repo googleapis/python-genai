@@ -112,6 +112,12 @@ def _filter_to_supported_schema(
           key: _filter_to_supported_schema(value)
           for key, value in field_value.items()
       }
-  return {
-      key: value for key, value in schema.items() if key in supported_fields
-  }
+  final_schema = {}
+  unsupported_format_values = ['json', 'uuid']
+  for key, value in schema.items():
+    if key in supported_fields:
+      if key is 'format' and value in unsupported_format_values:
+        continue
+      final_schema[key] = value
+      
+  return final_schema
