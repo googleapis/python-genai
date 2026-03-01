@@ -22,8 +22,8 @@ from typing import Optional, cast
 import uuid
 
 import requests  # type: ignore
-import sentencepiece as spm
-from sentencepiece import sentencepiece_model_pb2
+from google3.third_party.sentencepiece.src.python import sentencepiece_processor as spm
+from google3.third_party.sentencepiece.src import sentencepiece_model_pb2
 
 
 # Source of truth: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
