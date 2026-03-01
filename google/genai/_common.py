@@ -34,6 +34,8 @@ logger = logging.getLogger('google_genai._common')
 
 StringDict: TypeAlias = dict[str, Any]
 
+_EXCLUDE_FROM_REMOVE_EXTRA_FIELDS = ['QueryReasoningEngineResponse']
+
 
 class ExperimentalWarning(Warning):
   """Warning for experimental features."""
@@ -343,7 +345,11 @@ def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
 
     # if dict, assume BaseModel but also check that field type is not dict
     # example: FunctionCall.args
-    if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
+    if (
+        isinstance(value, dict)
+        and typing.get_origin(annotation) is not dict
+        and annotation.__name__ not in _EXCLUDE_FROM_REMOVE_EXTRA_FIELDS
+    ):
       _remove_extra_fields(annotation, value)
     elif isinstance(value, list):
       if _is_struct_type(annotation):
