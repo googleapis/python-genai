@@ -39,4 +39,4 @@ class GoogleSearchResultContent(BaseModel):
     """Whether the Google Search resulted in an error."""
 
     signature: Optional[str] = None
-    """The signature of the Google Search result."""
+    """A signature hash for backend validation."""

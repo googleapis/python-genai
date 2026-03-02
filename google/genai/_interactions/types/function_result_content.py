@@ -50,3 +50,6 @@ class FunctionResultContent(BaseModel):
 
     name: Optional[str] = None
     """The name of the tool that was called."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

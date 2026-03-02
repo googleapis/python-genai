@@ -40,4 +40,4 @@ class GoogleSearchResultContentParam(TypedDict, total=False):
     """Whether the Google Search resulted in an error."""
 
     signature: str
-    """The signature of the Google Search result."""
+    """A signature hash for backend validation."""

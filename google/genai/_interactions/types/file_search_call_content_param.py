@@ -29,3 +29,6 @@ class FileSearchCallContentParam(TypedDict, total=False):
     """A unique ID for this specific tool call."""
 
     type: Required[Literal["file_search_call"]]
+
+    signature: str
+    """A signature hash for backend validation."""

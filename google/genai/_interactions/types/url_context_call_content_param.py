@@ -34,3 +34,6 @@ class URLContextCallContentParam(TypedDict, total=False):
     """The arguments to pass to the URL context."""
 
     type: Required[Literal["url_context_call"]]
+
+    signature: str
+    """A signature hash for backend validation."""

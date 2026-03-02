@@ -51,3 +51,6 @@ class FunctionResultContentParam(TypedDict, total=False):
 
     name: str
     """The name of the tool that was called."""
+
+    signature: str
+    """A signature hash for backend validation."""

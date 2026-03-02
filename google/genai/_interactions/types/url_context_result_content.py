@@ -39,4 +39,4 @@ class URLContextResultContent(BaseModel):
     """Whether the URL context resulted in an error."""
 
     signature: Optional[str] = None
-    """The signature of the URL context result."""
+    """A signature hash for backend validation."""

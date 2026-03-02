@@ -39,3 +39,6 @@ class MCPServerToolCallContentParam(TypedDict, total=False):
     """The name of the used MCP server."""
 
     type: Required[Literal["mcp_server_tool_call"]]
+
+    signature: str
+    """A signature hash for backend validation."""

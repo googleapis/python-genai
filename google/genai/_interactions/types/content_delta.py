@@ -158,6 +158,9 @@ class DeltaFunctionCallDelta(BaseModel):
 
     type: Literal["function_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
@@ -182,6 +185,9 @@ class DeltaFunctionResultDelta(BaseModel):
 
     name: Optional[str] = None
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 class DeltaCodeExecutionCallDelta(BaseModel):
     id: str
@@ -191,6 +197,9 @@ class DeltaCodeExecutionCallDelta(BaseModel):
     """The arguments to pass to the code execution."""
 
     type: Literal["code_execution_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaCodeExecutionResultDelta(BaseModel):
@@ -204,6 +213,7 @@ class DeltaCodeExecutionResultDelta(BaseModel):
     is_error: Optional[bool] = None
 
     signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaURLContextCallDelta(BaseModel):
@@ -214,6 +224,9 @@ class DeltaURLContextCallDelta(BaseModel):
     """The arguments to pass to the URL context."""
 
     type: Literal["url_context_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaURLContextResultDelta(BaseModel):
@@ -227,6 +240,7 @@ class DeltaURLContextResultDelta(BaseModel):
     is_error: Optional[bool] = None
 
     signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaGoogleSearchCallDelta(BaseModel):
@@ -237,6 +251,9 @@ class DeltaGoogleSearchCallDelta(BaseModel):
     """The arguments to pass to Google Search."""
 
     type: Literal["google_search_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaGoogleSearchResultDelta(BaseModel):
@@ -250,6 +267,7 @@ class DeltaGoogleSearchResultDelta(BaseModel):
     is_error: Optional[bool] = None
 
     signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaMCPServerToolCallDelta(BaseModel):
@@ -263,6 +281,9 @@ class DeltaMCPServerToolCallDelta(BaseModel):
     server_name: str
 
     type: Literal["mcp_server_tool_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
@@ -288,12 +309,18 @@ class DeltaMCPServerToolResultDelta(BaseModel):
 
     server_name: Optional[str] = None
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 class DeltaFileSearchCallDelta(BaseModel):
     id: str
     """A unique ID for this specific tool call."""
 
     type: Literal["file_search_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaFileSearchResultDeltaResult(BaseModel):

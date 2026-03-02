@@ -36,3 +36,6 @@ class FunctionCallContentParam(TypedDict, total=False):
     """The name of the tool to call."""
 
     type: Required[Literal["function_call"]]
+
+    signature: str
+    """A signature hash for backend validation."""
