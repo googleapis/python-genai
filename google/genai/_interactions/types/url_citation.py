@@ -32,7 +32,10 @@ class URLCitation(BaseModel):
     """End of the attributed segment, exclusive."""
 
     start_index: Optional[int] = None
-    """Start of segment of the response that is attributed to this source."""
+    """Start of segment of the response that is attributed to this source.
+
+    Index indicates the start of the segment, measured in bytes.
+    """
 
     title: Optional[str] = None
     """The title of the URL."""
