@@ -23,16 +23,9 @@ from typing_extensions import Literal, Required, TypeAlias, TypedDict
 from .text_content_param import TextContentParam
 from .image_content_param import ImageContentParam
 
-__all__ = ["FunctionResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
+__all__ = ["FunctionResultContentParam", "ResultFunctionResultSubcontentList"]
 
-ResultItemsItem: TypeAlias = Union[TextContentParam, ImageContentParam]
-
-
-class ResultItems(TypedDict, total=False):
-    items: Iterable[ResultItemsItem]
-
-
-Result: TypeAlias = Union[ResultItems, str, object]
+ResultFunctionResultSubcontentList: TypeAlias = Union[TextContentParam, ImageContentParam]
 
 
 class FunctionResultContentParam(TypedDict, total=False):
@@ -41,7 +34,7 @@ class FunctionResultContentParam(TypedDict, total=False):
     call_id: Required[str]
     """ID to match the ID from the function call block."""
 
-    result: Required[Result]
+    result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
     """The result of the tool call."""
 
     type: Required[Literal["function_result"]]
