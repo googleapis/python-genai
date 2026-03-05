@@ -21,11 +21,14 @@ import datetime
 import enum
 import functools
 import logging
+import os
 import re
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
 import warnings
+from google.auth.exceptions import MutualTLSChannelError
+from google.auth.transport import mtls
 import pydantic
 from pydantic import alias_generators
 from typing_extensions import TypeAlias

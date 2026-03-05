@@ -43,6 +43,7 @@ def test_close_httpx_client():
       vertexai=True,
       project='test_project',
       location='global',
+      http_options=api_client.HttpOptions(client_args={'max_redirects': 10}),
   )
   client.close()
   assert client._api_client._httpx_client.is_closed
@@ -55,6 +56,7 @@ def test_httpx_client_context_manager():
       vertexai=True,
       project='test_project',
       location='global',
+      http_options=api_client.HttpOptions(client_args={'max_redirects': 10}),
   ) as client:
     pass
     assert not client._api_client._httpx_client.is_closed
@@ -135,6 +137,9 @@ def test_aclose_aiohttp_session(mock_request):
           vertexai=True,
           project='test_project',
           location='global',
+          http_options=api_client.HttpOptions(
+              async_client_args={'trust_env': False}
+          ),
       ).aio
       # aiohttp session is created in the first request instead of client
       # initialization.
@@ -176,6 +181,9 @@ def test_aiohttp_session_context_manager(mock_request):
           vertexai=True,
           project='test_project',
           location='global',
+          http_options=api_client.HttpOptions(
+              async_client_args={'trust_env': False}
+          ),
       ).aio as async_client:
         # aiohttp session is created in the first request instead of client
         # initialization.
