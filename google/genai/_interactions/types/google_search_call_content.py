@@ -31,7 +31,7 @@ class GoogleSearchCallContent(BaseModel):
     """A unique ID for this specific tool call."""
 
     arguments: GoogleSearchCallArguments
-    """The arguments to pass to Google Search."""
+    """Required. The arguments to pass to Google Search."""
 
     type: Literal["google_search_call"]
 
