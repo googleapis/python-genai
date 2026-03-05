@@ -529,23 +529,17 @@ class SyncHttpxClient(httpx.Client):
 
 
 class AsyncHttpxClient(httpx.AsyncClient):
-  """Async httpx client."""
+  """Async httpx client.
+
+  Note: This client must be explicitly closed using 'await client.aclose()'
+  to properly release resources. The __del__ finalizer has been removed to
+  prevent creating unawaited asyncio tasks during garbage collection.
+  """
 
   def __init__(self, **kwargs: Any) -> None:
     """Initializes the httpx client."""
     kwargs.setdefault('follow_redirects', True)
     super().__init__(**kwargs)
-
-  def __del__(self) -> None:
-    try:
-      if self.is_closed:
-        return
-    except Exception:
-      pass
-    try:
-      asyncio.get_running_loop().create_task(self.aclose())
-    except Exception:
-      pass
 
 
 class BaseApiClient:
