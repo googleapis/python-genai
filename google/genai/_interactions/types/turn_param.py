@@ -26,8 +26,7 @@ __all__ = ["TurnParam"]
 
 
 class TurnParam(TypedDict, total=False):
-    content: Union[str, Iterable[ContentParam]]
-    """The content of the turn."""
+    content: Union[Iterable[ContentParam], str]
 
     role: str
     """The originator of this turn.

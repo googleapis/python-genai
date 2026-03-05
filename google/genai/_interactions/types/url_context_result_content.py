@@ -31,7 +31,7 @@ class URLContextResultContent(BaseModel):
     """ID to match the ID from the url context call block."""
 
     result: List[URLContextResult]
-    """The results of the URL context."""
+    """Required. The results of the URL context."""
 
     type: Literal["url_context_result"]
 

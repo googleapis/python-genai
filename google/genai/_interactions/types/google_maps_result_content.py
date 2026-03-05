@@ -31,7 +31,7 @@ class GoogleMapsResultContent(BaseModel):
     """ID to match the ID from the google maps call block."""
 
     result: List[GoogleMapsResult]
-    """The results of the Google Maps."""
+    """Required. The results of the Google Maps."""
 
     type: Literal["google_maps_result"]
 

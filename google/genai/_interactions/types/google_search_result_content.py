@@ -31,7 +31,7 @@ class GoogleSearchResultContent(BaseModel):
     """ID to match the ID from the google search call block."""
 
     result: List[GoogleSearchResult]
-    """The results of the Google Search."""
+    """Required. The results of the Google Search."""
 
     type: Literal["google_search_result"]
 
