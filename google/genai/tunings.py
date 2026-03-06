@@ -585,6 +585,17 @@ def _EvaluationConfig_from_vertex(
         ),
     )
 
+  if getv(from_object, ['inferenceGenerationConfig']) is not None:
+    setv(
+        to_object,
+        ['inference_generation_config'],
+        _GenerationConfig_from_vertex(
+            getv(from_object, ['inferenceGenerationConfig']),
+            to_object,
+            root_object,
+        ),
+    )
+
   return to_object
 
 
@@ -606,6 +617,17 @@ def _EvaluationConfig_to_vertex(
         ['autoraterConfig'],
         _AutoraterConfig_to_vertex(
             getv(from_object, ['autorater_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['inference_generation_config']) is not None:
+    setv(
+        to_object,
+        ['inferenceGenerationConfig'],
+        _GenerationConfig_to_vertex(
+            getv(from_object, ['inference_generation_config']),
+            to_object,
+            root_object,
         ),
     )
 
