@@ -19,11 +19,11 @@ import io
 import json
 import logging
 import os
-from typing import Any, Optional, Union
+import pathlib
+from typing import Any, Optional, Union, List
 from urllib.parse import urlencode
 
 import google.auth
-
 from . import _api_client
 from . import _api_module
 from . import _common
@@ -33,7 +33,6 @@ from . import types
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
-
 
 logger = logging.getLogger('google_genai.files')
 
@@ -569,6 +568,79 @@ class Files(_api_module.BaseModule):
     return types.File._from_response(
         response=return_file.json['file'],
         kwargs=config_model.model_dump() if config else {},
+    )
+
+  def upload_many(
+      self,
+      *,
+      files: List[Union[str, pathlib.Path, os.PathLike, io.IOBase]],
+      configs: Optional[List[Optional[types.UploadFileConfigOrDict]]] = None,
+  ) -> List[types.File]:
+    """Uploads multiple files using a supported file service.
+
+    Args:
+      files: A list of paths to files or `IOBase` objects to be uploaded. Each file
+        must follow the same requirements as the single file upload method. If it's an
+        IOBase object, it must be opened in blocking (the default) mode and
+        binary mode. In other words, do not use non-blocking mode or text mode.
+        The given stream must be seekable, that is, it must be able to call
+        `seek()` on 'path'.
+      configs: Optional list of configurations for each file. If provided, must have
+        the same length as the files list. Each config can contain parameters to set
+        `display_name`, `mime_type`, and `name`.
+
+    Returns:
+      A list of uploaded File objects.
+
+    Raises:
+      ValueError: If the number of configs doesn't match the number of files.
+      FileNotFoundError: If any of the file paths are invalid.
+      ValueError: If the mime type cannot be determined for any file.
+      ValueError: If any file is not opened in binary mode.
+      ValueError: If this method is called with a Vertex AI client.
+
+    Example:
+      ```python
+      files = client.files.upload_many(
+          files=["file1.txt", "file2.txt"],
+          configs=[
+              {"display_name": "First File"},
+              {"display_name": "Second File"}
+          ]
+      )
+      ```
+    """
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+
+    if not files:
+      return []
+
+    if configs is not None and len(configs) != len(files):
+      raise ValueError(
+          'The number of configs must match the number of files'
+      )
+
+    if configs is None:
+      configs = [None] * len(files)
+
+    uploaded_files = []
+    for file, config in zip(files, configs):
+      uploaded_file = self.upload(file=file, config=config)
+      uploaded_files.append(uploaded_file)
+
+    return uploaded_files
+
+  def list(
+      self, *, config: Optional[types.ListFilesConfigOrDict] = None
+  ) -> Pager[types.File]:
+    return Pager(
+        'files',
+        self._list,
+        self._list(config=config),
+        config,
     )
 
   def download(
@@ -1113,6 +1185,79 @@ class AsyncFiles(_api_module.BaseModule):
     return types.File._from_response(
         response=return_file.json['file'],
         kwargs=config_model.model_dump() if config else {},
+    )
+
+  async def upload_many(
+      self,
+      *,
+      files: List[Union[str, pathlib.Path, os.PathLike, io.IOBase]],
+      configs: Optional[List[Optional[types.UploadFileConfigOrDict]]] = None,
+  ) -> List[types.File]:
+    """Uploads multiple files asynchronously using a supported file service.
+
+    Args:
+      files: A list of paths to files or `IOBase` objects to be uploaded. Each file
+        must follow the same requirements as the single file upload method. If it's an
+        IOBase object, it must be opened in blocking (the default) mode and
+        binary mode. In other words, do not use non-blocking mode or text mode.
+        The given stream must be seekable, that is, it must be able to call
+        `seek()` on 'path'.
+      configs: Optional list of configurations for each file. If provided, must have
+        the same length as the files list. Each config can contain parameters to set
+        `display_name`, `mime_type`, and `name`.
+
+    Returns:
+      A list of uploaded File objects.
+
+    Raises:
+      ValueError: If the number of configs doesn't match the number of files.
+      FileNotFoundError: If any of the file paths are invalid.
+      ValueError: If the mime type cannot be determined for any file.
+      ValueError: If any file is not opened in binary mode.
+      ValueError: If this method is called with a Vertex AI client.
+
+    Example:
+      ```python
+      files = await client.aio.files.upload_many(
+          files=["file1.txt", "file2.txt"],
+          configs=[
+              {"display_name": "First File"},
+              {"display_name": "Second File"}
+          ]
+      )
+      ```
+    """
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+
+    if not files:
+      return []
+
+    if configs is not None and len(configs) != len(files):
+      raise ValueError(
+          'The number of configs must match the number of files'
+      )
+
+    if configs is None:
+      configs = [None] * len(files)
+
+    uploaded_files = []
+    for file, config in zip(files, configs):
+      uploaded_file = await self.upload(file=file, config=config)
+      uploaded_files.append(uploaded_file)
+
+    return uploaded_files
+
+  async def list(
+      self, *, config: Optional[types.ListFilesConfigOrDict] = None
+  ) -> AsyncPager[types.File]:
+    return AsyncPager(
+        'files',
+        self._list,
+        await self._list(config=config),
+        config,
     )
 
   async def download(
