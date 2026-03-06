@@ -32,6 +32,8 @@ class ImageContentParam(TypedDict, total=False):
 
     type: Required[Literal["image"]]
 
+    caption: str
+
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """The image content."""
 
