@@ -1461,7 +1461,7 @@ class BaseApiClient:
         http_method, path, request_dict, http_options
     )
 
-    response = await self._async_request(http_request=http_request, stream=True)
+    response = await self._async_request(http_request=http_request, http_options=http_options, stream=True)
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
