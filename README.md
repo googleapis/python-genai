@@ -286,15 +286,25 @@ server) and bypass some authentication checks for project, location, or API key.
 You may pass the custom base url like this:
 
 ```python
-base_url = 'https://test-api-gateway-proxy.com'
 client = Client(
-    vertexai=True,  # Currently only vertexai=True is supported
-    http_options={
-        'base_url': base_url,
-        'headers': {'Authorization': 'Bearer test_token'},
-    },
+    vertexai=True,
+    http_options=types.HttpOptionsDict(
+        base_url='https://test-api-gateway-proxy.com',
+        base_url_resource_scope=types.ResourceScope.COLLECTION,
+    ),
+)
+
+response = client.models.generate_content(
+    model='gemini-3-pro-preview', contents='Why is the sky blue?'
 )
 ```
+
+If `base_url_resource_scope=types.ResourceScope.COLLECTION`, the resource name
+will not include api version, project, or location.
+
+Expected request url will be:
+https://test-api-gateway-proxy.com/publishers/google/models/gemini-3-pro-preview
+
 
 ## Types
 
