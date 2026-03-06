@@ -22,6 +22,7 @@ from typing import AsyncIterator
 import websockets
 
 from . import _api_module
+from . import _extra_utils
 from . import _common
 from . import _live_converters as live_converters
 from . import _transformers as t
@@ -169,31 +170,42 @@ class AsyncLiveMusic(_api_module.BaseModule):
   @contextlib.asynccontextmanager
   async def connect(self, *, model: str) -> AsyncIterator[AsyncMusicSession]:
     """[Experimental] Connect to the live music server."""
+    if self._api_client.vertexai:
+      raise NotImplementedError('Live music generation is not supported in Vertex AI.')
+
     base_url = self._api_client._websocket_base_url()
     if isinstance(base_url, bytes):
       base_url = base_url.decode('utf-8')
     transformed_model = t.t_model(self._api_client, model)
 
+    version = self._api_client._http_options.api_version
+    original_headers = self._api_client._http_options.headers
+    headers = original_headers.copy() if original_headers is not None else {}
+
     if self._api_client.api_key:
-      api_key = self._api_client.api_key
-      version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateMusic?key={api_key}'
-      headers = self._api_client._http_options.headers
-
-      # Only mldev supported
-      request_dict = _common.convert_to_dict(
-          live_converters._LiveMusicConnectParameters_to_mldev(
-              from_object=types.LiveMusicConnectParameters(
-                model=transformed_model,
-              ).model_dump(exclude_none=True)
-          )
-      )
-
-      setv(request_dict, ['setup', 'model'], transformed_model)
-
-      request = json.dumps(request_dict)
+      # API key is already included in headers.
+      pass
+    elif creds := self._api_client._credentials:
+      await _extra_utils._maybe_update_and_insert_auth_token(headers, creds)
     else:
-      raise NotImplementedError('Live music generation is not supported in Vertex AI.')
+      # This shouldn't happen.
+      raise ValueError('Genai live music connection requires credentials or API key provided.')
+
+    uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateMusic'
+
+    # Only mldev supported
+    request_dict = _common.convert_to_dict(
+        live_converters._LiveMusicConnectParameters_to_mldev(
+            from_object=types.LiveMusicConnectParameters(
+              model=transformed_model,
+            ).model_dump(exclude_none=True)
+        )
+    )
+
+    setv(request_dict, ['setup', 'model'], transformed_model)
+
+    request = json.dumps(request_dict)
+
 
     try:
       async with connect(uri, additional_headers=headers) as ws:
