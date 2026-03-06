@@ -383,6 +383,10 @@ def test_eval_config_with_unified_metrics(client):
             sampling_count=1,
             autorater_model="test-model",
         ),
+        inference_generation_config=genai_types.GenerationConfig(
+            temperature=0.5,
+            max_output_tokens=1024,
+        ),
     )
     tuning_job = client.tunings.tune(
       base_model="gemini-2.5-flash",
