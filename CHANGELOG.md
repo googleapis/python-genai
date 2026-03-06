@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.67.0](https://github.com/googleapis/python-genai/compare/v1.66.0...v1.67.0) (2026-03-06)
+
+
+### Features
+
+* Add inference_generation_config to EvaluationConfig for Tuning ([1fdb4b8](https://github.com/googleapis/python-genai/commit/1fdb4b87aaec6e58b415168ea5893c0e901819a9))
+
 ## [1.66.0](https://github.com/googleapis/python-genai/compare/v1.65.0...v1.66.0) (2026-03-03)
 
 
