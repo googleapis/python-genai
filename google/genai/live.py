@@ -29,6 +29,7 @@ import pydantic
 import websockets
 
 from . import _api_module
+from . import _extra_utils
 from . import _common
 from . import _live_converters as live_converters
 from . import _mcp_utils
@@ -946,148 +947,17 @@ class AsyncLive(_api_module.BaseModule):
     base_url = self._api_client._websocket_base_url()
     if isinstance(base_url, bytes):
       base_url = base_url.decode('utf-8')
-    transformed_model = t.t_model(self._api_client, model)  # type: ignore
 
     parameter_model = await _t_live_connect_config(self._api_client, config)
 
-    if self._api_client.api_key and not self._api_client.vertexai:
-      version = self._api_client._http_options.api_version
-      api_key = self._api_client.api_key
-      method = 'BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
-      headers = original_headers.copy() if original_headers is not None else {}
-      if api_key.startswith('auth_tokens/'):
-        warnings.warn(
-            message=(
-                "The SDK's ephemeral token support is experimental, and may"
-                ' change in future versions.'
-            ),
-            category=errors.ExperimentalWarning,
-        )
-        method = 'BidiGenerateContentConstrained'
-        headers['Authorization'] = f'Token {api_key}'
-        if version != 'v1alpha':
-          warnings.warn(
-              message=(
-                  "The SDK's ephemeral token support is in v1alpha only."
-                  'Please use client = genai.Client(api_key=token.name, '
-                  'http_options=types.HttpOptions(api_version="v1alpha"))'
-                  ' before session connection.'
-              ),
-              category=errors.ExperimentalWarning,
-          )
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
-
-      request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_mldev(
-              api_client=self._api_client,
-              from_object=types.LiveConnectParameters(
-                  model=transformed_model,
-                  config=parameter_model,
-              ).model_dump(exclude_none=True),
-          )
+    if self._api_client.vertexai:
+      uri, headers, request = await self._prepare_connection_vertex(
+          base_url=base_url, model=model, parameter_model=parameter_model
       )
-
-      del request_dict['config']
-      request_dict = _common.encode_unserializable_types(request_dict)
-      setv(request_dict, ['setup', 'model'], transformed_model)
-
-      request = json.dumps(request_dict)
-    elif self._api_client.api_key and self._api_client.vertexai:
-      # Headers already contains api key for express mode.
-      api_key = self._api_client.api_key
-      version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
-      headers = original_headers.copy() if original_headers is not None else {}
-
-      request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_vertex(
-              api_client=self._api_client,
-              from_object=types.LiveConnectParameters(
-                  model=transformed_model,
-                  config=parameter_model,
-              ).model_dump(exclude_none=True),
-          )
-      )
-      del request_dict['config']
-      request_dict = _common.encode_unserializable_types(request_dict)
-      setv(request_dict, ['setup', 'model'], transformed_model)
-
-      request = json.dumps(request_dict)
     else:
-      version = self._api_client._http_options.api_version
-      has_sufficient_auth = (
-          self._api_client.project and self._api_client.location
+      uri, headers, request = await self._prepare_connection_mldev(
+          base_url=base_url, model=model, parameter_model=parameter_model
       )
-      if self._api_client.custom_base_url and not has_sufficient_auth:
-        # API gateway proxy can use the auth in custom headers, not url.
-        # Enable custom url if auth is not sufficient.
-        uri = self._api_client.custom_base_url
-        # Keep the model as is.
-        transformed_model = model
-        # Do not get credentials for custom url.
-        original_headers = self._api_client._http_options.headers
-        headers = (
-            original_headers.copy() if original_headers is not None else {}
-        )
-
-      else:
-        uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-
-        if not self._api_client._credentials:
-          # Get bearer token through Application Default Credentials.
-          creds, _ = google.auth.default(  # type: ignore
-              scopes=['https://www.googleapis.com/auth/cloud-platform']
-          )
-        else:
-          creds = self._api_client._credentials
-        # creds.valid is False, and creds.token is None
-        # Need to refresh credentials to populate those
-        if not (creds.token and creds.valid):
-          if requests is None:
-            raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
-          auth_req = requests.Request()  # type: ignore
-          creds.refresh(auth_req)  # type: ignore[no-untyped-call]
-        bearer_token = creds.token
-
-        original_headers = self._api_client._http_options.headers
-        headers = (
-            original_headers.copy() if original_headers is not None else {}
-        )
-        if not headers.get('Authorization'):
-          headers['Authorization'] = f'Bearer {bearer_token}'
-
-      location = self._api_client.location
-      project = self._api_client.project
-      if transformed_model.startswith('publishers/') and project and location:
-        transformed_model = (
-            f'projects/{project}/locations/{location}/' + transformed_model
-        )
-      request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_vertex(
-              api_client=self._api_client,
-              from_object=types.LiveConnectParameters(
-                  model=transformed_model,
-                  config=parameter_model,
-              ).model_dump(exclude_none=True),
-          )
-      )
-      del request_dict['config']
-      request_dict = _common.encode_unserializable_types(request_dict)
-      if (
-          getv(
-              request_dict, ['setup', 'generationConfig', 'responseModalities']
-          )
-          is None
-      ):
-        setv(
-            request_dict,
-            ['setup', 'generationConfig', 'responseModalities'],
-            ['AUDIO'],
-        )
-
-      request = json.dumps(request_dict)
 
     if parameter_model.tools and _mcp_utils.has_mcp_tool_usage(
         parameter_model.tools
@@ -1116,8 +986,8 @@ class AsyncLive(_api_module.BaseModule):
       if raw_response:
         try:
           response = json.loads(raw_response)
-        except json.decoder.JSONDecodeError:
-          raise ValueError(f'Failed to parse response: {raw_response!r}')
+        except json.decoder.JSONDecodeError as e:
+          raise ValueError(f'Failed to parse response: {raw_response!r}') from e
       else:
         response = {}
 
@@ -1138,6 +1008,187 @@ class AsyncLive(_api_module.BaseModule):
           websocket=ws,
           session_id=session_id,
       )
+
+  async def _prepare_connection_mldev(
+      self, *,
+      base_url: str,
+      model: str,
+      parameter_model: types.LiveConnectConfig,
+  ) -> tuple[str, _common.StringDict, str]:
+    """Prepares live connection parameters for the MLDev API.
+
+    Constructs the WebSocket URI, headers, and request body necessary
+    to establish a connection with the MLDev backend.
+
+    Args:
+        base_url: The base URL for the WebSocket connection.
+        model: The name of the model to use.
+        parameter_model: Configuration parameters for the connection.
+
+    Returns:
+        A tuple containing:
+            - uri: The WebSocket connection URI.
+            - headers: A dictionary of headers for the connection.
+            - request: The JSON-serialized request body.
+
+    Raises:
+        ValueError: If an API key is not provided.
+    """
+    transformed_model = t.t_model(self._api_client, model)  # type: ignore
+    version = self._api_client._http_options.api_version
+    method = 'BidiGenerateContent'
+    original_headers = self._api_client._http_options.headers
+    headers = original_headers.copy() if original_headers is not None else {}
+
+    if api_key := self._api_client.api_key:
+      if api_key.startswith('auth_tokens/'):
+        method = 'BidiGenerateContentConstrained'
+        headers['Authorization'] = f'Token {api_key}'
+        warnings.warn(
+            message=(
+                "The SDK's ephemeral token support is experimental, and may"
+                ' change in future versions.'
+            ),
+            category=errors.ExperimentalWarning,
+        )
+        if version != 'v1alpha':
+          warnings.warn(
+              message=(
+                  "The SDK's ephemeral token support is in v1alpha only."
+                  'Please use client = genai.Client(api_key=token.name, '
+                  'http_options=types.HttpOptions(api_version="v1alpha"))'
+                  ' before session connection.'
+              ),
+              category=errors.ExperimentalWarning,
+          )
+    elif creds := self._api_client._credentials:
+      await _extra_utils._maybe_update_and_insert_auth_token(headers, creds)
+    else:
+      # this shouldn't happen.
+      raise ValueError('Genai live connection requires credentials or API key provided.')
+
+    uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
+
+    request_dict = _common.convert_to_dict(
+        live_converters._LiveConnectParameters_to_mldev(
+            api_client=self._api_client,
+            from_object=types.LiveConnectParameters(
+                model=transformed_model,
+                config=parameter_model,
+            ).model_dump(exclude_none=True),
+        )
+    )
+    del request_dict['config']
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    setv(request_dict, ['setup', 'model'], transformed_model)
+
+    return uri, headers, json.dumps(request_dict)
+
+
+  async def _prepare_connection_vertex(
+      self, *,
+      base_url: str,
+      model: str,
+      parameter_model: types.LiveConnectConfig,
+  ) -> tuple[str, _common.StringDict, str]:
+    """Prepares live connection parameters for the Vertex AI API.
+
+    Constructs the WebSocket URI, headers, and request body necessary
+    to establish a connection with the Vertex AI backend. Handles
+    authentication using either an API key or default credentials.
+
+    Args:
+        base_url: The base URL for the WebSocket connection.
+        model: The name of the model to use.
+        parameter_model: Configuration parameters for the connection.
+
+    Returns:
+        A tuple containing:
+            - uri: The WebSocket connection URI.
+            - headers: A dictionary of headers for the connection.
+            - request: The JSON-serialized request body.
+
+    Raises:
+        ValueError: If project and location are not provided when
+            default credentials are used.
+    """
+    transformed_model = t.t_model(self._api_client, model)  # type: ignore
+    version = self._api_client._http_options.api_version
+    original_headers = self._api_client._http_options.headers
+    headers = (
+        original_headers.copy() if original_headers is not None else {}
+    )
+    if api_key := self._api_client.api_key:
+      # Headers already contains api key
+      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+    else:
+      has_sufficient_auth = (
+          self._api_client.project and self._api_client.location
+      )
+      if self._api_client.custom_base_url and not has_sufficient_auth:
+        # API gateway proxy can use the auth in custom headers, not url.
+        # Enable custom url if auth is not sufficient.
+        uri = self._api_client.custom_base_url
+        # Keep the model as is.
+        transformed_model = model
+        # Do not get credentials for custom url.
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+
+      else:
+        uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+
+        if not self._api_client._credentials:
+          # Get bearer token through Application Default Credentials.
+          creds, _ = google.auth.default(  # type: ignore
+              scopes=['https://www.googleapis.com/auth/cloud-platform']
+          )
+        else:
+          creds = self._api_client._credentials
+        # creds.valid is False, and creds.token is None
+        # Need to refresh credentials to populate those
+        await _extra_utils._maybe_update_and_insert_auth_token(headers, creds)
+
+
+      location = self._api_client.location
+      project = self._api_client.project
+      if transformed_model.startswith('publishers/') and project and location:
+        transformed_model = (
+            f'projects/{project}/locations/{location}/' + transformed_model
+        )
+
+    request_dict = _common.convert_to_dict(
+        live_converters._LiveConnectParameters_to_vertex(
+            api_client=self._api_client,
+            from_object=types.LiveConnectParameters(
+                model=transformed_model,
+                config=parameter_model,
+            ).model_dump(exclude_none=True),
+        )
+    )
+    del request_dict['config']
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    if api_key is None:
+      # Refactor note: I'm surprised the two paths are different, you'd have
+      # to test every model to be sure. The goal of this refactor is to not
+      # change any behavior so leaving it as is.
+      if (
+          getv(
+              request_dict, ['setup', 'generationConfig', 'responseModalities']
+          )
+          is None
+      ):
+        setv(
+            request_dict,
+            ['setup', 'generationConfig', 'responseModalities'],
+            ['AUDIO'],
+        )
+
+    return uri, headers, json.dumps(request_dict)
 
 
 async def _t_live_connect_config(
