@@ -38,7 +38,7 @@ class APIError(Exception):
   def __init__(
       self,
       code: int,
-      response_json: Any,
+      response_json: Any = {},
       response: Optional[
           Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
       ] = None,
