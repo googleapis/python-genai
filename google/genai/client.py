@@ -174,14 +174,12 @@ class AsyncClient:
         # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
         timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
         max_retries=max_retries,
-        client_adapter=AsyncGeminiNextGenAPIClientAdapter(self._api_client)
+        client_adapter=AsyncGeminiNextGenAPIClientAdapter(self._api_client),
     )
 
-    client = self._nextgen_client_instance
-    if self._api_client.vertexai:
-      client._is_vertex = True
-      client._vertex_project = self._api_client.project
-      client._vertex_location = self._api_client.location
+    self._nextgen_client_instance._is_vertex = self._api_client.vertexai or False
+    self._nextgen_client_instance._vertex_project = self._api_client.project
+    self._nextgen_client_instance._vertex_location = self._api_client.location
 
     return self._nextgen_client_instance
 
@@ -525,11 +523,9 @@ class Client:
         client_adapter=GeminiNextGenAPIClientAdapter(self._api_client),
     )
 
-    client = self._nextgen_client_instance
-    if self._api_client.vertexai:
-      client._is_vertex = True
-      client._vertex_project = self._api_client.project
-      client._vertex_location = self._api_client.location
+    self._nextgen_client_instance._is_vertex = self._api_client.vertexai or False
+    self._nextgen_client_instance._vertex_project = self._api_client.project
+    self._nextgen_client_instance._vertex_location = self._api_client.location
 
     return self._nextgen_client_instance
 
