@@ -45,7 +45,7 @@ class FileSearchResultContent(BaseModel):
     type: Literal["file_search_result"]
 
     result: Optional[List[Result]] = None
-    """The results of the File Search."""
+    """Required. The results of the File Search."""
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""

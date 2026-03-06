@@ -28,7 +28,8 @@ class InteractionCompleteEvent(BaseModel):
     event_type: Literal["interaction.complete"]
 
     interaction: Interaction
-    """
+    """Required.
+
     The completed interaction with empty outputs to reduce the payload size.
     Use the preceding ContentDelta events for the actual output.
     """

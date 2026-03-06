@@ -32,7 +32,7 @@ class GoogleSearchResultContentParam(TypedDict, total=False):
     """ID to match the ID from the google search call block."""
 
     result: Required[Iterable[GoogleSearchResultParam]]
-    """The results of the Google Search."""
+    """Required. The results of the Google Search."""
 
     type: Required[Literal["google_search_result"]]
 
