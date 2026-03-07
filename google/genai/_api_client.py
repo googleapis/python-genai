@@ -1232,9 +1232,21 @@ class BaseApiClient:
       if parameter_model.retry_options:
         retry_kwargs = retry_args(parameter_model.retry_options)
         retry = tenacity.Retrying(**retry_kwargs)
-        return retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+        for attempt in retry:
+          with attempt:
+            res = self._request_once(
+              http_request, stream,
+            )
+            res.headers["X-Retry-Attempt"] = str(attempt.retry_state.attempt_number)
+            return res
 
-    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+    for attempt in self._retry:
+      with attempt:
+          res = self._request_once(
+              http_request, stream,
+          )
+          res.headers["X-Retry-Attempt"] = str(attempt.retry_state.attempt_number)
+          return res
 
   async def _async_request_once(
       self, http_request: HttpRequest, stream: bool = False
@@ -1376,10 +1388,21 @@ class BaseApiClient:
       if parameter_model.retry_options:
         retry_kwargs = retry_args(parameter_model.retry_options)
         retry = tenacity.AsyncRetrying(**retry_kwargs)
-        return await retry(self._async_request_once, http_request, stream)  # type: ignore[no-any-return]
-    return await self._async_retry(  # type: ignore[no-any-return]
-        self._async_request_once, http_request, stream
-    )
+        async for attempt in retry:
+          with attempt:
+            res = await self._async_request_once(
+              http_request, stream,
+            )
+            res.headers["X-Retry-Attempt"] = str(attempt.retry_state.attempt_number)
+            return res
+
+    async for attempt in self._async_retry:
+      with attempt:
+        res = await self._async_request_once(
+          http_request, stream,
+        )
+        res.headers["X-Retry-Attempt"] = str(attempt.retry_state.attempt_number)
+        return res
 
   def get_read_only_http_options(self) -> _common.StringDict:
     if isinstance(self._http_options, BaseModel):
