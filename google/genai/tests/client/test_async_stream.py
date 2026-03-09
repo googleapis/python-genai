@@ -20,7 +20,9 @@ from typing import List
 from unittest import mock
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
+from unittest.mock import patch
 import pytest
+
 
 try:
   import aiohttp
@@ -33,6 +35,16 @@ except ImportError:
 import httpx
 
 from ... import _api_client as api_client
+from ... import Client
+from ... import errors
+from ... import types
+
+
+EVENT_STREAM_DATA_WITH_ERROR = [
+    b'{"candidates":[{"content":{"parts":[{"text":"test"}],"role":"model"}}]}',
+    b'\n',
+    b'{"error":{"code":500,"message":"Error","status":"INTERNAL"}}',
+]
 
 
 class MockHTTPXResponse(httpx.Response):
@@ -251,3 +263,165 @@ async def test_aiohttp_incomplete_json_at_end(
   assert results == ['{ "partial": "data"']
   mock_response.content.readline.assert_any_call()
   mock_response.release.assert_called_once()
+
+
+def mock_response(chunks):
+  mock_stream = MagicMock(spec=httpx.SyncByteStream)
+  mock_stream.__iter__.return_value = chunks
+  return httpx.Response(
+      status_code=200,
+      stream=mock_stream,
+  )
+
+
+@patch('httpx.Client.send')
+def test_error_event_in_streamed_responses_bad_json(mock_send_method):
+  with_bad_json = [
+      b'{"candidates":[{"content":{"parts":[{"text":"test"}],"role":"model"}}]}',
+      b'\n',
+      b'{"error": bad_json}',
+  ]
+  mock_send_method.return_value = mock_response(with_bad_json)
+
+  client = api_client.BaseApiClient(api_key='test_api_key')
+  stream = client.request_streamed('POST', 'models/gemini-2.5-flash', {})
+
+  chunk = next(stream)
+  assert chunk == types.HttpResponse(
+      headers={},
+      body=(
+          '{"candidates": [{"content": {"parts": [{"text": "test"}], "role":'
+          ' "model"}}]}'
+      ),
+  )
+
+  with pytest.raises(errors.UnknownApiResponseError):
+    next(stream)
+
+
+@patch('httpx.Client.send')
+def test_error_event_in_streamed_responses(mock_send_method):
+  mock_send_method.return_value = mock_response(EVENT_STREAM_DATA_WITH_ERROR)
+
+  client = api_client.BaseApiClient(api_key='test_api_key')
+  stream = client.request_streamed('POST', 'models/gemini-2.5-flash', {})
+
+  chunk = next(stream)
+  assert chunk == types.HttpResponse(
+      body=(
+          '{"candidates": [{"content": {"parts": [{"text": "test"}], "role":'
+          ' "model"}}]}'
+      ),
+      headers={},
+  )
+
+  with pytest.raises(errors.ServerError):
+    next(stream)
+
+
+@patch('httpx.Client.send')
+def test_error_event_in_generate_content_stream(mock_send_method):
+  mock_send_method.return_value = mock_response(EVENT_STREAM_DATA_WITH_ERROR)
+
+  client = Client(api_key='test_api_key')
+  generated_response = client.models.generate_content_stream(
+      model='gemini-2.5-flash',
+      contents='Tell me a story in 300 words.',
+  )
+
+  chunk = next(generated_response)
+  assert chunk == types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[
+                      types.Part(
+                          text='test'
+                      ),
+                  ],
+                  role='model'
+              )
+          ),
+      ],
+      sdk_http_response=types.HttpResponse(headers={})
+  )
+
+  with pytest.raises(errors.ServerError):
+    next(generated_response)
+
+
+async def _async_httpx_response(_):
+  mock_stream = MagicMock(spec=httpx.AsyncByteStream)
+  mock_stream.__aiter__.return_value = EVENT_STREAM_DATA_WITH_ERROR
+  mock_stream.aclose = AsyncMock()
+  return httpx.Response(
+      status_code=200,
+      stream=mock_stream,
+  )
+
+
+@patch('httpx.AsyncBaseTransport')
+@pytest.mark.asyncio
+async def test_error_event_in_streamed_responses_async(mock_transport):
+  client = api_client.BaseApiClient(
+      api_key='test_api_key',
+      http_options=types.HttpOptions(
+          async_client_args={'transport': mock_transport}
+          ),
+      )
+  mock_transport.handle_async_request = _async_httpx_response
+  mock_transport.aclose = AsyncMock()
+
+  resp = await client.async_request_streamed(
+      'POST', 'models/gemini-2.5-flash', {'key': 'value'}
+  )
+
+  chunk = await anext(resp)
+  assert chunk == types.HttpResponse(
+      headers={},
+      body=(
+          '{"candidates": [{"content": {"parts": [{"text": "test"}], "role":'
+          ' "model"}}]}'
+      ),
+  )
+
+  with pytest.raises(errors.ServerError):
+    await anext(resp)
+
+
+@patch('httpx.AsyncBaseTransport')
+@pytest.mark.asyncio
+async def test_error_event_in_generate_content_stream_async(mock_transport):
+  client = Client(
+      api_key='test_api_key',
+      http_options=types.HttpOptions(
+          async_client_args={'transport': mock_transport}
+      ),
+  )
+  mock_transport.handle_async_request = _async_httpx_response
+  mock_transport.aclose = AsyncMock()
+
+  generated_response = await client.aio.models.generate_content_stream(
+      model='gemini-2.5-flash',
+      contents='Tell me a story in 300 words.',
+  )
+
+  chunk = await anext(generated_response)
+  assert chunk == types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[
+                      types.Part(
+                          text='test'
+                      ),
+                  ],
+                  role='model'
+              )
+          ),
+      ],
+      sdk_http_response=types.HttpResponse(headers={})
+  )
+
+  with pytest.raises(errors.ServerError):
+    await anext(generated_response)

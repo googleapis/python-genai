@@ -1515,8 +1515,8 @@ section above to initialize a client.
 
 .. code:: console
 
-    gsutil cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
-    gsutil cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
+    gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
+    gcloud storage cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
 
 Upload
 ------
@@ -1633,7 +1633,7 @@ Tune
     model = 'gemini-2.5-flash'
     training_dataset = types.TuningDataset(
         # or gcs_uri=my_vertex_multimodal_dataset
-        gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl',
+        gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
     )
 
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import logging
 import pydantic
 
 from ... import types
@@ -384,3 +385,33 @@ def test_complex_object_type_conversion():
   assert vertex_ai_schema == expected_schema
 
 
+def test_from_json_schema_logs_only_once(caplog):
+  """Test that the info message is logged only once across multiple from_json_schema calls."""
+  from ... import types as types_module
+
+  types_module._from_json_schema_warning_logged = False
+
+  caplog.set_level(logging.INFO, logger='google_genai.types')
+
+  json_schema1 = types_module.JSONSchema(type='string')
+  schema1 = types_module.Schema.from_json_schema(json_schema=json_schema1)
+
+  assert len(caplog.records) == 1
+  assert 'Json Schema is now supported natively' in caplog.text
+  assert 'response_json_schema' in caplog.text
+
+  json_schema2 = types_module.JSONSchema(type='number')
+  schema2 = types_module.Schema.from_json_schema(json_schema=json_schema2)
+
+  assert len(caplog.records) == 1
+
+  json_schema3 = types_module.JSONSchema(type='object')
+  schema3 = types_module.Schema.from_json_schema(json_schema=json_schema3)
+
+  assert len(caplog.records) == 1
+
+  assert schema1.type == types_module.Type('STRING')
+  assert schema2.type == types_module.Type('NUMBER')
+  assert schema3.type == types.Type('OBJECT')
+
+  types_module._from_json_schema_warning_logged = False

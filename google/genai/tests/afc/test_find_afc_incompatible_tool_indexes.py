@@ -83,6 +83,7 @@ def test_empty_tools_list_returns_empty_list():
 
 def test_all_compatible_tools_returns_empty_list_with_empty_fd():
     """Verifies that an empty list is returned when all tools are compatible.
+
     A tool is compatible if it's not a `types.Tool` or if its
     `function_declarations` attribute is empty or None from config.
     """
@@ -118,6 +119,7 @@ def test_all_compatible_tools_returns_empty_list_with_empty_fd():
 
 def test_all_compatible_tools_returns_empty_list_with_none_fd():
     """Verifies that an empty list is returned when all tools are compatible.
+
     A tool is compatible if it's not a `types.Tool` or if its
     `function_declarations` attribute is empty or None from config.
     """
@@ -153,6 +155,7 @@ def test_all_compatible_tools_returns_empty_list_with_none_fd():
 
 def test_all_compatible_tools_returns_empty_list():
     """Verifies that an empty list is returned when all tools are compatible.
+
     A tool is compatible if it's not a `types.Tool` or if its
     `function_declarations` attribute is empty or None from config.
     """
@@ -211,8 +214,7 @@ def test_single_incompatible_tool():
 
 
 def test_multiple_incompatible_tools():
-    """Verifies that all correct indexes are returned for multiple incompatible
-    tools. """
+    """Verifies correct indexes are returned for multiple incompatible tools."""
     result = find_afc_incompatible_tool_indexes(
         config=types.GenerateContentConfig(
             tools=[
@@ -238,3 +240,29 @@ def test_multiple_incompatible_tools():
         )
     )
     assert result == [2, 5]
+
+def test_mcp_tool_incompatible():
+    """Verifies correct indexes are returned for multiple incompatible tools."""
+    result = find_afc_incompatible_tool_indexes(
+        config=types.GenerateContentConfig(
+            tools=[
+                types.Tool(
+                    google_search_retrieval=types.GoogleSearchRetrieval()
+                ),
+                types.Tool(retrieval=types.Retrieval()),
+                types.Tool(
+                    function_declarations=[
+                        types.FunctionDeclaration(name='test_function')
+                    ]
+                ),
+                types.Tool(code_execution=types.ToolCodeExecution()),
+
+                get_weather_tool,
+                mcp_to_genai_tool_adapter,
+                types.Tool(
+                    mcp_servers=[types.McpServer(name='test_mcp_server')]
+                ),
+            ]
+        )
+    )
+    assert result == [2, 6]

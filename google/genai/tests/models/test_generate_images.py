@@ -21,7 +21,7 @@ import pytest
 from ... import types
 from .. import pytest_helper
 
-IMAGEN_MODEL_LATEST = 'imagen-3.0-generate-002'
+IMAGEN_MODEL_LATEST = 'imagen-4.0-generate-001'
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
@@ -36,38 +36,13 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
-        name='test_simple_prompt_imagen3-001',
-        exception_if_mldev='not found',
-        parameters=types._GenerateImagesParameters(
-            model='imagen-3.0-generate-001',
-            prompt='Red skateboard',
-            # 001 model does not support prompt enhancement.
-            config=types.GenerateImagesConfig(
-                number_of_images=1,
-                output_mime_type='image/jpeg',
-            ),
-        ),
-    ),
-    pytest_helper.TestTableItem(
-        name='test_generate_size_2k_imagen4-001',
-        parameters=types._GenerateImagesParameters(
-            model='imagen-4.0-generate-001',
-            prompt='Red skateboard',
-            config=types.GenerateImagesConfig(
-                number_of_images=1,
-                output_mime_type='image/jpeg',
-                # Replay file has a smaller image saved for smaller file size.
-                image_size='2K',
-            ),
-        ),
-    ),
-    pytest_helper.TestTableItem(
         name='test_all_vertexai_config_parameters',
         exception_if_mldev='not supported in Gemini API',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',
             config=types.GenerateImagesConfig(
+                image_size='2K',
                 aspect_ratio='1:1',
                 guidance_scale=15.0,
                 safety_filter_level=types.SafetyFilterLevel.BLOCK_MEDIUM_AND_ABOVE,
@@ -168,6 +143,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',
             config=types.GenerateImagesConfig(
+                image_size='2K',
                 aspect_ratio='1:1',
                 guidance_scale=15.0,
                 safety_filter_level='BLOCK_LOW_AND_ABOVE',

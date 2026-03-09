@@ -22,8 +22,8 @@ from ... import types
 from .. import pytest_helper
 
 
-_GEMINI_MODEL = 'gemini-1.5-flash-002'
-_EMBEDDING_MODEL = 'text-embedding-004'
+_GEMINI_MODEL = 'gemini-2.5-flash'
+_EMBEDDING_MODEL = 'gemini-embedding-001'
 _DISPLAY_NAME = 'test_batch'
 
 _GENERATE_CONTENT_BQ_OUTPUT_PREFIX = (

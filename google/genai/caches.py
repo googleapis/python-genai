@@ -33,6 +33,40 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.caches')
 
 
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError('api_key_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError('auth_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError('oauth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError('oidc_config parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -116,7 +150,11 @@ def _CreateCachedContentConfig_to_mldev(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
+    setv(
+        parent_object,
+        ['toolConfig'],
+        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
+    )
 
   if getv(from_object, ['kms_key_name']) is not None:
     raise ValueError('kms_key_name parameter is not supported in Gemini API.')
@@ -293,14 +331,58 @@ def _FileData_to_mldev(
   return to_object
 
 
+def _FunctionCall_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['args']) is not None:
+    setv(to_object, ['args'], getv(from_object, ['args']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['partial_args']) is not None:
+    raise ValueError('partial_args parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError('will_continue parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _FunctionCallingConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['allowed_function_names']) is not None:
+    setv(
+        to_object,
+        ['allowedFunctionNames'],
+        getv(from_object, ['allowed_function_names']),
+    )
+
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['stream_function_call_arguments']) is not None:
+    raise ValueError(
+        'stream_function_call_arguments parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  return to_object
+
+
 def _FunctionDeclaration_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
-
   if getv(from_object, ['description']) is not None:
     setv(to_object, ['description'], getv(from_object, ['description']))
 
@@ -326,6 +408,9 @@ def _FunctionDeclaration_to_vertex(
         ['responseJsonSchema'],
         getv(from_object, ['response_json_schema']),
     )
+
+  if getv(from_object, ['behavior']) is not None:
+    raise ValueError('behavior parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -368,7 +453,11 @@ def _GoogleMaps_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(getv(from_object, ['auth_config']), to_object),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
@@ -381,14 +470,17 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
 
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -516,8 +608,10 @@ def _Part_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -534,6 +628,13 @@ def _Part_to_mldev(
         to_object,
         ['fileData'],
         _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(
+        to_object,
+        ['functionCall'],
+        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
     )
 
   if getv(from_object, ['function_response']) is not None:
@@ -569,27 +670,35 @@ def _Part_to_mldev(
   return to_object
 
 
+def _ToolConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
+  if getv(from_object, ['function_calling_config']) is not None:
+    setv(
+        to_object,
+        ['functionCallingConfig'],
+        _FunctionCallingConfig_to_mldev(
+            getv(from_object, ['function_calling_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _Tool_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [item for item in getv(from_object, ['function_declarations'])],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
-    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
@@ -597,12 +706,11 @@ def _Tool_to_mldev(
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_maps']) is not None:
@@ -612,15 +720,42 @@ def _Tool_to_mldev(
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
-  if getv(from_object, ['google_search']) is not None:
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    raise ValueError(
+        'parallel_ai_search parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
 
   return to_object
 
@@ -630,31 +765,20 @@ def _Tool_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
-    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError('file_search parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
+  if getv(from_object, ['google_maps']) is not None:
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -666,14 +790,35 @@ def _Tool_to_vertex(
         getv(from_object, ['enterprise_web_search']),
     )
 
-  if getv(from_object, ['google_maps']) is not None:
-    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_vertex(item, to_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    setv(
+        to_object,
+        ['parallelAiSearch'],
+        getv(from_object, ['parallel_ai_search']),
+    )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -1047,15 +1192,6 @@ class Caches(_api_module.BaseModule):
   def _list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> types.ListCachedContentsResponse:
-    """Lists cached content configurations.
-
-    .. code-block:: python
-
-      cached_contents = client.caches.list(config={'page_size': 2})
-      for cached_content in cached_contents:
-        print(cached_content)
-    """
-
     parameter_model = types._ListCachedContentsParameters(
         config=config,
     )
@@ -1114,9 +1250,28 @@ class Caches(_api_module.BaseModule):
   def list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> Pager[types.CachedContent]:
+    """Lists cached contents.
+
+    Args:
+      config (ListCachedContentsConfig): Optional configuration for the list
+        request.
+
+    Returns:
+      A Pager object that contains one page of cached contents. When iterating
+      over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      for cached_content in client.caches.list():
+        print(cached_content.name)
+    """
+
+    list_request = self._list
     return Pager(
         'cached_contents',
-        self._list,
+        list_request,
         self._list(config=config),
         config,
     )
@@ -1423,15 +1578,6 @@ class AsyncCaches(_api_module.BaseModule):
   async def _list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> types.ListCachedContentsResponse:
-    """Lists cached content configurations.
-
-    .. code-block:: python
-
-      cached_contents = await client.aio.caches.list(config={'page_size': 2})
-      async for cached_content in cached_contents:
-        print(cached_content)
-    """
-
     parameter_model = types._ListCachedContentsParameters(
         config=config,
     )
@@ -1492,9 +1638,28 @@ class AsyncCaches(_api_module.BaseModule):
   async def list(
       self, *, config: Optional[types.ListCachedContentsConfigOrDict] = None
   ) -> AsyncPager[types.CachedContent]:
+    """Lists cached contents asynchronously.
+
+    Args:
+      config (ListCachedContentsConfig): Optional configuration for the list
+        request.
+
+    Returns:
+      A Pager object that contains one page of cached contents. When iterating
+      over
+      the pager, it automatically fetches the next page if there are more.
+
+    Usage:
+
+    .. code-block:: python
+      async for cached_content in await client.aio.caches.list():
+        print(cached_content.name)
+    """
+
+    list_request = self._list
     return AsyncPager(
         'cached_contents',
-        self._list,
+        list_request,
         await self._list(config=config),
         config,
     )

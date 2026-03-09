@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=
 
 [project]
 name = "google-genai"
-version = "1.49.0"
+version = "1.66.0"
 description = "GenAI Python SDK"
 readme = "README.md"
 license = "Apache-2.0"
@@ -26,26 +26,32 @@ classifiers = [
 ]
 dependencies = [
     "anyio>=4.8.0, <5.0.0",
-    "google-auth>=2.14.1, <3.0.0",
+    "google-auth[requests]>=2.47.0, <3.0.0",
     "httpx>=0.28.1, <1.0.0",
     "pydantic>=2.9.0, <3.0.0",
     "requests>=2.28.1, <3.0.0",
     "tenacity>=8.2.3, <9.2.0",
-    "websockets>=13.0.0, <15.1.0",
+    "websockets>=13.0.0, <17.0",
     "typing-extensions>=4.11.0, <5.0.0",
+    "distro>=1.7.0, <2",
+    "sniffio",
 ]
 
 [project.optional-dependencies]
-aiohttp = ["aiohttp<4.0.0"]
+aiohttp = ["aiohttp>=3.10.11, <4.0.0"]
 local-tokenizer = ["sentencepiece>=0.2.0", "protobuf"]
 
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
 
-# [tool.setuptools] settings are in setup.cfg
+# Other [tool.setuptools] settings are in setup.cfg
 
 [tool.setuptools.package-data]
 "google.genai" = ["py.typed"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 exclude = ["tests/", "_test_api_client\\.py"]
@@ -53,5 +59,23 @@ plugins = ["pydantic.mypy"]
 # we are ignoring 'unused-ignore' because we run mypy on Python 3.9 - 3.13 and
 # some errors in _automatic_function_calling_util.py only apply in 3.10+
 # 'import-not-found' and 'import-untyped' are environment specific
-disable_error_code = ["import-not-found", "import-untyped", "unused-ignore"]
+disable_error_code = [
+  "import-not-found",
+  "import-untyped",
+  "unused-ignore",
+]
 strict = true
+
+pretty = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "genai._interactions",
+    "genai._interactions.*"
+]
+# 'redundant-cast' is safe to ignore.
+disable_error_code = [
+  "redundant-cast",
+]
+implicit_reexport = true

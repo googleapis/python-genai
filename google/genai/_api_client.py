@@ -44,7 +44,6 @@ import certifi
 import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
-from google.auth.transport.requests import Request
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -57,6 +56,7 @@ from .types import HttpOptions
 from .types import HttpOptionsOrDict
 from .types import HttpResponse as SdkHttpResponse
 from .types import HttpRetryOptions
+from .types import ResourceScope
 
 
 try:
@@ -181,6 +181,13 @@ def join_url_path(base_url: str, path: str) -> str:
 
 def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   """Loads google auth credentials and project id."""
+
+  ## Set GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES to false
+  ## to disable bound token sharing. Tracking on
+  ## https://github.com/googleapis/python-genai/issues/1956
+  os.environ['GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES'] = (
+      'false'
+  )
   credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
       scopes=['https://www.googleapis.com/auth/cloud-platform'],
   )
@@ -197,6 +204,7 @@ def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
 
 
 def refresh_auth(credentials: Credentials) -> Credentials:
+  from google.auth.transport.requests import Request
   credentials.refresh(Request())  # type: ignore[no-untyped-call]
   return credentials
 
@@ -259,7 +267,13 @@ class HttpResponse:
 
   @property
   def json(self) -> Any:
-    if not self.response_stream[0]:  # Empty response
+    # Handle case where response_stream is not a list (e.g., aiohttp.ClientResponse)
+    # This can happen when the API returns an error and the response object
+    # is passed directly instead of being wrapped in a list.
+    # See: https://github.com/googleapis/python-genai/issues/1897
+    if not isinstance(self.response_stream, list):
+      return None
+    if not self.response_stream or not self.response_stream[0]:  # Empty response
       return ''
     return self._load_json_from_response(self.response_stream[0])
 
@@ -576,8 +590,14 @@ class BaseApiClient:
         validated_http_options = HttpOptions.model_validate(http_options)
       except ValidationError as e:
         raise ValueError('Invalid http_options') from e
-    elif isinstance(http_options, HttpOptions):
+    elif http_options and _common.is_duck_type_of(http_options, HttpOptions):
       validated_http_options = http_options
+
+    if validated_http_options.base_url_resource_scope and not validated_http_options.base_url:
+      # base_url_resource_scope is only valid when base_url is set.
+      raise ValueError(
+          'base_url must be set when base_url_resource_scope is set.'
+      )
 
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
@@ -629,14 +649,20 @@ class BaseApiClient:
         )
         self.api_key = None
 
-      if not self.location and not self.api_key:
-          self.location = 'global'
-
       self.custom_base_url = (
           validated_http_options.base_url
           if validated_http_options.base_url
           else None
       )
+
+      if (
+          not self.location
+          and not self.api_key
+      ):
+        if not self.custom_base_url:
+          self.location = 'global'
+        elif self.custom_base_url.endswith('.googleapis.com'):
+          self.location = 'global'
 
       # Skip fetching project from ADC if base url is provided in http options.
       if (
@@ -653,12 +679,16 @@ class BaseApiClient:
       if not has_sufficient_auth and not self.custom_base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
-            'Project or API key must be set when using the Vertex '
-            'AI API.'
+            'Project or API key must be set when using the Vertex AI API.'
         )
-      if self.api_key or self.location == 'global':
+      if (
+          self.api_key or self.location == 'global'
+      ) and not self.custom_base_url:
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif self.custom_base_url and not ((project and location) or api_key):
+      elif (
+          self.custom_base_url
+          and not self.custom_base_url.endswith('.googleapis.com')
+      ) and not ((project and location) or api_key):
         # Avoid setting default base url and api version if base_url provided.
         # API gateway proxy can use the auth in custom headers, not url.
         # Enable custom url if auth is not sufficient.
@@ -674,9 +704,9 @@ class BaseApiClient:
     else:  # Implicit initialization or missing arguments.
       if not self.api_key:
         raise ValueError(
-            'Missing key inputs argument! To use the Google AI API,'
-            ' provide (`api_key`) arguments. To use the Google Cloud API,'
-            ' provide (`vertexai`, `project` & `location`) arguments.'
+            'No API key was provided. Please pass a valid API key. Learn how to'
+            ' create an API key at'
+            ' https://ai.google.dev/gemini-api/docs/api-key.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
       self._http_options.api_version = 'v1beta'
@@ -708,18 +738,21 @@ class BaseApiClient:
       self._async_httpx_client = self._http_options.httpx_async_client
     else:
       self._async_httpx_client = AsyncHttpxClient(**async_client_args)
-    if self._use_aiohttp():
-      try:
-        import aiohttp  # pylint: disable=g-import-not-at-top
-        # Do it once at the genai.Client level. Share among all requests.
-        self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
-            self._http_options
-        )
-      except ImportError:
-        pass
 
     # Initialize the aiohttp client session.
     self._aiohttp_session: Optional[aiohttp.ClientSession] = None
+    if self._use_aiohttp():
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
+
+        if self._http_options.aiohttp_client:
+          self._aiohttp_session = self._http_options.aiohttp_client
+        # Do it once at the genai.Client level. Share among all requests.
+        self._async_client_session_request_args = (
+            self._ensure_aiohttp_ssl_ctx(self._http_options)
+        )
+      except ImportError:
+        pass
 
     retry_kwargs = retry_args(self._http_options.retry_options)
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
@@ -728,10 +761,44 @@ class BaseApiClient:
 
   async def _get_aiohttp_session(self) -> 'aiohttp.ClientSession':
     """Returns the aiohttp client session."""
-    if self._aiohttp_session is None or self._aiohttp_session.closed:
+    if (
+        self._aiohttp_session is None
+        or self._aiohttp_session.closed
+        or self._aiohttp_session._loop.is_closed()  # pylint: disable=protected-access
+    ):
       # Initialize the aiohttp client session if it's not set up or closed.
-      self._aiohttp_session = aiohttp.ClientSession(
-          connector=aiohttp.TCPConnector(limit=0),
+      class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if not self.closed:
+            context = {
+                'client_session': self,
+                'message': 'Unclosed client session',
+            }
+            if self._source_traceback is not None:
+              context['source_traceback'] = self._source_traceback
+            # Remove this self._loop.call_exception_handler(context)
+
+      class AiohttpTCPConnector(aiohttp.TCPConnector):  # type: ignore[misc]
+
+        def __del__(self, _warnings: Any = warnings) -> None:
+          if self._closed:
+            return
+          if not self._conns:
+            return
+          conns = [repr(c) for c in self._conns.values()]
+          # After v3.13.2, it may change to self._close_immediately()
+          self._close()
+          context = {
+              'connector': self,
+              'connections': conns,
+              'message': 'Unclosed connector',
+          }
+          if self._source_traceback is not None:
+            context['source_traceback'] = self._source_traceback
+          # Remove this self._loop.call_exception_handler(context)
+      self._aiohttp_session = AiohttpClientSession(
+          connector=AiohttpTCPConnector(limit=0),
           trust_env=True,
           read_bufsize=READ_BUFFER_SIZE,
       )
@@ -943,12 +1010,7 @@ class BaseApiClient:
           self.project = project
 
       if self._credentials:
-        if self._credentials.expired or not self._credentials.token:
-          # Only refresh when it needs to. Default expiration is 3600 seconds.
-          refresh_auth(self._credentials)
-        if not self._credentials.token:
-          raise RuntimeError('Could not resolve API token from the environment')
-        return self._credentials.token  # type: ignore[no-any-return]
+        return get_token_from_credentials(self, self._credentials)  # type: ignore[no-any-return]
       else:
         raise RuntimeError('Could not resolve API token from the environment')
 
@@ -993,18 +1055,10 @@ class BaseApiClient:
             self.project = project
 
     if self._credentials:
-      if self._credentials.expired or not self._credentials.token:
-        # Only refresh when it needs to. Default expiration is 3600 seconds.
-        async_auth_lock = await self._get_async_auth_lock()
-        async with async_auth_lock:
-          if self._credentials.expired or not self._credentials.token:
-            # Double check that the credentials expired before refreshing.
-            await asyncio.to_thread(refresh_auth, self._credentials)
-
-      if not self._credentials.token:
-        raise RuntimeError('Could not resolve API token from the environment')
-
-      return self._credentials.token
+      return await async_get_token_from_credentials(
+          self,
+          self._credentials
+      )  # type: ignore[no-any-return]
     else:
       raise RuntimeError('Could not resolve API token from the environment')
 
@@ -1045,6 +1099,11 @@ class BaseApiClient:
         and not path.startswith('projects/')
         and not query_vertex_base_models
         and (self.project or self.location)
+        and not (
+            self.custom_base_url
+            and patched_http_options.base_url_resource_scope
+            == ResourceScope.COLLECTION
+        )
     ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
 
@@ -1074,10 +1133,21 @@ class BaseApiClient:
         or (self.project and self.location)
         or self.api_key
     ):
-      url = join_url_path(
-          base_url,
-          versioned_path,
-      )
+      if (
+          patched_http_options.base_url_resource_scope
+          == ResourceScope.COLLECTION
+      ):
+        url = join_url_path(base_url, path)
+      else:
+        url = join_url_path(
+            base_url,
+            versioned_path,
+        )
+    elif(
+        self.custom_base_url
+        and patched_http_options.base_url_resource_scope == ResourceScope.COLLECTION
+    ):
+      url = join_url_path(base_url, path)
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(
@@ -1197,7 +1267,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
         except (
@@ -1219,7 +1289,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
 
@@ -1249,7 +1319,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1273,7 +1343,7 @@ class BaseApiClient:
               url=http_request.url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1347,9 +1417,21 @@ class BaseApiClient:
 
     session_response = self._request(http_request, http_options, stream=True)
     for chunk in session_response.segments():
-      yield SdkHttpResponse(
-          headers=session_response.headers, body=json.dumps(chunk)
-      )
+      chunk_dump = json.dumps(chunk)
+      try:
+        if chunk_dump.startswith('{"error":'):
+          chunk_json = json.loads(chunk_dump)
+          errors.APIError.raise_error(
+              chunk_json.get('error', {}).get('code'),
+              chunk_json,
+              session_response,
+          )
+      except json.decoder.JSONDecodeError:
+        logger.debug(
+            'Failed to decode chunk that contains an error: %s' % chunk_dump
+        )
+        pass
+      yield SdkHttpResponse(headers=session_response.headers, body=chunk_dump)
 
   async def async_request(
       self,
@@ -1383,7 +1465,21 @@ class BaseApiClient:
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
-        yield SdkHttpResponse(headers=response.headers, body=json.dumps(chunk))
+        chunk_dump = json.dumps(chunk)
+        try:
+          if chunk_dump.startswith('{"error":'):
+            chunk_json = json.loads(chunk_dump)
+            await errors.APIError.raise_error_async(
+                chunk_json.get('error', {}).get('code'),
+                chunk_json,
+                response,
+            )
+        except json.decoder.JSONDecodeError:
+          logger.debug(
+              'Failed to decode chunk that contains an error: %s' % chunk_dump
+          )
+          pass
+        yield SdkHttpResponse(headers=response.headers, body=chunk_dump)
 
     return async_generator()  # type: ignore[no-untyped-call]
 
@@ -1635,7 +1731,7 @@ class BaseApiClient:
               url=upload_url,
               data=file_chunk,
               headers=upload_headers,
-              timeout=aiohttp.ClientTimeout(connect=timeout_in_seconds),
+              timeout=aiohttp.ClientTimeout(total=timeout_in_seconds),
           )
 
           if response.headers.get('X-Goog-Upload-Status'):
@@ -1781,7 +1877,7 @@ class BaseApiClient:
           url=http_request.url,
           headers=http_request.headers,
           data=data,
-          timeout=aiohttp.ClientTimeout(connect=http_request.timeout),
+          timeout=aiohttp.ClientTimeout(total=http_request.timeout),
       )
       await errors.APIError.raise_for_async_response(response)
 
@@ -1811,13 +1907,18 @@ class BaseApiClient:
 
   def close(self) -> None:
     """Closes the API client."""
-    self._httpx_client.close()
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_client:
+      self._httpx_client.close()
 
   async def aclose(self) -> None:
     """Closes the API async client."""
-
-    await self._async_httpx_client.aclose()
-    if self._aiohttp_session:
+    # Let users close the custom client explicitly by themselves. Otherwise,
+    # close the client when the object is garbage collected.
+    if not self._http_options.httpx_async_client:
+      await self._async_httpx_client.aclose()
+    if self._aiohttp_session and not self._http_options.aiohttp_client:
       await self._aiohttp_session.close()
 
   def __del__(self) -> None:
@@ -1828,17 +1929,42 @@ class BaseApiClient:
     """
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
       if not self._http_options.httpx_client:
         self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 
     try:
-      # Let users close the custom client explicitly by themselves. Otherwise,
-      # close the client when the object is garbage collected.
-      if not self._http_options.httpx_async_client:
-        asyncio.get_running_loop().create_task(self.aclose())
+      asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
+
+def get_token_from_credentials(
+    client: 'BaseApiClient',
+    credentials: google.auth.credentials.Credentials
+) -> str:
+  """Refreshes the authentication token for the given credentials."""
+  if credentials.expired or not credentials.token:
+    # Only refresh when it needs to. Default expiration is 3600 seconds.
+    refresh_auth(credentials)
+  if not credentials.token:
+    raise RuntimeError('Could not resolve API token from the environment')
+  return credentials.token  # type: ignore[no-any-return]
+
+async def async_get_token_from_credentials(
+    client: 'BaseApiClient',
+    credentials: google.auth.credentials.Credentials
+) -> str:
+  """Refreshes the authentication token for the given credentials."""
+  if credentials.expired or not credentials.token:
+    # Only refresh when it needs to. Default expiration is 3600 seconds.
+    async_auth_lock = await client._get_async_auth_lock()
+    async with async_auth_lock:
+      if credentials.expired or not credentials.token:
+        # Double check that the credentials expired before refreshing.
+        await asyncio.to_thread(refresh_auth, credentials)
+
+  if not credentials.token:
+    raise RuntimeError('Could not resolve API token from the environment')
+
+  return credentials.token    # type: ignore[no-any-return]

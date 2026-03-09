@@ -1,5 +1,316 @@
 # Changelog
 
+## [1.66.0](https://github.com/googleapis/python-genai/compare/v1.65.0...v1.66.0) (2026-03-03)
+
+
+### Features
+
+* Add gemini-3.1-flash-image-preview model ([dd52cc2](https://github.com/googleapis/python-genai/commit/dd52cc288be297e74cb689be9260b917ea90e06b))
+* Support signature for all Interaction tool types ([abb388e](https://github.com/googleapis/python-genai/commit/abb388e9058fd8fa0d53bc0b265d68ce93a6f184))
+* Update data types from discovery doc. ([15666c0](https://github.com/googleapis/python-genai/commit/15666c063488fcb4589624ef44b4c80281a9ee7b))
+
+## [1.65.0](https://github.com/googleapis/python-genai/compare/v1.64.0...v1.65.0) (2026-02-26)
+
+
+### Features
+
+* Add gemini-3.1-pro-preview to list of models in Interactions ([fe86870](https://github.com/googleapis/python-genai/commit/fe86870752ca8cc66d140d3942e9b07f19ca092c))
+* Add Image Grounding support to GoogleSearch tool ([0035182](https://github.com/googleapis/python-genai/commit/0035182ec4eaf1ce2503a09f290b1e48a2e1ee1f))
+* Enable server side MCP and disable all other AFC when server side MCP is configured. ([4dd7b16](https://github.com/googleapis/python-genai/commit/4dd7b165dc54d3ae75367f68d05f9d9951688f54))
+* Support more image sizes and resolutions ([8b2a4e0](https://github.com/googleapis/python-genai/commit/8b2a4e04707c86e5f7d46e0483a88457fbf6d533))
+
+
+### Bug Fixes
+
+* Change interactions media mime type to enum (breaking change for experimental feature) ([e0f3378](https://github.com/googleapis/python-genai/commit/e0f33786f76a1af6ac3ad1938ab57961833bf0a1))
+* Handle non-list response_stream in HttpResponse.json property ([006042d](https://github.com/googleapis/python-genai/commit/006042db8379d957ac1ac0e57993983a21f7e1d1))
+* Handle non-list response_stream in HttpResponse.json property ([#1903](https://github.com/googleapis/python-genai/issues/1903)) ([61aec34](https://github.com/googleapis/python-genai/commit/61aec3455e886a1c700fb0ba21ed40f59bba65ff))
+* Make aiohttp an optional dependency, bump aiohttp version upperbound, and ensure HttpOptions.async_client_args propagates to custom aiohttp.ClientSession request args for proxy etc. ([b28d144](https://github.com/googleapis/python-genai/commit/b28d1445bb6c2c46c495ffd1b03a622d9d6942f6)), closes [#2090](https://github.com/googleapis/python-genai/issues/2090) [#2051](https://github.com/googleapis/python-genai/issues/2051) [#1950](https://github.com/googleapis/python-genai/issues/1950)
+
+
+### Documentation
+
+* Regenerate docs for 1.64.0 ([a023141](https://github.com/googleapis/python-genai/commit/a02314197d0dc72e854fa3ea79247f53421511ba))
+* Update README and codegen_instructions for structured outputs ([4d5a978](https://github.com/googleapis/python-genai/commit/4d5a978932e9aacd2569f3058ce5af527ae18210))
+
+## [1.64.0](https://github.com/googleapis/python-genai/compare/v1.63.0...v1.64.0) (2026-02-18)
+
+
+### Features
+
+* Add UnifiedMetric support to Vertex Tuning evaluation config ([9a9908a](https://github.com/googleapis/python-genai/commit/9a9908a9605756a94404359187cad09b21c094e0))
+* Support multimodal embedding for Gemini Embedding 2.0 and support MaaS models in Models.embed_content() (Vertex AI API) ([af40cc6](https://github.com/googleapis/python-genai/commit/af40cc629751b2d389eecb75741e9c3531cc8e6e))
+
+## [1.63.0](https://github.com/googleapis/python-genai/compare/v1.62.0...v1.63.0) (2026-02-11)
+
+
+### Features
+
+* Add INCOMPLETE status to Interaction. ([1a84605](https://github.com/googleapis/python-genai/commit/1a84605bcac5445c8e13658b8bd7ff1860f10f1b))
+* Support encryption_spec in tuning job creation configuration for GenAI SDK ([057d6f0](https://github.com/googleapis/python-genai/commit/057d6f077b0a6d13c843fff0479027f5f7369113))
+
+
+### Bug Fixes
+
+* Base_url and global location parsing ([2c40555](https://github.com/googleapis/python-genai/commit/2c40555c54267b1e9ba10dfafe1bc73f0cca43d4))
+* Remove build warning due to extra comma: assertion on a tuple is always true ([1cc2c2d](https://github.com/googleapis/python-genai/commit/1cc2c2d411576e9858d4a4ae33bbf12975700a9f))
+* Remove debug print statement. ([60c0a2f](https://github.com/googleapis/python-genai/commit/60c0a2ffb4c1e87374c02958b1cb42748ba84ff1))
+* Remove unused import of `websockets` ([3b82b5f](https://github.com/googleapis/python-genai/commit/3b82b5f382c6fe9fa820a59c3938d04cef3ae24e))
+
+
+### Documentation
+
+* Add docstrings to C# and Python SDK Operations methods. ([f2e85a3](https://github.com/googleapis/python-genai/commit/f2e85a3911c431d4494a4e3712d0eed1a2e6c069))
+* Regenerate docs for 1.62.0 ([455ec26](https://github.com/googleapis/python-genai/commit/455ec260be3deef68d59eda6d7ed2b53505d3a4f))
+
+## [1.62.0](https://github.com/googleapis/python-genai/compare/v1.61.0...v1.62.0) (2026-02-04)
+
+
+### Features
+
+* Update data types from discovery doc. ([089ba97](https://github.com/googleapis/python-genai/commit/089ba97d7ee2e084134354d7a69421eaba176894))
+
+
+### Bug Fixes
+
+* Add error handling for live and live music APIs ([1148276](https://github.com/googleapis/python-genai/commit/114827682339fcc3c81543c008d9716b1a6b8401)), closes [#668](https://github.com/googleapis/python-genai/issues/668)
+
+## [1.61.0](https://github.com/googleapis/python-genai/compare/v1.60.0...v1.61.0) (2026-01-30)
+
+
+### Features
+
+* Add `include_input` query parameter to Get Interaction endpoint. ([a0240d9](https://github.com/googleapis/python-genai/commit/a0240d9cf4c817d1737cb2cf818d405addabeed8))
+* Add registerFiles for you can use gcs files with mldev. ([965395b](https://github.com/googleapis/python-genai/commit/965395b2f640a7d92a6df3d03020f4d15fe6b2fa))
+* Support distillation tuning ([9e49d71](https://github.com/googleapis/python-genai/commit/9e49d71c5aa70066cb0c81c7bef9770294dbcceb))
+* Support OSS Tuning in GenAI SDK ([51748a7](https://github.com/googleapis/python-genai/commit/51748a7559fb038f2cd5ce290025d6259bb61ae0))
+
+
+### Bug Fixes
+
+* Add metadata in batch inlined response ([08c47aa](https://github.com/googleapis/python-genai/commit/08c47aa1a4237daed90d86d38ccb4590c25c8ab8))
+
+## [1.60.0](https://github.com/googleapis/python-genai/compare/v1.59.0...v1.60.0) (2026-01-21)
+
+
+### Features
+
+* Add ModelArmorConfig support for prompt and response sanitization via the Model Armor service ([8d1091a](https://github.com/googleapis/python-genai/commit/8d1091a7e8d8eef774984ff2202cb87fa674e92e))
+* Update data types from discovery doc. ([4209289](https://github.com/googleapis/python-genai/commit/42092898071f8462d307105830a72bfe48db0935))
+* Update data types from discovery doc. ([7db2c2d](https://github.com/googleapis/python-genai/commit/7db2c2d5b341782ffd2ed775c4a8196971cdad72))
+
+
+### Documentation
+
+* Regenerate docs for 1.59.0 ([351e490](https://github.com/googleapis/python-genai/commit/351e4901c7c8178a2bbb876148cbe441a77b071e))
+* Update docs to include interactions and file_search_stores module ([a21841c](https://github.com/googleapis/python-genai/commit/a21841cad53b73a54eef322a66cebd2c42c57bea))
+
+## [1.59.0](https://github.com/googleapis/python-genai/compare/v1.58.0...v1.59.0) (2026-01-15)
+
+
+### Features
+
+* Set the environment variable GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES to 'false' within BaseApiClient to disable bound token sharing. ([79ac880](https://github.com/googleapis/python-genai/commit/79ac88081ab3629f2eaab72bd004a3481affeac0))
+* Support 4:5 and 5:4 aspect ratio in Interactions ([1ddd9f1](https://github.com/googleapis/python-genai/commit/1ddd9f1dfd2fecc53941dab04d5fc2f2891203e3))
+
+
+### Documentation
+
+* Regenerate docs for 1.58.0 ([39a8b06](https://github.com/googleapis/python-genai/commit/39a8b064ca5e6f2c80d313ead9ef1e0e8192a513))
+
+## [1.58.0](https://github.com/googleapis/python-genai/compare/v1.57.0...v1.58.0) (2026-01-14)
+
+
+### Features
+
+* Add FileSearchCallContent to Interactions ([a882dea](https://github.com/googleapis/python-genai/commit/a882deab12a03d9390e2dd83243afc767e78c789))
+* Add ImageConfig to GenerationConfig for image generation in Interactions ([b61163f](https://github.com/googleapis/python-genai/commit/b61163f463f0b452d6fc01a5ad23ff16b65f23db))
+* Support passing the custom aiohttp.ClientSession through HttpOptions.aiohttp_client ([750648f](https://github.com/googleapis/python-genai/commit/750648fe0b2b5acb35233dec4e4dda4c03e96f31)), closes [#1662](https://github.com/googleapis/python-genai/issues/1662)
+* Voice activity support ([b7b1c2e](https://github.com/googleapis/python-genai/commit/b7b1c2e8b3ce825f08481c27b477abe6d26d0f2b))
+
+
+### Bug Fixes
+
+* Serialize Pillow images losslessly by default ([8d7c74d](https://github.com/googleapis/python-genai/commit/8d7c74d4579408714f4c9a5cc40d4772e670fae5))
+
+
+### Documentation
+
+* Regenerate docs for 1.57.0 ([65018b6](https://github.com/googleapis/python-genai/commit/65018b655dbb6038b6daac5860c89974b8ae125e))
+
+## [1.57.0](https://github.com/googleapis/python-genai/compare/v1.56.0...v1.57.0) (2026-01-07)
+
+
+### Features
+
+* [Python] add RegisterFiles so gcs files can be used with genai. ([68fa075](https://github.com/googleapis/python-genai/commit/68fa0754290bcbd84c1c34806eedfdad28890921))
+* Add gemini-3-pro-preview support for local tokenizer ([48f8256](https://github.com/googleapis/python-genai/commit/48f8256202a9ea3abfb7790fa80fcbf68e541131))
+* Add PersonGeneration to ImageConfig for Vertex Gempix ([c66e0ce](https://github.com/googleapis/python-genai/commit/c66e0ce16bc1385969b66d3f266269ac9aafad73))
+
+
+### Bug Fixes
+
+* Remove validation for empty text parts on Chat, this will support keeping the history in chat when the API yields back such a part. ([215c852](https://github.com/googleapis/python-genai/commit/215c8524659c0b2ca945b6cd7887b3501db61be4))
+
+
+### Documentation
+
+* Regenerate docs for 1.56.0 ([b4c063e](https://github.com/googleapis/python-genai/commit/b4c063e7f213092e5cb25a7ad0783540dc7a982e))
+* Update `codegen_instructions.md` for Gemini 3 Flash ([22500b5](https://github.com/googleapis/python-genai/commit/22500b5ef99fb8e2d3f476da10164b08e8485a6f))
+* Update Virtual Try-On model id in samples and docstrings ([5bf4d62](https://github.com/googleapis/python-genai/commit/5bf4d625f3b3965260ea5dcc1427f8b6a6845eab))
+
+## [1.56.0](https://github.com/googleapis/python-genai/compare/v1.55.0...v1.56.0) (2025-12-16)
+
+
+### Features
+
+* Add minimal and medium thinking levels. ([96d644c](https://github.com/googleapis/python-genai/commit/96d644cd52a300063040c6d7bf70e2939b735e6f))
+* Add support for Struct in ToolResult Content. ([8fd4886](https://github.com/googleapis/python-genai/commit/8fd4886a04396683f75a54887f768c312e1b73b7))
+* Add ultra high resolution to the media resolution in Parts. ([356c320](https://github.com/googleapis/python-genai/commit/356c320566a7ff512c680bcf60b678648b342829))
+* Add ULTRA_HIGH MediaResolution and new ThinkingLevel enums ([336b823](https://github.com/googleapis/python-genai/commit/336b8236c0e7c16d581226ed3438453dddf66119))
+* Define and use DocumentMimeType for DocumentContent ([dc7f00f](https://github.com/googleapis/python-genai/commit/dc7f00f78b74bfdeab4b20121a4c2c2ba3065daa))
+* Support multi speaker for Vertex AI ([ecb00c2](https://github.com/googleapis/python-genai/commit/ecb00c22414dc578cf7db760591a4086a541d72a))
+
+
+### Bug Fixes
+
+* Api version handling for interactions. ([436ca2e](https://github.com/googleapis/python-genai/commit/436ca2e1d536d57d662284b6b1079215de3d787f))
+
+
+### Documentation
+
+* Add documentation for the new Interactions API (Preview). ([e28a69c](https://github.com/googleapis/python-genai/commit/e28a69c92a7c770400b329cad714c2b612829fe0))
+* Update and restructure codegen_instructions ([00422de](https://github.com/googleapis/python-genai/commit/00422de07b133a19246f91ac77e7da41dc471e74))
+* Update docs for 1.55 ([1cc43e7](https://github.com/googleapis/python-genai/commit/1cc43e7d066eeb95c77409d01fd8f5652d32847a))
+
+## [1.55.0](https://github.com/googleapis/python-genai/compare/v1.54.0...v1.55.0) (2025-12-11)
+
+
+### Features
+
+* Add the Interactions API ([836a3](https://github.com/googleapis/python-genai/commit/836a33c93f26f56349758ca22e59b8e46962dad4))
+* Add enableEnhancedCivicAnswers feature in GenerateContentConfig ([15d1ea9](https://github.com/googleapis/python-genai/commit/15d1ea9fbb8eff3d2a252acb60b33f8f80da55c3))
+* Add IMAGE_RECITATION and IMAGE_OTHER enum values to FinishReason ([8bb4b9a](https://github.com/googleapis/python-genai/commit/8bb4b9a8b77b69904035337aa79d5147e52443b4))
+* Add voice activity detection signal. ([feae46d](https://github.com/googleapis/python-genai/commit/feae46dd766f6f7dbd30a43235a7a7a87e6c8ca0))
+
+
+### Bug Fixes
+
+* Replicated voice config bytes handling ([c9f8668](https://github.com/googleapis/python-genai/commit/c9f8668cea83dc285372a00e58cebd082d65e19a))
+
+
+### Documentation
+
+* Regenerate docs for 1.54.0 ([8bac8d2](https://github.com/googleapis/python-genai/commit/8bac8d2d92124067eee5eee10b04485e413ba9a3))
+
+## [1.54.0](https://github.com/googleapis/python-genai/compare/v1.53.0...v1.54.0) (2025-12-08)
+
+
+### Features
+
+* Support ReplicatedVoiceConfig ([07c74dd](https://github.com/googleapis/python-genai/commit/07c74dd120ce19ce0aef697a8d12eaf6dc358e37))
+
+
+### Bug Fixes
+
+* Apply timeout to the total request duration in aiohttp ([a4f4205](https://github.com/googleapis/python-genai/commit/a4f4205dd9f09be418d298c71752f9c85980c9f9))
+* Make APIError class picklable (fixes [#1144](https://github.com/googleapis/python-genai/issues/1144)) ([e3d5712](https://github.com/googleapis/python-genai/commit/e3d5712d9faa2970ec0f652d2c819ae3ac049286))
+
+
+### Documentation
+
+* Regenerate docs for 1.53.0 ([3a2b970](https://github.com/googleapis/python-genai/commit/3a2b9702ec10b60b6d236e02f27f6a62f8350d4f))
+
+## [1.53.0](https://github.com/googleapis/python-genai/compare/v1.52.0...v1.53.0) (2025-12-03)
+
+
+### Features
+
+* Add empty response for tunings.cancel() ([97cc7e4](https://github.com/googleapis/python-genai/commit/97cc7e4eafbee4fa4035e7420170ab6a2c9da7fb))
+
+
+### Bug Fixes
+
+* Convert 'citationSources' key in CitationMetadata to 'citations' when present (fixes [#1222](https://github.com/googleapis/python-genai/issues/1222)) ([2f28b02](https://github.com/googleapis/python-genai/commit/2f28b02517dbbe57ca604079e8f14c0773ec4aca))
+* Fix google.auth.transport.requests import error in Live API ([a842721](https://github.com/googleapis/python-genai/commit/a842721cb1f536b9663552bf424aaa0c48387903))
+
+
+### Documentation
+
+* Improve docs for google.genai.types ([5b50adc](https://github.com/googleapis/python-genai/commit/5b50adce2a76cb77bef067bc0a624d111d39c2dc))
+* Recommend using response_json_schema in error messages and docstrings. ([c0b175a](https://github.com/googleapis/python-genai/commit/c0b175a0ca20286db419390031a2239938d0c0b7))
+* Updating codegen instructions to use gemini 3 pro and nano banana pro ([060f015](https://github.com/googleapis/python-genai/commit/060f015d7efb39f716731d7f3a6571f59a5e94e9))
+
+## [1.52.0](https://github.com/googleapis/python-genai/compare/v1.51.0...v1.52.0) (2025-11-21)
+
+
+### Features
+
+* Add support for configuring resource scope when using base_url ([a3e0859](https://github.com/googleapis/python-genai/commit/a3e0859b673ad5b20157ed9970ecfc2edfa5077c))
+
+
+### Bug Fixes
+
+* `TypeError: issubclass() arg 1 must be a class` when using`List[str]` for `contents` ([c624d7e](https://github.com/googleapis/python-genai/commit/c624d7e5705df98e36cbc7b55dc110adf5871c85))
+* Create new aiohttp Client Session if loop is closed ([1dc35ea](https://github.com/googleapis/python-genai/commit/1dc35ea7abdd8f5d0faed4f8aa55756d8da7c478))
+
+## [1.51.0](https://github.com/googleapis/python-genai/compare/v1.50.1...v1.51.0) (2025-11-18)
+
+
+### Features
+
+* Add a pre-validation hook to warn about Pydantic model type mismatches. ([f7af6ef](https://github.com/googleapis/python-genai/commit/f7af6ef697dee79115c8e5716ae9e3a102c49a4a))
+* Add display name to FunctionResponseBlob ([52906d5](https://github.com/googleapis/python-genai/commit/52906d513f22d58fda9bc177fc1f6bff003d2e61))
+* Add display name to FunctionResponseFileData ([7c39f70](https://github.com/googleapis/python-genai/commit/7c39f702636516596233ed29ae0a588e621b8152))
+* Add generate_content_config.thinking_level ([30b00db](https://github.com/googleapis/python-genai/commit/30b00dbad15f9cf0bb79deca7f1d7b69e345986e))
+* Add image output options to ImageConfig for Vertex ([014aaad](https://github.com/googleapis/python-genai/commit/014aaad624790afc50d46c996bf84c96e3751498))
+* Add part.media_resolution ([30b00db](https://github.com/googleapis/python-genai/commit/30b00dbad15f9cf0bb79deca7f1d7b69e345986e))
+* Support Function call argument streaming for all languages ([9b2ca50](https://github.com/googleapis/python-genai/commit/9b2ca50d5194af8ff8f3fdaed1c2a317acd52970))
+
+
+### Bug Fixes
+
+* Only log warnings once for accessors in GenerateContentResponse and LiveServerMessage ([eec841e](https://github.com/googleapis/python-genai/commit/eec841e6a35c5d656f79f0e0700f00126acfda9c))
+
+
+### Documentation
+
+* Remove gemini 2 below model reference ([c42ddff](https://github.com/googleapis/python-genai/commit/c42ddff06c662eaec3cf770dfa35e39a6376ad2d))
+* Update sample code to use gemini 2 or above ([d48bbba](https://github.com/googleapis/python-genai/commit/d48bbba5f8e7f8b18d2c22f60ba96c366a0d2ff1))
+* Update Veo and Imagen model id in README ([5c69122](https://github.com/googleapis/python-genai/commit/5c6912273964a195fbaf8df0f3e3b6c5bf4e99d5))
+
+## [1.50.1](https://github.com/googleapis/python-genai/compare/v1.50.0...v1.50.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* Do not use ADC if passing a base_url, no project, no location ([a00b67a](https://github.com/googleapis/python-genai/commit/a00b67a9618e81b0aa8abde9ddc68388869f8445))
+* Ensure the custom httpx client and async client won't be closed automatically ([9a9fa3c](https://github.com/googleapis/python-genai/commit/9a9fa3c95ee872efeee8ede411bd2946f7351100))
+
+## [1.50.0](https://github.com/googleapis/python-genai/compare/v1.49.0...v1.50.0) (2025-11-12)
+
+
+### Features
+
+* Use pytest-xdist for test parallelization ([6ff82fc](https://github.com/googleapis/python-genai/commit/6ff82fca9ed90992c15cfb3affdbb65dd5d5f4d1))
+
+
+### Bug Fixes
+
+* Add missing fields to the model types ([4b855e6](https://github.com/googleapis/python-genai/commit/4b855e621525f2bdd7cdd00e3a98edbdd173997b))
+* Don't generate warnings from response.text property because of thought_signature. ([dd9360d](https://github.com/googleapis/python-genai/commit/dd9360d21d0a979ddd7acf994a0aa19bec794182))
+* Fix base_steps parameter for recontext_image ([d94077b](https://github.com/googleapis/python-genai/commit/d94077bdeeddf012eae8134a341c915be5fe24ce))
+* Fix file_search_stores.documents pagination ([8d40d48](https://github.com/googleapis/python-genai/commit/8d40d48d9a048313ec97b60a8941e7b536721d6e))
+* Fix models.list() filter parameter ([7fa1e41](https://github.com/googleapis/python-genai/commit/7fa1e41580052822c90d9b6ba99c66674ab5851a))
+* Handle SSE error message types properly in streaming ([72afa50](https://github.com/googleapis/python-genai/commit/72afa50eb2c4d960a4f6b55909205d0739fde05a))
+* Roll back a breaking change to the import system ([8674003](https://github.com/googleapis/python-genai/commit/86740033fb9c93b822b33100324f6c2ac8ad1f7e))
+
+
+### Documentation
+
+* Log Schema.json_schema and Schema.from_json_schema only once ([517300c](https://github.com/googleapis/python-genai/commit/517300caabd58268f06f4091f0cbbb52c2bc889e))
+* Regenerate docs for 1.49.0 ([74b680a](https://github.com/googleapis/python-genai/commit/74b680adfdf74b6e807d50d8595f092cd522a6f8))
+
 ## [1.49.0](https://github.com/googleapis/python-genai/compare/v1.48.0...v1.49.0) (2025-11-05)
 
 

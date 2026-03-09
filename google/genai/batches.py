@@ -35,6 +35,40 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.batches')
 
 
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError('api_key_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError('auth_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError('oauth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError('oidc_config parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _BatchJobDestination_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -408,15 +442,15 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
   if getv(from_object, ['groundingMetadata']) is not None:
     setv(
         to_object,
         ['grounding_metadata'],
         getv(from_object, ['groundingMetadata']),
     )
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
   if getv(from_object, ['index']) is not None:
     setv(to_object, ['index'], getv(from_object, ['index']))
@@ -796,6 +830,53 @@ def _FileData_to_mldev(
   return to_object
 
 
+def _FunctionCall_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['args']) is not None:
+    setv(to_object, ['args'], getv(from_object, ['args']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['partial_args']) is not None:
+    raise ValueError('partial_args parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError('will_continue parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _FunctionCallingConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['allowed_function_names']) is not None:
+    setv(
+        to_object,
+        ['allowedFunctionNames'],
+        getv(from_object, ['allowed_function_names']),
+    )
+
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
+
+  if getv(from_object, ['stream_function_call_arguments']) is not None:
+    raise ValueError(
+        'stream_function_call_arguments parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  return to_object
+
+
 def _GenerateContentConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -907,7 +988,11 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
+    setv(
+        parent_object,
+        ['toolConfig'],
+        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
+    )
 
   if getv(from_object, ['labels']) is not None:
     raise ValueError('labels parameter is not supported in Gemini API.')
@@ -949,7 +1034,23 @@ def _GenerateContentConfig_to_mldev(
     setv(to_object, ['thinkingConfig'], getv(from_object, ['thinking_config']))
 
   if getv(from_object, ['image_config']) is not None:
-    setv(to_object, ['imageConfig'], getv(from_object, ['image_config']))
+    setv(
+        to_object,
+        ['imageConfig'],
+        _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
+    )
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    setv(
+        to_object,
+        ['enableEnhancedCivicAnswers'],
+        getv(from_object, ['enable_enhanced_civic_answers']),
+    )
+
+  if getv(from_object, ['model_armor_config']) is not None:
+    raise ValueError(
+        'model_armor_config parameter is not supported in Gemini API.'
+    )
 
   return to_object
 
@@ -1027,7 +1128,11 @@ def _GoogleMaps_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(getv(from_object, ['auth_config']), to_object),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
@@ -1040,19 +1145,61 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
 
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
+    )
+
+  return to_object
+
+
+def _ImageConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['aspect_ratio']) is not None:
+    setv(to_object, ['aspectRatio'], getv(from_object, ['aspect_ratio']))
+
+  if getv(from_object, ['image_size']) is not None:
+    setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['person_generation']) is not None:
+    raise ValueError(
+        'person_generation parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['prominent_people']) is not None:
+    raise ValueError(
+        'prominent_people parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['output_mime_type']) is not None:
+    raise ValueError(
+        'output_mime_type parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['output_compression_quality']) is not None:
+    raise ValueError(
+        'output_compression_quality parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['image_output_options']) is not None:
+    raise ValueError(
+        'image_output_options parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -1111,6 +1258,9 @@ def _InlinedResponse_from_mldev(
             getv(from_object, ['response']), to_object
         ),
     )
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
   if getv(from_object, ['error']) is not None:
     setv(to_object, ['error'], getv(from_object, ['error']))
@@ -1245,8 +1395,10 @@ def _Part_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_call']) is not None:
-    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
 
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
@@ -1263,6 +1415,13 @@ def _Part_to_mldev(
         to_object,
         ['fileData'],
         _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+    )
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(
+        to_object,
+        ['functionCall'],
+        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
     )
 
   if getv(from_object, ['function_response']) is not None:
@@ -1315,27 +1474,35 @@ def _SafetySetting_to_mldev(
   return to_object
 
 
+def _ToolConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
+  if getv(from_object, ['function_calling_config']) is not None:
+    setv(
+        to_object,
+        ['functionCallingConfig'],
+        _FunctionCallingConfig_to_mldev(
+            getv(from_object, ['function_calling_config']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _Tool_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [item for item in getv(from_object, ['function_declarations'])],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
-    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
@@ -1343,12 +1510,11 @@ def _Tool_to_mldev(
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_maps']) is not None:
@@ -1358,15 +1524,42 @@ def _Tool_to_mldev(
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
-  if getv(from_object, ['google_search']) is not None:
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    raise ValueError(
+        'parallel_ai_search parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
 
   return to_object
 
@@ -1902,16 +2095,15 @@ class Batches(_api_module.BaseModule):
     Usage:
 
     .. code-block:: python
-
-      batch_jobs = client.batches.list(config={"page_size": 10})
-      for batch_job in batch_jobs:
-        print(f"Batch job: {batch_job.name}, state {batch_job.state}")
+      config = {'page_size': 10}
+      for batch_job in client.batches.list(config):
+        print(batch_job.name)
     """
-    if config is None:
-      config = types.ListBatchJobsConfig()
+
+    list_request = self._list
     return Pager(
         'batch_jobs',
-        self._list,
+        list_request,
         self._list(config=config),
         config,
     )
@@ -2458,17 +2650,14 @@ class AsyncBatches(_api_module.BaseModule):
     Usage:
 
     .. code-block:: python
-
-      batch_jobs = await client.aio.batches.list(config={'page_size': 5})
-      print(f"current page: {batch_jobs.page}")
-      await batch_jobs_pager.next_page()
-      print(f"next page: {batch_jobs_pager.page}")
+      async for batch_job in await client.aio.batches.list():
+        print(batch_job.name)
     """
-    if config is None:
-      config = types.ListBatchJobsConfig()
+
+    list_request = self._list
     return AsyncPager(
         'batch_jobs',
-        self._list,
+        list_request,
         await self._list(config=config),
         config,
     )
