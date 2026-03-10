@@ -17,16 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Dict, Union
-from typing_extensions import Literal, Required, TypeAlias, TypedDict
+from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["DynamicAgentConfigParam"]
 
 
-class DynamicAgentConfigParamTyped(TypedDict, total=False):
+class DynamicAgentConfigParam(TypedDict, total=False, extra_items=object):  # type: ignore[call-arg]
     """Configuration for dynamic agents."""
 
     type: Required[Literal["dynamic"]]
-
-
-DynamicAgentConfigParam: TypeAlias = Union[DynamicAgentConfigParamTyped, Dict[str, object]]
