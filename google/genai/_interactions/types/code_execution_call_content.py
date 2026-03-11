@@ -15,7 +15,6 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -34,6 +33,3 @@ class CodeExecutionCallContent(BaseModel):
     """The arguments to pass to the code execution."""
 
     type: Literal["code_execution_call"]
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""

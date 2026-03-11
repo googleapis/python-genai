@@ -37,6 +37,3 @@ class GoogleSearchCallContent(BaseModel):
 
     search_type: Optional[Literal["web_search", "image_search"]] = None
     """The type of search grounding enabled."""
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""

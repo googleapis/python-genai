@@ -34,6 +34,3 @@ class CodeExecutionCallContentParam(TypedDict, total=False):
     """The arguments to pass to the code execution."""
 
     type: Required[Literal["code_execution_call"]]
-
-    signature: str
-    """A signature hash for backend validation."""

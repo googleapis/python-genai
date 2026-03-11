@@ -158,9 +158,6 @@ class DeltaFunctionCallDelta(BaseModel):
 
     type: Literal["function_call"]
 
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
 
 DeltaFunctionResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
@@ -198,9 +195,6 @@ class DeltaCodeExecutionCallDelta(BaseModel):
 
     type: Literal["code_execution_call"]
 
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
 
 class DeltaCodeExecutionResultDelta(BaseModel):
     call_id: str
@@ -225,9 +219,6 @@ class DeltaURLContextCallDelta(BaseModel):
 
     type: Literal["url_context_call"]
 
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
 
 class DeltaURLContextResultDelta(BaseModel):
     call_id: str
@@ -251,9 +242,6 @@ class DeltaGoogleSearchCallDelta(BaseModel):
     """The arguments to pass to Google Search."""
 
     type: Literal["google_search_call"]
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
 
 
 class DeltaGoogleSearchResultDelta(BaseModel):
@@ -281,9 +269,6 @@ class DeltaMCPServerToolCallDelta(BaseModel):
     server_name: str
 
     type: Literal["mcp_server_tool_call"]
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
 
 
 DeltaMCPServerToolResultDeltaResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
@@ -319,9 +304,6 @@ class DeltaFileSearchCallDelta(BaseModel):
 
     type: Literal["file_search_call"]
 
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
 
 class DeltaFileSearchResultDeltaResult(BaseModel):
     """The result of the File Search."""
@@ -337,9 +319,15 @@ class DeltaFileSearchResultDeltaResult(BaseModel):
 
 
 class DeltaFileSearchResultDelta(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
     type: Literal["file_search_result"]
 
     result: Optional[List[DeltaFileSearchResultDeltaResult]] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 Delta: TypeAlias = Annotated[
