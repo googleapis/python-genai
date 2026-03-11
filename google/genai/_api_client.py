@@ -1538,6 +1538,21 @@ class BaseApiClient:
           The HttpResponse object from the finalize request.
     """
     offset = 0
+    http_options = http_options if http_options else self._http_options
+    base_url = (
+        http_options.get('base_url')
+        if isinstance(http_options, dict)
+        else getattr(http_options, 'base_url', None)
+    )
+    if base_url:
+      parsed_base = urlparse(base_url)
+      parsed_upload = urlparse(upload_url)
+      upload_url = urlunparse(
+          parsed_upload._replace(
+              scheme=parsed_base.scheme, netloc=parsed_base.netloc
+          )
+      )
+
     # Upload the file in chunks
     while True:
       file_chunk = file.read(CHUNK_SIZE)
@@ -1548,7 +1563,6 @@ class BaseApiClient:
       # If last chunk, finalize the upload.
       if chunk_size + offset >= upload_size:
         upload_command += ', finalize'
-      http_options = http_options if http_options else self._http_options
       timeout = (
           http_options.get('timeout')
           if isinstance(http_options, dict)
@@ -1562,11 +1576,17 @@ class BaseApiClient:
             else self._http_options.timeout
         )
       timeout_in_seconds = get_timeout_in_seconds(timeout)
-      upload_headers = {
+      user_headers = (
+          http_options.get('headers', {})
+          if isinstance(http_options, dict)
+          else (getattr(http_options, 'headers', {}) or {})
+      )
+      upload_headers = dict(user_headers) if user_headers else {}
+      upload_headers.update({
           'X-Goog-Upload-Command': upload_command,
           'X-Goog-Upload-Offset': str(offset),
           'Content-Length': str(chunk_size),
-      }
+      })
       populate_server_timeout_header(upload_headers, timeout_in_seconds)
       retry_count = 0
       while retry_count < MAX_RETRY_COUNT:
@@ -1689,6 +1709,21 @@ class BaseApiClient:
           The HttpResponse object from the finalized request.
     """
     offset = 0
+    http_options = http_options if http_options else self._http_options
+    base_url = (
+        http_options.get('base_url')
+        if isinstance(http_options, dict)
+        else getattr(http_options, 'base_url', None)
+    )
+    if base_url:
+      parsed_base = urlparse(base_url)
+      parsed_upload = urlparse(upload_url)
+      upload_url = urlunparse(
+          parsed_upload._replace(
+              scheme=parsed_base.scheme, netloc=parsed_base.netloc
+          )
+      )
+
     # Upload the file in chunks
     if self._use_aiohttp():  # pylint: disable=g-import-not-at-top
       self._aiohttp_session = await self._get_aiohttp_session()
@@ -1704,7 +1739,6 @@ class BaseApiClient:
         # If last chunk, finalize the upload.
         if chunk_size + offset >= upload_size:
           upload_command += ', finalize'
-        http_options = http_options if http_options else self._http_options
         timeout = (
             http_options.get('timeout')
              if isinstance(http_options, dict)
@@ -1718,11 +1752,17 @@ class BaseApiClient:
               else self._http_options.timeout
           )
         timeout_in_seconds = get_timeout_in_seconds(timeout)
-        upload_headers = {
+        user_headers = (
+            http_options.get('headers', {})
+            if isinstance(http_options, dict)
+            else (getattr(http_options, 'headers', {}) or {})
+        )
+        upload_headers = dict(user_headers) if user_headers else {}
+        upload_headers.update({
             'X-Goog-Upload-Command': upload_command,
-             'X-Goog-Upload-Offset': str(offset),
+            'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
-        }
+        })
         populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
         retry_count = 0
@@ -1780,7 +1820,6 @@ class BaseApiClient:
         # If last chunk, finalize the upload.
         if chunk_size + offset >= upload_size:
           upload_command += ', finalize'
-        http_options = http_options if http_options else self._http_options
         timeout = (
             http_options.get('timeout')
             if isinstance(http_options, dict)
@@ -1794,11 +1833,17 @@ class BaseApiClient:
               else self._http_options.timeout
           )
         timeout_in_seconds = get_timeout_in_seconds(timeout)
-        upload_headers = {
+        user_headers = (
+            http_options.get('headers', {})
+            if isinstance(http_options, dict)
+            else (getattr(http_options, 'headers', {}) or {})
+        )
+        upload_headers = dict(user_headers) if user_headers else {}
+        upload_headers.update({
             'X-Goog-Upload-Command': upload_command,
             'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
-        }
+        })
         populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
         retry_count = 0
