@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.67.0](https://github.com/googleapis/python-genai/compare/v1.66.0...v1.67.0) (2026-03-12)
+
+
+### Features
+
+* Add inference_generation_config to EvaluationConfig for Tuning ([1fdb4b8](https://github.com/googleapis/python-genai/commit/1fdb4b87aaec6e58b415168ea5893c0e901819a9))
+* Add live history_config with initial_history_in_client_content ([a80babd](https://github.com/googleapis/python-genai/commit/a80babd22d195d82881cdda0a2c0d5cdefd9573d))
+* Add support for referencing registered metrics by resource name in evaluation run API ([41b348e](https://github.com/googleapis/python-genai/commit/41b348ed7a5b3a817861e56ccd01251dc65859d3))
+* Enable language code for audio transcription config in Live API for Vertex AI ([c04be0d](https://github.com/googleapis/python-genai/commit/c04be0db2b65506ba0ad3e1b0922ec871df1580b))
+
+
+### Bug Fixes
+
+* Forward http_options in async_request_streamed to enable retry support ([8b3be87](https://github.com/googleapis/python-genai/commit/8b3be8744065ad1fa96484fcc2910842a7414a32))
+* Forward http_options in async_request_streamed to enable retry support ([#2097](https://github.com/googleapis/python-genai/issues/2097)) ([8b10efb](https://github.com/googleapis/python-genai/commit/8b10efb0349bcf64599405a48325f4415aa7eaad))
+
 ## [1.66.0](https://github.com/googleapis/python-genai/compare/v1.65.0...v1.66.0) (2026-03-03)
 
 
