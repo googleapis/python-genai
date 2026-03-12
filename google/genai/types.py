@@ -18211,15 +18211,15 @@ class LiveClientSetup(_common.BaseModel):
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
-  history_config: Optional[HistoryConfig] = Field(
-      default=None,
-      description="""Configures the exchange of history between the client and the server.""",
-  )
   explicit_vad_signal: Optional[bool] = Field(
       default=None,
       description="""Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently.""",
+  )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Configures the exchange of history between the client and the server.""",
   )
 
 
@@ -18272,13 +18272,13 @@ class LiveClientSetupDict(TypedDict, total=False):
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
 
-  history_config: Optional[HistoryConfigDict]
-  """Configures the exchange of history between the client and the server."""
-
   explicit_vad_signal: Optional[bool]
   """Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently."""
+
+  history_config: Optional[HistoryConfigDict]
+  """Configures the exchange of history between the client and the server."""
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -18764,15 +18764,15 @@ If included the server will send SessionResumptionUpdate messages.""",
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
-  history_config: Optional[HistoryConfig] = Field(
-      default=None,
-      description="""Configures the exchange of history between the client and the server.""",
-  )
   explicit_vad_signal: Optional[bool] = Field(
       default=None,
       description="""Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently.""",
+  )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Configures the exchange of history between the client and the server.""",
   )
 
 
@@ -18876,13 +18876,13 @@ If included the server will send SessionResumptionUpdate messages."""
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
 
-  history_config: Optional[HistoryConfigDict]
-  """Configures the exchange of history between the client and the server."""
-
   explicit_vad_signal: Optional[bool]
   """Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently."""
+
+  history_config: Optional[HistoryConfigDict]
+  """Configures the exchange of history between the client and the server."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
