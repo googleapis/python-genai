@@ -17996,13 +17996,19 @@ ContextWindowCompressionConfigOrDict = Union[
 class AudioTranscriptionConfig(_common.BaseModel):
   """The audio transcription configuration in Setup."""
 
-  pass
+  language_codes: Optional[list[str]] = Field(
+      default=None,
+      description="""The language codes of the audio. BCP-47 language code. If not set, the transcription will be in the language detected by the model. If set, the server will use the language code specified in the model config as a hint for the language of the audio
+      """,
+  )
 
 
 class AudioTranscriptionConfigDict(TypedDict, total=False):
   """The audio transcription configuration in Setup."""
 
-  pass
+  language_codes: Optional[list[str]]
+  """The language codes of the audio. BCP-47 language code. If not set, the transcription will be in the language detected by the model. If set, the server will use the language code specified in the model config as a hint for the language of the audio
+      """
 
 
 AudioTranscriptionConfigOrDict = Union[

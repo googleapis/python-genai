@@ -15,7 +15,6 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -30,6 +29,3 @@ class FileSearchCallContent(BaseModel):
     """A unique ID for this specific tool call."""
 
     type: Literal["file_search_call"]
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
