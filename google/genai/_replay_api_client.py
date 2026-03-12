@@ -163,11 +163,32 @@ def _redact_project_location_path(path: str) -> str:
     return path
 
 
-def _redact_request_body(body: dict[str, object]) -> None:
+def _redact_request_body(body: Any) -> None:
   """Redacts fields in the request body in place."""
-  for key, value in body.items():
-    if isinstance(value, str):
-      body[key] = _redact_project_location_path(value)
+  if isinstance(body, dict):
+    for key, value in body.items():
+      if isinstance(value, str):
+        value = _redact_project_location_path(value)
+        value = re.sub(
+            r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+            '{UUID}',
+            value,
+        )
+        body[key] = value
+      elif isinstance(value, (dict, list)):
+        _redact_request_body(value)
+  elif isinstance(body, list):
+    for i, value in enumerate(body):
+      if isinstance(value, str):
+        value = _redact_project_location_path(value)
+        value = re.sub(
+            r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+            '{UUID}',
+            value,
+        )
+        body[i] = value
+      elif isinstance(value, (dict, list)):
+        _redact_request_body(value)
 
 
 def redact_http_request(http_request: HttpRequest) -> None:
@@ -433,7 +454,10 @@ class ReplayApiClient(BaseApiClient):
       _redact_request_body(request_data_copy)
 
     actual_request_body = [request_data_copy]
-    expected_request_body = interaction.request.body_segments
+    expected_request_body = copy.deepcopy(interaction.request.body_segments)
+    for segment in expected_request_body:
+      if not isinstance(segment, bytes):
+        _redact_request_body(segment)
     assert _equals_ignore_key_case(actual_request_body, expected_request_body), (
         'Request body mismatch:\n'
         f'Actual: {actual_request_body}\n'
