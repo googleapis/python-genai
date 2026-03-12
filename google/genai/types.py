@@ -5568,7 +5568,6 @@ class GenerateContentConfig(_common.BaseModel):
         - `application/json`: JSON response in the candidates.
       The model needs to be prompted to output the appropriate response type,
       otherwise the behavior is undefined.
-      This is a preview feature.
       """,
   )
   response_schema: Optional[SchemaUnion] = Field(
@@ -5801,7 +5800,6 @@ class GenerateContentConfigDict(TypedDict, total=False):
         - `application/json`: JSON response in the candidates.
       The model needs to be prompted to output the appropriate response type,
       otherwise the behavior is undefined.
-      This is a preview feature.
       """
 
   response_schema: Optional[SchemaUnionDict]
