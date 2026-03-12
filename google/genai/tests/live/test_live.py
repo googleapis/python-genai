@@ -873,6 +873,19 @@ async def test_explicit_vad_config(vertexai):
   assert result['setup']['explicitVadSignal'] == True
 
 
+@pytest.mark.asyncio
+async def test_history_config():
+  config_dict = {
+      'history_config': {'initial_history_in_client_content': True},
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=False), model='test_model', config=config_dict
+  )
+  assert result['setup']['historyConfig'] == {
+      'initial_history_in_client_content': True,
+  }
+
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_system_instruction_as_content_type(
