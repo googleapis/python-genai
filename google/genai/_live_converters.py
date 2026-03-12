@@ -584,6 +584,9 @@ def _LiveClientSetup_to_mldev(
   if getv(from_object, ['proactivity']) is not None:
     setv(to_object, ['proactivity'], getv(from_object, ['proactivity']))
 
+  if getv(from_object, ['history_config']) is not None:
+    setv(to_object, ['historyConfig'], getv(from_object, ['history_config']))
+
   if getv(from_object, ['explicit_vad_signal']) is not None:
     raise ValueError(
         'explicit_vad_signal parameter is not supported in Gemini API.'
@@ -657,6 +660,9 @@ def _LiveClientSetup_to_vertex(
 
   if getv(from_object, ['proactivity']) is not None:
     setv(to_object, ['proactivity'], getv(from_object, ['proactivity']))
+
+  if getv(from_object, ['history_config']) is not None:
+    raise ValueError('history_config parameter is not supported in Vertex AI.')
 
   if getv(from_object, ['explicit_vad_signal']) is not None:
     setv(
@@ -819,6 +825,13 @@ def _LiveConnectConfig_to_mldev(
         getv(from_object, ['proactivity']),
     )
 
+  if getv(from_object, ['history_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'historyConfig'],
+        getv(from_object, ['history_config']),
+    )
+
   if getv(from_object, ['explicit_vad_signal']) is not None:
     raise ValueError(
         'explicit_vad_signal parameter is not supported in Gemini API.'
@@ -971,6 +984,9 @@ def _LiveConnectConfig_to_vertex(
         ['setup', 'proactivity'],
         getv(from_object, ['proactivity']),
     )
+
+  if getv(from_object, ['history_config']) is not None:
+    raise ValueError('history_config parameter is not supported in Vertex AI.')
 
   if getv(from_object, ['explicit_vad_signal']) is not None:
     setv(
