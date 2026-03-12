@@ -23,6 +23,17 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 
+def _AudioTranscriptionConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_codes']) is not None:
+    raise ValueError('language_codes parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _AuthConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -365,14 +376,18 @@ def _LiveConnectConfig_to_mldev(
     setv(
         parent_object,
         ['setup', 'inputAudioTranscription'],
-        getv(from_object, ['input_audio_transcription']),
+        _AudioTranscriptionConfig_to_mldev(
+            getv(from_object, ['input_audio_transcription']), to_object
+        ),
     )
 
   if getv(from_object, ['output_audio_transcription']) is not None:
     setv(
         parent_object,
         ['setup', 'outputAudioTranscription'],
-        getv(from_object, ['output_audio_transcription']),
+        _AudioTranscriptionConfig_to_mldev(
+            getv(from_object, ['output_audio_transcription']), to_object
+        ),
     )
 
   if getv(from_object, ['realtime_input_config']) is not None:
