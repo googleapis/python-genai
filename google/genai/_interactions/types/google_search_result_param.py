@@ -25,7 +25,7 @@ __all__ = ["GoogleSearchResultParam"]
 class GoogleSearchResultParam(TypedDict, total=False):
     """The result of the Google Search."""
 
-    rendered_content: str
+    search_suggestions: str
     """Web content snippet that can be embedded in a web page or an app webview."""
 
     title: str

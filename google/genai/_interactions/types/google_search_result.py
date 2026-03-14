@@ -25,7 +25,7 @@ __all__ = ["GoogleSearchResult"]
 class GoogleSearchResult(BaseModel):
     """The result of the Google Search."""
 
-    rendered_content: Optional[str] = None
+    search_suggestions: Optional[str] = None
     """Web content snippet that can be embedded in a web page or an app webview."""
 
     title: Optional[str] = None

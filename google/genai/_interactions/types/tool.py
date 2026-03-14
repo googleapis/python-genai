@@ -25,7 +25,25 @@ from .._models import BaseModel
 from .function import Function
 from .allowed_tools import AllowedTools
 
-__all__ = ["Tool", "CodeExecution", "URLContext", "ComputerUse", "MCPServer", "GoogleSearch", "FileSearch"]
+__all__ = [
+    "Tool",
+    "GoogleSearch",
+    "CodeExecution",
+    "URLContext",
+    "ComputerUse",
+    "MCPServer",
+    "FileSearch",
+    "GoogleMaps",
+]
+
+
+class GoogleSearch(BaseModel):
+    """A tool that can be used by the model to search Google."""
+
+    type: Literal["google_search"]
+
+    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
+    """The types of search grounding to enable."""
 
 
 class CodeExecution(BaseModel):
@@ -73,15 +91,6 @@ class MCPServer(BaseModel):
     """
 
 
-class GoogleSearch(BaseModel):
-    """A tool that can be used by the model to search Google."""
-
-    type: Literal["google_search"]
-
-    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
-    """The types of search grounding to enable."""
-
-
 class FileSearch(BaseModel):
     """A tool that can be used by the model to search files."""
 
@@ -97,7 +106,25 @@ class FileSearch(BaseModel):
     """The number of semantic retrieval chunks to retrieve."""
 
 
+class GoogleMaps(BaseModel):
+    """A tool that can be used by the model to call Google Maps."""
+
+    enable_widget: Optional[bool] = None
+    """
+    Whether to return a widget context token in the tool call result of the
+    response.
+    """
+
+    latitude: Optional[float] = None
+    """The latitude of the user's location."""
+
+    longitude: Optional[float] = None
+    """The longitude of the user's location."""
+
+    type: Optional[Literal["google_maps"]] = None
+
+
 Tool: TypeAlias = Annotated[
-    Union[Function, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch],
+    Union[Function, GoogleSearch, CodeExecution, URLContext, ComputerUse, MCPServer, FileSearch, GoogleMaps],
     PropertyInfo(discriminator="type"),
 ]

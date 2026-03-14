@@ -36,9 +36,11 @@ from .dynamic_agent_config import DynamicAgentConfig
 from .function_call_content import FunctionCallContent
 from .function_result_content import FunctionResultContent
 from .file_search_call_content import FileSearchCallContent
+from .google_maps_call_content import GoogleMapsCallContent
 from .url_context_call_content import URLContextCallContent
 from .deep_research_agent_config import DeepResearchAgentConfig
 from .file_search_result_content import FileSearchResultContent
+from .google_maps_result_content import GoogleMapsResultContent
 from .google_search_call_content import GoogleSearchCallContent
 from .url_context_result_content import URLContextResultContent
 from .code_execution_call_content import CodeExecutionCallContent
@@ -75,6 +77,8 @@ Input: TypeAlias = Union[
     MCPServerToolResultContent,
     FileSearchCallContent,
     FileSearchResultContent,
+    GoogleMapsCallContent,
+    GoogleMapsResultContent,
 ]
 
 

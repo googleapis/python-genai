@@ -5568,7 +5568,6 @@ class GenerateContentConfig(_common.BaseModel):
         - `application/json`: JSON response in the candidates.
       The model needs to be prompted to output the appropriate response type,
       otherwise the behavior is undefined.
-      This is a preview feature.
       """,
   )
   response_schema: Optional[SchemaUnion] = Field(
@@ -5801,7 +5800,6 @@ class GenerateContentConfigDict(TypedDict, total=False):
         - `application/json`: JSON response in the candidates.
       The model needs to be prompted to output the appropriate response type,
       otherwise the behavior is undefined.
-      This is a preview feature.
       """
 
   response_schema: Optional[SchemaUnionDict]
@@ -18039,6 +18037,33 @@ class ProactivityConfigDict(TypedDict, total=False):
 ProactivityConfigOrDict = Union[ProactivityConfig, ProactivityConfigDict]
 
 
+class HistoryConfig(_common.BaseModel):
+  """Configuration for history exchange between client and server."""
+
+  initial_history_in_client_content: Optional[bool] = Field(
+      default=None,
+      description="""If true, after sending `setup_complete`, the server will wait
+      and at first process `client_content` messages until `turn_complete` is
+      `true`. This initial history will not trigger a model call and
+      may end with model content. After `turn_complete` is `true`, the client
+      can start the realtime conversation via `realtime_input`.""",
+  )
+
+
+class HistoryConfigDict(TypedDict, total=False):
+  """Configuration for history exchange between client and server."""
+
+  initial_history_in_client_content: Optional[bool]
+  """If true, after sending `setup_complete`, the server will wait
+      and at first process `client_content` messages until `turn_complete` is
+      `true`. This initial history will not trigger a model call and
+      may end with model content. After `turn_complete` is `true`, the client
+      can start the realtime conversation via `realtime_input`."""
+
+
+HistoryConfigOrDict = Union[HistoryConfig, HistoryConfigDict]
+
+
 class AutomaticActivityDetection(_common.BaseModel):
   """Configures automatic detection of activity."""
 
@@ -18186,6 +18211,10 @@ class LiveClientSetup(_common.BaseModel):
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Configures the exchange of history between the client and the server.""",
+  )
   explicit_vad_signal: Optional[bool] = Field(
       default=None,
       description="""Configures the explicit VAD signal. If enabled, the client will send
@@ -18242,6 +18271,9 @@ class LiveClientSetupDict(TypedDict, total=False):
   proactivity: Optional[ProactivityConfigDict]
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
+
+  history_config: Optional[HistoryConfigDict]
+  """Configures the exchange of history between the client and the server."""
 
   explicit_vad_signal: Optional[bool]
   """Configures the explicit VAD signal. If enabled, the client will send
@@ -18732,6 +18764,10 @@ If included the server will send SessionResumptionUpdate messages.""",
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Configures the exchange of history between the client and the server.""",
+  )
   explicit_vad_signal: Optional[bool] = Field(
       default=None,
       description="""Configures the explicit VAD signal. If enabled, the client will send
@@ -18839,6 +18875,9 @@ If included the server will send SessionResumptionUpdate messages."""
   proactivity: Optional[ProactivityConfigDict]
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
+
+  history_config: Optional[HistoryConfigDict]
+  """Configures the exchange of history between the client and the server."""
 
   explicit_vad_signal: Optional[bool]
   """Configures the explicit VAD signal. If enabled, the client will send
