@@ -23,8 +23,10 @@ from .._models import BaseModel
 from .annotation import Annotation
 from .text_content import TextContent
 from .image_content import ImageContent
+from .google_maps_result import GoogleMapsResult
 from .url_context_result import URLContextResult
 from .google_search_result import GoogleSearchResult
+from .google_maps_call_arguments import GoogleMapsCallArguments
 from .url_context_call_arguments import URLContextCallArguments
 from .google_search_call_arguments import GoogleSearchCallArguments
 from .code_execution_call_arguments import CodeExecutionCallArguments
@@ -59,6 +61,8 @@ __all__ = [
     "DeltaFileSearchCall",
     "DeltaFileSearchResult",
     "DeltaFileSearchResultResult",
+    "DeltaGoogleMapsCall",
+    "DeltaGoogleMapsResult",
 ]
 
 
@@ -328,6 +332,29 @@ class DeltaFileSearchResult(BaseModel):
     """A signature hash for backend validation."""
 
 
+class DeltaGoogleMapsCall(BaseModel):
+    id: str
+    """A unique ID for this specific tool call."""
+
+    type: Literal["google_maps_call"]
+
+    arguments: Optional[GoogleMapsCallArguments] = None
+    """The arguments to pass to the Google Maps tool."""
+
+
+class DeltaGoogleMapsResult(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
+    result: List[GoogleMapsResult]
+    """The results of the Google Maps."""
+
+    type: Literal["google_maps_result"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
 Delta: TypeAlias = Annotated[
     Union[
         DeltaText,
@@ -349,6 +376,8 @@ Delta: TypeAlias = Annotated[
         DeltaMCPServerToolResult,
         DeltaFileSearchCall,
         DeltaFileSearchResult,
+        DeltaGoogleMapsCall,
+        DeltaGoogleMapsResult,
     ],
     PropertyInfo(discriminator="type"),
 ]
