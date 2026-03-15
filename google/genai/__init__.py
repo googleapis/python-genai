@@ -15,6 +15,7 @@
 
 """Google Gen AI SDK"""
 
+from . import interactions
 from . import types
 from . import keras
 from . import version

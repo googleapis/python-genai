@@ -13,9 +13,8 @@
 # limitations under the License.
 #
 
-import base64
-import enum
 import os
+import pathlib
 
 from pydantic import BaseModel, ValidationError, Field, ConfigDict
 from typing import Literal, List, Optional, Union, Set
@@ -30,16 +29,16 @@ from ... import types
 from .. import pytest_helper
 from enum import Enum
 
-IMAGE_PNG_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.png')
-)
-
 GEMINI_FLASH_LATEST = 'gemini-2.5-flash'
 GEMINI_FLASH_2_0 = 'gemini-2.0-flash-001'
 GEMINI_FLASH_IMAGE_LATEST = 'gemini-2.5-flash-image'
 
-with open(IMAGE_PNG_FILE_PATH, 'rb') as image_file:
-  image_bytes = image_file.read()
+IMAGE_PNG_FILE_PATH = pathlib.Path(__file__).parent / '../data/google.png'
+image_bytes = IMAGE_PNG_FILE_PATH.read_bytes()
+
+AUDIO_WAV_FILE_PATH = pathlib.Path(__file__).parent / '../data/voice_sample.wav'
+audio_bytes = AUDIO_WAV_FILE_PATH.read_bytes()
+
 
 safety_settings_with_method = [
     {
@@ -375,7 +374,6 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_multi_speaker_voice_config',
-        exception_if_vertex='not supported',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
             contents=t.t_contents(
@@ -410,7 +408,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_speech_error_with_speech_config_and_multi_speech_config',
-        exception_if_vertex='not supported',
+        exception_if_vertex='mutually exclusive',
         exception_if_mldev='mutually exclusive',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
@@ -532,6 +530,37 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_vertex='invalid model parameter',
         exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enhanced_civic_answers',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents(
+                'Summarize the evidence that confirms widespread voter fraud was'
+                ' the reason the last national election results were'
+                ' inaccurate.'
+            ),
+            config={
+                'enable_enhanced_civic_answers': True,
+            },
+        ),
+        exception_if_vertex='not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_model_armor_config',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'model_armor_config': {
+                    'prompt_template_name': '',
+                    'response_template_name': '',
+                    # Intentionally left blank just to test that the SDK doesn't
+                    # throw an exception.
+                },
+            },
+        ),
+        exception_if_mldev='not supported',
     ),
 ]
 
@@ -1962,6 +1991,27 @@ def test_schema_with_any_of(client):
   assert 'fruit' in response.parsed
   assert isinstance(response.parsed['fruit'], list)
   assert 'type' in response.parsed['fruit'][0]
+
+
+def test_replicated_voice_config(client):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+      client.models.generate_content(
+          model='gemini-2.5-flash-preview-tts-voice-replication-rev22-2025-10-28',
+          contents=t.t_contents(
+              'Produce a speech response saying "Cheese"'
+          ),
+          config=types.GenerateContentConfig(
+              response_modalities=['audio'],
+              speech_config=types.SpeechConfig(
+                  voice_config=types.VoiceConfig(
+                      replicated_voice_config=types.ReplicatedVoiceConfig(
+                          voice_sample_audio=audio_bytes,
+                          mime_type='audio/wav',
+                      )
+                  )
+              ),
+          ),
+      )
 
 
 def test_json_schema_with_streaming(client):

@@ -53,7 +53,7 @@ def test_validate_response_part_with_empty_text():
       ]
   )
 
-  assert not _validate_response(response)
+  assert _validate_response(response)
 
 
 def test_validate_response_part_with_text():

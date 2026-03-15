@@ -54,9 +54,45 @@ def _VideoGenerationReferenceType_to_mldev_enum_validate(
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
 
 
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError('api_key_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError('auth_type parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is not supported in Gemini'
+        ' API.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError('oauth_config parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError('oidc_config parameter is not supported in Gemini API.')
+
+  return to_object
+
+
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['data']) is not None:
@@ -74,6 +110,7 @@ def _Blob_to_mldev(
 def _Candidate_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['content']) is not None:
@@ -84,7 +121,7 @@ def _Candidate_from_mldev(
         to_object,
         ['citation_metadata'],
         _CitationMetadata_from_mldev(
-            getv(from_object, ['citationMetadata']), to_object
+            getv(from_object, ['citationMetadata']), to_object, root_object
         ),
     )
 
@@ -94,15 +131,15 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
   if getv(from_object, ['groundingMetadata']) is not None:
     setv(
         to_object,
         ['grounding_metadata'],
         getv(from_object, ['groundingMetadata']),
     )
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
   if getv(from_object, ['index']) is not None:
     setv(to_object, ['index'], getv(from_object, ['index']))
@@ -130,6 +167,7 @@ def _Candidate_from_mldev(
 def _CitationMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['citationSources']) is not None:
@@ -146,6 +184,7 @@ def _ComputeTokensParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -168,6 +207,7 @@ def _ComputeTokensParameters_to_vertex(
 def _ComputeTokensResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -188,6 +228,7 @@ def _ComputeTokensResponse_from_vertex(
 def _ContentEmbeddingStatistics_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['truncated']) is not None:
@@ -202,6 +243,7 @@ def _ContentEmbeddingStatistics_from_vertex(
 def _ContentEmbedding_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['values']) is not None:
@@ -212,7 +254,7 @@ def _ContentEmbedding_from_vertex(
         to_object,
         ['statistics'],
         _ContentEmbeddingStatistics_from_vertex(
-            getv(from_object, ['statistics']), to_object
+            getv(from_object, ['statistics']), to_object, root_object
         ),
     )
 
@@ -222,6 +264,7 @@ def _ContentEmbedding_from_vertex(
 def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['parts']) is not None:
@@ -229,7 +272,7 @@ def _Content_to_mldev(
         to_object,
         ['parts'],
         [
-            _Part_to_mldev(item, to_object)
+            _Part_to_mldev(item, to_object, root_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -243,6 +286,7 @@ def _Content_to_mldev(
 def _ControlReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['control_type']) is not None:
@@ -261,6 +305,7 @@ def _ControlReferenceConfig_to_vertex(
 def _CountTokensConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -283,6 +328,7 @@ def _CountTokensConfig_to_mldev(
 def _CountTokensConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -298,7 +344,7 @@ def _CountTokensConfig_to_vertex(
         parent_object,
         ['tools'],
         [
-            _Tool_to_vertex(item, to_object)
+            _Tool_to_vertex(item, to_object, root_object)
             for item in getv(from_object, ['tools'])
         ],
     )
@@ -308,7 +354,7 @@ def _CountTokensConfig_to_vertex(
         parent_object,
         ['generationConfig'],
         _GenerationConfig_to_vertex(
-            getv(from_object, ['generation_config']), to_object
+            getv(from_object, ['generation_config']), to_object, root_object
         ),
     )
 
@@ -319,6 +365,7 @@ def _CountTokensParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -333,13 +380,15 @@ def _CountTokensParameters_to_mldev(
         to_object,
         ['contents'],
         [
-            _Content_to_mldev(item, to_object)
+            _Content_to_mldev(item, to_object, root_object)
             for item in t.t_contents(getv(from_object, ['contents']))
         ],
     )
 
   if getv(from_object, ['config']) is not None:
-    _CountTokensConfig_to_mldev(getv(from_object, ['config']), to_object)
+    _CountTokensConfig_to_mldev(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -348,6 +397,7 @@ def _CountTokensParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -365,7 +415,9 @@ def _CountTokensParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    _CountTokensConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _CountTokensConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -373,6 +425,7 @@ def _CountTokensParameters_to_vertex(
 def _CountTokensResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -396,6 +449,7 @@ def _CountTokensResponse_from_mldev(
 def _CountTokensResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -413,6 +467,7 @@ def _DeleteModelParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -429,6 +484,7 @@ def _DeleteModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -444,6 +500,7 @@ def _DeleteModelParameters_to_vertex(
 def _DeleteModelResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -457,6 +514,7 @@ def _DeleteModelResponse_from_mldev(
 def _DeleteModelResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -470,6 +528,7 @@ def _DeleteModelResponse_from_vertex(
 def _EditImageConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -591,6 +650,7 @@ def _EditImageParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -608,13 +668,15 @@ def _EditImageParameters_to_vertex(
         to_object,
         ['instances[0]', 'referenceImages'],
         [
-            _ReferenceImageAPI_to_vertex(item, to_object)
+            _ReferenceImageAPI_to_vertex(item, to_object, root_object)
             for item in getv(from_object, ['reference_images'])
         ],
     )
 
   if getv(from_object, ['config']) is not None:
-    _EditImageConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _EditImageConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -622,6 +684,7 @@ def _EditImageParameters_to_vertex(
 def _EditImageResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -634,7 +697,7 @@ def _EditImageResponse_from_vertex(
         to_object,
         ['generated_images'],
         [
-            _GeneratedImage_from_vertex(item, to_object)
+            _GeneratedImage_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['predictions'])
         ],
     )
@@ -645,6 +708,7 @@ def _EditImageResponse_from_vertex(
 def _EmbedContentConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -677,47 +741,89 @@ def _EmbedContentConfig_to_mldev(
 def _EmbedContentConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
-  if getv(from_object, ['task_type']) is not None:
-    setv(
-        parent_object,
-        ['instances[]', 'task_type'],
-        getv(from_object, ['task_type']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['task_type']) is not None:
+      setv(
+          parent_object,
+          ['instances[]', 'task_type'],
+          getv(from_object, ['task_type']),
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['task_type']) is not None:
+      setv(parent_object, ['taskType'], getv(from_object, ['task_type']))
 
-  if getv(from_object, ['title']) is not None:
-    setv(parent_object, ['instances[]', 'title'], getv(from_object, ['title']))
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['title']) is not None:
+      setv(
+          parent_object, ['instances[]', 'title'], getv(from_object, ['title'])
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['title']) is not None:
+      setv(parent_object, ['title'], getv(from_object, ['title']))
 
-  if getv(from_object, ['output_dimensionality']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'outputDimensionality'],
-        getv(from_object, ['output_dimensionality']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['output_dimensionality']) is not None:
+      setv(
+          parent_object,
+          ['parameters', 'outputDimensionality'],
+          getv(from_object, ['output_dimensionality']),
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['output_dimensionality']) is not None:
+      setv(
+          parent_object,
+          ['outputDimensionality'],
+          getv(from_object, ['output_dimensionality']),
+      )
 
-  if getv(from_object, ['mime_type']) is not None:
-    setv(
-        parent_object,
-        ['instances[]', 'mimeType'],
-        getv(from_object, ['mime_type']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['mime_type']) is not None:
+      setv(
+          parent_object,
+          ['instances[]', 'mimeType'],
+          getv(from_object, ['mime_type']),
+      )
 
-  if getv(from_object, ['auto_truncate']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'autoTruncate'],
-        getv(from_object, ['auto_truncate']),
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['auto_truncate']) is not None:
+      setv(
+          parent_object,
+          ['parameters', 'autoTruncate'],
+          getv(from_object, ['auto_truncate']),
+      )
+  elif discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['auto_truncate']) is not None:
+      setv(
+          parent_object, ['autoTruncate'], getv(from_object, ['auto_truncate'])
+      )
 
   return to_object
 
 
-def _EmbedContentParameters_to_mldev(
+def _EmbedContentParametersPrivate_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -739,8 +845,15 @@ def _EmbedContentParameters_to_mldev(
         ],
     )
 
+  if getv(from_object, ['content']) is not None:
+    _Content_to_mldev(
+        t.t_content(getv(from_object, ['content'])), to_object, root_object
+    )
+
   if getv(from_object, ['config']) is not None:
-    _EmbedContentConfig_to_mldev(getv(from_object, ['config']), to_object)
+    _EmbedContentConfig_to_mldev(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   setv(
       to_object,
@@ -750,10 +863,11 @@ def _EmbedContentParameters_to_mldev(
   return to_object
 
 
-def _EmbedContentParameters_to_vertex(
+def _EmbedContentParametersPrivate_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -763,20 +877,33 @@ def _EmbedContentParameters_to_vertex(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['contents']) is not None:
-    setv(
-        to_object,
-        ['instances[]', 'content'],
-        [
-            item
-            for item in t.t_contents_for_embed(
-                api_client, getv(from_object, ['contents'])
-            )
-        ],
-    )
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'PREDICT':
+    if getv(from_object, ['contents']) is not None:
+      setv(
+          to_object,
+          ['instances[]', 'content'],
+          [
+              item
+              for item in t.t_contents_for_embed(
+                  api_client, getv(from_object, ['contents'])
+              )
+          ],
+      )
+
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['content']) is not None:
+      setv(to_object, ['content'], t.t_content(getv(from_object, ['content'])))
 
   if getv(from_object, ['config']) is not None:
-    _EmbedContentConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _EmbedContentConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -784,6 +911,7 @@ def _EmbedContentParameters_to_vertex(
 def _EmbedContentResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -807,6 +935,7 @@ def _EmbedContentResponse_from_mldev(
 def _EmbedContentResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -819,7 +948,7 @@ def _EmbedContentResponse_from_vertex(
         to_object,
         ['embeddings'],
         [
-            _ContentEmbedding_from_vertex(item, to_object)
+            _ContentEmbedding_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['predictions[]', 'embeddings'])
         ],
     )
@@ -827,12 +956,26 @@ def _EmbedContentResponse_from_vertex(
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
+  if getv(root_object, ['embedding_api_type']) == 'EMBED_CONTENT':
+    embedding = getv(from_object, ['embedding'])
+    usage_metadata = getv(from_object, ['usageMetadata'])
+    truncated = getv(from_object, ['truncated'])
+    if embedding:
+      stats = {}
+      if usage_metadata and usage_metadata.get('promptTokenCount'):
+        stats['token_count'] = usage_metadata['promptTokenCount']
+      if truncated:
+        stats['truncated'] = truncated
+      embedding['statistics'] = stats
+      setv(to_object, ['embeddings'], [embedding])
+
   return to_object
 
 
 def _Endpoint_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['endpoint']) is not None:
@@ -849,6 +992,7 @@ def _Endpoint_from_vertex(
 def _FileData_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
@@ -866,6 +1010,7 @@ def _FileData_to_mldev(
 def _FunctionCall_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['id']) is not None:
@@ -889,17 +1034,18 @@ def _FunctionCall_to_mldev(
 def _FunctionCallingConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
         ['allowedFunctionNames'],
         getv(from_object, ['allowed_function_names']),
     )
+
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
 
   if getv(from_object, ['stream_function_call_arguments']) is not None:
     raise ValueError(
@@ -913,11 +1059,9 @@ def _FunctionCallingConfig_to_mldev(
 def _FunctionDeclaration_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
-
   if getv(from_object, ['description']) is not None:
     setv(to_object, ['description'], getv(from_object, ['description']))
 
@@ -944,6 +1088,9 @@ def _FunctionDeclaration_to_vertex(
         getv(from_object, ['response_json_schema']),
     )
 
+  if getv(from_object, ['behavior']) is not None:
+    raise ValueError('behavior parameter is not supported in Vertex AI.')
+
   return to_object
 
 
@@ -951,6 +1098,7 @@ def _GenerateContentConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -959,7 +1107,9 @@ def _GenerateContentConfig_to_mldev(
         parent_object,
         ['systemInstruction'],
         _Content_to_mldev(
-            t.t_content(getv(from_object, ['system_instruction'])), to_object
+            t.t_content(getv(from_object, ['system_instruction'])),
+            to_object,
+            root_object,
         ),
     )
 
@@ -1042,7 +1192,7 @@ def _GenerateContentConfig_to_mldev(
         parent_object,
         ['safetySettings'],
         [
-            _SafetySetting_to_mldev(item, to_object)
+            _SafetySetting_to_mldev(item, to_object, root_object)
             for item in getv(from_object, ['safety_settings'])
         ],
     )
@@ -1052,7 +1202,7 @@ def _GenerateContentConfig_to_mldev(
         parent_object,
         ['tools'],
         [
-            _Tool_to_mldev(t.t_tool(api_client, item), to_object)
+            _Tool_to_mldev(t.t_tool(api_client, item), to_object, root_object)
             for item in t.t_tools(api_client, getv(from_object, ['tools']))
         ],
     )
@@ -1061,7 +1211,9 @@ def _GenerateContentConfig_to_mldev(
     setv(
         parent_object,
         ['toolConfig'],
-        _ToolConfig_to_mldev(getv(from_object, ['tool_config']), to_object),
+        _ToolConfig_to_mldev(
+            getv(from_object, ['tool_config']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['labels']) is not None:
@@ -1107,7 +1259,21 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['imageConfig'],
-        _ImageConfig_to_mldev(getv(from_object, ['image_config']), to_object),
+        _ImageConfig_to_mldev(
+            getv(from_object, ['image_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    setv(
+        to_object,
+        ['enableEnhancedCivicAnswers'],
+        getv(from_object, ['enable_enhanced_civic_answers']),
+    )
+
+  if getv(from_object, ['model_armor_config']) is not None:
+    raise ValueError(
+        'model_armor_config parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -1117,6 +1283,7 @@ def _GenerateContentConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -1215,7 +1382,7 @@ def _GenerateContentConfig_to_vertex(
         parent_object,
         ['tools'],
         [
-            _Tool_to_vertex(t.t_tool(api_client, item), to_object)
+            _Tool_to_vertex(t.t_tool(api_client, item), to_object, root_object)
             for item in t.t_tools(api_client, getv(from_object, ['tools']))
         ],
     )
@@ -1251,9 +1418,7 @@ def _GenerateContentConfig_to_vertex(
     setv(
         to_object,
         ['speechConfig'],
-        _SpeechConfig_to_vertex(
-            t.t_speech_config(getv(from_object, ['speech_config'])), to_object
-        ),
+        t.t_speech_config(getv(from_object, ['speech_config'])),
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
@@ -1266,7 +1431,21 @@ def _GenerateContentConfig_to_vertex(
     setv(
         to_object,
         ['imageConfig'],
-        _ImageConfig_to_vertex(getv(from_object, ['image_config']), to_object),
+        _ImageConfig_to_vertex(
+            getv(from_object, ['image_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
+    raise ValueError(
+        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['model_armor_config']) is not None:
+    setv(
+        parent_object,
+        ['modelArmorConfig'],
+        getv(from_object, ['model_armor_config']),
     )
 
   return to_object
@@ -1276,6 +1455,7 @@ def _GenerateContentParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -1290,7 +1470,7 @@ def _GenerateContentParameters_to_mldev(
         to_object,
         ['contents'],
         [
-            _Content_to_mldev(item, to_object)
+            _Content_to_mldev(item, to_object, root_object)
             for item in t.t_contents(getv(from_object, ['contents']))
         ],
     )
@@ -1300,7 +1480,7 @@ def _GenerateContentParameters_to_mldev(
         to_object,
         ['generationConfig'],
         _GenerateContentConfig_to_mldev(
-            api_client, getv(from_object, ['config']), to_object
+            api_client, getv(from_object, ['config']), to_object, root_object
         ),
     )
 
@@ -1311,6 +1491,7 @@ def _GenerateContentParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -1332,7 +1513,7 @@ def _GenerateContentParameters_to_vertex(
         to_object,
         ['generationConfig'],
         _GenerateContentConfig_to_vertex(
-            api_client, getv(from_object, ['config']), to_object
+            api_client, getv(from_object, ['config']), to_object, root_object
         ),
     )
 
@@ -1342,6 +1523,7 @@ def _GenerateContentParameters_to_vertex(
 def _GenerateContentResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -1354,7 +1536,7 @@ def _GenerateContentResponse_from_mldev(
         to_object,
         ['candidates'],
         [
-            _Candidate_from_mldev(item, to_object)
+            _Candidate_from_mldev(item, to_object, root_object)
             for item in getv(from_object, ['candidates'])
         ],
     )
@@ -1377,6 +1559,7 @@ def _GenerateContentResponse_from_mldev(
 def _GenerateContentResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -1412,6 +1595,7 @@ def _GenerateContentResponse_from_vertex(
 def _GenerateImagesConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -1524,6 +1708,7 @@ def _GenerateImagesConfig_to_mldev(
 def _GenerateImagesConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -1645,6 +1830,7 @@ def _GenerateImagesParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -1658,7 +1844,9 @@ def _GenerateImagesParameters_to_mldev(
     setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
 
   if getv(from_object, ['config']) is not None:
-    _GenerateImagesConfig_to_mldev(getv(from_object, ['config']), to_object)
+    _GenerateImagesConfig_to_mldev(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -1667,6 +1855,7 @@ def _GenerateImagesParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -1680,7 +1869,9 @@ def _GenerateImagesParameters_to_vertex(
     setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
 
   if getv(from_object, ['config']) is not None:
-    _GenerateImagesConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _GenerateImagesConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -1688,6 +1879,7 @@ def _GenerateImagesParameters_to_vertex(
 def _GenerateImagesResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -1700,7 +1892,7 @@ def _GenerateImagesResponse_from_mldev(
         to_object,
         ['generated_images'],
         [
-            _GeneratedImage_from_mldev(item, to_object)
+            _GeneratedImage_from_mldev(item, to_object, root_object)
             for item in getv(from_object, ['predictions'])
         ],
     )
@@ -1710,7 +1902,9 @@ def _GenerateImagesResponse_from_mldev(
         to_object,
         ['positive_prompt_safety_attributes'],
         _SafetyAttributes_from_mldev(
-            getv(from_object, ['positivePromptSafetyAttributes']), to_object
+            getv(from_object, ['positivePromptSafetyAttributes']),
+            to_object,
+            root_object,
         ),
     )
 
@@ -1720,6 +1914,7 @@ def _GenerateImagesResponse_from_mldev(
 def _GenerateImagesResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -1732,7 +1927,7 @@ def _GenerateImagesResponse_from_vertex(
         to_object,
         ['generated_images'],
         [
-            _GeneratedImage_from_vertex(item, to_object)
+            _GeneratedImage_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['predictions'])
         ],
     )
@@ -1742,7 +1937,9 @@ def _GenerateImagesResponse_from_vertex(
         to_object,
         ['positive_prompt_safety_attributes'],
         _SafetyAttributes_from_vertex(
-            getv(from_object, ['positivePromptSafetyAttributes']), to_object
+            getv(from_object, ['positivePromptSafetyAttributes']),
+            to_object,
+            root_object,
         ),
     )
 
@@ -1752,6 +1949,7 @@ def _GenerateImagesResponse_from_vertex(
 def _GenerateVideosConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -1823,7 +2021,9 @@ def _GenerateVideosConfig_to_mldev(
     setv(
         parent_object,
         ['instances[0]', 'lastFrame'],
-        _Image_to_mldev(getv(from_object, ['last_frame']), to_object),
+        _Image_to_mldev(
+            getv(from_object, ['last_frame']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['reference_images']) is not None:
@@ -1831,7 +2031,9 @@ def _GenerateVideosConfig_to_mldev(
         parent_object,
         ['instances[0]', 'referenceImages'],
         [
-            _VideoGenerationReferenceImage_to_mldev(item, to_object)
+            _VideoGenerationReferenceImage_to_mldev(
+                item, to_object, root_object
+            )
             for item in getv(from_object, ['reference_images'])
         ],
     )
@@ -1850,6 +2052,7 @@ def _GenerateVideosConfig_to_mldev(
 def _GenerateVideosConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -1933,7 +2136,9 @@ def _GenerateVideosConfig_to_vertex(
     setv(
         parent_object,
         ['instances[0]', 'lastFrame'],
-        _Image_to_vertex(getv(from_object, ['last_frame']), to_object),
+        _Image_to_vertex(
+            getv(from_object, ['last_frame']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['reference_images']) is not None:
@@ -1941,7 +2146,9 @@ def _GenerateVideosConfig_to_vertex(
         parent_object,
         ['instances[0]', 'referenceImages'],
         [
-            _VideoGenerationReferenceImage_to_vertex(item, to_object)
+            _VideoGenerationReferenceImage_to_vertex(
+                item, to_object, root_object
+            )
             for item in getv(from_object, ['reference_images'])
         ],
     )
@@ -1950,7 +2157,9 @@ def _GenerateVideosConfig_to_vertex(
     setv(
         parent_object,
         ['instances[0]', 'mask'],
-        _VideoGenerationMask_to_vertex(getv(from_object, ['mask']), to_object),
+        _VideoGenerationMask_to_vertex(
+            getv(from_object, ['mask']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['compression_quality']) is not None:
@@ -1966,6 +2175,7 @@ def _GenerateVideosConfig_to_vertex(
 def _GenerateVideosOperation_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -1985,7 +2195,9 @@ def _GenerateVideosOperation_from_mldev(
         to_object,
         ['response'],
         _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']), to_object
+            getv(from_object, ['response', 'generateVideoResponse']),
+            to_object,
+            root_object,
         ),
     )
 
@@ -1994,7 +2206,9 @@ def _GenerateVideosOperation_from_mldev(
         to_object,
         ['result'],
         _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']), to_object
+            getv(from_object, ['response', 'generateVideoResponse']),
+            to_object,
+            root_object,
         ),
     )
 
@@ -2004,6 +2218,7 @@ def _GenerateVideosOperation_from_mldev(
 def _GenerateVideosOperation_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -2023,7 +2238,7 @@ def _GenerateVideosOperation_from_vertex(
         to_object,
         ['response'],
         _GenerateVideosResponse_from_vertex(
-            getv(from_object, ['response']), to_object
+            getv(from_object, ['response']), to_object, root_object
         ),
     )
 
@@ -2032,7 +2247,7 @@ def _GenerateVideosOperation_from_vertex(
         to_object,
         ['result'],
         _GenerateVideosResponse_from_vertex(
-            getv(from_object, ['response']), to_object
+            getv(from_object, ['response']), to_object, root_object
         ),
     )
 
@@ -2043,6 +2258,7 @@ def _GenerateVideosParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -2059,21 +2275,25 @@ def _GenerateVideosParameters_to_mldev(
     setv(
         to_object,
         ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object),
+        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['video']) is not None:
     setv(
         to_object,
         ['instances[0]', 'video'],
-        _Video_to_mldev(getv(from_object, ['video']), to_object),
+        _Video_to_mldev(getv(from_object, ['video']), to_object, root_object),
     )
 
   if getv(from_object, ['source']) is not None:
-    _GenerateVideosSource_to_mldev(getv(from_object, ['source']), to_object)
+    _GenerateVideosSource_to_mldev(
+        getv(from_object, ['source']), to_object, root_object
+    )
 
   if getv(from_object, ['config']) is not None:
-    _GenerateVideosConfig_to_mldev(getv(from_object, ['config']), to_object)
+    _GenerateVideosConfig_to_mldev(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -2082,6 +2302,7 @@ def _GenerateVideosParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -2098,21 +2319,25 @@ def _GenerateVideosParameters_to_vertex(
     setv(
         to_object,
         ['instances[0]', 'image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
+        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['video']) is not None:
     setv(
         to_object,
         ['instances[0]', 'video'],
-        _Video_to_vertex(getv(from_object, ['video']), to_object),
+        _Video_to_vertex(getv(from_object, ['video']), to_object, root_object),
     )
 
   if getv(from_object, ['source']) is not None:
-    _GenerateVideosSource_to_vertex(getv(from_object, ['source']), to_object)
+    _GenerateVideosSource_to_vertex(
+        getv(from_object, ['source']), to_object, root_object
+    )
 
   if getv(from_object, ['config']) is not None:
-    _GenerateVideosConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _GenerateVideosConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -2120,6 +2345,7 @@ def _GenerateVideosParameters_to_vertex(
 def _GenerateVideosResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['generatedSamples']) is not None:
@@ -2127,7 +2353,7 @@ def _GenerateVideosResponse_from_mldev(
         to_object,
         ['generated_videos'],
         [
-            _GeneratedVideo_from_mldev(item, to_object)
+            _GeneratedVideo_from_mldev(item, to_object, root_object)
             for item in getv(from_object, ['generatedSamples'])
         ],
     )
@@ -2152,6 +2378,7 @@ def _GenerateVideosResponse_from_mldev(
 def _GenerateVideosResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['videos']) is not None:
@@ -2159,7 +2386,7 @@ def _GenerateVideosResponse_from_vertex(
         to_object,
         ['generated_videos'],
         [
-            _GeneratedVideo_from_vertex(item, to_object)
+            _GeneratedVideo_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['videos'])
         ],
     )
@@ -2184,6 +2411,7 @@ def _GenerateVideosResponse_from_vertex(
 def _GenerateVideosSource_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['prompt']) is not None:
@@ -2195,14 +2423,14 @@ def _GenerateVideosSource_to_mldev(
     setv(
         parent_object,
         ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object),
+        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['video']) is not None:
     setv(
         parent_object,
         ['instances[0]', 'video'],
-        _Video_to_mldev(getv(from_object, ['video']), to_object),
+        _Video_to_mldev(getv(from_object, ['video']), to_object, root_object),
     )
 
   return to_object
@@ -2211,6 +2439,7 @@ def _GenerateVideosSource_to_mldev(
 def _GenerateVideosSource_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['prompt']) is not None:
@@ -2222,14 +2451,14 @@ def _GenerateVideosSource_to_vertex(
     setv(
         parent_object,
         ['instances[0]', 'image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
+        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['video']) is not None:
     setv(
         parent_object,
         ['instances[0]', 'video'],
-        _Video_to_vertex(getv(from_object, ['video']), to_object),
+        _Video_to_vertex(getv(from_object, ['video']), to_object, root_object),
     )
 
   return to_object
@@ -2238,13 +2467,16 @@ def _GenerateVideosSource_to_vertex(
 def _GeneratedImageMask_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
         to_object,
         ['mask'],
-        _Image_from_vertex(getv(from_object, ['_self']), to_object),
+        _Image_from_vertex(
+            getv(from_object, ['_self']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['labels']) is not None:
@@ -2258,13 +2490,14 @@ def _GeneratedImageMask_from_vertex(
 def _GeneratedImage_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
         to_object,
         ['image'],
-        _Image_from_mldev(getv(from_object, ['_self']), to_object),
+        _Image_from_mldev(getv(from_object, ['_self']), to_object, root_object),
     )
 
   if getv(from_object, ['raiFilteredReason']) is not None:
@@ -2278,7 +2511,9 @@ def _GeneratedImage_from_mldev(
     setv(
         to_object,
         ['safety_attributes'],
-        _SafetyAttributes_from_mldev(getv(from_object, ['_self']), to_object),
+        _SafetyAttributes_from_mldev(
+            getv(from_object, ['_self']), to_object, root_object
+        ),
     )
 
   return to_object
@@ -2287,13 +2522,16 @@ def _GeneratedImage_from_mldev(
 def _GeneratedImage_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
         to_object,
         ['image'],
-        _Image_from_vertex(getv(from_object, ['_self']), to_object),
+        _Image_from_vertex(
+            getv(from_object, ['_self']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['raiFilteredReason']) is not None:
@@ -2307,7 +2545,9 @@ def _GeneratedImage_from_vertex(
     setv(
         to_object,
         ['safety_attributes'],
-        _SafetyAttributes_from_vertex(getv(from_object, ['_self']), to_object),
+        _SafetyAttributes_from_vertex(
+            getv(from_object, ['_self']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['prompt']) is not None:
@@ -2319,13 +2559,14 @@ def _GeneratedImage_from_vertex(
 def _GeneratedVideo_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['video']) is not None:
     setv(
         to_object,
         ['video'],
-        _Video_from_mldev(getv(from_object, ['video']), to_object),
+        _Video_from_mldev(getv(from_object, ['video']), to_object, root_object),
     )
 
   return to_object
@@ -2334,13 +2575,16 @@ def _GeneratedVideo_from_mldev(
 def _GeneratedVideo_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['_self']) is not None:
     setv(
         to_object,
         ['video'],
-        _Video_from_vertex(getv(from_object, ['_self']), to_object),
+        _Video_from_vertex(
+            getv(from_object, ['_self']), to_object, root_object
+        ),
     )
 
   return to_object
@@ -2349,6 +2593,7 @@ def _GeneratedVideo_from_vertex(
 def _GenerationConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model_selection_config']) is not None:
@@ -2434,13 +2679,7 @@ def _GenerationConfig_to_vertex(
     setv(to_object, ['seed'], getv(from_object, ['seed']))
 
   if getv(from_object, ['speech_config']) is not None:
-    setv(
-        to_object,
-        ['speechConfig'],
-        _SpeechConfig_to_vertex(
-            getv(from_object, ['speech_config']), to_object
-        ),
-    )
+    setv(to_object, ['speechConfig'], getv(from_object, ['speech_config']))
 
   if getv(from_object, ['stop_sequences']) is not None:
     setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
@@ -2469,6 +2708,7 @@ def _GetModelParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -2485,6 +2725,7 @@ def _GetModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -2500,10 +2741,17 @@ def _GetModelParameters_to_vertex(
 def _GoogleMaps_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(
+            getv(from_object, ['auth_config']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
@@ -2514,16 +2762,20 @@ def _GoogleMaps_to_mldev(
 def _GoogleSearch_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
 
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is not supported in Gemini API.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -2537,6 +2789,7 @@ def _GoogleSearch_to_mldev(
 def _ImageConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['aspect_ratio']) is not None:
@@ -2544,6 +2797,16 @@ def _ImageConfig_to_mldev(
 
   if getv(from_object, ['image_size']) is not None:
     setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['person_generation']) is not None:
+    raise ValueError(
+        'person_generation parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['prominent_people']) is not None:
+    raise ValueError(
+        'prominent_people parameter is not supported in Gemini API.'
+    )
 
   if getv(from_object, ['output_mime_type']) is not None:
     raise ValueError(
@@ -2555,12 +2818,18 @@ def _ImageConfig_to_mldev(
         'output_compression_quality parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['image_output_options']) is not None:
+    raise ValueError(
+        'image_output_options parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
 def _ImageConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['aspect_ratio']) is not None:
@@ -2568,6 +2837,18 @@ def _ImageConfig_to_vertex(
 
   if getv(from_object, ['image_size']) is not None:
     setv(to_object, ['imageSize'], getv(from_object, ['image_size']))
+
+  if getv(from_object, ['person_generation']) is not None:
+    setv(
+        to_object,
+        ['personGeneration'],
+        getv(from_object, ['person_generation']),
+    )
+
+  if getv(from_object, ['prominent_people']) is not None:
+    setv(
+        to_object, ['prominentPeople'], getv(from_object, ['prominent_people'])
+    )
 
   if getv(from_object, ['output_mime_type']) is not None:
     setv(
@@ -2583,12 +2864,20 @@ def _ImageConfig_to_vertex(
         getv(from_object, ['output_compression_quality']),
     )
 
+  if getv(from_object, ['image_output_options']) is not None:
+    setv(
+        to_object,
+        ['imageOutputOptions'],
+        getv(from_object, ['image_output_options']),
+    )
+
   return to_object
 
 
 def _Image_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -2608,6 +2897,7 @@ def _Image_from_mldev(
 def _Image_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcsUri']) is not None:
@@ -2629,6 +2919,7 @@ def _Image_from_vertex(
 def _Image_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
@@ -2650,6 +2941,7 @@ def _Image_to_mldev(
 def _Image_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
@@ -2672,6 +2964,7 @@ def _ListModelsConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -2704,6 +2997,7 @@ def _ListModelsConfig_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -2736,11 +3030,12 @@ def _ListModelsParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     _ListModelsConfig_to_mldev(
-        api_client, getv(from_object, ['config']), to_object
+        api_client, getv(from_object, ['config']), to_object, root_object
     )
 
   return to_object
@@ -2750,11 +3045,12 @@ def _ListModelsParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     _ListModelsConfig_to_vertex(
-        api_client, getv(from_object, ['config']), to_object
+        api_client, getv(from_object, ['config']), to_object, root_object
     )
 
   return to_object
@@ -2763,6 +3059,7 @@ def _ListModelsParameters_to_vertex(
 def _ListModelsResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -2778,7 +3075,7 @@ def _ListModelsResponse_from_mldev(
         to_object,
         ['models'],
         [
-            _Model_from_mldev(item, to_object)
+            _Model_from_mldev(item, to_object, root_object)
             for item in t.t_extract_models(getv(from_object, ['_self']))
         ],
     )
@@ -2789,6 +3086,7 @@ def _ListModelsResponse_from_mldev(
 def _ListModelsResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -2804,7 +3102,7 @@ def _ListModelsResponse_from_vertex(
         to_object,
         ['models'],
         [
-            _Model_from_vertex(item, to_object)
+            _Model_from_vertex(item, to_object, root_object)
             for item in t.t_extract_models(getv(from_object, ['_self']))
         ],
     )
@@ -2815,6 +3113,7 @@ def _ListModelsResponse_from_vertex(
 def _MaskReferenceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['mask_mode']) is not None:
@@ -2834,6 +3133,7 @@ def _MaskReferenceConfig_to_vertex(
 def _Model_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -2891,6 +3191,7 @@ def _Model_from_mldev(
 def _Model_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
@@ -2910,7 +3211,7 @@ def _Model_from_vertex(
         to_object,
         ['endpoints'],
         [
-            _Endpoint_from_vertex(item, to_object)
+            _Endpoint_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['deployedModels'])
         ],
     )
@@ -2922,7 +3223,9 @@ def _Model_from_vertex(
     setv(
         to_object,
         ['tuned_model_info'],
-        _TunedModelInfo_from_vertex(getv(from_object, ['_self']), to_object),
+        _TunedModelInfo_from_vertex(
+            getv(from_object, ['_self']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['defaultCheckpointId']) is not None:
@@ -2945,6 +3248,7 @@ def _Model_from_vertex(
 def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['media_resolution']) is not None:
@@ -2966,14 +3270,18 @@ def _Part_to_mldev(
     setv(
         to_object,
         ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
+        _FileData_to_mldev(
+            getv(from_object, ['file_data']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['function_call']) is not None:
     setv(
         to_object,
         ['functionCall'],
-        _FunctionCall_to_mldev(getv(from_object, ['function_call']), to_object),
+        _FunctionCall_to_mldev(
+            getv(from_object, ['function_call']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['function_response']) is not None:
@@ -2987,7 +3295,9 @@ def _Part_to_mldev(
     setv(
         to_object,
         ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
+        _Blob_to_mldev(
+            getv(from_object, ['inline_data']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['text']) is not None:
@@ -3012,13 +3322,16 @@ def _Part_to_mldev(
 def _ProductImage_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['product_image']) is not None:
     setv(
         to_object,
         ['image'],
-        _Image_to_vertex(getv(from_object, ['product_image']), to_object),
+        _Image_to_vertex(
+            getv(from_object, ['product_image']), to_object, root_object
+        ),
     )
 
   return to_object
@@ -3027,6 +3340,7 @@ def _ProductImage_to_vertex(
 def _RecontextImageConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -3106,6 +3420,7 @@ def _RecontextImageParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -3116,10 +3431,14 @@ def _RecontextImageParameters_to_vertex(
     )
 
   if getv(from_object, ['source']) is not None:
-    _RecontextImageSource_to_vertex(getv(from_object, ['source']), to_object)
+    _RecontextImageSource_to_vertex(
+        getv(from_object, ['source']), to_object, root_object
+    )
 
   if getv(from_object, ['config']) is not None:
-    _RecontextImageConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _RecontextImageConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -3127,6 +3446,7 @@ def _RecontextImageParameters_to_vertex(
 def _RecontextImageResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictions']) is not None:
@@ -3134,7 +3454,7 @@ def _RecontextImageResponse_from_vertex(
         to_object,
         ['generated_images'],
         [
-            _GeneratedImage_from_vertex(item, to_object)
+            _GeneratedImage_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['predictions'])
         ],
     )
@@ -3145,6 +3465,7 @@ def _RecontextImageResponse_from_vertex(
 def _RecontextImageSource_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['prompt']) is not None:
@@ -3156,7 +3477,9 @@ def _RecontextImageSource_to_vertex(
     setv(
         parent_object,
         ['instances[0]', 'personImage', 'image'],
-        _Image_to_vertex(getv(from_object, ['person_image']), to_object),
+        _Image_to_vertex(
+            getv(from_object, ['person_image']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['product_images']) is not None:
@@ -3164,7 +3487,7 @@ def _RecontextImageSource_to_vertex(
         parent_object,
         ['instances[0]', 'productImages'],
         [
-            _ProductImage_to_vertex(item, to_object)
+            _ProductImage_to_vertex(item, to_object, root_object)
             for item in getv(from_object, ['product_images'])
         ],
     )
@@ -3175,13 +3498,16 @@ def _RecontextImageSource_to_vertex(
 def _ReferenceImageAPI_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['reference_image']) is not None:
     setv(
         to_object,
         ['referenceImage'],
-        _Image_to_vertex(getv(from_object, ['reference_image']), to_object),
+        _Image_to_vertex(
+            getv(from_object, ['reference_image']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['reference_id']) is not None:
@@ -3195,7 +3521,7 @@ def _ReferenceImageAPI_to_vertex(
         to_object,
         ['maskImageConfig'],
         _MaskReferenceConfig_to_vertex(
-            getv(from_object, ['mask_image_config']), to_object
+            getv(from_object, ['mask_image_config']), to_object, root_object
         ),
     )
 
@@ -3204,7 +3530,7 @@ def _ReferenceImageAPI_to_vertex(
         to_object,
         ['controlImageConfig'],
         _ControlReferenceConfig_to_vertex(
-            getv(from_object, ['control_image_config']), to_object
+            getv(from_object, ['control_image_config']), to_object, root_object
         ),
     )
 
@@ -3228,6 +3554,7 @@ def _ReferenceImageAPI_to_vertex(
 def _SafetyAttributes_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['safetyAttributes', 'categories']) is not None:
@@ -3251,6 +3578,7 @@ def _SafetyAttributes_from_mldev(
 def _SafetyAttributes_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['safetyAttributes', 'categories']) is not None:
@@ -3274,6 +3602,7 @@ def _SafetyAttributes_from_vertex(
 def _SafetySetting_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['category']) is not None:
@@ -3291,13 +3620,14 @@ def _SafetySetting_to_mldev(
 def _ScribbleImage_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['image']) is not None:
     setv(
         to_object,
         ['image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
+        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
     )
 
   return to_object
@@ -3306,6 +3636,7 @@ def _ScribbleImage_to_vertex(
 def _SegmentImageConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -3350,6 +3681,7 @@ def _SegmentImageParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -3360,10 +3692,14 @@ def _SegmentImageParameters_to_vertex(
     )
 
   if getv(from_object, ['source']) is not None:
-    _SegmentImageSource_to_vertex(getv(from_object, ['source']), to_object)
+    _SegmentImageSource_to_vertex(
+        getv(from_object, ['source']), to_object, root_object
+    )
 
   if getv(from_object, ['config']) is not None:
-    _SegmentImageConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _SegmentImageConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -3371,6 +3707,7 @@ def _SegmentImageParameters_to_vertex(
 def _SegmentImageResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['predictions']) is not None:
@@ -3378,7 +3715,7 @@ def _SegmentImageResponse_from_vertex(
         to_object,
         ['generated_masks'],
         [
-            _GeneratedImageMask_from_vertex(item, to_object)
+            _GeneratedImageMask_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['predictions'])
         ],
     )
@@ -3389,6 +3726,7 @@ def _SegmentImageResponse_from_vertex(
 def _SegmentImageSource_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['prompt']) is not None:
@@ -3400,7 +3738,7 @@ def _SegmentImageSource_to_vertex(
     setv(
         parent_object,
         ['instances[0]', 'image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
+        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['scribble_image']) is not None:
@@ -3408,27 +3746,8 @@ def _SegmentImageSource_to_vertex(
         parent_object,
         ['instances[0]', 'scribble'],
         _ScribbleImage_to_vertex(
-            getv(from_object, ['scribble_image']), to_object
+            getv(from_object, ['scribble_image']), to_object, root_object
         ),
-    )
-
-  return to_object
-
-
-def _SpeechConfig_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['language_code']) is not None:
-    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
-
-  if getv(from_object, ['voice_config']) is not None:
-    setv(to_object, ['voiceConfig'], getv(from_object, ['voice_config']))
-
-  if getv(from_object, ['multi_speaker_voice_config']) is not None:
-    raise ValueError(
-        'multi_speaker_voice_config parameter is not supported in Vertex AI.'
     )
 
   return to_object
@@ -3437,20 +3756,23 @@ def _SpeechConfig_to_vertex(
 def _ToolConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
         ['functionCallingConfig'],
         _FunctionCallingConfig_to_mldev(
-            getv(from_object, ['function_calling_config']), to_object
+            getv(from_object, ['function_calling_config']),
+            to_object,
+            root_object,
         ),
-    )
-
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   return to_object
@@ -3459,30 +3781,35 @@ def _ToolConfig_to_mldev(
 def _Tool_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [item for item in getv(from_object, ['function_declarations'])],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
-    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(
+            getv(from_object, ['google_search']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['google_maps']) is not None:
+    setv(
+        to_object,
+        ['googleMaps'],
+        _GoogleMaps_to_mldev(
+            getv(from_object, ['google_maps']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -3492,43 +3819,12 @@ def _Tool_to_mldev(
         'enterprise_web_search parameter is not supported in Gemini API.'
     )
 
-  if getv(from_object, ['google_maps']) is not None:
-    setv(
-        to_object,
-        ['googleMaps'],
-        _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
-    )
-
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
-    )
-
-  if getv(from_object, ['url_context']) is not None:
-    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
-
-  return to_object
-
-
-def _Tool_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
   if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
         ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
+        [item for item in getv(from_object, ['function_declarations'])],
     )
-
-  if getv(from_object, ['retrieval']) is not None:
-    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['google_search_retrieval']) is not None:
     setv(
@@ -3537,11 +3833,44 @@ def _Tool_to_vertex(
         getv(from_object, ['google_search_retrieval']),
     )
 
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    raise ValueError(
+        'parallel_ai_search parameter is not supported in Gemini API.'
+    )
+
+  if getv(from_object, ['url_context']) is not None:
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
+  return to_object
+
+
+def _Tool_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval']) is not None:
+    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
+
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError('file_search parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
+  if getv(from_object, ['google_maps']) is not None:
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -3553,14 +3882,35 @@ def _Tool_to_vertex(
         getv(from_object, ['enterprise_web_search']),
     )
 
-  if getv(from_object, ['google_maps']) is not None:
-    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [
+            _FunctionDeclaration_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['function_declarations'])
+        ],
+    )
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    setv(
+        to_object,
+        ['parallelAiSearch'],
+        getv(from_object, ['parallel_ai_search']),
+    )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -3568,6 +3918,7 @@ def _Tool_to_vertex(
 def _TunedModelInfo_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if (
@@ -3592,6 +3943,7 @@ def _TunedModelInfo_from_vertex(
 def _UpdateModelConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -3614,6 +3966,7 @@ def _UpdateModelConfig_to_mldev(
 def _UpdateModelConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -3637,6 +3990,7 @@ def _UpdateModelParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -3647,7 +4001,9 @@ def _UpdateModelParameters_to_mldev(
     )
 
   if getv(from_object, ['config']) is not None:
-    _UpdateModelConfig_to_mldev(getv(from_object, ['config']), to_object)
+    _UpdateModelConfig_to_mldev(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -3656,6 +4012,7 @@ def _UpdateModelParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -3666,7 +4023,9 @@ def _UpdateModelParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    _UpdateModelConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _UpdateModelConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -3674,6 +4033,7 @@ def _UpdateModelParameters_to_vertex(
 def _UpscaleImageAPIConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
 
@@ -3753,6 +4113,7 @@ def _UpscaleImageAPIParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
@@ -3766,7 +4127,7 @@ def _UpscaleImageAPIParameters_to_vertex(
     setv(
         to_object,
         ['instances[0]', 'image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
+        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['upscale_factor']) is not None:
@@ -3777,7 +4138,9 @@ def _UpscaleImageAPIParameters_to_vertex(
     )
 
   if getv(from_object, ['config']) is not None:
-    _UpscaleImageAPIConfig_to_vertex(getv(from_object, ['config']), to_object)
+    _UpscaleImageAPIConfig_to_vertex(
+        getv(from_object, ['config']), to_object, root_object
+    )
 
   return to_object
 
@@ -3785,6 +4148,7 @@ def _UpscaleImageAPIParameters_to_vertex(
 def _UpscaleImageResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['sdkHttpResponse']) is not None:
@@ -3797,7 +4161,7 @@ def _UpscaleImageResponse_from_vertex(
         to_object,
         ['generated_images'],
         [
-            _GeneratedImage_from_vertex(item, to_object)
+            _GeneratedImage_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['predictions'])
         ],
     )
@@ -3808,13 +4172,14 @@ def _UpscaleImageResponse_from_vertex(
 def _VideoGenerationMask_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['image']) is not None:
     setv(
         to_object,
         ['_self'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
+        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['mask_mode']) is not None:
@@ -3826,13 +4191,14 @@ def _VideoGenerationMask_to_vertex(
 def _VideoGenerationReferenceImage_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['image']) is not None:
     setv(
         to_object,
         ['image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object),
+        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['reference_type']) is not None:
@@ -3847,13 +4213,14 @@ def _VideoGenerationReferenceImage_to_mldev(
 def _VideoGenerationReferenceImage_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['image']) is not None:
     setv(
         to_object,
         ['image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object),
+        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
     )
 
   if getv(from_object, ['reference_type']) is not None:
@@ -3865,6 +4232,7 @@ def _VideoGenerationReferenceImage_to_vertex(
 def _Video_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['uri']) is not None:
@@ -3886,6 +4254,7 @@ def _Video_from_mldev(
 def _Video_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcsUri']) is not None:
@@ -3907,6 +4276,7 @@ def _Video_from_vertex(
 def _Video_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['uri']) is not None:
@@ -3928,6 +4298,7 @@ def _Video_to_mldev(
 def _Video_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['uri']) is not None:
@@ -3965,7 +4336,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -3974,7 +4345,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:generateContent'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4011,10 +4382,14 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateContentResponse_from_vertex(response_dict)
+      response_dict = _GenerateContentResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _GenerateContentResponse_from_mldev(response_dict)
+      response_dict = _GenerateContentResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.GenerateContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4042,7 +4417,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4053,7 +4428,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:streamGenerateContent?alt=sse'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4093,10 +4468,14 @@ class Models(_api_module.BaseModule):
       response_dict = {} if not response.body else json.loads(response.body)
 
       if self._api_client.vertexai:
-        response_dict = _GenerateContentResponse_from_vertex(response_dict)
+        response_dict = _GenerateContentResponse_from_vertex(
+            response_dict, None, parameter_model
+        )
 
       if not self._api_client.vertexai:
-        response_dict = _GenerateContentResponse_from_mldev(response_dict)
+        response_dict = _GenerateContentResponse_from_mldev(
+            response_dict, None, parameter_model
+        )
 
       return_value = types.GenerateContentResponse._from_response(
           response=response_dict, kwargs=parameter_model.model_dump()
@@ -4107,11 +4486,17 @@ class Models(_api_module.BaseModule):
       self._api_client._verify_response(return_value)
       yield return_value
 
-  def embed_content(
+  def _embed_content(
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: Optional[
+          Union[types.ContentListUnion, types.ContentListUnionDict]
+      ] = None,
+      content: Optional[
+          Union[types.ContentUnion, types.ContentUnionDict]
+      ] = None,
+      embedding_api_type: Optional[types.EmbeddingApiType] = None,
       config: Optional[types.EmbedContentConfigOrDict] = None,
   ) -> types.EmbedContentResponse:
     """Calculates embeddings for the given contents. Only text is supported.
@@ -4137,26 +4522,29 @@ class Models(_api_module.BaseModule):
       )
     """
 
-    parameter_model = types._EmbedContentParameters(
+    parameter_model = types._EmbedContentParametersPrivate(
         model=model,
         contents=contents,
+        content=content,
+        embedding_api_type=embedding_api_type,
         config=config,
     )
 
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _EmbedContentParameters_to_vertex(
-          self._api_client, parameter_model
+      request_dict = _EmbedContentParametersPrivate_to_vertex(
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
+      endpoint_url = '{model}:embedContent' if t.t_is_vertex_embed_content_model(parameter_model.model) else '{model}:predict'  # type: ignore[arg-type]
       if request_url_dict:
-        path = '{model}:predict'.format_map(request_url_dict)
+        path = endpoint_url.format_map(request_url_dict)
       else:
-        path = '{model}:predict'
+        path = endpoint_url
     else:
-      request_dict = _EmbedContentParameters_to_mldev(
-          self._api_client, parameter_model
+      request_dict = _EmbedContentParametersPrivate_to_mldev(
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4186,10 +4574,14 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _EmbedContentResponse_from_vertex(response_dict)
+      response_dict = _EmbedContentResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _EmbedContentResponse_from_mldev(response_dict)
+      response_dict = _EmbedContentResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4219,7 +4611,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateImagesParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4228,7 +4620,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:predict'
     else:
       request_dict = _GenerateImagesParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4258,10 +4650,14 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateImagesResponse_from_vertex(response_dict)
+      response_dict = _GenerateImagesResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _GenerateImagesResponse_from_mldev(response_dict)
+      response_dict = _GenerateImagesResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4294,7 +4690,7 @@ class Models(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _EditImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4325,7 +4721,9 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _EditImageResponse_from_vertex(response_dict)
+      response_dict = _EditImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4358,7 +4756,7 @@ class Models(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4389,7 +4787,9 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _UpscaleImageResponse_from_vertex(response_dict)
+      response_dict = _UpscaleImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.UpscaleImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4442,7 +4842,7 @@ class Models(_api_module.BaseModule):
       image = product_recontext_response.generated_images[0].image
 
       virtual_try_on_response = client.models.recontext_image(
-          model="virtual-try-on-preview-08-04",
+          model="virtual-try-on-001",
           source=types.RecontextImageSource(
               person_image=types.Image.from_file(IMAGE1_FILE_PATH),
               product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
@@ -4466,7 +4866,7 @@ class Models(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _RecontextImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4497,7 +4897,9 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _RecontextImageResponse_from_vertex(response_dict)
+      response_dict = _RecontextImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.RecontextImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4549,7 +4951,7 @@ class Models(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _SegmentImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4580,7 +4982,9 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _SegmentImageResponse_from_vertex(response_dict)
+      response_dict = _SegmentImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.SegmentImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4601,7 +5005,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GetModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4610,7 +5014,7 @@ class Models(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _GetModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4638,10 +5042,10 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(response_dict)
+      response_dict = _Model_from_vertex(response_dict, None, parameter_model)
 
     if not self._api_client.vertexai:
-      response_dict = _Model_from_mldev(response_dict)
+      response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4661,7 +5065,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _ListModelsParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4670,7 +5074,7 @@ class Models(_api_module.BaseModule):
         path = '{models_url}'
     else:
       request_dict = _ListModelsParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4703,10 +5107,14 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListModelsResponse_from_vertex(response_dict)
+      response_dict = _ListModelsResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _ListModelsResponse_from_mldev(response_dict)
+      response_dict = _ListModelsResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4732,7 +5140,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _UpdateModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4741,7 +5149,7 @@ class Models(_api_module.BaseModule):
         path = '{model}'
     else:
       request_dict = _UpdateModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4771,10 +5179,10 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(response_dict)
+      response_dict = _Model_from_vertex(response_dict, None, parameter_model)
 
     if not self._api_client.vertexai:
-      response_dict = _Model_from_mldev(response_dict)
+      response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4798,7 +5206,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _DeleteModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4807,7 +5215,7 @@ class Models(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _DeleteModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4837,10 +5245,14 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _DeleteModelResponse_from_vertex(response_dict)
+      response_dict = _DeleteModelResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _DeleteModelResponse_from_mldev(response_dict)
+      response_dict = _DeleteModelResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4889,7 +5301,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _CountTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4898,7 +5310,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:countTokens'
     else:
       request_dict = _CountTokensParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -4928,10 +5340,14 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CountTokensResponse_from_vertex(response_dict)
+      response_dict = _CountTokensResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _CountTokensResponse_from_mldev(response_dict)
+      response_dict = _CountTokensResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -4983,7 +5399,7 @@ class Models(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5014,7 +5430,9 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ComputeTokensResponse_from_vertex(response_dict)
+      response_dict = _ComputeTokensResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -5050,7 +5468,7 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateVideosParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5059,7 +5477,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:predictLongRunning'
     else:
       request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5089,10 +5507,14 @@ class Models(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
+      response_dict = _GenerateVideosOperation_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_mldev(response_dict)
+      response_dict = _GenerateVideosOperation_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -5100,6 +5522,75 @@ class Models(_api_module.BaseModule):
 
     self._api_client._verify_response(return_value)
     return return_value
+
+  def embed_content(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.EmbedContentConfigOrDict] = None,
+  ) -> types.EmbedContentResponse:
+    """Calculates embeddings for the given contents.
+
+    Args:
+      model (str): The model to use.
+      contents (list[Content]): The contents to embed.
+      config (EmbedContentConfig): Optional configuration for embeddings.
+
+    Usage:
+
+    .. code-block:: python
+
+      embeddings = client.models.embed_content(
+          model= 'text-embedding-004',
+          contents=[
+              'What is your name?',
+              'What is your favorite color?',
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+
+      # Multimodal embeddings are only supported for the Vertex AI API.
+      multimodal_embeddings = client.models.embed_content(
+          model='gemini-embedding-2-exp-11-2025',
+          contents=[
+              types.Part.from_uri(
+                  file_uri='gs://generativeai-downloads/images/scones.jpg',
+                  mime_type='image/jpeg',
+              ),
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+    """
+    if not self._api_client.vertexai:
+      return self._embed_content(model=model, contents=contents, config=config)
+
+    if t.t_is_vertex_embed_content_model(model):
+      normalized_contents = t.t_contents(contents)
+      if len(normalized_contents) > 1:
+        raise ValueError(
+            'The embedContent API for this model only supports one content at a'
+            ' time.'
+        )
+      return self._embed_content(
+          model=model,
+          contents=None,
+          content=normalized_contents[0],
+          embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
+          config=config,
+      )
+    else:
+      return self._embed_content(
+          model=model,
+          content=None,
+          contents=contents,
+          embedding_api_type=types.EmbeddingApiType.PREDICT,
+          config=config,
+      )
 
   def generate_content(
       self,
@@ -5197,7 +5688,7 @@ class Models(_api_module.BaseModule):
             'Tools at indices [%s] are not compatible with automatic function '
             'calling (AFC). AFC is disabled. If AFC is intended, please '
             'include python callables in the tool list, and do not include '
-            'function declaration in the tool list.',
+            'function declaration and MCP server in the tool list.',
             indices_str,
         )
       return self._generate_content(
@@ -5804,7 +6295,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5813,7 +6304,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:generateContent'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5850,10 +6341,14 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateContentResponse_from_vertex(response_dict)
+      response_dict = _GenerateContentResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _GenerateContentResponse_from_mldev(response_dict)
+      response_dict = _GenerateContentResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.GenerateContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -5881,7 +6376,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateContentParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5892,7 +6387,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:streamGenerateContent?alt=sse'
     else:
       request_dict = _GenerateContentParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -5935,10 +6430,14 @@ class AsyncModels(_api_module.BaseModule):
         response_dict = {} if not response.body else json.loads(response.body)
 
         if self._api_client.vertexai:
-          response_dict = _GenerateContentResponse_from_vertex(response_dict)
+          response_dict = _GenerateContentResponse_from_vertex(
+              response_dict, None, parameter_model
+          )
 
         if not self._api_client.vertexai:
-          response_dict = _GenerateContentResponse_from_mldev(response_dict)
+          response_dict = _GenerateContentResponse_from_mldev(
+              response_dict, None, parameter_model
+          )
 
         return_value = types.GenerateContentResponse._from_response(
             response=response_dict, kwargs=parameter_model.model_dump()
@@ -5951,11 +6450,17 @@ class AsyncModels(_api_module.BaseModule):
 
     return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 
-  async def embed_content(
+  async def _embed_content(
       self,
       *,
       model: str,
-      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      contents: Optional[
+          Union[types.ContentListUnion, types.ContentListUnionDict]
+      ] = None,
+      content: Optional[
+          Union[types.ContentUnion, types.ContentUnionDict]
+      ] = None,
+      embedding_api_type: Optional[types.EmbeddingApiType] = None,
       config: Optional[types.EmbedContentConfigOrDict] = None,
   ) -> types.EmbedContentResponse:
     """Calculates embeddings for the given contents. Only text is supported.
@@ -5981,26 +6486,29 @@ class AsyncModels(_api_module.BaseModule):
       )
     """
 
-    parameter_model = types._EmbedContentParameters(
+    parameter_model = types._EmbedContentParametersPrivate(
         model=model,
         contents=contents,
+        content=content,
+        embedding_api_type=embedding_api_type,
         config=config,
     )
 
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _EmbedContentParameters_to_vertex(
-          self._api_client, parameter_model
+      request_dict = _EmbedContentParametersPrivate_to_vertex(
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
+      endpoint_url = '{model}:embedContent' if t.t_is_vertex_embed_content_model(parameter_model.model) else '{model}:predict'  # type: ignore[arg-type]
       if request_url_dict:
-        path = '{model}:predict'.format_map(request_url_dict)
+        path = endpoint_url.format_map(request_url_dict)
       else:
-        path = '{model}:predict'
+        path = endpoint_url
     else:
-      request_dict = _EmbedContentParameters_to_mldev(
-          self._api_client, parameter_model
+      request_dict = _EmbedContentParametersPrivate_to_mldev(
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6030,10 +6538,14 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _EmbedContentResponse_from_vertex(response_dict)
+      response_dict = _EmbedContentResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _EmbedContentResponse_from_mldev(response_dict)
+      response_dict = _EmbedContentResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.EmbedContentResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6063,7 +6575,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateImagesParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6072,7 +6584,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:predict'
     else:
       request_dict = _GenerateImagesParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6102,10 +6614,14 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateImagesResponse_from_vertex(response_dict)
+      response_dict = _GenerateImagesResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _GenerateImagesResponse_from_mldev(response_dict)
+      response_dict = _GenerateImagesResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.GenerateImagesResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6138,7 +6654,7 @@ class AsyncModels(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _EditImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6169,7 +6685,9 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _EditImageResponse_from_vertex(response_dict)
+      response_dict = _EditImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.EditImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6202,7 +6720,7 @@ class AsyncModels(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6233,7 +6751,9 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _UpscaleImageResponse_from_vertex(response_dict)
+      response_dict = _UpscaleImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.UpscaleImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6286,7 +6806,7 @@ class AsyncModels(_api_module.BaseModule):
       image = product_recontext_response.generated_images[0].image
 
       virtual_try_on_response = client.models.recontext_image(
-          model="virtual-try-on-preview-08-04",
+          model="virtual-try-on-001",
           source=types.RecontextImageSource(
               person_image=types.Image.from_file(IMAGE1_FILE_PATH),
               product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
@@ -6310,7 +6830,7 @@ class AsyncModels(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _RecontextImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6341,7 +6861,9 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _RecontextImageResponse_from_vertex(response_dict)
+      response_dict = _RecontextImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.RecontextImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6396,7 +6918,7 @@ class AsyncModels(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _SegmentImageParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6427,7 +6949,9 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _SegmentImageResponse_from_vertex(response_dict)
+      response_dict = _SegmentImageResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.SegmentImageResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6448,7 +6972,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GetModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6457,7 +6981,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _GetModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6487,10 +7011,10 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(response_dict)
+      response_dict = _Model_from_vertex(response_dict, None, parameter_model)
 
     if not self._api_client.vertexai:
-      response_dict = _Model_from_mldev(response_dict)
+      response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6510,7 +7034,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _ListModelsParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6519,7 +7043,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{models_url}'
     else:
       request_dict = _ListModelsParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6554,10 +7078,14 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ListModelsResponse_from_vertex(response_dict)
+      response_dict = _ListModelsResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _ListModelsResponse_from_mldev(response_dict)
+      response_dict = _ListModelsResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ListModelsResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6583,7 +7111,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _UpdateModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6592,7 +7120,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}'
     else:
       request_dict = _UpdateModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6622,10 +7150,10 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _Model_from_vertex(response_dict)
+      response_dict = _Model_from_vertex(response_dict, None, parameter_model)
 
     if not self._api_client.vertexai:
-      response_dict = _Model_from_mldev(response_dict)
+      response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6649,7 +7177,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _DeleteModelParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6658,7 +7186,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{name}'
     else:
       request_dict = _DeleteModelParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6688,10 +7216,14 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _DeleteModelResponse_from_vertex(response_dict)
+      response_dict = _DeleteModelResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _DeleteModelResponse_from_mldev(response_dict)
+      response_dict = _DeleteModelResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.DeleteModelResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6740,7 +7272,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _CountTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6749,7 +7281,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:countTokens'
     else:
       request_dict = _CountTokensParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6779,10 +7311,14 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _CountTokensResponse_from_vertex(response_dict)
+      response_dict = _CountTokensResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _CountTokensResponse_from_mldev(response_dict)
+      response_dict = _CountTokensResponse_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.CountTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6833,7 +7369,7 @@ class AsyncModels(_api_module.BaseModule):
       raise ValueError('This method is only supported in the Vertex AI client.')
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6864,7 +7400,9 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _ComputeTokensResponse_from_vertex(response_dict)
+      response_dict = _ComputeTokensResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.ComputeTokensResponse._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -6900,7 +7438,7 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       request_dict = _GenerateVideosParameters_to_vertex(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6909,7 +7447,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:predictLongRunning'
     else:
       request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -6939,10 +7477,14 @@ class AsyncModels(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
+      response_dict = _GenerateVideosOperation_from_vertex(
+          response_dict, None, parameter_model
+      )
 
     if not self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_mldev(response_dict)
+      response_dict = _GenerateVideosOperation_from_mldev(
+          response_dict, None, parameter_model
+      )
 
     return_value = types.GenerateVideosOperation._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -7015,7 +7557,7 @@ class AsyncModels(_api_module.BaseModule):
             'Tools at indices [%s] are not compatible with automatic function '
             'calling (AFC). AFC is disabled. If AFC is intended, please '
             'include python callables in the tool list, and do not include '
-            'function declaration in the tool list.',
+            'function declaration and MCP server in the tool list.',
             indices_str,
         )
       return await self._generate_content(
@@ -7179,7 +7721,7 @@ class AsyncModels(_api_module.BaseModule):
             'Tools at indices [%s] are not compatible with automatic function '
             'calling (AFC). AFC is disabled. If AFC is intended, please '
             'include python callables in the tool list, and do not include '
-            'function declaration in the tool list.',
+            'function declaration and MCP server in the tool list.',
             indices_str,
         )
       response = await self._generate_content_stream(
@@ -7624,3 +8166,72 @@ class AsyncModels(_api_module.BaseModule):
         source=source,
         config=config,
     )
+
+  async def embed_content(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.EmbedContentConfigOrDict] = None,
+  ) -> types.EmbedContentResponse:
+    """Calculates embeddings for the given contents.
+
+    Args:
+      model (str): The model to use.
+      contents (list[Content]): The contents to embed.
+      config (EmbedContentConfig): Optional configuration for embeddings.
+
+    Usage:
+
+    .. code-block:: python
+
+      embeddings = await client.aio.models.embed_content(
+          model= 'text-embedding-004',
+          contents=[
+              'What is your name?',
+              'What is your favorite color?',
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+
+      # Multimodal embeddings are only supported for the Vertex AI API.
+      multimodal_embeddings = await client.aio.models.embed_content(
+          model='gemini-embedding-2-exp-11-2025',
+          contents=[
+              types.Part.from_uri(
+                  file_uri='gs://generativeai-downloads/images/scones.jpg',
+                  mime_type='image/jpeg',
+              ),
+          ],
+          config={
+              'output_dimensionality': 64
+          },
+      )
+    """
+    if not self._api_client.vertexai:
+      return await self._embed_content(
+          model=model, contents=contents, config=config
+      )
+    if t.t_is_vertex_embed_content_model(model):
+      normalized_contents = t.t_contents(contents)
+      if len(normalized_contents) > 1:
+        raise ValueError(
+            'The embedContent API for this model only supports one content at a'
+            ' time.'
+        )
+      return await self._embed_content(
+          model=model,
+          contents=contents,
+          content=normalized_contents[0],
+          embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
+          config=config,
+      )
+    else:
+      return await self._embed_content(
+          model=model,
+          contents=contents,
+          embedding_api_type=types.EmbeddingApiType.PREDICT,
+          config=config,
+      )

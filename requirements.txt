@@ -7,7 +7,7 @@ charset-normalizer==3.4.0
 coverage==7.6.9
 distro==1.9.0
 httpx==0.28.1
-google-auth==2.37.0
+google-auth==2.47.0
 idna==3.10
 iniconfig==2.0.0
 packaging==24.2
@@ -27,7 +27,7 @@ rsa==4.9
 tenacity==8.2.3
 typing_extensions>=4.14.1
 urllib3==2.5.0
-websockets==15.0.0
+websockets==16.0
 mcp>=1.14.0; python_version > '3.9'
 sentencepiece>=0.2.0
 protobuf

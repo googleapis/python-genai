@@ -141,9 +141,12 @@ def find_afc_incompatible_tool_indexes(
     return incompatible_tools_indexes
 
   for index, tool in enumerate(config_model.tools):
-    if isinstance(tool, types.Tool) and tool.function_declarations:
+    if not isinstance(tool, types.Tool):
+      continue
+    if tool.function_declarations:
       incompatible_tools_indexes.append(index)
-
+    if tool.mcp_servers:
+      incompatible_tools_indexes.append(index)
   return incompatible_tools_indexes
 
 

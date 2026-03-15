@@ -42,20 +42,36 @@ _SAFETY_SETTINGS = [
     },
 ]
 
-_INLINED_REQUEST = {
-    'contents': [{
-        'parts': [{
-            'text': 'Hello!',
+_INLINED_REQUESTS = [
+    {
+        'contents': [{
+            'parts': [{
+                'text': 'what is the number after 1? return just the number.',
+            }],
+            'role': 'user',
         }],
-        'role': 'user',
-    }],
-    'metadata': {
-        'key': 'request-1',
+        'metadata': {
+            'key': 'request-1',
+        },
+        'config': {
+            'safety_settings': _SAFETY_SETTINGS,
+        },
     },
-    'config': {
-        'safety_settings': _SAFETY_SETTINGS,
+    {
+        'contents': [{
+            'parts': [{
+                'text': 'what is the number after 2? return just the number.',
+            }],
+            'role': 'user',
+        }],
+        'metadata': {
+            'key': 'request-2',
+        },
+        'config': {
+            'safety_settings': _SAFETY_SETTINGS,
+        },
     },
-}
+]
 _INLINED_TEXT_REQUEST_UNION = {
     'contents': [{
         'parts': [{
@@ -154,7 +170,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_union_with_inlined_request',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
-            src=[_INLINED_REQUEST],
+            src=_INLINED_REQUESTS,
             config={
                 'display_name': _DISPLAY_NAME,
             },
@@ -166,7 +182,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_with_inlined_request',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
-            src={'inlined_requests': [_INLINED_REQUEST]},
+            src={'inlined_requests': _INLINED_REQUESTS},
             config={
                 'display_name': _DISPLAY_NAME,
             },
@@ -177,7 +193,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_with_inlined_request_config',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
-            src={'inlined_requests': [_INLINED_TEXT_REQUEST]},
+            src={'inlined_requests': _INLINED_REQUESTS},
             config={
                 'display_name': _DISPLAY_NAME,
             },
@@ -247,7 +263,7 @@ async def test_async_create(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     batch_job = await client.aio.batches.create(
         model=_GEMINI_MODEL,
-        src=[_INLINED_REQUEST],
+        src=_INLINED_REQUESTS,
     )
     assert batch_job.name.startswith('batches/')
     assert (

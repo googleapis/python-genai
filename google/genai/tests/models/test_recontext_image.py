@@ -23,7 +23,7 @@ from .. import pytest_helper
 
 PRODUCT_RECONTEXT_MODEL_LATEST = 'imagen-product-recontext-preview-06-30'
 
-VIRTUAL_TRY_ON_IMAGE_MODEL_LATEST = 'virtual-try-on-preview-08-04'
+VIRTUAL_TRY_ON_IMAGE_MODEL_LATEST = 'virtual-try-on-001'
 
 BACKPACK1 = types.Image(
     gcs_uri='gs://genai-sdk-tests/inputs/images/backpack1.png',

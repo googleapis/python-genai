@@ -633,6 +633,37 @@ async def test_async_session_start_stream(
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
+async def test_async_session_receive_vad_signal(mock_websocket, vertexai):
+  # Simulate the server sending a VAD signal message
+  mock_websocket.recv = mock.AsyncMock(
+      side_effect=[
+          '{"voiceActivityDetectionSignal": {"vadSignalType": "VAD_SIGNAL_TYPE_SOS"}}',
+          '{"serverContent": {"turnComplete": true}}',  # To close the receiver loop
+      ]
+  )
+
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+
+  messages = await _async_iterator_to_list(session.receive())
+
+  # Check if the first message contains the VAD signal
+  assert len(messages) > 0
+  vad_message = messages[0]
+  assert isinstance(vad_message, types.LiveServerMessage)
+  assert vad_message.voice_activity_detection_signal is not None
+  assert (
+      vad_message.voice_activity_detection_signal.vad_signal_type
+      == types.VadSignalType.VAD_SIGNAL_TYPE_SOS
+  )
+
+  # Check that the session can close cleanly
+  assert messages[-1].server_content.turn_complete is True
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
 async def test_async_session_close( mock_websocket, vertexai):
   session = live.AsyncSession(
       mock_api_client(vertexai=vertexai), mock_websocket
@@ -806,6 +837,53 @@ async def test_bidi_setup_error_if_multispeaker_voice_config(vertexai):
         model='test_model',
         config=config_dict,
     )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_explicit_vad(vertexai):
+  # Config is a dict
+  config_dict = {'explicit_vad_signal': True}
+  with pytest_helper.exception_if_mldev(
+      mock_api_client(vertexai=vertexai), ValueError
+  ):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
+    )
+  if not vertexai:
+    return
+  assert result['setup']['explicitVadSignal'] == True
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_explicit_vad_config(vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+
+  # Config is a dict
+  config_dict = {'explicit_vad_signal': True}
+  with pytest_helper.exception_if_mldev(api_client, ValueError):
+    result = await get_connect_message(
+        mock_api_client(vertexai=vertexai),
+        model='test_model',
+        config=config_dict,
+    )
+  if not vertexai:
+    return
+  assert result['setup']['explicitVadSignal'] == True
+
+
+@pytest.mark.asyncio
+async def test_history_config():
+  config_dict = {
+      'history_config': {'initial_history_in_client_content': True},
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=False), model='test_model', config=config_dict
+  )
+  assert result['setup']['historyConfig'] == {
+      'initial_history_in_client_content': True,
+  }
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -1589,6 +1667,8 @@ async def test_bidi_setup_to_api_with_thinking_config(vertexai):
   result = await get_connect_message(
       mock_api_client(vertexai=vertexai), model='test_model', config=config_dict
   )
+  result = pytest_helper.camel_to_snake_all_keys(result)
+  expected_result = pytest_helper.camel_to_snake_all_keys(expected_result)
   assert result == expected_result
 
 
@@ -2073,3 +2153,4 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
   assert 'x-goog-api-key' in capture['headers'], "x-goog-api-key is missing from headers"
   assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
   assert 'BidiGenerateContent' in capture['uri']
+

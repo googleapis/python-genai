@@ -181,6 +181,13 @@ def join_url_path(base_url: str, path: str) -> str:
 
 def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   """Loads google auth credentials and project id."""
+
+  ## Set GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES to false
+  ## to disable bound token sharing. Tracking on
+  ## https://github.com/googleapis/python-genai/issues/1956
+  os.environ['GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES'] = (
+      'false'
+  )
   credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
       scopes=['https://www.googleapis.com/auth/cloud-platform'],
   )
@@ -260,7 +267,13 @@ class HttpResponse:
 
   @property
   def json(self) -> Any:
-    if not self.response_stream[0]:  # Empty response
+    # Handle case where response_stream is not a list (e.g., aiohttp.ClientResponse)
+    # This can happen when the API returns an error and the response object
+    # is passed directly instead of being wrapped in a list.
+    # See: https://github.com/googleapis/python-genai/issues/1897
+    if not isinstance(self.response_stream, list):
+      return None
+    if not self.response_stream or not self.response_stream[0]:  # Empty response
       return ''
     return self._load_json_from_response(self.response_stream[0])
 
@@ -577,7 +590,7 @@ class BaseApiClient:
         validated_http_options = HttpOptions.model_validate(http_options)
       except ValidationError as e:
         raise ValueError('Invalid http_options') from e
-    elif isinstance(http_options, HttpOptions):
+    elif http_options and _common.is_duck_type_of(http_options, HttpOptions):
       validated_http_options = http_options
 
     if validated_http_options.base_url_resource_scope and not validated_http_options.base_url:
@@ -642,7 +655,13 @@ class BaseApiClient:
           else None
       )
 
-      if not self.location and not self.api_key and not self.custom_base_url:
+      if (
+          not self.location
+          and not self.api_key
+      ):
+        if not self.custom_base_url:
+          self.location = 'global'
+        elif self.custom_base_url.endswith('.googleapis.com'):
           self.location = 'global'
 
       # Skip fetching project from ADC if base url is provided in http options.
@@ -660,12 +679,16 @@ class BaseApiClient:
       if not has_sufficient_auth and not self.custom_base_url:
         # Skip sufficient auth check if base url is provided in http options.
         raise ValueError(
-            'Project or API key must be set when using the Vertex '
-            'AI API.'
+            'Project or API key must be set when using the Vertex AI API.'
         )
-      if self.api_key or self.location == 'global':
+      if (
+          self.api_key or self.location == 'global'
+      ) and not self.custom_base_url:
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif self.custom_base_url and not ((project and location) or api_key):
+      elif (
+          self.custom_base_url
+          and not self.custom_base_url.endswith('.googleapis.com')
+      ) and not ((project and location) or api_key):
         # Avoid setting default base url and api version if base_url provided.
         # API gateway proxy can use the auth in custom headers, not url.
         # Enable custom url if auth is not sufficient.
@@ -681,9 +704,9 @@ class BaseApiClient:
     else:  # Implicit initialization or missing arguments.
       if not self.api_key:
         raise ValueError(
-            'Missing key inputs argument! To use the Google AI API,'
-            ' provide (`api_key`) arguments. To use the Google Cloud API,'
-            ' provide (`vertexai`, `project` & `location`) arguments.'
+            'No API key was provided. Please pass a valid API key. Learn how to'
+            ' create an API key at'
+            ' https://ai.google.dev/gemini-api/docs/api-key.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
       self._http_options.api_version = 'v1beta'
@@ -715,18 +738,21 @@ class BaseApiClient:
       self._async_httpx_client = self._http_options.httpx_async_client
     else:
       self._async_httpx_client = AsyncHttpxClient(**async_client_args)
-    if self._use_aiohttp():
-      try:
-        import aiohttp  # pylint: disable=g-import-not-at-top
-        # Do it once at the genai.Client level. Share among all requests.
-        self._async_client_session_request_args = self._ensure_aiohttp_ssl_ctx(
-            self._http_options
-        )
-      except ImportError:
-        pass
 
     # Initialize the aiohttp client session.
     self._aiohttp_session: Optional[aiohttp.ClientSession] = None
+    if self._use_aiohttp():
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
+
+        if self._http_options.aiohttp_client:
+          self._aiohttp_session = self._http_options.aiohttp_client
+        # Do it once at the genai.Client level. Share among all requests.
+        self._async_client_session_request_args = (
+            self._ensure_aiohttp_ssl_ctx(self._http_options)
+        )
+      except ImportError:
+        pass
 
     retry_kwargs = retry_args(self._http_options.retry_options)
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
@@ -984,12 +1010,7 @@ class BaseApiClient:
           self.project = project
 
       if self._credentials:
-        if self._credentials.expired or not self._credentials.token:
-          # Only refresh when it needs to. Default expiration is 3600 seconds.
-          refresh_auth(self._credentials)
-        if not self._credentials.token:
-          raise RuntimeError('Could not resolve API token from the environment')
-        return self._credentials.token  # type: ignore[no-any-return]
+        return get_token_from_credentials(self, self._credentials)  # type: ignore[no-any-return]
       else:
         raise RuntimeError('Could not resolve API token from the environment')
 
@@ -1034,18 +1055,10 @@ class BaseApiClient:
             self.project = project
 
     if self._credentials:
-      if self._credentials.expired or not self._credentials.token:
-        # Only refresh when it needs to. Default expiration is 3600 seconds.
-        async_auth_lock = await self._get_async_auth_lock()
-        async with async_auth_lock:
-          if self._credentials.expired or not self._credentials.token:
-            # Double check that the credentials expired before refreshing.
-            await asyncio.to_thread(refresh_auth, self._credentials)
-
-      if not self._credentials.token:
-        raise RuntimeError('Could not resolve API token from the environment')
-
-      return self._credentials.token
+      return await async_get_token_from_credentials(
+          self,
+          self._credentials
+      )  # type: ignore[no-any-return]
     else:
       raise RuntimeError('Could not resolve API token from the environment')
 
@@ -1448,7 +1461,9 @@ class BaseApiClient:
         http_method, path, request_dict, http_options
     )
 
-    response = await self._async_request(http_request=http_request, stream=True)
+    response = await self._async_request(
+        http_request=http_request, http_options=http_options, stream=True
+    )
 
     async def async_generator():  # type: ignore[no-untyped-def]
       async for chunk in response:
@@ -1523,6 +1538,21 @@ class BaseApiClient:
           The HttpResponse object from the finalize request.
     """
     offset = 0
+    http_options = http_options if http_options else self._http_options
+    base_url = (
+        http_options.get('base_url')
+        if isinstance(http_options, dict)
+        else getattr(http_options, 'base_url', None)
+    )
+    if base_url:
+      parsed_base = urlparse(base_url)
+      parsed_upload = urlparse(upload_url)
+      upload_url = urlunparse(
+          parsed_upload._replace(
+              scheme=parsed_base.scheme, netloc=parsed_base.netloc
+          )
+      )
+
     # Upload the file in chunks
     while True:
       file_chunk = file.read(CHUNK_SIZE)
@@ -1533,7 +1563,6 @@ class BaseApiClient:
       # If last chunk, finalize the upload.
       if chunk_size + offset >= upload_size:
         upload_command += ', finalize'
-      http_options = http_options if http_options else self._http_options
       timeout = (
           http_options.get('timeout')
           if isinstance(http_options, dict)
@@ -1547,11 +1576,17 @@ class BaseApiClient:
             else self._http_options.timeout
         )
       timeout_in_seconds = get_timeout_in_seconds(timeout)
-      upload_headers = {
+      user_headers = (
+          http_options.get('headers', {})
+          if isinstance(http_options, dict)
+          else (getattr(http_options, 'headers', {}) or {})
+      )
+      upload_headers = dict(user_headers) if user_headers else {}
+      upload_headers.update({
           'X-Goog-Upload-Command': upload_command,
           'X-Goog-Upload-Offset': str(offset),
           'Content-Length': str(chunk_size),
-      }
+      })
       populate_server_timeout_header(upload_headers, timeout_in_seconds)
       retry_count = 0
       while retry_count < MAX_RETRY_COUNT:
@@ -1674,6 +1709,21 @@ class BaseApiClient:
           The HttpResponse object from the finalized request.
     """
     offset = 0
+    http_options = http_options if http_options else self._http_options
+    base_url = (
+        http_options.get('base_url')
+        if isinstance(http_options, dict)
+        else getattr(http_options, 'base_url', None)
+    )
+    if base_url:
+      parsed_base = urlparse(base_url)
+      parsed_upload = urlparse(upload_url)
+      upload_url = urlunparse(
+          parsed_upload._replace(
+              scheme=parsed_base.scheme, netloc=parsed_base.netloc
+          )
+      )
+
     # Upload the file in chunks
     if self._use_aiohttp():  # pylint: disable=g-import-not-at-top
       self._aiohttp_session = await self._get_aiohttp_session()
@@ -1689,7 +1739,6 @@ class BaseApiClient:
         # If last chunk, finalize the upload.
         if chunk_size + offset >= upload_size:
           upload_command += ', finalize'
-        http_options = http_options if http_options else self._http_options
         timeout = (
             http_options.get('timeout')
              if isinstance(http_options, dict)
@@ -1703,11 +1752,17 @@ class BaseApiClient:
               else self._http_options.timeout
           )
         timeout_in_seconds = get_timeout_in_seconds(timeout)
-        upload_headers = {
+        user_headers = (
+            http_options.get('headers', {})
+            if isinstance(http_options, dict)
+            else (getattr(http_options, 'headers', {}) or {})
+        )
+        upload_headers = dict(user_headers) if user_headers else {}
+        upload_headers.update({
             'X-Goog-Upload-Command': upload_command,
-             'X-Goog-Upload-Offset': str(offset),
+            'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
-        }
+        })
         populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
         retry_count = 0
@@ -1765,7 +1820,6 @@ class BaseApiClient:
         # If last chunk, finalize the upload.
         if chunk_size + offset >= upload_size:
           upload_command += ', finalize'
-        http_options = http_options if http_options else self._http_options
         timeout = (
             http_options.get('timeout')
             if isinstance(http_options, dict)
@@ -1779,11 +1833,17 @@ class BaseApiClient:
               else self._http_options.timeout
           )
         timeout_in_seconds = get_timeout_in_seconds(timeout)
-        upload_headers = {
+        user_headers = (
+            http_options.get('headers', {})
+            if isinstance(http_options, dict)
+            else (getattr(http_options, 'headers', {}) or {})
+        )
+        upload_headers = dict(user_headers) if user_headers else {}
+        upload_headers.update({
             'X-Goog-Upload-Command': upload_command,
             'X-Goog-Upload-Offset': str(offset),
             'Content-Length': str(chunk_size),
-        }
+        })
         populate_server_timeout_header(upload_headers, timeout_in_seconds)
 
         retry_count = 0
@@ -1905,7 +1965,7 @@ class BaseApiClient:
     # close the client when the object is garbage collected.
     if not self._http_options.httpx_async_client:
       await self._async_httpx_client.aclose()
-    if self._aiohttp_session:
+    if self._aiohttp_session and not self._http_options.aiohttp_client:
       await self._aiohttp_session.close()
 
   def __del__(self) -> None:
@@ -1925,3 +1985,33 @@ class BaseApiClient:
       asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
+
+def get_token_from_credentials(
+    client: 'BaseApiClient',
+    credentials: google.auth.credentials.Credentials
+) -> str:
+  """Refreshes the authentication token for the given credentials."""
+  if credentials.expired or not credentials.token:
+    # Only refresh when it needs to. Default expiration is 3600 seconds.
+    refresh_auth(credentials)
+  if not credentials.token:
+    raise RuntimeError('Could not resolve API token from the environment')
+  return credentials.token  # type: ignore[no-any-return]
+
+async def async_get_token_from_credentials(
+    client: 'BaseApiClient',
+    credentials: google.auth.credentials.Credentials
+) -> str:
+  """Refreshes the authentication token for the given credentials."""
+  if credentials.expired or not credentials.token:
+    # Only refresh when it needs to. Default expiration is 3600 seconds.
+    async_auth_lock = await client._get_async_auth_lock()
+    async with async_auth_lock:
+      if credentials.expired or not credentials.token:
+        # Double check that the credentials expired before refreshing.
+        await asyncio.to_thread(refresh_auth, credentials)
+
+  if not credentials.token:
+    raise RuntimeError('Could not resolve API token from the environment')
+
+  return credentials.token    # type: ignore[no-any-return]

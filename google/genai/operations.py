@@ -249,7 +249,34 @@ class Operations(_api_module.BaseModule):
       *,
       config: Optional[types.GetOperationConfigOrDict] = None,
   ) -> T:
-    """Gets the status of an operation."""
+    """Gets the status of a long-running operation.
+
+    Args:
+      operation (Operation): The operation instance to get the status for.
+      config (GetOperationConfig): Configuration for getting the operation.
+
+    Returns:
+      Operation: The updated operation instance with the latest status or
+      result.
+
+    Usage:
+
+    .. code-block:: python
+
+      import time
+
+      operation = client.models.generate_videos(
+          model="veo-2.0-generate-001",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
+      )
+      while not operation.done:
+          time.sleep(10)
+          operation = client.operations.get(operation)
+
+      print(operation.result)
+    """
     # Currently, only GenerateVideosOperation is supported.
     # TODO(b/398040607): Support short form names
     operation_name = operation.name
@@ -460,7 +487,34 @@ class AsyncOperations(_api_module.BaseModule):
       *,
       config: Optional[types.GetOperationConfigOrDict] = None,
   ) -> T:
-    """Gets the status of an operation."""
+    """Gets the status of a long-running operation.
+
+    Args:
+      operation (Operation): The operation instance to get the status for.
+      config (GetOperationConfig): Configuration for getting the operation.
+
+    Returns:
+      Operation: The updated operation instance with the latest status or
+      result.
+
+    Usage:
+
+    .. code-block:: python
+
+      import asyncio
+
+      operation = await client.aio.models.generate_videos(
+          model="veo-2.0-generate-001",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
+      )
+      while not operation.done:
+          await asyncio.sleep(10)
+          operation = await client.aio.operations.get(operation)
+
+      print(operation.result)
+    """
     # Currently, only GenerateVideosOperation is supported.
     operation_name = operation.name
     if not operation_name:

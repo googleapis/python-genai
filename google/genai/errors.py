@@ -18,6 +18,7 @@
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import httpx
 import json
+import websockets
 from . import _common
 
 
@@ -69,14 +70,26 @@ class APIError(Exception):
     return obj
 
   def _get_status(self, response_json: Any) -> Any:
-    return response_json.get(
-        'status', response_json.get('error', {}).get('status', None)
-    )
+    try:
+      status = response_json.get(
+          'status', response_json.get('error', {}).get('status', None)
+      )
+      return status
+    except AttributeError:
+      # If response_json is not a dict, return close code to handle the case
+      # when encountering a websocket error.
+      return None
 
   def _get_message(self, response_json: Any) -> Any:
-    return response_json.get(
-        'message', response_json.get('error', {}).get('message', None)
-    )
+    try:
+      message = response_json.get(
+          'message', response_json.get('error', {}).get('message', None)
+      )
+      return message
+    except AttributeError:
+      # If response_json is not a dict, return it as None.
+      # This is to handle the case when encountering a websocket error.
+      return None
 
   def _get_code(self, response_json: Any) -> Any:
     return response_json.get(
