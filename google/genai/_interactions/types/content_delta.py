@@ -160,6 +160,9 @@ class DeltaFunctionCall(BaseModel):
 
     type: Literal["function_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 DeltaFunctionResultResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
@@ -197,6 +200,9 @@ class DeltaCodeExecutionCall(BaseModel):
 
     type: Literal["code_execution_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 class DeltaCodeExecutionResult(BaseModel):
     call_id: str
@@ -221,6 +227,9 @@ class DeltaURLContextCall(BaseModel):
 
     type: Literal["url_context_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 class DeltaURLContextResult(BaseModel):
     call_id: str
@@ -244,6 +253,9 @@ class DeltaGoogleSearchCall(BaseModel):
     """The arguments to pass to Google Search."""
 
     type: Literal["google_search_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaGoogleSearchResult(BaseModel):
@@ -271,6 +283,9 @@ class DeltaMCPServerToolCall(BaseModel):
     server_name: str
 
     type: Literal["mcp_server_tool_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 DeltaMCPServerToolResultResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
@@ -306,6 +321,9 @@ class DeltaFileSearchCall(BaseModel):
 
     type: Literal["file_search_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 class DeltaFileSearchResultResult(BaseModel):
     """The result of the File Search."""
@@ -340,6 +358,9 @@ class DeltaGoogleMapsCall(BaseModel):
 
     arguments: Optional[GoogleMapsCallArguments] = None
     """The arguments to pass to the Google Maps tool."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaGoogleMapsResult(BaseModel):

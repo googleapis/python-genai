@@ -17,8 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Iterable
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypedDict
+
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 
 __all__ = ["FileSearchResultContentParam", "Result"]
 
@@ -47,5 +51,8 @@ class FileSearchResultContentParam(TypedDict, total=False):
     result: Iterable[Result]
     """The results of the File Search."""
 
-    signature: str
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """A signature hash for backend validation."""
+
+
+set_pydantic_config(FileSearchResultContentParam, {"arbitrary_types_allowed": True})

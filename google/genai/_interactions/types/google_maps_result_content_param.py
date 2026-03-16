@@ -17,9 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Iterable
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .google_maps_result_param import GoogleMapsResultParam
 
 __all__ = ["GoogleMapsResultContentParam"]
@@ -36,5 +39,8 @@ class GoogleMapsResultContentParam(TypedDict, total=False):
 
     type: Required[Literal["google_maps_result"]]
 
-    signature: str
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """A signature hash for backend validation."""
+
+
+set_pydantic_config(GoogleMapsResultContentParam, {"arbitrary_types_allowed": True})

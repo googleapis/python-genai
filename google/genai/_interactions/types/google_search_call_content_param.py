@@ -17,8 +17,12 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union
+from typing_extensions import Literal, Required, Annotated, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .google_search_call_arguments_param import GoogleSearchCallArgumentsParam
 
 __all__ = ["GoogleSearchCallContentParam"]
@@ -37,3 +41,9 @@ class GoogleSearchCallContentParam(TypedDict, total=False):
 
     search_type: Literal["web_search", "image_search"]
     """The type of search grounding enabled."""
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(GoogleSearchCallContentParam, {"arbitrary_types_allowed": True})
