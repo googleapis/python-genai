@@ -45,7 +45,7 @@ class FileSearchResultContentParam(TypedDict, total=False):
     type: Required[Literal["file_search_result"]]
 
     result: Iterable[Result]
-    """The results of the File Search."""
+    """Required. The results of the File Search."""
 
     signature: str
     """A signature hash for backend validation."""

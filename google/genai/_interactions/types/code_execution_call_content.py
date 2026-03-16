@@ -30,6 +30,6 @@ class CodeExecutionCallContent(BaseModel):
     """A unique ID for this specific tool call."""
 
     arguments: CodeExecutionCallArguments
-    """The arguments to pass to the code execution."""
+    """Required. The arguments to pass to the code execution."""
 
     type: Literal["code_execution_call"]

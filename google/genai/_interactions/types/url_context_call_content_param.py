@@ -31,6 +31,6 @@ class URLContextCallContentParam(TypedDict, total=False):
     """A unique ID for this specific tool call."""
 
     arguments: Required[URLContextCallArgumentsParam]
-    """The arguments to pass to the URL context."""
+    """Required. The arguments to pass to the URL context."""
 
     type: Required[Literal["url_context_call"]]

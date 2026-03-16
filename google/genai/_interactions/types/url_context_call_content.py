@@ -30,6 +30,6 @@ class URLContextCallContent(BaseModel):
     """A unique ID for this specific tool call."""
 
     arguments: URLContextCallArguments
-    """The arguments to pass to the URL context."""
+    """Required. The arguments to pass to the URL context."""
 
     type: Literal["url_context_call"]

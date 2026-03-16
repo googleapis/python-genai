@@ -32,7 +32,7 @@ class URLContextResultContentParam(TypedDict, total=False):
     """ID to match the ID from the url context call block."""
 
     result: Required[Iterable[URLContextResultParam]]
-    """The results of the URL context."""
+    """Required. The results of the URL context."""
 
     type: Required[Literal["url_context_result"]]
 
