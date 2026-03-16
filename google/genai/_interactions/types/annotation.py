@@ -15,28 +15,14 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
+from typing import Union
+from typing_extensions import Annotated, TypeAlias
 
-from .._models import BaseModel
+from .._utils import PropertyInfo
+from .url_citation import URLCitation
+from .file_citation import FileCitation
+from .place_citation import PlaceCitation
 
 __all__ = ["Annotation"]
 
-
-class Annotation(BaseModel):
-    """Citation information for model-generated content."""
-
-    end_index: Optional[int] = None
-    """End of the attributed segment, exclusive."""
-
-    source: Optional[str] = None
-    """Source attributed for a portion of the text.
-
-    Could be a URL, title, or
-    other identifier.
-    """
-
-    start_index: Optional[int] = None
-    """Start of segment of the response that is attributed to this source.
-
-    Index indicates the start of the segment, measured in bytes.
-    """
+Annotation: TypeAlias = Annotated[Union[URLCitation, FileCitation, PlaceCitation], PropertyInfo(discriminator="type")]

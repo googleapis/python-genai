@@ -24,20 +24,7 @@ from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
 
-__all__ = ["FileSearchResultContentParam", "Result"]
-
-
-class Result(TypedDict, total=False):
-    """The result of the File Search."""
-
-    file_search_store: str
-    """The name of the file search store."""
-
-    text: str
-    """The text of the search result."""
-
-    title: str
-    """The title of the search result."""
+__all__ = ["FileSearchResultContentParam"]
 
 
 class FileSearchResultContentParam(TypedDict, total=False):
@@ -48,7 +35,7 @@ class FileSearchResultContentParam(TypedDict, total=False):
 
     type: Required[Literal["file_search_result"]]
 
-    result: Iterable[Result]
+    result: Iterable[object]
     """The results of the File Search."""
 
     signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
