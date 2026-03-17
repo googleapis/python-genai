@@ -105,6 +105,27 @@ def _Content_to_mldev(
   return to_object
 
 
+def _Content_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _Part_to_vertex(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['role']) is not None:
+    setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
 def _CreateCachedContentConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -181,14 +202,19 @@ def _CreateCachedContentConfig_to_vertex(
     setv(
         parent_object,
         ['contents'],
-        [item for item in t.t_contents(getv(from_object, ['contents']))],
+        [
+            _Content_to_vertex(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
+        ],
     )
 
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
         ['systemInstruction'],
-        t.t_content(getv(from_object, ['system_instruction'])),
+        _Content_to_vertex(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
     )
 
   if getv(from_object, ['tools']) is not None:
@@ -202,7 +228,11 @@ def _CreateCachedContentConfig_to_vertex(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
+    setv(
+        parent_object,
+        ['toolConfig'],
+        _ToolConfig_to_vertex(getv(from_object, ['tool_config']), to_object),
+    )
 
   if getv(from_object, ['kms_key_name']) is not None:
     setv(
@@ -667,6 +697,73 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
+  if getv(from_object, ['tool_call']) is not None:
+    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
+
+  if getv(from_object, ['tool_response']) is not None:
+    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+
+  return to_object
+
+
+def _Part_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['tool_call']) is not None:
+    raise ValueError('tool_call parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['tool_response']) is not None:
+    raise ValueError('tool_response parameter is not supported in Vertex AI.')
+
   return to_object
 
 
@@ -687,6 +784,39 @@ def _ToolConfig_to_mldev(
         _FunctionCallingConfig_to_mldev(
             getv(from_object, ['function_calling_config']), to_object
         ),
+    )
+
+  if getv(from_object, ['include_server_side_tool_invocations']) is not None:
+    setv(
+        to_object,
+        ['includeServerSideToolInvocations'],
+        getv(from_object, ['include_server_side_tool_invocations']),
+    )
+
+  return to_object
+
+
+def _ToolConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
+  if getv(from_object, ['function_calling_config']) is not None:
+    setv(
+        to_object,
+        ['functionCallingConfig'],
+        getv(from_object, ['function_calling_config']),
+    )
+
+  if getv(from_object, ['include_server_side_tool_invocations']) is not None:
+    raise ValueError(
+        'include_server_side_tool_invocations parameter is not supported in'
+        ' Vertex AI.'
     )
 
   return to_object

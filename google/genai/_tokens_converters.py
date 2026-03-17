@@ -515,6 +515,12 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
+  if getv(from_object, ['tool_call']) is not None:
+    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
+
+  if getv(from_object, ['tool_response']) is not None:
+    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+
   return to_object
 
 

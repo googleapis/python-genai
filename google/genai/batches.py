@@ -1454,6 +1454,12 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
+  if getv(from_object, ['tool_call']) is not None:
+    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
+
+  if getv(from_object, ['tool_response']) is not None:
+    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+
   return to_object
 
 
@@ -1491,6 +1497,13 @@ def _ToolConfig_to_mldev(
         _FunctionCallingConfig_to_mldev(
             getv(from_object, ['function_calling_config']), to_object
         ),
+    )
+
+  if getv(from_object, ['include_server_side_tool_invocations']) is not None:
+    setv(
+        to_object,
+        ['includeServerSideToolInvocations'],
+        getv(from_object, ['include_server_side_tool_invocations']),
     )
 
   return to_object
