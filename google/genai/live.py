@@ -92,10 +92,12 @@ class AsyncSession:
       api_client: BaseApiClient,
       websocket: ClientConnection,
       session_id: Optional[str] = None,
+      setup_complete: Optional[types.LiveServerSetupComplete] = None,
   ):
     self._api_client = api_client
     self._ws = websocket
     self.session_id = session_id
+    self.setup_complete = setup_complete
 
   async def send(
       self,
@@ -1131,12 +1133,15 @@ class AsyncLive(_api_module.BaseModule):
       )
       if setup_response.setup_complete:
         session_id = setup_response.setup_complete.session_id
+        setup_complete = setup_response.setup_complete
       else:
         session_id = None
+        setup_complete = None
       yield AsyncSession(
           api_client=self._api_client,
           websocket=ws,
           session_id=session_id,
+          setup_complete=setup_complete,
       )
 
 
