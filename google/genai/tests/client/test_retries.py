@@ -342,6 +342,33 @@ def test_retries_failed_request_retries_unsuccessfully():
     mock_transport.handle_request.assert_called()
 
 
+def test_retries_failed_request_no_retries_unsuccessfully():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          http_options=types.HttpOptions(
+              retry_options=types.HttpRetryOptions(attempts=0)
+          ),
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    try:
+      client.request(http_method='GET', path='path', request_dict={})
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert e.code == 429
+    mock_transport.handle_request.assert_called()
+
+
 def test_retries_failed_request_retries_unsuccessfully_at_request_level():
   mock_transport = mock.Mock(spec=httpx.BaseTransport)
   mock_transport.handle_request.side_effect = (
