@@ -24,6 +24,8 @@ from unittest.mock import Mock
 from unittest.mock import patch
 import warnings
 
+import google.auth
+import google.auth.transport.requests
 from google.oauth2.credentials import Credentials
 import pytest
 from websockets import client
@@ -36,6 +38,7 @@ from ... import live
 from ... import live_music
 from ... import types
 from .. import pytest_helper
+
 try:
     import aiohttp
     AIOHTTP_NOT_INSTALLED = False
@@ -49,10 +52,27 @@ requires_aiohttp = pytest.mark.skipif(
 )
 
 
-def mock_api_client(vertexai=False, credentials=None):
+class FakeCredentials(Credentials):
+  def __init__(self, token='fake_token', valid=True):
+    super().__init__(token='placeholder')
+    self.token = token
+    self._valid = valid
+    self.refresh_called = False
+
+  def refresh(self, request):
+    self.token = 'refreshed_token'
+    self._valid = True
+    self.refresh_called = True
+
+  @property
+  def valid(self):
+    return self._valid
+
+
+def mock_api_client(vertexai=False, credentials=None, api_key='TEST_API_KEY'):
   api_client = mock.MagicMock(spec=gl_client.BaseApiClient)
   if not vertexai:
-    api_client.api_key = 'TEST_API_KEY'
+    api_client.api_key = api_key
     api_client.location = None
     api_client.project = None
   else:
@@ -67,7 +87,22 @@ def mock_api_client(vertexai=False, credentials=None):
   )  # Ensure headers exist
   api_client.vertexai = vertexai
   api_client._api_client = api_client
+  api_client._websocket_base_url = lambda: 'wss://test.com'
   return api_client
+
+
+@pytest.fixture(autouse=True)
+def clear_env(monkeypatch):
+  monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+  monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+  monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+  monkeypatch.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+  monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
+  monkeypatch.delenv("GOOGLE_GENAI_CLIENT_MODE", raising=False)
+  monkeypatch.delenv("GOOGLE_GENAI_REPLAY_ID", raising=False)
+  monkeypatch.delenv("GOOGLE_GENAI_REPLAYS_DIRECTORY", raising=False)
+  monkeypatch.delenv("GOOGLE_GEMINI_BASE_URL", raising=False)
+  monkeypatch.delenv("GOOGLE_VERTEX_BASE_URL", raising=False)
 
 
 @pytest.fixture
@@ -115,14 +150,15 @@ async def get_connect_message(api_client, model):
   mock_google_auth_default.return_value = (mock_creds, None)
 
   @contextlib.asynccontextmanager
-  async def mock_connect(uri, additional_headers=None):
+  async def mock_connect(uri, additional_headers=None, **kwargs):
     yield mock_ws
 
-  @patch('google.auth.default', new=mock_google_auth_default)
-  @patch.object(live_music, 'connect', new=mock_connect)
-  async def _test_connect():
-    live_module = live.AsyncLive(api_client)
-    async with live_module.music.connect(
+  with (
+      patch.object(google.auth, 'default', new=mock_google_auth_default),
+      patch.object(live_music, 'connect', new=mock_connect)
+  ):
+    live_module = live_music.AsyncLiveMusic(api_client)
+    async with live_module.connect(
         model=model,
     ):
       pass
@@ -130,7 +166,6 @@ async def get_connect_message(api_client, model):
     mock_ws.send.assert_called_once()
     return json.loads(mock_ws.send.call_args[0][0])
 
-  return await _test_connect()
 
 
 def test_mldev_from_env(monkeypatch):
@@ -142,6 +177,7 @@ def test_mldev_from_env(monkeypatch):
   assert not client.aio.live.music._api_client.vertexai
   assert client.aio.live.music._api_client.api_key == api_key
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
+  assert client.aio.live._api_client._http_options.headers['x-goog-api-key'] == api_key
 
 
 @requires_aiohttp
@@ -360,3 +396,70 @@ async def test_setup_to_api(vertexai):
   else:
     expected_result['setup']['model'] = 'models/test_model'
   assert result == expected_result
+
+@pytest.mark.asyncio
+async def test_connect_with_api_key(mock_websocket):
+    client = Client(api_key='TEST_API_KEY', http_options={'api_version': 'v1test'})
+    client._api_client._websocket_base_url = lambda: 'wss://test.com'
+    live_module = client.aio.live.music
+    capture = {}
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None, **kwargs):
+      capture['uri'] = uri
+      capture['headers'] = additional_headers
+      yield mock_websocket
+
+    with patch.object(live_music, 'connect', new=mock_connect):
+      async with live_module.connect(model='test-model'):
+          pass
+
+    assert capture['uri'] == 'wss://test.com/ws/google.ai.generativelanguage.v1test.GenerativeService.BidiGenerateMusic'
+    assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
+    assert 'Authorization' not in capture['headers']
+
+@pytest.mark.parametrize(
+    "creds, existing_headers, expected_auth, expect_refresh",
+    [
+        (FakeCredentials(), {}, 'Bearer fake_token', False),
+        (FakeCredentials(valid=False), {}, 'Bearer refreshed_token', True),
+        (FakeCredentials(token=None, valid=False), {}, 'Bearer refreshed_token', True),
+        (FakeCredentials(token='existing_token', valid=True), {}, 'Bearer existing_token', False),
+        (FakeCredentials(token='new_token', valid=True), {'Authorization': 'Bearer old_token'}, 'Bearer old_token', False),
+    ],
+)
+@pytest.mark.asyncio
+async def test_connect_with_credentials(
+    mock_websocket, creds, existing_headers, expected_auth, expect_refresh
+):
+    client = api_client.BaseApiClient(credentials=creds, http_options={'api_version': 'v1test'})
+    if existing_headers:
+      client._http_options.headers = existing_headers
+    client._websocket_base_url = lambda: 'wss://test.com'
+    live_module = live_music.AsyncLiveMusic(client)
+    capture = {}
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(uri, additional_headers=None, **kwargs):
+      capture['uri'] = uri
+      capture['headers'] = additional_headers
+      yield mock_websocket
+
+    with patch.object(live_music, 'connect', new=mock_connect):
+      with patch.object(google.auth.transport.requests, 'Request', autospec=True):
+        async with live_module.connect(model='test-model'):
+          pass
+
+    assert capture['uri'] == 'wss://test.com/ws/google.ai.generativelanguage.v1test.GenerativeService.BidiGenerateMusic'
+    headers = capture['headers']
+    assert headers.get('Authorization') == expected_auth
+    assert 'x-goog-api-key' not in headers
+    assert creds.refresh_called == expect_refresh
+
+@pytest.mark.asyncio
+async def test_connect_vertex_unsupported(mock_websocket):
+    client = Client(vertexai=True, project='test', location='us-central1')
+    live_module = client.aio.live.music
+    with pytest.raises(NotImplementedError):
+        async with live_module.connect(model='test-model'):
+            pass
