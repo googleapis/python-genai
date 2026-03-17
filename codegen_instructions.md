@@ -652,7 +652,7 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-## Other APIs
+## Other APIs 
 
 The list of APIs and capabilities above are not comprehensive. If users ask you
 to generate code for a capability not provided above, refer them to
