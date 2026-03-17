@@ -420,7 +420,6 @@ response = client.models.generate_content(
     contents='What is the weather in Boston?',
     config=types.GenerateContentConfig(
         tools=[get_current_weather] # Make the function available to the model as a tool
-
     ),
 )
 
@@ -466,6 +465,14 @@ print(f"Search Pages: {', '.join([site.web.title for site in response.candidates
 
 The output `response.text` will likely not be in JSON format, do not attempt to
 parse it as JSON.
+
+> **⚠️ Known limitation — CJK languages with Gemini 2.5:** Search Grounding
+> does not work correctly with CJK (Japanese, Chinese, Korean) input on any
+> Gemini 2.5 model. `webSearchQueries` returns an empty list `[]` and the model
+> treats the input as garbled text. English input on the same models works
+> correctly. **Use a Gemini 3.x model (e.g. `gemini-3-pro-preview`) for Search
+> Grounding with CJK queries.**
+> See [issue #2134](https://github.com/googleapis/python-genai/issues/2134).
 
 ## Media Generation
 
@@ -607,49 +614,6 @@ for n, generated_video in enumerate(operation.response.generated_videos):
     generated_video.video.save(f'video{n}.mp4')  # saves the video
 ```
 
-### Search Grounding
-
-Google Search can be used as a tool for grounding queries that with up to date
-information from the web.
-
-**Correct**
-
-```python
-from google import genai
-from google.genai import types
-
-client = genai.Client()
-
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents='What was the score of the latest Olympique Lyonais game?',
-    config=types.GenerateContentConfig(
-        tools=[
-            types.Tool(google_search=types.GoogleSearch())
-        ]
-    ),
-)
-
-# Response
-print(f'Response:\n {response.text}')
-# Search details
-print(f'Search Query: {response.candidates[0].grounding_metadata.web_search_queries}')
-# Urls used for grounding
-print(f"Search Pages: {', '.join([site.web.title for site in response.candidates[0].grounding_metadata.grounding_chunks])}")
-```
-
-The output `response.text` will likely not be in JSON format, do not attempt to
-parse it as JSON.
-
-> **⚠️ Known limitation — CJK languages with Gemini 2.5:** Search Grounding
-> does not work correctly with CJK (Japanese, Chinese, Korean) input on any
-> Gemini 2.5 model. `webSearchQueries` returns an empty list `[]` and the model
-> treats the input as garbled text. English input on the same models works
-> correctly. **Use a Gemini 3.x model (e.g. `gemini-3-pro-preview`) for Search
-> Grounding with CJK queries.**
-> See [issue #2134](https://github.com/googleapis/python-genai/issues/2134).
-
-### Content and Part Hierarchy
 ## Content and Part Hierarchy
 
 While the simpler API call is often sufficient, you may run into scenarios where
@@ -696,8 +660,8 @@ ai.google.dev/gemini-api/docs.
 
 ## Useful Links
 
--   Documentation: ai.google.dev/gemini-api/docs
--   API Keys and Authentication: ai.google.dev/gemini-api/docs/api-key
--   Models: ai.google.dev/models
--   API Pricing: ai.google.dev/pricing
--   Rate Limits: ai.google.dev/rate-limits
+-   Documentation: [ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)
+-   API Keys and Authentication: [ai.google.dev/gemini-api/docs/api-key](https://ai.google.dev/gemini-api/docs/api-key)
+-   Models: [ai.google.dev/models](https://ai.google.dev/models])
+-   API Pricing: [ai.google.dev/pricing](https://ai.google.dev/pricing)
+-   Rate Limits: [ai.google.dev/rate-limits](https://ai.google.dev/rate-limits)
