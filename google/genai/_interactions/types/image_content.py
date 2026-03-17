@@ -28,6 +28,8 @@ class ImageContent(BaseModel):
 
     type: Literal["image"]
 
+    caption: Optional[str] = None
+
     data: Optional[str] = None
     """The image content."""
 
