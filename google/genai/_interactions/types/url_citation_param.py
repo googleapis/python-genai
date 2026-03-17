@@ -15,21 +15,26 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
-from typing_extensions import Literal
+from __future__ import annotations
 
-from .._models import BaseModel
+from typing_extensions import Literal, Required, TypedDict
 
-__all__ = ["FileSearchCallContent"]
+__all__ = ["URLCitationParam"]
 
 
-class FileSearchCallContent(BaseModel):
-    """File Search content."""
+class URLCitationParam(TypedDict, total=False):
+    """A URL citation annotation."""
 
-    id: str
-    """A unique ID for this specific tool call."""
+    type: Required[Literal["url_citation"]]
 
-    type: Literal["file_search_call"]
+    end_index: int
+    """End of the attributed segment, exclusive."""
 
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
+    start_index: int
+    """Start of segment of the response that is attributed to this source."""
+
+    title: str
+    """The title of the URL."""
+
+    url: str
+    """The URL."""

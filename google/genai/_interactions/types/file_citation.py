@@ -20,16 +20,25 @@ from typing_extensions import Literal
 
 from .._models import BaseModel
 
-__all__ = ["FileSearchCallContent"]
+__all__ = ["FileCitation"]
 
 
-class FileSearchCallContent(BaseModel):
-    """File Search content."""
+class FileCitation(BaseModel):
+    """A file citation annotation."""
 
-    id: str
-    """A unique ID for this specific tool call."""
+    type: Literal["file_citation"]
 
-    type: Literal["file_search_call"]
+    document_uri: Optional[str] = None
+    """The URI of the file."""
 
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
+    end_index: Optional[int] = None
+    """End of the attributed segment, exclusive."""
+
+    file_name: Optional[str] = None
+    """The name of the file."""
+
+    source: Optional[str] = None
+    """Source attributed for a portion of the text."""
+
+    start_index: Optional[int] = None
+    """Start of segment of the response that is attributed to this source."""
