@@ -31,7 +31,7 @@ class DocumentContent(BaseModel):
     data: Optional[str] = None
     """The document content."""
 
-    mime_type: Optional[Literal["application/pdf"]] = None
+    mime_type: Optional[Literal["application/pdf", "text/html"]] = None
     """The mime type of the document."""
 
     uri: Optional[str] = None

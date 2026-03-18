@@ -35,7 +35,7 @@ class DocumentContentParam(TypedDict, total=False):
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """The document content."""
 
-    mime_type: Literal["application/pdf"]
+    mime_type: Literal["application/pdf", "text/html"]
     """The mime type of the document."""
 
     uri: str
