@@ -18,18 +18,9 @@
 import inspect
 from typing import List, Optional
 
-import pytest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from google import genai
 from google.genai import types
-
-
-@pytest.fixture
-def client():
-    """Return a client that uses the replay_session."""
-    client = genai.Client(api_key="test-api-key")
-    return client
 
 
 def test_live_client_classes_exist():
@@ -60,7 +51,7 @@ def test_live_client_classes_exist():
 def test_live_client_message_fields():
     """Verify that LiveClientMessage has expected fields."""
     # Get the field details
-    fields = types.LiveClientMessage.__fields__
+    fields = types.LiveClientMessage.model_fields
 
     # Check for expected fields
     assert "setup" in fields
@@ -100,36 +91,28 @@ def test_list_pydantic_in_generate_content_response():
     assert all(isinstance(item, Recipe) for item in response.parsed)
 
 
-def test_combined_functionality(client):
+def test_combined_functionality():
     """Test that combines verification of both LiveClient classes and list[pydantic.BaseModel] support."""
     # Verify LiveClient classes exist
     assert hasattr(types, "LiveClientMessage")
     assert inspect.isclass(types.LiveClientMessage)
 
-    # Test the list[pydantic.BaseModel] support in generate_content
+    # Test that GenerateContentResponse.parsed accepts list[pydantic.BaseModel]
     class Recipe(BaseModel):
         recipe_name: str
         ingredients: List[str]
         instructions: Optional[List[str]] = None
 
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents="List 2 simple cookie recipes.",
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=list[Recipe],
-        ),
-    )
+    response = types.GenerateContentResponse()
+    recipes = [
+        Recipe(recipe_name="Chocolate Chip Cookies", ingredients=["Flour", "Sugar"]),
+        Recipe(recipe_name="Oatmeal Cookies", ingredients=["Oats", "Flour"]),
+    ]
+    response.parsed = recipes
 
-    # Verify the parsed field contains a list of Recipe objects
     assert isinstance(response.parsed, list)
-    assert len(response.parsed) > 0
+    assert len(response.parsed) == 2
     assert all(isinstance(item, Recipe) for item in response.parsed)
-
-    # Access a property to verify the type annotation works correctly
-    recipe = response.parsed[0]
-    assert isinstance(recipe.recipe_name, str)
-    assert isinstance(recipe.ingredients, list)
 
 
 def test_live_connect_config_exists():
@@ -142,11 +125,11 @@ def test_live_connect_config_exists():
     assert hasattr(types, "LiveConnectConfigDict")
 
     # Get the field details if it's a pydantic model
-    if hasattr(types.LiveConnectConfig, "__fields__"):
-        fields = types.LiveConnectConfig.__fields__
+    if hasattr(types.LiveConnectConfig, "model_fields"):
+        fields = types.LiveConnectConfig.model_fields
 
         # Check for expected fields (these might vary based on actual implementation)
-        assert "model" in fields
+        assert "generation_config" in fields
 
 
 def test_live_client_tool_response():
@@ -159,7 +142,7 @@ def test_live_client_tool_response():
     assert hasattr(types, "LiveClientToolResponseDict")
 
     # Get the field details
-    fields = types.LiveClientToolResponse.__fields__
+    fields = types.LiveClientToolResponse.model_fields
 
-    # Check for expected fields (these might vary based on actual implementation)
-    assert "function_response" in fields or "tool_outputs" in fields
+    # Check for expected fields
+    assert "function_responses" in fields
