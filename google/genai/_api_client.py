@@ -552,6 +552,8 @@ class AsyncHttpxClient(httpx.AsyncClient):
 class BaseApiClient:
   """Client for calling HTTP APIs sending and receiving JSON."""
 
+  _VERTEXAI_MULTI_REGIONAL_LOCATIONS = ('us',)
+
   def __init__(
       self,
       vertexai: Optional[bool] = None,
@@ -686,6 +688,13 @@ class BaseApiClient:
           self.api_key or self.location == 'global'
       ) and not self.custom_base_url:
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
+      elif (
+          self.location in self._VERTEXAI_MULTI_REGIONAL_LOCATIONS
+          and not self.custom_base_url
+      ):
+        self._http_options.base_url = (
+            f'https://aiplatform.{self.location}.rep.googleapis.com/'
+        )
       elif (
           self.custom_base_url
           and not self.custom_base_url.endswith('.googleapis.com')
