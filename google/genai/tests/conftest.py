@@ -92,6 +92,14 @@ def client(use_vertex, replays_prefix, http_options, request):
         Assert an exception if the test is not supported in an API.""")
   replay_id = _get_replay_id(use_vertex, replays_prefix)
 
+  if mode in ['replay', 'tap'] and not use_vertex:
+    # Replay mode should not require a real API key, but client init still
+    # validates key presence on the mldev path.
+    if not os.environ.get('GOOGLE_API_KEY') and not os.environ.get(
+        'GEMINI_API_KEY'
+    ):
+      os.environ['GOOGLE_API_KEY'] = 'dummy-api-key'
+
   if mode == 'tap':
     mode = 'replay'
 
