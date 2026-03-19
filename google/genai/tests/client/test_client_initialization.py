@@ -515,6 +515,22 @@ def test_vertexai_no_default_location_when_location_explicitly_set(monkeypatch):
     assert client.models._api_client.project == project_id
 
 
+def test_vertexai_location_us_routing(monkeypatch):
+  # Verify that location='us' correctly routes to the us.rep endpoint
+  project_id = "fake_project_id"
+  location = "us"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://aiplatform.us.rep.googleapis.com/"
+    )
+
+
 def test_vertexai_no_default_location_when_env_location_set(monkeypatch):
   # Verify that location is NOT defaulted to global when set via environment
   project_id = "fake_project_id"
