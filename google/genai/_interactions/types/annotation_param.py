@@ -17,26 +17,13 @@
 
 from __future__ import annotations
 
-from typing_extensions import TypedDict
+from typing import Union
+from typing_extensions import TypeAlias
+
+from .url_citation_param import URLCitationParam
+from .file_citation_param import FileCitationParam
+from .place_citation_param import PlaceCitationParam
 
 __all__ = ["AnnotationParam"]
 
-
-class AnnotationParam(TypedDict, total=False):
-    """Citation information for model-generated content."""
-
-    end_index: int
-    """End of the attributed segment, exclusive."""
-
-    source: str
-    """Source attributed for a portion of the text.
-
-    Could be a URL, title, or
-    other identifier.
-    """
-
-    start_index: int
-    """Start of segment of the response that is attributed to this source.
-
-    Index indicates the start of the segment, measured in bytes.
-    """
+AnnotationParam: TypeAlias = Union[URLCitationParam, FileCitationParam, PlaceCitationParam]

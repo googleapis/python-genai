@@ -60,7 +60,6 @@ __all__ = [
     "DeltaMCPServerToolResultResultItemsItem",
     "DeltaFileSearchCall",
     "DeltaFileSearchResult",
-    "DeltaFileSearchResultResult",
     "DeltaGoogleMapsCall",
     "DeltaGoogleMapsResult",
 ]
@@ -160,6 +159,9 @@ class DeltaFunctionCall(BaseModel):
 
     type: Literal["function_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 DeltaFunctionResultResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
 
@@ -197,6 +199,9 @@ class DeltaCodeExecutionCall(BaseModel):
 
     type: Literal["code_execution_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 class DeltaCodeExecutionResult(BaseModel):
     call_id: str
@@ -221,6 +226,9 @@ class DeltaURLContextCall(BaseModel):
 
     type: Literal["url_context_call"]
 
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
 
 class DeltaURLContextResult(BaseModel):
     call_id: str
@@ -244,6 +252,9 @@ class DeltaGoogleSearchCall(BaseModel):
     """The arguments to pass to Google Search."""
 
     type: Literal["google_search_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaGoogleSearchResult(BaseModel):
@@ -271,6 +282,9 @@ class DeltaMCPServerToolCall(BaseModel):
     server_name: str
 
     type: Literal["mcp_server_tool_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 DeltaMCPServerToolResultResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
@@ -306,18 +320,8 @@ class DeltaFileSearchCall(BaseModel):
 
     type: Literal["file_search_call"]
 
-
-class DeltaFileSearchResultResult(BaseModel):
-    """The result of the File Search."""
-
-    file_search_store: Optional[str] = None
-    """The name of the file search store."""
-
-    text: Optional[str] = None
-    """The text of the search result."""
-
-    title: Optional[str] = None
-    """The title of the search result."""
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaFileSearchResult(BaseModel):
@@ -326,7 +330,7 @@ class DeltaFileSearchResult(BaseModel):
 
     type: Literal["file_search_result"]
 
-    result: Optional[List[DeltaFileSearchResultResult]] = None
+    result: Optional[List[object]] = None
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""
@@ -340,6 +344,9 @@ class DeltaGoogleMapsCall(BaseModel):
 
     arguments: Optional[GoogleMapsCallArguments] = None
     """The arguments to pass to the Google Maps tool."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
 
 
 class DeltaGoogleMapsResult(BaseModel):

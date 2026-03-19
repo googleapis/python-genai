@@ -140,6 +140,15 @@ T = typing.TypeVar('T', bound='GenerateContentResponse')
 MetricSubclass = typing.TypeVar('MetricSubclass', bound='Metric')
 
 
+class Language(_common.CaseInSensitiveEnum):
+  """Programming language of the `code`."""
+
+  LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
+  """Unspecified language. This value should not be used."""
+  PYTHON = 'PYTHON'
+  """Python >= 3.10, with numpy and simpy available."""
+
+
 class Outcome(_common.CaseInSensitiveEnum):
   """Outcome of the code execution."""
 
@@ -151,15 +160,6 @@ class Outcome(_common.CaseInSensitiveEnum):
   """Code execution finished but with a failure. `stderr` should contain the reason."""
   OUTCOME_DEADLINE_EXCEEDED = 'OUTCOME_DEADLINE_EXCEEDED'
   """Code execution ran for too long, and was cancelled. There may or may not be a partial output present."""
-
-
-class Language(_common.CaseInSensitiveEnum):
-  """Programming language of the `code`."""
-
-  LANGUAGE_UNSPECIFIED = 'LANGUAGE_UNSPECIFIED'
-  """Unspecified language. This value should not be used."""
-  PYTHON = 'PYTHON'
-  """Python >= 3.10, with numpy and simpy available."""
 
 
 class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
@@ -737,6 +737,23 @@ class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """Media resolution set to ultra high."""
 
 
+class ToolType(_common.CaseInSensitiveEnum):
+  """The type of tool in the function call."""
+
+  TOOL_TYPE_UNSPECIFIED = 'TOOL_TYPE_UNSPECIFIED'
+  """Unspecified tool type."""
+  GOOGLE_SEARCH_WEB = 'GOOGLE_SEARCH_WEB'
+  """Google search tool, maps to Tool.google_search.search_types.web_search."""
+  GOOGLE_SEARCH_IMAGE = 'GOOGLE_SEARCH_IMAGE'
+  """Image search tool, maps to Tool.google_search.search_types.image_search."""
+  URL_CONTEXT = 'URL_CONTEXT'
+  """URL context tool, maps to Tool.url_context."""
+  GOOGLE_MAPS = 'GOOGLE_MAPS'
+  """Google maps tool, maps to Tool.google_maps."""
+  FILE_SEARCH = 'FILE_SEARCH'
+  """File search tool, maps to Tool.file_search."""
+
+
 class ResourceScope(_common.CaseInSensitiveEnum):
   """Resource scope."""
 
@@ -1126,6 +1143,86 @@ class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
       Retains the current prompts and config."""
 
 
+class ExecutableCode(_common.BaseModel):
+  """Model-generated code executed server-side, results returned to the model.
+
+  Only generated when using the `CodeExecution` tool, in which the code will
+  be automatically executed, and a corresponding `CodeExecutionResult` will
+  also be generated.
+  """
+
+  code: Optional[str] = Field(
+      default=None, description="""Required. The code to be executed."""
+  )
+  language: Optional[Language] = Field(
+      default=None,
+      description="""Required. Programming language of the `code`.""",
+  )
+  id: Optional[str] = Field(
+      default=None,
+      description="""Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`.""",
+  )
+
+
+class ExecutableCodeDict(TypedDict, total=False):
+  """Model-generated code executed server-side, results returned to the model.
+
+  Only generated when using the `CodeExecution` tool, in which the code will
+  be automatically executed, and a corresponding `CodeExecutionResult` will
+  also be generated.
+  """
+
+  code: Optional[str]
+  """Required. The code to be executed."""
+
+  language: Optional[Language]
+  """Required. Programming language of the `code`."""
+
+  id: Optional[str]
+  """Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`."""
+
+
+ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
+
+
+class CodeExecutionResult(_common.BaseModel):
+  """Result of executing the `ExecutableCode`.
+
+  Generated only when the `CodeExecution` tool is used.
+  """
+
+  outcome: Optional[Outcome] = Field(
+      default=None, description="""Required. Outcome of the code execution."""
+  )
+  output: Optional[str] = Field(
+      default=None,
+      description="""Optional. Contains stdout when code execution is successful, stderr or other description otherwise.""",
+  )
+  id: Optional[str] = Field(
+      default=None,
+      description="""The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id.""",
+  )
+
+
+class CodeExecutionResultDict(TypedDict, total=False):
+  """Result of executing the `ExecutableCode`.
+
+  Generated only when the `CodeExecution` tool is used.
+  """
+
+  outcome: Optional[Outcome]
+  """Required. Outcome of the code execution."""
+
+  output: Optional[str]
+  """Optional. Contains stdout when code execution is successful, stderr or other description otherwise."""
+
+  id: Optional[str]
+  """The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id."""
+
+
+CodeExecutionResultOrDict = Union[CodeExecutionResult, CodeExecutionResultDict]
+
+
 class PartMediaResolution(_common.BaseModel):
   """Media resolution for the input media."""
 
@@ -1156,72 +1253,92 @@ class PartMediaResolutionDict(TypedDict, total=False):
 PartMediaResolutionOrDict = Union[PartMediaResolution, PartMediaResolutionDict]
 
 
-class CodeExecutionResult(_common.BaseModel):
-  """Result of executing the [ExecutableCode].
+class ToolCall(_common.BaseModel):
+  """A predicted server-side `ToolCall` returned from the model.
 
-  Only generated when using the [CodeExecution] tool, and always follows a
-  `part` containing the [ExecutableCode].
+  This message contains information about a tool that the model wants to invoke.
+  The client is NOT expected to execute this `ToolCall`. Instead, the
+  client should pass this `ToolCall` back to the API in a subsequent turn
+  within a `Content` message, along with the corresponding `ToolResponse`.
   """
 
-  outcome: Optional[Outcome] = Field(
-      default=None, description="""Required. Outcome of the code execution."""
-  )
-  output: Optional[str] = Field(
+  id: Optional[str] = Field(
       default=None,
-      description="""Optional. Contains stdout when code execution is successful, stderr or other description otherwise.""",
+      description="""Unique identifier of the tool call. The server returns the tool response with the matching `id`.""",
   )
-
-
-class CodeExecutionResultDict(TypedDict, total=False):
-  """Result of executing the [ExecutableCode].
-
-  Only generated when using the [CodeExecution] tool, and always follows a
-  `part` containing the [ExecutableCode].
-  """
-
-  outcome: Optional[Outcome]
-  """Required. Outcome of the code execution."""
-
-  output: Optional[str]
-  """Optional. Contains stdout when code execution is successful, stderr or other description otherwise."""
-
-
-CodeExecutionResultOrDict = Union[CodeExecutionResult, CodeExecutionResultDict]
-
-
-class ExecutableCode(_common.BaseModel):
-  """Code generated by the model that is meant to be executed, and the result returned to the model.
-
-  Generated when using the [CodeExecution] tool, in which the code will be
-  automatically executed, and a corresponding [CodeExecutionResult] will also be
-  generated.
-  """
-
-  code: Optional[str] = Field(
-      default=None, description="""Required. The code to be executed."""
+  tool_type: Optional[ToolType] = Field(
+      default=None, description="""The type of tool that was called."""
   )
-  language: Optional[Language] = Field(
+  args: Optional[dict[str, Any]] = Field(
       default=None,
-      description="""Required. Programming language of the `code`.""",
+      description="""The tool call arguments. Example: {"arg1": "value1", "arg2": "value2"}.""",
   )
 
 
-class ExecutableCodeDict(TypedDict, total=False):
-  """Code generated by the model that is meant to be executed, and the result returned to the model.
+class ToolCallDict(TypedDict, total=False):
+  """A predicted server-side `ToolCall` returned from the model.
 
-  Generated when using the [CodeExecution] tool, in which the code will be
-  automatically executed, and a corresponding [CodeExecutionResult] will also be
-  generated.
+  This message contains information about a tool that the model wants to invoke.
+  The client is NOT expected to execute this `ToolCall`. Instead, the
+  client should pass this `ToolCall` back to the API in a subsequent turn
+  within a `Content` message, along with the corresponding `ToolResponse`.
   """
 
-  code: Optional[str]
-  """Required. The code to be executed."""
+  id: Optional[str]
+  """Unique identifier of the tool call. The server returns the tool response with the matching `id`."""
 
-  language: Optional[Language]
-  """Required. Programming language of the `code`."""
+  tool_type: Optional[ToolType]
+  """The type of tool that was called."""
+
+  args: Optional[dict[str, Any]]
+  """The tool call arguments. Example: {"arg1": "value1", "arg2": "value2"}."""
 
 
-ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
+ToolCallOrDict = Union[ToolCall, ToolCallDict]
+
+
+class ToolResponse(_common.BaseModel):
+  """The output from a server-side `ToolCall` execution.
+
+  This message contains the results of a tool invocation that was initiated by a
+  `ToolCall` from the model. The client should pass this `ToolResponse` back to
+  the API in a subsequent turn within a `Content` message, along with the
+  corresponding `ToolCall`.
+  """
+
+  id: Optional[str] = Field(
+      default=None,
+      description="""The identifier of the tool call this response is for.""",
+  )
+  tool_type: Optional[ToolType] = Field(
+      default=None,
+      description="""The type of tool that was called, matching the tool_type in the corresponding ToolCall.""",
+  )
+  response: Optional[dict[str, Any]] = Field(
+      default=None, description="""The tool response."""
+  )
+
+
+class ToolResponseDict(TypedDict, total=False):
+  """The output from a server-side `ToolCall` execution.
+
+  This message contains the results of a tool invocation that was initiated by a
+  `ToolCall` from the model. The client should pass this `ToolResponse` back to
+  the API in a subsequent turn within a `Content` message, along with the
+  corresponding `ToolCall`.
+  """
+
+  id: Optional[str]
+  """The identifier of the tool call this response is for."""
+
+  tool_type: Optional[ToolType]
+  """The type of tool that was called, matching the tool_type in the corresponding ToolCall."""
+
+  response: Optional[dict[str, Any]]
+  """The tool response."""
+
+
+ToolResponseOrDict = Union[ToolResponse, ToolResponseDict]
 
 
 class FileData(_common.BaseModel):
@@ -1738,6 +1855,14 @@ class Part(_common.BaseModel):
       default=None,
       description="""Optional. Video metadata. The metadata should only be specified while the video data is presented in inline_data or file_data.""",
   )
+  tool_call: Optional[ToolCall] = Field(
+      default=None,
+      description="""Server-side tool call. This field is populated when the model predicts a tool invocation that should be executed on the server. The client is expected to echo this message back to the API.""",
+  )
+  tool_response: Optional[ToolResponse] = Field(
+      default=None,
+      description="""The output from a server-side ToolCall execution. This field is populated by the client with the results of executing the corresponding ToolCall.""",
+  )
 
   def __init__(
       self,
@@ -1959,6 +2084,12 @@ class PartDict(TypedDict, total=False):
 
   video_metadata: Optional[VideoMetadataDict]
   """Optional. Video metadata. The metadata should only be specified while the video data is presented in inline_data or file_data."""
+
+  tool_call: Optional[ToolCallDict]
+  """Server-side tool call. This field is populated when the model predicts a tool invocation that should be executed on the server. The client is expected to echo this message back to the API."""
+
+  tool_response: Optional[ToolResponseDict]
+  """The output from a server-side ToolCall execution. This field is populated by the client with the results of executing the corresponding ToolCall."""
 
 
 PartOrDict = Union[Part, PartDict]
@@ -4745,6 +4876,10 @@ class ToolConfig(_common.BaseModel):
   function_calling_config: Optional[FunctionCallingConfig] = Field(
       default=None, description="""Optional. Function calling config."""
   )
+  include_server_side_tool_invocations: Optional[bool] = Field(
+      default=None,
+      description="""If true, the API response will include the server-side tool calls and responses within the `Content` message. This allows clients to observe the server's tool invocations.""",
+  )
 
 
 class ToolConfigDict(TypedDict, total=False):
@@ -4758,6 +4893,9 @@ class ToolConfigDict(TypedDict, total=False):
 
   function_calling_config: Optional[FunctionCallingConfigDict]
   """Optional. Function calling config."""
+
+  include_server_side_tool_invocations: Optional[bool]
+  """If true, the API response will include the server-side tool calls and responses within the `Content` message. This allows clients to observe the server's tool invocations."""
 
 
 ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
@@ -18211,15 +18349,15 @@ class LiveClientSetup(_common.BaseModel):
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
-  history_config: Optional[HistoryConfig] = Field(
-      default=None,
-      description="""Configures the exchange of history between the client and the server.""",
-  )
   explicit_vad_signal: Optional[bool] = Field(
       default=None,
       description="""Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently.""",
+  )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Configures the exchange of history between the client and the server.""",
   )
 
 
@@ -18272,13 +18410,13 @@ class LiveClientSetupDict(TypedDict, total=False):
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
 
-  history_config: Optional[HistoryConfigDict]
-  """Configures the exchange of history between the client and the server."""
-
   explicit_vad_signal: Optional[bool]
   """Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently."""
+
+  history_config: Optional[HistoryConfigDict]
+  """Configures the exchange of history between the client and the server."""
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -18764,15 +18902,15 @@ If included the server will send SessionResumptionUpdate messages.""",
       description="""Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input.""",
   )
-  history_config: Optional[HistoryConfig] = Field(
-      default=None,
-      description="""Configures the exchange of history between the client and the server.""",
-  )
   explicit_vad_signal: Optional[bool] = Field(
       default=None,
       description="""Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently.""",
+  )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Configures the exchange of history between the client and the server.""",
   )
 
 
@@ -18876,13 +19014,13 @@ If included the server will send SessionResumptionUpdate messages."""
   """Configures the proactivity of the model. This allows the model to respond proactively to
     the input and to ignore irrelevant input."""
 
-  history_config: Optional[HistoryConfigDict]
-  """Configures the exchange of history between the client and the server."""
-
   explicit_vad_signal: Optional[bool]
   """Configures the explicit VAD signal. If enabled, the client will send
       vad_signal to indicate the start and end of speech. This allows the server
       to process the audio more efficiently."""
+
+  history_config: Optional[HistoryConfigDict]
+  """Configures the exchange of history between the client and the server."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]

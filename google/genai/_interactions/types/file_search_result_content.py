@@ -20,20 +20,7 @@ from typing_extensions import Literal
 
 from .._models import BaseModel
 
-__all__ = ["FileSearchResultContent", "Result"]
-
-
-class Result(BaseModel):
-    """The result of the File Search."""
-
-    file_search_store: Optional[str] = None
-    """The name of the file search store."""
-
-    text: Optional[str] = None
-    """The text of the search result."""
-
-    title: Optional[str] = None
-    """The title of the search result."""
+__all__ = ["FileSearchResultContent"]
 
 
 class FileSearchResultContent(BaseModel):
@@ -44,7 +31,7 @@ class FileSearchResultContent(BaseModel):
 
     type: Literal["file_search_result"]
 
-    result: Optional[List[Result]] = None
+    result: Optional[List[object]] = None
     """The results of the File Search."""
 
     signature: Optional[str] = None

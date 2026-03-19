@@ -603,6 +603,84 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={'tools': [{'google_maps': {'enable_widget': True}}]},
         ),
     ),
+    pytest_helper.TestTableItem(
+        name='test_include_server_side_tool_invocations',
+        parameters=types._GenerateContentParameters(
+            model='gemini-3.1-pro-preview',
+            contents=t.t_contents('Why is the sky blue?'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(),
+                    ),
+                ],
+                tool_config=types.ToolConfig(
+                    include_server_side_tool_invocations=True,
+                ),
+            ),
+        ),
+        exception_if_vertex='parameter is not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_include_server_side_tool_invocations_with_tool_call_echo',
+        parameters=types._GenerateContentParameters(
+            model='gemini-3.1-pro-preview',
+            contents=[
+                types.Content.model_validate(item)
+                for item in [
+                    {
+                        'role': 'user',
+                        'parts': [{'text': 'Why is the sky blue?'}],
+                    },
+                    {
+                        'role': 'model',
+                        'parts': [
+                            {
+                                'tool_call': {
+                                    'tool_type': 'GOOGLE_SEARCH',
+                                    'args': {
+                                        'query': 'why is the sky blue',
+                                    },
+                                },
+                            },
+                            {
+                                'tool_response': {
+                                    'tool_type': 'GOOGLE_SEARCH',
+                                    'response': {
+                                        'result': (
+                                            'The sky is blue because of'
+                                            ' Rayleigh scattering.'
+                                        ),
+                                    },
+                                },
+                            },
+                            {
+                                'text': (
+                                    'The sky is blue due to a phenomenon called'
+                                    ' Rayleigh scattering.'
+                                ),
+                            },
+                        ],
+                    },
+                    {
+                        'role': 'user',
+                        'parts': [{'text': 'What about Mars?'}],
+                    },
+                ]
+            ],
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(),
+                    ),
+                ],
+                tool_config=types.ToolConfig(
+                    include_server_side_tool_invocations=True,
+                ),
+            ),
+        ),
+        exception_if_vertex='parameter is not supported',
+    ),
 ]
 
 

@@ -411,16 +411,16 @@ def _LiveConnectConfig_to_mldev(
         getv(from_object, ['proactivity']),
     )
 
+  if getv(from_object, ['explicit_vad_signal']) is not None:
+    raise ValueError(
+        'explicit_vad_signal parameter is not supported in Gemini API.'
+    )
+
   if getv(from_object, ['history_config']) is not None:
     setv(
         parent_object,
         ['setup', 'historyConfig'],
         getv(from_object, ['history_config']),
-    )
-
-  if getv(from_object, ['explicit_vad_signal']) is not None:
-    raise ValueError(
-        'explicit_vad_signal parameter is not supported in Gemini API.'
     )
 
   return to_object
@@ -514,6 +514,12 @@ def _Part_to_mldev(
 
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['tool_call']) is not None:
+    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
+
+  if getv(from_object, ['tool_response']) is not None:
+    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
 
   return to_object
 

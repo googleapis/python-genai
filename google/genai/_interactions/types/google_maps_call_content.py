@@ -34,3 +34,6 @@ class GoogleMapsCallContent(BaseModel):
 
     arguments: Optional[GoogleMapsCallArguments] = None
     """The arguments to pass to the Google Maps tool."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

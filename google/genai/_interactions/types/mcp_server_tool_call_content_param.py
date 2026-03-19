@@ -17,8 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Dict
-from typing_extensions import Literal, Required, TypedDict
+from typing import Dict, Union
+from typing_extensions import Literal, Required, Annotated, TypedDict
+
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 
 __all__ = ["MCPServerToolCallContentParam"]
 
@@ -39,3 +43,9 @@ class MCPServerToolCallContentParam(TypedDict, total=False):
     """The name of the used MCP server."""
 
     type: Required[Literal["mcp_server_tool_call"]]
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(MCPServerToolCallContentParam, {"arbitrary_types_allowed": True})

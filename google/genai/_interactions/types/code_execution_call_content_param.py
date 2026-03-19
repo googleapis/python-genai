@@ -17,8 +17,12 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union
+from typing_extensions import Literal, Required, Annotated, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .code_execution_call_arguments_param import CodeExecutionCallArgumentsParam
 
 __all__ = ["CodeExecutionCallContentParam"]
@@ -34,3 +38,9 @@ class CodeExecutionCallContentParam(TypedDict, total=False):
     """The arguments to pass to the code execution."""
 
     type: Required[Literal["code_execution_call"]]
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(CodeExecutionCallContentParam, {"arbitrary_types_allowed": True})

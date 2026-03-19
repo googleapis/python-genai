@@ -15,7 +15,7 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Dict
+from typing import Dict, Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -39,3 +39,6 @@ class MCPServerToolCallContent(BaseModel):
     """The name of the used MCP server."""
 
     type: Literal["mcp_server_tool_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

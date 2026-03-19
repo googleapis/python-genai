@@ -18,8 +18,11 @@
 from __future__ import annotations
 
 from typing import Union, Iterable
-from typing_extensions import Literal, Required, TypeAlias, TypedDict
+from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .text_content_param import TextContentParam
 from .image_content_param import ImageContentParam
 
@@ -45,5 +48,8 @@ class FunctionResultContentParam(TypedDict, total=False):
     name: str
     """The name of the tool that was called."""
 
-    signature: str
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """A signature hash for backend validation."""
+
+
+set_pydantic_config(FunctionResultContentParam, {"arbitrary_types_allowed": True})

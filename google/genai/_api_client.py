@@ -524,7 +524,8 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   """
   if options is None:
     return {'stop': tenacity.stop_after_attempt(1), 'reraise': True}
-
+  if options.attempts == 0:
+    options.attempts = 1
   stop = tenacity.stop_after_attempt(options.attempts or _RETRY_ATTEMPTS)
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
