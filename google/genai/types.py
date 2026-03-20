@@ -11355,11 +11355,17 @@ PreferenceOptimizationSpecOrDict = Union[
 
 
 class DistillationHyperParameters(_common.BaseModel):
-  """Hyperparameters for Distillation.
+  """Hyperparameters for distillation."""
 
-  This data type is not supported in Gemini API.
-  """
-
+  batch_size: Optional[int] = Field(
+      default=None,
+      description="""The batch size hyperparameter for tuning.
+      This is only supported for OSS models in Vertex.""",
+  )
+  learning_rate: Optional[float] = Field(
+      default=None,
+      description="""The learning rate for tuning. OSS models only.""",
+  )
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Optional. Adapter size for distillation."""
   )
@@ -11374,10 +11380,14 @@ class DistillationHyperParameters(_common.BaseModel):
 
 
 class DistillationHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Distillation.
+  """Hyperparameters for distillation."""
 
-  This data type is not supported in Gemini API.
-  """
+  batch_size: Optional[int]
+  """The batch size hyperparameter for tuning.
+      This is only supported for OSS models in Vertex."""
+
+  learning_rate: Optional[float]
+  """The learning rate for tuning. OSS models only."""
 
   adapter_size: Optional[AdapterSize]
   """Optional. Adapter size for distillation."""
@@ -11401,13 +11411,16 @@ class DistillationSpec(_common.BaseModel):
       default=None,
       description="""The GCS URI of the prompt dataset to use during distillation.""",
   )
-  base_teacher_model: Optional[str] = Field(
-      default=None,
-      description="""The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).""",
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode for tuning."""
   )
   hyper_parameters: Optional[DistillationHyperParameters] = Field(
       default=None,
       description="""Optional. Hyperparameters for Distillation.""",
+  )
+  base_teacher_model: Optional[str] = Field(
+      default=None,
+      description="""The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).""",
   )
   pipeline_root_directory: Optional[str] = Field(
       default=None,
@@ -11437,11 +11450,14 @@ class DistillationSpecDict(TypedDict, total=False):
   prompt_dataset_uri: Optional[str]
   """The GCS URI of the prompt dataset to use during distillation."""
 
-  base_teacher_model: Optional[str]
-  """The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models)."""
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode for tuning."""
 
   hyper_parameters: Optional[DistillationHyperParametersDict]
   """Optional. Hyperparameters for Distillation."""
+
+  base_teacher_model: Optional[str]
+  """The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models)."""
 
   pipeline_root_directory: Optional[str]
   """Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output directory of the distillation pipeline. It is used by the system to generate the paths of output artifacts."""
@@ -13559,7 +13575,7 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None, description="""Adapter size for tuning."""
   )
   tuning_mode: Optional[TuningMode] = Field(
-      default=None, description="""Tuning mode for SFT tuning."""
+      default=None, description="""Tuning mode for tuning."""
   )
   custom_base_model: Optional[str] = Field(
       default=None,
@@ -13640,7 +13656,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Adapter size for tuning."""
 
   tuning_mode: Optional[TuningMode]
-  """Tuning mode for SFT tuning."""
+  """Tuning mode for tuning."""
 
   custom_base_model: Optional[str]
   """Custom base model for tuning. This is only supported for OSS models in Vertex."""
