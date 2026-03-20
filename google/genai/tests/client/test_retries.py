@@ -1268,6 +1268,7 @@ def test_aiohttp_retries_client_connector_error_retries_successfully(
         vertexai=True,
         project='test_project',
         location='global',
+        http_options={'aiohttp_client': aiohttp.ClientSession(trust_env=False)},
     )
 
     with _patch_auth_default():
