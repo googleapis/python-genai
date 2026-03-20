@@ -196,26 +196,13 @@ class Type(_common.CaseInSensitiveEnum):
   """Null type"""
 
 
-class PhishBlockThreshold(_common.CaseInSensitiveEnum):
-  """Sites with confidence level chosen & above this value will be blocked from the search results.
+class Environment(_common.CaseInSensitiveEnum):
+  """The environment being operated."""
 
-  This enum is not supported in Gemini API.
-  """
-
-  PHISH_BLOCK_THRESHOLD_UNSPECIFIED = 'PHISH_BLOCK_THRESHOLD_UNSPECIFIED'
-  """Defaults to unspecified."""
-  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
-  """Blocks Low and above confidence URL that is risky."""
-  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
-  """Blocks Medium and above confidence URL that is risky."""
-  BLOCK_HIGH_AND_ABOVE = 'BLOCK_HIGH_AND_ABOVE'
-  """Blocks High and above confidence URL that is risky."""
-  BLOCK_HIGHER_AND_ABOVE = 'BLOCK_HIGHER_AND_ABOVE'
-  """Blocks Higher and above confidence URL that is risky."""
-  BLOCK_VERY_HIGH_AND_ABOVE = 'BLOCK_VERY_HIGH_AND_ABOVE'
-  """Blocks Very high and above confidence URL that is risky."""
-  BLOCK_ONLY_EXTREMELY_HIGH = 'BLOCK_ONLY_EXTREMELY_HIGH'
-  """Blocks Extremely high confidence URL that is risky."""
+  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
+  """Defaults to browser."""
+  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
+  """Operates in a web browser."""
 
 
 class AuthType(_common.CaseInSensitiveEnum):
@@ -266,6 +253,28 @@ class ApiSpec(_common.CaseInSensitiveEnum):
   """Elastic search API spec."""
 
 
+class PhishBlockThreshold(_common.CaseInSensitiveEnum):
+  """Sites with confidence level chosen & above this value will be blocked from the search results.
+
+  This enum is not supported in Gemini API.
+  """
+
+  PHISH_BLOCK_THRESHOLD_UNSPECIFIED = 'PHISH_BLOCK_THRESHOLD_UNSPECIFIED'
+  """Defaults to unspecified."""
+  BLOCK_LOW_AND_ABOVE = 'BLOCK_LOW_AND_ABOVE'
+  """Blocks Low and above confidence URL that is risky."""
+  BLOCK_MEDIUM_AND_ABOVE = 'BLOCK_MEDIUM_AND_ABOVE'
+  """Blocks Medium and above confidence URL that is risky."""
+  BLOCK_HIGH_AND_ABOVE = 'BLOCK_HIGH_AND_ABOVE'
+  """Blocks High and above confidence URL that is risky."""
+  BLOCK_HIGHER_AND_ABOVE = 'BLOCK_HIGHER_AND_ABOVE'
+  """Blocks Higher and above confidence URL that is risky."""
+  BLOCK_VERY_HIGH_AND_ABOVE = 'BLOCK_VERY_HIGH_AND_ABOVE'
+  """Blocks Very high and above confidence URL that is risky."""
+  BLOCK_ONLY_EXTREMELY_HIGH = 'BLOCK_ONLY_EXTREMELY_HIGH'
+  """Blocks Extremely high confidence URL that is risky."""
+
+
 class Behavior(_common.CaseInSensitiveEnum):
   """Specifies the function Behavior.
 
@@ -310,14 +319,14 @@ class ThinkingLevel(_common.CaseInSensitiveEnum):
 
   THINKING_LEVEL_UNSPECIFIED = 'THINKING_LEVEL_UNSPECIFIED'
   """Unspecified thinking level."""
+  MINIMAL = 'MINIMAL'
+  """MINIMAL thinking level."""
   LOW = 'LOW'
   """Low thinking level."""
   MEDIUM = 'MEDIUM'
   """Medium thinking level."""
   HIGH = 'HIGH'
   """High thinking level."""
-  MINIMAL = 'MINIMAL'
-  """MINIMAL thinking level."""
 
 
 class PersonGeneration(_common.CaseInSensitiveEnum):
@@ -329,6 +338,23 @@ class PersonGeneration(_common.CaseInSensitiveEnum):
   """Generate images of adults, but not children."""
   ALLOW_ALL = 'ALLOW_ALL'
   """Generate images that include adults and children."""
+
+
+class ProminentPeople(_common.CaseInSensitiveEnum):
+  """Controls whether prominent people (celebrities) generation is allowed.
+
+  If used with personGeneration, personGeneration enum would take precedence.
+  For instance, if ALLOW_NONE is set, all person generation would be blocked. If
+  this field is unspecified, the default behavior is to allow prominent people.
+  This enum is not supported in Gemini API.
+  """
+
+  PROMINENT_PEOPLE_UNSPECIFIED = 'PROMINENT_PEOPLE_UNSPECIFIED'
+  """Unspecified value. The model will proceed with the default behavior, which is to allow generation of prominent people."""
+  ALLOW_PROMINENT_PEOPLE = 'ALLOW_PROMINENT_PEOPLE'
+  """Allows the model to generate images of prominent people."""
+  BLOCK_PROMINENT_PEOPLE = 'BLOCK_PROMINENT_PEOPLE'
+  """Prevents the model from generating images of prominent people."""
 
 
 class HarmCategory(_common.CaseInSensitiveEnum):
@@ -540,6 +566,30 @@ class Modality(_common.CaseInSensitiveEnum):
   """Indicates the model should return audio."""
 
 
+class ModelStage(_common.CaseInSensitiveEnum):
+  """The stage of the underlying model.
+
+  This enum is not supported in Vertex AI.
+  """
+
+  MODEL_STAGE_UNSPECIFIED = 'MODEL_STAGE_UNSPECIFIED'
+  """Unspecified model stage."""
+  UNSTABLE_EXPERIMENTAL = 'UNSTABLE_EXPERIMENTAL'
+  """The underlying model is subject to lots of tunings."""
+  EXPERIMENTAL = 'EXPERIMENTAL'
+  """Models in this stage are for experimental purposes only."""
+  PREVIEW = 'PREVIEW'
+  """Models in this stage are more mature than experimental models."""
+  STABLE = 'STABLE'
+  """Models in this stage are considered stable and ready for production use."""
+  LEGACY = 'LEGACY'
+  """If the model is on this stage, it means that this model is on the path to deprecation in near future. Only existing customers can use this model."""
+  DEPRECATED = 'DEPRECATED'
+  """Models in this stage are deprecated. These models cannot be used."""
+  RETIRED = 'RETIRED'
+  """Models in this stage are retired. These models cannot be used."""
+
+
 class MediaResolution(_common.CaseInSensitiveEnum):
   """The media resolution to use."""
 
@@ -694,6 +744,22 @@ class TuningTask(_common.CaseInSensitiveEnum):
   """Tuning task for reference to video."""
 
 
+class DocumentState(_common.CaseInSensitiveEnum):
+  """Output only.
+
+  Current state of the `Document`. This enum is not supported in Vertex AI.
+  """
+
+  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
+  """The default value. This value is used if the state is omitted."""
+  STATE_PENDING = 'STATE_PENDING'
+  """Some `Chunks` of the `Document` are being processed (embedding and vector storage)."""
+  STATE_ACTIVE = 'STATE_ACTIVE'
+  """All `Chunks` of the `Document` is processed and available for querying."""
+  STATE_FAILED = 'STATE_FAILED'
+  """Some `Chunks` of the `Document` failed processing."""
+
+
 class RubricContentType(_common.CaseInSensitiveEnum):
   """Represents the rubric content type."""
 
@@ -790,26 +856,6 @@ class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   PRIORITIZE_QUALITY = 'PRIORITIZE_QUALITY'
   BALANCED = 'BALANCED'
   PRIORITIZE_COST = 'PRIORITIZE_COST'
-
-
-class Environment(_common.CaseInSensitiveEnum):
-  """The environment being operated."""
-
-  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
-  """Defaults to browser."""
-  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
-  """Operates in a web browser."""
-
-
-class ProminentPeople(_common.CaseInSensitiveEnum):
-  """Enum for controlling whether the model can generate images of prominent people (celebrities)."""
-
-  PROMINENT_PEOPLE_UNSPECIFIED = 'PROMINENT_PEOPLE_UNSPECIFIED'
-  """Unspecified value. The model will proceed with the default behavior, which is to allow generation of prominent people."""
-  ALLOW_PROMINENT_PEOPLE = 'ALLOW_PROMINENT_PEOPLE'
-  """Allows the model to generate images of prominent people."""
-  BLOCK_PROMINENT_PEOPLE = 'BLOCK_PROMINENT_PEOPLE'
-  """Prevents the model from generating images of prominent people."""
 
 
 class EmbeddingApiType(_common.CaseInSensitiveEnum):
@@ -954,15 +1000,6 @@ class TuningMethod(_common.CaseInSensitiveEnum):
   """Preference optimization tuning."""
   DISTILLATION = 'DISTILLATION'
   """Distillation tuning."""
-
-
-class DocumentState(_common.CaseInSensitiveEnum):
-  """State for the lifecycle of a Document."""
-
-  STATE_UNSPECIFIED = 'STATE_UNSPECIFIED'
-  STATE_PENDING = 'STATE_PENDING'
-  STATE_ACTIVE = 'STATE_ACTIVE'
-  STATE_FAILED = 'STATE_FAILED'
 
 
 class FileState(_common.CaseInSensitiveEnum):
@@ -1863,6 +1900,10 @@ class Part(_common.BaseModel):
       default=None,
       description="""The output from a server-side ToolCall execution. This field is populated by the client with the results of executing the corresponding ToolCall.""",
   )
+  part_metadata: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Custom metadata associated with the Part. Agents using genai.Part as content representation may need to keep track of the additional information. For example it can be name of a file/source from which the Part originates or a way to multiplex multiple Part streams. This field is not supported in Vertex AI.""",
+  )
 
   def __init__(
       self,
@@ -2090,6 +2131,9 @@ class PartDict(TypedDict, total=False):
 
   tool_response: Optional[ToolResponseDict]
   """The output from a server-side ToolCall execution. This field is populated by the client with the results of executing the corresponding ToolCall."""
+
+  part_metadata: Optional[dict[str, Any]]
+  """Custom metadata associated with the Part. Agents using genai.Part as content representation may need to keep track of the additional information. For example it can be name of a file/source from which the Part originates or a way to multiplex multiple Part streams. This field is not supported in Vertex AI."""
 
 
 PartOrDict = Union[Part, PartDict]
@@ -2458,7 +2502,8 @@ class Schema(_common.BaseModel):
       description="""Optional. Default value to use if the field is not specified.""",
   )
   description: Optional[str] = Field(
-      default=None, description="""Optional. Description of the schema."""
+      default=None,
+      description="""Optional. Describes the data. The model uses this field to understand the purpose of the schema and how to use it. It is a best practice to provide a clear and descriptive explanation for the schema and its properties here, rather than in the prompt.""",
   )
   enum: Optional[list[str]] = Field(
       default=None,
@@ -2536,7 +2581,7 @@ class Schema(_common.BaseModel):
   )
 
   @property
-  def json_schema(self) -> JSONSchema:
+  def json_schema(self) -> 'JSONSchema':
     """Converts the Schema object to a JSONSchema object, that is compatible with 2020-12 JSON Schema draft.
 
      Note: Conversion of fields that are not included in the JSONSchema class
@@ -2585,7 +2630,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
     )
     dict_schema_field_names: tuple[str] = ('properties',)  # 'defs' to come
 
-    def convert_schema(schema: Union['Schema', dict[str, Any]]) -> JSONSchema:
+    def convert_schema(schema: Union['Schema', dict[str, Any]]) -> 'JSONSchema':
       if isinstance(schema, pydantic.BaseModel):
         schema_dict = schema.model_dump(exclude_none=True)
       else:
@@ -2640,7 +2685,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
   def from_json_schema(
       cls,
       *,
-      json_schema: JSONSchema,
+      json_schema: 'JSONSchema',
       api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
       raise_error_on_unsupported_field: bool = False,
   ) -> 'Schema':
@@ -2845,7 +2890,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
         )
 
     def convert_json_schema(
-        current_json_schema: JSONSchema,
+        current_json_schema: 'JSONSchema',
         root_json_schema_dict: dict[str, Any],
         api_option: Literal['VERTEX_AI', 'GEMINI_API'],
         raise_error_on_unsupported_field: bool,
@@ -3025,7 +3070,7 @@ class SchemaDict(TypedDict, total=False):
   """Optional. Default value to use if the field is not specified."""
 
   description: Optional[str]
-  """Optional. Description of the schema."""
+  """Optional. Describes the data. The model uses this field to understand the purpose of the schema and how to use it. It is a best practice to provide a clear and descriptive explanation for the schema and its properties here, rather than in the prompt."""
 
   enum: Optional[list[str]]
   """Optional. Possible values of the field. This field can be used to restrict a value to a fixed set of values. To mark a field as an enum, set `format` to `enum` and provide the list of possible values in `enum`. For example: 1. To define directions: `{type:STRING, format:enum, enum:["EAST", "NORTH", "SOUTH", "WEST"]}` 2. To define apartment numbers: `{type:INTEGER, format:enum, enum:["101", "201", "301"]}`"""
@@ -3139,181 +3184,6 @@ class ComputerUseDict(TypedDict, total=False):
 
 
 ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
-
-
-class FileSearch(_common.BaseModel):
-  """Tool to retrieve knowledge from the File Search Stores."""
-
-  file_search_store_names: Optional[list[str]] = Field(
-      default=None,
-      description="""The names of the file_search_stores to retrieve from.
-      Example: `fileSearchStores/my-file-search-store-123`""",
-  )
-  top_k: Optional[int] = Field(
-      default=None,
-      description="""The number of file search retrieval chunks to retrieve.""",
-  )
-  metadata_filter: Optional[str] = Field(
-      default=None,
-      description="""Metadata filter to apply to the file search retrieval documents. See https://google.aip.dev/160 for the syntax of the filter expression.""",
-  )
-
-
-class FileSearchDict(TypedDict, total=False):
-  """Tool to retrieve knowledge from the File Search Stores."""
-
-  file_search_store_names: Optional[list[str]]
-  """The names of the file_search_stores to retrieve from.
-      Example: `fileSearchStores/my-file-search-store-123`"""
-
-  top_k: Optional[int]
-  """The number of file search retrieval chunks to retrieve."""
-
-  metadata_filter: Optional[str]
-  """Metadata filter to apply to the file search retrieval documents. See https://google.aip.dev/160 for the syntax of the filter expression."""
-
-
-FileSearchOrDict = Union[FileSearch, FileSearchDict]
-
-
-class WebSearch(_common.BaseModel):
-  """Standard web search for grounding and related configurations.
-
-  Only text results are returned.
-  """
-
-  pass
-
-
-class WebSearchDict(TypedDict, total=False):
-  """Standard web search for grounding and related configurations.
-
-  Only text results are returned.
-  """
-
-  pass
-
-
-WebSearchOrDict = Union[WebSearch, WebSearchDict]
-
-
-class ImageSearch(_common.BaseModel):
-  """Image search for grounding and related configurations."""
-
-  pass
-
-
-class ImageSearchDict(TypedDict, total=False):
-  """Image search for grounding and related configurations."""
-
-  pass
-
-
-ImageSearchOrDict = Union[ImageSearch, ImageSearchDict]
-
-
-class SearchTypes(_common.BaseModel):
-  """Tool to support computer use."""
-
-  web_search: Optional[WebSearch] = Field(
-      default=None,
-      description="""Setting this field enables web search. Only text results are
-      returned.""",
-  )
-  image_search: Optional[ImageSearch] = Field(
-      default=None,
-      description="""Setting this field enables image search. Image bytes are returned.""",
-  )
-
-
-class SearchTypesDict(TypedDict, total=False):
-  """Tool to support computer use."""
-
-  web_search: Optional[WebSearchDict]
-  """Setting this field enables web search. Only text results are
-      returned."""
-
-  image_search: Optional[ImageSearchDict]
-  """Setting this field enables image search. Image bytes are returned."""
-
-
-SearchTypesOrDict = Union[SearchTypes, SearchTypesDict]
-
-
-class Interval(_common.BaseModel):
-  """Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
-
-  The start must be less than or equal to the end. When the start equals the
-  end, the interval is empty (matches no time). When both start and end are
-  unspecified, the interval matches any time.
-  """
-
-  end_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Optional. Exclusive end of the interval. If specified, a Timestamp matching this interval will have to be before the end.""",
-  )
-  start_time: Optional[datetime.datetime] = Field(
-      default=None,
-      description="""Optional. Inclusive start of the interval. If specified, a Timestamp matching this interval will have to be the same or after the start.""",
-  )
-
-
-class IntervalDict(TypedDict, total=False):
-  """Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
-
-  The start must be less than or equal to the end. When the start equals the
-  end, the interval is empty (matches no time). When both start and end are
-  unspecified, the interval matches any time.
-  """
-
-  end_time: Optional[datetime.datetime]
-  """Optional. Exclusive end of the interval. If specified, a Timestamp matching this interval will have to be before the end."""
-
-  start_time: Optional[datetime.datetime]
-  """Optional. Inclusive start of the interval. If specified, a Timestamp matching this interval will have to be the same or after the start."""
-
-
-IntervalOrDict = Union[Interval, IntervalDict]
-
-
-class GoogleSearch(_common.BaseModel):
-  """Tool to support web search."""
-
-  search_types: Optional[SearchTypes] = Field(
-      default=None,
-      description="""Different types of search that can be enabled on the GoogleSearch tool.""",
-  )
-  blocking_confidence: Optional[PhishBlockThreshold] = Field(
-      default=None,
-      description="""Optional. Sites with confidence level chosen & above this value will be blocked from the search results. This field is not supported in Gemini API.""",
-  )
-  exclude_domains: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API.""",
-  )
-  time_range_filter: Optional[Interval] = Field(
-      default=None,
-      description="""Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI.""",
-  )
-
-
-class GoogleSearchDict(TypedDict, total=False):
-  """Tool to support web search."""
-
-  search_types: Optional[SearchTypesDict]
-  """Different types of search that can be enabled on the GoogleSearch tool."""
-
-  blocking_confidence: Optional[PhishBlockThreshold]
-  """Optional. Sites with confidence level chosen & above this value will be blocked from the search results. This field is not supported in Gemini API."""
-
-  exclude_domains: Optional[list[str]]
-  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API."""
-
-  time_range_filter: Optional[IntervalDict]
-  """Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI."""
-
-
-GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
 
 
 class ApiKeyConfig(_common.BaseModel):
@@ -4146,6 +4016,191 @@ class RetrievalDict(TypedDict, total=False):
 RetrievalOrDict = Union[Retrieval, RetrievalDict]
 
 
+class FileSearch(_common.BaseModel):
+  """The FileSearch tool that retrieves knowledge from Semantic Retrieval corpora.
+
+  Files are imported to Semantic Retrieval corpora using the ImportFile API.
+  This data type is not supported in Vertex AI.
+  """
+
+  file_search_store_names: Optional[list[str]] = Field(
+      default=None,
+      description="""Required. The names of the file_search_stores to retrieve from. Example: `fileSearchStores/my-file-search-store-123`""",
+  )
+  top_k: Optional[int] = Field(
+      default=None,
+      description="""Optional. The number of semantic retrieval chunks to retrieve.""",
+  )
+  metadata_filter: Optional[str] = Field(
+      default=None,
+      description="""Optional. Metadata filter to apply to the semantic retrieval documents and chunks.""",
+  )
+
+
+class FileSearchDict(TypedDict, total=False):
+  """The FileSearch tool that retrieves knowledge from Semantic Retrieval corpora.
+
+  Files are imported to Semantic Retrieval corpora using the ImportFile API.
+  This data type is not supported in Vertex AI.
+  """
+
+  file_search_store_names: Optional[list[str]]
+  """Required. The names of the file_search_stores to retrieve from. Example: `fileSearchStores/my-file-search-store-123`"""
+
+  top_k: Optional[int]
+  """Optional. The number of semantic retrieval chunks to retrieve."""
+
+  metadata_filter: Optional[str]
+  """Optional. Metadata filter to apply to the semantic retrieval documents and chunks."""
+
+
+FileSearchOrDict = Union[FileSearch, FileSearchDict]
+
+
+class WebSearch(_common.BaseModel):
+  """Standard web search for grounding and related configurations.
+
+  Only text results are returned.
+  """
+
+  pass
+
+
+class WebSearchDict(TypedDict, total=False):
+  """Standard web search for grounding and related configurations.
+
+  Only text results are returned.
+  """
+
+  pass
+
+
+WebSearchOrDict = Union[WebSearch, WebSearchDict]
+
+
+class ImageSearch(_common.BaseModel):
+  """Image search for grounding and related configurations."""
+
+  pass
+
+
+class ImageSearchDict(TypedDict, total=False):
+  """Image search for grounding and related configurations."""
+
+  pass
+
+
+ImageSearchOrDict = Union[ImageSearch, ImageSearchDict]
+
+
+class SearchTypes(_common.BaseModel):
+  """Different types of search that can be enabled on the GoogleSearch tool."""
+
+  web_search: Optional[WebSearch] = Field(
+      default=None,
+      description="""Optional. Setting this field enables web search. Only text results are returned.""",
+  )
+  image_search: Optional[ImageSearch] = Field(
+      default=None,
+      description="""Optional. Setting this field enables image search. Image bytes are returned.""",
+  )
+
+
+class SearchTypesDict(TypedDict, total=False):
+  """Different types of search that can be enabled on the GoogleSearch tool."""
+
+  web_search: Optional[WebSearchDict]
+  """Optional. Setting this field enables web search. Only text results are returned."""
+
+  image_search: Optional[ImageSearchDict]
+  """Optional. Setting this field enables image search. Image bytes are returned."""
+
+
+SearchTypesOrDict = Union[SearchTypes, SearchTypesDict]
+
+
+class Interval(_common.BaseModel):
+  """Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
+
+  The start must be less than or equal to the end. When the start equals the
+  end, the interval is empty (matches no time). When both start and end are
+  unspecified, the interval matches any time.
+  """
+
+  end_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Exclusive end of the interval. If specified, a Timestamp matching this interval will have to be before the end.""",
+  )
+  start_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Inclusive start of the interval. If specified, a Timestamp matching this interval will have to be the same or after the start.""",
+  )
+
+
+class IntervalDict(TypedDict, total=False):
+  """Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
+
+  The start must be less than or equal to the end. When the start equals the
+  end, the interval is empty (matches no time). When both start and end are
+  unspecified, the interval matches any time.
+  """
+
+  end_time: Optional[datetime.datetime]
+  """Optional. Exclusive end of the interval. If specified, a Timestamp matching this interval will have to be before the end."""
+
+  start_time: Optional[datetime.datetime]
+  """Optional. Inclusive start of the interval. If specified, a Timestamp matching this interval will have to be the same or after the start."""
+
+
+IntervalOrDict = Union[Interval, IntervalDict]
+
+
+class GoogleSearch(_common.BaseModel):
+  """GoogleSearch tool type.
+
+  Tool to support Google Search in Model. Powered by Google.
+  """
+
+  search_types: Optional[SearchTypes] = Field(
+      default=None,
+      description="""Optional. The set of search types to enable. If not set, web search is enabled by default.""",
+  )
+  blocking_confidence: Optional[PhishBlockThreshold] = Field(
+      default=None,
+      description="""Optional. Sites with confidence level chosen & above this value will be blocked from the search results. This field is not supported in Gemini API.""",
+  )
+  exclude_domains: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API.""",
+  )
+  time_range_filter: Optional[Interval] = Field(
+      default=None,
+      description="""Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI.""",
+  )
+
+
+class GoogleSearchDict(TypedDict, total=False):
+  """GoogleSearch tool type.
+
+  Tool to support Google Search in Model. Powered by Google.
+  """
+
+  search_types: Optional[SearchTypesDict]
+  """Optional. The set of search types to enable. If not set, web search is enabled by default."""
+
+  blocking_confidence: Optional[PhishBlockThreshold]
+  """Optional. Sites with confidence level chosen & above this value will be blocked from the search results. This field is not supported in Gemini API."""
+
+  exclude_domains: Optional[list[str]]
+  """Optional. List of domains to be excluded from the search results. The default limit is 2000 domains. Example: ["amazon.com", "facebook.com"]. This field is not supported in Gemini API."""
+
+  time_range_filter: Optional[IntervalDict]
+  """Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). This field is not supported in Vertex AI."""
+
+
+GoogleSearchOrDict = Union[GoogleSearch, GoogleSearchDict]
+
+
 class ToolCodeExecution(_common.BaseModel):
   """Tool that executes code generated by the model, and automatically returns the result to the model.
 
@@ -4665,11 +4720,11 @@ class Tool(_common.BaseModel):
   )
   file_search: Optional[FileSearch] = Field(
       default=None,
-      description="""Optional. Tool to retrieve knowledge from the File Search Stores.""",
+      description="""Optional. FileSearch tool type. Tool to retrieve knowledge from Semantic Retrieval corpora. This field is not supported in Vertex AI.""",
   )
   google_search: Optional[GoogleSearch] = Field(
       default=None,
-      description="""Enables the model to execute Google Search as part of generation.""",
+      description="""Optional. GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google.""",
   )
   google_maps: Optional[GoogleMaps] = Field(
       default=None,
@@ -4718,10 +4773,10 @@ class ToolDict(TypedDict, total=False):
       Function Declarations."""
 
   file_search: Optional[FileSearchDict]
-  """Optional. Tool to retrieve knowledge from the File Search Stores."""
+  """Optional. FileSearch tool type. Tool to retrieve knowledge from Semantic Retrieval corpora. This field is not supported in Vertex AI."""
 
   google_search: Optional[GoogleSearchDict]
-  """Enables the model to execute Google Search as part of generation."""
+  """Optional. GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google."""
 
   google_maps: Optional[GoogleMapsDict]
   """Optional. Tool that allows grounding the model's response with
@@ -5203,11 +5258,7 @@ class ImageConfig(_common.BaseModel):
   )
   prominent_people: Optional[ProminentPeople] = Field(
       default=None,
-      description="""Controls whether prominent people (celebrities)
-      generation is allowed. If used with personGeneration, personGeneration
-      enum would take precedence. For instance, if ALLOW_NONE is set, all person
-      generation would be blocked. If this field is unspecified, the default
-      behavior is to allow prominent people.""",
+      description="""Optional. Controls whether prominent people (celebrities) generation is allowed. If used with personGeneration, personGeneration enum would take precedence. For instance, if ALLOW_NONE is set, all person generation would be blocked. If this field is unspecified, the default behavior is to allow prominent people. This field is not supported in Gemini API.""",
   )
   output_mime_type: Optional[str] = Field(
       default=None,
@@ -5221,7 +5272,7 @@ class ImageConfig(_common.BaseModel):
   )
   image_output_options: Optional[ImageConfigImageOutputOptions] = Field(
       default=None,
-      description="""Optional. The image output format for generated images.""",
+      description="""Optional. The image output format for generated images. This field is not supported in Gemini API.""",
   )
 
 
@@ -5242,11 +5293,7 @@ class ImageConfigDict(TypedDict, total=False):
       ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE."""
 
   prominent_people: Optional[ProminentPeople]
-  """Controls whether prominent people (celebrities)
-      generation is allowed. If used with personGeneration, personGeneration
-      enum would take precedence. For instance, if ALLOW_NONE is set, all person
-      generation would be blocked. If this field is unspecified, the default
-      behavior is to allow prominent people."""
+  """Optional. Controls whether prominent people (celebrities) generation is allowed. If used with personGeneration, personGeneration enum would take precedence. For instance, if ALLOW_NONE is set, all person generation would be blocked. If this field is unspecified, the default behavior is to allow prominent people. This field is not supported in Gemini API."""
 
   output_mime_type: Optional[str]
   """MIME type of the generated image. This field is not
@@ -5257,7 +5304,7 @@ class ImageConfigDict(TypedDict, total=False):
       ``image/jpeg`` only). This field is not supported in Gemini API."""
 
   image_output_options: Optional[ImageConfigImageOutputOptionsDict]
-  """Optional. The image output format for generated images."""
+  """Optional. The image output format for generated images. This field is not supported in Gemini API."""
 
 
 ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]
@@ -6267,53 +6314,6 @@ class CitationMetadataDict(TypedDict, total=False):
 CitationMetadataOrDict = Union[CitationMetadata, CitationMetadataDict]
 
 
-class GroundingChunkImage(_common.BaseModel):
-  """A piece of evidence that comes from an image search result.
-
-  It contains the URI of the image search result and the URI of the image.
-  This is used to provide the user with a link to the source of the
-  information.
-  """
-
-  source_uri: Optional[str] = Field(
-      default=None, description="""The URI of the image search result page."""
-  )
-  image_uri: Optional[str] = Field(
-      default=None, description="""The URI of the image."""
-  )
-  title: Optional[str] = Field(
-      default=None, description="""The title of the image search result page."""
-  )
-  domain: Optional[str] = Field(
-      default=None,
-      description="""The domain of the image search result page.""",
-  )
-
-
-class GroundingChunkImageDict(TypedDict, total=False):
-  """A piece of evidence that comes from an image search result.
-
-  It contains the URI of the image search result and the URI of the image.
-  This is used to provide the user with a link to the source of the
-  information.
-  """
-
-  source_uri: Optional[str]
-  """The URI of the image search result page."""
-
-  image_uri: Optional[str]
-  """The URI of the image."""
-
-  title: Optional[str]
-  """The title of the image search result page."""
-
-  domain: Optional[str]
-  """The domain of the image search result page."""
-
-
-GroundingChunkImageOrDict = Union[GroundingChunkImage, GroundingChunkImageDict]
-
-
 class GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution(_common.BaseModel):
   """Author attribution for a photo or review."""
 
@@ -6466,6 +6466,46 @@ GroundingChunkMapsPlaceAnswerSourcesOrDict = Union[
 ]
 
 
+class GroundingChunkMapsRoute(_common.BaseModel):
+  """Route information from Google Maps.
+
+  This data type is not supported in Gemini API.
+  """
+
+  distance_meters: Optional[int] = Field(
+      default=None,
+      description="""The total distance of the route, in meters.""",
+  )
+  duration: Optional[str] = Field(
+      default=None, description="""The total duration of the route."""
+  )
+  encoded_polyline: Optional[str] = Field(
+      default=None,
+      description="""An encoded polyline of the route. See https://developers.google.com/maps/documentation/utilities/polylinealgorithm""",
+  )
+
+
+class GroundingChunkMapsRouteDict(TypedDict, total=False):
+  """Route information from Google Maps.
+
+  This data type is not supported in Gemini API.
+  """
+
+  distance_meters: Optional[int]
+  """The total distance of the route, in meters."""
+
+  duration: Optional[str]
+  """The total duration of the route."""
+
+  encoded_polyline: Optional[str]
+  """An encoded polyline of the route. See https://developers.google.com/maps/documentation/utilities/polylinealgorithm"""
+
+
+GroundingChunkMapsRouteOrDict = Union[
+    GroundingChunkMapsRoute, GroundingChunkMapsRouteDict
+]
+
+
 class GroundingChunkMaps(_common.BaseModel):
   """A `Maps` chunk is a piece of evidence that comes from Google Maps.
 
@@ -6494,6 +6534,9 @@ class GroundingChunkMaps(_common.BaseModel):
   )
   uri: Optional[str] = Field(
       default=None, description="""The URI of the place."""
+  )
+  route: Optional[GroundingChunkMapsRoute] = Field(
+      default=None, description="""Output only. Route information."""
   )
 
 
@@ -6524,8 +6567,56 @@ class GroundingChunkMapsDict(TypedDict, total=False):
   uri: Optional[str]
   """The URI of the place."""
 
+  route: Optional[GroundingChunkMapsRouteDict]
+  """Output only. Route information."""
+
 
 GroundingChunkMapsOrDict = Union[GroundingChunkMaps, GroundingChunkMapsDict]
+
+
+class GroundingChunkImage(_common.BaseModel):
+  """An `Image` chunk is a piece of evidence that comes from an image search result.
+
+  It contains the URI of the image search result and the URI of the image. This
+  is used to provide the user with a link to the source of the information.
+  """
+
+  source_uri: Optional[str] = Field(
+      default=None, description="""The URI of the image search result page."""
+  )
+  image_uri: Optional[str] = Field(
+      default=None, description="""The URI of the image."""
+  )
+  title: Optional[str] = Field(
+      default=None, description="""The title of the image search result page."""
+  )
+  domain: Optional[str] = Field(
+      default=None,
+      description="""The domain of the image search result page.""",
+  )
+
+
+class GroundingChunkImageDict(TypedDict, total=False):
+  """An `Image` chunk is a piece of evidence that comes from an image search result.
+
+  It contains the URI of the image search result and the URI of the image. This
+  is used to provide the user with a link to the source of the information.
+  """
+
+  source_uri: Optional[str]
+  """The URI of the image search result page."""
+
+  image_uri: Optional[str]
+  """The URI of the image."""
+
+  title: Optional[str]
+  """The title of the image search result page."""
+
+  domain: Optional[str]
+  """The domain of the image search result page."""
+
+
+GroundingChunkImageOrDict = Union[GroundingChunkImage, GroundingChunkImageDict]
 
 
 class RagChunkPageSpan(_common.BaseModel):
@@ -6591,20 +6682,87 @@ class RagChunkDict(TypedDict, total=False):
 RagChunkOrDict = Union[RagChunk, RagChunkDict]
 
 
+class GroundingChunkStringList(_common.BaseModel):
+  """A list of string values. This data type is not supported in Vertex AI."""
+
+  values: Optional[list[str]] = Field(
+      default=None, description="""The string values of the list."""
+  )
+
+
+class GroundingChunkStringListDict(TypedDict, total=False):
+  """A list of string values. This data type is not supported in Vertex AI."""
+
+  values: Optional[list[str]]
+  """The string values of the list."""
+
+
+GroundingChunkStringListOrDict = Union[
+    GroundingChunkStringList, GroundingChunkStringListDict
+]
+
+
+class GroundingChunkCustomMetadata(_common.BaseModel):
+  """User provided metadata about the GroundingFact.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  key: Optional[str] = Field(
+      default=None, description="""The key of the metadata."""
+  )
+  numeric_value: Optional[float] = Field(
+      default=None,
+      description="""Optional. The numeric value of the metadata. The expected range for this value depends on the specific `key` used.""",
+  )
+  string_list_value: Optional[GroundingChunkStringList] = Field(
+      default=None,
+      description="""Optional. A list of string values for the metadata.""",
+  )
+  string_value: Optional[str] = Field(
+      default=None,
+      description="""Optional. The string value of the metadata.""",
+  )
+
+
+class GroundingChunkCustomMetadataDict(TypedDict, total=False):
+  """User provided metadata about the GroundingFact.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  key: Optional[str]
+  """The key of the metadata."""
+
+  numeric_value: Optional[float]
+  """Optional. The numeric value of the metadata. The expected range for this value depends on the specific `key` used."""
+
+  string_list_value: Optional[GroundingChunkStringListDict]
+  """Optional. A list of string values for the metadata."""
+
+  string_value: Optional[str]
+  """Optional. The string value of the metadata."""
+
+
+GroundingChunkCustomMetadataOrDict = Union[
+    GroundingChunkCustomMetadata, GroundingChunkCustomMetadataDict
+]
+
+
 class GroundingChunkRetrievedContext(_common.BaseModel):
   """Context retrieved from a data source to ground the model's response.
 
   This is used when a retrieval tool fetches information from a user-provided
-  corpus or a public dataset. This data type is not supported in Gemini API.
+  corpus or a public dataset.
   """
 
   document_name: Optional[str] = Field(
       default=None,
-      description="""Output only. The full resource name of the referenced Vertex AI Search document. This is used to identify the specific document that was retrieved. The format is `projects/{project}/locations/{location}/collections/{collection}/dataStores/{data_store}/branches/{branch}/documents/{document}`.""",
+      description="""Output only. The full resource name of the referenced Vertex AI Search document. This is used to identify the specific document that was retrieved. The format is `projects/{project}/locations/{location}/collections/{collection}/dataStores/{data_store}/branches/{branch}/documents/{document}`. This field is not supported in Gemini API.""",
   )
   rag_chunk: Optional[RagChunk] = Field(
       default=None,
-      description="""Additional context for a Retrieval-Augmented Generation (RAG) retrieval result. This is populated only when the RAG retrieval tool is used.""",
+      description="""Additional context for a Retrieval-Augmented Generation (RAG) retrieval result. This is populated only when the RAG retrieval tool is used. This field is not supported in Gemini API.""",
   )
   text: Optional[str] = Field(
       default=None, description="""The content of the retrieved data source."""
@@ -6615,20 +6773,28 @@ class GroundingChunkRetrievedContext(_common.BaseModel):
   uri: Optional[str] = Field(
       default=None, description="""The URI of the retrieved data source."""
   )
+  custom_metadata: Optional[list[GroundingChunkCustomMetadata]] = Field(
+      default=None,
+      description="""Optional. User-provided metadata about the retrieved context. This field is not supported in Vertex AI.""",
+  )
+  file_search_store: Optional[str] = Field(
+      default=None,
+      description="""Optional. Name of the `FileSearchStore` containing the document. Example: `fileSearchStores/123`. This field is not supported in Vertex AI.""",
+  )
 
 
 class GroundingChunkRetrievedContextDict(TypedDict, total=False):
   """Context retrieved from a data source to ground the model's response.
 
   This is used when a retrieval tool fetches information from a user-provided
-  corpus or a public dataset. This data type is not supported in Gemini API.
+  corpus or a public dataset.
   """
 
   document_name: Optional[str]
-  """Output only. The full resource name of the referenced Vertex AI Search document. This is used to identify the specific document that was retrieved. The format is `projects/{project}/locations/{location}/collections/{collection}/dataStores/{data_store}/branches/{branch}/documents/{document}`."""
+  """Output only. The full resource name of the referenced Vertex AI Search document. This is used to identify the specific document that was retrieved. The format is `projects/{project}/locations/{location}/collections/{collection}/dataStores/{data_store}/branches/{branch}/documents/{document}`. This field is not supported in Gemini API."""
 
   rag_chunk: Optional[RagChunkDict]
-  """Additional context for a Retrieval-Augmented Generation (RAG) retrieval result. This is populated only when the RAG retrieval tool is used."""
+  """Additional context for a Retrieval-Augmented Generation (RAG) retrieval result. This is populated only when the RAG retrieval tool is used. This field is not supported in Gemini API."""
 
   text: Optional[str]
   """The content of the retrieved data source."""
@@ -6638,6 +6804,12 @@ class GroundingChunkRetrievedContextDict(TypedDict, total=False):
 
   uri: Optional[str]
   """The URI of the retrieved data source."""
+
+  custom_metadata: Optional[list[GroundingChunkCustomMetadataDict]]
+  """Optional. User-provided metadata about the retrieved context. This field is not supported in Vertex AI."""
+
+  file_search_store: Optional[str]
+  """Optional. Name of the `FileSearchStore` containing the document. Example: `fileSearchStores/123`. This field is not supported in Vertex AI."""
 
 
 GroundingChunkRetrievedContextOrDict = Union[
@@ -6698,9 +6870,7 @@ class GroundingChunk(_common.BaseModel):
 
   image: Optional[GroundingChunkImage] = Field(
       default=None,
-      description="""A grounding chunk from an image search result. See the `Image`
-      message for details.
-      """,
+      description="""A grounding chunk from an image search result. See the `Image` message for details.""",
   )
   maps: Optional[GroundingChunkMaps] = Field(
       default=None,
@@ -6712,7 +6882,7 @@ class GroundingChunk(_common.BaseModel):
   )
   retrieved_context: Optional[GroundingChunkRetrievedContext] = Field(
       default=None,
-      description="""A grounding chunk from a data source retrieved by a retrieval tool, such as Vertex AI Search. See the `RetrievedContext` message for details. This field is not supported in Gemini API.""",
+      description="""A grounding chunk from a data source retrieved by a retrieval tool, such as Vertex AI Search. See the `RetrievedContext` message for details""",
   )
   web: Optional[GroundingChunkWeb] = Field(
       default=None,
@@ -6729,9 +6899,7 @@ class GroundingChunkDict(TypedDict, total=False):
   """
 
   image: Optional[GroundingChunkImageDict]
-  """A grounding chunk from an image search result. See the `Image`
-      message for details.
-      """
+  """A grounding chunk from an image search result. See the `Image` message for details."""
 
   maps: Optional[GroundingChunkMapsDict]
   """A `Maps` chunk is a piece of evidence that comes from Google Maps.
@@ -6741,7 +6909,7 @@ class GroundingChunkDict(TypedDict, total=False):
       information."""
 
   retrieved_context: Optional[GroundingChunkRetrievedContextDict]
-  """A grounding chunk from a data source retrieved by a retrieval tool, such as Vertex AI Search. See the `RetrievedContext` message for details. This field is not supported in Gemini API."""
+  """A grounding chunk from a data source retrieved by a retrieval tool, such as Vertex AI Search. See the `RetrievedContext` message for details"""
 
   web: Optional[GroundingChunkWebDict]
   """A grounding chunk from a web page, typically from Google Search. See the `Web` message for details."""
@@ -6823,6 +6991,10 @@ class GroundingSupport(_common.BaseModel):
       default=None,
       description="""Segment of the content this support belongs to.""",
   )
+  rendered_parts: Optional[list[int]] = Field(
+      default=None,
+      description="""Indices into the `rendered_parts` field of the `GroundingMetadata` message. These indices specify which rendered parts are associated with this support message.""",
+  )
 
 
 class GroundingSupportDict(TypedDict, total=False):
@@ -6842,6 +7014,9 @@ class GroundingSupportDict(TypedDict, total=False):
 
   segment: Optional[SegmentDict]
   """Segment of the content this support belongs to."""
+
+  rendered_parts: Optional[list[int]]
+  """Indices into the `rendered_parts` field of the `GroundingMetadata` message. These indices specify which rendered parts are associated with this support message."""
 
 
 GroundingSupportOrDict = Union[GroundingSupport, GroundingSupportDict]
@@ -6944,10 +7119,7 @@ class GroundingMetadata(_common.BaseModel):
 
   image_search_queries: Optional[list[str]] = Field(
       default=None,
-      description="""Optional. The image search queries that were used to generate the
-      content. This field is populated only when the grounding source is Google
-      Search with the Image Search search_type enabled.
-      """,
+      description="""Optional. The image search queries that were used to generate the content. This field is populated only when the grounding source is Google Search with the Image Search search_type enabled.""",
   )
   grounding_chunks: Optional[list[GroundingChunk]] = Field(
       default=None,
@@ -6974,7 +7146,7 @@ class GroundingMetadata(_common.BaseModel):
   )
   google_maps_widget_context_token: Optional[str] = Field(
       default=None,
-      description="""Optional. Output only. A token that can be used to render a Google Maps widget with the contextual data. This field is populated only when the grounding source is Google Maps. This field is not supported in Gemini API.""",
+      description="""Optional. Output only. A token that can be used to render a Google Maps widget with the contextual data. This field is populated only when the grounding source is Google Maps.""",
   )
   retrieval_queries: Optional[list[str]] = Field(
       default=None,
@@ -6992,10 +7164,7 @@ class GroundingMetadataDict(TypedDict, total=False):
   """Information for various kinds of grounding."""
 
   image_search_queries: Optional[list[str]]
-  """Optional. The image search queries that were used to generate the
-      content. This field is populated only when the grounding source is Google
-      Search with the Image Search search_type enabled.
-      """
+  """Optional. The image search queries that were used to generate the content. This field is populated only when the grounding source is Google Search with the Image Search search_type enabled."""
 
   grounding_chunks: Optional[list[GroundingChunkDict]]
   """A list of supporting references retrieved from the grounding
@@ -7017,7 +7186,7 @@ class GroundingMetadataDict(TypedDict, total=False):
   """Web search queries for the following-up web search."""
 
   google_maps_widget_context_token: Optional[str]
-  """Optional. Output only. A token that can be used to render a Google Maps widget with the contextual data. This field is populated only when the grounding source is Google Maps. This field is not supported in Gemini API."""
+  """Optional. Output only. A token that can be used to render a Google Maps widget with the contextual data. This field is populated only when the grounding source is Google Maps."""
 
   retrieval_queries: Optional[list[str]]
   """Optional. The queries that were executed by the retrieval tools. This field is populated only when the grounding source is a retrieval tool, such as Vertex AI Search. This field is not supported in Gemini API."""
@@ -7109,6 +7278,10 @@ class LogprobsResult(_common.BaseModel):
       default=None,
       description="""A list of the top candidate tokens at each decoding step. The length of this list is equal to the total number of decoding steps.""",
   )
+  log_probability_sum: Optional[float] = Field(
+      default=None,
+      description="""Sum of log probabilities for all tokens. This field is not supported in Vertex AI.""",
+  )
 
 
 class LogprobsResultDict(TypedDict, total=False):
@@ -7127,6 +7300,9 @@ class LogprobsResultDict(TypedDict, total=False):
 
   top_candidates: Optional[list[LogprobsResultTopCandidatesDict]]
   """A list of the top candidate tokens at each decoding step. The length of this list is equal to the total number of decoding steps."""
+
+  log_probability_sum: Optional[float]
+  """Sum of log probabilities for all tokens. This field is not supported in Vertex AI."""
 
 
 LogprobsResultOrDict = Union[LogprobsResult, LogprobsResultDict]
@@ -7517,6 +7693,45 @@ GenerateContentResponseUsageMetadataOrDict = Union[
 ]
 
 
+class ModelStatus(_common.BaseModel):
+  """The status of the underlying model.
+
+  This is used to indicate the stage of the underlying model and the retirement
+  time if applicable. This data type is not supported in Vertex AI.
+  """
+
+  message: Optional[str] = Field(
+      default=None, description="""A message explaining the model status."""
+  )
+  model_stage: Optional[ModelStage] = Field(
+      default=None, description="""The stage of the underlying model."""
+  )
+  retirement_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""The time at which the model will be retired.""",
+  )
+
+
+class ModelStatusDict(TypedDict, total=False):
+  """The status of the underlying model.
+
+  This is used to indicate the stage of the underlying model and the retirement
+  time if applicable. This data type is not supported in Vertex AI.
+  """
+
+  message: Optional[str]
+  """A message explaining the model status."""
+
+  model_stage: Optional[ModelStage]
+  """The stage of the underlying model."""
+
+  retirement_time: Optional[datetime.datetime]
+  """The time at which the model will be retired."""
+
+
+ModelStatusOrDict = Union[ModelStatus, ModelStatusDict]
+
+
 class GenerateContentResponse(_common.BaseModel):
   """Response message for PredictionService.GenerateContent."""
 
@@ -7547,6 +7762,10 @@ class GenerateContentResponse(_common.BaseModel):
   )
   usage_metadata: Optional[GenerateContentResponseUsageMetadata] = Field(
       default=None, description="""Usage metadata about the response(s)."""
+  )
+  model_status: Optional[ModelStatus] = Field(
+      default=None,
+      description="""Output only. The current model status of this model. This field is not supported in Vertex AI.""",
   )
   automatic_function_calling_history: Optional[list[Content]] = None
   parsed: Optional[Union[pydantic.BaseModel, dict[Any, Any], Enum]] = Field(
@@ -7859,6 +8078,9 @@ class GenerateContentResponseDict(TypedDict, total=False):
 
   usage_metadata: Optional[GenerateContentResponseUsageMetadataDict]
   """Usage metadata about the response(s)."""
+
+  model_status: Optional[ModelStatusDict]
+  """Output only. The current model status of this model. This field is not supported in Vertex AI."""
 
 
 GenerateContentResponseOrDict = Union[
@@ -12908,7 +13130,7 @@ class EvaluateDatasetRun(_common.BaseModel):
   )
   operation_name: Optional[str] = Field(
       default=None,
-      description="""Output only. The operation ID of the evaluation run. Format: `projects/{project}/locations/{location}/operations/{operation_id}`.""",
+      description="""Output only. Deprecated: The updated architecture uses evaluation_run instead.""",
   )
 
 
@@ -12931,7 +13153,7 @@ class EvaluateDatasetRunDict(TypedDict, total=False):
   """Output only. The resource name of the evaluation run. Format: `projects/{project}/locations/{location}/evaluationRuns/{evaluation_run_id}`."""
 
   operation_name: Optional[str]
-  """Output only. The operation ID of the evaluation run. Format: `projects/{project}/locations/{location}/operations/{operation_id}`."""
+  """Output only. Deprecated: The updated architecture uses evaluation_run instead."""
 
 
 EvaluateDatasetRunOrDict = Union[EvaluateDatasetRun, EvaluateDatasetRunDict]
@@ -13054,6 +13276,73 @@ class VeoTuningSpecDict(TypedDict, total=False):
 VeoTuningSpecOrDict = Union[VeoTuningSpec, VeoTuningSpecDict]
 
 
+class DistillationSamplingSpec(_common.BaseModel):
+  """Spec for creating a distilled dataset in Vertex Dataset.
+
+  This data type is not supported in Gemini API.
+  """
+
+  base_teacher_model: Optional[str] = Field(
+      default=None,
+      description="""Optional. The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).""",
+  )
+  tuned_teacher_model_source: Optional[str] = Field(
+      default=None,
+      description="""Optional. The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Optional. Cloud Storage path to file containing validation dataset for distillation. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+class DistillationSamplingSpecDict(TypedDict, total=False):
+  """Spec for creating a distilled dataset in Vertex Dataset.
+
+  This data type is not supported in Gemini API.
+  """
+
+  base_teacher_model: Optional[str]
+  """Optional. The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models)."""
+
+  tuned_teacher_model_source: Optional[str]
+  """Optional. The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`."""
+
+  validation_dataset_uri: Optional[str]
+  """Optional. Cloud Storage path to file containing validation dataset for distillation. The dataset must be formatted as a JSONL file."""
+
+
+DistillationSamplingSpecOrDict = Union[
+    DistillationSamplingSpec, DistillationSamplingSpecDict
+]
+
+
+class TuningJobMetadata(_common.BaseModel):
+  """Tuning job metadata. This data type is not supported in Gemini API."""
+
+  completed_epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. The number of epochs that have been completed.""",
+  )
+  completed_step_count: Optional[int] = Field(
+      default=None,
+      description="""Output only. The number of steps that have been completed. Set for Multi-Step RL.""",
+  )
+
+
+class TuningJobMetadataDict(TypedDict, total=False):
+  """Tuning job metadata. This data type is not supported in Gemini API."""
+
+  completed_epoch_count: Optional[int]
+  """Output only. The number of epochs that have been completed."""
+
+  completed_step_count: Optional[int]
+  """Output only. The number of steps that have been completed. Set for Multi-Step RL."""
+
+
+TuningJobMetadataOrDict = Union[TuningJobMetadata, TuningJobMetadataDict]
+
+
 class TuningJob(_common.BaseModel):
   """A tuning job."""
 
@@ -13169,6 +13458,13 @@ class TuningJob(_common.BaseModel):
   veo_tuning_spec: Optional[VeoTuningSpec] = Field(
       default=None, description="""Tuning Spec for Veo Tuning."""
   )
+  distillation_sampling_spec: Optional[DistillationSamplingSpec] = Field(
+      default=None,
+      description="""Optional. Spec for creating a distillation dataset.""",
+  )
+  tuning_job_metadata: Optional[TuningJobMetadata] = Field(
+      default=None, description="""Output only. Tuning Job metadata."""
+  )
 
   @property
   def has_ended(self) -> bool:
@@ -13273,6 +13569,12 @@ class TuningJobDict(TypedDict, total=False):
 
   veo_tuning_spec: Optional[VeoTuningSpecDict]
   """Tuning Spec for Veo Tuning."""
+
+  distillation_sampling_spec: Optional[DistillationSamplingSpecDict]
+  """Optional. Spec for creating a distillation dataset."""
+
+  tuning_job_metadata: Optional[TuningJobMetadataDict]
+  """Output only. Tuning Job metadata."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]
@@ -14399,21 +14701,23 @@ class Document(_common.BaseModel):
 
   name: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Document.
-      Example: fileSearchStores/file-search-store-foo/documents/documents-bar""",
+      description="""Immutable. Identifier. The `Document` resource name. The ID (name excluding the "fileSearchStores/&#42;/documents/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be derived from `display_name` along with a 12 character random suffix. Example: `fileSearchStores/{file_search_store_id}/documents/my-awesome-doc-123a456b789c`""",
   )
   display_name: Optional[str] = Field(
       default=None,
-      description="""The human-readable display name for the Document.""",
+      description="""Optional. The human-readable display name for the `Document`. The display name must be no more than 512 characters in length, including spaces. Example: "Semantic Retriever Documentation".""",
   )
   state: Optional[DocumentState] = Field(
-      default=None, description="""The current state of the Document."""
+      default=None,
+      description="""Output only. Current state of the `Document`.""",
   )
   size_bytes: Optional[int] = Field(
-      default=None, description="""The size of the Document in bytes."""
+      default=None,
+      description="""Output only. The size of raw bytes ingested into the Document.""",
   )
   mime_type: Optional[str] = Field(
-      default=None, description="""The MIME type of the Document."""
+      default=None,
+      description="""Output only. The mime type of the Document.""",
   )
   create_time: Optional[datetime.datetime] = Field(
       default=None,
@@ -14433,20 +14737,19 @@ class DocumentDict(TypedDict, total=False):
   """A Document is a collection of Chunks."""
 
   name: Optional[str]
-  """The resource name of the Document.
-      Example: fileSearchStores/file-search-store-foo/documents/documents-bar"""
+  """Immutable. Identifier. The `Document` resource name. The ID (name excluding the "fileSearchStores/&#42;/documents/" prefix) can contain up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot start or end with a dash. If the name is empty on create, a unique name will be derived from `display_name` along with a 12 character random suffix. Example: `fileSearchStores/{file_search_store_id}/documents/my-awesome-doc-123a456b789c`"""
 
   display_name: Optional[str]
-  """The human-readable display name for the Document."""
+  """Optional. The human-readable display name for the `Document`. The display name must be no more than 512 characters in length, including spaces. Example: "Semantic Retriever Documentation"."""
 
   state: Optional[DocumentState]
-  """The current state of the Document."""
+  """Output only. Current state of the `Document`."""
 
   size_bytes: Optional[int]
-  """The size of the Document in bytes."""
+  """Output only. The size of raw bytes ingested into the Document."""
 
   mime_type: Optional[str]
-  """The MIME type of the Document."""
+  """Output only. The mime type of the Document."""
 
   create_time: Optional[datetime.datetime]
   """Output only. The Timestamp of when the `Document` was created."""
@@ -14890,7 +15193,10 @@ class ListFileSearchStoresResponse(_common.BaseModel):
   sdk_http_response: Optional[HttpResponse] = Field(
       default=None, description="""Used to retain the full HTTP response."""
   )
-  next_page_token: Optional[str] = Field(default=None, description="""""")
+  next_page_token: Optional[str] = Field(
+      default=None,
+      description="""A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no more pages.""",
+  )
   file_search_stores: Optional[list[FileSearchStore]] = Field(
       default=None, description="""The returned file search stores."""
   )
@@ -14903,7 +15209,7 @@ class ListFileSearchStoresResponseDict(TypedDict, total=False):
   """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
-  """"""
+  """A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no more pages."""
 
   file_search_stores: Optional[list[FileSearchStoreDict]]
   """The returned file search stores."""
@@ -15731,14 +16037,15 @@ class InlinedEmbedContentResponse(_common.BaseModel):
   """Config for `inlined_embedding_responses` parameter."""
 
   response: Optional[SingleEmbedContentResponse] = Field(
-      default=None,
-      description="""The response to the request.
-      """,
+      default=None, description="""Output only. The response to the request."""
   )
   error: Optional[JobError] = Field(
       default=None,
-      description="""The error encountered while processing the request.
-      """,
+      description="""Output only. The error encountered while processing the request.""",
+  )
+  metadata: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Output only. The metadata associated with the request.""",
   )
 
 
@@ -15746,12 +16053,13 @@ class InlinedEmbedContentResponseDict(TypedDict, total=False):
   """Config for `inlined_embedding_responses` parameter."""
 
   response: Optional[SingleEmbedContentResponseDict]
-  """The response to the request.
-      """
+  """Output only. The response to the request."""
 
   error: Optional[JobErrorDict]
-  """The error encountered while processing the request.
-      """
+  """Output only. The error encountered while processing the request."""
+
+  metadata: Optional[dict[str, Any]]
+  """Output only. The metadata associated with the request."""
 
 
 InlinedEmbedContentResponseOrDict = Union[
@@ -17499,14 +17807,11 @@ class Transcription(_common.BaseModel):
   """Audio transcription in Server Conent."""
 
   text: Optional[str] = Field(
-      default=None,
-      description="""Transcription text.
-      """,
+      default=None, description="""Optional. Transcription text."""
   )
   finished: Optional[bool] = Field(
       default=None,
-      description="""The bool indicates the end of the transcription.
-      """,
+      description="""Optional. The bool indicates the end of the transcription.""",
   )
 
 
@@ -17514,12 +17819,10 @@ class TranscriptionDict(TypedDict, total=False):
   """Audio transcription in Server Conent."""
 
   text: Optional[str]
-  """Transcription text.
-      """
+  """Optional. Transcription text."""
 
   finished: Optional[bool]
-  """The bool indicates the end of the transcription.
-      """
+  """Optional. The bool indicates the end of the transcription."""
 
 
 TranscriptionOrDict = Union[Transcription, TranscriptionDict]
