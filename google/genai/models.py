@@ -5008,7 +5008,7 @@ class Models(_api_module.BaseModule):
       virtual_try_on_response = client.models.recontext_image(
           model="virtual-try-on-001",
           source=types.RecontextImageSource(
-              person_image=types.Image.from_file(IMAGE1_FILE_PATH),
+              person_image=types.Image.from_file(location=IMAGE1_FILE_PATH),
               product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
           ),
           config=types.RecontextImageConfig(
@@ -5096,7 +5096,7 @@ class Models(_api_module.BaseModule):
       response = client.models.segment_image(
           model="image-segmentation-001",
           source=types.SegmentImageSource(
-              image=types.Image.from_file(IMAGE_FILE_PATH),
+              image=types.Image.from_file(location=IMAGE_FILE_PATH),
           ),
       )
 
@@ -6192,7 +6192,7 @@ class Models(_api_module.BaseModule):
 
       raw_ref_image = RawReferenceImage(
         reference_id=1,
-        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
+        reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
       )
 
       mask_ref_image = MaskReferenceImage(
@@ -6247,7 +6247,7 @@ class Models(_api_module.BaseModule):
       IMAGE_FILE_PATH="my-image.png"
       response=client.models.upscale_image(
           model='imagen-3.0-generate-001',
-          image=types.Image.from_file(IMAGE_FILE_PATH),
+          image=types.Image.from_file(location=IMAGE_FILE_PATH),
           upscale_factor='x2',
       )
       response.generated_images[0].image.show()
@@ -6972,7 +6972,7 @@ class AsyncModels(_api_module.BaseModule):
       virtual_try_on_response = client.models.recontext_image(
           model="virtual-try-on-001",
           source=types.RecontextImageSource(
-              person_image=types.Image.from_file(IMAGE1_FILE_PATH),
+              person_image=types.Image.from_file(location=IMAGE1_FILE_PATH),
               product_images=[types.ProductImage.from_file(IMAGE2_FILE_PATH)],
           ),
           config=types.RecontextImageConfig(
@@ -7060,7 +7060,7 @@ class AsyncModels(_api_module.BaseModule):
       response = client.models.segment_image(
           model="image-segmentation-001",
           source=types.SegmentImageSource(
-              image=types.Image.from_file(IMAGE_FILE_PATH),
+              image=types.Image.from_file(location=IMAGE_FILE_PATH),
           ),
           config=types.SegmentImageConfig(
               mode=types.SegmentMode.foreground,
@@ -8027,7 +8027,7 @@ class AsyncModels(_api_module.BaseModule):
 
       raw_ref_image = RawReferenceImage(
         reference_id=1,
-        reference_image=types.Image.from_file(IMAGE_FILE_PATH),
+        reference_image=types.Image.from_file(location=IMAGE_FILE_PATH),
       )
 
       mask_ref_image = MaskReferenceImage(
@@ -8189,7 +8189,7 @@ class AsyncModels(_api_module.BaseModule):
       IMAGE_FILE_PATH="my-image.png"
       response = await client.aio.models.upscale_image(
           model='imagen-3.0-generate-001',
-          image=types.Image.from_file(IMAGE_FILE_PATH),
+          image=types.Image.from_file(location=IMAGE_FILE_PATH),
           upscale_factor='x2',
       )
       response.generated_images[0].image.show()
