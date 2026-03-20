@@ -40,4 +40,7 @@ class FileCitationParam(TypedDict, total=False):
     """Source attributed for a portion of the text."""
 
     start_index: int
-    """Start of segment of the response that is attributed to this source."""
+    """Start of segment of the response that is attributed to this source.
+
+    Index indicates the start of the segment, measured in bytes.
+    """

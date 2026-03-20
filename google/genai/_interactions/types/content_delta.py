@@ -43,24 +43,20 @@ __all__ = [
     "DeltaThoughtSummaryContent",
     "DeltaThoughtSignature",
     "DeltaFunctionCall",
-    "DeltaFunctionResult",
-    "DeltaFunctionResultResult",
-    "DeltaFunctionResultResultItems",
-    "DeltaFunctionResultResultItemsItem",
     "DeltaCodeExecutionCall",
-    "DeltaCodeExecutionResult",
     "DeltaURLContextCall",
-    "DeltaURLContextResult",
     "DeltaGoogleSearchCall",
-    "DeltaGoogleSearchResult",
     "DeltaMCPServerToolCall",
-    "DeltaMCPServerToolResult",
-    "DeltaMCPServerToolResultResult",
-    "DeltaMCPServerToolResultResultItems",
-    "DeltaMCPServerToolResultResultItemsItem",
     "DeltaFileSearchCall",
-    "DeltaFileSearchResult",
     "DeltaGoogleMapsCall",
+    "DeltaFunctionResult",
+    "DeltaFunctionResultResultFunctionResultSubcontentList",
+    "DeltaCodeExecutionResult",
+    "DeltaURLContextResult",
+    "DeltaGoogleSearchResult",
+    "DeltaMCPServerToolResult",
+    "DeltaMCPServerToolResultResultFunctionResultSubcontentList",
+    "DeltaFileSearchResult",
     "DeltaGoogleMapsResult",
 ]
 
@@ -163,33 +159,6 @@ class DeltaFunctionCall(BaseModel):
     """A signature hash for backend validation."""
 
 
-DeltaFunctionResultResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
-
-
-class DeltaFunctionResultResultItems(BaseModel):
-    items: Optional[List[DeltaFunctionResultResultItemsItem]] = None
-
-
-DeltaFunctionResultResult: TypeAlias = Union[DeltaFunctionResultResultItems, str, object]
-
-
-class DeltaFunctionResult(BaseModel):
-    call_id: str
-    """ID to match the ID from the function call block."""
-
-    result: DeltaFunctionResultResult
-    """Tool call result delta."""
-
-    type: Literal["function_result"]
-
-    is_error: Optional[bool] = None
-
-    name: Optional[str] = None
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
-
 class DeltaCodeExecutionCall(BaseModel):
     id: str
     """A unique ID for this specific tool call."""
@@ -198,20 +167,6 @@ class DeltaCodeExecutionCall(BaseModel):
     """The arguments to pass to the code execution."""
 
     type: Literal["code_execution_call"]
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
-
-class DeltaCodeExecutionResult(BaseModel):
-    call_id: str
-    """ID to match the ID from the function call block."""
-
-    result: str
-
-    type: Literal["code_execution_result"]
-
-    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""
@@ -230,20 +185,6 @@ class DeltaURLContextCall(BaseModel):
     """A signature hash for backend validation."""
 
 
-class DeltaURLContextResult(BaseModel):
-    call_id: str
-    """ID to match the ID from the function call block."""
-
-    result: List[URLContextResult]
-
-    type: Literal["url_context_result"]
-
-    is_error: Optional[bool] = None
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
-
 class DeltaGoogleSearchCall(BaseModel):
     id: str
     """A unique ID for this specific tool call."""
@@ -252,20 +193,6 @@ class DeltaGoogleSearchCall(BaseModel):
     """The arguments to pass to Google Search."""
 
     type: Literal["google_search_call"]
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
-
-class DeltaGoogleSearchResult(BaseModel):
-    call_id: str
-    """ID to match the ID from the function call block."""
-
-    result: List[GoogleSearchResult]
-
-    type: Literal["google_search_result"]
-
-    is_error: Optional[bool] = None
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""
@@ -287,50 +214,11 @@ class DeltaMCPServerToolCall(BaseModel):
     """A signature hash for backend validation."""
 
 
-DeltaMCPServerToolResultResultItemsItem: TypeAlias = Union[TextContent, ImageContent]
-
-
-class DeltaMCPServerToolResultResultItems(BaseModel):
-    items: Optional[List[DeltaMCPServerToolResultResultItemsItem]] = None
-
-
-DeltaMCPServerToolResultResult: TypeAlias = Union[DeltaMCPServerToolResultResultItems, str, object]
-
-
-class DeltaMCPServerToolResult(BaseModel):
-    call_id: str
-    """ID to match the ID from the function call block."""
-
-    result: DeltaMCPServerToolResultResult
-    """Tool call result delta."""
-
-    type: Literal["mcp_server_tool_result"]
-
-    name: Optional[str] = None
-
-    server_name: Optional[str] = None
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
-
 class DeltaFileSearchCall(BaseModel):
     id: str
     """A unique ID for this specific tool call."""
 
     type: Literal["file_search_call"]
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
-
-class DeltaFileSearchResult(BaseModel):
-    call_id: str
-    """ID to match the ID from the function call block."""
-
-    type: Literal["file_search_result"]
-
-    result: Optional[List[object]] = None
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""
@@ -344,6 +232,102 @@ class DeltaGoogleMapsCall(BaseModel):
 
     arguments: Optional[GoogleMapsCallArguments] = None
     """The arguments to pass to the Google Maps tool."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+DeltaFunctionResultResultFunctionResultSubcontentList: TypeAlias = Annotated[
+    Union[TextContent, ImageContent], PropertyInfo(discriminator="type")
+]
+
+
+class DeltaFunctionResult(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
+    result: Union[List[DeltaFunctionResultResultFunctionResultSubcontentList], str, object]
+
+    type: Literal["function_result"]
+
+    is_error: Optional[bool] = None
+
+    name: Optional[str] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaCodeExecutionResult(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
+    result: str
+
+    type: Literal["code_execution_result"]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaURLContextResult(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
+    result: List[URLContextResult]
+
+    type: Literal["url_context_result"]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaGoogleSearchResult(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
+    result: List[GoogleSearchResult]
+
+    type: Literal["google_search_result"]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+DeltaMCPServerToolResultResultFunctionResultSubcontentList: TypeAlias = Annotated[
+    Union[TextContent, ImageContent], PropertyInfo(discriminator="type")
+]
+
+
+class DeltaMCPServerToolResult(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
+    result: Union[List[DeltaMCPServerToolResultResultFunctionResultSubcontentList], str, object]
+
+    type: Literal["mcp_server_tool_result"]
+
+    name: Optional[str] = None
+
+    server_name: Optional[str] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaFileSearchResult(BaseModel):
+    call_id: str
+    """ID to match the ID from the function call block."""
+
+    type: Literal["file_search_result"]
+
+    result: Optional[List[object]] = None
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""
@@ -372,18 +356,18 @@ Delta: TypeAlias = Annotated[
         DeltaThoughtSummary,
         DeltaThoughtSignature,
         DeltaFunctionCall,
-        DeltaFunctionResult,
         DeltaCodeExecutionCall,
-        DeltaCodeExecutionResult,
         DeltaURLContextCall,
-        DeltaURLContextResult,
         DeltaGoogleSearchCall,
-        DeltaGoogleSearchResult,
         DeltaMCPServerToolCall,
-        DeltaMCPServerToolResult,
         DeltaFileSearchCall,
-        DeltaFileSearchResult,
         DeltaGoogleMapsCall,
+        DeltaFunctionResult,
+        DeltaCodeExecutionResult,
+        DeltaURLContextResult,
+        DeltaGoogleSearchResult,
+        DeltaMCPServerToolResult,
+        DeltaFileSearchResult,
         DeltaGoogleMapsResult,
     ],
     PropertyInfo(discriminator="type"),
@@ -392,6 +376,7 @@ Delta: TypeAlias = Annotated[
 
 class ContentDelta(BaseModel):
     delta: Delta
+    """The delta content data for a content block."""
 
     event_type: Literal["content.delta"]
 
@@ -399,5 +384,6 @@ class ContentDelta(BaseModel):
 
     event_id: Optional[str] = None
     """
-    The event_id token to be used to resume the interaction stream, from this event.
+    The event_id token to be used to resume the interaction stream, from
+    this event.
     """
