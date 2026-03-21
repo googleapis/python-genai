@@ -45,6 +45,7 @@ _GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES = {
     "gemini-2.0-flash-001": "gemma3",
     "gemini-2.0-flash-lite-001": "gemma3",
     "gemini-3-pro-preview": "gemma3",
+    "gemini-3-flash-preview": "gemma3",
 }
 
 
