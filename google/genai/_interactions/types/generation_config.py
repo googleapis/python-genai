@@ -58,7 +58,7 @@ class GenerationConfig(BaseModel):
     """Whether to include thought summaries in the response."""
 
     tool_choice: Optional[ToolChoice] = None
-    """The tool choice for the interaction."""
+    """The tool choice configuration."""
 
     top_p: Optional[float] = None
     """The maximum cumulative probability of tokens to consider when sampling."""

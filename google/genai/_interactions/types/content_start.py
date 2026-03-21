@@ -34,5 +34,6 @@ class ContentStart(BaseModel):
 
     event_id: Optional[str] = None
     """
-    The event_id token to be used to resume the interaction stream, from this event.
+    The event_id token to be used to resume the interaction stream, from
+    this event.
     """

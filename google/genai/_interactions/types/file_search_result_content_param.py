@@ -33,10 +33,10 @@ class FileSearchResultContentParam(TypedDict, total=False):
     call_id: Required[str]
     """ID to match the ID from the file search call block."""
 
-    type: Required[Literal["file_search_result"]]
+    result: Required[Iterable[object]]
+    """Required. The results of the File Search."""
 
-    result: Iterable[object]
-    """The results of the File Search."""
+    type: Required[Literal["file_search_result"]]
 
     signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """A signature hash for backend validation."""

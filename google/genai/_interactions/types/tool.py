@@ -27,23 +27,14 @@ from .allowed_tools import AllowedTools
 
 __all__ = [
     "Tool",
-    "GoogleSearch",
     "CodeExecution",
     "URLContext",
     "ComputerUse",
     "MCPServer",
+    "GoogleSearch",
     "FileSearch",
     "GoogleMaps",
 ]
-
-
-class GoogleSearch(BaseModel):
-    """A tool that can be used by the model to search Google."""
-
-    type: Literal["google_search"]
-
-    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
-    """The types of search grounding to enable."""
 
 
 class CodeExecution(BaseModel):
@@ -91,6 +82,15 @@ class MCPServer(BaseModel):
     """
 
 
+class GoogleSearch(BaseModel):
+    """A tool that can be used by the model to search Google."""
+
+    type: Literal["google_search"]
+
+    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
+    """The types of search grounding to enable."""
+
+
 class FileSearch(BaseModel):
     """A tool that can be used by the model to search files."""
 
@@ -109,6 +109,8 @@ class FileSearch(BaseModel):
 class GoogleMaps(BaseModel):
     """A tool that can be used by the model to call Google Maps."""
 
+    type: Literal["google_maps"]
+
     enable_widget: Optional[bool] = None
     """
     Whether to return a widget context token in the tool call result of the
@@ -121,10 +123,8 @@ class GoogleMaps(BaseModel):
     longitude: Optional[float] = None
     """The longitude of the user's location."""
 
-    type: Optional[Literal["google_maps"]] = None
-
 
 Tool: TypeAlias = Annotated[
-    Union[Function, GoogleSearch, CodeExecution, URLContext, ComputerUse, MCPServer, FileSearch, GoogleMaps],
+    Union[Function, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch, GoogleMaps],
     PropertyInfo(discriminator="type"),
 ]

@@ -60,7 +60,7 @@ class GenerationConfigParam(TypedDict, total=False):
     """Whether to include thought summaries in the response."""
 
     tool_choice: ToolChoice
-    """The tool choice for the interaction."""
+    """The tool choice configuration."""
 
     top_p: float
     """The maximum cumulative probability of tokens to consider when sampling."""
