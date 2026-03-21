@@ -4562,10 +4562,10 @@ class Models(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> types.GenerateContentResponse:
-    contents = _process_contents_for_generation(self._api_client, contents)
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
@@ -4644,10 +4644,10 @@ class Models(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Iterator[types.GenerateContentResponse]:
-    contents = _process_contents_for_generation(self._api_client, contents)
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
@@ -6523,10 +6523,10 @@ class AsyncModels(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> types.GenerateContentResponse:
-    contents = _process_contents_for_generation(self._api_client, contents)
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
@@ -6605,10 +6605,10 @@ class AsyncModels(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Awaitable[AsyncIterator[types.GenerateContentResponse]]:
-    contents = _process_contents_for_generation(self._api_client, contents)
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
