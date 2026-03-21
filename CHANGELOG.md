@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.69.0](https://github.com/googleapis/python-genai/compare/v1.68.0...v1.69.0) (2026-03-21)
+
+
+### Features
+
+* Add model_status to GenerateContentResponse (Gemini API only) ([ce86f2b](https://github.com/googleapis/python-genai/commit/ce86f2b4426294af0342ab490794b5d1f83c588b))
+* Add part_metadata in Part (Gemini API only) ([ce86f2b](https://github.com/googleapis/python-genai/commit/ce86f2b4426294af0342ab490794b5d1f83c588b))
+* Autoenable mTLS in environment with bound token (Agent Engine with AgentAuthority) through google-auth migration (except custom client args, custom client or custom ClientSession) ([a95d08a](https://github.com/googleapis/python-genai/commit/a95d08a45cc1e1e0dd3842c7b2e4fd528ed70b5b))
+* Support rendered_parts in GroundingSupport ([ce86f2b](https://github.com/googleapis/python-genai/commit/ce86f2b4426294af0342ab490794b5d1f83c588b))
+
+
+### Documentation
+
+* Update python docs for 1.68. ([07ae1b1](https://github.com/googleapis/python-genai/commit/07ae1b166c696a83697510ac51dbc880d1660fd0))
+
 ## [1.68.0](https://github.com/googleapis/python-genai/compare/v1.67.0...v1.68.0) (2026-03-17)
 
 ### Breaking changes
