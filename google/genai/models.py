@@ -1606,6 +1606,9 @@ def _GenerateContentResponse_from_mldev(
   if getv(from_object, ['usageMetadata']) is not None:
     setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
 
+  if getv(from_object, ['modelStatus']) is not None:
+    setv(to_object, ['model_status'], getv(from_object, ['modelStatus']))
+
   return to_object
 
 
@@ -3375,6 +3378,9 @@ def _Part_to_mldev(
   if getv(from_object, ['tool_response']) is not None:
     setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
 
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
   return to_object
 
 
@@ -3436,6 +3442,9 @@ def _Part_to_vertex(
 
   if getv(from_object, ['tool_response']) is not None:
     raise ValueError('tool_response parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['part_metadata']) is not None:
+    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
 
   return to_object
 

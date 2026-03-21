@@ -148,7 +148,9 @@ class AsyncClient:
           stacklevel=5,
       )
 
-    http_client: httpx.AsyncClient = self._api_client._async_httpx_client
+    http_client: Optional[httpx.AsyncClient] = (
+        self._api_client._async_httpx_client
+    )
 
     async_client_args = self._api_client._http_options.async_client_args or {}
     has_custom_transport = 'transport' in async_client_args
@@ -306,7 +308,6 @@ class DebugConfig(pydantic.BaseModel):
   replay_id: Optional[str] = pydantic.Field(
       default_factory=lambda: os.getenv('GOOGLE_GENAI_REPLAY_ID', None)
   )
-
 
 
 class Client:

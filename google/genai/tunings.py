@@ -1314,6 +1314,20 @@ def _TuningJob_from_vertex(
   if getv(from_object, ['veoTuningSpec']) is not None:
     setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
+  if getv(from_object, ['distillationSamplingSpec']) is not None:
+    setv(
+        to_object,
+        ['distillation_sampling_spec'],
+        getv(from_object, ['distillationSamplingSpec']),
+    )
+
+  if getv(from_object, ['tuningJobMetadata']) is not None:
+    setv(
+        to_object,
+        ['tuning_job_metadata'],
+        getv(from_object, ['tuningJobMetadata']),
+    )
+
   return to_object
 
 

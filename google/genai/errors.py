@@ -18,19 +18,25 @@
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import httpx
 import json
-import websockets
+import requests
 from . import _common
 
 
 if TYPE_CHECKING:
   from .replay_api_client import ReplayResponse
   import aiohttp
+  from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
 
 
 class APIError(Exception):
   """General errors raised by the GenAI API."""
   code: int
-  response: Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+  response: Union[
+      requests.Response,
+      'ReplayResponse',
+      httpx.Response,
+      'AsyncAuthorizedSessionResponse',
+  ]
 
   status: Optional[str] = None
   message: Optional[str] = None
@@ -40,7 +46,12 @@ class APIError(Exception):
       code: int,
       response_json: Any,
       response: Optional[
-          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+          Union[
+              requests.Response,
+              'ReplayResponse',
+              httpx.Response,
+              'AsyncAuthorizedSessionResponse',
+          ]
       ] = None,
   ):
     if isinstance(response_json, list) and len(response_json) == 1:
@@ -112,7 +123,7 @@ class APIError(Exception):
 
   @classmethod
   def raise_for_response(
-      cls, response: Union['ReplayResponse', httpx.Response]
+      cls, response: Union['ReplayResponse', httpx.Response, requests.Response]
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
@@ -128,6 +139,16 @@ class APIError(Exception):
             'message': message,
             'status': response.reason_phrase,
         }
+    elif isinstance(response, requests.Response):
+      try:
+        # do not do any extra muanipulation on the response.
+        # return the raw response json as is.
+        response_json = response.json()
+      except requests.exceptions.JSONDecodeError:
+        response_json = {
+            'message': response.text,
+            'status': response.reason,
+        }
     else:
       response_json = response.body_segments[0].get('error', {})
 
@@ -139,7 +160,11 @@ class APIError(Exception):
       status_code: int,
       response_json: Any,
       response: Optional[
-          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+          Union[
+              'ReplayResponse',
+              httpx.Response,
+              requests.Response,
+          ]
       ],
   ) -> None:
     """Raises an appropriate APIError subclass based on the status code.
@@ -166,12 +191,13 @@ class APIError(Exception):
   async def raise_for_async_response(
       cls,
       response: Union[
-          'ReplayResponse', httpx.Response, 'aiohttp.ClientResponse'
+          'ReplayResponse',
+          httpx.Response,
+          'aiohttp.ClientResponse',
+          'AsyncAuthorizedSessionResponse',
       ],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
-    status_code = 0
-    response_json = None
     if isinstance(response, httpx.Response):
       if response.status_code == 200:
         return
@@ -196,18 +222,23 @@ class APIError(Exception):
       try:
         import aiohttp  # pylint: disable=g-import-not-at-top
 
-        if isinstance(response, aiohttp.ClientResponse):
-          if response.status == 200:
+        # Use a local variable to help Mypy handle the unwrapped response
+        unwrapped_response: Any = response
+        if hasattr(unwrapped_response, '_response'):
+          unwrapped_response = unwrapped_response._response
+
+        if isinstance(unwrapped_response, aiohttp.ClientResponse):
+          if unwrapped_response.status == 200:
             return
           try:
-            response_json = await response.json()
+            response_json = await unwrapped_response.json()
           except aiohttp.client_exceptions.ContentTypeError:
-            message = await response.text()
+            message = await unwrapped_response.text()
             response_json = {
                 'message': message,
-                'status': response.reason,
+                'status': unwrapped_response.reason,
             }
-          status_code = response.status
+          status_code = unwrapped_response.status
         else:
           raise ValueError(f'Unsupported response type: {type(response)}')
       except ImportError:

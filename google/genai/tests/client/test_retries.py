@@ -20,12 +20,20 @@ from collections.abc import Sequence
 import datetime
 from unittest import mock
 import pytest
+
 try:
-    import aiohttp
-    AIOHTTP_NOT_INSTALLED = False
+  import aiohttp
+  from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
+  from google.auth.aio.transport.sessions import AsyncAuthorizedSession
+  from google.auth.aio.credentials import StaticCredentials
+
+  AIOHTTP_NOT_INSTALLED = False
 except ImportError:
-    AIOHTTP_NOT_INSTALLED = True
-    aiohttp = mock.MagicMock()
+  AIOHTTP_NOT_INSTALLED = True
+  aiohttp = mock.MagicMock()
+  AsyncAuthorizedSessionResponse = mock.MagicMock()
+  StaticCredentials = mock.MagicMock()
+  AsyncAuthorizedSession = mock.MagicMock()
 
 from google.oauth2 import credentials
 import httpx
@@ -614,7 +622,6 @@ def test_async_retries_failed_request_retries_unsuccessfully_at_request_level():
 
 # Async aiohttp
 
-
 async def _aiohttp_async_response(status: int, streamable: bool = False):
   """Has to return a coroutine hence async."""
   response = mock.Mock(spec=aiohttp.ClientResponse)
@@ -725,7 +732,10 @@ def test_aiohttp_retries_failed_request_retries_successfully(mock_request):
         project='test_project',
         location='global',
         http_options=_transport_options(
-            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            http_options=types.HttpOptions(
+                retry_options=_RETRY_OPTIONS,
+                async_client_args={'trust_env': False},
+            ),
         ),
     )
 
@@ -740,7 +750,11 @@ def test_aiohttp_retries_failed_request_retries_successfully(mock_request):
 
 
 @requires_aiohttp
-@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
 def test_aiohttp_retries_failed_request_retries_successfully_at_request_level(
     mock_request,
 ):
@@ -789,7 +803,10 @@ def test_aiohttp_retries_failed_request_retries_unsuccessfully(mock_request):
         project='test_project',
         location='global',
         http_options=_transport_options(
-            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            http_options=types.HttpOptions(
+                retry_options=_RETRY_OPTIONS,
+                async_client_args={'trust_env': False},
+            ),
         ),
     )
 
@@ -807,7 +824,11 @@ def test_aiohttp_retries_failed_request_retries_unsuccessfully(mock_request):
 
 
 @requires_aiohttp
-@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
 def test_aiohttp_retries_failed_request_retries_unsuccessfully_at_request_level(
     mock_request,
 ):
@@ -1160,7 +1181,10 @@ def test_aiohttp_retries_streamed_failed_request_retries_successfully_at_request
           http_method='GET',
           path='path',
           request_dict={},
-          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          http_options=types.HttpOptions(
+              retry_options=_RETRY_OPTIONS,
+              async_client_args={'trust_env': False},
+          ),
       )
       async for _ in stream:
         pass
@@ -1171,7 +1195,11 @@ def test_aiohttp_retries_streamed_failed_request_retries_successfully_at_request
 
 
 @requires_aiohttp
-@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
 def test_aiohttp_retries_streamed_failed_request_retries_unsuccessfully(
     mock_request,
 ):
@@ -1224,6 +1252,9 @@ def test_aiohttp_retries_streamed_failed_request_retries_unsuccessfully_at_reque
         vertexai=True,
         project='test_project',
         location='global',
+        http_options=types.HttpOptions(
+            async_client_args={'trust_env': False},
+        ),
     )
 
     with _patch_auth_default():
@@ -1245,7 +1276,11 @@ def test_aiohttp_retries_streamed_failed_request_retries_unsuccessfully_at_reque
 
 
 @requires_aiohttp
-@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
 def test_aiohttp_retries_client_connector_error_retries_successfully(
     mock_request,
 ):
@@ -1276,5 +1311,53 @@ def test_aiohttp_retries_client_connector_error_retries_successfully(
       )
       mock_request.assert_called()
       assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(AsyncAuthorizedSession, 'request', autospec=True)
+def test_aiohttp_retries_failed_request_retries_unsuccessfully_mtls(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    # 1. Setup mocked aiohttp responses
+    res429 = await _aiohttp_async_response(429)
+    res504 = await _aiohttp_async_response(504)
+
+    # 2. Wrap them in the AsyncAuthorizedSessionResponse expected by the SDK
+    mock_auth_res429 = mock.Mock(spec=AsyncAuthorizedSessionResponse)
+    mock_auth_res429._response = res429
+
+    mock_auth_res504 = mock.Mock(spec=AsyncAuthorizedSessionResponse)
+    mock_auth_res504._response = res504
+
+    # AsyncAuthorizedSession.request is an async method
+    mock_request.side_effect = [mock_auth_res429, mock_auth_res504]
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=types.HttpOptions(
+            retry_options=_RETRY_OPTIONS,
+        ),
+    )
+
+    # Force the mTLS path to be active for this test
+    with mock.patch(
+        'google.auth.transport.mtls.should_use_client_cert', return_value=True
+    ):
+      with _patch_auth_default():
+        try:
+          await client.async_request(
+              http_method='GET', path='path', request_dict={}
+          )
+          assert False, 'Expected APIError to be raised.'
+        except errors.APIError as e:
+          assert e.code == 504
+        mock_request.assert_called()
 
   asyncio.run(run())
