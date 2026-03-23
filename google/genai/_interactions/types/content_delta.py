@@ -92,7 +92,9 @@ class DeltaAudio(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"]] = None
+    mime_type: Optional[
+        Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg"]
+    ] = None
 
     uri: Optional[str] = None
 
