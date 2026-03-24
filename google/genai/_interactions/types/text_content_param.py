@@ -29,7 +29,7 @@ class TextContentParam(TypedDict, total=False):
     """A text content block."""
 
     text: Required[str]
-    """The text content."""
+    """Required. The text content."""
 
     type: Required[Literal["text"]]
 

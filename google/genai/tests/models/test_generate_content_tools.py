@@ -607,7 +607,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_include_server_side_tool_invocations',
         parameters=types._GenerateContentParameters(
             model='gemini-3.1-pro-preview',
-            contents=t.t_contents('Why is the sky blue?'),
+            contents=t.t_contents(
+                'Use Google Search to tell me about the 1970 world cup match'),
             config=types.GenerateContentConfig(
                 tools=[
                     types.Tool(

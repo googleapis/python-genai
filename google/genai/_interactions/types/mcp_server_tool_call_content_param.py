@@ -34,13 +34,13 @@ class MCPServerToolCallContentParam(TypedDict, total=False):
     """A unique ID for this specific tool call."""
 
     arguments: Required[Dict[str, object]]
-    """The JSON object of arguments for the function."""
+    """Required. The JSON object of arguments for the function."""
 
     name: Required[str]
-    """The name of the tool which was called."""
+    """Required. The name of the tool which was called."""
 
     server_name: Required[str]
-    """The name of the used MCP server."""
+    """Required. The name of the used MCP server."""
 
     type: Required[Literal["mcp_server_tool_call"]]
 

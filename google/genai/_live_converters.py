@@ -292,7 +292,13 @@ def _GenerationConfig_to_vertex(
     setv(to_object, ['seed'], getv(from_object, ['seed']))
 
   if getv(from_object, ['speech_config']) is not None:
-    setv(to_object, ['speechConfig'], getv(from_object, ['speech_config']))
+    setv(
+        to_object,
+        ['speechConfig'],
+        _SpeechConfig_to_vertex(
+            getv(from_object, ['speech_config']), to_object
+        ),
+    )
 
   if getv(from_object, ['stop_sequences']) is not None:
     setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
@@ -959,7 +965,10 @@ def _LiveConnectConfig_to_vertex(
     setv(
         parent_object,
         ['setup', 'generationConfig', 'speechConfig'],
-        t.t_live_speech_config(getv(from_object, ['speech_config'])),
+        _SpeechConfig_to_vertex(
+            t.t_live_speech_config(getv(from_object, ['speech_config'])),
+            to_object,
+        ),
     )
 
   if getv(from_object, ['thinking_config']) is not None:
@@ -1391,6 +1400,24 @@ def _LiveServerMessage_from_vertex(
   return to_object
 
 
+def _MultiSpeakerVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    setv(
+        to_object,
+        ['speakerVoiceConfigs'],
+        [
+            _SpeakerVoiceConfig_to_vertex(item, to_object)
+            for item in getv(from_object, ['speaker_voice_configs'])
+        ],
+    )
+
+  return to_object
+
+
 def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1461,6 +1488,9 @@ def _Part_to_mldev(
   if getv(from_object, ['tool_response']) is not None:
     setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
 
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
   return to_object
 
 
@@ -1522,6 +1552,35 @@ def _Part_to_vertex(
   if getv(from_object, ['tool_response']) is not None:
     raise ValueError('tool_response parameter is not supported in Vertex AI.')
 
+  if getv(from_object, ['part_metadata']) is not None:
+    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
+
+  return to_object
+
+
+def _ReplicatedVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  if getv(from_object, ['voice_sample_audio']) is not None:
+    setv(
+        to_object,
+        ['voiceSampleAudio'],
+        getv(from_object, ['voice_sample_audio']),
+    )
+
+  if getv(from_object, ['consent_audio']) is not None:
+    raise ValueError('consent_audio parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['voice_consent_signature']) is not None:
+    raise ValueError(
+        'voice_consent_signature parameter is not supported in Vertex AI.'
+    )
+
   return to_object
 
 
@@ -1535,6 +1594,51 @@ def _SessionResumptionConfig_to_mldev(
 
   if getv(from_object, ['transparent']) is not None:
     raise ValueError('transparent parameter is not supported in Gemini API.')
+
+  return to_object
+
+
+def _SpeakerVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_vertex(getv(from_object, ['voice_config']), to_object),
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_vertex(getv(from_object, ['voice_config']), to_object),
+    )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    setv(
+        to_object,
+        ['multiSpeakerVoiceConfig'],
+        _MultiSpeakerVoiceConfig_to_vertex(
+            getv(from_object, ['multi_speaker_voice_config']), to_object
+        ),
+    )
 
   return to_object
 
@@ -1767,5 +1871,29 @@ def _VoiceActivity_from_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['type']) is not None:
     setv(to_object, ['voice_activity_type'], getv(from_object, ['type']))
+
+  return to_object
+
+
+def _VoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['replicated_voice_config']) is not None:
+    setv(
+        to_object,
+        ['replicatedVoiceConfig'],
+        _ReplicatedVoiceConfig_to_vertex(
+            getv(from_object, ['replicated_voice_config']), to_object
+        ),
+    )
+
+  if getv(from_object, ['prebuilt_voice_config']) is not None:
+    setv(
+        to_object,
+        ['prebuiltVoiceConfig'],
+        getv(from_object, ['prebuilt_voice_config']),
+    )
 
   return to_object
