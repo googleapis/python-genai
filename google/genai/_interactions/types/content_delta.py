@@ -327,9 +327,9 @@ class DeltaFileSearchResult(BaseModel):
     call_id: str
     """ID to match the ID from the function call block."""
 
-    type: Literal["file_search_result"]
+    result: List[object]
 
-    result: Optional[List[object]] = None
+    type: Literal["file_search_result"]
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""
@@ -339,10 +339,10 @@ class DeltaGoogleMapsResult(BaseModel):
     call_id: str
     """ID to match the ID from the function call block."""
 
-    result: List[GoogleMapsResult]
-    """The results of the Google Maps."""
-
     type: Literal["google_maps_result"]
+
+    result: Optional[List[GoogleMapsResult]] = None
+    """The results of the Google Maps."""
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""

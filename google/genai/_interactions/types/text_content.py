@@ -28,7 +28,7 @@ class TextContent(BaseModel):
     """A text content block."""
 
     text: str
-    """The text content."""
+    """Required. The text content."""
 
     type: Literal["text"]
 

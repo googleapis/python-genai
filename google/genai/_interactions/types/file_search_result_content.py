@@ -29,10 +29,10 @@ class FileSearchResultContent(BaseModel):
     call_id: str
     """ID to match the ID from the file search call block."""
 
-    type: Literal["file_search_result"]
+    result: List[object]
+    """Required. The results of the File Search."""
 
-    result: Optional[List[object]] = None
-    """The results of the File Search."""
+    type: Literal["file_search_result"]
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""

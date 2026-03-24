@@ -109,6 +109,8 @@ class FileSearch(TypedDict, total=False):
 class GoogleMaps(TypedDict, total=False):
     """A tool that can be used by the model to call Google Maps."""
 
+    type: Required[Literal["google_maps"]]
+
     enable_widget: bool
     """
     Whether to return a widget context token in the tool call result of the
@@ -120,8 +122,6 @@ class GoogleMaps(TypedDict, total=False):
 
     longitude: float
     """The longitude of the user's location."""
-
-    type: Literal["google_maps"]
 
 
 ToolParam: TypeAlias = Union[

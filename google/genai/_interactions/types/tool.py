@@ -109,6 +109,8 @@ class FileSearch(BaseModel):
 class GoogleMaps(BaseModel):
     """A tool that can be used by the model to call Google Maps."""
 
+    type: Literal["google_maps"]
+
     enable_widget: Optional[bool] = None
     """
     Whether to return a widget context token in the tool call result of the
@@ -120,8 +122,6 @@ class GoogleMaps(BaseModel):
 
     longitude: Optional[float] = None
     """The longitude of the user's location."""
-
-    type: Optional[Literal["google_maps"]] = None
 
 
 Tool: TypeAlias = Annotated[
