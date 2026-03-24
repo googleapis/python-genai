@@ -27,23 +27,14 @@ from .allowed_tools_param import AllowedToolsParam
 
 __all__ = [
     "ToolParam",
-    "GoogleSearch",
     "CodeExecution",
     "URLContext",
     "ComputerUse",
     "MCPServer",
+    "GoogleSearch",
     "FileSearch",
     "GoogleMaps",
 ]
-
-
-class GoogleSearch(TypedDict, total=False):
-    """A tool that can be used by the model to search Google."""
-
-    type: Required[Literal["google_search"]]
-
-    search_types: List[Literal["web_search", "image_search"]]
-    """The types of search grounding to enable."""
 
 
 class CodeExecution(TypedDict, total=False):
@@ -91,6 +82,15 @@ class MCPServer(TypedDict, total=False):
     """
 
 
+class GoogleSearch(TypedDict, total=False):
+    """A tool that can be used by the model to search Google."""
+
+    type: Required[Literal["google_search"]]
+
+    search_types: List[Literal["web_search", "image_search"]]
+    """The types of search grounding to enable."""
+
+
 class FileSearch(TypedDict, total=False):
     """A tool that can be used by the model to search files."""
 
@@ -125,5 +125,5 @@ class GoogleMaps(TypedDict, total=False):
 
 
 ToolParam: TypeAlias = Union[
-    FunctionParam, GoogleSearch, CodeExecution, URLContext, ComputerUse, MCPServer, FileSearch, GoogleMaps
+    FunctionParam, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch, GoogleMaps
 ]
