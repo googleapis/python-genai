@@ -1468,7 +1468,11 @@ def _GenerateContentConfig_to_vertex(
     setv(
         to_object,
         ['speechConfig'],
-        t.t_speech_config(getv(from_object, ['speech_config'])),
+        _SpeechConfig_to_vertex(
+            t.t_speech_config(getv(from_object, ['speech_config'])),
+            to_object,
+            root_object,
+        ),
     )
 
   if getv(from_object, ['audio_timestamp']) is not None:
@@ -2735,7 +2739,13 @@ def _GenerationConfig_to_vertex(
     setv(to_object, ['seed'], getv(from_object, ['seed']))
 
   if getv(from_object, ['speech_config']) is not None:
-    setv(to_object, ['speechConfig'], getv(from_object, ['speech_config']))
+    setv(
+        to_object,
+        ['speechConfig'],
+        _SpeechConfig_to_vertex(
+            getv(from_object, ['speech_config']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['stop_sequences']) is not None:
     setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
@@ -3301,6 +3311,25 @@ def _Model_from_vertex(
   return to_object
 
 
+def _MultiSpeakerVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    setv(
+        to_object,
+        ['speakerVoiceConfigs'],
+        [
+            _SpeakerVoiceConfig_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['speaker_voice_configs'])
+        ],
+    )
+
+  return to_object
+
+
 def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3681,6 +3710,33 @@ def _ReferenceImageAPI_to_vertex(
   return to_object
 
 
+def _ReplicatedVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  if getv(from_object, ['voice_sample_audio']) is not None:
+    setv(
+        to_object,
+        ['voiceSampleAudio'],
+        getv(from_object, ['voice_sample_audio']),
+    )
+
+  if getv(from_object, ['consent_audio']) is not None:
+    raise ValueError('consent_audio parameter is not supported in Vertex AI.')
+
+  if getv(from_object, ['voice_consent_signature']) is not None:
+    raise ValueError(
+        'voice_consent_signature parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
 def _SafetyAttributes_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -3877,6 +3933,59 @@ def _SegmentImageSource_to_vertex(
         ['instances[0]', 'scribble'],
         _ScribbleImage_to_vertex(
             getv(from_object, ['scribble_image']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _SpeakerVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_vertex(
+            getv(from_object, ['voice_config']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_vertex(
+            getv(from_object, ['voice_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    setv(
+        to_object,
+        ['multiSpeakerVoiceConfig'],
+        _MultiSpeakerVoiceConfig_to_vertex(
+            getv(from_object, ['multi_speaker_voice_config']),
+            to_object,
+            root_object,
         ),
     )
 
@@ -4477,6 +4586,33 @@ def _Video_to_vertex(
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _VoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['replicated_voice_config']) is not None:
+    setv(
+        to_object,
+        ['replicatedVoiceConfig'],
+        _ReplicatedVoiceConfig_to_vertex(
+            getv(from_object, ['replicated_voice_config']),
+            to_object,
+            root_object,
+        ),
+    )
+
+  if getv(from_object, ['prebuilt_voice_config']) is not None:
+    setv(
+        to_object,
+        ['prebuiltVoiceConfig'],
+        getv(from_object, ['prebuilt_voice_config']),
+    )
 
   return to_object
 
