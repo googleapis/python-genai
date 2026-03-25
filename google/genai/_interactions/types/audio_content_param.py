@@ -35,7 +35,9 @@ class AudioContentParam(TypedDict, total=False):
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """The audio content."""
 
-    mime_type: Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg"]
+    mime_type: Literal[
+        "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+    ]
     """The mime type of the audio."""
 
     uri: str

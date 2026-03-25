@@ -31,7 +31,19 @@ class ImageContent(BaseModel):
     data: Optional[str] = None
     """The image content."""
 
-    mime_type: Optional[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]] = None
+    mime_type: Optional[
+        Literal[
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/heic",
+            "image/heif",
+            "image/jpg",
+            "image/gif",
+            "image/bmp",
+            "image/tiff",
+        ]
+    ] = None
     """The mime type of the image."""
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None

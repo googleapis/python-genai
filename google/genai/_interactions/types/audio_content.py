@@ -32,7 +32,9 @@ class AudioContent(BaseModel):
     """The audio content."""
 
     mime_type: Optional[
-        Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg"]
+        Literal[
+            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+        ]
     ] = None
     """The mime type of the audio."""
 

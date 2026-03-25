@@ -35,7 +35,17 @@ class ImageContentParam(TypedDict, total=False):
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """The image content."""
 
-    mime_type: Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]
+    mime_type: Literal[
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/heic",
+        "image/heif",
+        "image/jpg",
+        "image/gif",
+        "image/bmp",
+        "image/tiff",
+    ]
     """The mime type of the image."""
 
     resolution: Literal["low", "medium", "high", "ultra_high"]

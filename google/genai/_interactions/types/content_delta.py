@@ -75,7 +75,19 @@ class DeltaImage(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]] = None
+    mime_type: Optional[
+        Literal[
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/heic",
+            "image/heif",
+            "image/jpg",
+            "image/gif",
+            "image/bmp",
+            "image/tiff",
+        ]
+    ] = None
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
@@ -89,7 +101,9 @@ class DeltaAudio(BaseModel):
     data: Optional[str] = None
 
     mime_type: Optional[
-        Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg"]
+        Literal[
+            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+        ]
     ] = None
 
     uri: Optional[str] = None
