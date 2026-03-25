@@ -87,7 +87,7 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     response_mime_type: str
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: List[Literal["text", "image", "audio"]]
+    response_modalities: List[Literal["text", "image", "audio", "video", "document"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     store: bool
@@ -154,7 +154,7 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     response_mime_type: str
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: List[Literal["text", "image", "audio"]]
+    response_modalities: List[Literal["text", "image", "audio", "video", "document"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     store: bool
