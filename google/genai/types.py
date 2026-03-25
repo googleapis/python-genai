@@ -11064,6 +11064,11 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""Compression quality of the generated videos.""",
   )
+  resize_mode: Optional[str] = Field(
+      default=None,
+      description="""The resize mode for image-to-video generation. Supported values
+      are: pad, crop. Default is pad when not specified.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -11132,6 +11137,10 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   compression_quality: Optional[VideoCompressionQuality]
   """Compression quality of the generated videos."""
+
+  resize_mode: Optional[str]
+  """The resize mode for image-to-video generation. Supported values
+      are: pad, crop. Default is pad when not specified."""
 
 
 GenerateVideosConfigOrDict = Union[

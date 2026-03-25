@@ -101,6 +101,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 negative_prompt="ugly, low quality",
                 enhance_prompt=True,
                 compression_quality=types.VideoCompressionQuality.LOSSLESS,
+                resize_mode="pad",
             ),
         ),
         exception_if_mldev=(
@@ -250,6 +251,28 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev=(
             "output_gcs_uri parameter is not supported in Gemini API"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_image_to_video_with_resize_mode_pad",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            image=LOCAL_IMAGE,
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                resize_mode="pad",
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_image_to_video_with_resize_mode_crop",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            image=LOCAL_IMAGE,
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                resize_mode="crop",
+            ),
         ),
     ),
 ]
@@ -527,6 +550,24 @@ def test_reference_images_to_video_poll(client):
                   reference_type=types.VideoGenerationReferenceType.ASSET,
               ),
           ],
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
+def test_image_to_video_resize_mode_poll(client):
+  operation = client.models.generate_videos(
+      model=VEO_MODEL_LATEST,
+      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+          resize_mode="crop",
       ),
   )
   while not operation.done:
