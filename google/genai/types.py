@@ -1114,6 +1114,10 @@ class TurnCoverage(_common.CaseInSensitiveEnum):
   """The users turn only includes activity since the last turn, excluding inactivity (e.g. silence on the audio stream). This is the default behavior."""
   TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
   """The users turn includes all realtime input since the last turn, including inactivity (e.g. silence on the audio stream)."""
+  TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO = (
+      'TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO'
+  )
+  """Includes audio activity and all video since the last turn. With automatic activity detection, audio activity means speech and excludes silence."""
 
 
 class Scale(_common.CaseInSensitiveEnum):
