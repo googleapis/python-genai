@@ -11064,6 +11064,10 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""Compression quality of the generated videos.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -11132,6 +11136,9 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   compression_quality: Optional[VideoCompressionQuality]
   """Compression quality of the generated videos."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 GenerateVideosConfigOrDict = Union[

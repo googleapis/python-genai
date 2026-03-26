@@ -2106,6 +2106,9 @@ def _GenerateVideosConfig_to_mldev(
         'compression_quality parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
   return to_object
 
 
@@ -2228,6 +2231,9 @@ def _GenerateVideosConfig_to_vertex(
         ['parameters', 'compressionQuality'],
         getv(from_object, ['compression_quality']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   return to_object
 
