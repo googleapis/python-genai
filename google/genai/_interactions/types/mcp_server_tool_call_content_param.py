@@ -31,7 +31,7 @@ class MCPServerToolCallContentParam(TypedDict, total=False):
     """MCPServer tool call content."""
 
     id: Required[str]
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Required[Dict[str, object]]
     """Required. The JSON object of arguments for the function."""

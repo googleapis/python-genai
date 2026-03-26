@@ -32,7 +32,7 @@ class GoogleMapsCallContentParam(TypedDict, total=False):
     """Google Maps content."""
 
     id: Required[str]
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     type: Required[Literal["google_maps_call"]]
 

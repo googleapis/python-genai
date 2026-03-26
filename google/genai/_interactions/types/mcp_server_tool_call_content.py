@@ -27,7 +27,7 @@ class MCPServerToolCallContent(BaseModel):
     """MCPServer tool call content."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Dict[str, object]
     """Required. The JSON object of arguments for the function."""

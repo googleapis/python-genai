@@ -34,7 +34,7 @@ class FileSearchResultContent(BaseModel):
     """File Search result content."""
 
     call_id: str
-    """ID to match the ID from the file search call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: List[Result]
     """Required. The results of the File Search."""
