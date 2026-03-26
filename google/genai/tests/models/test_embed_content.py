@@ -191,6 +191,25 @@ pytestmark = pytest_helper.setup(
 )
 
 
+def test_gemini_embedding_2_content_combination(client):
+  response = client.models.embed_content(
+      model='gemini-embedding-2-preview',
+      contents=[
+          'The jetpack is cool',
+          types.Part.from_bytes(
+              data=_get_bytes_from_file('../data/checkerboard.png'),
+              mime_type='image/png',
+          ),
+          types.Part.from_uri(
+              file_uri='gs://generativeai-downloads/images/scones.jpg',
+              mime_type='image/jpeg',
+          ),
+      ],
+      config={'output_dimensionality': 100},
+  )
+  assert response
+
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.embed_content(
