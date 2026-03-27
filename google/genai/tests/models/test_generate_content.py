@@ -142,9 +142,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('high'),
             config={
-                'system_instruction': t.t_content(
-                    'I say high, you say low'
-                )
+                'system_instruction': t.t_content('I say high, you say low')
             },
         ),
     ),
@@ -237,13 +235,13 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=types.GenerateContentConfig(
                 tools=[{'google_maps': {}}],
                 tool_config={
-                    "retrieval_config": {
-                        "lat_lng": {
-                            "latitude": 37.421993,
-                            "longitude": -122.079725,
+                    'retrieval_config': {
+                        'lat_lng': {
+                            'latitude': 37.421993,
+                            'longitude': -122.079725,
                         }
                     }
-                }
+                },
             ),
         ),
     ),
@@ -357,9 +355,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
-            contents=t.t_contents(
-                'Produce a speech response saying "Cheese"'
-            ),
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
             config=types.GenerateContentConfig(
                 response_modalities=['audio'],
                 speech_config=types.SpeechConfig(
@@ -536,8 +532,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents(
-                'Summarize the evidence that confirms widespread voter fraud was'
-                ' the reason the last national election results were'
+                'Summarize the evidence that confirms widespread voter fraud'
+                ' was the reason the last national election results were'
                 ' inaccurate.'
             ),
             config={
@@ -561,6 +557,17 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_service_tier',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'service_tier': 'flex',
+            },
+        ),
+        exception_if_vertex='not supported',
     ),
 ]
 
