@@ -85,6 +85,16 @@ client = genai.Client()
     -   **Gemini 2.0 Series**: `gemini-2.0-flash`, `gemini-2.0-flash-lite`
     -   **Gemini 2.5 Series**: `gemini-2.5-flash`, `gemini-2.5-pro`
 
+> **⚠️ Known limitation — Gemini 2.5 series (CJK languages):** All Gemini 2.5
+> models (`gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.5-flash-lite`)
+> currently fail to correctly process CJK (Japanese, Chinese, Korean) text
+> input via the REST API. The model may interpret valid UTF-8 CJK characters as
+> garbled/corrupted text. Google Search Grounding is also affected —
+> `webSearchQueries` returns empty `[]` for CJK input on these models.
+> **If your application requires CJK language input, use `gemini-3-pro-preview`
+> or another Gemini 3.x model as a workaround until this is resolved.**
+> See [issue #2134](https://github.com/googleapis/python-genai/issues/2134).
+
 -   Do not use the following deprecated models (or their variants like
     `gemini-1.5-flash-latest`):
     -   **Prohibited:** `gemini-1.5-flash`
@@ -410,7 +420,6 @@ response = client.models.generate_content(
     contents='What is the weather in Boston?',
     config=types.GenerateContentConfig(
         tools=[get_current_weather] # Make the function available to the model as a tool
-
     ),
 )
 
@@ -456,6 +465,14 @@ print(f"Search Pages: {', '.join([site.web.title for site in response.candidates
 
 The output `response.text` will likely not be in JSON format, do not attempt to
 parse it as JSON.
+
+> **⚠️ Known limitation — CJK languages with Gemini 2.5:** Search Grounding
+> does not work correctly with CJK (Japanese, Chinese, Korean) input on any
+> Gemini 2.5 model. `webSearchQueries` returns an empty list `[]` and the model
+> treats the input as garbled text. English input on the same models works
+> correctly. **Use a Gemini 3.x model (e.g. `gemini-3-pro-preview`) for Search
+> Grounding with CJK queries.**
+> See [issue #2134](https://github.com/googleapis/python-genai/issues/2134).
 
 ## Media Generation
 
@@ -635,7 +652,7 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-## Other APIs
+## Other APIs 
 
 The list of APIs and capabilities above are not comprehensive. If users ask you
 to generate code for a capability not provided above, refer them to
