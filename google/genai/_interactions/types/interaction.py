@@ -138,6 +138,9 @@ class Interaction(BaseModel):
     role: Optional[str] = None
     """Output only. The role of the interaction."""
 
+    service_tier: Optional[Literal["flex", "standard", "priority"]] = None
+    """The service tier for the interaction."""
+
     system_instruction: Optional[str] = None
     """System instruction for the interaction."""
 

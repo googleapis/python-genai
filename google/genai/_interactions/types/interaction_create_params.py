@@ -90,6 +90,9 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     response_modalities: List[Literal["text", "image", "audio"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
+    service_tier: Literal["flex", "standard", "priority"]
+    """The service tier for the interaction."""
+
     store: bool
     """Input only. Whether to store the response and request for later retrieval."""
 
@@ -156,6 +159,9 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
 
     response_modalities: List[Literal["text", "image", "audio"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
+
+    service_tier: Literal["flex", "standard", "priority"]
+    """The service tier for the interaction."""
 
     store: bool
     """Input only. Whether to store the response and request for later retrieval."""
