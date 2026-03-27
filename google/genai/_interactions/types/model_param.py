@@ -24,6 +24,7 @@ __all__ = ["ModelParam"]
 
 ModelParam: TypeAlias = Union[
     Literal[
+        "gemini-2.5-computer-use-preview-10-2025",
         "gemini-2.5-flash",
         "gemini-2.5-flash-image",
         "gemini-2.5-flash-lite",
@@ -38,6 +39,9 @@ ModelParam: TypeAlias = Union[
         "gemini-3-pro-preview",
         "gemini-3.1-pro-preview",
         "gemini-3.1-flash-image-preview",
+        "gemini-3.1-flash-lite-preview",
+        "lyria-3-clip-preview",
+        "lyria-3-pro-preview",
     ],
     str,
 ]
