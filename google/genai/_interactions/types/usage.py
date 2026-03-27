@@ -32,7 +32,7 @@ __all__ = [
 class CachedTokensByModality(BaseModel):
     """The token count for a single response modality."""
 
-    modality: Optional[Literal["text", "image", "audio"]] = None
+    modality: Optional[Literal["text", "image", "audio", "video", "document"]] = None
     """The modality associated with the token count."""
 
     tokens: Optional[int] = None
@@ -42,7 +42,7 @@ class CachedTokensByModality(BaseModel):
 class InputTokensByModality(BaseModel):
     """The token count for a single response modality."""
 
-    modality: Optional[Literal["text", "image", "audio"]] = None
+    modality: Optional[Literal["text", "image", "audio", "video", "document"]] = None
     """The modality associated with the token count."""
 
     tokens: Optional[int] = None
@@ -52,7 +52,7 @@ class InputTokensByModality(BaseModel):
 class OutputTokensByModality(BaseModel):
     """The token count for a single response modality."""
 
-    modality: Optional[Literal["text", "image", "audio"]] = None
+    modality: Optional[Literal["text", "image", "audio", "video", "document"]] = None
     """The modality associated with the token count."""
 
     tokens: Optional[int] = None
@@ -62,7 +62,7 @@ class OutputTokensByModality(BaseModel):
 class ToolUseTokensByModality(BaseModel):
     """The token count for a single response modality."""
 
-    modality: Optional[Literal["text", "image", "audio"]] = None
+    modality: Optional[Literal["text", "image", "audio", "video", "document"]] = None
     """The modality associated with the token count."""
 
     tokens: Optional[int] = None
