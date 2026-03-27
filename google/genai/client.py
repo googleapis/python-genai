@@ -103,6 +103,9 @@ class GeminiNextGenAPIClientAdapter(_interactions.GeminiNextGenAPIClientAdapter)
     return headers
 
 
+# AsyncClient.
+
+
 class AsyncClient:
   """Client for making asynchronous (non-blocking) requests."""
 
