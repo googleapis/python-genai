@@ -831,6 +831,19 @@ class ResourceScope(_common.CaseInSensitiveEnum):
       "https://aiplatform.googleapis.com/publishers/google/models/gemini-3-pro-preview"""
 
 
+class ServiceTier(_common.CaseInSensitiveEnum):
+  """Pricing and performance service tier."""
+
+  SERVICE_TIER_UNSPECIFIED = 'SERVICE_TIER_UNSPECIFIED'
+  """Default service tier, which is standard."""
+  SERVICE_TIER_FLEX = 'SERVICE_TIER_FLEX'
+  """Flex service tier."""
+  SERVICE_TIER_STANDARD = 'SERVICE_TIER_STANDARD'
+  """Standard service tier."""
+  SERVICE_TIER_PRIORITY = 'SERVICE_TIER_PRIORITY'
+  """Priority service tier."""
+
+
 class JSONSchemaType(Enum):
   """The type of the data supported by JSON Schema.
 
@@ -5937,6 +5950,10 @@ class GenerateContentConfig(_common.BaseModel):
       service. If supplied, safety_settings must not be supplied.
       """,
   )
+  service_tier: Optional[ServiceTier] = Field(
+      default=None,
+      description="""The service tier to use for the request. For example, SERVICE_TIER_FLEX.""",
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6150,6 +6167,9 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """Settings for prompt and response sanitization using the Model Armor
       service. If supplied, safety_settings must not be supplied.
       """
+
+  service_tier: Optional[ServiceTier]
+  """The service tier to use for the request. For example, SERVICE_TIER_FLEX."""
 
 
 GenerateContentConfigOrDict = Union[
