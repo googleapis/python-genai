@@ -409,6 +409,13 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'tuningMode'],
           getv(from_object, ['tuning_mode']),
       )
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['tuning_mode']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'tuningMode'],
+          getv(from_object, ['tuning_mode']),
+      )
 
   if getv(from_object, ['custom_base_model']) is not None:
     setv(
@@ -427,6 +434,13 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'batchSize'],
           getv(from_object, ['batch_size']),
       )
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['batch_size']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'hyperParameters', 'batchSize'],
+          getv(from_object, ['batch_size']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -436,6 +450,13 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['supervisedTuningSpec', 'hyperParameters', 'learningRate'],
+          getv(from_object, ['learning_rate']),
+      )
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['learning_rate']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'hyperParameters', 'learningRate'],
           getv(from_object, ['learning_rate']),
       )
 

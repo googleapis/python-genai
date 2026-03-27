@@ -11649,10 +11649,7 @@ PreferenceOptimizationSpecOrDict = Union[
 
 
 class DistillationHyperParameters(_common.BaseModel):
-  """Hyperparameters for Distillation.
-
-  This data type is not supported in Gemini API.
-  """
+  """Hyperparameters for distillation."""
 
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Optional. Adapter size for distillation."""
@@ -11665,13 +11662,19 @@ class DistillationHyperParameters(_common.BaseModel):
       default=None,
       description="""Optional. Multiplier for adjusting the default learning rate.""",
   )
+  batch_size: Optional[int] = Field(
+      default=None,
+      description="""The batch size hyperparameter for tuning.
+      This is only supported for OSS models in Vertex.""",
+  )
+  learning_rate: Optional[float] = Field(
+      default=None,
+      description="""The learning rate for tuning. OSS models only.""",
+  )
 
 
 class DistillationHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Distillation.
-
-  This data type is not supported in Gemini API.
-  """
+  """Hyperparameters for distillation."""
 
   adapter_size: Optional[AdapterSize]
   """Optional. Adapter size for distillation."""
@@ -11681,6 +11684,13 @@ class DistillationHyperParametersDict(TypedDict, total=False):
 
   learning_rate_multiplier: Optional[float]
   """Optional. Multiplier for adjusting the default learning rate."""
+
+  batch_size: Optional[int]
+  """The batch size hyperparameter for tuning.
+      This is only supported for OSS models in Vertex."""
+
+  learning_rate: Optional[float]
+  """The learning rate for tuning. OSS models only."""
 
 
 DistillationHyperParametersOrDict = Union[
@@ -11723,6 +11733,9 @@ class DistillationSpec(_common.BaseModel):
       default=None,
       description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
   )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode for tuning."""
+  )
 
 
 class DistillationSpecDict(TypedDict, total=False):
@@ -11751,6 +11764,9 @@ class DistillationSpecDict(TypedDict, total=False):
 
   validation_dataset_uri: Optional[str]
   """Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode for tuning."""
 
 
 DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
@@ -13933,7 +13949,7 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None, description="""Adapter size for tuning."""
   )
   tuning_mode: Optional[TuningMode] = Field(
-      default=None, description="""Tuning mode for SFT tuning."""
+      default=None, description="""Tuning mode for tuning."""
   )
   custom_base_model: Optional[str] = Field(
       default=None,
@@ -14014,7 +14030,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Adapter size for tuning."""
 
   tuning_mode: Optional[TuningMode]
-  """Tuning mode for SFT tuning."""
+  """Tuning mode for tuning."""
 
   custom_base_model: Optional[str]
   """Custom base model for tuning. This is only supported for OSS models in Vertex."""
