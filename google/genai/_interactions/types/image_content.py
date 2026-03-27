@@ -33,15 +33,7 @@ class ImageContent(BaseModel):
 
     mime_type: Optional[
         Literal[
-            "image/png",
-            "image/jpeg",
-            "image/webp",
-            "image/heic",
-            "image/heif",
-            "image/jpg",
-            "image/gif",
-            "image/bmp",
-            "image/tiff",
+            "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif", "image/gif", "image/bmp", "image/tiff"
         ]
     ] = None
     """The mime type of the image."""
