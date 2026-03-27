@@ -107,7 +107,7 @@ class DeltaDocument(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[Literal["application/pdf"]] = None
+    mime_type: Optional[Literal["application/pdf", "text/html"]] = None
 
     uri: Optional[str] = None
 
