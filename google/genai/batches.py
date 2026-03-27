@@ -33,6 +33,7 @@ from .pagers import AsyncPager, Pager
 
 
 logger = logging.getLogger('google_genai.batches')
+_INLINED_REQUEST_ORDER_METADATA_KEY = '_google_genai_inlined_request_order'
 
 
 def _AuthConfig_to_mldev(
@@ -79,15 +80,37 @@ def _BatchJobDestination_from_mldev(
     setv(to_object, ['file_name'], getv(from_object, ['responsesFile']))
 
   if getv(from_object, ['inlinedResponses', 'inlinedResponses']) is not None:
+    inlined_responses = [
+        _InlinedResponse_from_mldev(item, to_object)
+        for item in getv(from_object, ['inlinedResponses', 'inlinedResponses'])
+    ]
+    # Backend can return inlined responses out of input order. When we have the
+    # SDK-injected order marker, restore the original order deterministically.
+    sortable = True
+    for inlined_response in inlined_responses:
+      metadata = getv(inlined_response, ['metadata'])
+      request_order = (
+          metadata.get(_INLINED_REQUEST_ORDER_METADATA_KEY)
+          if isinstance(metadata, dict)
+          else None
+      )
+      if request_order is None or not str(request_order).isdigit():
+        sortable = False
+        break
+    if sortable:
+      inlined_responses.sort(
+          key=lambda response: int(
+              getv(response, ['metadata', _INLINED_REQUEST_ORDER_METADATA_KEY])
+          )
+      )
+      for inlined_response in inlined_responses:
+        metadata = getv(inlined_response, ['metadata'])
+        if isinstance(metadata, dict):
+          metadata.pop(_INLINED_REQUEST_ORDER_METADATA_KEY, None)
     setv(
         to_object,
         ['inlined_responses'],
-        [
-            _InlinedResponse_from_mldev(item, to_object)
-            for item in getv(
-                from_object, ['inlinedResponses', 'inlinedResponses']
-            )
-        ],
+        inlined_responses,
     )
 
   if (
@@ -213,13 +236,23 @@ def _BatchJobSource_to_mldev(
     setv(to_object, ['fileName'], getv(from_object, ['file_name']))
 
   if getv(from_object, ['inlined_requests']) is not None:
+    inlined_requests = []
+    for index, inlined_request in enumerate(getv(from_object, ['inlined_requests'])):
+      inlined_request_object = _InlinedRequest_to_mldev(
+          api_client, inlined_request, to_object
+      )
+      metadata = getv(inlined_request_object, ['metadata'], default_value={})
+      if not isinstance(metadata, dict):
+        metadata = {}
+      # Reserved SDK key: always stamp deterministic order marker, even when
+      # caller metadata contains the same key.
+      metadata[_INLINED_REQUEST_ORDER_METADATA_KEY] = str(index)
+      setv(inlined_request_object, ['metadata'], metadata)
+      inlined_requests.append(inlined_request_object)
     setv(
         to_object,
         ['requests', 'requests'],
-        [
-            _InlinedRequest_to_mldev(api_client, item, to_object)
-            for item in getv(from_object, ['inlined_requests'])
-        ],
+        inlined_requests,
     )
 
   return to_object
