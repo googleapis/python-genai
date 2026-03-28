@@ -19,7 +19,7 @@ import logging
 from typing import Any, Iterable
 from typing import Optional, Union
 
-from sentencepiece import sentencepiece_model_pb2
+from google3.third_party.sentencepiece.src import sentencepiece_model_pb2
 
 from . import _common
 from . import _local_tokenizer_loader as loader
