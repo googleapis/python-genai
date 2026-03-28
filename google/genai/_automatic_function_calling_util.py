@@ -26,9 +26,9 @@ from . import types
 
 
 if sys.version_info >= (3, 10):
-  VersionedUnionType = builtin_types.UnionType
+  VersionedUnionType = (builtin_types.UnionType, type(Union[int, str]))
 else:
-  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
+  VersionedUnionType = (type(Union[int, str]),)
 
 
 __all__ = [
