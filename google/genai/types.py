@@ -16706,8 +16706,8 @@ class _GetBatchJobParameters(_common.BaseModel):
   name: Optional[str] = Field(
       default=None,
       description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
+    Example: "projects/.../locations/.../batchPredictionJobs/123"
+    or "123" when project and location are initialized in the client.
     """,
   )
   config: Optional[GetBatchJobConfig] = Field(
@@ -16720,8 +16720,8 @@ class _GetBatchJobParametersDict(TypedDict, total=False):
 
   name: Optional[str]
   """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
+    Example: "projects/.../locations/.../batchPredictionJobs/123"
+    or "123" when project and location are initialized in the client.
     """
 
   config: Optional[GetBatchJobConfigDict]
@@ -16759,8 +16759,8 @@ class _CancelBatchJobParameters(_common.BaseModel):
   name: Optional[str] = Field(
       default=None,
       description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
+    Example: "projects/.../locations/.../batchPredictionJobs/123"
+    or "123" when project and location are initialized in the client.
     """,
   )
   config: Optional[CancelBatchJobConfig] = Field(
@@ -16773,8 +16773,8 @@ class _CancelBatchJobParametersDict(TypedDict, total=False):
 
   name: Optional[str]
   """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
+    Example: "projects/.../locations/.../batchPredictionJobs/123"
+    or "123" when project and location are initialized in the client.
     """
 
   config: Optional[CancelBatchJobConfigDict]
@@ -16890,8 +16890,8 @@ class _DeleteBatchJobParameters(_common.BaseModel):
   name: Optional[str] = Field(
       default=None,
       description="""A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
+    Example: "projects/.../locations/.../batchPredictionJobs/123"
+    or "123" when project and location are initialized in the client.
     """,
   )
   config: Optional[DeleteBatchJobConfig] = Field(
@@ -16904,8 +16904,8 @@ class _DeleteBatchJobParametersDict(TypedDict, total=False):
 
   name: Optional[str]
   """A fully-qualified BatchJob resource name or ID.
-    Example: "projects/.../locations/.../batchPredictionJobs/456"
-    or "456" when project and location are initialized in the client.
+    Example: "projects/.../locations/.../batchPredictionJobs/123"
+    or "123" when project and location are initialized in the client.
     """
 
   config: Optional[DeleteBatchJobConfigDict]
