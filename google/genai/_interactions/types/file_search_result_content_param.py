@@ -24,16 +24,23 @@ from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
 
-__all__ = ["FileSearchResultContentParam"]
+__all__ = ["FileSearchResultContentParam", "Result"]
+
+
+class Result(TypedDict, total=False):
+    """The result of the File Search."""
+
+    custom_metadata: Iterable[object]
+    """User provided metadata about the FileSearchResult."""
 
 
 class FileSearchResultContentParam(TypedDict, total=False):
     """File Search result content."""
 
     call_id: Required[str]
-    """ID to match the ID from the file search call block."""
+    """Required. ID to match the ID from the function call block."""
 
-    result: Required[Iterable[object]]
+    result: Required[Iterable[Result]]
     """Required. The results of the File Search."""
 
     type: Required[Literal["file_search_result"]]

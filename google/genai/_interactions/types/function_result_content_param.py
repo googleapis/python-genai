@@ -35,7 +35,7 @@ class FunctionResultContentParam(TypedDict, total=False):
     """A function tool result content block."""
 
     call_id: Required[str]
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
     """The result of the tool call."""

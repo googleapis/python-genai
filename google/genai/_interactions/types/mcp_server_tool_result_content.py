@@ -34,7 +34,7 @@ class MCPServerToolResultContent(BaseModel):
     """MCPServer tool result content."""
 
     call_id: str
-    """ID to match the ID from the MCP server tool call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Union[List[ResultFunctionResultSubcontentList], str, object]
     """The output from the MCP server call. Can be simple text or rich content."""

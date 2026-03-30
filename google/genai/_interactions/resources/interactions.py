@@ -77,6 +77,7 @@ class InteractionsResource(SyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -108,6 +109,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -141,6 +144,7 @@ class InteractionsResource(SyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
@@ -174,6 +178,8 @@ class InteractionsResource(SyncAPIResource):
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
 
+          service_tier: The service tier for the interaction.
+
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
@@ -203,6 +209,7 @@ class InteractionsResource(SyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -234,6 +241,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -267,6 +276,7 @@ class InteractionsResource(SyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
@@ -299,6 +309,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -330,6 +342,7 @@ class InteractionsResource(SyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
@@ -363,6 +376,8 @@ class InteractionsResource(SyncAPIResource):
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
 
+          service_tier: The service tier for the interaction.
+
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
@@ -392,6 +407,7 @@ class InteractionsResource(SyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -425,6 +441,7 @@ class InteractionsResource(SyncAPIResource):
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
                     "response_modalities": response_modalities,
+                    "service_tier": service_tier,
                     "store": store,
                     "stream": stream,
                     "system_instruction": system_instruction,
@@ -705,6 +722,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -736,6 +754,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -769,6 +789,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
@@ -802,6 +823,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
 
+          service_tier: The service tier for the interaction.
+
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
@@ -831,6 +854,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -862,6 +886,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -895,6 +921,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
@@ -927,6 +954,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -958,6 +987,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
@@ -991,6 +1021,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
 
+          service_tier: The service tier for the interaction.
+
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
@@ -1020,6 +1052,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -1053,6 +1086,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
                     "response_modalities": response_modalities,
+                    "service_tier": service_tier,
                     "store": store,
                     "stream": stream,
                     "system_instruction": system_instruction,

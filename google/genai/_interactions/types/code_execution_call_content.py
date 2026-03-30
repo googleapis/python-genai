@@ -28,7 +28,7 @@ class CodeExecutionCallContent(BaseModel):
     """Code execution content."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: CodeExecutionCallArguments
     """Required. The arguments to pass to the code execution."""

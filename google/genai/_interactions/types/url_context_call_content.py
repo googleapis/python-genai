@@ -28,7 +28,7 @@ class URLContextCallContent(BaseModel):
     """URL context content."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: URLContextCallArguments
     """Required. The arguments to pass to the URL context."""

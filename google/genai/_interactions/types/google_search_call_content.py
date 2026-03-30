@@ -28,7 +28,7 @@ class GoogleSearchCallContent(BaseModel):
     """Google Search content."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: GoogleSearchCallArguments
     """Required. The arguments to pass to Google Search."""

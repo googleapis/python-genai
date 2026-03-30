@@ -28,7 +28,7 @@ class GoogleSearchResultContent(BaseModel):
     """Google Search result content."""
 
     call_id: str
-    """ID to match the ID from the google search call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: List[GoogleSearchResult]
     """Required. The results of the Google Search."""

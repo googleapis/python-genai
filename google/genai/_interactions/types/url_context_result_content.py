@@ -28,7 +28,7 @@ class URLContextResultContent(BaseModel):
     """URL context result content."""
 
     call_id: str
-    """ID to match the ID from the url context call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: List[URLContextResult]
     """Required. The results of the URL context."""

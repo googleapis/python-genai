@@ -28,7 +28,7 @@ class GoogleMapsCallContent(BaseModel):
     """Google Maps content."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     type: Literal["google_maps_call"]
 

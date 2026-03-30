@@ -57,6 +57,7 @@ __all__ = [
     "DeltaMCPServerToolResult",
     "DeltaMCPServerToolResultResultFunctionResultSubcontentList",
     "DeltaFileSearchResult",
+    "DeltaFileSearchResultResult",
     "DeltaGoogleMapsResult",
 ]
 
@@ -75,7 +76,11 @@ class DeltaImage(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]] = None
+    mime_type: Optional[
+        Literal[
+            "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif", "image/gif", "image/bmp", "image/tiff"
+        ]
+    ] = None
 
     resolution: Optional[Literal["low", "medium", "high", "ultra_high"]] = None
     """The resolution of the media."""
@@ -89,7 +94,9 @@ class DeltaAudio(BaseModel):
     data: Optional[str] = None
 
     mime_type: Optional[
-        Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg"]
+        Literal[
+            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+        ]
     ] = None
 
     uri: Optional[str] = None
@@ -149,7 +156,7 @@ class DeltaThoughtSignature(BaseModel):
 
 class DeltaFunctionCall(BaseModel):
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Dict[str, object]
 
@@ -163,7 +170,7 @@ class DeltaFunctionCall(BaseModel):
 
 class DeltaCodeExecutionCall(BaseModel):
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: CodeExecutionCallArguments
     """The arguments to pass to the code execution."""
@@ -176,7 +183,7 @@ class DeltaCodeExecutionCall(BaseModel):
 
 class DeltaURLContextCall(BaseModel):
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: URLContextCallArguments
     """The arguments to pass to the URL context."""
@@ -189,7 +196,7 @@ class DeltaURLContextCall(BaseModel):
 
 class DeltaGoogleSearchCall(BaseModel):
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: GoogleSearchCallArguments
     """The arguments to pass to Google Search."""
@@ -202,7 +209,7 @@ class DeltaGoogleSearchCall(BaseModel):
 
 class DeltaMCPServerToolCall(BaseModel):
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Dict[str, object]
 
@@ -218,7 +225,7 @@ class DeltaMCPServerToolCall(BaseModel):
 
 class DeltaFileSearchCall(BaseModel):
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     type: Literal["file_search_call"]
 
@@ -228,7 +235,7 @@ class DeltaFileSearchCall(BaseModel):
 
 class DeltaGoogleMapsCall(BaseModel):
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     type: Literal["google_maps_call"]
 
@@ -246,7 +253,7 @@ DeltaFunctionResultResultFunctionResultSubcontentList: TypeAlias = Annotated[
 
 class DeltaFunctionResult(BaseModel):
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Union[List[DeltaFunctionResultResultFunctionResultSubcontentList], str, object]
 
@@ -262,7 +269,7 @@ class DeltaFunctionResult(BaseModel):
 
 class DeltaCodeExecutionResult(BaseModel):
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: str
 
@@ -276,7 +283,7 @@ class DeltaCodeExecutionResult(BaseModel):
 
 class DeltaURLContextResult(BaseModel):
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: List[URLContextResult]
 
@@ -290,7 +297,7 @@ class DeltaURLContextResult(BaseModel):
 
 class DeltaGoogleSearchResult(BaseModel):
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: List[GoogleSearchResult]
 
@@ -309,7 +316,7 @@ DeltaMCPServerToolResultResultFunctionResultSubcontentList: TypeAlias = Annotate
 
 class DeltaMCPServerToolResult(BaseModel):
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Union[List[DeltaMCPServerToolResultResultFunctionResultSubcontentList], str, object]
 
@@ -323,11 +330,18 @@ class DeltaMCPServerToolResult(BaseModel):
     """A signature hash for backend validation."""
 
 
+class DeltaFileSearchResultResult(BaseModel):
+    """The result of the File Search."""
+
+    custom_metadata: Optional[List[object]] = None
+    """User provided metadata about the FileSearchResult."""
+
+
 class DeltaFileSearchResult(BaseModel):
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
-    result: List[object]
+    result: List[DeltaFileSearchResultResult]
 
     type: Literal["file_search_result"]
 
@@ -337,7 +351,7 @@ class DeltaFileSearchResult(BaseModel):
 
 class DeltaGoogleMapsResult(BaseModel):
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     type: Literal["google_maps_result"]
 

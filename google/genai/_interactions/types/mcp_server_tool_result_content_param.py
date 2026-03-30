@@ -35,7 +35,7 @@ class MCPServerToolResultContentParam(TypedDict, total=False):
     """MCPServer tool result content."""
 
     call_id: Required[str]
-    """ID to match the ID from the MCP server tool call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
     """The output from the MCP server call. Can be simple text or rich content."""

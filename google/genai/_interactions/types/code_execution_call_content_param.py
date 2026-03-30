@@ -32,7 +32,7 @@ class CodeExecutionCallContentParam(TypedDict, total=False):
     """Code execution content."""
 
     id: Required[str]
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Required[CodeExecutionCallArgumentsParam]
     """Required. The arguments to pass to the code execution."""

@@ -101,6 +101,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 negative_prompt="ugly, low quality",
                 enhance_prompt=True,
                 compression_quality=types.VideoCompressionQuality.LOSSLESS,
+                labels={"veo_label_key": "generate_videos"},
             ),
         ),
         exception_if_mldev=(

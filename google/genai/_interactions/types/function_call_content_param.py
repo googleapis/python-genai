@@ -31,7 +31,7 @@ class FunctionCallContentParam(TypedDict, total=False):
     """A function tool call content block."""
 
     id: Required[str]
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Required[Dict[str, object]]
     """Required. The arguments to pass to the function."""

@@ -831,6 +831,19 @@ class ResourceScope(_common.CaseInSensitiveEnum):
       "https://aiplatform.googleapis.com/publishers/google/models/gemini-3-pro-preview"""
 
 
+class ServiceTier(_common.CaseInSensitiveEnum):
+  """Pricing and performance service tier."""
+
+  SERVICE_TIER_UNSPECIFIED = 'SERVICE_TIER_UNSPECIFIED'
+  """Default service tier, which is standard."""
+  SERVICE_TIER_FLEX = 'SERVICE_TIER_FLEX'
+  """Flex service tier."""
+  SERVICE_TIER_STANDARD = 'SERVICE_TIER_STANDARD'
+  """Standard service tier."""
+  SERVICE_TIER_PRIORITY = 'SERVICE_TIER_PRIORITY'
+  """Priority service tier."""
+
+
 class JSONSchemaType(Enum):
   """The type of the data supported by JSON Schema.
 
@@ -1114,6 +1127,10 @@ class TurnCoverage(_common.CaseInSensitiveEnum):
   """The users turn only includes activity since the last turn, excluding inactivity (e.g. silence on the audio stream). This is the default behavior."""
   TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
   """The users turn includes all realtime input since the last turn, including inactivity (e.g. silence on the audio stream)."""
+  TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO = (
+      'TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO'
+  )
+  """Includes audio activity and all video since the last turn. With automatic activity detection, audio activity means speech and excludes silence."""
 
 
 class Scale(_common.CaseInSensitiveEnum):
@@ -5933,6 +5950,10 @@ class GenerateContentConfig(_common.BaseModel):
       service. If supplied, safety_settings must not be supplied.
       """,
   )
+  service_tier: Optional[ServiceTier] = Field(
+      default=None,
+      description="""The service tier to use for the request. For example, SERVICE_TIER_FLEX.""",
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6146,6 +6167,9 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """Settings for prompt and response sanitization using the Model Armor
       service. If supplied, safety_settings must not be supplied.
       """
+
+  service_tier: Optional[ServiceTier]
+  """The service tier to use for the request. For example, SERVICE_TIER_FLEX."""
 
 
 GenerateContentConfigOrDict = Union[
@@ -11064,6 +11088,10 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""Compression quality of the generated videos.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -11132,6 +11160,9 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   compression_quality: Optional[VideoCompressionQuality]
   """Compression quality of the generated videos."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
 
 GenerateVideosConfigOrDict = Union[
@@ -11638,10 +11669,7 @@ PreferenceOptimizationSpecOrDict = Union[
 
 
 class DistillationHyperParameters(_common.BaseModel):
-  """Hyperparameters for Distillation.
-
-  This data type is not supported in Gemini API.
-  """
+  """Hyperparameters for distillation."""
 
   adapter_size: Optional[AdapterSize] = Field(
       default=None, description="""Optional. Adapter size for distillation."""
@@ -11654,13 +11682,19 @@ class DistillationHyperParameters(_common.BaseModel):
       default=None,
       description="""Optional. Multiplier for adjusting the default learning rate.""",
   )
+  batch_size: Optional[int] = Field(
+      default=None,
+      description="""The batch size hyperparameter for tuning.
+      This is only supported for OSS models in Vertex.""",
+  )
+  learning_rate: Optional[float] = Field(
+      default=None,
+      description="""The learning rate for tuning. OSS models only.""",
+  )
 
 
 class DistillationHyperParametersDict(TypedDict, total=False):
-  """Hyperparameters for Distillation.
-
-  This data type is not supported in Gemini API.
-  """
+  """Hyperparameters for distillation."""
 
   adapter_size: Optional[AdapterSize]
   """Optional. Adapter size for distillation."""
@@ -11670,6 +11704,13 @@ class DistillationHyperParametersDict(TypedDict, total=False):
 
   learning_rate_multiplier: Optional[float]
   """Optional. Multiplier for adjusting the default learning rate."""
+
+  batch_size: Optional[int]
+  """The batch size hyperparameter for tuning.
+      This is only supported for OSS models in Vertex."""
+
+  learning_rate: Optional[float]
+  """The learning rate for tuning. OSS models only."""
 
 
 DistillationHyperParametersOrDict = Union[
@@ -11712,6 +11753,9 @@ class DistillationSpec(_common.BaseModel):
       default=None,
       description="""Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.""",
   )
+  tuning_mode: Optional[TuningMode] = Field(
+      default=None, description="""Tuning mode for tuning."""
+  )
 
 
 class DistillationSpecDict(TypedDict, total=False):
@@ -11740,6 +11784,9 @@ class DistillationSpecDict(TypedDict, total=False):
 
   validation_dataset_uri: Optional[str]
   """Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+  tuning_mode: Optional[TuningMode]
+  """Tuning mode for tuning."""
 
 
 DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
@@ -13922,7 +13969,7 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None, description="""Adapter size for tuning."""
   )
   tuning_mode: Optional[TuningMode] = Field(
-      default=None, description="""Tuning mode for SFT tuning."""
+      default=None, description="""Tuning mode for tuning."""
   )
   custom_base_model: Optional[str] = Field(
       default=None,
@@ -14003,7 +14050,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Adapter size for tuning."""
 
   tuning_mode: Optional[TuningMode]
-  """Tuning mode for SFT tuning."""
+  """Tuning mode for tuning."""
 
   custom_base_model: Optional[str]
   """Custom base model for tuning. This is only supported for OSS models in Vertex."""

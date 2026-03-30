@@ -27,7 +27,7 @@ class FunctionCallContent(BaseModel):
     """A function tool call content block."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Dict[str, object]
     """Required. The arguments to pass to the function."""
