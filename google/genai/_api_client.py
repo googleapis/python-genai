@@ -798,6 +798,7 @@ class BaseApiClient:
     self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
+    # Test comment
 
   def _use_google_auth_sync(self) -> bool:
     if not hasattr(mtls, 'should_use_client_cert'):
