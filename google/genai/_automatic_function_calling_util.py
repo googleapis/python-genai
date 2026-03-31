@@ -14,9 +14,7 @@
 #
 
 import inspect
-import sys
 import types as builtin_types
-import typing
 from typing import _GenericAlias, Any, Callable, get_args, get_origin, Literal, Optional, Union  # type: ignore[attr-defined]
 
 import pydantic
@@ -25,10 +23,7 @@ from . import _extra_utils
 from . import types
 
 
-if sys.version_info >= (3, 10):
-  VersionedUnionType = builtin_types.UnionType
-else:
-  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
+_UNION_TYPES = (Union, builtin_types.UnionType)
 
 
 __all__ = [
@@ -51,6 +46,10 @@ _py_builtin_type_to_schema_type = {
     dict: types.Type.OBJECT,
     None: types.Type.NULL,
 }
+
+
+def _is_union_annotation(annotation: inspect.Parameter.annotation) -> bool:  # type: ignore[valid-type]
+  return get_origin(annotation) in _UNION_TYPES
 
 
 def _raise_for_unsupported_param(
@@ -102,10 +101,10 @@ def _is_default_value_compatible(
   if (
       isinstance(annotation, _GenericAlias)
       or isinstance(annotation, builtin_types.GenericAlias)
-      or isinstance(annotation, VersionedUnionType)
+      or _is_union_annotation(annotation)
   ):
     origin = get_origin(annotation)
-    if origin in (Union, VersionedUnionType):  # type: ignore[comparison-overlap]
+    if origin in _UNION_TYPES:
       return any(
           _is_default_value_compatible(default_value, arg)
           for arg in get_args(annotation)
@@ -160,7 +159,7 @@ def _parse_schema_from_parameter(  # type: ignore[return]
     schema.type = _py_builtin_type_to_schema_type[param.annotation]
     return schema
   if (
-      isinstance(param.annotation, VersionedUnionType)
+      _is_union_annotation(param.annotation)
       # only parse simple UnionType, example int | str | float | bool
       # complex UnionType will be invoked in raise branch
       and all(
@@ -199,8 +198,10 @@ def _parse_schema_from_parameter(  # type: ignore[return]
         raise ValueError(default_value_error_msg)
       schema.default = param.default
     return schema
-  if isinstance(param.annotation, _GenericAlias) or isinstance(
-      param.annotation, builtin_types.GenericAlias
+  if (
+      isinstance(param.annotation, _GenericAlias)
+      or isinstance(param.annotation, builtin_types.GenericAlias)
+      or _is_union_annotation(param.annotation)
   ):
     origin = get_origin(param.annotation)
     args = get_args(param.annotation)
@@ -239,7 +240,7 @@ def _parse_schema_from_parameter(  # type: ignore[return]
           raise ValueError(default_value_error_msg)
         schema.default = param.default
       return schema
-    if origin is Union:
+    if origin in _UNION_TYPES:
       schema.any_of = []
       schema.type = _py_builtin_type_to_schema_type[dict]
       unique_types = set()

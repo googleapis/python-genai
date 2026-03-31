@@ -22,11 +22,10 @@ import inspect
 import io
 import logging
 import re
-import sys
 import time
 import types as builtin_types
 import typing
-from typing import Any, GenericAlias, List, Optional, Sequence, Union  # type: ignore[attr-defined]
+from typing import Any, GenericAlias, List, Optional, Sequence, TypeGuard, Union  # type: ignore[attr-defined]
 from ._mcp_utils import mcp_to_gemini_tool
 from ._common import get_value_by_path as getv
 from ._common import is_duck_type_of
@@ -42,14 +41,7 @@ from . import types
 
 logger = logging.getLogger('google_genai._transformers')
 
-if sys.version_info >= (3, 10):
-  VersionedUnionType = builtin_types.UnionType
-  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
-  from typing import TypeGuard
-else:
-  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
-  _UNION_TYPES = (typing.Union,)
-  from typing_extensions import TypeGuard
+_UNION_TYPES = (typing.Union, builtin_types.UnionType)
 
 if typing.TYPE_CHECKING:
   from mcp import ClientSession as McpClientSession
@@ -881,7 +873,6 @@ def t_schema(
   elif (
       isinstance(origin, GenericAlias)
       or isinstance(origin, type)
-      or isinstance(origin, VersionedUnionType)
       or typing.get_origin(origin) in _UNION_TYPES
   ):
 
