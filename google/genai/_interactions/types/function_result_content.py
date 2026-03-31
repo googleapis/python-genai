@@ -34,7 +34,7 @@ class FunctionResultContent(BaseModel):
     """A function tool result content block."""
 
     call_id: str
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Union[List[ResultFunctionResultSubcontentList], str, object]
     """The result of the tool call."""

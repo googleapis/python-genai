@@ -32,7 +32,7 @@ class GoogleMapsResultContentParam(TypedDict, total=False):
     """Google Maps result content."""
 
     call_id: Required[str]
-    """ID to match the ID from the google maps call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Required[Iterable[GoogleMapsResultParam]]
     """Required. The results of the Google Maps."""

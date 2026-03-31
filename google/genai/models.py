@@ -1317,6 +1317,9 @@ def _GenerateContentConfig_to_mldev(
         'model_armor_config parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['service_tier']) is not None:
+    setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
+
   return to_object
 
 
@@ -1502,6 +1505,9 @@ def _GenerateContentConfig_to_vertex(
         ['modelArmorConfig'],
         getv(from_object, ['model_armor_config']),
     )
+
+  if getv(from_object, ['service_tier']) is not None:
+    raise ValueError('service_tier parameter is not supported in Vertex AI.')
 
   return to_object
 
@@ -2107,6 +2113,9 @@ def _GenerateVideosConfig_to_mldev(
         'compression_quality parameter is not supported in Gemini API.'
     )
 
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError('labels parameter is not supported in Gemini API.')
+
   return to_object
 
 
@@ -2229,6 +2238,9 @@ def _GenerateVideosConfig_to_vertex(
         ['parameters', 'compressionQuality'],
         getv(from_object, ['compression_quality']),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   return to_object
 
