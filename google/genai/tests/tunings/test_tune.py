@@ -246,6 +246,25 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev="not supported in Gemini API",
     ),
     pytest_helper.TestTableItem(
+        name="test_tune_oss_distillation_hyperparams",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="qwen/qwen3@qwen3-4b",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                method="DISTILLATION",
+                base_teacher_model="deepseek-ai/deepseek-r1-0528-maas",
+                learning_rate=1e-4,
+                batch_size=4,
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                tuning_mode="TUNING_MODE_FULL",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="not supported in Gemini API",
+    ),
+    pytest_helper.TestTableItem(
         name="test_tune_encryption_spec",
         parameters=genai_types.CreateTuningJobParameters(
             base_model="gemini-2.5-flash",

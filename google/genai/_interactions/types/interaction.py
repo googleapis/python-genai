@@ -66,18 +66,18 @@ Input: TypeAlias = Union[
     VideoContent,
     ThoughtContent,
     FunctionCallContent,
-    FunctionResultContent,
     CodeExecutionCallContent,
-    CodeExecutionResultContent,
     URLContextCallContent,
-    URLContextResultContent,
-    GoogleSearchCallContent,
-    GoogleSearchResultContent,
     MCPServerToolCallContent,
-    MCPServerToolResultContent,
+    GoogleSearchCallContent,
     FileSearchCallContent,
-    FileSearchResultContent,
     GoogleMapsCallContent,
+    FunctionResultContent,
+    CodeExecutionResultContent,
+    URLContextResultContent,
+    GoogleSearchResultContent,
+    MCPServerToolResultContent,
+    FileSearchResultContent,
     GoogleMapsResultContent,
 ]
 
@@ -86,22 +86,22 @@ class Interaction(BaseModel):
     """The Interaction resource."""
 
     id: str
-    """Output only. A unique identifier for the interaction completion."""
+    """Required. Output only. A unique identifier for the interaction completion."""
 
     created: datetime
-    """Output only.
+    """Required.
 
-    The time at which the response was created in ISO 8601 format
+    Output only. The time at which the response was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
     status: Literal["in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete"]
-    """Output only. The status of the interaction."""
+    """Required. Output only. The status of the interaction."""
 
     updated: datetime
-    """Output only.
+    """Required.
 
-    The time at which the response was last updated in ISO 8601 format
+    Output only. The time at which the response was last updated in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
@@ -137,6 +137,9 @@ class Interaction(BaseModel):
 
     role: Optional[str] = None
     """Output only. The role of the interaction."""
+
+    service_tier: Optional[Literal["flex", "standard", "priority"]] = None
+    """The service tier for the interaction."""
 
     system_instruction: Optional[str] = None
     """System instruction for the interaction."""

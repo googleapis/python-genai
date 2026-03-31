@@ -27,10 +27,10 @@ class CodeExecutionResultContent(BaseModel):
     """Code execution result content."""
 
     call_id: str
-    """ID to match the ID from the code execution call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: str
-    """The output of the code execution."""
+    """Required. The output of the code execution."""
 
     type: Literal["code_execution_result"]
 

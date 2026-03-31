@@ -32,10 +32,10 @@ class GoogleSearchCallContentParam(TypedDict, total=False):
     """Google Search content."""
 
     id: Required[str]
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Required[GoogleSearchCallArgumentsParam]
-    """The arguments to pass to Google Search."""
+    """Required. The arguments to pass to Google Search."""
 
     type: Required[Literal["google_search_call"]]
 

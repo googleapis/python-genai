@@ -27,7 +27,7 @@ class FileSearchCallContent(BaseModel):
     """File Search content."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     type: Literal["file_search_call"]
 

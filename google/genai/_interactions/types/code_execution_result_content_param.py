@@ -31,10 +31,10 @@ class CodeExecutionResultContentParam(TypedDict, total=False):
     """Code execution result content."""
 
     call_id: Required[str]
-    """ID to match the ID from the code execution call block."""
+    """Required. ID to match the ID from the function call block."""
 
     result: Required[str]
-    """The output of the code execution."""
+    """Required. The output of the code execution."""
 
     type: Required[Literal["code_execution_result"]]
 

@@ -27,16 +27,16 @@ class MCPServerToolCallContent(BaseModel):
     """MCPServer tool call content."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Dict[str, object]
-    """The JSON object of arguments for the function."""
+    """Required. The JSON object of arguments for the function."""
 
     name: str
-    """The name of the tool which was called."""
+    """Required. The name of the tool which was called."""
 
     server_name: str
-    """The name of the used MCP server."""
+    """Required. The name of the used MCP server."""
 
     type: Literal["mcp_server_tool_call"]
 
