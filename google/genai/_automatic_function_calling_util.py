@@ -49,7 +49,7 @@ _py_builtin_type_to_schema_type = {
 
 
 def _is_union_annotation(annotation: inspect.Parameter.annotation) -> bool:  # type: ignore[valid-type]
-  return get_origin(annotation) in _UNION_TYPES
+  return get_origin(annotation) in _UNION_TYPES  # type: ignore[comparison-overlap]
 
 
 def _raise_for_unsupported_param(
@@ -104,7 +104,7 @@ def _is_default_value_compatible(
       or _is_union_annotation(annotation)
   ):
     origin = get_origin(annotation)
-    if origin in _UNION_TYPES:
+    if origin in _UNION_TYPES:  # type: ignore[comparison-overlap]
       return any(
           _is_default_value_compatible(default_value, arg)
           for arg in get_args(annotation)
