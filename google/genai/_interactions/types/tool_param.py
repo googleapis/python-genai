@@ -76,10 +76,7 @@ class MCPServer(TypedDict, total=False):
     """The name of the MCPServer."""
 
     url: str
-    """
-    The full URL for the MCPServer endpoint.
-    Example: "https://api.example.com/mcp"
-    """
+    """The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp" """
 
 
 class GoogleSearch(TypedDict, total=False):

@@ -125,8 +125,8 @@ class Interaction(BaseModel):
 
     response_format: Optional[object] = None
     """
-    Enforces that the generated response is a JSON object that complies with
-    the JSON schema specified in this field.
+    Enforces that the generated response is a JSON object that complies with the
+    JSON schema specified in this field.
     """
 
     response_mime_type: Optional[str] = None

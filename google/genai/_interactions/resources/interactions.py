@@ -103,8 +103,8 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -171,8 +171,8 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -235,8 +235,8 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -303,8 +303,8 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -369,8 +369,8 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -513,7 +513,8 @@ class InteractionsResource(SyncAPIResource):
     ) -> Interaction:
         """Cancels an interaction by id.
 
-        This only applies to background interactions that are still running.
+        This only applies to background interactions that
+        are still running.
 
         Args:
           extra_headers: Send extra headers
@@ -555,12 +556,14 @@ class InteractionsResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           include_input: If set to true, includes the input in the response.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           stream: If set to true, the generated content will be streamed incrementally.
 
@@ -591,14 +594,16 @@ class InteractionsResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Stream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
           include_input: If set to true, includes the input in the response.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
@@ -627,14 +632,16 @@ class InteractionsResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
           include_input: If set to true, includes the input in the response.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
@@ -748,8 +755,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -816,8 +823,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -880,8 +887,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -948,8 +955,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -1014,8 +1021,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -1158,7 +1165,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
     ) -> Interaction:
         """Cancels an interaction by id.
 
-        This only applies to background interactions that are still running.
+        This only applies to background interactions that
+        are still running.
 
         Args:
           extra_headers: Send extra headers
@@ -1200,12 +1208,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           include_input: If set to true, includes the input in the response.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           stream: If set to true, the generated content will be streamed incrementally.
 
@@ -1236,14 +1246,16 @@ class AsyncInteractionsResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AsyncStream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
           include_input: If set to true, includes the input in the response.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
@@ -1272,14 +1284,16 @@ class AsyncInteractionsResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
           include_input: If set to true, includes the input in the response.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
