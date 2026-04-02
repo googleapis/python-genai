@@ -27,8 +27,4 @@ class Turn(BaseModel):
     content: Union[List[Content], str, None] = None
 
     role: Optional[str] = None
-    """The originator of this turn.
-
-    Must be user for input or model for
-    model output.
-    """
+    """The originator of this turn. Must be user for input or model for model output."""
