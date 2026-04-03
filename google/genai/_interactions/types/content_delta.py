@@ -89,13 +89,27 @@ class DeltaImage(BaseModel):
 class DeltaAudio(BaseModel):
     type: Literal["audio"]
 
+    channels: Optional[int] = None
+    """The number of audio channels."""
+
     data: Optional[str] = None
 
     mime_type: Optional[
         Literal[
-            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+            "audio/wav",
+            "audio/mp3",
+            "audio/aiff",
+            "audio/aac",
+            "audio/ogg",
+            "audio/flac",
+            "audio/mpeg",
+            "audio/m4a",
+            "audio/l16",
         ]
     ] = None
+
+    rate: Optional[int] = None
+    """The sample rate of the audio."""
 
     uri: Optional[str] = None
 
