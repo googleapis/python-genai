@@ -21,17 +21,17 @@ from .. import pytest_helper
 from . import constants
 
 _COMPUTE_TOKENS_PARAMS = types._ComputeTokensParameters(
-    model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    model='gemini-2.5-flash',
+    contents=[t.t_content('Tell me a story in 300 words.')],
 )
 _COMPUTE_TOKENS_PARAMS_VERTEX_CUSTOM_URL = types._ComputeTokensParameters(
-    model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    model='gemini-2.5-flash',
+    contents=[t.t_content('Tell me a story in 300 words.')],
     config={'http_options': constants.VERTEX_HTTP_OPTIONS},
 )
 _COMPUTE_TOKENS_PARAMS_MLDEV_CUSTOM_URL = types._ComputeTokensParameters(
-    model='gemini-1.5-flash',
-    contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+    model='gemini-2.5-flash',
+    contents=[t.t_content('Tell me a story in 300 words.')],
     config={'http_options': constants.MLDEV_HTTP_OPTIONS},
 )
 _UNICODE_STRING = '这是一条unicode测试🤪❤★'
@@ -41,8 +41,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_compute_tokens',
         exception_if_mldev='only supported in',
         parameters=types._ComputeTokensParameters(
-            model='gemini-1.5-flash',
-            contents=[t.t_content(None, 'Tell me a story in 300 words.')],
+            model='gemini-2.5-flash',
+            contents=[t.t_content('Tell me a story in 300 words.')],
         ),
     ),
     pytest_helper.TestTableItem(
@@ -60,7 +60,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_compute_tokens_unicode',
         exception_if_mldev='only supported in',
         parameters=types._ComputeTokensParameters(
-            model='gemini-1.5-flash', contents=[t.t_content(None, _UNICODE_STRING)]
+            model='gemini-2.5-flash', contents=[t.t_content(_UNICODE_STRING)]
         ),
     ),
 ]
@@ -105,16 +105,16 @@ async def test_async(client):
 def test_different_model_names(client):
   if client._api_client.vertexai:
     response1 = client.models.compute_tokens(
-        model='gemini-1.5-flash', contents=_COMPUTE_TOKENS_PARAMS.contents
+        model='gemini-2.5-flash', contents=_COMPUTE_TOKENS_PARAMS.contents
     )
     assert response1
     response3 = client.models.compute_tokens(
-        model='publishers/google/models/gemini-1.5-flash',
+        model='publishers/google/models/gemini-2.5-flash',
         contents=_COMPUTE_TOKENS_PARAMS.contents,
     )
     assert response3
     response4 = client.models.compute_tokens(
-        model='projects/vertexsdk/locations/us-central1/publishers/google/models/gemini-1.5-flash',
+        model='projects/vertexsdk/locations/us-central1/publishers/google/models/gemini-2.5-flash',
         contents=_COMPUTE_TOKENS_PARAMS.contents,
     )
     assert response4

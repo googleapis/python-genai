@@ -15,19 +15,28 @@
 
 """Error classes for the GenAI SDK."""
 
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import httpx
 import json
+import requests
+from . import _common
 
 
 if TYPE_CHECKING:
   from .replay_api_client import ReplayResponse
+  import aiohttp
+  from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
 
 
 class APIError(Exception):
   """General errors raised by the GenAI API."""
   code: int
-  response: Union['ReplayResponse', httpx.Response]
+  response: Union[
+      requests.Response,
+      'ReplayResponse',
+      httpx.Response,
+      'AsyncAuthorizedSessionResponse',
+  ]
 
   status: Optional[str] = None
   message: Optional[str] = None
@@ -36,8 +45,18 @@ class APIError(Exception):
       self,
       code: int,
       response_json: Any,
-      response: Optional[Union['ReplayResponse', httpx.Response]] = None,
+      response: Optional[
+          Union[
+              requests.Response,
+              'ReplayResponse',
+              httpx.Response,
+              'AsyncAuthorizedSessionResponse',
+          ]
+      ] = None,
   ):
+    if isinstance(response_json, list) and len(response_json) == 1:
+      response_json = response_json[0]
+
     self.response = response
     self.details = response_json
     self.message = self._get_message(response_json)
@@ -46,22 +65,49 @@ class APIError(Exception):
 
     super().__init__(f'{self.code} {self.status}. {self.details}')
 
+  def __reduce__(
+      self,
+  ) -> tuple[Callable[..., 'APIError'], tuple[dict[str, Any]]]:
+    """Returns a tuple that can be used to reconstruct the error for pickling."""
+    state = self.__dict__.copy()
+    return (self.__class__._rebuild, (state,))
+
+  @staticmethod
+  def _rebuild(state: dict[str, Any]) -> 'APIError':
+    """Rebuilds the error from the state."""
+    obj = APIError.__new__(APIError)
+    obj.__dict__.update(state)
+    Exception.__init__(obj, f'{obj.code} {obj.status}. {obj.details}')
+    return obj
+
   def _get_status(self, response_json: Any) -> Any:
-    return response_json.get(
-        'status', response_json.get('error', {}).get('status', None)
-    )
+    try:
+      status = response_json.get(
+          'status', response_json.get('error', {}).get('status', None)
+      )
+      return status
+    except AttributeError:
+      # If response_json is not a dict, return close code to handle the case
+      # when encountering a websocket error.
+      return None
 
   def _get_message(self, response_json: Any) -> Any:
-    return response_json.get(
-        'message', response_json.get('error', {}).get('message', None)
-    )
+    try:
+      message = response_json.get(
+          'message', response_json.get('error', {}).get('message', None)
+      )
+      return message
+    except AttributeError:
+      # If response_json is not a dict, return it as None.
+      # This is to handle the case when encountering a websocket error.
+      return None
 
   def _get_code(self, response_json: Any) -> Any:
     return response_json.get(
         'code', response_json.get('error', {}).get('code', None)
     )
 
-  def _to_replay_record(self) -> dict[str, Any]:
+  def _to_replay_record(self) -> _common.StringDict:
     """Returns a dictionary representation of the error for replay recording.
 
     details is not included since it may expose internal information in the
@@ -77,7 +123,7 @@ class APIError(Exception):
 
   @classmethod
   def raise_for_response(
-      cls, response: Union['ReplayResponse', httpx.Response]
+      cls, response: Union['ReplayResponse', httpx.Response, requests.Response]
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
@@ -93,10 +139,47 @@ class APIError(Exception):
             'message': message,
             'status': response.reason_phrase,
         }
+    elif isinstance(response, requests.Response):
+      try:
+        # do not do any extra muanipulation on the response.
+        # return the raw response json as is.
+        response_json = response.json()
+      except requests.exceptions.JSONDecodeError:
+        response_json = {
+            'message': response.text,
+            'status': response.reason,
+        }
     else:
       response_json = response.body_segments[0].get('error', {})
 
-    status_code = response.status_code
+    cls.raise_error(response.status_code, response_json, response)
+
+  @classmethod
+  def raise_error(
+      cls,
+      status_code: int,
+      response_json: Any,
+      response: Optional[
+          Union[
+              'ReplayResponse',
+              httpx.Response,
+              requests.Response,
+          ]
+      ],
+  ) -> None:
+    """Raises an appropriate APIError subclass based on the status code.
+
+    Args:
+      status_code: The HTTP status code of the response.
+      response_json: The JSON body of the response, or a dict containing error
+        details.
+      response: The original response object.
+
+    Raises:
+      ClientError: If the status code is in the 4xx range.
+      ServerError: If the status code is in the 5xx range.
+      APIError: For other error status codes.
+    """
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
@@ -106,12 +189,18 @@ class APIError(Exception):
 
   @classmethod
   async def raise_for_async_response(
-      cls, response: Union['ReplayResponse', httpx.Response]
+      cls,
+      response: Union[
+          'ReplayResponse',
+          httpx.Response,
+          'aiohttp.ClientResponse',
+          'AsyncAuthorizedSessionResponse',
+      ],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
-    if response.status_code == 200:
-      return
     if isinstance(response, httpx.Response):
+      if response.status_code == 200:
+        return
       try:
         await response.aread()
         response_json = response.json()
@@ -121,10 +210,61 @@ class APIError(Exception):
             'message': message,
             'status': response.reason_phrase,
         }
-    else:
+      status_code = response.status_code
+    elif hasattr(response, 'body_segments') and hasattr(
+        response, 'status_code'
+    ):
+      if response.status_code == 200:
+        return
       response_json = response.body_segments[0].get('error', {})
+      status_code = response.status_code
+    else:
+      try:
+        import aiohttp  # pylint: disable=g-import-not-at-top
 
-    status_code = response.status_code
+        # Use a local variable to help Mypy handle the unwrapped response
+        unwrapped_response: Any = response
+        if hasattr(unwrapped_response, '_response'):
+          unwrapped_response = unwrapped_response._response
+
+        if isinstance(unwrapped_response, aiohttp.ClientResponse):
+          if unwrapped_response.status == 200:
+            return
+          try:
+            response_json = await unwrapped_response.json()
+          except aiohttp.client_exceptions.ContentTypeError:
+            message = await unwrapped_response.text()
+            response_json = {
+                'message': message,
+                'status': unwrapped_response.reason,
+            }
+          status_code = unwrapped_response.status
+        else:
+          raise ValueError(f'Unsupported response type: {type(response)}')
+      except ImportError:
+        raise ValueError(f'Unsupported response type: {type(response)}')
+
+    await cls.raise_error_async(status_code, response_json, response)
+
+  @classmethod
+  async def raise_error_async(
+      cls, status_code: int, response_json: Any, response: Optional[
+          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+      ]
+  ) -> None:
+    """Raises an appropriate APIError subclass based on the status code.
+
+    Args:
+      status_code: The HTTP status code of the response.
+      response_json: The JSON body of the response, or a dict containing error
+        details.
+      response: The original response object.
+
+    Raises:
+      ClientError: If the status code is in the 4xx range.
+      ServerError: If the status code is in the 5xx range.
+      APIError: For other error status codes.
+    """
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
@@ -145,19 +285,21 @@ class ServerError(APIError):
 
 class UnknownFunctionCallArgumentError(ValueError):
   """Raised when the function call argument cannot be converted to the parameter annotation."""
-
   pass
 
 
 class UnsupportedFunctionError(ValueError):
   """Raised when the function is not supported."""
+  pass
 
 
 class FunctionInvocationError(ValueError):
   """Raised when the function cannot be invoked with the given arguments."""
-
   pass
 
 
-class ExperimentalWarning(Warning):
-  """Warning for experimental features."""
+class UnknownApiResponseError(ValueError):
+  """Raised when the response from the API cannot be parsed as JSON."""
+  pass
+
+ExperimentalWarning = _common.ExperimentalWarning

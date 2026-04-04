@@ -15,6 +15,7 @@
 
 """[Experimental] Auth Tokens API client."""
 
+import json
 import logging
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
@@ -26,7 +27,7 @@ from . import types
 logger = logging.getLogger('google_genai.tokens')
 
 
-def _get_field_masks(setup: Dict[str, Any]) -> str:
+def _get_field_masks(setup: _common.StringDict) -> str:
   """Return field_masks"""
   fields = []
   for k, v in setup.items():
@@ -41,9 +42,9 @@ def _get_field_masks(setup: Dict[str, Any]) -> str:
 
 
 def _convert_bidi_setup_to_token_setup(
-    request_dict: dict[str, Any],
+    request_dict: _common.StringDict,
     config: Optional[types.CreateAuthTokenConfigOrDict] = None,
-) -> Dict[str, Any]:
+) -> _common.StringDict:
   """Converts bidiGenerateContentSetup."""
   bidi_setup = request_dict.get('bidiGenerateContentSetup')
   if bidi_setup and bidi_setup.get('setup'):
@@ -143,6 +144,7 @@ class Tokens(_api_module.BaseModule):
     Usage:
 
     .. code-block:: python
+
       # Case 1: If LiveEphemeralParameters is unset, unlock LiveConnectConfig
       # when using the token in Live API sessions. Each session connection can
       # use a different configuration.
@@ -154,6 +156,7 @@ class Tokens(_api_module.BaseModule):
       auth_token = client.tokens.create(config=config)
 
     .. code-block:: python
+
       # Case 2: If LiveEphemeralParameters is set, lock all fields in
       # LiveConnectConfig when using the token in Live API sessions. For
       # example, changing `output_audio_transcription` in the Live API
@@ -163,14 +166,16 @@ class Tokens(_api_module.BaseModule):
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
               ),
           )
       )
-      .. code-block:: python
+
+    .. code-block:: python
+
       # Case 3: If LiveEphemeralParameters is set and lockAdditionalFields is
       # empty, lock LiveConnectConfig with set fields (e.g.
       # system_instruction in this example) when using the token in Live API
@@ -187,7 +192,8 @@ class Tokens(_api_module.BaseModule):
           )
       )
 
-      .. code-block:: python
+    .. code-block:: python
+
       # Case 4: If LiveEphemeralParameters is set and lockAdditionalFields is
       # set, lock LiveConnectConfig with set and additional fields (e.g.
       # system_instruction, temperature in this example) when using the token
@@ -196,7 +202,7 @@ class Tokens(_api_module.BaseModule):
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -216,7 +222,8 @@ class Tokens(_api_module.BaseModule):
       )
     else:
       request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client,
+          parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -247,14 +254,10 @@ class Tokens(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = self._api_client.request(
+    response = self._api_client.request(
         'post', path, request_dict, http_options
     )
-
-    if not self._api_client.vertexai:
-      response_dict = tokens_converters._AuthToken_from_mldev(
-          self._api_client, response_dict
-      )
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.AuthToken._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -276,7 +279,7 @@ class AsyncTokens(_api_module.BaseModule):
   async def create(
       self, *, config: Optional[types.CreateAuthTokenConfigOrDict] = None
   ) -> types.AuthToken:
-    """Creates an auth token asynchronously.
+    """Creates an auth token asynchronously. Support in v1alpha only.
 
     Args:
       config (CreateAuthTokenConfig): Optional configuration for the request.
@@ -285,11 +288,16 @@ class AsyncTokens(_api_module.BaseModule):
 
     .. code-block:: python
 
+      client = genai.Client(
+          api_key=API_KEY,
+          http_options=types.HttpOptions(api_version='v1alpha'),
+      )
+
       auth_token = await client.aio.tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -309,7 +317,8 @@ class AsyncTokens(_api_module.BaseModule):
       )
     else:
       request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
-          self._api_client, parameter_model
+          self._api_client,
+          parameter_model
       )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
@@ -338,17 +347,13 @@ class AsyncTokens(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response_dict = await self._api_client.async_request(
+    response = await self._api_client.async_request(
         'post',
         path,
         request_dict,
         http_options=http_options,
     )
-
-    if not self._api_client.vertexai:
-      response_dict = tokens_converters._AuthToken_from_mldev(
-          self._api_client, response_dict
-      )
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.AuthToken._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()

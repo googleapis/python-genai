@@ -56,7 +56,7 @@ def test_name_transform_name(client):
         video,
         generated_video,
     ]:
-      name = t.t_file_name(client, f)
+      name = t.t_file_name(f)
       assert name == file_id
 
 

@@ -23,16 +23,6 @@ test_http_options = {'headers': {'test': 'headers'}}
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name='test_mldev_tuned_models_update',
-        parameters=types._UpdateModelParameters(
-            model='tunedModels/generatenum5443-ekrw7ie9wis23zbeogbw6jq8',
-            config={
-                'display_name': 'My tuned gemini-1.5',
-            },
-        ),
-        exception_if_vertex='404',
-    ),
-    pytest_helper.TestTableItem(
         name='test_vertex_tuned_models_update',
         parameters=types._UpdateModelParameters(
             model='models/2171259487439028224',
@@ -44,17 +34,6 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='404',
-    ),
-    pytest_helper.TestTableItem(
-        name='test_mldev_tuned_models_update_with_http_options_in_method',
-        parameters=types._UpdateModelParameters(
-            model='tunedModels/generatenum5443-ekrw7ie9wis23zbeogbw6jq8',
-            config={
-                'display_name': 'My tuned gemini-1.0',
-                'http_options': test_http_options,
-            },
-        ),
-        exception_if_vertex='404',
     ),
     pytest_helper.TestTableItem(
         name='test_vertex_tuned_models_update_with_http_options_in_method',
@@ -87,19 +66,11 @@ async def test_async_update_tuned_model(client):
       await client.aio.models.update(
           model='tunedModels/generatenum5443-ekrw7ie9wis23zbeogbw6jq8',
           config={
-              'description': 'My tuned gemini-1.0',
+              'description': 'My tuned gemini model',
               'http_options': test_http_options,
           },
       )
     assert '404' in str(e)
-  else:
-    response = await client.aio.models.update(
-        model='tunedModels/generatenum5443-ekrw7ie9wis23zbeogbw6jq8',
-        config={
-            'description': 'My tuned gemini-1.5',
-            'http_options': test_http_options,
-        },
-    )
 
 
 @pytest.mark.asyncio
@@ -108,7 +79,7 @@ async def test_async_update_model(client):
     response = await client.aio.models.update(
         model='models/2171259487439028224',
         config={
-            'display_name': 'My tuned gemini-1.5',
+            'display_name': 'My tuned gemini model',
             'http_options': test_http_options,
         },
     )
@@ -117,7 +88,7 @@ async def test_async_update_model(client):
       await client.aio.models.update(
           model='models/2171259487439028224',
           config={
-              'display_name': 'My tuned gemini-1.5',
+              'display_name': 'My tuned gemini model',
               'http_options': test_http_options,
           },
       )

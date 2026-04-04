@@ -13,7 +13,9 @@
 # limitations under the License.
 #
 
+import asyncio
 import os
+from types import TracebackType
 from typing import Optional, Union
 
 import google.auth
@@ -25,13 +27,80 @@ from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
 from .chats import AsyncChats, Chats
+from .file_search_stores import AsyncFileSearchStores, FileSearchStores
 from .files import AsyncFiles, Files
 from .live import AsyncLive
 from .models import AsyncModels, Models
 from .operations import AsyncOperations, Operations
 from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
-from .types import HttpOptions, HttpOptionsDict
+from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
+
+import warnings
+import httpx
+
+from ._api_client import has_aiohttp
+
+from . import _common
+
+from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, GeminiNextGenAPIClient
+from . import _interactions
+
+from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
+_interactions_experimental_warned = False
+
+class AsyncGeminiNextGenAPIClientAdapter(_interactions.AsyncGeminiNextGenAPIClientAdapter):
+  """Adapter for the Gemini NextGen API Client."""
+  def __init__(self, api_client: BaseApiClient):
+    self._api_client = api_client
+
+  def is_vertex_ai(self) -> bool:
+    return self._api_client.vertexai or False
+
+  def get_project(self) -> str | None:
+    return self._api_client.project
+
+  def get_location(self) -> str | None:
+    return self._api_client.location
+
+  async def async_get_auth_headers(self) -> dict[str, str]:
+    if self._api_client.api_key:
+      return {"x-goog-api-key": self._api_client.api_key}
+    access_token = await self._api_client._async_access_token()
+    headers = {
+      "Authorization": f"Bearer {access_token}",
+    }
+    if creds := self._api_client._credentials:
+      if creds.quota_project_id:
+        headers["x-goog-user-project"] = creds.quota_project_id
+    return headers
+
+
+class GeminiNextGenAPIClientAdapter(_interactions.GeminiNextGenAPIClientAdapter):
+  """Adapter for the Gemini NextGen API Client."""
+  def __init__(self, api_client: BaseApiClient):
+    self._api_client = api_client
+
+  def is_vertex_ai(self) -> bool:
+    return self._api_client.vertexai or False
+
+  def get_project(self) -> str | None:
+    return self._api_client.project
+
+  def get_location(self) -> str | None:
+    return self._api_client.location
+
+  def get_auth_headers(self) -> dict[str, str]:
+    if self._api_client.api_key:
+      return {"x-goog-api-key": self._api_client.api_key}
+    access_token = self._api_client._access_token()
+    headers = {
+      "Authorization": f"Bearer {access_token}",
+    }
+    if creds := self._api_client._credentials:
+      if creds.quota_project_id:
+        headers["x-goog-user-project"] = creds.quota_project_id
+    return headers
 
 
 class AsyncClient:
@@ -45,9 +114,97 @@ class AsyncClient:
     self._caches = AsyncCaches(self._api_client)
     self._batches = AsyncBatches(self._api_client)
     self._files = AsyncFiles(self._api_client)
+    self._file_search_stores = AsyncFileSearchStores(self._api_client)
     self._live = AsyncLive(self._api_client)
     self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
+    self._nextgen_client_instance: Optional[AsyncGeminiNextGenAPIClient] = None
+
+  @property
+  def _nextgen_client(self) -> AsyncGeminiNextGenAPIClient:
+    if self._nextgen_client_instance is not None:
+      return self._nextgen_client_instance
+
+    http_opts = self._api_client._http_options
+
+    if http_opts.extra_body:
+      warnings.warn(
+          'extra_body properties are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    retry_opts = http_opts.retry_options
+    if retry_opts is not None and (
+        retry_opts.initial_delay is not None
+        or retry_opts.max_delay is not None
+        or retry_opts.exp_base is not None
+        or retry_opts.jitter is not None
+        or retry_opts.http_status_codes is not None
+    ):
+      warnings.warn(
+          'Granular retry options are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    http_client: Optional[httpx.AsyncClient] = (
+        self._api_client._async_httpx_client
+    )
+
+    async_client_args = self._api_client._http_options.async_client_args or {}
+    has_custom_transport = 'transport' in async_client_args
+
+    if has_aiohttp and not has_custom_transport:
+      warnings.warn(
+          'Async interactions client cannot use aiohttp, fallingback to httpx.',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    if retry_opts is not None and retry_opts.attempts is not None:
+      max_retries = retry_opts.attempts
+    else:
+      max_retries = DEFAULT_MAX_RETRIES + 1
+
+    self._nextgen_client_instance = AsyncGeminiNextGenAPIClient(
+        base_url=http_opts.base_url,
+        api_key=self._api_client.api_key,
+        api_version=http_opts.api_version,
+        default_headers=http_opts.headers,
+        http_client=http_client,
+        # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
+        timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+        max_retries=max_retries,
+        client_adapter=AsyncGeminiNextGenAPIClientAdapter(self._api_client)
+    )
+
+    client = self._nextgen_client_instance
+    if self._api_client.vertexai:
+      client._is_vertex = True
+      client._vertex_project = self._api_client.project
+      client._vertex_location = self._api_client.location
+
+    return self._nextgen_client_instance
+
+  @property
+  def interactions(self) -> AsyncNextGenInteractionsResource:
+    global _interactions_experimental_warned
+    if not _interactions_experimental_warned:
+      _interactions_experimental_warned = True
+      warnings.warn(
+          'Interactions usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    return self._nextgen_client.interactions
+
+  @property
+  def _has_nextgen_client(self) -> bool:
+    return (
+        hasattr(self, '_nextgen_client_instance') and
+        self._nextgen_client_instance is not None
+    )
 
   @property
   def models(self) -> AsyncModels:
@@ -60,6 +217,10 @@ class AsyncClient:
   @property
   def caches(self) -> AsyncCaches:
     return self._caches
+
+  @property
+  def file_search_stores(self) -> AsyncFileSearchStores:
+    return self._file_search_stores
 
   @property
   def batches(self) -> AsyncBatches:
@@ -84,6 +245,53 @@ class AsyncClient:
   @property
   def operations(self) -> AsyncOperations:
     return self._operations
+
+  async def aclose(self) -> None:
+    """Closes the async client explicitly.
+
+    However, it doesn't close the sync client, which can be closed using the
+    Client.close() method or using the context manager.
+
+    Usage:
+    .. code-block:: python
+
+      from google.genai import Client
+
+      async_client = Client(
+          vertexai=True, project='my-project-id', location='us-central1'
+      ).aio
+      response_1 = await async_client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      response_2 = await async_client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      # Close the client to release resources.
+      await async_client.aclose()
+    """
+    await self._api_client.aclose()
+
+    if self._has_nextgen_client:
+      await self._nextgen_client.close()
+
+  async def __aenter__(self) -> 'AsyncClient':
+    return self
+
+  async def __aexit__(
+      self,
+      exc_type: Optional[Exception],
+      exc_value: Optional[Exception],
+      traceback: Optional[TracebackType],
+  ) -> None:
+    await self.aclose()
+
+  def __del__(self) -> None:
+    try:
+      asyncio.get_running_loop().create_task(self.aclose())
+    except Exception:
+      pass
 
 
 class DebugConfig(pydantic.BaseModel):
@@ -230,10 +438,12 @@ class Client:
     self._models = Models(self._api_client)
     self._tunings = Tunings(self._api_client)
     self._caches = Caches(self._api_client)
+    self._file_search_stores = FileSearchStores(self._api_client)
     self._batches = Batches(self._api_client)
     self._files = Files(self._api_client)
     self._tokens = Tokens(self._api_client)
     self._operations = Operations(self._api_client)
+    self._nextgen_client_instance: Optional[GeminiNextGenAPIClient] = None
 
   @staticmethod
   def _get_api_client(
@@ -272,6 +482,78 @@ class Client:
     )
 
   @property
+  def _nextgen_client(self) -> GeminiNextGenAPIClient:
+    if self._nextgen_client_instance is not None:
+      return self._nextgen_client_instance
+
+    http_opts = self._api_client._http_options
+
+    if http_opts.extra_body:
+      warnings.warn(
+          'extra_body properties are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    retry_opts = http_opts.retry_options
+    if retry_opts is not None and (
+        retry_opts.initial_delay is not None
+        or retry_opts.max_delay is not None
+        or retry_opts.exp_base is not None
+        or retry_opts.jitter is not None
+        or retry_opts.http_status_codes is not None
+    ):
+      warnings.warn(
+          'Granular retry options are not supported in `.interactions` yet',
+          category=UserWarning,
+          stacklevel=5,
+      )
+
+    if retry_opts is not None and retry_opts.attempts is not None:
+      max_retries = retry_opts.attempts
+    else:
+      max_retries = DEFAULT_MAX_RETRIES + 1
+
+    self._nextgen_client_instance = GeminiNextGenAPIClient(
+        base_url=http_opts.base_url,
+        api_key=self._api_client.api_key,
+        api_version=http_opts.api_version,
+        default_headers=http_opts.headers,
+        http_client=self._api_client._httpx_client,
+        # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
+        timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+        max_retries=max_retries,
+        client_adapter=GeminiNextGenAPIClientAdapter(self._api_client),
+    )
+
+    client = self._nextgen_client_instance
+    if self._api_client.vertexai:
+      client._is_vertex = True
+      client._vertex_project = self._api_client.project
+      client._vertex_location = self._api_client.location
+
+    return self._nextgen_client_instance
+
+  @property
+  def interactions(self) -> NextGenInteractionsResource:
+    global _interactions_experimental_warned
+    if not _interactions_experimental_warned:
+      _interactions_experimental_warned = True
+      warnings.warn(
+        'Interactions usage is experimental and may change in future versions.',
+        category=UserWarning,
+        stacklevel=2,
+      )
+    return self._nextgen_client.interactions
+
+  @property
+  def _has_nextgen_client(self) -> bool:
+    return (
+        hasattr(self, '_nextgen_client_instance') and
+        self._nextgen_client_instance is not None
+    )
+
+  @property
   def chats(self) -> Chats:
     return Chats(modules=self.models)
 
@@ -290,6 +572,10 @@ class Client:
   @property
   def caches(self) -> Caches:
     return self._caches
+
+  @property
+  def file_search_stores(self) -> FileSearchStores:
+    return self._file_search_stores
 
   @property
   def batches(self) -> Batches:
@@ -311,3 +597,50 @@ class Client:
   def vertexai(self) -> bool:
     """Returns whether the client is using the Vertex AI API."""
     return self._api_client.vertexai or False
+
+  def close(self) -> None:
+    """Closes the synchronous client explicitly.
+
+    However, it doesn't close the async client, which can be closed using the
+    Client.aio.aclose() method or using the async context manager.
+
+    Usage:
+    .. code-block:: python
+
+      from google.genai import Client
+
+      client = Client(
+          vertexai=True, project='my-project-id', location='us-central1'
+      )
+      response_1 = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      response_2 = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents='Hello World',
+      )
+      # Close the client to release resources.
+      client.close()
+    """
+    self._api_client.close()
+
+    if self._has_nextgen_client:
+      self._nextgen_client.close()
+
+  def __enter__(self) -> 'Client':
+    return self
+
+  def __exit__(
+      self,
+      exc_type: Optional[Exception],
+      exc_value: Optional[Exception],
+      traceback: Optional[TracebackType],
+  ) -> None:
+    self.close()
+
+  def __del__(self) -> None:
+    try:
+      self.close()
+    except Exception:
+      pass
