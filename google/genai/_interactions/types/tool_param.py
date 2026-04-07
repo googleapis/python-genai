@@ -34,6 +34,8 @@ __all__ = [
     "GoogleSearch",
     "FileSearch",
     "GoogleMaps",
+    "Retrieval",
+    "RetrievalVertexAISearchConfig",
 ]
 
 
@@ -84,7 +86,7 @@ class GoogleSearch(TypedDict, total=False):
 
     type: Required[Literal["google_search"]]
 
-    search_types: List[Literal["web_search", "image_search"]]
+    search_types: List[Literal["web_search", "image_search", "enterprise_web_search"]]
     """The types of search grounding to enable."""
 
 
@@ -121,6 +123,28 @@ class GoogleMaps(TypedDict, total=False):
     """The longitude of the user's location."""
 
 
+class RetrievalVertexAISearchConfig(TypedDict, total=False):
+    """Used to specify configuration for VertexAISearch."""
+
+    datastores: SequenceNotStr[str]
+    """Optional. Used to specify Vertex AI Search datastores."""
+
+    engine: str
+    """Optional. Used to specify Vertex AI Search engine."""
+
+
+class Retrieval(TypedDict, total=False):
+    """A tool that can be used by the model to retrieve files."""
+
+    type: Required[Literal["retrieval"]]
+
+    retrieval_types: List[Literal["vertex_ai_search"]]
+    """The types of file retrieval to enable."""
+
+    vertex_ai_search_config: RetrievalVertexAISearchConfig
+    """Used to specify configuration for VertexAISearch."""
+
+
 ToolParam: TypeAlias = Union[
-    FunctionParam, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch, GoogleMaps
+    FunctionParam, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch, GoogleMaps, Retrieval
 ]
