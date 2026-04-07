@@ -37,6 +37,44 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.models')
 
 
+def _filter_thought_parts(
+    return_value: 'types.GenerateContentResponse',
+    parameter_model: 'types._GenerateContentParameters',
+) -> 'types.GenerateContentResponse':
+  """Filters thought parts from response when include_thoughts is False.
+
+  When the Vertex AI API returns thought parts despite include_thoughts=False
+  being set in ThinkingConfig, this function performs client-side filtering
+  to suppress them. The part.thought flag is reliably set by the API, so
+  filtering on it is safe.
+
+  Args:
+    return_value: The GenerateContentResponse to filter.
+    parameter_model: The request parameters, used to read ThinkingConfig.
+
+  Returns:
+    The response with thought parts removed if include_thoughts=False,
+    otherwise the response unchanged.
+  """
+  config = parameter_model.config
+  if config is None:
+    return return_value
+  thinking_config = getattr(config, 'thinking_config', None)
+  if thinking_config is None:
+    return return_value
+  include_thoughts = getattr(thinking_config, 'include_thoughts', None)
+  if include_thoughts is not False:
+    return return_value
+  if not return_value.candidates:
+    return return_value
+  for candidate in return_value.candidates:
+    if candidate.content and candidate.content.parts:
+      candidate.content.parts = [
+          part for part in candidate.content.parts if not part.thought
+      ]
+  return return_value
+
+
 def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
   if enum_value in set(['ALLOW_ALL']):
     raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
@@ -4710,7 +4748,7 @@ class Models(_api_module.BaseModule):
         headers=response.headers
     )
     self._api_client._verify_response(return_value)
-    return return_value
+    return _filter_thought_parts(return_value, parameter_model)
 
   def _generate_content_stream(
       self,
@@ -4796,7 +4834,7 @@ class Models(_api_module.BaseModule):
           headers=response.headers
       )
       self._api_client._verify_response(return_value)
-      yield return_value
+      yield _filter_thought_parts(return_value, parameter_model)
 
   def _embed_content(
       self,
@@ -6669,7 +6707,7 @@ class AsyncModels(_api_module.BaseModule):
         headers=response.headers
     )
     self._api_client._verify_response(return_value)
-    return return_value
+    return _filter_thought_parts(return_value, parameter_model)
 
   async def _generate_content_stream(
       self,
@@ -6758,7 +6796,7 @@ class AsyncModels(_api_module.BaseModule):
             headers=response.headers
         )
         self._api_client._verify_response(return_value)
-        yield return_value
+        yield _filter_thought_parts(return_value, parameter_model)
 
     return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 
