@@ -74,3 +74,5 @@ def test_thinking_budget(client):
                     has_thought = True
                     break
     assert has_thought
+
+

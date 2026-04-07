@@ -8032,6 +8032,22 @@ class GenerateContentResponse(_common.BaseModel):
   ) -> T:
     result = super()._from_response(response=response, kwargs=kwargs)
 
+    # Filter out thought parts when include_thoughts=False.
+    # On Vertex AI, the API may return thought parts even when
+    # include_thoughts=False is set in ThinkingConfig. We enforce the
+    # filtering client-side here, consistent with the documented behavior.
+    include_thoughts = _common.get_value_by_path(
+        kwargs, ['config', 'thinking_config', 'include_thoughts']
+    )
+    if include_thoughts is False and result.candidates:
+      for candidate in result.candidates:
+        if candidate.content and candidate.content.parts:
+          candidate.content.parts = [
+              part
+              for part in candidate.content.parts
+              if not (isinstance(part.thought, bool) and part.thought)
+          ]
+
     # Handles response schema.
     response_schema = _common.get_value_by_path(
         kwargs, ['config', 'response_schema']
