@@ -39,7 +39,7 @@ class GoogleSearchCallContentParam(TypedDict, total=False):
 
     type: Required[Literal["google_search_call"]]
 
-    search_type: Literal["web_search", "image_search"]
+    search_type: Literal["web_search", "image_search", "enterprise_web_search"]
     """The type of search grounding enabled."""
 
     signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
