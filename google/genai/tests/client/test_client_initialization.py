@@ -1411,7 +1411,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_not_called()
-  assert mock_request.call_count == 10
+  assert len(mock_request.call_args_list) == 10
 
   # 2. Test credential refreshing in multiple threads
   mock_creds.expired = True
@@ -1427,7 +1427,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_called_once()
-  assert mock_request.call_count == 20
+  assert len(mock_request.call_args_list) == 20
 
 
 @pytest.mark.asyncio
