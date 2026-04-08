@@ -1507,7 +1507,7 @@ def _GenerateContentConfig_to_vertex(
     )
 
   if getv(from_object, ['service_tier']) is not None:
-    raise ValueError('service_tier parameter is not supported in Vertex AI.')
+    setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
 
   return to_object
 

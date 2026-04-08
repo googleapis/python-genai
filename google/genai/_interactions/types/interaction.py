@@ -125,14 +125,14 @@ class Interaction(BaseModel):
 
     response_format: Optional[object] = None
     """
-    Enforces that the generated response is a JSON object that complies with
-    the JSON schema specified in this field.
+    Enforces that the generated response is a JSON object that complies with the
+    JSON schema specified in this field.
     """
 
     response_mime_type: Optional[str] = None
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: Optional[List[Literal["text", "image", "audio"]]] = None
+    response_modalities: Optional[List[Literal["text", "image", "audio", "video", "document"]]] = None
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     role: Optional[str] = None
