@@ -17,6 +17,7 @@
 
 import json
 import logging
+import time
 from typing import Any, AsyncIterator, Awaitable, Iterator, Optional, Union
 from urllib.parse import urlencode
 
@@ -4629,6 +4630,86 @@ def _VoiceConfig_to_vertex(
   return to_object
 
 
+def _ensure_file_active(
+    api_client: BaseApiClient,
+    file_obj: types.File,
+    max_retries: int = 3,
+    retry_delay_seconds: int = 5,
+) -> types.File:
+  """Ensure a file object is in ACTIVE state before using it in content generation.
+
+  Args:
+    api_client: The API client to use for requests.
+    file_obj: The file object to check.
+    max_retries: Maximum number of retries for checking file state.
+    retry_delay_seconds: Delay between retries in seconds.
+
+  Returns:
+    The file object, refreshed if necessary.
+
+  Raises:
+    errors.FileProcessingError: If the file fails to become ACTIVE within the retry limit.
+  """
+  if hasattr(file_obj, 'name') and file_obj.name and hasattr(file_obj, 'state'):
+    if file_obj.state == types.FileState.PROCESSING:
+      logger.info(
+          f'File {file_obj.name} is in PROCESSING state. Waiting for it to become ACTIVE.'
+      )
+      for attempt in range(max_retries):
+        time.sleep(retry_delay_seconds)
+        try:
+          file_id = file_obj.name.split('/')[-1]
+          response = api_client.request('GET', f'files/{file_id}', {}, None)
+          response_dict = {} if not response.body else json.loads(response.body)
+          refreshed_file = types.File._from_response(
+              response=response_dict, kwargs={}
+          )
+          logger.info(f'File {file_obj.name} state: {refreshed_file.state}')
+          if refreshed_file.state == types.FileState.ACTIVE:
+            return refreshed_file
+          if refreshed_file.state == types.FileState.FAILED:
+            error_msg = 'File processing failed'
+            if hasattr(refreshed_file, 'error') and refreshed_file.error:
+              error_msg = f'{error_msg}: {refreshed_file.error.message}'
+            raise errors.FileProcessingError(error_msg)
+        except errors.FileProcessingError:
+          raise
+        except Exception as e:
+          logger.warning(f'Error refreshing file state: {e}')
+      logger.warning(
+          f'File {file_obj.name} did not become ACTIVE after {max_retries} attempts. '
+          'This may cause the content generation to fail.'
+      )
+  return file_obj
+
+
+def _process_contents_for_generation(
+    api_client: BaseApiClient,
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+) -> list[types.Content]:
+  """Process the contents, ensuring all File objects are in the ACTIVE state.
+
+  Args:
+    api_client: The API client to use for requests.
+    contents: The contents to process.
+
+  Returns:
+    The processed contents.
+  """
+  processed_contents = t.t_contents(contents)
+
+  def process_file_in_item(item: types.Content) -> types.Content:
+    if isinstance(item, types.Content):
+      if hasattr(item, 'parts') and item.parts:
+        for part in item.parts:
+          if hasattr(part, 'file_data') and part.file_data:
+            if isinstance(part.file_data, types.File):
+              part.file_data = _ensure_file_active(api_client, part.file_data)
+    return item
+
+  return [process_file_in_item(item) for item in processed_contents]
+
+
 class Models(_api_module.BaseModule):
 
   def _generate_content(
@@ -4638,9 +4719,10 @@ class Models(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> types.GenerateContentResponse:
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
@@ -4719,9 +4801,10 @@ class Models(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Iterator[types.GenerateContentResponse]:
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
@@ -6597,9 +6680,10 @@ class AsyncModels(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> types.GenerateContentResponse:
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
@@ -6678,9 +6762,10 @@ class AsyncModels(_api_module.BaseModule):
       contents: Union[types.ContentListUnion, types.ContentListUnionDict],
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Awaitable[AsyncIterator[types.GenerateContentResponse]]:
+    processed_contents = _process_contents_for_generation(self._api_client, contents)
     parameter_model = types._GenerateContentParameters(
         model=model,
-        contents=contents,
+        contents=processed_contents,
         config=config,
     )
 
