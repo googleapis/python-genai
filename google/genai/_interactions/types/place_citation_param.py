@@ -55,8 +55,8 @@ class PlaceCitationParam(TypedDict, total=False):
 
     review_snippets: Iterable[ReviewSnippet]
     """
-    Snippets of reviews that are used to generate answers about the
-    features of a given place in Google Maps.
+    Snippets of reviews that are used to generate answers about the features of a
+    given place in Google Maps.
     """
 
     start_index: int

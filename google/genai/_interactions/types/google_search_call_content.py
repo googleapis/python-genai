@@ -35,7 +35,7 @@ class GoogleSearchCallContent(BaseModel):
 
     type: Literal["google_search_call"]
 
-    search_type: Optional[Literal["web_search", "image_search"]] = None
+    search_type: Optional[Literal["web_search", "image_search", "enterprise_web_search"]] = None
     """The type of search grounding enabled."""
 
     signature: Optional[str] = None

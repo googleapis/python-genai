@@ -834,13 +834,13 @@ class ResourceScope(_common.CaseInSensitiveEnum):
 class ServiceTier(_common.CaseInSensitiveEnum):
   """Pricing and performance service tier."""
 
-  SERVICE_TIER_UNSPECIFIED = 'SERVICE_TIER_UNSPECIFIED'
+  UNSPECIFIED = 'unspecified'
   """Default service tier, which is standard."""
-  SERVICE_TIER_FLEX = 'SERVICE_TIER_FLEX'
+  FLEX = 'flex'
   """Flex service tier."""
-  SERVICE_TIER_STANDARD = 'SERVICE_TIER_STANDARD'
+  STANDARD = 'standard'
   """Standard service tier."""
-  SERVICE_TIER_PRIORITY = 'SERVICE_TIER_PRIORITY'
+  PRIORITY = 'priority'
   """Priority service tier."""
 
 
@@ -5952,7 +5952,7 @@ class GenerateContentConfig(_common.BaseModel):
   )
   service_tier: Optional[ServiceTier] = Field(
       default=None,
-      description="""The service tier to use for the request. For example, SERVICE_TIER_FLEX.""",
+      description="""The service tier to use for the request. For example, ServiceTier.FLEX.""",
   )
 
   @pydantic.field_validator('response_schema', mode='before')
@@ -6169,7 +6169,7 @@ class GenerateContentConfigDict(TypedDict, total=False):
       """
 
   service_tier: Optional[ServiceTier]
-  """The service tier to use for the request. For example, SERVICE_TIER_FLEX."""
+  """The service tier to use for the request. For example, ServiceTier.FLEX."""
 
 
 GenerateContentConfigOrDict = Union[

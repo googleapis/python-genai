@@ -48,8 +48,8 @@ class Place(TypedDict, total=False):
 
     review_snippets: Iterable[PlaceReviewSnippet]
     """
-    Snippets of reviews that are used to generate answers about the
-    features of a given place in Google Maps.
+    Snippets of reviews that are used to generate answers about the features of a
+    given place in Google Maps.
     """
 
     url: str
