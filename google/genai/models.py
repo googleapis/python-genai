@@ -5121,38 +5121,20 @@ class Models(_api_module.BaseModule):
   ) -> types.RecontextImageResponse:
     """Recontextualizes an image.
 
-    There are two types of recontextualization currently supported:
-    1) Imagen Product Recontext - Generate images of products in new scenes
-       and contexts.
-    2) Virtual Try-On: Generate images of persons modeling fashion products.
+    There is one type of recontextualization currently supported:
+    1) Virtual Try-On: Generate images of persons modeling fashion products.
 
     Args:
       model (str): The model to use.
       source (RecontextImageSource): An object containing the source inputs
         (prompt, person_image, product_images) for image recontext. prompt is
-        optional for product recontext and disallowed for virtual try-on.
-        person_image is required for virtual try-on, disallowed for product
-        recontext. product_images is required for both product recontext and
-        virtual try-on. Only one product image is supported for virtual try-on,
-        and up to 3 product images (different angles of the same product) are
-        supported for product recontext.
+        behind an allowlist. person_image is required. product_images is
+        required. Only one product image is supported currently.
       config (RecontextImageConfig): Configuration for recontextualization.
 
     Usage:
 
       ```
-      product_recontext_response = client.models.recontext_image(
-          model="imagen-product-recontext-preview-06-30",
-          source=types.RecontextImageSource(
-              prompt="In a modern kitchen setting.",
-              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
-          ),
-          config=types.RecontextImageConfig(
-              number_of_images=1,
-          ),
-      )
-      image = product_recontext_response.generated_images[0].image
-
       virtual_try_on_response = client.models.recontext_image(
           model="virtual-try-on-001",
           source=types.RecontextImageSource(
@@ -7085,39 +7067,21 @@ class AsyncModels(_api_module.BaseModule):
   ) -> types.RecontextImageResponse:
     """Recontextualizes an image.
 
-    There are two types of recontextualization currently supported:
-    1) Imagen Product Recontext - Generate images of products in new scenes
-       and contexts.
-    2) Virtual Try-On: Generate images of persons modeling fashion products.
+    There is one type of recontextualization currently supported:
+    1) Virtual Try-On: Generate images of persons modeling fashion products.
 
     Args:
       model (str): The model to use.
       source (RecontextImageSource): An object containing the source inputs
         (prompt, person_image, product_images) for image recontext. prompt is
-        optional for product recontext and disallowed for virtual try-on.
-        person_image is required for virtual try-on, disallowed for product
-        recontext. product_images is required for both product recontext and
-        virtual try-on. Only one product image is supported for virtual try-on,
-        and up to 3 product images (different angles of the same product) are
-        supported for product recontext.
+        behind an allowlist. person_image is required. product_images is
+        required. Only one product image is supported currently.
       config (RecontextImageConfig): Configuration for recontextualization.
 
     Usage:
 
       ```
-      product_recontext_response = client.models.recontext_image(
-          model="imagen-product-recontext-preview-06-30",
-          source=types.RecontextImageSource(
-              prompt="In a modern kitchen setting.",
-              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
-          ),
-          config=types.RecontextImageConfig(
-              number_of_images=1,
-          ),
-      )
-      image = product_recontext_response.generated_images[0].image
-
-      virtual_try_on_response = client.models.recontext_image(
+      virtual_try_on_response = await client.aio.models.recontext_image(
           model="virtual-try-on-001",
           source=types.RecontextImageSource(
               person_image=types.Image.from_file(IMAGE1_FILE_PATH),
