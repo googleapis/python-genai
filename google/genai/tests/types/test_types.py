@@ -2687,6 +2687,30 @@ def test_function_with_option_vertex(monkeypatch):
   assert actual_schema_vertex == expected_schema_vertex
 
 
+def test_convert_json_schema_with_cycle():
+  json_schema_dict = {
+      'type': 'object',
+      'properties': {
+          'foo': {'$ref': '#/$defs/Foo'}
+      },
+      '$defs': {
+          'Foo': {
+              'type': 'object',
+              'properties': {
+                  'foo': {'$ref': '#/$defs/Foo'}
+              }
+          }
+      }
+  }
+
+  json_schema = types.JSONSchema(**json_schema_dict)
+  schema = types.Schema.from_json_schema(json_schema=json_schema)
+
+  assert schema.type == types.Type.OBJECT
+  assert schema.properties['foo'].type == types.Type.OBJECT
+  assert schema.properties['foo'].properties['foo'] == types.Schema()
+
+
 def test_case_insensitive_enum():
   assert types.Type('STRING') == types.Type.STRING
   assert types.Type('string') == types.Type.STRING

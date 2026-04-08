@@ -665,6 +665,7 @@ def process_schema(
     defs: Optional[_common.StringDict] = None,
     *,
     order_properties: bool = True,
+    visited_dicts_path: Optional[set[int]] = None,
 ) -> None:
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
@@ -726,6 +727,13 @@ def process_schema(
         'type': 'array'
     }
   """
+  if visited_dicts_path is None:
+    visited_dicts_path = set()
+
+  if id(schema) in visited_dicts_path:
+    return
+  visited_dicts_path.add(id(schema))
+
   if schema.get('title') == 'PlaceholderLiteralEnum':
     del schema['title']
 
@@ -750,7 +758,11 @@ def process_schema(
       # directly referencing another '$ref':
       # https://json-schema.org/understanding-json-schema/structuring#recursion
       process_schema(
-          sub_schema, client, defs, order_properties=order_properties
+          sub_schema,
+          client,
+          defs,
+          order_properties=order_properties,
+          visited_dicts_path=visited_dicts_path,
       )
 
   handle_null_fields(schema)
@@ -765,11 +777,21 @@ def process_schema(
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
       sub_schema = defs[ref.split('defs/')[-1]]
-    process_schema(sub_schema, client, defs, order_properties=order_properties)
+      if id(sub_schema) in visited_dicts_path:
+        return {}
+
+    process_schema(
+        sub_schema,
+        client,
+        defs,
+        order_properties=order_properties,
+        visited_dicts_path=visited_dicts_path,
+    )
     return sub_schema
 
   if (any_of := schema.get('anyOf')) is not None:
     schema['anyOf'] = [_recurse(sub_schema) for sub_schema in any_of]
+    visited_dicts_path.remove(id(schema))
     return
 
   schema_type = schema.get('type')
@@ -809,6 +831,7 @@ def process_schema(
     if (prefixes := schema.get('prefixItems')) is not None:
       schema['prefixItems'] = [_recurse(prefix) for prefix in prefixes]
 
+  visited_dicts_path.remove(id(schema))
 
 def _process_enum(
     enum: EnumMeta, client: Optional[_api_client.BaseApiClient]

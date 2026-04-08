@@ -2911,14 +2911,20 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
         root_json_schema_dict: dict[str, Any],
         api_option: Literal['VERTEX_AI', 'GEMINI_API'],
         raise_error_on_unsupported_field: bool,
+        visited_refs: Optional[set[str]] = None,
     ) -> 'Schema':
+      if visited_refs is None:
+        visited_refs = set()
+
       schema = Schema()
       json_schema_dict = current_json_schema.model_dump()
 
-      if json_schema_dict.get('ref'):
-        json_schema_dict = _resolve_ref(
-            json_schema_dict['ref'], root_json_schema_dict
-        )
+      ref = json_schema_dict.get('ref')
+      if ref:
+        if ref in visited_refs:
+          return Schema()
+        visited_refs.add(ref)
+        json_schema_dict = _resolve_ref(ref, root_json_schema_dict)
 
       raise_error_if_cannot_convert(
           json_schema_dict=json_schema_dict,
@@ -2985,6 +2991,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
               root_json_schema_dict=root_json_schema_dict,
               api_option=api_option,
               raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              visited_refs=visited_refs,
           )
           setattr(schema, field_name, schema_field_value)
         elif field_name in list_schema_field_names:
@@ -2994,6 +3001,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
                   root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+                  visited_refs=visited_refs,
               )
               for this_field_value in field_value
           ]
@@ -3007,6 +3015,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
                   root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+                  visited_refs=visited_refs,
               )
               for key, value in field_value.items()
           }
@@ -3051,6 +3060,8 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
           if default_value is not None:
             schema.default = default_value
 
+      if ref:
+        visited_refs.remove(ref)
       return schema
 
     # This is the initial call to the recursive function.
