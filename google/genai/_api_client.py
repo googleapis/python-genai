@@ -2100,7 +2100,7 @@ class BaseApiClient:
     if http_options and not http_options.httpx_async_client and getattr(self, '_async_httpx_client', None):
       await self._async_httpx_client.aclose()  # type: ignore[union-attr]
     if getattr(self, '_aiohttp_session', None) and http_options and not http_options.aiohttp_client:
-      await self._aiohttp_session.close()
+      await self._aiohttp_session.close()  # type: ignore[union-attr] 
 
   def __del__(self) -> None:
     """Closes the API client when the object is garbage collected.
