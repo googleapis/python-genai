@@ -1905,9 +1905,7 @@ class Batches(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
+    self._api_client.request('post', path, request_dict, http_options)
 
   def _list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
@@ -2527,7 +2525,7 @@ class AsyncBatches(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = await self._api_client.async_request(
+    await self._api_client.async_request(
         'post', path, request_dict, http_options
     )
 

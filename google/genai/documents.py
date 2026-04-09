@@ -254,9 +254,7 @@ class Documents(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = self._api_client.request(
-        'delete', path, request_dict, http_options
-    )
+    self._api_client.request('delete', path, request_dict, http_options)
 
   def _list(
       self,
@@ -486,7 +484,7 @@ class AsyncDocuments(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = await self._api_client.async_request(
+    await self._api_client.async_request(
         'delete', path, request_dict, http_options
     )
 
