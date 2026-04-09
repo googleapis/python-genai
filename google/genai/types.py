@@ -564,6 +564,8 @@ class Modality(_common.CaseInSensitiveEnum):
   """Indicates the model should return images."""
   AUDIO = 'AUDIO'
   """Indicates the model should return audio."""
+  VIDEO = 'VIDEO'
+  """Indicates the model should return video."""
 
 
 class ModelStage(_common.CaseInSensitiveEnum):
@@ -1044,6 +1046,60 @@ class TurnCompleteReason(_common.CaseInSensitiveEnum):
   """The response is rejected by the model."""
   NEED_MORE_INPUT = 'NEED_MORE_INPUT'
   """Needs more input from the user."""
+  PROHIBITED_INPUT_CONTENT = 'PROHIBITED_INPUT_CONTENT'
+  """Input content is prohibited."""
+  IMAGE_PROHIBITED_INPUT_CONTENT = 'IMAGE_PROHIBITED_INPUT_CONTENT'
+  """Input image contains prohibited content."""
+  INPUT_TEXT_CONTAIN_PROMINENT_PERSON_PROHIBITED = (
+      'INPUT_TEXT_CONTAIN_PROMINENT_PERSON_PROHIBITED'
+  )
+  """Input text contains prominent person reference."""
+  INPUT_IMAGE_CELEBRITY = 'INPUT_IMAGE_CELEBRITY'
+  """Input image contains celebrity."""
+  INPUT_IMAGE_PHOTO_REALISTIC_CHILD_PROHIBITED = (
+      'INPUT_IMAGE_PHOTO_REALISTIC_CHILD_PROHIBITED'
+  )
+  """Input image contains photo realistic child."""
+  INPUT_TEXT_NCII_PROHIBITED = 'INPUT_TEXT_NCII_PROHIBITED'
+  """Input text contains NCII content."""
+  INPUT_OTHER = 'INPUT_OTHER'
+  """Other input safety issue."""
+  INPUT_IP_PROHIBITED = 'INPUT_IP_PROHIBITED'
+  """Input contains IP violation."""
+  BLOCKLIST = 'BLOCKLIST'
+  """Input matched blocklist."""
+  UNSAFE_PROMPT_FOR_IMAGE_GENERATION = 'UNSAFE_PROMPT_FOR_IMAGE_GENERATION'
+  """Input is unsafe for image generation."""
+  GENERATED_IMAGE_SAFETY = 'GENERATED_IMAGE_SAFETY'
+  """Generated image failed safety check."""
+  GENERATED_CONTENT_SAFETY = 'GENERATED_CONTENT_SAFETY'
+  """Generated content failed safety check."""
+  GENERATED_AUDIO_SAFETY = 'GENERATED_AUDIO_SAFETY'
+  """Generated audio failed safety check."""
+  GENERATED_VIDEO_SAFETY = 'GENERATED_VIDEO_SAFETY'
+  """Generated video failed safety check."""
+  GENERATED_CONTENT_PROHIBITED = 'GENERATED_CONTENT_PROHIBITED'
+  """Generated content is prohibited."""
+  GENERATED_CONTENT_BLOCKLIST = 'GENERATED_CONTENT_BLOCKLIST'
+  """Generated content matched blocklist."""
+  GENERATED_IMAGE_PROHIBITED = 'GENERATED_IMAGE_PROHIBITED'
+  """Generated image is prohibited."""
+  GENERATED_IMAGE_CELEBRITY = 'GENERATED_IMAGE_CELEBRITY'
+  """Generated image contains celebrity."""
+  GENERATED_IMAGE_PROMINENT_PEOPLE_DETECTED_BY_REWRITER = (
+      'GENERATED_IMAGE_PROMINENT_PEOPLE_DETECTED_BY_REWRITER'
+  )
+  """Generated image contains prominent people detected by rewriter."""
+  GENERATED_IMAGE_IDENTIFIABLE_PEOPLE = 'GENERATED_IMAGE_IDENTIFIABLE_PEOPLE'
+  """Generated image contains identifiable people."""
+  GENERATED_IMAGE_MINORS = 'GENERATED_IMAGE_MINORS'
+  """Generated image contains minors."""
+  OUTPUT_IMAGE_IP_PROHIBITED = 'OUTPUT_IMAGE_IP_PROHIBITED'
+  """Generated image contains IP violation."""
+  GENERATED_OTHER = 'GENERATED_OTHER'
+  """Other generated content issue."""
+  MAX_REGENERATION_REACHED = 'MAX_REGENERATION_REACHED'
+  """Max regeneration attempts reached."""
 
 
 class MediaModality(_common.CaseInSensitiveEnum):
@@ -18637,6 +18693,71 @@ class HistoryConfigDict(TypedDict, total=False):
 HistoryConfigOrDict = Union[HistoryConfig, HistoryConfigDict]
 
 
+class CustomizedAvatar(_common.BaseModel):
+  """Configures the customized avatar to be used in the session."""
+
+  image_mime_type: Optional[str] = Field(
+      default=None,
+      description="""The mime type of the reference image, e.g., "image/jpeg".""",
+  )
+  image_data: Optional[bytes] = Field(
+      default=None,
+      description="""The data of the reference image. The dimensions of the reference
+      image should be 9:16 (portrait) with a minimum resolution of 704x1280.""",
+  )
+
+
+class CustomizedAvatarDict(TypedDict, total=False):
+  """Configures the customized avatar to be used in the session."""
+
+  image_mime_type: Optional[str]
+  """The mime type of the reference image, e.g., "image/jpeg"."""
+
+  image_data: Optional[bytes]
+  """The data of the reference image. The dimensions of the reference
+      image should be 9:16 (portrait) with a minimum resolution of 704x1280."""
+
+
+CustomizedAvatarOrDict = Union[CustomizedAvatar, CustomizedAvatarDict]
+
+
+class AvatarConfig(_common.BaseModel):
+  """Configures the avatar to be used in the session."""
+
+  avatar_name: Optional[str] = Field(
+      default=None, description="""Pre-built avatar id."""
+  )
+  customized_avatar: Optional[CustomizedAvatar] = Field(
+      default=None,
+      description="""Customized avatar appearance with a reference image.""",
+  )
+  audio_bitrate_bps: Optional[int] = Field(
+      default=None, description="""The bitrate of compressed audio."""
+  )
+  video_bitrate_bps: Optional[int] = Field(
+      default=None, description="""The bitrate of compressed video output."""
+  )
+
+
+class AvatarConfigDict(TypedDict, total=False):
+  """Configures the avatar to be used in the session."""
+
+  avatar_name: Optional[str]
+  """Pre-built avatar id."""
+
+  customized_avatar: Optional[CustomizedAvatarDict]
+  """Customized avatar appearance with a reference image."""
+
+  audio_bitrate_bps: Optional[int]
+  """The bitrate of compressed audio."""
+
+  video_bitrate_bps: Optional[int]
+  """The bitrate of compressed video output."""
+
+
+AvatarConfigOrDict = Union[AvatarConfig, AvatarConfigDict]
+
+
 class LiveClientSetup(_common.BaseModel):
   """Message contains configuration that will apply for the duration of the streaming session."""
 
@@ -18705,6 +18826,15 @@ class LiveClientSetup(_common.BaseModel):
       default=None,
       description="""Configures the exchange of history between the client and the server.""",
   )
+  avatar_config: Optional[AvatarConfig] = Field(
+      default=None, description="""Configures the avatar model behavior."""
+  )
+  safety_settings: Optional[list[SafetySetting]] = Field(
+      default=None,
+      description="""Safety settings in the request to block unsafe content in the
+      response.
+      """,
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -18763,6 +18893,14 @@ class LiveClientSetupDict(TypedDict, total=False):
 
   history_config: Optional[HistoryConfigDict]
   """Configures the exchange of history between the client and the server."""
+
+  avatar_config: Optional[AvatarConfigDict]
+  """Configures the avatar model behavior."""
+
+  safety_settings: Optional[list[SafetySettingDict]]
+  """Safety settings in the request to block unsafe content in the
+      response.
+      """
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -19262,6 +19400,15 @@ If included the server will send SessionResumptionUpdate messages.""",
       default=None,
       description="""Configures the exchange of history between the client and the server.""",
   )
+  avatar_config: Optional[AvatarConfig] = Field(
+      default=None, description="""Configures the avatar model behavior."""
+  )
+  safety_settings: Optional[list[SafetySetting]] = Field(
+      default=None,
+      description="""Safety settings in the request to block unsafe content in the
+      response.
+      """,
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -19371,6 +19518,14 @@ If included the server will send SessionResumptionUpdate messages."""
 
   history_config: Optional[HistoryConfigDict]
   """Configures the exchange of history between the client and the server."""
+
+  avatar_config: Optional[AvatarConfigDict]
+  """Configures the avatar model behavior."""
+
+  safety_settings: Optional[list[SafetySettingDict]]
+  """Safety settings in the request to block unsafe content in the
+      response.
+      """
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
