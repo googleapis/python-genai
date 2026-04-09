@@ -6071,9 +6071,8 @@ class Models(_api_module.BaseModule):
           },
       )
 
-      # Multimodal embeddings are only supported for the Vertex AI API.
       multimodal_embeddings = client.models.embed_content(
-          model='gemini-embedding-2-exp-11-2025',
+          model='gemini-embedding-2-preview',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -6086,6 +6085,8 @@ class Models(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
+      if 'gemini-embedding-2' in model:
+        contents = t.t_contents(contents)  # type: ignore[assignment]
       return self._embed_content(model=model, contents=contents, config=config)
 
     if t.t_is_vertex_embed_content_model(model):
@@ -8922,9 +8923,8 @@ class AsyncModels(_api_module.BaseModule):
           },
       )
 
-      # Multimodal embeddings are only supported for the Vertex AI API.
       multimodal_embeddings = await client.aio.models.embed_content(
-          model='gemini-embedding-2-exp-11-2025',
+          model='gemini-embedding-2-preview',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -8937,6 +8937,8 @@ class AsyncModels(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
+      if 'gemini-embedding-2' in model:
+        contents = t.t_contents(contents)  # type: ignore[assignment]
       return await self._embed_content(
           model=model, contents=contents, config=config
       )

@@ -94,16 +94,14 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='parameter is not supported',
     ),
     pytest_helper.TestTableItem(
-        name='test_vertex_new_api_text_only',
+        name='test_new_api_text_only',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-exp-11-2025',
+            model='gemini-embedding-2-preview',
             contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 100,
             },
         ),
-        # Model not exposed on MLDev.
-        exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
         name='test_vertex_new_api_maas',
@@ -120,9 +118,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
-        name='test_vertex_new_api_gcs_image_and_config',
+        name='test_new_api_gcs_image_and_config',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-exp-11-2025',
+            model='gemini-embedding-2-preview',
             contents=[
                 types.Content(
                     parts=[
@@ -145,13 +143,11 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        # Model not exposed on MLDev.
-        exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
-        name='test_vertex_new_api_inline_pdf',
+        name='test_new_api_inline_pdf',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-exp-11-2025',
+            model='gemini-embedding-2-preview',
             contents=[
                 types.Content(
                     parts=[
@@ -166,8 +162,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'output_dimensionality': 100,
             },
         ),
-        # Model not exposed on MLDev.
-        exception_if_mldev='404',
     ),
     pytest_helper.TestTableItem(
         name='test_vertex_new_api_list_of_contents_error',
@@ -191,6 +185,28 @@ pytestmark = pytest_helper.setup(
 )
 
 
+def test_gemini_embedding_2_content_combination(client):
+  response = client.models.embed_content(
+      model='gemini-embedding-2-preview',
+      contents=[
+          'The jetpack is cool',
+          types.Part.from_bytes(
+              data=_get_bytes_from_file('../data/checkerboard.png'),
+              mime_type='image/png',
+          ),
+          types.Part.from_uri(
+              file_uri='gs://generativeai-downloads/images/scones.jpg',
+              mime_type='image/jpeg',
+          ),
+      ],
+      config={'output_dimensionality': 100},
+  )
+  # assert has one total embedding
+  assert response.embeddings is not None
+  assert len(response.embeddings) == 1
+  assert len(response.embeddings[0].values) == 100
+
+
 @pytest.mark.asyncio
 async def test_async(client):
   response = await client.aio.models.embed_content(
@@ -203,10 +219,8 @@ async def test_async(client):
 
 @pytest.mark.asyncio
 async def test_async_new_api(client):
-  if not client.vertexai:
-    return
   response = await client.aio.models.embed_content(
-      model='gemini-embedding-2-exp-11-2025',
+      model='gemini-embedding-2-preview',
       contents=t.t_contents('What is your name?'),
       config={'output_dimensionality': 10},
   )
