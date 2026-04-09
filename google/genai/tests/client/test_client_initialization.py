@@ -532,6 +532,22 @@ def test_vertexai_location_us_routing(monkeypatch):
     )
 
 
+def test_vertexai_location_eu_routing(monkeypatch):
+  # Verify that location='eu' correctly routes to the eu.rep endpoint
+  project_id = "fake_project_id"
+  location = "eu"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://aiplatform.eu.rep.googleapis.com/"
+    )
+
+
 def test_vertexai_location_us_routing_base_url_override(monkeypatch):
   # Verify that base_url override takes precedence over location='us' routing
   project_id = "fake_project_id"

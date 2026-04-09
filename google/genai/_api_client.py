@@ -91,6 +91,8 @@ MAX_RETRY_COUNT = 3
 INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
 
+_MULTI_REGIONAL_LOCATIONS = {'us', 'eu'}
+
 
 class EphemeralTokenAPIKeyError(ValueError):
   """Error raised when the API key is invalid."""
@@ -702,7 +704,10 @@ class BaseApiClient:
           self.api_key or self.location == 'global'
       ) and not self.custom_base_url:
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
-      elif self.location == 'us' and not self.custom_base_url:
+      elif (
+          self.location in _MULTI_REGIONAL_LOCATIONS
+          and not self.custom_base_url
+      ):
         self._http_options.base_url = (
             f'https://aiplatform.{self.location}.rep.googleapis.com/'
         )
