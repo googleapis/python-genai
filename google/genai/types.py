@@ -18637,95 +18637,6 @@ class HistoryConfigDict(TypedDict, total=False):
 HistoryConfigOrDict = Union[HistoryConfig, HistoryConfigDict]
 
 
-class AutomaticActivityDetection(_common.BaseModel):
-  """Configures automatic detection of activity."""
-
-  disabled: Optional[bool] = Field(
-      default=None,
-      description="""If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
-  )
-  start_of_speech_sensitivity: Optional[StartSensitivity] = Field(
-      default=None,
-      description="""Determines how likely speech is to be detected.""",
-  )
-  end_of_speech_sensitivity: Optional[EndSensitivity] = Field(
-      default=None,
-      description="""Determines how likely detected speech is ended.""",
-  )
-  prefix_padding_ms: Optional[int] = Field(
-      default=None,
-      description="""The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives.""",
-  )
-  silence_duration_ms: Optional[int] = Field(
-      default=None,
-      description="""The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
-  )
-
-
-class AutomaticActivityDetectionDict(TypedDict, total=False):
-  """Configures automatic detection of activity."""
-
-  disabled: Optional[bool]
-  """If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
-
-  start_of_speech_sensitivity: Optional[StartSensitivity]
-  """Determines how likely speech is to be detected."""
-
-  end_of_speech_sensitivity: Optional[EndSensitivity]
-  """Determines how likely detected speech is ended."""
-
-  prefix_padding_ms: Optional[int]
-  """The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives."""
-
-  silence_duration_ms: Optional[int]
-  """The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
-
-
-AutomaticActivityDetectionOrDict = Union[
-    AutomaticActivityDetection, AutomaticActivityDetectionDict
-]
-
-
-class RealtimeInputConfig(_common.BaseModel):
-  """Marks the end of user activity.
-
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
-  """
-
-  automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
-      default=None,
-      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
-  )
-  activity_handling: Optional[ActivityHandling] = Field(
-      default=None, description="""Defines what effect activity has."""
-  )
-  turn_coverage: Optional[TurnCoverage] = Field(
-      default=None,
-      description="""Defines which input is included in the user's turn.""",
-  )
-
-
-class RealtimeInputConfigDict(TypedDict, total=False):
-  """Marks the end of user activity.
-
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
-  """
-
-  automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
-  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
-
-  activity_handling: Optional[ActivityHandling]
-  """Defines what effect activity has."""
-
-  turn_coverage: Optional[TurnCoverage]
-  """Defines which input is included in the user's turn."""
-
-
-RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
-
-
 class LiveClientSetup(_common.BaseModel):
   """Message contains configuration that will apply for the duration of the streaming session."""
 
@@ -19094,91 +19005,6 @@ LiveClientToolResponseOrDict = Union[
 ]
 
 
-if _is_pillow_image_imported:
-  BlobImageUnion = Union[PIL_Image, Blob]
-else:
-  BlobImageUnion = Blob  # type: ignore[misc]
-
-
-if _is_pillow_image_imported:
-  BlobImageUnionDict = Union[PIL_Image, Blob, BlobDict]
-else:
-  BlobImageUnionDict = Union[Blob, BlobDict]  # type: ignore[misc]
-
-
-class LiveSendRealtimeInputParameters(_common.BaseModel):
-  """Parameters for sending realtime input to the live API."""
-
-  media: Optional[BlobImageUnion] = Field(
-      default=None, description="""Realtime input to send to the session."""
-  )
-  audio: Optional[Blob] = Field(
-      default=None, description="""The realtime audio input stream."""
-  )
-  audio_stream_end: Optional[bool] = Field(
-      default=None,
-      description="""
-Indicates that the audio stream has ended, e.g. because the microphone was
-turned off.
-
-This should only be sent when automatic activity detection is enabled
-(which is the default).
-
-The client can reopen the stream by sending an audio message.
-""",
-  )
-  video: Optional[BlobImageUnion] = Field(
-      default=None, description="""The realtime video input stream."""
-  )
-  text: Optional[str] = Field(
-      default=None, description="""The realtime text input stream."""
-  )
-  activity_start: Optional[ActivityStart] = Field(
-      default=None, description="""Marks the start of user activity."""
-  )
-  activity_end: Optional[ActivityEnd] = Field(
-      default=None, description="""Marks the end of user activity."""
-  )
-
-
-class LiveSendRealtimeInputParametersDict(TypedDict, total=False):
-  """Parameters for sending realtime input to the live API."""
-
-  media: Optional[BlobImageUnionDict]
-  """Realtime input to send to the session."""
-
-  audio: Optional[BlobDict]
-  """The realtime audio input stream."""
-
-  audio_stream_end: Optional[bool]
-  """
-Indicates that the audio stream has ended, e.g. because the microphone was
-turned off.
-
-This should only be sent when automatic activity detection is enabled
-(which is the default).
-
-The client can reopen the stream by sending an audio message.
-"""
-
-  video: Optional[BlobImageUnionDict]
-  """The realtime video input stream."""
-
-  text: Optional[str]
-  """The realtime text input stream."""
-
-  activity_start: Optional[ActivityStartDict]
-  """Marks the start of user activity."""
-
-  activity_end: Optional[ActivityEndDict]
-  """Marks the end of user activity."""
-
-
-LiveSendRealtimeInputParametersOrDict = Union[
-    LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
-]
-
-
 class LiveClientMessage(_common.BaseModel):
   """Messages sent by the client in the API call."""
 
@@ -19216,6 +19042,95 @@ class LiveClientMessageDict(TypedDict, total=False):
 
 
 LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
+
+
+class AutomaticActivityDetection(_common.BaseModel):
+  """Configures automatic detection of activity."""
+
+  disabled: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
+  )
+  start_of_speech_sensitivity: Optional[StartSensitivity] = Field(
+      default=None,
+      description="""Determines how likely speech is to be detected.""",
+  )
+  end_of_speech_sensitivity: Optional[EndSensitivity] = Field(
+      default=None,
+      description="""Determines how likely detected speech is ended.""",
+  )
+  prefix_padding_ms: Optional[int] = Field(
+      default=None,
+      description="""The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives.""",
+  )
+  silence_duration_ms: Optional[int] = Field(
+      default=None,
+      description="""The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
+  )
+
+
+class AutomaticActivityDetectionDict(TypedDict, total=False):
+  """Configures automatic detection of activity."""
+
+  disabled: Optional[bool]
+  """If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
+
+  start_of_speech_sensitivity: Optional[StartSensitivity]
+  """Determines how likely speech is to be detected."""
+
+  end_of_speech_sensitivity: Optional[EndSensitivity]
+  """Determines how likely detected speech is ended."""
+
+  prefix_padding_ms: Optional[int]
+  """The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives."""
+
+  silence_duration_ms: Optional[int]
+  """The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
+
+
+AutomaticActivityDetectionOrDict = Union[
+    AutomaticActivityDetection, AutomaticActivityDetectionDict
+]
+
+
+class RealtimeInputConfig(_common.BaseModel):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
+      default=None,
+      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
+  )
+  activity_handling: Optional[ActivityHandling] = Field(
+      default=None, description="""Defines what effect activity has."""
+  )
+  turn_coverage: Optional[TurnCoverage] = Field(
+      default=None,
+      description="""Defines which input is included in the user's turn.""",
+  )
+
+
+class RealtimeInputConfigDict(TypedDict, total=False):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
+  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
+
+  activity_handling: Optional[ActivityHandling]
+  """Defines what effect activity has."""
+
+  turn_coverage: Optional[TurnCoverage]
+  """Defines which input is included in the user's turn."""
+
+
+RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
 
 
 class LiveConnectConfig(_common.BaseModel):
@@ -19490,6 +19405,91 @@ class LiveConnectParametersDict(TypedDict, total=False):
 
 LiveConnectParametersOrDict = Union[
     LiveConnectParameters, LiveConnectParametersDict
+]
+
+
+if _is_pillow_image_imported:
+  BlobImageUnion = Union[PIL_Image, Blob]
+else:
+  BlobImageUnion = Blob  # type: ignore[misc]
+
+
+if _is_pillow_image_imported:
+  BlobImageUnionDict = Union[PIL_Image, Blob, BlobDict]
+else:
+  BlobImageUnionDict = Union[Blob, BlobDict]  # type: ignore[misc]
+
+
+class LiveSendRealtimeInputParameters(_common.BaseModel):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnion] = Field(
+      default=None, description="""Realtime input to send to the session."""
+  )
+  audio: Optional[Blob] = Field(
+      default=None, description="""The realtime audio input stream."""
+  )
+  audio_stream_end: Optional[bool] = Field(
+      default=None,
+      description="""
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[BlobImageUnion] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
+
+
+class LiveSendRealtimeInputParametersDict(TypedDict, total=False):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnionDict]
+  """Realtime input to send to the session."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobImageUnionDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
+
+
+LiveSendRealtimeInputParametersOrDict = Union[
+    LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
 ]
 
 
