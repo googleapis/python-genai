@@ -48,6 +48,9 @@ class AudioContentParam(TypedDict, total=False):
         "audio/mpeg",
         "audio/m4a",
         "audio/l16",
+        "audio/opus",
+        "audio/alaw",
+        "audio/mulaw",
     ]
     """The mime type of the audio."""
 
