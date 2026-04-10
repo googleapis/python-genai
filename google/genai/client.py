@@ -47,6 +47,7 @@ from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, Gem
 from . import _interactions
 
 from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
+from ._interactions.resources import WebhooksResource, AsyncWebhooksResource
 _interactions_experimental_warned = False
 
 class AsyncGeminiNextGenAPIClientAdapter(_interactions.AsyncGeminiNextGenAPIClientAdapter):
@@ -198,6 +199,10 @@ class AsyncClient:
           stacklevel=1,
       )
     return self._nextgen_client.interactions
+
+  @property
+  def webhooks(self) -> AsyncWebhooksResource:
+    return self._nextgen_client.webhooks
 
   @property
   def _has_nextgen_client(self) -> bool:
@@ -545,6 +550,10 @@ class Client:
         stacklevel=2,
       )
     return self._nextgen_client.interactions
+
+  @property
+  def webhooks(self) -> WebhooksResource:
+    return self._nextgen_client.webhooks
 
   @property
   def _has_nextgen_client(self) -> bool:
