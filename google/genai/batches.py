@@ -31,7 +31,6 @@ from ._common import move_value_by_path as movev
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.batches')
 
 

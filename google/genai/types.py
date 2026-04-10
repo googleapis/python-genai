@@ -37,7 +37,6 @@ from ._operations_converters import (
     _UploadToFileSearchStoreOperation_from_mldev,
 )
 
-
 if sys.version_info >= (3, 10):
   # Supports both Union[t1, t2] and t1 | t2
   VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
