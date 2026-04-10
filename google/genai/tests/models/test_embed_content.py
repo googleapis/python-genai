@@ -78,7 +78,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_vertex_new_api_text_only_with_config',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-exp-11-2025',
+            model='gemini-embedding-2-preview',
             contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 10,
@@ -174,6 +174,48 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_vertex='supports',
         exception_if_mldev='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_vertex_inline_pdf_document_ocr',
+        parameters=types.EmbedContentParameters(
+            model='gemini-embedding-2-preview',
+            contents=[
+                types.Content(
+                    parts=[
+                        types.Part.from_bytes(
+                            data=_get_bytes_from_file('../data/story.pdf'),
+                            mime_type='application/pdf',
+                        ),
+                    ],
+                )
+            ],
+            config={
+                'output_dimensionality': 100,
+                'document_ocr': True,
+            },
+        ),
+        exception_if_mldev='not supported in Gemini API',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_vertex_inline_video_audio_track_extraction',
+        parameters=types.EmbedContentParameters(
+            model='gemini-embedding-2-preview',
+            contents=[
+                types.Content(
+                    parts=[
+                        types.Part.from_bytes(
+                            data=_get_bytes_from_file('../data/animal.mp4'),
+                            mime_type='video/mp4',
+                        ),
+                    ],
+                )
+            ],
+            config={
+                'output_dimensionality': 100,
+                'audio_track_extraction': True,
+            },
+        ),
+        exception_if_mldev='not supported in Gemini API',
     ),
 ]
 

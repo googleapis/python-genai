@@ -789,6 +789,14 @@ def _EmbedContentConfig_to_mldev(
   if getv(from_object, ['auto_truncate']) is not None:
     raise ValueError('auto_truncate parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['document_ocr']) is not None:
+    raise ValueError('document_ocr parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['audio_track_extraction']) is not None:
+    raise ValueError(
+        'audio_track_extraction parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 

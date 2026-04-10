@@ -8277,6 +8277,18 @@ class EmbedContentConfig(_common.BaseModel):
       will lead to an INVALID_ARGUMENT error, similar to other text APIs.
       """,
   )
+  document_ocr: Optional[bool] = Field(
+      default=None,
+      description="""Vertex API only. Whether to enable OCR for document content.
+      Only applicable to Gemini Embedding 2 models.
+      """,
+  )
+  audio_track_extraction: Optional[bool] = Field(
+      default=None,
+      description="""Vertex API only. Whether to extract audio from video content.
+      Only applicable to Gemini Embedding 2 models.
+      """,
+  )
 
 
 class EmbedContentConfigDict(TypedDict, total=False):
@@ -8309,6 +8321,16 @@ class EmbedContentConfigDict(TypedDict, total=False):
   """Vertex API only. Whether to silently truncate inputs longer than
       the max sequence length. If this option is set to false, oversized inputs
       will lead to an INVALID_ARGUMENT error, similar to other text APIs.
+      """
+
+  document_ocr: Optional[bool]
+  """Vertex API only. Whether to enable OCR for document content.
+      Only applicable to Gemini Embedding 2 models.
+      """
+
+  audio_track_extraction: Optional[bool]
+  """Vertex API only. Whether to extract audio from video content.
+      Only applicable to Gemini Embedding 2 models.
       """
 
 
