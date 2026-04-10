@@ -2533,6 +2533,20 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AutoraterConfigDict.sampling_count"><code class="docutils literal notranslate"><span class="pre">AutoraterConfigDict.sampling_count</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AvatarConfig"><code class="docutils literal notranslate"><span class="pre">AvatarConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfig.audio_bitrate_bps"><code class="docutils literal notranslate"><span class="pre">AvatarConfig.audio_bitrate_bps</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfig.avatar_name"><code class="docutils literal notranslate"><span class="pre">AvatarConfig.avatar_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfig.customized_avatar"><code class="docutils literal notranslate"><span class="pre">AvatarConfig.customized_avatar</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfig.video_bitrate_bps"><code class="docutils literal notranslate"><span class="pre">AvatarConfig.video_bitrate_bps</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.AvatarConfigDict"><code class="docutils literal notranslate"><span class="pre">AvatarConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfigDict.audio_bitrate_bps"><code class="docutils literal notranslate"><span class="pre">AvatarConfigDict.audio_bitrate_bps</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfigDict.avatar_name"><code class="docutils literal notranslate"><span class="pre">AvatarConfigDict.avatar_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfigDict.customized_avatar"><code class="docutils literal notranslate"><span class="pre">AvatarConfigDict.customized_avatar</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.AvatarConfigDict.video_bitrate_bps"><code class="docutils literal notranslate"><span class="pre">AvatarConfigDict.video_bitrate_bps</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.BatchJob"><code class="docutils literal notranslate"><span class="pre">BatchJob</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BatchJob.completion_stats"><code class="docutils literal notranslate"><span class="pre">BatchJob.completion_stats</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.BatchJob.create_time"><code class="docutils literal notranslate"><span class="pre">BatchJob.create_time</span></code></a></li>
@@ -3190,6 +3204,16 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CustomOutputFormatConfigDict.return_raw_output"><code class="docutils literal notranslate"><span class="pre">CustomOutputFormatConfigDict.return_raw_output</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CustomizedAvatar"><code class="docutils literal notranslate"><span class="pre">CustomizedAvatar</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CustomizedAvatar.image_data"><code class="docutils literal notranslate"><span class="pre">CustomizedAvatar.image_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CustomizedAvatar.image_mime_type"><code class="docutils literal notranslate"><span class="pre">CustomizedAvatar.image_mime_type</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CustomizedAvatarDict"><code class="docutils literal notranslate"><span class="pre">CustomizedAvatarDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CustomizedAvatarDict.image_data"><code class="docutils literal notranslate"><span class="pre">CustomizedAvatarDict.image_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CustomizedAvatarDict.image_mime_type"><code class="docutils literal notranslate"><span class="pre">CustomizedAvatarDict.image_mime_type</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DatasetDistribution"><code class="docutils literal notranslate"><span class="pre">DatasetDistribution</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DatasetDistribution.buckets"><code class="docutils literal notranslate"><span class="pre">DatasetDistribution.buckets</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DatasetDistribution.max"><code class="docutils literal notranslate"><span class="pre">DatasetDistribution.max</span></code></a></li>
@@ -3526,7 +3550,9 @@ The structure of the dictionary must match the backend API’s request structure
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfig"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfig.audio_track_extraction"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfig.audio_track_extraction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfig.auto_truncate"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfig.auto_truncate</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfig.document_ocr"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfig.document_ocr</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfig.http_options"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfig.http_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfig.mime_type"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfig.mime_type</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfig.output_dimensionality"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfig.output_dimensionality</span></code></a></li>
@@ -3535,7 +3561,9 @@ The structure of the dictionary must match the backend API’s request structure
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfigDict"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfigDict.audio_track_extraction"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfigDict.audio_track_extraction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfigDict.auto_truncate"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfigDict.auto_truncate</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfigDict.document_ocr"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfigDict.document_ocr</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfigDict.http_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfigDict.mime_type"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfigDict.mime_type</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.EmbedContentConfigDict.output_dimensionality"><code class="docutils literal notranslate"><span class="pre">EmbedContentConfigDict.output_dimensionality</span></code></a></li>
@@ -5330,6 +5358,7 @@ The structure of the dictionary must match the backend API’s request structure
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.avatar_config"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.avatar_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.context_window_compression"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.context_window_compression</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.explicit_vad_signal"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.explicit_vad_signal</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.generation_config"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.generation_config</span></code></a></li>
@@ -5338,12 +5367,14 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.model"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.output_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.output_audio_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.proactivity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.safety_settings"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.safety_settings</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.session_resumption"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.session_resumption</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.system_instruction"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.system_instruction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetup.tools"><code class="docutils literal notranslate"><span class="pre">LiveClientSetup.tools</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.avatar_config"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.avatar_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.context_window_compression"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.context_window_compression</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.explicit_vad_signal"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.explicit_vad_signal</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.generation_config"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.generation_config</span></code></a></li>
@@ -5352,6 +5383,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.model"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.output_audio_transcription"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.output_audio_transcription</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.proactivity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.safety_settings"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.safety_settings</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.session_resumption"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.session_resumption</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.system_instruction"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.system_instruction</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveClientSetupDict.tools"><code class="docutils literal notranslate"><span class="pre">LiveClientSetupDict.tools</span></code></a></li>
@@ -5366,6 +5398,7 @@ The structure of the dictionary must match the backend API’s request structure
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.avatar_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.avatar_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.context_window_compression"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.context_window_compression</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.enable_affective_dialog"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.enable_affective_dialog</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.explicit_vad_signal"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.explicit_vad_signal</span></code></a></li>
@@ -5379,6 +5412,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.proactivity</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.realtime_input_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.realtime_input_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.response_modalities"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.response_modalities</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.safety_settings"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.safety_settings</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.seed"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.seed</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.session_resumption"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.session_resumption</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfig.speech_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfig.speech_config</span></code></a></li>
@@ -5391,6 +5425,7 @@ The structure of the dictionary must match the backend API’s request structure
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.avatar_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.avatar_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.context_window_compression"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.context_window_compression</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.enable_affective_dialog"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.enable_affective_dialog</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.explicit_vad_signal"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.explicit_vad_signal</span></code></a></li>
@@ -5404,6 +5439,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.proactivity"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.proactivity</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.realtime_input_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.realtime_input_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.response_modalities"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.response_modalities</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.safety_settings"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.safety_settings</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.seed"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.seed</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.session_resumption"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.session_resumption</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.LiveConnectConfigDict.speech_config"><code class="docutils literal notranslate"><span class="pre">LiveConnectConfigDict.speech_config</span></code></a></li>
@@ -5808,6 +5844,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Modality.IMAGE"><code class="docutils literal notranslate"><span class="pre">Modality.IMAGE</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Modality.MODALITY_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">Modality.MODALITY_UNSPECIFIED</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Modality.TEXT"><code class="docutils literal notranslate"><span class="pre">Modality.TEXT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.Modality.VIDEO"><code class="docutils literal notranslate"><span class="pre">Modality.VIDEO</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.ModalityTokenCount"><code class="docutils literal notranslate"><span class="pre">ModalityTokenCount</span></code></a><ul>
@@ -7389,10 +7426,34 @@ The structure of the dictionary must match the backend API’s request structure
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.BLOCKLIST"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.BLOCKLIST</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_AUDIO_SAFETY"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_AUDIO_SAFETY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_CONTENT_BLOCKLIST"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_CONTENT_BLOCKLIST</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_CONTENT_PROHIBITED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_CONTENT_PROHIBITED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_CONTENT_SAFETY"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_CONTENT_SAFETY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_IMAGE_CELEBRITY"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_IMAGE_CELEBRITY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_IMAGE_IDENTIFIABLE_PEOPLE"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_IMAGE_IDENTIFIABLE_PEOPLE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_IMAGE_MINORS"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_IMAGE_MINORS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_IMAGE_PROHIBITED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_IMAGE_PROHIBITED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_IMAGE_PROMINENT_PEOPLE_DETECTED_BY_REWRITER"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_IMAGE_PROMINENT_PEOPLE_DETECTED_BY_REWRITER</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_IMAGE_SAFETY"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_IMAGE_SAFETY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_OTHER"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_OTHER</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.GENERATED_VIDEO_SAFETY"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.GENERATED_VIDEO_SAFETY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.IMAGE_PROHIBITED_INPUT_CONTENT"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.IMAGE_PROHIBITED_INPUT_CONTENT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.INPUT_IMAGE_CELEBRITY"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.INPUT_IMAGE_CELEBRITY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.INPUT_IMAGE_PHOTO_REALISTIC_CHILD_PROHIBITED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.INPUT_IMAGE_PHOTO_REALISTIC_CHILD_PROHIBITED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.INPUT_IP_PROHIBITED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.INPUT_IP_PROHIBITED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.INPUT_OTHER"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.INPUT_OTHER</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.INPUT_TEXT_CONTAIN_PROMINENT_PERSON_PROHIBITED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.INPUT_TEXT_CONTAIN_PROMINENT_PERSON_PROHIBITED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.INPUT_TEXT_NCII_PROHIBITED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.INPUT_TEXT_NCII_PROHIBITED</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.MALFORMED_FUNCTION_CALL"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.MALFORMED_FUNCTION_CALL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.MAX_REGENERATION_REACHED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.MAX_REGENERATION_REACHED</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.NEED_MORE_INPUT"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.NEED_MORE_INPUT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.OUTPUT_IMAGE_IP_PROHIBITED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.OUTPUT_IMAGE_IP_PROHIBITED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.PROHIBITED_INPUT_CONTENT"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.PROHIBITED_INPUT_CONTENT</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.RESPONSE_REJECTED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.RESPONSE_REJECTED</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.TURN_COMPLETE_REASON_UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.TURN_COMPLETE_REASON_UNSPECIFIED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.TurnCompleteReason.UNSAFE_PROMPT_FOR_IMAGE_GENERATION"><code class="docutils literal notranslate"><span class="pre">TurnCompleteReason.UNSAFE_PROMPT_FOR_IMAGE_GENERATION</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.TurnCoverage"><code class="docutils literal notranslate"><span class="pre">TurnCoverage</span></code></a><ul>
