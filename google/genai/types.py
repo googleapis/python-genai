@@ -25,7 +25,7 @@ import logging
 import sys
 import types as builtin_types
 import typing
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
+from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Union
 import pydantic
 from pydantic import ConfigDict, Field, PrivateAttr, model_validator
 from typing_extensions import Self, TypedDict
@@ -38,14 +38,9 @@ from ._operations_converters import (
 )
 
 
-if sys.version_info >= (3, 10):
-  # Supports both Union[t1, t2] and t1 | t2
-  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
-  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
-else:
-  # Supports only Union[t1, t2]
-  VersionedUnionType = _UnionGenericAlias
-  _UNION_TYPES = (typing.Union,)
+# Supports both Union[t1, t2] and t1 | t2.
+VersionedUnionType = builtin_types.UnionType
+_UNION_TYPES = (typing.Union, builtin_types.UnionType)
 
 _is_pillow_image_imported = False
 if typing.TYPE_CHECKING:
@@ -6025,6 +6020,18 @@ class GenerateContentConfig(_common.BaseModel):
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
   def _convert_literal_to_enum(cls, value: Any) -> Union[Any, EnumMeta]:
+    # Normalize typing.Union[...] to PEP 604 unions on Python <= 3.13, where
+    # typing.Union[...] is not an instance of types.UnionType.
+    if (
+        typing.get_origin(value) is typing.Union
+        and not isinstance(value, builtin_types.UnionType)
+    ):
+      union_args = typing.get_args(value)
+      if union_args:
+        normalized_union = union_args[0]
+        for union_arg in union_args[1:]:
+          normalized_union = normalized_union | union_arg
+        return normalized_union
     if typing.get_origin(value) is typing.Literal:
       enum_vals = typing.get_args(value)
       if not all(isinstance(arg, str) for arg in enum_vals):
