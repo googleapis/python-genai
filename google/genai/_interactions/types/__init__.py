@@ -46,6 +46,7 @@ from .video_content import VideoContent as VideoContent
 from .function_param import FunctionParam as FunctionParam
 from .place_citation import PlaceCitation as PlaceCitation
 from .thinking_level import ThinkingLevel as ThinkingLevel
+from .webhook_config import WebhookConfig as WebhookConfig
 from .thought_content import ThoughtContent as ThoughtContent
 from .annotation_param import AnnotationParam as AnnotationParam
 from .document_content import DocumentContent as DocumentContent
@@ -63,17 +64,27 @@ from .file_citation_param import FileCitationParam as FileCitationParam
 from .image_content_param import ImageContentParam as ImageContentParam
 from .speech_config_param import SpeechConfigParam as SpeechConfigParam
 from .video_content_param import VideoContentParam as VideoContentParam
+from .webhook_list_params import WebhookListParams as WebhookListParams
+from .webhook_ping_params import WebhookPingParams as WebhookPingParams
 from .dynamic_agent_config import DynamicAgentConfig as DynamicAgentConfig
 from .google_search_result import GoogleSearchResult as GoogleSearchResult
 from .place_citation_param import PlaceCitationParam as PlaceCitationParam
+from .webhook_config_param import WebhookConfigParam as WebhookConfigParam
 from .function_call_content import FunctionCallContent as FunctionCallContent
 from .interaction_sse_event import InteractionSSEEvent as InteractionSSEEvent
 from .thought_content_param import ThoughtContentParam as ThoughtContentParam
+from .webhook_create_params import WebhookCreateParams as WebhookCreateParams
+from .webhook_list_response import WebhookListResponse as WebhookListResponse
+from .webhook_ping_response import WebhookPingResponse as WebhookPingResponse
+from .webhook_update_params import WebhookUpdateParams as WebhookUpdateParams
 from .document_content_param import DocumentContentParam as DocumentContentParam
 from .interaction_get_params import InteractionGetParams as InteractionGetParams
 from .function_result_content import FunctionResultContent as FunctionResultContent
 from .generation_config_param import GenerationConfigParam as GenerationConfigParam
 from .interaction_start_event import InteractionStartEvent as InteractionStartEvent
+from .webhook_create_response import WebhookCreateResponse as WebhookCreateResponse
+from .webhook_delete_response import WebhookDeleteResponse as WebhookDeleteResponse
+from .webhook_update_response import WebhookUpdateResponse as WebhookUpdateResponse
 from .file_search_call_content import FileSearchCallContent as FileSearchCallContent
 from .google_maps_call_content import GoogleMapsCallContent as GoogleMapsCallContent
 from .google_maps_result_param import GoogleMapsResultParam as GoogleMapsResultParam
@@ -82,6 +93,7 @@ from .url_context_call_content import URLContextCallContent as URLContextCallCon
 from .url_context_result_param import URLContextResultParam as URLContextResultParam
 from .interaction_create_params import InteractionCreateParams as InteractionCreateParams
 from .interaction_status_update import InteractionStatusUpdate as InteractionStatusUpdate
+from .webhook_retrieve_response import WebhookRetrieveResponse as WebhookRetrieveResponse
 from .deep_research_agent_config import DeepResearchAgentConfig as DeepResearchAgentConfig
 from .dynamic_agent_config_param import DynamicAgentConfigParam as DynamicAgentConfigParam
 from .file_search_result_content import FileSearchResultContent as FileSearchResultContent
@@ -118,3 +130,7 @@ from .mcp_server_tool_call_content_param import MCPServerToolCallContentParam as
 from .code_execution_call_arguments_param import CodeExecutionCallArgumentsParam as CodeExecutionCallArgumentsParam
 from .code_execution_result_content_param import CodeExecutionResultContentParam as CodeExecutionResultContentParam
 from .mcp_server_tool_result_content_param import MCPServerToolResultContentParam as MCPServerToolResultContentParam
+from .webhook_rotate_signing_secret_params import WebhookRotateSigningSecretParams as WebhookRotateSigningSecretParams
+from .webhook_rotate_signing_secret_response import (
+    WebhookRotateSigningSecretResponse as WebhookRotateSigningSecretResponse,
+)
