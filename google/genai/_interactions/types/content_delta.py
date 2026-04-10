@@ -59,6 +59,7 @@ __all__ = [
     "DeltaFileSearchResult",
     "DeltaFileSearchResultResult",
     "DeltaGoogleMapsResult",
+    "DeltaTextAnnotation",
 ]
 
 
@@ -66,9 +67,6 @@ class DeltaText(BaseModel):
     text: str
 
     type: Literal["text"]
-
-    annotations: Optional[List[Annotation]] = None
-    """Citation information for model-generated content."""
 
 
 class DeltaImage(BaseModel):
@@ -91,13 +89,30 @@ class DeltaImage(BaseModel):
 class DeltaAudio(BaseModel):
     type: Literal["audio"]
 
+    channels: Optional[int] = None
+    """The number of audio channels."""
+
     data: Optional[str] = None
 
     mime_type: Optional[
         Literal[
-            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+            "audio/wav",
+            "audio/mp3",
+            "audio/aiff",
+            "audio/aac",
+            "audio/ogg",
+            "audio/flac",
+            "audio/mpeg",
+            "audio/m4a",
+            "audio/l16",
+            "audio/opus",
+            "audio/alaw",
+            "audio/mulaw",
         ]
     ] = None
+
+    rate: Optional[int] = None
+    """The sample rate of the audio."""
 
     uri: Optional[str] = None
 
@@ -362,6 +377,13 @@ class DeltaGoogleMapsResult(BaseModel):
     """A signature hash for backend validation."""
 
 
+class DeltaTextAnnotation(BaseModel):
+    type: Literal["text_annotation"]
+
+    annotations: Optional[List[Annotation]] = None
+    """Citation information for model-generated content."""
+
+
 Delta: TypeAlias = Annotated[
     Union[
         DeltaText,
@@ -385,6 +407,7 @@ Delta: TypeAlias = Annotated[
         DeltaMCPServerToolResult,
         DeltaFileSearchResult,
         DeltaGoogleMapsResult,
+        DeltaTextAnnotation,
     ],
     PropertyInfo(discriminator="type"),
 ]
@@ -400,6 +423,5 @@ class ContentDelta(BaseModel):
 
     event_id: Optional[str] = None
     """
-    The event_id token to be used to resume the interaction stream, from
-    this event.
+    The event_id token to be used to resume the interaction stream, from this event.
     """

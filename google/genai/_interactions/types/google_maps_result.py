@@ -47,8 +47,8 @@ class Place(BaseModel):
 
     review_snippets: Optional[List[PlaceReviewSnippet]] = None
     """
-    Snippets of reviews that are used to generate answers about the
-    features of a given place in Google Maps.
+    Snippets of reviews that are used to generate answers about the features of a
+    given place in Google Maps.
     """
 
     url: Optional[str] = None

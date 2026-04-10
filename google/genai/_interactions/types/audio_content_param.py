@@ -32,13 +32,30 @@ class AudioContentParam(TypedDict, total=False):
 
     type: Required[Literal["audio"]]
 
+    channels: int
+    """The number of audio channels."""
+
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """The audio content."""
 
     mime_type: Literal[
-        "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+        "audio/wav",
+        "audio/mp3",
+        "audio/aiff",
+        "audio/aac",
+        "audio/ogg",
+        "audio/flac",
+        "audio/mpeg",
+        "audio/m4a",
+        "audio/l16",
+        "audio/opus",
+        "audio/alaw",
+        "audio/mulaw",
     ]
     """The mime type of the audio."""
+
+    rate: int
+    """The sample rate of the audio."""
 
     uri: str
     """The URI of the audio."""

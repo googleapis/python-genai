@@ -532,6 +532,22 @@ def test_vertexai_location_us_routing(monkeypatch):
     )
 
 
+def test_vertexai_location_eu_routing(monkeypatch):
+  # Verify that location='eu' correctly routes to the eu.rep endpoint
+  project_id = "fake_project_id"
+  location = "eu"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://aiplatform.eu.rep.googleapis.com/"
+    )
+
+
 def test_vertexai_location_us_routing_base_url_override(monkeypatch):
   # Verify that base_url override takes precedence over location='us' routing
   project_id = "fake_project_id"
@@ -1411,7 +1427,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_not_called()
-  assert mock_request.call_count == 10
+  assert len(mock_request.call_args_list) == 10
 
   # 2. Test credential refreshing in multiple threads
   mock_creds.expired = True
@@ -1427,7 +1443,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_called_once()
-  assert mock_request.call_count == 20
+  assert len(mock_request.call_args_list) == 20
 
 
 @pytest.mark.asyncio

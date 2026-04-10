@@ -28,15 +28,32 @@ class AudioContent(BaseModel):
 
     type: Literal["audio"]
 
+    channels: Optional[int] = None
+    """The number of audio channels."""
+
     data: Optional[str] = None
     """The audio content."""
 
     mime_type: Optional[
         Literal[
-            "audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac", "audio/mpeg", "audio/m4a"
+            "audio/wav",
+            "audio/mp3",
+            "audio/aiff",
+            "audio/aac",
+            "audio/ogg",
+            "audio/flac",
+            "audio/mpeg",
+            "audio/m4a",
+            "audio/l16",
+            "audio/opus",
+            "audio/alaw",
+            "audio/mulaw",
         ]
     ] = None
     """The mime type of the audio."""
+
+    rate: Optional[int] = None
+    """The sample rate of the audio."""
 
     uri: Optional[str] = None
     """The URI of the audio."""

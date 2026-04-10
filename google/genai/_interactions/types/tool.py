@@ -34,6 +34,8 @@ __all__ = [
     "GoogleSearch",
     "FileSearch",
     "GoogleMaps",
+    "Retrieval",
+    "RetrievalVertexAISearchConfig",
 ]
 
 
@@ -76,10 +78,7 @@ class MCPServer(BaseModel):
     """The name of the MCPServer."""
 
     url: Optional[str] = None
-    """
-    The full URL for the MCPServer endpoint.
-    Example: "https://api.example.com/mcp"
-    """
+    """The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp" """
 
 
 class GoogleSearch(BaseModel):
@@ -87,7 +86,7 @@ class GoogleSearch(BaseModel):
 
     type: Literal["google_search"]
 
-    search_types: Optional[List[Literal["web_search", "image_search"]]] = None
+    search_types: Optional[List[Literal["web_search", "image_search", "enterprise_web_search"]]] = None
     """The types of search grounding to enable."""
 
 
@@ -124,7 +123,29 @@ class GoogleMaps(BaseModel):
     """The longitude of the user's location."""
 
 
+class RetrievalVertexAISearchConfig(BaseModel):
+    """Used to specify configuration for VertexAISearch."""
+
+    datastores: Optional[List[str]] = None
+    """Optional. Used to specify Vertex AI Search datastores."""
+
+    engine: Optional[str] = None
+    """Optional. Used to specify Vertex AI Search engine."""
+
+
+class Retrieval(BaseModel):
+    """A tool that can be used by the model to retrieve files."""
+
+    type: Literal["retrieval"]
+
+    retrieval_types: Optional[List[Literal["vertex_ai_search"]]] = None
+    """The types of file retrieval to enable."""
+
+    vertex_ai_search_config: Optional[RetrievalVertexAISearchConfig] = None
+    """Used to specify configuration for VertexAISearch."""
+
+
 Tool: TypeAlias = Annotated[
-    Union[Function, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch, GoogleMaps],
+    Union[Function, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch, GoogleMaps, Retrieval],
     PropertyInfo(discriminator="type"),
 ]

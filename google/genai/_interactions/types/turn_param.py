@@ -29,8 +29,4 @@ class TurnParam(TypedDict, total=False):
     content: Union[Iterable[ContentParam], str]
 
     role: str
-    """The originator of this turn.
-
-    Must be user for input or model for
-    model output.
-    """
+    """The originator of this turn. Must be user for input or model for model output."""

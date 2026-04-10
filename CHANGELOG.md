@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.72.0](https://github.com/googleapis/python-genai/compare/v1.71.0...v1.72.0) (2026-04-09)
+
+
+### Features
+
+* Add "eu" as a supported service location for Vertex AI platform. ([888a731](https://github.com/googleapis/python-genai/commit/888a73159db17a8f08f928ee1a85e80db1a85a1a))
+* Add Live Avatar new fields ([ad1777e](https://github.com/googleapis/python-genai/commit/ad1777e29e28677101c9a26bdff6fd32e103340b))
+* Add support for new audio MIME types: opus, alaw, and mulaw ([74eb373](https://github.com/googleapis/python-genai/commit/74eb373b2e97291e1d07cedce7cbf1fb82123a18))
+* Add the delete method for the Agent Engine Task Store Service ([d821082](https://github.com/googleapis/python-genai/commit/d821082a91effba4dc684b03b438e51527deed03))
+
+
+### Documentation
+
+* Update python docs for 1.71.0 ([e82f9fc](https://github.com/googleapis/python-genai/commit/e82f9fc9093825b3d5c4388c7faefe0c733f154b))
+
+## [1.71.0](https://github.com/googleapis/python-genai/compare/v1.70.0...v1.71.0) (2026-04-08)
+
+
+### Features
+
+* Introduce TYPE_L16 audio content and optional fields. ([07e932f](https://github.com/googleapis/python-genai/commit/07e932f9bc8dcb224ced2b35061ede9df25432cb))
+
+
+### Documentation
+
+* Remove deprecated product recontext model samples from docstrings ([aca7dcf](https://github.com/googleapis/python-genai/commit/aca7dcf32b15ef2d945a14fb498be0e9c096c0d8))
+
+## [1.70.0](https://github.com/googleapis/python-genai/compare/v1.69.0...v1.70.0) (2026-03-31)
+
+
+### Features
+
+* Support dedicated TextAnnotationDelta for streaming tool responses ([5c820f2](https://github.com/googleapis/python-genai/commit/5c820f26122c911dd9d7d48bdd4156ade46c3636))
+
+
+### Bug Fixes
+
+* Fix service_tier enums. ([855e431](https://github.com/googleapis/python-genai/commit/855e4317b6245d4cae02d538138fb6cab0d433a9))
+
 ## [1.69.0](https://github.com/googleapis/python-genai/compare/v1.68.0...v1.69.0) (2026-03-27)
 
 
