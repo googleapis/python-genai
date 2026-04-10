@@ -1006,6 +1006,17 @@ class VideoCompressionQuality(_common.CaseInSensitiveEnum):
       with a larger file size."""
 
 
+class ImageResizeMode(_common.CaseInSensitiveEnum):
+  """Resize mode for the image input for video generation."""
+
+  CROP = 'CROP'
+  """Crop the image to fit the correct aspect ratio (so we lose parts
+      of the image in the process)."""
+  PAD = 'PAD'
+  """Pad the image to fit the correct aspect ratio (so we don't lose
+      any parts of the image in the process)."""
+
+
 class TuningMethod(_common.CaseInSensitiveEnum):
   """Enum representing the tuning method."""
 
@@ -11181,6 +11192,10 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""User specified labels to track billing usage.""",
   )
+  resize_mode: Optional[ImageResizeMode] = Field(
+      default=None,
+      description="""Resize mode of the image input for video generation.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -11252,6 +11267,9 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   labels: Optional[dict[str, str]]
   """User specified labels to track billing usage."""
+
+  resize_mode: Optional[ImageResizeMode]
+  """Resize mode of the image input for video generation."""
 
 
 GenerateVideosConfigOrDict = Union[
