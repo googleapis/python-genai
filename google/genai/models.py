@@ -5519,7 +5519,9 @@ class Models(_api_module.BaseModule):
         if getattr(parameter_model, 'config', None)
         else {},
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
@@ -7696,7 +7698,9 @@ class AsyncModels(_api_module.BaseModule):
         if getattr(parameter_model, 'config', None)
         else {},
     )
-
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
     self._api_client._verify_response(return_value)
     return return_value
 
