@@ -15,11 +15,6 @@
 
 * Refine Pyink blank line insertion logic and fix range-based formatting regressions. ([b91bda5](https://github.com/googleapis/python-genai/commit/b91bda5d587ee6217fcff8f4e1b8eee4aebb9203))
 
-
-### Documentation
-
-* Update python docs for 1.72.0 ([68ed088](https://github.com/googleapis/python-genai/commit/68ed088dbb9d1e95e52837a90afd9e3e2ad43cce))
-
 ## [1.72.0](https://github.com/googleapis/python-genai/compare/v1.71.0...v1.72.0) (2026-04-09)
 
 
