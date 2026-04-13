@@ -278,6 +278,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.models"><code class="docutils literal notranslate"><span class="pre">AsyncClient.models</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.operations"><code class="docutils literal notranslate"><span class="pre">AsyncClient.operations</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.tunings"><code class="docutils literal notranslate"><span class="pre">AsyncClient.tunings</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.AsyncClient.webhooks"><code class="docutils literal notranslate"><span class="pre">AsyncClient.webhooks</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.client.AsyncGeminiNextGenAPIClientAdapter"><code class="docutils literal notranslate"><span class="pre">AsyncGeminiNextGenAPIClientAdapter</span></code></a><ul>
@@ -308,6 +309,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.operations"><code class="docutils literal notranslate"><span class="pre">Client.operations</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.tunings"><code class="docutils literal notranslate"><span class="pre">Client.tunings</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#id0"><code class="docutils literal notranslate"><span class="pre">Client.vertexai</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.client.Client.webhooks"><code class="docutils literal notranslate"><span class="pre">Client.webhooks</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.client.DebugConfig"><code class="docutils literal notranslate"><span class="pre">DebugConfig</span></code></a><ul>
@@ -1268,12 +1270,14 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfig.dest"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfig.dest</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfig.display_name"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfig.display_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfig.http_options"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfig.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfig.webhook_config"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfig.webhook_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfigDict"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfigDict.dest"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfigDict.dest</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfigDict.display_name"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfigDict.display_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfigDict.http_options</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateBatchJobConfigDict.webhook_config"><code class="docutils literal notranslate"><span class="pre">CreateBatchJobConfigDict.webhook_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateCachedContentConfig"><code class="docutils literal notranslate"><span class="pre">CreateCachedContentConfig</span></code></a><ul>
@@ -2537,6 +2541,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfig.reference_images"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfig.reference_images</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfig.resolution"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfig.resolution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfig.seed"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfig.seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfig.webhook_config"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfig.webhook_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfigDict"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfigDict</span></code></a><ul>
@@ -2558,6 +2563,7 @@
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfigDict.reference_images"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfigDict.reference_images</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfigDict.resolution"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfigDict.resolution</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfigDict.seed"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfigDict.seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GenerateVideosConfigDict.webhook_config"><code class="docutils literal notranslate"><span class="pre">GenerateVideosConfigDict.webhook_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.GenerateVideosOperation"><code class="docutils literal notranslate"><span class="pre">GenerateVideosOperation</span></code></a><ul>
@@ -6122,6 +6128,16 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.WebSearch"><code class="docutils literal notranslate"><span class="pre">WebSearch</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.WebSearchDict"><code class="docutils literal notranslate"><span class="pre">WebSearchDict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.WebhookConfig"><code class="docutils literal notranslate"><span class="pre">WebhookConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WebhookConfig.uris"><code class="docutils literal notranslate"><span class="pre">WebhookConfig.uris</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WebhookConfig.user_metadata"><code class="docutils literal notranslate"><span class="pre">WebhookConfig.user_metadata</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.WebhookConfigDict"><code class="docutils literal notranslate"><span class="pre">WebhookConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WebhookConfigDict.uris"><code class="docutils literal notranslate"><span class="pre">WebhookConfigDict.uris</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WebhookConfigDict.user_metadata"><code class="docutils literal notranslate"><span class="pre">WebhookConfigDict.user_metadata</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.WeightedPrompt"><code class="docutils literal notranslate"><span class="pre">WeightedPrompt</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WeightedPrompt.text"><code class="docutils literal notranslate"><span class="pre">WeightedPrompt.text</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.WeightedPrompt.weight"><code class="docutils literal notranslate"><span class="pre">WeightedPrompt.weight</span></code></a></li>
