@@ -26,7 +26,6 @@ from . import types
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
-
 logger = logging.getLogger('google_genai.operations')
 
 

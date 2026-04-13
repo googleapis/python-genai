@@ -33,7 +33,6 @@ from ._operations_converters import _UploadToFileSearchStoreOperation_from_mldev
 from .documents import AsyncDocuments, Documents
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.filesearchstores')
 
 
