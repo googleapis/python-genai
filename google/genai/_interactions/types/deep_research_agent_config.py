@@ -33,7 +33,7 @@ class DeepResearchAgentConfig(BaseModel):
 
     If set to true, the Deep Research agent will provide a research plan in its
     response. The agent will then proceed only if the user confirms the plan in the
-    next turn. Relevant issue: b/482352502.
+    next turn. .
     """
 
     thinking_summaries: Optional[Literal["auto", "none"]] = None
