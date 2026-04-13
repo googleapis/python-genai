@@ -38,6 +38,7 @@ from .._base_client import make_request_options
 from ..types.tool_param import ToolParam
 from ..types.interaction import Interaction
 from ..types.model_param import ModelParam
+from ..types.webhook_config_param import WebhookConfigParam
 from ..types.interaction_sse_event import InteractionSSEEvent
 from ..types.generation_config_param import GenerationConfigParam
 
@@ -82,6 +83,7 @@ class InteractionsResource(SyncAPIResource):
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -120,6 +122,9 @@ class InteractionsResource(SyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -148,6 +153,7 @@ class InteractionsResource(SyncAPIResource):
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -185,6 +191,9 @@ class InteractionsResource(SyncAPIResource):
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -214,6 +223,7 @@ class InteractionsResource(SyncAPIResource):
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -252,6 +262,9 @@ class InteractionsResource(SyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -280,6 +293,7 @@ class InteractionsResource(SyncAPIResource):
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -318,6 +332,9 @@ class InteractionsResource(SyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -346,6 +363,7 @@ class InteractionsResource(SyncAPIResource):
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -384,6 +402,9 @@ class InteractionsResource(SyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -412,6 +433,7 @@ class InteractionsResource(SyncAPIResource):
         stream: Literal[False] | Literal[True] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         agent: Union[str, Literal["deep-research-pro-preview-12-2025"]] | Omit = omit,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -446,6 +468,7 @@ class InteractionsResource(SyncAPIResource):
                     "stream": stream,
                     "system_instruction": system_instruction,
                     "tools": tools,
+                    "webhook_config": webhook_config,
                     "agent": agent,
                     "agent_config": agent_config,
                 },
@@ -734,6 +757,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -772,6 +796,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -800,6 +827,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -837,6 +865,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -866,6 +897,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -904,6 +936,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -932,6 +967,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -970,6 +1006,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -998,6 +1037,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -1036,6 +1076,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           tools: A list of tool declarations the model may call during interaction.
 
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -1064,6 +1107,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         stream: Literal[False] | Literal[True] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         agent: Union[str, Literal["deep-research-pro-preview-12-2025"]] | Omit = omit,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1098,6 +1142,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
                     "stream": stream,
                     "system_instruction": system_instruction,
                     "tools": tools,
+                    "webhook_config": webhook_config,
                     "agent": agent,
                     "agent_config": agent_config,
                 },
