@@ -11097,6 +11097,46 @@ class VideoGenerationMaskDict(TypedDict, total=False):
 VideoGenerationMaskOrDict = Union[VideoGenerationMask, VideoGenerationMaskDict]
 
 
+class WebhookConfig(_common.BaseModel):
+  """Configuration for webhook notifications.
+
+  Used to configure webhook endpoints that will receive notifications
+  when long-running operations (e.g., batch jobs, video generation) complete.
+  """
+
+  uris: Optional[list[str]] = Field(
+      default=None,
+      description="""The webhook URIs to receive notifications. If set, these
+      webhook URIs will be used instead of the registered webhooks.""",
+  )
+  user_metadata: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""User metadata that will be included in each webhook event
+      notification. Use this to attach custom key-value data to correlate
+      webhook events with your internal systems.""",
+  )
+
+
+class WebhookConfigDict(TypedDict, total=False):
+  """Configuration for webhook notifications.
+
+  Used to configure webhook endpoints that will receive notifications
+  when long-running operations (e.g., batch jobs, video generation) complete.
+  """
+
+  uris: Optional[list[str]]
+  """The webhook URIs to receive notifications. If set, these
+      webhook URIs will be used instead of the registered webhooks."""
+
+  user_metadata: Optional[dict[str, Any]]
+  """User metadata that will be included in each webhook event
+      notification. Use this to attach custom key-value data to correlate
+      webhook events with your internal systems."""
+
+
+WebhookConfigOrDict = Union[WebhookConfig, WebhookConfigDict]
+
+
 class GenerateVideosConfig(_common.BaseModel):
   """Configuration for generating videos."""
 
@@ -11180,6 +11220,11 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""User specified labels to track billing usage.""",
   )
+  webhook_config: Optional[WebhookConfig] = Field(
+      default=None,
+      description="""Webhook configuration for receiving notifications when the
+      video generation operation completes.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -11251,6 +11296,10 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   labels: Optional[dict[str, str]]
   """User specified labels to track billing usage."""
+
+  webhook_config: Optional[WebhookConfigDict]
+  """Webhook configuration for receiving notifications when the
+      video generation operation completes."""
 
 
 GenerateVideosConfigOrDict = Union[
@@ -16376,6 +16425,12 @@ class CreateBatchJobConfig(_common.BaseModel):
       "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
       """,
   )
+  webhook_config: Optional[WebhookConfig] = Field(
+      default=None,
+      description="""Webhook configuration for receiving notifications when the batch
+      operation completes.
+      """,
+  )
 
 
 class CreateBatchJobConfigDict(TypedDict, total=False):
@@ -16391,6 +16446,11 @@ class CreateBatchJobConfigDict(TypedDict, total=False):
   dest: Optional[BatchJobDestinationUnionDict]
   """GCS or BigQuery URI prefix for the output predictions. Example:
       "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
+      """
+
+  webhook_config: Optional[WebhookConfigDict]
+  """Webhook configuration for receiving notifications when the batch
+      operation completes.
       """
 
 

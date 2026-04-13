@@ -526,6 +526,13 @@ def _CreateBatchJobConfig_to_mldev(
   if getv(from_object, ['dest']) is not None:
     raise ValueError('dest parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['webhook_config']) is not None:
+    setv(
+        parent_object,
+        ['batch', 'webhookConfig'],
+        getv(from_object, ['webhook_config']),
+    )
+
   return to_object
 
 
@@ -546,6 +553,9 @@ def _CreateBatchJobConfig_to_vertex(
             t.t_batch_job_destination(getv(from_object, ['dest'])), to_object
         ),
     )
+
+  if getv(from_object, ['webhook_config']) is not None:
+    raise ValueError('webhook_config parameter is not supported in Vertex AI.')
 
   return to_object
 

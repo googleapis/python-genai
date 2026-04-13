@@ -2154,6 +2154,11 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['labels']) is not None:
     raise ValueError('labels parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['webhook_config']) is not None:
+    setv(
+        parent_object, ['webhookConfig'], getv(from_object, ['webhook_config'])
+    )
+
   return to_object
 
 
@@ -2279,6 +2284,9 @@ def _GenerateVideosConfig_to_vertex(
 
   if getv(from_object, ['labels']) is not None:
     setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  if getv(from_object, ['webhook_config']) is not None:
+    raise ValueError('webhook_config parameter is not supported in Vertex AI.')
 
   return to_object
 
