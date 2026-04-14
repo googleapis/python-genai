@@ -40,12 +40,10 @@ from .._response import (
     async_to_streamed_response_wrapper,
 )
 from .._base_client import make_request_options
+from ..types.webhook import Webhook
 from ..types.webhook_list_response import WebhookListResponse
 from ..types.webhook_ping_response import WebhookPingResponse
-from ..types.webhook_create_response import WebhookCreateResponse
 from ..types.webhook_delete_response import WebhookDeleteResponse
-from ..types.webhook_update_response import WebhookUpdateResponse
-from ..types.webhook_retrieve_response import WebhookRetrieveResponse
 from ..types.webhook_rotate_signing_secret_response import WebhookRotateSigningSecretResponse
 
 __all__ = ["WebhooksResource", "AsyncWebhooksResource"]
@@ -101,7 +99,7 @@ class WebhooksResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> WebhookCreateResponse:
+    ) -> Webhook:
         """Creates a new Webhook.
 
         Args:
@@ -159,7 +157,7 @@ class WebhooksResource(SyncAPIResource):
                 timeout=timeout,
                 query=maybe_transform({"webhook_id": webhook_id}, webhook_create_params.WebhookCreateParams),
             ),
-            cast_to=WebhookCreateResponse,
+            cast_to=Webhook,
         )
 
     def retrieve(
@@ -173,7 +171,7 @@ class WebhooksResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> WebhookRetrieveResponse:
+    ) -> Webhook:
         """
         Gets a specific Webhook.
 
@@ -197,7 +195,7 @@ class WebhooksResource(SyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=WebhookRetrieveResponse,
+            cast_to=Webhook,
         )
 
     def update(
@@ -231,7 +229,7 @@ class WebhooksResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> WebhookUpdateResponse:
+    ) -> Webhook:
         """Updates an existing Webhook.
 
         Args:
@@ -290,7 +288,7 @@ class WebhooksResource(SyncAPIResource):
                 timeout=timeout,
                 query=maybe_transform({"update_mask": update_mask}, webhook_update_params.WebhookUpdateParams),
             ),
-            cast_to=WebhookUpdateResponse,
+            cast_to=Webhook,
         )
 
     def list(
@@ -525,7 +523,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> WebhookCreateResponse:
+    ) -> Webhook:
         """Creates a new Webhook.
 
         Args:
@@ -585,7 +583,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
                     {"webhook_id": webhook_id}, webhook_create_params.WebhookCreateParams
                 ),
             ),
-            cast_to=WebhookCreateResponse,
+            cast_to=Webhook,
         )
 
     async def retrieve(
@@ -599,7 +597,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> WebhookRetrieveResponse:
+    ) -> Webhook:
         """
         Gets a specific Webhook.
 
@@ -623,7 +621,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=WebhookRetrieveResponse,
+            cast_to=Webhook,
         )
 
     async def update(
@@ -657,7 +655,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> WebhookUpdateResponse:
+    ) -> Webhook:
         """Updates an existing Webhook.
 
         Args:
@@ -718,7 +716,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
                     {"update_mask": update_mask}, webhook_update_params.WebhookUpdateParams
                 ),
             ),
-            cast_to=WebhookUpdateResponse,
+            cast_to=Webhook,
         )
 
     async def list(

@@ -22,6 +22,7 @@ from .turn import Turn as Turn
 from .model import Model as Model
 from .usage import Usage as Usage
 from .content import Content as Content
+from .webhook import Webhook as Webhook
 from .function import Function as Function
 from .annotation import Annotation as Annotation
 from .tool_param import ToolParam as ToolParam
@@ -45,6 +46,7 @@ from .speech_config import SpeechConfig as SpeechConfig
 from .video_content import VideoContent as VideoContent
 from .function_param import FunctionParam as FunctionParam
 from .place_citation import PlaceCitation as PlaceCitation
+from .signing_secret import SigningSecret as SigningSecret
 from .thinking_level import ThinkingLevel as ThinkingLevel
 from .webhook_config import WebhookConfig as WebhookConfig
 from .thought_content import ThoughtContent as ThoughtContent
@@ -82,9 +84,7 @@ from .interaction_get_params import InteractionGetParams as InteractionGetParams
 from .function_result_content import FunctionResultContent as FunctionResultContent
 from .generation_config_param import GenerationConfigParam as GenerationConfigParam
 from .interaction_start_event import InteractionStartEvent as InteractionStartEvent
-from .webhook_create_response import WebhookCreateResponse as WebhookCreateResponse
 from .webhook_delete_response import WebhookDeleteResponse as WebhookDeleteResponse
-from .webhook_update_response import WebhookUpdateResponse as WebhookUpdateResponse
 from .file_search_call_content import FileSearchCallContent as FileSearchCallContent
 from .google_maps_call_content import GoogleMapsCallContent as GoogleMapsCallContent
 from .google_maps_result_param import GoogleMapsResultParam as GoogleMapsResultParam
@@ -93,7 +93,6 @@ from .url_context_call_content import URLContextCallContent as URLContextCallCon
 from .url_context_result_param import URLContextResultParam as URLContextResultParam
 from .interaction_create_params import InteractionCreateParams as InteractionCreateParams
 from .interaction_status_update import InteractionStatusUpdate as InteractionStatusUpdate
-from .webhook_retrieve_response import WebhookRetrieveResponse as WebhookRetrieveResponse
 from .deep_research_agent_config import DeepResearchAgentConfig as DeepResearchAgentConfig
 from .dynamic_agent_config_param import DynamicAgentConfigParam as DynamicAgentConfigParam
 from .file_search_result_content import FileSearchResultContent as FileSearchResultContent

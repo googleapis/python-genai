@@ -15,22 +15,19 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import List, Optional
+from typing import Optional
+from datetime import datetime
 
-from .webhook import Webhook
 from .._models import BaseModel
 
-__all__ = ["WebhookListResponse"]
+__all__ = ["SigningSecret"]
 
 
-class WebhookListResponse(BaseModel):
-    """Response message for WebhookService.ListWebhooks."""
+class SigningSecret(BaseModel):
+    """Represents a signing secret used to verify webhook payloads."""
 
-    next_page_token: Optional[str] = None
-    """
-    A token, which can be sent as `page_token` to retrieve the next page. If this
-    field is omitted, there are no subsequent pages.
-    """
+    expire_time: Optional[datetime] = None
+    """Output only. The expiration date of the signing secret."""
 
-    webhooks: Optional[List[Webhook]] = None
-    """The webhooks."""
+    truncated_secret: Optional[str] = None
+    """Output only. The truncated version of the signing secret."""

@@ -20,21 +20,12 @@ from datetime import datetime
 from typing_extensions import Literal
 
 from .._models import BaseModel
+from .signing_secret import SigningSecret
 
-__all__ = ["WebhookUpdateResponse", "SigningSecret"]
-
-
-class SigningSecret(BaseModel):
-    """Represents a signing secret used to verify webhook payloads."""
-
-    expire_time: Optional[datetime] = None
-    """Output only. The expiration date of the signing secret."""
-
-    truncated_secret: Optional[str] = None
-    """Output only. The truncated version of the signing secret."""
+__all__ = ["Webhook"]
 
 
-class WebhookUpdateResponse(BaseModel):
+class Webhook(BaseModel):
     """A Webhook resource."""
 
     subscribed_events: List[
