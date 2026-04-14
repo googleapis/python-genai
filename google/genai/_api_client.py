@@ -777,7 +777,7 @@ class BaseApiClient:
       self._async_httpx_client = AsyncHttpxClient(**async_client_args)
 
     # Initialize the aiohttp client session.
-    self._aiohttp_session: Optional[aiohttp.ClientSession] = None
+    self._aiohttp_session: Optional[Union['aiohttp.ClientSession', 'AsyncAuthorizedSession']] = None
     if self._use_aiohttp():
       try:
         import aiohttp  # pylint: disable=g-import-not-at-top
@@ -841,15 +841,15 @@ class BaseApiClient:
         from google.auth.aio.transport.sessions import AsyncAuthorizedSession
 
         async_creds = StaticCredentials(token=self._access_token())  # type: ignore[no-untyped-call]
-        self._aiohttp_session = AsyncAuthorizedSession(async_creds)  # type: ignore[no-untyped-call]
-        return self._aiohttp_session
+        self._aiohttp_session = AsyncAuthorizedSession(async_creds)  # type: ignore[no-untyped-call,assignment]
+        return self._aiohttp_session  # type: ignore[return-value]
       except ImportError:
         pass
 
     if not self._use_google_auth_async() and (
         self._aiohttp_session is None
-        or self._aiohttp_session.closed
-        or self._aiohttp_session._loop.is_closed()
+        or self._aiohttp_session.closed  # type: ignore[union-attr]
+        or self._aiohttp_session._loop.is_closed()  # type: ignore[union-attr]
     ):  # pylint: disable=protected-access
       # Initialize the aiohttp client session if it's not set up or closed.
       class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
@@ -888,7 +888,7 @@ class BaseApiClient:
           read_bufsize=READ_BUFFER_SIZE,
       )
 
-    return self._aiohttp_session
+    return self._aiohttp_session  # type: ignore[return-value]
 
   @staticmethod
   def _ensure_httpx_ssl_ctx(
@@ -1353,7 +1353,7 @@ class BaseApiClient:
 
     if stream:
       if self._use_aiohttp():
-        self._aiohttp_session = await self._get_aiohttp_session()
+        self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
         url = http_request.url
         if self._use_google_auth_async():
           client_cert_source = mtls.default_client_cert_source()  # type: ignore[no-untyped-call]
@@ -1368,7 +1368,7 @@ class BaseApiClient:
             else:
               url = url.replace('googleapis.com', 'mtls.googleapis.com')
         try:
-          response = await self._aiohttp_session.request(
+          response = await self._aiohttp_session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1389,8 +1389,8 @@ class BaseApiClient:
               self._ensure_aiohttp_ssl_ctx(self._http_options)
           )
           # Instantiate a new session with the updated SSL context.
-          self._aiohttp_session = await self._get_aiohttp_session()
-          response = await self._aiohttp_session.request(
+          self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
+          response = await self._aiohttp_session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1422,7 +1422,7 @@ class BaseApiClient:
         return HttpResponse(client_response.headers, client_response)
     else:
       if self._use_aiohttp():
-        self._aiohttp_session = await self._get_aiohttp_session()
+        self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
         url = http_request.url
         if self._use_google_auth_async():
           client_cert_source = mtls.default_client_cert_source()  # type: ignore[no-untyped-call]
@@ -1437,7 +1437,7 @@ class BaseApiClient:
             else:
               url = url.replace('googleapis.com', 'mtls.googleapis.com')
         try:
-          response = await self._aiohttp_session.request(
+          response = await self._aiohttp_session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1466,8 +1466,8 @@ class BaseApiClient:
               self._ensure_aiohttp_ssl_ctx(self._http_options)
           )
           # Instantiate a new session with the updated SSL context.
-          self._aiohttp_session = await self._get_aiohttp_session()
-          response = await self._aiohttp_session.request(
+          self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
+          response = await self._aiohttp_session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1862,7 +1862,7 @@ class BaseApiClient:
 
     # Upload the file in chunks
     if self._use_aiohttp():  # pylint: disable=g-import-not-at-top
-      self._aiohttp_session = await self._get_aiohttp_session()
+      self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
       while True:
         if isinstance(file, io.IOBase):
           file_chunk = file.read(CHUNK_SIZE)
@@ -1904,7 +1904,7 @@ class BaseApiClient:
         retry_count = 0
         response = None
         while retry_count < MAX_RETRY_COUNT:
-          response = await self._aiohttp_session.request(
+          response = await self._aiohttp_session.request(  # type: ignore[union-attr]
               method='POST',
               url=upload_url,
               data=file_chunk,
@@ -2054,8 +2054,8 @@ class BaseApiClient:
         data = http_request.data
 
     if self._use_aiohttp():
-      self._aiohttp_session = await self._get_aiohttp_session()
-      response = await self._aiohttp_session.request(
+      self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
+      response = await self._aiohttp_session.request(  # type: ignore[union-attr]
           method=http_request.method,
           url=http_request.url,
           headers=http_request.headers,
