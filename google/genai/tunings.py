@@ -907,31 +907,6 @@ def _GetTuningJobParameters_to_vertex(
   return to_object
 
 
-def _ListTuningJobsConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  if getv(from_object, ['filter']) is not None:
-    setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
-
-  return to_object
-
-
 def _ListTuningJobsConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -957,20 +932,6 @@ def _ListTuningJobsConfig_to_vertex(
   return to_object
 
 
-def _ListTuningJobsParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    _ListTuningJobsConfig_to_mldev(
-        getv(from_object, ['config']), to_object, root_object
-    )
-
-  return to_object
-
-
 def _ListTuningJobsParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -980,33 +941,6 @@ def _ListTuningJobsParameters_to_vertex(
   if getv(from_object, ['config']) is not None:
     _ListTuningJobsConfig_to_vertex(
         getv(from_object, ['config']), to_object, root_object
-    )
-
-  return to_object
-
-
-def _ListTuningJobsResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['tunedModels']) is not None:
-    setv(
-        to_object,
-        ['tuning_jobs'],
-        [
-            _TuningJob_from_mldev(item, to_object, root_object)
-            for item in getv(from_object, ['tunedModels'])
-        ],
     )
 
   return to_object
@@ -1632,8 +1566,9 @@ class Tunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
       request_dict = _ListTuningJobsParameters_to_vertex(
           parameter_model, None, parameter_model
       )
@@ -1642,15 +1577,7 @@ class Tunings(_api_module.BaseModule):
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
-    else:
-      request_dict = _ListTuningJobsParameters_to_mldev(
-          parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -1673,11 +1600,6 @@ class Tunings(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _ListTuningJobsResponse_from_vertex(
-          response_dict, None, parameter_model
-      )
-
-    if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(
           response_dict, None, parameter_model
       )
 
@@ -2215,8 +2137,9 @@ class AsyncTunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
       request_dict = _ListTuningJobsParameters_to_vertex(
           parameter_model, None, parameter_model
       )
@@ -2225,15 +2148,7 @@ class AsyncTunings(_api_module.BaseModule):
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
-    else:
-      request_dict = _ListTuningJobsParameters_to_mldev(
-          parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -2258,11 +2173,6 @@ class AsyncTunings(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _ListTuningJobsResponse_from_vertex(
-          response_dict, None, parameter_model
-      )
-
-    if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(
           response_dict, None, parameter_model
       )
 
