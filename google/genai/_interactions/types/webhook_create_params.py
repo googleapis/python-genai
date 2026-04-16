@@ -67,8 +67,5 @@ class WebhookCreateParams(TypedDict, total=False):
     generate a unique ID.
     """
 
-    name: str
-    """Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`"""
-
     state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"]
     """The state of the webhook."""

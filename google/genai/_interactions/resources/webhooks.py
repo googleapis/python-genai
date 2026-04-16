@@ -91,7 +91,6 @@ class WebhooksResource(SyncAPIResource):
         ],
         uri: str,
         webhook_id: str | Omit = omit,
-        name: str | Omit = omit,
         state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -123,8 +122,6 @@ class WebhooksResource(SyncAPIResource):
           webhook_id: Optional. The webhook_id to use for the webhook. If not specified, the server
               will generate a unique ID.
 
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
-
           state: The state of the webhook.
 
           extra_headers: Send extra headers
@@ -145,7 +142,6 @@ class WebhooksResource(SyncAPIResource):
                 {
                     "subscribed_events": subscribed_events,
                     "uri": uri,
-                    "name": name,
                     "state": state,
                 },
                 webhook_create_params.WebhookCreateParams,
@@ -162,7 +158,7 @@ class WebhooksResource(SyncAPIResource):
 
     def update(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         subscribed_events: List[
@@ -183,7 +179,6 @@ class WebhooksResource(SyncAPIResource):
         ],
         uri: str,
         update_mask: str | Omit = omit,
-        name: str | Omit = omit,
         state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -214,8 +209,6 @@ class WebhooksResource(SyncAPIResource):
 
           update_mask: Optional. The list of fields to update.
 
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
-
           state: The state of the webhook.
 
           extra_headers: Send extra headers
@@ -230,15 +223,14 @@ class WebhooksResource(SyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return self._patch(
-            path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}", api_version=api_version, name=name),
             body=maybe_transform(
                 {
                     "subscribed_events": subscribed_events,
                     "uri": uri,
-                    "name": name,
                     "state": state,
                 },
                 webhook_update_params.WebhookUpdateParams,
@@ -310,7 +302,7 @@ class WebhooksResource(SyncAPIResource):
 
     def delete(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -336,10 +328,10 @@ class WebhooksResource(SyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return self._delete(
-            path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}", api_version=api_version, name=name),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -348,7 +340,7 @@ class WebhooksResource(SyncAPIResource):
 
     def get(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -374,10 +366,10 @@ class WebhooksResource(SyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return self._get(
-            path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}", api_version=api_version, name=name),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -386,7 +378,7 @@ class WebhooksResource(SyncAPIResource):
 
     def ping(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         body: webhook_ping_params.Body | Omit = omit,
@@ -415,10 +407,10 @@ class WebhooksResource(SyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return self._post(
-            path_template("/{api_version}/webhooks/{id}:ping", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}:ping", api_version=api_version, name=name),
             body=maybe_transform(body, webhook_ping_params.WebhookPingParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -428,7 +420,7 @@ class WebhooksResource(SyncAPIResource):
 
     def rotate_signing_secret(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         revocation_behavior: Literal["revoke_previous_secrets_after_h24", "revoke_previous_secrets_immediately"]
@@ -458,10 +450,10 @@ class WebhooksResource(SyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return self._post(
-            path_template("/{api_version}/webhooks/{id}:rotateSigningSecret", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}:rotateSigningSecret", api_version=api_version, name=name),
             body=maybe_transform(
                 {"revocation_behavior": revocation_behavior},
                 webhook_rotate_signing_secret_params.WebhookRotateSigningSecretParams,
@@ -515,7 +507,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
         ],
         uri: str,
         webhook_id: str | Omit = omit,
-        name: str | Omit = omit,
         state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -547,8 +538,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
           webhook_id: Optional. The webhook_id to use for the webhook. If not specified, the server
               will generate a unique ID.
 
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
-
           state: The state of the webhook.
 
           extra_headers: Send extra headers
@@ -569,7 +558,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
                 {
                     "subscribed_events": subscribed_events,
                     "uri": uri,
-                    "name": name,
                     "state": state,
                 },
                 webhook_create_params.WebhookCreateParams,
@@ -588,7 +576,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
     async def update(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         subscribed_events: List[
@@ -609,7 +597,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
         ],
         uri: str,
         update_mask: str | Omit = omit,
-        name: str | Omit = omit,
         state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -640,8 +627,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
           update_mask: Optional. The list of fields to update.
 
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
-
           state: The state of the webhook.
 
           extra_headers: Send extra headers
@@ -656,15 +641,14 @@ class AsyncWebhooksResource(AsyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return await self._patch(
-            path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}", api_version=api_version, name=name),
             body=await async_maybe_transform(
                 {
                     "subscribed_events": subscribed_events,
                     "uri": uri,
-                    "name": name,
                     "state": state,
                 },
                 webhook_update_params.WebhookUpdateParams,
@@ -738,7 +722,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
     async def delete(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -764,10 +748,10 @@ class AsyncWebhooksResource(AsyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return await self._delete(
-            path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}", api_version=api_version, name=name),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -776,7 +760,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
     async def get(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -802,10 +786,10 @@ class AsyncWebhooksResource(AsyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return await self._get(
-            path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}", api_version=api_version, name=name),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -814,7 +798,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
     async def ping(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         body: webhook_ping_params.Body | Omit = omit,
@@ -843,10 +827,10 @@ class AsyncWebhooksResource(AsyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return await self._post(
-            path_template("/{api_version}/webhooks/{id}:ping", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}:ping", api_version=api_version, name=name),
             body=await async_maybe_transform(body, webhook_ping_params.WebhookPingParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -856,7 +840,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
     async def rotate_signing_secret(
         self,
-        id: str,
+        name: str,
         *,
         api_version: str | None = None,
         revocation_behavior: Literal["revoke_previous_secrets_after_h24", "revoke_previous_secrets_immediately"]
@@ -886,10 +870,10 @@ class AsyncWebhooksResource(AsyncAPIResource):
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+        if not name:
+            raise ValueError(f"Expected a non-empty value for `name` but received {name!r}")
         return await self._post(
-            path_template("/{api_version}/webhooks/{id}:rotateSigningSecret", api_version=api_version, id=id),
+            path_template("/{api_version}/{name}:rotateSigningSecret", api_version=api_version, name=name),
             body=await async_maybe_transform(
                 {"revocation_behavior": revocation_behavior},
                 webhook_rotate_signing_secret_params.WebhookRotateSigningSecretParams,

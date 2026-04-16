@@ -63,8 +63,5 @@ class WebhookUpdateParams(TypedDict, total=False):
     update_mask: str
     """Optional. The list of fields to update."""
 
-    name: str
-    """Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`"""
-
     state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"]
     """The state of the webhook."""

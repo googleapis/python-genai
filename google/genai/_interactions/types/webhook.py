@@ -64,7 +64,10 @@ class Webhook(BaseModel):
     """Output only. The timestamp when the webhook was created."""
 
     name: Optional[str] = None
-    """Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`"""
+    """Output only.
+
+    Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
+    """
 
     new_signing_secret: Optional[str] = None
     """Output only. The new signing secret for the webhook. Only populated on create."""
