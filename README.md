@@ -918,6 +918,10 @@ output might be lower in quality.
 
 #### JSON Schema support
 
+Use `response_json_schema` when you want to pass a standard JSON Schema
+dictionary directly. If you are passing Python types, Pydantic models, or
+other SDK-native schema helpers, use `response_schema` instead.
+
 Schemas can be provided as standard JSON schema.
 
 ```python
@@ -954,7 +958,8 @@ print(response.text)
 
 #### Pydantic Model Schema support
 
-Schemas can be provided as Pydantic Models.
+Schemas can also be provided as Python types or Pydantic models through
+`response_schema`.
 
 ```python
 from pydantic import BaseModel
