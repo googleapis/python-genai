@@ -25,6 +25,7 @@ import logging
 import sys
 from ... import _transformers as t
 from ... import errors
+from ... import models as models_module
 from ... import types
 from .. import pytest_helper
 from enum import Enum
@@ -875,6 +876,22 @@ def test_model_selection_config_pydantic(client):
       ),
   )
   assert response.text
+
+
+def test_vertex_google_search_exclude_domains_is_camel_cased():
+  tool = types.Tool(
+      google_search=types.GoogleSearch(
+          exclude_domains=['amazon.com', 'facebook.com']
+      )
+  )
+
+  request_tool = models_module._Tool_to_vertex(tool)
+
+  assert request_tool == {
+      'googleSearch': {
+          'excludeDomains': ['amazon.com', 'facebook.com'],
+      }
+  }
 
 
 def test_sdk_logger_logs_warnings_once(client, caplog):

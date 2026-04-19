@@ -2911,6 +2911,33 @@ def _GoogleSearch_to_mldev(
   return to_object
 
 
+def _GoogleSearch_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
+
+  if getv(from_object, ['blocking_confidence']) is not None:
+    setv(
+        to_object,
+        ['blockingConfidence'],
+        getv(from_object, ['blocking_confidence']),
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    setv(to_object, ['excludeDomains'], getv(from_object, ['exclude_domains']))
+
+  if getv(from_object, ['time_range_filter']) is not None:
+    raise ValueError(
+        'time_range_filter parameter is not supported in Vertex AI.'
+    )
+
+  return to_object
+
+
 def _ImageConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -4199,7 +4226,13 @@ def _Tool_to_vertex(
     raise ValueError('file_search parameter is not supported in Vertex AI.')
 
   if getv(from_object, ['google_search']) is not None:
-    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_vertex(
+            getv(from_object, ['google_search']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['google_maps']) is not None:
     setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
