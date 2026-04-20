@@ -454,9 +454,6 @@ class AsyncSession:
     """
     # TODO(b/365983264) Handle intermittent issues for the user.
     while result := await self._receive():
-      if result.server_content and result.server_content.turn_complete:
-        yield result
-        break
       yield result
 
   async def start_stream(
