@@ -1012,7 +1012,11 @@ def t_batch_job_source(
     src = types.BatchJobSource(**src)
   if is_duck_type_of(src, types.BatchJobSource):
     vertex_sources = sum(
-        [src.gcs_uri is not None, src.bigquery_uri is not None]  # type: ignore[union-attr]
+        [
+            src.gcs_uri is not None,  # type: ignore[union-attr]
+            src.bigquery_uri is not None,  # type: ignore[union-attr]
+            src.vertex_dataset_name is not None,  # type: ignore[union-attr]
+        ]
     )
     mldev_sources = sum([
         src.inlined_requests is not None,  # type: ignore[union-attr]
@@ -1021,7 +1025,7 @@ def t_batch_job_source(
     if client.vertexai:
       if mldev_sources or vertex_sources != 1:
         raise ValueError(
-            'Exactly one of `gcs_uri` or `bigquery_uri` must be set, other '
+            'Exactly one of `gcs_uri`, `bigquery_uri`, or `vertex_dataset_name` must be set, other '
             'sources are not supported in Vertex AI.'
         )
     else:
@@ -1045,6 +1049,11 @@ def t_batch_job_source(
       return types.BatchJobSource(
           format='bigquery',
           bigquery_uri=src,
+      )
+    elif re.match(r'^projects/[^/]+/locations/[^/]+/datasets/[^/]+$', src):
+      return types.BatchJobSource(
+          format='vertex-dataset',
+          vertex_dataset_name=src,
       )
     elif src.startswith('files/'):
       return types.BatchJobSource(
