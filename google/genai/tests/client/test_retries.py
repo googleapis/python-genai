@@ -17,6 +17,7 @@
 
 import asyncio
 from collections.abc import Sequence
+import contextlib
 import datetime
 from unittest import mock
 import pytest
@@ -1359,5 +1360,62 @@ def test_aiohttp_retries_failed_request_retries_unsuccessfully_mtls(
         except errors.APIError as e:
           assert e.code == 504
         mock_request.assert_called()
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(AsyncAuthorizedSession, 'close', autospec=True)
+@mock.patch.object(AsyncAuthorizedSession, 'request', autospec=True)
+def test_aiohttp_retries_client_connector_error_recreates_mtls_session(
+    mock_request, mock_close
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    connector_error = aiohttp.ClientConnectorError(
+        connection_key=aiohttp.client_reqrep.ConnectionKey(
+            'localhost', 80, False, True, None, None, None
+        ),
+        os_error=OSError,
+    )
+    res200 = await _aiohttp_async_response(200)
+    mock_auth_res200 = mock.Mock(spec=AsyncAuthorizedSessionResponse)
+    mock_auth_res200._response = res200
+    mock_request.side_effect = [connector_error, mock_auth_res200]
+
+    sessions = []
+    original_get_session = api_client.BaseApiClient._get_aiohttp_session
+
+    async def tracking_get_session(self):
+      session = await original_get_session(self)
+      if session not in sessions:
+        sessions.append(session)
+      return session
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with mock.patch.object(
+        api_client.BaseApiClient,
+        '_get_aiohttp_session',
+        new=tracking_get_session,
+    ):
+      with mock.patch(
+          'google.auth.transport.mtls.should_use_client_cert', return_value=True
+      ):
+        with _patch_auth_default():
+          response = await client.async_request(
+              http_method='GET', path='path', request_dict={}
+          )
+
+    assert response.headers['status-code'] == '200'
+    assert len(sessions) == 2
+    mock_close.assert_awaited_once_with(sessions[0])
+    with contextlib.suppress(Exception):
+      await client.aclose()
 
   asyncio.run(run())
