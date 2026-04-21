@@ -15,8 +15,7 @@
 
 import asyncio
 import os
-from types import TracebackType
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import google.auth
 import pydantic
@@ -47,6 +46,7 @@ from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, Gem
 from . import _interactions
 
 from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
+from ._interactions.resources import WebhooksResource, AsyncWebhooksResource
 _interactions_experimental_warned = False
 
 class AsyncGeminiNextGenAPIClientAdapter(_interactions.AsyncGeminiNextGenAPIClientAdapter):
@@ -200,6 +200,10 @@ class AsyncClient:
     return self._nextgen_client.interactions
 
   @property
+  def webhooks(self) -> AsyncWebhooksResource:
+    return self._nextgen_client.webhooks
+
+  @property
   def _has_nextgen_client(self) -> bool:
     return (
         hasattr(self, '_nextgen_client_instance') and
@@ -279,12 +283,8 @@ class AsyncClient:
   async def __aenter__(self) -> 'AsyncClient':
     return self
 
-  async def __aexit__(
-      self,
-      exc_type: Optional[Exception],
-      exc_value: Optional[Exception],
-      traceback: Optional[TracebackType],
-  ) -> None:
+  async def __aexit__(self, *args: Any, **kwargs: Any) -> None:
+    del args, kwargs
     await self.aclose()
 
   def __del__(self) -> None:
@@ -547,6 +547,10 @@ class Client:
     return self._nextgen_client.interactions
 
   @property
+  def webhooks(self) -> WebhooksResource:
+    return self._nextgen_client.webhooks
+
+  @property
   def _has_nextgen_client(self) -> bool:
     return (
         hasattr(self, '_nextgen_client_instance') and
@@ -631,12 +635,8 @@ class Client:
   def __enter__(self) -> 'Client':
     return self
 
-  def __exit__(
-      self,
-      exc_type: Optional[Exception],
-      exc_value: Optional[Exception],
-      traceback: Optional[TracebackType],
-  ) -> None:
+  def __exit__(self, *args: Any, **kwargs: Any) -> None:
+    del args, kwargs
     self.close()
 
   def __del__(self) -> None:

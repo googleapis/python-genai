@@ -28,6 +28,7 @@ from .text_content_param import TextContentParam
 from .audio_content_param import AudioContentParam
 from .image_content_param import ImageContentParam
 from .video_content_param import VideoContentParam
+from .webhook_config_param import WebhookConfigParam
 from .thought_content_param import ThoughtContentParam
 from .document_content_param import DocumentContentParam
 from .generation_config_param import GenerationConfigParam
@@ -102,6 +103,13 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     tools: Iterable[ToolParam]
     """A list of tool declarations the model may call during interaction."""
 
+    webhook_config: WebhookConfigParam
+    """Optional.
+
+    Webhook configuration for receiving notifications when the interaction
+    completes.
+    """
+
 
 Input: TypeAlias = Union[
     Iterable[ContentParam],
@@ -171,6 +179,13 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
 
     tools: Iterable[ToolParam]
     """A list of tool declarations the model may call during interaction."""
+
+    webhook_config: WebhookConfigParam
+    """Optional.
+
+    Webhook configuration for receiving notifications when the interaction
+    completes.
+    """
 
 
 AgentConfig: TypeAlias = Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam]

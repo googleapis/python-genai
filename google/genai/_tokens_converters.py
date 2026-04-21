@@ -423,6 +423,23 @@ def _LiveConnectConfig_to_mldev(
         getv(from_object, ['history_config']),
     )
 
+  if getv(from_object, ['avatar_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'avatarConfig'],
+        getv(from_object, ['avatar_config']),
+    )
+
+  if getv(from_object, ['safety_settings']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'safetySettings'],
+        [
+            _SafetySetting_to_mldev(item, to_object)
+            for item in getv(from_object, ['safety_settings'])
+        ],
+    )
+
   return to_object
 
 
@@ -523,6 +540,23 @@ def _Part_to_mldev(
 
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  return to_object
+
+
+def _SafetySetting_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['category']) is not None:
+    setv(to_object, ['category'], getv(from_object, ['category']))
+
+  if getv(from_object, ['method']) is not None:
+    raise ValueError('method parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['threshold']) is not None:
+    setv(to_object, ['threshold'], getv(from_object, ['threshold']))
 
   return to_object
 

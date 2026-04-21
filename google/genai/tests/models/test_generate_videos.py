@@ -104,9 +104,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 labels={"veo_label_key": "generate_videos"},
             ),
         ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
-        ),
+        exception_if_mldev="not supported in Gemini API",
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_source",
@@ -202,9 +200,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
-        ),
+        exception_if_mldev="not supported in Gemini API",
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_mldev",
@@ -251,6 +247,39 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev=(
             "output_gcs_uri parameter is not supported in Gemini API"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_with_webhook_config",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            prompt="Man with a dog",
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                webhook_config=types.WebhookConfig(
+                    uris=["https://example.com/webhook"],
+                    user_metadata={"job_id": "video_123"},
+                ),
+            ),
+        ),
+        exception_if_vertex=(
+            "webhook_config parameter is not supported in Vertex AI"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_with_webhook_config_dict",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            prompt="Man with a dog",
+            config={
+                "number_of_videos": 1,
+                "webhook_config": {
+                    "uris": ["https://example.com/webhook"],
+                },
+            },
+        ),
+        exception_if_vertex=(
+            "webhook_config parameter is not supported in Vertex AI"
         ),
     ),
 ]
@@ -757,4 +786,3 @@ async def test_generated_video_extension_from_source_poll_async(client):
   video2 = operation2.result.generated_videos[0].video
   assert video2.uri
   assert await client.aio.files.download(file=video2)
-
