@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from unittest import mock
+import httpx
 import pytest
 from ... import client as client_lib
 
@@ -82,3 +83,16 @@ async def test_async_client_timeout():
         max_retries=mock.ANY,
         client_adapter=mock.ANY,
     )
+
+
+def test_interactions_default_headers_use_single_user_agent():
+  client = client_lib.Client(
+      api_key="placeholder",
+      http_options={"api_version": "v1alpha"},
+  )
+
+  headers = httpx.Headers(client.interactions._client.default_headers)
+
+  assert len(headers.get_list("user-agent")) == 1
+  assert "google-genai-sdk/" in headers["user-agent"]
+  assert "gl-python/" in headers["user-agent"]
