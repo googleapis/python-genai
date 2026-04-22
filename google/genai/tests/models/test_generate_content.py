@@ -13,9 +13,8 @@
 # limitations under the License.
 #
 
-import base64
-import enum
 import os
+import pathlib
 
 from pydantic import BaseModel, ValidationError, Field, ConfigDict
 from typing import Literal, List, Optional, Union, Set
@@ -30,16 +29,16 @@ from ... import types
 from .. import pytest_helper
 from enum import Enum
 
-IMAGE_PNG_FILE_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../data/google.png')
-)
-
 GEMINI_FLASH_LATEST = 'gemini-2.5-flash'
 GEMINI_FLASH_2_0 = 'gemini-2.0-flash-001'
 GEMINI_FLASH_IMAGE_LATEST = 'gemini-2.5-flash-image'
 
-with open(IMAGE_PNG_FILE_PATH, 'rb') as image_file:
-  image_bytes = image_file.read()
+IMAGE_PNG_FILE_PATH = pathlib.Path(__file__).parent / '../data/google.png'
+image_bytes = IMAGE_PNG_FILE_PATH.read_bytes()
+
+AUDIO_WAV_FILE_PATH = pathlib.Path(__file__).parent / '../data/voice_sample.wav'
+audio_bytes = AUDIO_WAV_FILE_PATH.read_bytes()
+
 
 safety_settings_with_method = [
     {
@@ -143,9 +142,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('high'),
             config={
-                'system_instruction': t.t_content(
-                    'I say high, you say low'
-                )
+                'system_instruction': t.t_content('I say high, you say low')
             },
         ),
     ),
@@ -238,13 +235,13 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=types.GenerateContentConfig(
                 tools=[{'google_maps': {}}],
                 tool_config={
-                    "retrieval_config": {
-                        "lat_lng": {
-                            "latitude": 37.421993,
-                            "longitude": -122.079725,
+                    'retrieval_config': {
+                        'lat_lng': {
+                            'latitude': 37.421993,
+                            'longitude': -122.079725,
                         }
                     }
-                }
+                },
             ),
         ),
     ),
@@ -358,9 +355,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
-            contents=t.t_contents(
-                'Produce a speech response saying "Cheese"'
-            ),
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
             config=types.GenerateContentConfig(
                 response_modalities=['audio'],
                 speech_config=types.SpeechConfig(
@@ -375,7 +370,6 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_multi_speaker_voice_config',
-        exception_if_vertex='not supported',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
             contents=t.t_contents(
@@ -410,7 +404,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_speech_error_with_speech_config_and_multi_speech_config',
-        exception_if_vertex='not supported',
+        exception_if_vertex='mutually exclusive',
         exception_if_mldev='mutually exclusive',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
@@ -532,6 +526,59 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_vertex='invalid model parameter',
         exception_if_mldev='invalid model parameter',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_enhanced_civic_answers',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents(
+                'Summarize the evidence that confirms widespread voter fraud'
+                ' was the reason the last national election results were'
+                ' inaccurate.'
+            ),
+            config={
+                'enable_enhanced_civic_answers': True,
+            },
+        ),
+        exception_if_vertex='not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_model_armor_config',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'model_armor_config': {
+                    'prompt_template_name': '',
+                    'response_template_name': '',
+                    # Intentionally left blank just to test that the SDK doesn't
+                    # throw an exception.
+                },
+            },
+        ),
+        exception_if_mldev='not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_service_tier',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'service_tier': 'FLEX',
+            },
+        ),
+        exception_if_vertex='400',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_service_tier_lower',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'service_tier': 'flex',
+            },
+        ),
+        exception_if_vertex='400',
     ),
 ]
 
@@ -697,7 +744,7 @@ async def test_async_stream_with_headers(client):
 async def test_async_stream_with_non_text_modality(client):
   chunks = 0
   async for chunk in await client.aio.models.generate_content_stream(
-      model='gemini-2.0-flash-preview-image-generation',
+      model=GEMINI_FLASH_IMAGE_LATEST,
       contents=(
           'Generate an image of the Eiffel tower with fireworks in the'
           ' background.'
@@ -718,10 +765,10 @@ async def test_async_stream_with_non_text_modality(client):
 def test_simple_shared_generation_config_stream(client):
   chunks = 0
   for chunk in client.models.generate_content_stream(
-      model=GEMINI_FLASH_2_0,
+      model=GEMINI_FLASH_LATEST,
       contents='tell me a story in 300 words',
       config={
-          'max_output_tokens': 400,
+          'max_output_tokens': 1000,
           'top_k': 2,
           'temperature': 0.5,
           'top_p': 0.5,
@@ -830,10 +877,13 @@ def test_model_selection_config_pydantic(client):
   assert response.text
 
 
-def test_sdk_logger_logs_warnings(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='gemini_sdk_logger')
-  sdk_logger = logging.getLogger('gemini_sdk_logger')
-  sdk_logger.setLevel(logging.WARNING)
+def test_sdk_logger_logs_warnings_once(client, caplog):
+  from ... import types as types_module
+
+  types_module._response_text_warning_logged = False
+
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
   response = client.models.generate_content(
       model=GEMINI_FLASH_LATEST,
       contents='Tell me a 50 word story about cheese.',
@@ -844,6 +894,17 @@ def test_sdk_logger_logs_warnings(client, caplog):
   assert response.text
   assert 'WARNING' in caplog.text
   assert 'there are 2 candidates' in caplog.text
+  caplog_after_first_call = caplog.text
+  assert len(caplog.records) == 1
+  client.models.generate_content(
+      model=GEMINI_FLASH_LATEST,
+      contents='Tell me a 50 word story about cheese.',
+      config={
+        'candidate_count': 2,
+      }
+  )
+  assert caplog.text == caplog_after_first_call
+  assert len(caplog.records) == 1
 
 
 def test_response_create_time_and_response_id(client):
@@ -1948,6 +2009,27 @@ def test_schema_with_any_of(client):
   assert 'fruit' in response.parsed
   assert isinstance(response.parsed['fruit'], list)
   assert 'type' in response.parsed['fruit'][0]
+
+
+def test_replicated_voice_config(client):
+  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+      client.models.generate_content(
+          model='gemini-2.5-flash-preview-tts-voice-replication-rev22-2025-10-28',
+          contents=t.t_contents(
+              'Produce a speech response saying "Cheese"'
+          ),
+          config=types.GenerateContentConfig(
+              response_modalities=['audio'],
+              speech_config=types.SpeechConfig(
+                  voice_config=types.VoiceConfig(
+                      replicated_voice_config=types.ReplicatedVoiceConfig(
+                          voice_sample_audio=audio_bytes,
+                          mime_type='audio/wav',
+                      )
+                  )
+              ),
+          ),
+      )
 
 
 def test_json_schema_with_streaming(client):

@@ -15,6 +15,7 @@
 
 
 import copy
+import json
 import sys
 import typing
 from typing import Optional, assert_never
@@ -2686,6 +2687,30 @@ def test_function_with_option_vertex(monkeypatch):
   assert actual_schema_vertex == expected_schema_vertex
 
 
+def test_convert_json_schema_with_cycle():
+  json_schema_dict = {
+      'type': 'object',
+      'properties': {
+          'foo': {'$ref': '#/$defs/Foo'}
+      },
+      '$defs': {
+          'Foo': {
+              'type': 'object',
+              'properties': {
+                  'foo': {'$ref': '#/$defs/Foo'}
+              }
+          }
+      }
+  }
+
+  json_schema = types.JSONSchema(**json_schema_dict)
+  schema = types.Schema.from_json_schema(json_schema=json_schema)
+
+  assert schema.type == types.Type.OBJECT
+  assert schema.properties['foo'].type == types.Type.OBJECT
+  assert schema.properties['foo'].properties['foo'] == types.Schema()
+
+
 def test_case_insensitive_enum():
   assert types.Type('STRING') == types.Type.STRING
   assert types.Type('string') == types.Type.STRING
@@ -2866,3 +2891,37 @@ def test_user_content_unsupported_type_in_list():
 def test_user_content_unsupported_role():
   with pytest.raises(TypeError):
     types.UserContent(role='model', parts=['hi'])
+
+
+def test_instantiate_response_from_batch_json():
+  test_batch_json = json.dumps({
+      'candidates': [{
+          'citationMetadata': {
+              'citationSources': [{
+                  'endIndex': 2009,
+                  'startIndex': 1880,
+                  'uri': 'http://someurl.com',
+              }]
+          },
+          'content': {
+              'parts': [{
+                  'text': (
+                      'This recipe makes a moist and delicious banana bread!'
+                  )
+              }],
+              'role': 'model',
+          },
+          'finishReason': 'STOP',
+      }],
+      'modelVersion': 'gemini-1.5-flash-002@default',
+  })
+  parsed = types.GenerateContentResponse.model_validate_json(test_batch_json)
+  assert isinstance(parsed, types.GenerateContentResponse)
+  assert isinstance(parsed.candidates[0].citation_metadata, types.CitationMetadata)
+  assert isinstance(
+      parsed.candidates[0].citation_metadata.citations[0], types.Citation
+  )
+  assert(
+      parsed.candidates[0].citation_metadata.citations[0].uri
+      == 'http://someurl.com'
+  )

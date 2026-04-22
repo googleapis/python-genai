@@ -24,7 +24,7 @@ import pytest
 from ... import types
 from .. import pytest_helper
 
-IMAGEN_MODEL_LATEST = 'imagen-3.0-generate-002'
+IMAGEN_MODEL_LATEST = 'imagen-4.0-upscale-preview'
 
 IMAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/bridge1.png')

@@ -261,7 +261,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_rag_model_ga',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-001',
+            model='gemini-2.5-flash',
             contents=t.t_contents(
                 'How much gain or loss did Google get in the Motorola Mobile'
                 ' deal in 2014?',
@@ -602,6 +602,85 @@ test_table: list[pytest_helper.TestTableItem] = [
             contents=t.t_contents('What is the nearest airport to Seattle?'),
             config={'tools': [{'google_maps': {'enable_widget': True}}]},
         ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_include_server_side_tool_invocations',
+        parameters=types._GenerateContentParameters(
+            model='gemini-3.1-pro-preview',
+            contents=t.t_contents(
+                'Use Google Search to tell me about the 1970 world cup match'),
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(),
+                    ),
+                ],
+                tool_config=types.ToolConfig(
+                    include_server_side_tool_invocations=True,
+                ),
+            ),
+        ),
+        exception_if_vertex='parameter is not supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_include_server_side_tool_invocations_with_tool_call_echo',
+        parameters=types._GenerateContentParameters(
+            model='gemini-3.1-pro-preview',
+            contents=[
+                types.Content.model_validate(item)
+                for item in [
+                    {
+                        'role': 'user',
+                        'parts': [{'text': 'Why is the sky blue?'}],
+                    },
+                    {
+                        'role': 'model',
+                        'parts': [
+                            {
+                                'tool_call': {
+                                    'tool_type': 'GOOGLE_SEARCH',
+                                    'args': {
+                                        'query': 'why is the sky blue',
+                                    },
+                                },
+                            },
+                            {
+                                'tool_response': {
+                                    'tool_type': 'GOOGLE_SEARCH',
+                                    'response': {
+                                        'result': (
+                                            'The sky is blue because of'
+                                            ' Rayleigh scattering.'
+                                        ),
+                                    },
+                                },
+                            },
+                            {
+                                'text': (
+                                    'The sky is blue due to a phenomenon called'
+                                    ' Rayleigh scattering.'
+                                ),
+                            },
+                        ],
+                    },
+                    {
+                        'role': 'user',
+                        'parts': [{'text': 'What about Mars?'}],
+                    },
+                ]
+            ],
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        google_search=types.GoogleSearch(),
+                    ),
+                ],
+                tool_config=types.ToolConfig(
+                    include_server_side_tool_invocations=True,
+                ),
+            ),
+        ),
+        exception_if_vertex='parameter is not supported',
     ),
 ]
 
@@ -1758,4 +1837,69 @@ async def test_function_declaration_with_callable_async_stream(client):
             ],
         },
     ):
+      pass
+
+def test_server_side_mcp_only(client):
+  """Test server side mcp, happy path."""
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    response = client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents=('What is the weather like in New York (NY) on 02/02/2026?'),
+        config=types.GenerateContentConfig(
+            tools=[types.Tool(
+                mcp_servers=[types.McpServer(
+                    name='get_weather',
+                    streamable_http_transport=types.StreamableHttpTransport(
+                        url='https://gemini-api-demos.uc.r.appspot.com/mcp',
+                        headers={'AUTHORIZATION': 'Bearer github_pat_XXXX'},
+                    ),
+                )]
+            )]
+        )
+    )
+    assert response.text
+
+@pytest.mark.asyncio
+async def test_server_side_mcp_only_async(client):
+  """Test server side mcp, happy path."""
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    response = await client.aio.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=(
+            'What is the weather like in New York on 02/02/2026?'
+        ),
+        config=types.GenerateContentConfig(
+            tools=[types.Tool(
+                mcp_servers=[types.McpServer(
+                    name='get_weather',
+                    streamable_http_transport=types.StreamableHttpTransport(
+                        url='https://gemini-api-demos.uc.r.appspot.com/mcp',
+                        headers={'AUTHORIZATION': 'Bearer github_pat_XXXX'},
+                    ),
+                )]
+
+            )]
+        )
+    )
+    assert response.text
+
+def test_server_side_mcp_only_stream(client):
+  """Test server side mcp, happy path."""
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    response = client.models.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents=('What is the weather like in New York (NY) on 02/02/2026?'),
+        config=types.GenerateContentConfig(
+            tools=[types.Tool(
+                mcp_servers=[types.McpServer(
+                    name='get_weather',
+                    streamable_http_transport=types.StreamableHttpTransport(
+                        url='https://gemini-api-demos.uc.r.appspot.com/mcp',
+                        headers={'AUTHORIZATION': 'Bearer github_pat_XXXX'},
+                    ),
+                )]
+            )]
+        )
+    )
+    for chunk in response:
       pass

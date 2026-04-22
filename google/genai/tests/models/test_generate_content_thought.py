@@ -32,6 +32,18 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
     ),
+    pytest_helper.TestTableItem(
+        name='test_thinking_level',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Explain the monty hall problem.'),
+            config={
+                'thinking_config': {
+                    'thinking_level': "LOW"
+                },
+            },
+        ),
+    ),
 ]
 
 

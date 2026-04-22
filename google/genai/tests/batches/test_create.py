@@ -65,6 +65,51 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='Unsupported destination',
         has_union=True,
     ),
+    pytest_helper.TestTableItem(
+        name='test_create_with_webhook_config',
+        parameters=types._CreateBatchJobParameters(
+            model=_GEMINI_MODEL,
+            src={
+                'inlined_requests': [
+                    {
+                        'contents': [
+                            {'parts': [{'text': 'say hello'}], 'role': 'user'}
+                        ]
+                    },
+                ]
+            },
+            config=types.CreateBatchJobConfig(
+                display_name=_DISPLAY_NAME,
+                webhook_config=types.WebhookConfig(
+                    uris=['https://example.com/webhook'],
+                    user_metadata={'batch_id': '123'},
+                ),
+            ),
+        ),
+        exception_if_vertex='not supported in Vertex AI',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_create_with_webhook_config_dict',
+        parameters=types._CreateBatchJobParameters(
+            model=_GEMINI_MODEL,
+            src={
+                'inlined_requests': [
+                    {
+                        'contents': [
+                            {'parts': [{'text': 'say hello'}], 'role': 'user'}
+                        ]
+                    },
+                ]
+            },
+            config={
+                'display_name': _DISPLAY_NAME,
+                'webhook_config': {
+                    'uris': ['https://example.com/webhook'],
+                },
+            },
+        ),
+        exception_if_vertex='not supported in Vertex AI',
+    ),
 ]
 
 pytestmark = [

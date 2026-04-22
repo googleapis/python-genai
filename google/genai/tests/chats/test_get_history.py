@@ -55,7 +55,7 @@ def mock_api_client(vertexai=False):
 
 
 @pytest.fixture
-def mock_generate_content_invalid_content():
+def mock_generate_content_with_empty_text_part():
   with mock.patch.object(
       models.Models, 'generate_content'
   ) as mock_generate_content:
@@ -84,7 +84,7 @@ def mock_generate_content_empty_content():
 
 
 @pytest.fixture
-def mock_generate_content_stream_invalid_content():
+def mock_generate_content_stream_with_empty_text_part():
   with mock.patch.object(
       models.Models, 'generate_content_stream'
   ) as mock_generate_content:
@@ -95,7 +95,8 @@ def mock_generate_content_stream_invalid_content():
                     content=types.Content(
                         role='model',
                         parts=[types.Part(text='')],
-                    )
+                    ),
+                    finish_reason=types.FinishReason.STOP,
                 )
             ]
         )
@@ -166,7 +167,7 @@ def test_history_start_with_valid_model_content():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
@@ -183,7 +184,7 @@ def test_history_start_with_invalid_model_content():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == [types.Content(role='user', parts=[types.Part.from_text(text='Hello')])]
@@ -203,7 +204,7 @@ def test_history_with_consecutive_valid_user_inputs():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
@@ -227,7 +228,7 @@ def test_history_with_valid_and_invalid_user_inputs():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
@@ -247,7 +248,7 @@ def test_history_with_consecutive_valid_model_outputs():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
@@ -271,7 +272,7 @@ def test_history_with_valid_and_invalid_model_output():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == []
@@ -295,7 +296,7 @@ def test_history_end_with_user_input():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
@@ -313,7 +314,7 @@ def test_unrecognized_role_in_history():
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
   with pytest.raises(ValueError) as e:
-    chat = chats_module.create(model='gemini-1.5-flash', history=history)
+    chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert 'Role must be user or model' in str(e)
 
@@ -339,7 +340,7 @@ def test_sync_chat_create():
 
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
@@ -370,7 +371,7 @@ def test_async_chat_create():
 
   models_module = models.AsyncModels(mock_api_client)
   chats_module = chats.AsyncChats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   assert chat.get_history() == history
   assert chat.get_history(curated=True) == history
@@ -385,7 +386,7 @@ def test_sync_chat_create_with_history_dict():
   ]
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   expected_history = [
       types.Content(
@@ -416,7 +417,7 @@ def test_async_chat_create_with_history_dict():
   ]
   models_module = models.AsyncModels(mock_api_client)
   chats_module = chats.AsyncChats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash', history=history)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
 
   expected_history = [
       types.Content(
@@ -474,17 +475,17 @@ def test_history_with_invalid_turns():
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
   chat = chats_module.create(
-      model='gemini-1.5-flash', history=comprehensive_history
+      model='gemini-2.5-flash', history=comprehensive_history
   )
 
   assert chat.get_history() == comprehensive_history
   assert chat.get_history(curated=True) == curated_history
 
 
-def test_chat_with_invalid_content(mock_generate_content_invalid_content):
+def test_chat_with_empty_text_part(mock_generate_content_with_empty_text_part):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash')
+  chat = chats_module.create(model='gemini-2.5-flash')
 
   chat.send_message('Hello')
 
@@ -496,13 +497,13 @@ def test_chat_with_invalid_content(mock_generate_content_invalid_content):
       ),
   ]
   assert chat.get_history() == expected_comprehensive_history
-  assert not chat.get_history(curated=True)
+  assert chat.get_history(curated=True) == expected_comprehensive_history
 
 
 def test_chat_with_empty_content(mock_generate_content_empty_content):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash')
+  chat = chats_module.create(model='gemini-2.5-flash')
 
   chat.send_message('Hello')
 
@@ -517,12 +518,12 @@ def test_chat_with_empty_content(mock_generate_content_empty_content):
   assert not chat.get_history(curated=True)
 
 
-def test_chat_stream_with_invalid_content(
-    mock_generate_content_stream_invalid_content,
+def test_chat_stream_with_empty_text_part(
+    mock_generate_content_stream_with_empty_text_part,
 ):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash')
+  chat = chats_module.create(model='gemini-2.5-flash')
 
   chunks = chat.send_message_stream('Hello')
   for chunk in chunks:
@@ -536,7 +537,7 @@ def test_chat_stream_with_invalid_content(
       ),
   ]
   assert chat.get_history() == expected_comprehensive_history
-  assert not chat.get_history(curated=True)
+  assert chat.get_history(curated=True) == expected_comprehensive_history
 
 
 def test_chat_stream_with_empty_content(
@@ -544,7 +545,7 @@ def test_chat_stream_with_empty_content(
 ):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash')
+  chat = chats_module.create(model='gemini-2.5-flash')
 
   chunks = chat.send_message_stream('Hello')
   for chunk in chunks:
@@ -564,7 +565,7 @@ def test_chat_stream_with_empty_content(
 def test_chat_with_afc_history(mock_generate_content_afc_history):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash')
+  chat = chats_module.create(model='gemini-2.5-flash')
 
   chat.send_message('Hello')
 
@@ -581,7 +582,7 @@ def test_chat_with_afc_history(mock_generate_content_afc_history):
 def test_chat_stream_with_afc_history(mock_generate_content_stream_afc_history):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-1.5-flash')
+  chat = chats_module.create(model='gemini-2.5-flash')
 
   chunks = chat.send_message_stream('Hello')
   for chunk in chunks:
