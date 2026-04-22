@@ -1296,7 +1296,7 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['cached_content']) is not None:
     setv(
