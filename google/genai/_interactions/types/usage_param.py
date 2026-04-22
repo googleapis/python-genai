@@ -23,6 +23,7 @@ from typing_extensions import Literal, TypedDict
 __all__ = [
     "UsageParam",
     "CachedTokensByModality",
+    "GroundingToolCount",
     "InputTokensByModality",
     "OutputTokensByModality",
     "ToolUseTokensByModality",
@@ -37,6 +38,16 @@ class CachedTokensByModality(TypedDict, total=False):
 
     tokens: int
     """Number of tokens for the modality."""
+
+
+class GroundingToolCount(TypedDict, total=False):
+    """The number of grounding tool counts."""
+
+    count: int
+    """The number of grounding tool counts."""
+
+    type: Literal["google_search", "google_map", "your_data"]
+    """The grounding tool type associated with the count."""
 
 
 class InputTokensByModality(TypedDict, total=False):
@@ -74,6 +85,9 @@ class UsageParam(TypedDict, total=False):
 
     cached_tokens_by_modality: Iterable[CachedTokensByModality]
     """A breakdown of cached token usage by modality."""
+
+    grounding_tool_count: Iterable[GroundingToolCount]
+    """Grounding tool count."""
 
     input_tokens_by_modality: Iterable[InputTokensByModality]
     """A breakdown of input token usage by modality."""
