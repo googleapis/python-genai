@@ -15,8 +15,7 @@
 
 import asyncio
 import os
-from types import TracebackType
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import google.auth
 import pydantic
@@ -284,12 +283,8 @@ class AsyncClient:
   async def __aenter__(self) -> 'AsyncClient':
     return self
 
-  async def __aexit__(
-      self,
-      exc_type: Optional[Exception],
-      exc_value: Optional[Exception],
-      traceback: Optional[TracebackType],
-  ) -> None:
+  async def __aexit__(self, *args: Any, **kwargs: Any) -> None:
+    del args, kwargs
     await self.aclose()
 
   def __del__(self) -> None:
@@ -640,12 +635,8 @@ class Client:
   def __enter__(self) -> 'Client':
     return self
 
-  def __exit__(
-      self,
-      exc_type: Optional[Exception],
-      exc_value: Optional[Exception],
-      traceback: Optional[TracebackType],
-  ) -> None:
+  def __exit__(self, *args: Any, **kwargs: Any) -> None:
+    del args, kwargs
     self.close()
 
   def __del__(self) -> None:

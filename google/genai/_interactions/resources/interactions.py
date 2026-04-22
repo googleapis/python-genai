@@ -210,7 +210,14 @@ class InteractionsResource(SyncAPIResource):
         self,
         *,
         api_version: str | None = None,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
         input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
@@ -280,7 +287,14 @@ class InteractionsResource(SyncAPIResource):
         self,
         *,
         api_version: str | None = None,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
         input: interaction_create_params.Input,
         stream: Literal[True],
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
@@ -434,7 +448,15 @@ class InteractionsResource(SyncAPIResource):
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
         webhook_config: WebhookConfigParam | Omit = omit,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]] | Omit = omit,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ]
+        | Omit = omit,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -884,7 +906,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
         self,
         *,
         api_version: str | None = None,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
         input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
@@ -954,7 +983,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
         self,
         *,
         api_version: str | None = None,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
         input: interaction_create_params.Input,
         stream: Literal[True],
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
@@ -1108,7 +1144,15 @@ class AsyncInteractionsResource(AsyncAPIResource):
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
         webhook_config: WebhookConfigParam | Omit = omit,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]] | Omit = omit,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ]
+        | Omit = omit,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
