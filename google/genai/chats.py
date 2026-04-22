@@ -35,8 +35,6 @@ def _validate_content(content: Content) -> bool:
   for part in content.parts:
     if part == Part():
       return False
-    if part.text is not None and part.text == "":
-      return False
   return True
 
 
@@ -454,6 +452,7 @@ class AsyncChat(_BaseChat):
     Usage:
 
     .. code-block:: python
+
       chat = client.aio.chats.create(model='gemini-2.0-flash')
       async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)

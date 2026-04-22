@@ -43,6 +43,14 @@ def test_file():
   )
 
 
+def test_file_dict():
+  assert t.t_part(
+      {'file_uri': 'gs://test', 'mime_type': 'image/png'}
+  ) == types.Part(
+      file_data=types.FileData(file_uri='gs://test', mime_type='image/png')
+  )
+
+
 def test_file_no_uri():
   with pytest.raises(ValueError):
     t.t_part(types.File(mime_type='image/png'))

@@ -19,6 +19,7 @@ from importlib.metadata import PackageNotFoundError, version
 import typing
 from typing import Any
 
+from . import _common
 from . import types
 
 if typing.TYPE_CHECKING:
@@ -89,7 +90,9 @@ def set_mcp_usage_header(headers: dict[str, str]) -> None:
   ).lstrip()
 
 
-def _filter_to_supported_schema(schema: dict[str, Any]) -> dict[str, Any]:
+def _filter_to_supported_schema(
+    schema: _common.StringDict,
+) -> _common.StringDict:
   """Filters the schema to only include fields that are supported by JSONSchema."""
   supported_fields: set[str] = set(types.JSONSchema.model_fields.keys())
   schema_field_names: tuple[str] = ("items",)  # 'additional_properties' to come

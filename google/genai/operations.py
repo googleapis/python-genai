@@ -17,53 +17,16 @@
 
 import json
 import logging
-from typing import Any, Optional, Union
+from typing import Any, Optional, TypeVar, Union
 from urllib.parse import urlencode
 
 from . import _api_module
 from . import _common
-from . import _transformers as t
 from . import types
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 logger = logging.getLogger('google_genai.operations')
-
-
-def _GetOperationParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _GetOperationParameters_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
 
 
 def _FetchPredictOperationParameters_to_vertex(
@@ -81,219 +44,47 @@ def _FetchPredictOperationParameters_to_vertex(
         getv(from_object, ['resource_name']),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
   return to_object
 
 
-def _Video_from_mldev(
+def _GetOperationParameters_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['video', 'uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
-
-  if getv(from_object, ['video', 'encodedVideo']) is not None:
+  if getv(from_object, ['operation_name']) is not None:
     setv(
         to_object,
-        ['video_bytes'],
-        t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
-    )
-
-  if getv(from_object, ['encoding']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['encoding']))
-
-  return to_object
-
-
-def _GeneratedVideo_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Video_from_mldev(getv(from_object, ['_self']), to_object),
+        ['_url', 'operationName'],
+        getv(from_object, ['operation_name']),
     )
 
   return to_object
 
 
-def _GenerateVideosResponse_from_mldev(
+def _GetOperationParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['generatedSamples']) is not None:
+  if getv(from_object, ['operation_name']) is not None:
     setv(
         to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_mldev(item, to_object)
-            for item in getv(from_object, ['generatedSamples'])
-        ],
-    )
-
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
+        ['_url', 'operationName'],
+        getv(from_object, ['operation_name']),
     )
 
   return to_object
 
 
-def _GenerateVideosOperation_from_mldev(
+def _GetProjectOperationParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
+  if getv(from_object, ['operation_id']) is not None:
     setv(
-        to_object,
-        ['response'],
-        _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']), to_object
-        ),
-    )
-
-  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
-    setv(
-        to_object,
-        ['result'],
-        _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _Video_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcsUri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['gcsUri']))
-
-  if getv(from_object, ['bytesBase64Encoded']) is not None:
-    setv(
-        to_object,
-        ['video_bytes'],
-        t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
-    )
-
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _GeneratedVideo_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Video_from_vertex(getv(from_object, ['_self']), to_object),
-    )
-
-  return to_object
-
-
-def _GenerateVideosResponse_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['videos']) is not None:
-    setv(
-        to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_vertex(item, to_object)
-            for item in getv(from_object, ['videos'])
-        ],
-    )
-
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
-    )
-
-  return to_object
-
-
-def _GenerateVideosOperation_from_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _GenerateVideosResponse_from_vertex(
-            getv(from_object, ['response']), to_object
-        ),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['result'],
-        _GenerateVideosResponse_from_vertex(
-            getv(from_object, ['response']), to_object
-        ),
+        to_object, ['_url', 'operation_id'], getv(from_object, ['operation_id'])
     )
 
   return to_object
@@ -306,7 +97,7 @@ class Operations(_api_module.BaseModule):
       *,
       operation_name: str,
       config: Optional[types.GetOperationConfigOrDict] = None,
-  ) -> types.GenerateVideosOperation:
+  ) -> Any:
     parameter_model = types._GetOperationParameters(
         operation_name=operation_name,
         config=config,
@@ -346,20 +137,9 @@ class Operations(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
-    if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
-
-    else:
-      response_dict = _GenerateVideosOperation_from_mldev(response_dict)
-
-    return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
+    return response_dict
 
   def _fetch_predict_videos_operation(
       self,
@@ -367,7 +147,7 @@ class Operations(_api_module.BaseModule):
       operation_name: str,
       resource_name: str,
       config: Optional[types.FetchPredictOperationConfigOrDict] = None,
-  ) -> types.GenerateVideosOperation:
+  ) -> Any:
     parameter_model = types._FetchPredictOperationParameters(
         operation_name=operation_name,
         resource_name=resource_name,
@@ -407,25 +187,110 @@ class Operations(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
-    if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
+    return response_dict
 
-    return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+  def _get(
+      self,
+      *,
+      operation_id: str,
+      config: Optional[types.GetOperationConfigOrDict] = None,
+  ) -> types.ProjectOperation:
+    parameter_model = types._GetProjectOperationParameters(
+        operation_id=operation_id,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'operations/{operation_id}'.format_map(request_url_dict)
+      else:
+        path = 'operations/{operation_id}'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request('get', path, request_dict, http_options)
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    return_value = types.ProjectOperation._from_response(
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
     return return_value
 
+  T = TypeVar('T', bound=types.Operation)
+
   def get(
       self,
-      operation: types.GenerateVideosOperation,
+      operation: T,
       *,
       config: Optional[types.GetOperationConfigOrDict] = None,
-  ) -> types.GenerateVideosOperation:
-    """Gets the status of an operation."""
+  ) -> T:
+    """Gets the status of a long-running operation.
+
+    Args:
+      operation (Operation): The operation instance to get the status for.
+      config (GetOperationConfig): Configuration for getting the operation.
+
+    Returns:
+      Operation: The updated operation instance with the latest status or
+      result.
+
+    Usage:
+
+    .. code-block:: python
+
+      import time
+
+      operation = client.models.generate_videos(
+          model="veo-2.0-generate-001",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
+      )
+      while not operation.done:
+          time.sleep(10)
+          operation = client.operations.get(operation)
+
+      print(operation.result)
+    """
     # Currently, only GenerateVideosOperation is supported.
     # TODO(b/398040607): Support short form names
     operation_name = operation.name
@@ -449,16 +314,29 @@ class Operations(_api_module.BaseModule):
       fetch_operation_config = types.FetchPredictOperationConfig(
           http_options=http_options
       )
-      return self._fetch_predict_videos_operation(
+      response_dict = self._fetch_predict_videos_operation(
           operation_name=operation_name,
           resource_name=resource_name,
           config=fetch_operation_config,
       )
+
+      response_operation = operation.from_api_response(
+          response_dict, is_vertex_ai=True
+      )
+
+      self._api_client._verify_response(response_operation)  # type: ignore [arg-type]
+      return response_operation  # type: ignore[no-any-return]
     else:
-      return self._get_videos_operation(
+      response_dict = self._get_videos_operation(
           operation_name=operation_name,
           config=config,
       )
+      response_operation = operation.from_api_response(
+          response_dict, is_vertex_ai=False
+      )
+
+      self._api_client._verify_response(response_operation)  # type: ignore [arg-type]
+      return response_operation  # type: ignore[no-any-return]
 
 
 class AsyncOperations(_api_module.BaseModule):
@@ -468,7 +346,7 @@ class AsyncOperations(_api_module.BaseModule):
       *,
       operation_name: str,
       config: Optional[types.GetOperationConfigOrDict] = None,
-  ) -> types.GenerateVideosOperation:
+  ) -> Any:
     parameter_model = types._GetOperationParameters(
         operation_name=operation_name,
         config=config,
@@ -510,20 +388,9 @@ class AsyncOperations(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
-    if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
-
-    else:
-      response_dict = _GenerateVideosOperation_from_mldev(response_dict)
-
-    return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
-    )
-
-    self._api_client._verify_response(return_value)
-    return return_value
+    return response_dict
 
   async def _fetch_predict_videos_operation(
       self,
@@ -531,7 +398,7 @@ class AsyncOperations(_api_module.BaseModule):
       operation_name: str,
       resource_name: str,
       config: Optional[types.FetchPredictOperationConfigOrDict] = None,
-  ) -> types.GenerateVideosOperation:
+  ) -> Any:
     parameter_model = types._FetchPredictOperationParameters(
         operation_name=operation_name,
         resource_name=resource_name,
@@ -571,25 +438,112 @@ class AsyncOperations(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
-    if self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_vertex(response_dict)
+    return response_dict
 
-    return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+  async def _get(
+      self,
+      *,
+      operation_id: str,
+      config: Optional[types.GetOperationConfigOrDict] = None,
+  ) -> types.ProjectOperation:
+    parameter_model = types._GetProjectOperationParameters(
+        operation_id=operation_id,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError('This method is only supported in the Vertex AI client.')
+    else:
+      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'operations/{operation_id}'.format_map(request_url_dict)
+      else:
+        path = 'operations/{operation_id}'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'get', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    return_value = types.ProjectOperation._from_response(
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
     return return_value
 
+  T = TypeVar('T', bound=types.Operation)
+
   async def get(
       self,
-      operation: types.GenerateVideosOperation,
+      operation: T,
       *,
       config: Optional[types.GetOperationConfigOrDict] = None,
-  ) -> types.GenerateVideosOperation:
-    """Gets the status of an operation."""
+  ) -> T:
+    """Gets the status of a long-running operation.
+
+    Args:
+      operation (Operation): The operation instance to get the status for.
+      config (GetOperationConfig): Configuration for getting the operation.
+
+    Returns:
+      Operation: The updated operation instance with the latest status or
+      result.
+
+    Usage:
+
+    .. code-block:: python
+
+      import asyncio
+
+      operation = await client.aio.models.generate_videos(
+          model="veo-2.0-generate-001",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
+      )
+      while not operation.done:
+          await asyncio.sleep(10)
+          operation = await client.aio.operations.get(operation)
+
+      print(operation.result)
+    """
     # Currently, only GenerateVideosOperation is supported.
     operation_name = operation.name
     if not operation_name:
@@ -611,13 +565,21 @@ class AsyncOperations(_api_module.BaseModule):
       fetch_operation_config = types.FetchPredictOperationConfig(
           http_options=http_options
       )
-      return await self._fetch_predict_videos_operation(
+      response_dict = await self._fetch_predict_videos_operation(
           operation_name=operation_name,
           resource_name=resource_name,
           config=fetch_operation_config,
       )
+      response_operation = operation.from_api_response(
+          response_dict, is_vertex_ai=True
+      )
+      return response_operation  # type: ignore[no-any-return]
     else:
-      return await self._get_videos_operation(
+      response_dict = await self._get_videos_operation(
           operation_name=operation_name,
           config=config,
       )
+      response_operation = operation.from_api_response(
+          response_dict, is_vertex_ai=False
+      )
+      return response_operation  # type: ignore[no-any-return]

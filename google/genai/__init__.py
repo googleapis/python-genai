@@ -15,6 +15,8 @@
 
 """Google Gen AI SDK"""
 
+from . import interactions
+from . import types
 from . import version
 from .client import Client
 

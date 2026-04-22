@@ -27,7 +27,7 @@ from . import types
 logger = logging.getLogger('google_genai.tokens')
 
 
-def _get_field_masks(setup: Dict[str, Any]) -> str:
+def _get_field_masks(setup: _common.StringDict) -> str:
   """Return field_masks"""
   fields = []
   for k, v in setup.items():
@@ -42,9 +42,9 @@ def _get_field_masks(setup: Dict[str, Any]) -> str:
 
 
 def _convert_bidi_setup_to_token_setup(
-    request_dict: dict[str, Any],
+    request_dict: _common.StringDict,
     config: Optional[types.CreateAuthTokenConfigOrDict] = None,
-) -> Dict[str, Any]:
+) -> _common.StringDict:
   """Converts bidiGenerateContentSetup."""
   bidi_setup = request_dict.get('bidiGenerateContentSetup')
   if bidi_setup and bidi_setup.get('setup'):
@@ -166,7 +166,7 @@ class Tokens(_api_module.BaseModule):
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -202,7 +202,7 @@ class Tokens(_api_module.BaseModule):
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -257,12 +257,7 @@ class Tokens(_api_module.BaseModule):
     response = self._api_client.request(
         'post', path, request_dict, http_options
     )
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = tokens_converters._AuthToken_from_mldev(
-          response_dict
-      )
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.AuthToken._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
@@ -284,7 +279,7 @@ class AsyncTokens(_api_module.BaseModule):
   async def create(
       self, *, config: Optional[types.CreateAuthTokenConfigOrDict] = None
   ) -> types.AuthToken:
-    """Creates an auth token asynchronously.
+    """Creates an auth token asynchronously. Support in v1alpha only.
 
     Args:
       config (CreateAuthTokenConfig): Optional configuration for the request.
@@ -293,11 +288,16 @@ class AsyncTokens(_api_module.BaseModule):
 
     .. code-block:: python
 
+      client = genai.Client(
+          api_key=API_KEY,
+          http_options=types.HttpOptions(api_version='v1alpha'),
+      )
+
       auth_token = await client.aio.tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
-                  model='gemini-2.0-flash-live-001',
+                  model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -353,12 +353,7 @@ class AsyncTokens(_api_module.BaseModule):
         request_dict,
         http_options=http_options,
     )
-    response_dict = '' if not response.body else json.loads(response.body)
-
-    if not self._api_client.vertexai:
-      response_dict = tokens_converters._AuthToken_from_mldev(
-          response_dict
-      )
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.AuthToken._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()

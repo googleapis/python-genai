@@ -26,12 +26,14 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_default',
         parameters=genai_types._ListTuningJobsParameters(),
+        exception_if_mldev='only supported in the Vertex AI client',
     ),
     pytest_helper.TestTableItem(
         name='test_with_config',
         parameters=genai_types._ListTuningJobsParameters(
             config=genai_types.ListTuningJobsConfig(page_size=2)
         ),
+        exception_if_mldev='only supported in the Vertex AI client',
     ),
 ]
 
@@ -46,8 +48,11 @@ pytest_plugins = ('pytest_asyncio',)
 
 
 def test_pager(client):
-  tuning_jobs = client.tunings.list(config={'page_size': 2})
+  if not client._api_client.vertexai:
+    return
 
+  tuning_jobs = client.tunings.list(config={'page_size': 2})
+  assert 'content-type' in tuning_jobs.sdk_http_response.headers
   assert tuning_jobs.name == 'tuning_jobs'
   assert tuning_jobs.page_size == 2
   assert len(tuning_jobs) <= 2
@@ -61,8 +66,12 @@ def test_pager(client):
 
 @pytest.mark.asyncio
 async def test_async_pager(client):
+  if not client._api_client.vertexai:
+    return
+
   tuning_jobs = await client.aio.tunings.list(config={'page_size': 2})
 
+  assert 'Content-Type' in tuning_jobs.sdk_http_response.headers
   assert tuning_jobs.name == 'tuning_jobs'
   assert tuning_jobs.page_size == 2
   assert len(tuning_jobs) <= 2

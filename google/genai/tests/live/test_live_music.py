@@ -36,6 +36,17 @@ from ... import live
 from ... import live_music
 from ... import types
 from .. import pytest_helper
+try:
+    import aiohttp
+    AIOHTTP_NOT_INSTALLED = False
+except ImportError:
+    AIOHTTP_NOT_INSTALLED = True
+    aiohttp = mock.MagicMock()
+
+
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
 
 
 def mock_api_client(vertexai=False, credentials=None):
@@ -133,6 +144,7 @@ def test_mldev_from_env(monkeypatch):
   assert isinstance(client.aio.live._api_client, api_client.BaseApiClient)
 
 
+@requires_aiohttp
 def test_vertex_from_env(monkeypatch):
   project_id = 'fake_project_id'
   location = 'fake-location'
@@ -186,9 +198,19 @@ async def test_async_session_send_config(
   )
   if vertexai:
     with pytest.raises(NotImplementedError):
-      await session.set_music_generation_config(config=types.LiveMusicGenerationConfig(bpm=140))
+      await session.set_music_generation_config(
+          config=types.LiveMusicGenerationConfig(
+              bpm=140,
+              music_generation_mode=types.MusicGenerationMode.VOCALIZATION,
+          )
+      )
     return
-  await session.set_music_generation_config(config=types.LiveMusicGenerationConfig(bpm=140))
+  await session.set_music_generation_config(
+      config=types.LiveMusicGenerationConfig(
+          bpm=140,
+          music_generation_mode=types.MusicGenerationMode.VOCALIZATION,
+      )
+  )
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'musicGenerationConfig' in sent_data

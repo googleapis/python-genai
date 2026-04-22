@@ -17,10 +17,36 @@
 
 import asyncio
 from collections.abc import Sequence
+import datetime
 from unittest import mock
+import pytest
+
+try:
+  import aiohttp
+  from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
+  from google.auth.aio.transport.sessions import AsyncAuthorizedSession
+  from google.auth.aio.credentials import StaticCredentials
+
+  AIOHTTP_NOT_INSTALLED = False
+except ImportError:
+  AIOHTTP_NOT_INSTALLED = True
+  aiohttp = mock.MagicMock()
+  AsyncAuthorizedSessionResponse = mock.MagicMock()
+  StaticCredentials = mock.MagicMock()
+  AsyncAuthorizedSession = mock.MagicMock()
+
+from google.oauth2 import credentials
+import httpx
+import tenacity
 
 from ... import _api_client as api_client
+from ... import errors
 from ... import types
+
+
+requires_aiohttp = pytest.mark.skipif(
+    AIOHTTP_NOT_INSTALLED, reason="aiohttp is not installed, skipping test."
+)
 
 
 _RETRIED_CODES = (
@@ -33,49 +59,97 @@ _RETRIED_CODES = (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_has_aiohttp():
+  yield
+  api_client.has_aiohttp = False
+
+
 def _final_codes(retried_codes: Sequence[int] = _RETRIED_CODES):
   return [code for code in range(100, 600) if code not in retried_codes]
 
 
-def _response(code: int):
-  response = api_client.HttpResponse(
+def _httpx_response(code: int):
+  return httpx.Response(
+      status_code=code,
       headers={'status-code': str(code)},
-      response_stream=[''],  # empty response body
+      content=b'',
   )
-  response.status_code = code
-  return response
 
 
 # Args
 
 
 def test_retry_args_disabled():
-  args = api_client._retry_args(None)
+  args = api_client.retry_args(None)
 
-  assert set(args.keys()) == {'stop'}
+  assert set(args.keys()) == {'stop', 'reraise'}
   assert args['stop'].max_attempt_number == 1
+  assert args['reraise']
 
 
 def test_retry_args_enabled_with_defaults():
   # Empty options means use the default values whereas None means no retries.
-  args = api_client._retry_args(types.HttpRetryOptions())
+  args = api_client.retry_args(types.HttpRetryOptions())
 
-  assert set(args.keys()) == {'stop', 'retry', 'retry_error_callback', 'wait'}
+  assert set(args.keys()) == {
+      'stop',
+      'retry',
+      'wait',
+      'reraise',
+      'before_sleep',
+  }
 
-  assert args['stop'].max_attempt_number == 3
+  assert args['stop'].max_attempt_number == 5
 
   wait = args['wait']
   assert wait.exp_base == 2
   assert wait.initial == 1
   assert wait.jitter == 1
-  assert wait.max == 120
+  assert wait.max == 60
 
   retry = args['retry']
   for code in _RETRIED_CODES:
-    assert retry.predicate(_response(code))
+    try:
+      errors.APIError.raise_for_response(_httpx_response(code))
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert retry.predicate(e)
 
   for code in _final_codes():
-    assert not retry.predicate(_response(code))
+    try:
+      errors.APIError.raise_for_response(_httpx_response(code))
+      # Does not raise for some codes.
+    except errors.APIError as e:
+      # Does not retry for error codes outside of the retried codes list.
+      assert not retry.predicate(e)
+
+    assert args['reraise']
+
+
+def test_retry_wait():
+  timestamps = []
+
+  def fn():
+    now = datetime.datetime.now()
+    timestamps.append(now)
+    raise errors.APIError.raise_for_response(_httpx_response(429))
+
+  retrying = tenacity.Retrying(
+      **api_client.retry_args(types.HttpRetryOptions())
+  )
+
+  try:
+    retrying(fn)
+    assert False, 'Expected APIError to be raised.'
+  except errors.APIError:
+    pass
+
+  assert len(timestamps) == 5
+  assert timestamps[1] - timestamps[0] >= datetime.timedelta(seconds=1)
+  assert timestamps[2] - timestamps[1] >= datetime.timedelta(seconds=2)
+  assert timestamps[3] - timestamps[2] >= datetime.timedelta(seconds=4)
+  assert timestamps[4] - timestamps[3] >= datetime.timedelta(seconds=8)
 
 
 def test_retry_args_enabled_with_custom_values_are_not_overridden():
@@ -87,7 +161,7 @@ def test_retry_args_enabled_with_custom_values_are_not_overridden():
       jitter=0.5,
       http_status_codes=[408, 429],
   )
-  retry_args = api_client._retry_args(options)
+  retry_args = api_client.retry_args(options)
   assert retry_args['stop'].max_attempt_number == 10
 
   wait = retry_args['wait']
@@ -98,41 +172,74 @@ def test_retry_args_enabled_with_custom_values_are_not_overridden():
 
   retry = retry_args['retry']
   for code in [408, 429]:
-    assert retry.predicate(_response(code))
+    try:
+      errors.APIError.raise_for_response(_httpx_response(code))
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert retry.predicate(e)
 
   for code in _final_codes([408, 429]):
-    assert not retry.predicate(_response(code))
+    try:
+      errors.APIError.raise_for_response(_httpx_response(code))
+      # Does not raise for some codes.
+    except errors.APIError as e:
+      # Does not retry for error codes outside of the retried codes list.
+      assert not retry.predicate(e)
+
+
+def _patch_auth_default():
+  return mock.patch(
+      'google.auth.default',
+      return_value=(credentials.Credentials('magic_token'), 'test_project'),
+      autospec=True,
+  )
+
+
+def _transport_options(http_options=None, transport=None, async_transport=None):
+  http_options = http_options or types.HttpOptions()
+  http_options.client_args = {'transport': transport}
+  http_options.async_client_args = {'transport': async_transport}
+  return http_options
 
 
 # Sync
 
 
 def test_disabled_retries_successful_request_executes_once():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.return_value = _httpx_response(200)
+
   client = api_client.BaseApiClient(
       vertexai=True,
       project='test_project',
       location='global',
+      http_options=_transport_options(transport=mock_transport),
   )
-  with mock.patch.object(
-      client, '_request_once', return_value=_response(200)
-  ) as mock_request_once:
+
+  with _patch_auth_default():
     response = client.request(http_method='GET', path='path', request_dict={})
-    mock_request_once.assert_called_once()
+    mock_transport.handle_request.assert_called_once()
     assert response.headers['status-code'] == '200'
 
 
 def test_disabled_retries_failed_request_executes_once():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.return_value = _httpx_response(429)
+
   client = api_client.BaseApiClient(
       vertexai=True,
       project='test_project',
       location='global',
+      http_options=_transport_options(transport=mock_transport),
   )
-  with mock.patch.object(
-      client, '_request_once', return_value=_response(429)
-  ) as mock_request_once:
-    response = client.request(http_method='GET', path='path', request_dict={})
-    mock_request_once.assert_called_once()
-    assert response.headers['status-code'] == '429'
+
+  with _patch_auth_default():
+    try:
+      client.request(http_method='GET', path='path', request_dict={})
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert e.code == 429
+    mock_transport.handle_request.assert_called_once()
 
 
 _RETRY_OPTIONS = types.HttpRetryOptions(
@@ -146,150 +253,1111 @@ _RETRY_OPTIONS = types.HttpRetryOptions(
 
 
 def test_retries_successful_request_executes_once():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.return_value = _httpx_response(200)
+
   client = api_client.BaseApiClient(
       vertexai=True,
       project='test_project',
       location='global',
-      http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+      http_options=_transport_options(
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          transport=mock_transport,
+      ),
   )
-  with mock.patch.object(
-      client, '_request_once', return_value=_response(200)
-  ) as mock_request_once:
+
+  with _patch_auth_default():
     response = client.request(http_method='GET', path='path', request_dict={})
-    mock_request_once.assert_called_once()
+    mock_transport.handle_request.assert_called_once()
     assert response.headers['status-code'] == '200'
 
 
 def test_retries_failed_request_retries_successfully():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(200),
+  )
+
   client = api_client.BaseApiClient(
       vertexai=True,
       project='test_project',
       location='global',
-      http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+      http_options=_transport_options(
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          transport=mock_transport,
+      ),
   )
-  with mock.patch.object(
-      client, '_request_once', side_effect=[_response(429), _response(200)]
-  ) as mock_request_once:
+
+  with _patch_auth_default():
     response = client.request(http_method='GET', path='path', request_dict={})
-    assert mock_request_once.call_count == 2
+    mock_transport.handle_request.assert_called()
+    assert response.headers['status-code'] == '200'
+
+
+def test_retries_failed_request_retries_successfully_at_request_level():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(200),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    response = client.request(
+        http_method='GET',
+        path='path',
+        request_dict={},
+        http_options=types.HttpOptions(
+            retry_options=_RETRY_OPTIONS
+        ),  # At request level.
+    )
+    mock_transport.handle_request.assert_called()
     assert response.headers['status-code'] == '200'
 
 
 def test_retries_failed_request_retries_unsuccessfully():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(504),
+  )
+
   client = api_client.BaseApiClient(
       vertexai=True,
       project='test_project',
       location='global',
-      http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+      http_options=_transport_options(
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          transport=mock_transport,
+      ),
   )
-  with mock.patch.object(
-      client, '_request_once', side_effect=[_response(429), _response(504)]
-  ) as mock_request_once:
-    response = client.request(http_method='GET', path='path', request_dict={})
-    assert mock_request_once.call_count == 2
-    assert response.headers['status-code'] == '504'
+
+  with _patch_auth_default():
+    try:
+      client.request(http_method='GET', path='path', request_dict={})
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert e.code == 504
+    mock_transport.handle_request.assert_called()
 
 
-# Async
+def test_retries_failed_request_no_retries_unsuccessfully():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          http_options=types.HttpOptions(
+              retry_options=types.HttpRetryOptions(attempts=0)
+          ),
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    try:
+      client.request(http_method='GET', path='path', request_dict={})
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert e.code == 429
+    mock_transport.handle_request.assert_called()
+
+
+def test_retries_failed_request_retries_unsuccessfully_at_request_level():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(504),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    try:
+      client.request(
+          http_method='GET',
+          path='path',
+          request_dict={},
+          http_options={'retry_options': _RETRY_OPTIONS},  # At request level.
+      )
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert e.code == 504
+    mock_transport.handle_request.assert_called()
+
+
+# Async httpx
 
 
 def test_async_disabled_retries_successful_request_executes_once():
+  api_client.has_aiohttp = False
+
   async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.return_value = _httpx_response(200)
+
     client = api_client.BaseApiClient(
         vertexai=True,
         project='test_project',
         location='global',
+        http_options=_transport_options(async_transport=mock_transport),
     )
-    with mock.patch.object(
-        client, '_async_request_once', return_value=_response(200)
-    ) as mock_async_request_once:
+
+    with _patch_auth_default():
       response = await client.async_request(
           http_method='GET', path='path', request_dict={}
       )
-      mock_async_request_once.assert_called_once()
+      mock_transport.handle_async_request.assert_called_once()
       assert response.headers['status-code'] == '200'
 
   asyncio.run(run())
 
 
 def test_async_disabled_retries_failed_request_executes_once():
+  api_client.has_aiohttp = False
+
   async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.return_value = _httpx_response(429)
+
     client = api_client.BaseApiClient(
         vertexai=True,
         project='test_project',
         location='global',
+        http_options=_transport_options(async_transport=mock_transport),
     )
-    with mock.patch.object(
-        client, '_async_request_once', return_value=_response(429)
-    ) as mock_async_request_once:
-      response = await client.async_request(
-          http_method='GET', path='path', request_dict={}
-      )
-      mock_async_request_once.assert_called_once()
-      assert response.headers['status-code'] == '429'
+
+    with _patch_auth_default():
+      try:
+        await client.async_request(
+            http_method='GET', path='path', request_dict={}
+        )
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 429
+      mock_transport.handle_async_request.assert_called_once()
 
   asyncio.run(run())
 
 
 def test_async_retries_successful_request_executes_once():
+  api_client.has_aiohttp = False
+
   async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.return_value = _httpx_response(200)
+
     client = api_client.BaseApiClient(
         vertexai=True,
         project='test_project',
         location='global',
-        http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            async_transport=mock_transport,
+        ),
     )
-    with mock.patch.object(
-        client, '_async_request_once', return_value=_response(200)
-    ) as mock_async_request_once:
+
+    with _patch_auth_default():
       response = await client.async_request(
           http_method='GET', path='path', request_dict={}
       )
-      mock_async_request_once.assert_called_once()
+      mock_transport.handle_async_request.assert_called_once()
       assert response.headers['status-code'] == '200'
 
   asyncio.run(run())
 
 
 def test_async_retries_failed_request_retries_successfully():
+  api_client.has_aiohttp = False
+
   async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(200),
+    )
+
     client = api_client.BaseApiClient(
         vertexai=True,
         project='test_project',
         location='global',
-        http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            async_transport=mock_transport,
+        ),
     )
-    with mock.patch.object(
-        client,
-        '_async_request_once',
-        side_effect=[_response(429), _response(200)],
-    ) as mock_async_request_once:
+
+    with _patch_auth_default():
       response = await client.async_request(
           http_method='GET', path='path', request_dict={}
       )
-      assert mock_async_request_once.call_count == 2
+      mock_transport.handle_async_request.assert_called()
+      assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+def test_async_retries_failed_request_retries_successfully_at_request_level():
+  api_client.has_aiohttp = False
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(200),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            async_transport=mock_transport,
+        ),
+    )
+
+    with _patch_auth_default():
+      response = await client.async_request(
+          http_method='GET',
+          path='path',
+          request_dict={},
+          http_options=types.HttpOptions(
+              retry_options=_RETRY_OPTIONS
+          ),  # At request level.
+      )
+      mock_transport.handle_async_request.assert_called()
       assert response.headers['status-code'] == '200'
 
   asyncio.run(run())
 
 
 def test_async_retries_failed_request_retries_unsuccessfully():
+  api_client.has_aiohttp = False
+
   async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(504),
+    )
+
     client = api_client.BaseApiClient(
         vertexai=True,
         project='test_project',
         location='global',
-        http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            async_transport=mock_transport,
+        ),
     )
-    with mock.patch.object(
-        client,
-        '_async_request_once',
-        side_effect=[_response(429), _response(504)],
-    ) as mock_async_request_once:
+
+    with _patch_auth_default():
+      try:
+        await client.async_request(
+            http_method='GET', path='path', request_dict={}
+        )
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_transport.handle_async_request.assert_called()
+
+  asyncio.run(run())
+
+
+def test_async_retries_failed_request_retries_unsuccessfully_at_request_level():
+  api_client.has_aiohttp = False
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(504),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            async_transport=mock_transport,
+        ),
+    )
+
+    with _patch_auth_default():
+      try:
+        await client.async_request(
+            http_method='GET',
+            path='path',
+            request_dict={},
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        )
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_transport.handle_async_request.assert_called()
+
+  asyncio.run(run())
+
+
+# Async aiohttp
+
+async def _aiohttp_async_response(status: int, streamable: bool = False):
+  """Has to return a coroutine hence async."""
+  response = mock.Mock(spec=aiohttp.ClientResponse)
+  response.status = status
+  response.headers = {'status-code': str(status)}
+  response.json.return_value = {}
+  response.text.return_value = 'test'
+  if streamable:
+    response.content = mock.Mock()
+    response.content.readline = mock.AsyncMock(return_value=b'')
+    response.release = mock.MagicMock()
+  return response
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_disabled_retries_successful_request_executes_once(
+    mock_request,
+):
+  api_client.has_aiohttp = True  # Force aiohttp
+
+  async def run():
+    mock_request.return_value = _aiohttp_async_response(200)
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with _patch_auth_default():
       response = await client.async_request(
           http_method='GET', path='path', request_dict={}
       )
-      assert mock_async_request_once.call_count == 2
-      assert response.headers['status-code'] == '504'
+      mock_request.assert_called_once()
+      assert response.headers['status-code'] == '200'
 
-    asyncio.run(run())
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_disabled_retries_failed_request_executes_once(mock_request):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.return_value = _aiohttp_async_response(429)
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with _patch_auth_default():
+      try:
+        await client.async_request(
+            http_method='GET', path='path', request_dict={}
+        )
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 429
+      mock_request.assert_called_once()
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_successful_request_executes_once(mock_request):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.return_value = _aiohttp_async_response(200)
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        ),
+    )
+
+    with _patch_auth_default():
+      response = await client.async_request(
+          http_method='GET', path='path', request_dict={}
+      )
+      mock_request.assert_called_once()
+      assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_failed_request_retries_successfully(mock_request):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(200),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(
+                retry_options=_RETRY_OPTIONS,
+                async_client_args={'trust_env': False},
+            ),
+        ),
+    )
+
+    with _patch_auth_default():
+      response = await client.async_request(
+          http_method='GET', path='path', request_dict={}
+      )
+      mock_request.assert_called()
+      assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
+def test_aiohttp_retries_failed_request_retries_successfully_at_request_level(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(200),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with _patch_auth_default():
+      response = await client.async_request(
+          http_method='GET',
+          path='path',
+          request_dict={},
+          http_options=types.HttpOptions(
+              retry_options=_RETRY_OPTIONS
+          ),  # At request level.
+      )
+      mock_request.assert_called()
+      assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_failed_request_retries_unsuccessfully(mock_request):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(504),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(
+                retry_options=_RETRY_OPTIONS,
+                async_client_args={'trust_env': False},
+            ),
+        ),
+    )
+
+    with _patch_auth_default():
+      try:
+        await client.async_request(
+            http_method='GET', path='path', request_dict={}
+        )
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_request.assert_called()
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
+def test_aiohttp_retries_failed_request_retries_unsuccessfully_at_request_level(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(504),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with _patch_auth_default():
+      try:
+        await client.async_request(
+            http_method='GET',
+            path='path',
+            request_dict={},
+            http_options={'retry_options': _RETRY_OPTIONS},  # At request level.
+        )
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_request.assert_called()
+
+  asyncio.run(run())
+
+
+# Sync Streaming
+
+
+def test_retries_streamed_failed_request_retries_successfully():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(200),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    stream = client.request_streamed(
+        http_method='GET', path='path', request_dict={}
+    )
+    list(stream)
+    mock_transport.handle_request.assert_called()
+    assert mock_transport.handle_request.call_count == 2
+
+
+def test_retries_streamed_failed_request_retries_successfully_at_request_level():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(200),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    stream = client.request_streamed(
+        http_method='GET',
+        path='path',
+        request_dict={},
+        http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+    )
+    list(stream)
+    mock_transport.handle_request.assert_called()
+    assert mock_transport.handle_request.call_count == 2
+
+
+def test_retries_streamed_failed_request_retries_unsuccessfully():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(504),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    try:
+      stream = client.request_streamed(
+          http_method='GET', path='path', request_dict={}
+      )
+      list(stream)
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert e.code == 504
+    mock_transport.handle_request.assert_called()
+
+
+def test_retries_streamed_failed_request_retries_unsuccessfully_at_request_level():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.side_effect = (
+      _httpx_response(429),
+      _httpx_response(504),
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default():
+    try:
+      stream = client.request_streamed(
+          http_method='GET',
+          path='path',
+          request_dict={},
+          http_options={'retry_options': _RETRY_OPTIONS},
+      )
+      list(stream)
+      assert False, 'Expected APIError to be raised.'
+    except errors.APIError as e:
+      assert e.code == 504
+    mock_transport.handle_request.assert_called()
+
+
+# Async httpx Streaming
+
+
+def test_async_retries_streamed_failed_request_retries_successfully():
+  api_client.has_aiohttp = False
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(200),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            async_transport=mock_transport,
+        ),
+    )
+
+    with _patch_auth_default():
+      stream = await client.async_request_streamed(
+          http_method='GET', path='path', request_dict={}
+      )
+      async for _ in stream:
+        pass
+      mock_transport.handle_async_request.assert_called()
+      assert mock_transport.handle_async_request.call_count == 2
+
+  asyncio.run(run())
+
+
+def test_async_retries_streamed_failed_request_retries_successfully_at_request_level():
+  api_client.has_aiohttp = False
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(200),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            async_transport=mock_transport,
+        ),
+    )
+
+    with _patch_auth_default():
+      stream = await client.async_request_streamed(
+          http_method='GET',
+          path='path',
+          request_dict={},
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+      )
+      async for _ in stream:
+        pass
+      mock_transport.handle_async_request.assert_called()
+      assert mock_transport.handle_async_request.call_count == 2
+
+  asyncio.run(run())
+
+
+def test_async_retries_streamed_failed_request_retries_unsuccessfully():
+  api_client.has_aiohttp = False
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(504),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            async_transport=mock_transport,
+        ),
+    )
+
+    with _patch_auth_default():
+      try:
+        stream = await client.async_request_streamed(
+            http_method='GET', path='path', request_dict={}
+        )
+        async for _ in stream:
+          pass
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_transport.handle_async_request.assert_called()
+
+  asyncio.run(run())
+
+
+def test_async_retries_streamed_failed_request_retries_unsuccessfully_at_request_level():
+  api_client.has_aiohttp = False
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.side_effect = (
+        _httpx_response(429),
+        _httpx_response(504),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            async_transport=mock_transport,
+        ),
+    )
+
+    with _patch_auth_default():
+      try:
+        stream = await client.async_request_streamed(
+            http_method='GET',
+            path='path',
+            request_dict={},
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        )
+        async for _ in stream:
+          pass
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_transport.handle_async_request.assert_called()
+
+  asyncio.run(run())
+
+
+# Async aiohttp Streaming
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_streamed_failed_request_retries_successfully(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(200, streamable=True),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        ),
+    )
+
+    with _patch_auth_default():
+      stream = await client.async_request_streamed(
+          http_method='GET', path='path', request_dict={}
+      )
+      async for _ in stream:
+        pass
+      mock_request.assert_called()
+      assert mock_request.call_count == 2
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_streamed_failed_request_retries_successfully_at_request_level(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(200, streamable=True),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with _patch_auth_default():
+      stream = await client.async_request_streamed(
+          http_method='GET',
+          path='path',
+          request_dict={},
+          http_options=types.HttpOptions(
+              retry_options=_RETRY_OPTIONS,
+              async_client_args={'trust_env': False},
+          ),
+      )
+      async for _ in stream:
+        pass
+      mock_request.assert_called()
+      assert mock_request.call_count == 2
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
+def test_aiohttp_retries_streamed_failed_request_retries_unsuccessfully(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(504),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+        ),
+    )
+
+    with _patch_auth_default():
+      try:
+        stream = await client.async_request_streamed(
+            http_method='GET', path='path', request_dict={}
+        )
+        async for _ in stream:
+          pass
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_request.assert_called()
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_streamed_failed_request_retries_unsuccessfully_at_request_level(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        _aiohttp_async_response(429),
+        _aiohttp_async_response(504),
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=types.HttpOptions(
+            async_client_args={'trust_env': False},
+        ),
+    )
+
+    with _patch_auth_default():
+      try:
+        stream = await client.async_request_streamed(
+            http_method='GET',
+            path='path',
+            request_dict={},
+            http_options={'retry_options': _RETRY_OPTIONS},
+        )
+        async for _ in stream:
+          pass
+        assert False, 'Expected APIError to be raised.'
+      except errors.APIError as e:
+        assert e.code == 504
+      mock_request.assert_called()
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(
+    aiohttp.ClientSession,
+    'request',
+    autospec=True,
+)
+def test_aiohttp_retries_client_connector_error_retries_successfully(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        aiohttp.ClientConnectorError(
+            connection_key=aiohttp.client_reqrep.ConnectionKey(
+                'localhost', 80, False, True, None, None, None
+            ),
+            os_error=OSError,
+        ),
+        _aiohttp_async_response(200),
+    )
+    # The request will be automatically retried once, if catching the
+    # ClientConnectorError.
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+    )
+
+    with _patch_auth_default():
+      response = await client.async_request(
+          http_method='GET', path='path', request_dict={}
+      )
+      mock_request.assert_called()
+      assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+@requires_aiohttp
+@mock.patch.object(AsyncAuthorizedSession, 'request', autospec=True)
+def test_aiohttp_retries_failed_request_retries_unsuccessfully_mtls(
+    mock_request,
+):
+  api_client.has_aiohttp = True
+
+  async def run():
+    # 1. Setup mocked aiohttp responses
+    res429 = await _aiohttp_async_response(429)
+    res504 = await _aiohttp_async_response(504)
+
+    # 2. Wrap them in the AsyncAuthorizedSessionResponse expected by the SDK
+    mock_auth_res429 = mock.Mock(spec=AsyncAuthorizedSessionResponse)
+    mock_auth_res429._response = res429
+
+    mock_auth_res504 = mock.Mock(spec=AsyncAuthorizedSessionResponse)
+    mock_auth_res504._response = res504
+
+    # AsyncAuthorizedSession.request is an async method
+    mock_request.side_effect = [mock_auth_res429, mock_auth_res504]
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=types.HttpOptions(
+            retry_options=_RETRY_OPTIONS,
+        ),
+    )
+
+    # Force the mTLS path to be active for this test
+    with mock.patch(
+        'google.auth.transport.mtls.should_use_client_cert', return_value=True
+    ):
+      with _patch_auth_default():
+        try:
+          await client.async_request(
+              http_method='GET', path='path', request_dict={}
+          )
+          assert False, 'Expected APIError to be raised.'
+        except errors.APIError as e:
+          assert e.code == 504
+        mock_request.assert_called()
+
+  asyncio.run(run())

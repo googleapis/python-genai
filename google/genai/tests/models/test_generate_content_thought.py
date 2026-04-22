@@ -22,35 +22,27 @@ from .. import pytest_helper
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name='test_generate_content_thought',
+        name='test_disable_thinking',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-pro-preview-03-25',
+            model='gemini-2.5-flash',
             contents=t.t_contents('Explain the monty hall problem.'),
             config={
                 'thinking_config': {
-                    'include_thoughts': True,
-                    'thinking_budget': 10000},
+                    'thinking_budget': 0},
             },
         ),
     ),
     pytest_helper.TestTableItem(
-        name='test_generate_content_thought_v1alpha',
+        name='test_thinking_level',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-pro-preview-03-25',
-            contents=t.t_contents(
-                'What is the sum of natural numbers from 1 to 100?'
-            ),
+            model='gemini-2.5-flash',
+            contents=t.t_contents('Explain the monty hall problem.'),
             config={
                 'thinking_config': {
-                    'include_thoughts': True,
-                    'thinking_budget': 10000
-                },
-                'http_options': {
-                    'api_version': 'v1alpha'
+                    'thinking_level': "LOW"
                 },
             },
         ),
-        exception_if_vertex='404',
     ),
 ]
 
@@ -63,60 +55,22 @@ pytestmark = pytest_helper.setup(
 )
 
 
-def test_thought_signature_with_thinking_budget(client):
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
+def test_thinking_budget(client):
     response = client.models.generate_content(
-        model='gemini-2.5-pro-preview-03-25',
+        model='gemini-2.5-pro',
         contents='What is the sum of natural numbers from 1 to 100?',
         config={
             'thinking_config': {
                 'include_thoughts': True,
                 'thinking_budget': 10000,
             },
-            'http_options': {'api_version': 'v1alpha'},
         },
     )
     has_thought = False
     if response.candidates:
-      for candidate in response.candidates:
-        for part in candidate.content.parts:
-          if part.thought:
-            has_thought = True
-            break
+        for candidate in response.candidates:
+            for part in candidate.content.parts:
+                if part.thought:
+                    has_thought = True
+                    break
     assert has_thought
-
-
-def test_thought_with_include_thoughts_v1alpha(client):
-  # Thoughts have been disabled in the API.
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
-    response = client.models.generate_content(
-        model='gemini-2.0-flash-thinking-exp',
-        contents='What is the sum of natural numbers from 1 to 100?',
-        config={
-            'thinking_config': {'include_thoughts': True},
-            'http_options': {'api_version': 'v1alpha'},
-        },
-    )
-    has_thought = False
-    if response.candidates:
-      for candidate in response.candidates:
-        for part in candidate.content.parts:
-          if part.thought:
-            has_thought = True
-            break
-    assert has_thought
-
-
-def test_no_thought_with_default_config(client):
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
-    response = client.models.generate_content(
-        model='gemini-2.0-flash-thinking-exp',
-        contents='What is the sum of natural numbers from 1 to 100?',
-    )
-    has_thought = False
-    for candidate in response.candidates:
-      for part in candidate.content.parts:
-        if part.thought:
-          has_thought = True
-          break
-    assert not has_thought

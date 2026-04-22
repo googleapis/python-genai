@@ -122,6 +122,32 @@ def test_file():
   ]
 
 
+def test_file_dict():
+  assert t.t_contents({'file_uri': 'gs://test', 'mime_type': 'image/png'}) == [
+      types.UserContent(
+          parts=[
+              types.Part(
+                  file_data=types.FileData(
+                      file_uri='gs://test', mime_type='image/png'
+                  )
+              )
+          ]
+      )
+  ]
+
+def test_file_dict_list():
+  assert t.t_contents([{'file_uri': 'gs://test', 'mime_type': 'image/png'}]) == [
+      types.UserContent(
+          parts=[
+              types.Part(
+                  file_data=types.FileData(
+                      file_uri='gs://test', mime_type='image/png'
+                  )
+              )
+          ]
+      )
+  ]
+
 def test_file_no_uri():
   with pytest.raises(ValueError):
     t.t_contents(types.File(mime_type='image/png'))

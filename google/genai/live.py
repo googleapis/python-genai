@@ -21,19 +21,18 @@ import contextlib
 import json
 import logging
 import typing
-from typing import Any, AsyncIterator, Dict, Optional, Sequence, Union, get_args
+from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
 import google.auth
 import pydantic
-from websockets import ConnectionClosed
+import websockets
 
 from . import _api_module
 from . import _common
 from . import _live_converters as live_converters
 from . import _mcp_utils
 from . import _transformers as t
-from . import client
 from . import errors
 from . import types
 from ._api_client import BaseApiClient
@@ -41,8 +40,8 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
-from .models import _Content_to_vertex
 
+ConnectionClosed = websockets.ConnectionClosed
 
 try:
   from websockets.asyncio.client import ClientConnection
@@ -51,6 +50,11 @@ except ModuleNotFoundError:
   # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
   from websockets.client import ClientConnection  # type: ignore
   from websockets.client import connect as ws_connect  # type: ignore
+
+try:
+  from google.auth.transport import requests
+except ImportError:
+  requests = None  # type: ignore[assignment]
 
 if typing.TYPE_CHECKING:
   from mcp import ClientSession as McpClientSession
@@ -83,9 +87,17 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 class AsyncSession:
   """[Preview] AsyncSession."""
 
-  def __init__(self, api_client: BaseApiClient, websocket: ClientConnection):
+  def __init__(
+      self,
+      api_client: BaseApiClient,
+      websocket: ClientConnection,
+      session_id: Optional[str] = None,
+      setup_complete: Optional[types.LiveServerSetupComplete] = None,
+  ):
     self._api_client = api_client
     self._ws = websocket
+    self.session_id = session_id
+    self.setup_complete = setup_complete
 
   async def send(
       self,
@@ -188,37 +200,38 @@ class AsyncSession:
         and will not return until you send `turn_complete=True`.
 
     Example:
-    ```
-    import google.genai
-    from google.genai import types
-    import os
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+    .. code-block:: python
 
-    client = genai.Client()
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]}
-    ) as session:
-      await session.send_client_content(
-          turns=types.Content(
-              role='user',
-              parts=[types.Part(text="Hello world!")]))
-      async for msg in session.receive():
-        if msg.text:
-          print(msg.text)
-    ```
+      import google.genai
+      from google.genai import types
+      import os
+
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
+
+      client = genai.Client()
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]}
+      ) as session:
+        await session.send_client_content(
+            turns=types.Content(
+                role='user',
+                parts=[types.Part(text="Hello world!")]))
+        async for msg in session.receive():
+          if msg.text:
+            print(msg.text)
     """
     client_content = t.t_client_content(turns, turn_complete).model_dump(
         mode='json', exclude_none=True
     )
 
     if self._api_client.vertexai:
-      client_content_dict = live_converters._LiveClientContent_to_vertex(
-          from_object=client_content
+      client_content_dict = _common.convert_to_dict(
+          client_content, convert_keys=True
       )
     else:
       client_content_dict = live_converters._LiveClientContent_to_mldev(
@@ -254,41 +267,42 @@ class AsyncSession:
       media: A `Blob`-like object, the realtime media to send.
 
     Example:
-    ```
-    from pathlib import Path
 
-    from google import genai
-    from google.genai import types
+    .. code-block:: python
 
-    import PIL.Image
+      from pathlib import Path
 
-    import os
+      from google import genai
+      from google.genai import types
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      import PIL.Image
+
+      import os
+
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
 
-    client = genai.Client()
+      client = genai.Client()
 
-    async with client.aio.live.connect(
-        model=MODEL_NAME,
-        config={"response_modalities": ["TEXT"]},
-    ) as session:
-      await session.send_realtime_input(
-          media=PIL.Image.open('image.jpg'))
+      async with client.aio.live.connect(
+          model=MODEL_NAME,
+          config={"response_modalities": ["TEXT"]},
+      ) as session:
+        await session.send_realtime_input(
+            media=PIL.Image.open('image.jpg'))
 
-      audio_bytes = Path('audio.pcm').read_bytes()
-      await session.send_realtime_input(
-          media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
+        audio_bytes = Path('audio.pcm').read_bytes()
+        await session.send_realtime_input(
+            media=types.Blob(data=audio_bytes, mime_type='audio/pcm;rate=16000'))
 
-      async for msg in session.receive():
-        if msg.text is not None:
-          print(f'{msg.text}')
-    ```
+        async for msg in session.receive():
+          if msg.text is not None:
+            print(f'{msg.text}')
     """
-    kwargs: dict[str, Any] = {}
+    kwargs: _common.StringDict = {}
     if media is not None:
       kwargs['media'] = media
     if audio is not None:
@@ -352,61 +366,63 @@ class AsyncSession:
         `FunctionResponse`-like objects.
 
     Example:
-    ```
-    from google import genai
-    from google.genai import types
 
-    import os
+    .. code-block:: python
 
-    if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
-      MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
-    else:
-      MODEL_NAME = 'gemini-2.0-flash-live-001';
+      from google import genai
+      from google.genai import types
 
-    client = genai.Client()
+      import os
 
-    tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
-    config = {
-        "tools": tools,
-        "response_modalities": ['TEXT']
-    }
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
+        MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
+      else:
+        MODEL_NAME = 'gemini-live-2.5-flash-preview';
 
-    async with client.aio.live.connect(
-        model='models/gemini-2.0-flash-live-001',
-        config=config
-    ) as session:
-      prompt = "Turn on the lights please"
-      await session.send_client_content(
-          turns={"parts": [{'text': prompt}]}
-      )
+      client = genai.Client()
 
-      async for chunk in session.receive():
-          if chunk.server_content:
-            if chunk.text is not None:
-              print(chunk.text)
-          elif chunk.tool_call:
-            print(chunk.tool_call)
-            print('_'*80)
-            function_response=types.FunctionResponse(
-                    name='turn_on_the_lights',
-                    response={'result': 'ok'},
-                    id=chunk.tool_call.function_calls[0].id,
-                )
-            print(function_response)
-            await session.send_tool_response(
-                function_responses=function_response
-            )
+      tools = [{'function_declarations': [{'name': 'turn_on_the_lights'}]}]
+      config = {
+          "tools": tools,
+          "response_modalities": ['TEXT']
+      }
 
-            print('_'*80)
+      async with client.aio.live.connect(
+          model='models/gemini-live-2.5-flash-preview',
+          config=config
+      ) as session:
+        prompt = "Turn on the lights please"
+        await session.send_client_content(
+            turns={"parts": [{'text': prompt}]}
+        )
+
+        async for chunk in session.receive():
+            if chunk.server_content:
+              if chunk.text is not None:
+                print(chunk.text)
+            elif chunk.tool_call:
+              print(chunk.tool_call)
+              print('_'*80)
+              function_response=types.FunctionResponse(
+                      name='turn_on_the_lights',
+                      response={'result': 'ok'},
+                      id=chunk.tool_call.function_calls[0].id,
+                  )
+              print(function_response)
+              await session.send_tool_response(
+                  function_responses=function_response
+              )
+
+              print('_'*80)
     """
     tool_response = t.t_tool_response(function_responses)
     if self._api_client.vertexai:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_vertex(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
     else:
-      tool_response_dict = live_converters._LiveClientToolResponse_to_mldev(
-          from_object=tool_response
+      tool_response_dict = _common.convert_to_dict(
+          tool_response, convert_keys=True
       )
       for response in tool_response_dict.get('functionResponses', []):
         if response.get('id') is None:
@@ -521,6 +537,14 @@ class AsyncSession:
       raw_response = await self._ws.recv(decode=False)
     except TypeError:
       raw_response = await self._ws.recv()  # type: ignore[assignment]
+    except ConnectionClosed as e:
+      if e.rcvd:
+        code = e.rcvd.code
+        reason = e.rcvd.reason
+      else:
+        code = 1006
+        reason = websockets.frames.CLOSE_CODE_EXPLANATIONS.get(code, 'Abnormal closure.')
+      errors.APIError.raise_error(code, reason, None)
     if raw_response:
       try:
         response = json.loads(raw_response)
@@ -534,6 +558,9 @@ class AsyncSession:
     else:
       response_dict = live_converters._LiveServerMessage_from_mldev(response)
 
+    if not response_dict and response:
+      # Error handling.
+      errors.APIError.raise_error(response.get('code'), response, None)
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
@@ -639,14 +666,14 @@ class AsyncSession:
     elif isinstance(formatted_input, Sequence) and any(
         isinstance(c, str) for c in formatted_input
     ):
-      to_object: dict[str, Any] = {}
+      to_object: _common.StringDict = {}
       content_input_parts: list[types.PartUnion] = []
       for item in formatted_input:
         if isinstance(item, get_args(types.PartUnion)):
           content_input_parts.append(item)
       if self._api_client.vertexai:
         contents = [
-            _Content_to_vertex(item, to_object)
+            _common.convert_to_dict(item, convert_keys=True)
             for item in t.t_contents(content_input_parts)
         ]
       else:
@@ -929,7 +956,8 @@ class AsyncLive(_api_module.BaseModule):
       version = self._api_client._http_options.api_version
       api_key = self._api_client.api_key
       method = 'BidiGenerateContent'
-      key_name = 'key'
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
       if api_key.startswith('auth_tokens/'):
         warnings.warn(
             message=(
@@ -939,10 +967,18 @@ class AsyncLive(_api_module.BaseModule):
             category=errors.ExperimentalWarning,
         )
         method = 'BidiGenerateContentConstrained'
-        key_name = 'access_token'
-
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}?{key_name}={api_key}'
-      headers = self._api_client._http_options.headers
+        headers['Authorization'] = f'Token {api_key}'
+        if version != 'v1alpha':
+          warnings.warn(
+              message=(
+                  "The SDK's ephemeral token support is in v1alpha only."
+                  'Please use client = genai.Client(api_key=token.name, '
+                  'http_options=types.HttpOptions(api_version="v1alpha"))'
+                  ' before session connection.'
+              ),
+              category=errors.ExperimentalWarning,
+          )
+      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_mldev(
@@ -953,8 +989,9 @@ class AsyncLive(_api_module.BaseModule):
               ).model_dump(exclude_none=True),
           )
       )
-      del request_dict['config']
 
+      del request_dict['config']
+      request_dict = _common.encode_unserializable_types(request_dict)
       setv(request_dict, ['setup', 'model'], transformed_model)
 
       request = json.dumps(request_dict)
@@ -963,7 +1000,8 @@ class AsyncLive(_api_module.BaseModule):
       api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      headers = self._api_client._http_options.headers
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
 
       request_dict = _common.convert_to_dict(
           live_converters._LiveConnectParameters_to_vertex(
@@ -975,34 +1013,56 @@ class AsyncLive(_api_module.BaseModule):
           )
       )
       del request_dict['config']
-
+      request_dict = _common.encode_unserializable_types(request_dict)
       setv(request_dict, ['setup', 'model'], transformed_model)
 
       request = json.dumps(request_dict)
     else:
-      if not self._api_client._credentials:
-        # Get bearer token through Application Default Credentials.
-        creds, _ = google.auth.default(  # type: ignore
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
-        )
-      else:
-        creds = self._api_client._credentials
-      # creds.valid is False, and creds.token is None
-      # Need to refresh credentials to populate those
-      if not (creds.token and creds.valid):
-        auth_req = google.auth.transport.requests.Request()  # type: ignore
-        creds.refresh(auth_req)
-      bearer_token = creds.token
-      headers = self._api_client._http_options.headers
-      if headers is not None:
-        headers.update({
-            'Authorization': 'Bearer {}'.format(bearer_token),
-        })
       version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+      has_sufficient_auth = (
+          self._api_client.project and self._api_client.location
+      )
+      if self._api_client.custom_base_url and not has_sufficient_auth:
+        # API gateway proxy can use the auth in custom headers, not url.
+        # Enable custom url if auth is not sufficient.
+        uri = self._api_client.custom_base_url
+        # Keep the model as is.
+        transformed_model = model
+        # Do not get credentials for custom url.
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+
+      else:
+        uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
+
+        if not self._api_client._credentials:
+          # Get bearer token through Application Default Credentials.
+          creds, _ = google.auth.default(  # type: ignore
+              scopes=['https://www.googleapis.com/auth/cloud-platform']
+          )
+        else:
+          creds = self._api_client._credentials
+        # creds.valid is False, and creds.token is None
+        # Need to refresh credentials to populate those
+        if not (creds.token and creds.valid):
+          if requests is None:
+            raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
+          auth_req = requests.Request()  # type: ignore
+          creds.refresh(auth_req)  # type: ignore[no-untyped-call]
+        bearer_token = creds.token
+
+        original_headers = self._api_client._http_options.headers
+        headers = (
+            original_headers.copy() if original_headers is not None else {}
+        )
+        if not headers.get('Authorization'):
+          headers['Authorization'] = f'Bearer {bearer_token}'
+
       location = self._api_client.location
       project = self._api_client.project
-      if transformed_model.startswith('publishers/'):
+      if transformed_model.startswith('publishers/') and project and location:
         transformed_model = (
             f'projects/{project}/locations/{location}/' + transformed_model
         )
@@ -1016,7 +1076,7 @@ class AsyncLive(_api_module.BaseModule):
           )
       )
       del request_dict['config']
-
+      request_dict = _common.encode_unserializable_types(request_dict)
       if (
           getv(
               request_dict, ['setup', 'generationConfig', 'responseModalities']
@@ -1037,15 +1097,52 @@ class AsyncLive(_api_module.BaseModule):
       if headers is None:
         headers = {}
       _mcp_utils.set_mcp_usage_header(headers)
-    async with ws_connect(uri, additional_headers=headers) as ws:
+
+    async with ws_connect(
+        uri, additional_headers=headers, **self._api_client._websocket_ssl_ctx
+    ) as ws:
       await ws.send(request)
       try:
         # websockets 14.0+
-        logger.info(await ws.recv(decode=False))
+        raw_response = await ws.recv(decode=False)
       except TypeError:
-        logger.info(await ws.recv())
+        raw_response = await ws.recv()  # type: ignore[assignment]
+      except ConnectionClosed as e:
+        if e.rcvd:
+          code = e.rcvd.code
+          reason = e.rcvd.reason
+        else:
+          code = 1006
+          reason = 'Abnormal closure.'
+        errors.APIError.raise_error(code, reason, None)
+      if raw_response:
+        try:
+          response = json.loads(raw_response)
+        except json.decoder.JSONDecodeError:
+          raise ValueError(f'Failed to parse response: {raw_response!r}')
+      else:
+        response = {}
 
-      yield AsyncSession(api_client=self._api_client, websocket=ws)
+      if self._api_client.vertexai:
+        response_dict = live_converters._LiveServerMessage_from_vertex(response)
+      else:
+        response_dict = response
+
+      setup_response = types.LiveServerMessage._from_response(
+          response=response_dict, kwargs=parameter_model.model_dump()
+      )
+      if setup_response.setup_complete:
+        session_id = setup_response.setup_complete.session_id
+        setup_complete = setup_response.setup_complete
+      else:
+        session_id = None
+        setup_complete = None
+      yield AsyncSession(
+          api_client=self._api_client,
+          websocket=ws,
+          session_id=session_id,
+          setup_complete=setup_complete,
+      )
 
 
 async def _t_live_connect_config(
