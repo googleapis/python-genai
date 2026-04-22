@@ -26,14 +26,17 @@ from ... import types
 
 
 def test_blob_dict():
-  blob = t.t_blob({'data': bytes([0, 0, 0, 0, 0, 0]), 'mime_type': 'audio/pcm'}
-  )
+  blob = t.t_blob({
+      'data': bytes([0, 0, 0, 0, 0, 0]),
+      'mime_type': 'audio/pcm',
+  })
   assert blob.data == bytes([0, 0, 0, 0, 0, 0])
   assert blob.mime_type == 'audio/pcm'
 
 
 def test_blob():
-  blob = t.t_blob(types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='audio/pcm')
+  blob = t.t_blob(
+      types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='audio/pcm')
   )
   assert blob.data == bytes([0, 0, 0, 0, 0, 0])
   assert blob.mime_type == 'audio/pcm'
@@ -50,9 +53,11 @@ def test_image(image_jpeg):
   assert round_trip_image.mode == image_jpeg.mode
   assert round_trip_image.format == image_jpeg.format
 
+
 def test_not_image():
   blob = types.Blob(data=bytes([0, 0, 0, 0, 0, 0]), mime_type='audio/pcm')
   assert blob.as_image() is None
+
 
 def test_part_image(image_jpeg):
   part = t.t_part(image_jpeg)
@@ -69,3 +74,11 @@ def test_part_image(image_jpeg):
 def test_part_not_image():
   part = t.t_part('hello world')
   assert part.as_image() is None
+
+
+def test_pil_to_blob_with_memory_pil_image():
+  img = PIL.Image.new('RGB', (1, 1), color='red')
+  blob = t.pil_to_blob(img)
+  assert blob.mime_type == 'image/png'
+  assert blob.data and len(blob.data) == 69
+  assert blob.data[0:4] == b'\x89PNG'

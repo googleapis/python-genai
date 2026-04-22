@@ -28,14 +28,17 @@ import google.auth
 from google.auth import credentials
 import httpx
 import pytest
+import requests
 
 from ... import _api_client as api_client
 from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 from ... import types
+
 try:
   import aiohttp
+
   AIOHTTP_NOT_INSTALLED = False
 except ImportError:
   AIOHTTP_NOT_INSTALLED = True
@@ -330,6 +333,84 @@ def test_vertexai_from_env_true(monkeypatch):
   assert client.models._api_client.location == location
 
 
+def test_enterprise_constructor_true():
+  client = Client(
+      enterprise=True, project="fake_project_id", location="fake-location"
+  )
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_constructor_false():
+  client = Client(enterprise=False, api_key="fake_api_key")
+  assert not client.models._api_client.vertexai
+
+
+def test_enterprise_constructor_conflict():
+  with pytest.raises(
+      ValueError,
+      match=(
+          "enterprise and vertexai flags have conflicting values, please set"
+          " enterprise value only."
+      ),
+  ):
+    Client(enterprise=True, vertexai=False)
+
+
+def test_enterprise_env_true(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "true")
+  client = Client(project="fake_project_id", location="fake-location")
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_env_false(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "false")
+  client = Client(api_key="fake_api_key")
+  assert not client.models._api_client.vertexai
+
+
+def test_enterprise_env_conflict_warning(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "true")
+  monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "false")
+
+  with pytest.warns(
+      UserWarning,
+      match=(
+          "Warning: Both GOOGLE_GENAI_USE_ENTERPRISE and"
+          " GOOGLE_GENAI_USE_VERTEXAI are set with conflicting values. The"
+          " value of GOOGLE_GENAI_USE_ENTERPRISE will be used."
+      ),
+  ):
+    # In BaseApiClient, resolving this warning.
+    client = Client(project="fake_project_id", location="fake-location")
+
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_constructor_precedence(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "false")
+  client = Client(
+      enterprise=True, project="fake_project_id", location="fake-location"
+  )
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_precedence_over_vertexai_constructor():
+  client = Client(
+      enterprise=True,
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+  )
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_env_precedence_over_vertexai_env(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "false")
+  monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+  client = Client(api_key="fake_api_key")
+  assert not client.models._api_client.vertexai
+
+
 def test_vertexai_from_constructor():
   project_id = "fake_project_id"
   location = "fake-location"
@@ -372,7 +453,9 @@ def test_vertexai_constructor_empty_base_url_override(monkeypatch):
   monkeypatch.setattr(google.auth, "default", mock_auth_default)
   # Including a base_url override skips the check for having proj/location or
   # api_key set.
-  client = Client(vertexai=True, http_options={"base_url": "https://override.com/"})
+  client = Client(
+      vertexai=True, http_options={"base_url": "https://override.com/"}
+  )
   assert client.models._api_client.location is None
 
 
@@ -449,6 +532,42 @@ def test_vertexai_default_location_to_global_with_explicit_project_and_env_apike
     assert not client.models._api_client.api_key
 
 
+def test_vertexai_default_location_to_global_with_vertexai_base_url(
+    monkeypatch,
+):
+  # Test case 4: When project and vertex base url are set
+  project_id = "env_project_id"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+    client = Client(
+        vertexai=True,
+        http_options={"base_url": "https://fake-url.googleapis.com"},
+    )
+    # Implicit project takes precedence over implicit api_key
+    assert client.models._api_client.location == "global"
+    assert client.models._api_client.project == project_id
+
+
+def test_vertexai_default_location_to_global_with_arbitrary_base_url(
+    monkeypatch,
+):
+  # Test case 5: When project and arbitrary base url (proxy) are set
+  project_id = "env_project_id"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
+    client = Client(
+        vertexai=True,
+        http_options={"base_url": "https://fake-url.com"},
+    )
+    # Implicit project takes precedence over implicit api_key
+    assert not client.models._api_client.location
+    assert not client.models._api_client.project
+
+
 def test_vertexai_default_location_to_global_with_env_project_and_env_apikey(
     monkeypatch,
 ):
@@ -477,6 +596,59 @@ def test_vertexai_no_default_location_when_location_explicitly_set(monkeypatch):
     client = Client(vertexai=True, project=project_id, location=location)
     assert client.models._api_client.location == location
     assert client.models._api_client.project == project_id
+
+
+def test_vertexai_location_us_routing(monkeypatch):
+  # Verify that location='us' correctly routes to the us.rep endpoint
+  project_id = "fake_project_id"
+  location = "us"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://aiplatform.us.rep.googleapis.com/"
+    )
+
+
+def test_vertexai_location_eu_routing(monkeypatch):
+  # Verify that location='eu' correctly routes to the eu.rep endpoint
+  project_id = "fake_project_id"
+  location = "eu"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://aiplatform.eu.rep.googleapis.com/"
+    )
+
+
+def test_vertexai_location_us_routing_base_url_override(monkeypatch):
+  # Verify that base_url override takes precedence over location='us' routing
+  project_id = "fake_project_id"
+  location = "us"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(
+        vertexai=True,
+        project=project_id,
+        location=location,
+        http_options={"base_url": "https://my-custom-url.com/"},
+    )
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://my-custom-url.com/"
+    )
 
 
 def test_vertexai_no_default_location_when_env_location_set(monkeypatch):
@@ -512,10 +684,7 @@ def test_vertexai_explicit_credentials(monkeypatch):
   monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "fake-location")
   monkeypatch.setenv("GOOGLE_API_KEY", "env_api_key")
 
-  client = Client(
-      vertexai=True,
-      credentials=creds
-  )
+  client = Client(vertexai=True, credentials=creds)
 
   assert client.models._api_client.vertexai
   assert client.models._api_client.project
@@ -1295,18 +1464,34 @@ def test_threaded_generate_content_locking(monkeypatch):
   mock_refresh = mock.Mock(side_effect=refresh_side_effect)
   mock_creds.refresh = mock_refresh
 
-  # Mock the actual request to avoid network calls
-  mock_httpx_response = httpx.Response(
-      status_code=200,
-      headers={},
-      text='{"candidates": [{"content": {"parts": [{"text": "response"}]}}]}',
-  )
-  mock_request = mock.Mock(return_value=mock_httpx_response)
-  monkeypatch.setattr(api_client.SyncHttpxClient, "request", mock_request)
-
   client = Client(
       vertexai=True, project="fake_project_id", location="fake-location"
   )
+  # Mock the actual request to avoid network calls
+  if client._api_client._use_google_auth_sync():
+    # Cloud environment enables mTLS and uses requests.Response
+    mock_http_response = requests.Response()
+    mock_http_response.status_code = 200
+    mock_http_response.headers = {}
+    mock_http_response._content = (
+        b'{"candidates": [{"content": {"parts": [{"text": "response"}]}}]}'
+    )
+    mock_request = mock.Mock(return_value=mock_http_response)
+    monkeypatch.setattr(
+        google.auth.transport.requests.AuthorizedSession,
+        "request",
+        mock_request,
+    )
+  else:
+    # Non-cloud environment w/o certificates uses httpx.Response
+    mock_httpx_response = httpx.Response(
+        status_code=200,
+        headers={},
+        text='{"candidates": [{"content": {"parts": [{"text": "response"}]}}]}',
+    )
+    mock_request = mock.Mock(return_value=mock_httpx_response)
+    monkeypatch.setattr(api_client.SyncHttpxClient, "send", mock_request)
+
   # Reset credentials to test initialization to ensure the sync lock is tested.
   client._api_client._credentials = None
 
@@ -1323,7 +1508,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_not_called()
-  assert mock_request.call_count == 10
+  assert len(mock_request.call_args_list) == 10
 
   # 2. Test credential refreshing in multiple threads
   mock_creds.expired = True
@@ -1339,7 +1524,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_called_once()
-  assert mock_request.call_count == 20
+  assert len(mock_request.call_args_list) == 20
 
 
 @pytest.mark.asyncio
