@@ -90,7 +90,6 @@ class WebhooksResource(SyncAPIResource):
             ]
         ],
         uri: str,
-        webhook_id: str | Omit = omit,
         name: str | Omit = omit,
         state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -120,10 +119,7 @@ class WebhooksResource(SyncAPIResource):
 
           uri: Required. The URI to which webhook events will be sent.
 
-          webhook_id: Optional. The webhook_id to use for the webhook. If not specified, the server
-              will generate a unique ID.
-
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
+          name: Optional. The user-provided name of the webhook.
 
           state: The state of the webhook.
 
@@ -151,11 +147,7 @@ class WebhooksResource(SyncAPIResource):
                 webhook_create_params.WebhookCreateParams,
             ),
             options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                query=maybe_transform({"webhook_id": webhook_id}, webhook_create_params.WebhookCreateParams),
+                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
             cast_to=Webhook,
         )
@@ -214,7 +206,7 @@ class WebhooksResource(SyncAPIResource):
 
           update_mask: Optional. The list of fields to update.
 
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
+          name: Optional. The user-provided name of the webhook.
 
           state: The state of the webhook.
 
@@ -514,7 +506,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
             ]
         ],
         uri: str,
-        webhook_id: str | Omit = omit,
         name: str | Omit = omit,
         state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -544,10 +535,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
           uri: Required. The URI to which webhook events will be sent.
 
-          webhook_id: Optional. The webhook_id to use for the webhook. If not specified, the server
-              will generate a unique ID.
-
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
+          name: Optional. The user-provided name of the webhook.
 
           state: The state of the webhook.
 
@@ -575,13 +563,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
                 webhook_create_params.WebhookCreateParams,
             ),
             options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                query=await async_maybe_transform(
-                    {"webhook_id": webhook_id}, webhook_create_params.WebhookCreateParams
-                ),
+                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
             cast_to=Webhook,
         )
@@ -640,7 +622,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
           update_mask: Optional. The list of fields to update.
 
-          name: Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`
+          name: Optional. The user-provided name of the webhook.
 
           state: The state of the webhook.
 

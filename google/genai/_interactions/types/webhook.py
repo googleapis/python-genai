@@ -60,11 +60,14 @@ class Webhook(BaseModel):
     uri: str
     """Required. The URI to which webhook events will be sent."""
 
+    id: Optional[str] = None
+    """Output only. The ID of the webhook."""
+
     create_time: Optional[datetime] = None
     """Output only. The timestamp when the webhook was created."""
 
     name: Optional[str] = None
-    """Identifier. The name of the webhook. Format: `webhooks/{webhook_id}`"""
+    """Optional. The user-provided name of the webhook."""
 
     new_signing_secret: Optional[str] = None
     """Output only. The new signing secret for the webhook. Only populated on create."""
