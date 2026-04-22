@@ -1025,8 +1025,8 @@ def t_batch_job_source(
     if client.vertexai:
       if mldev_sources or vertex_sources != 1:
         raise ValueError(
-            'Exactly one of `gcs_uri`, `bigquery_uri`, or `vertex_dataset_name` must be set, other '
-            'sources are not supported in Vertex AI.'
+            'Exactly one of `gcs_uri` or `bigquery_uri`, or `vertex_dataset_name` must be set, other '
+            'sources are not supported in Gemini Enterprise Agent Platform.'
         )
     else:
       if vertex_sources or mldev_sources != 1:

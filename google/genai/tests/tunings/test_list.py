@@ -26,14 +26,18 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_default',
         parameters=genai_types._ListTuningJobsParameters(),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_with_config',
         parameters=genai_types._ListTuningJobsParameters(
             config=genai_types.ListTuningJobsConfig(page_size=2)
         ),
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
     ),
 ]
 

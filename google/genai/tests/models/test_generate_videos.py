@@ -263,7 +263,8 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_vertex=(
-            "webhook_config parameter is not supported in Vertex AI"
+            "webhook_config parameter is not supported in Gemini Enterprise"
+            " Agent Platform"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -279,7 +280,8 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex=(
-            "webhook_config parameter is not supported in Vertex AI"
+            "webhook_config parameter is not supported in Gemini Enterprise"
+            " Agent Platform"
         ),
     ),
 ]
