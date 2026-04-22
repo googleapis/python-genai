@@ -15,12 +15,22 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Union
-from typing_extensions import TypeAlias
+from typing import Optional
+from typing_extensions import Literal
 
-from .tool_choice_type import ToolChoiceType
-from .tool_choice_config import ToolChoiceConfig
+from .._models import BaseModel
+from .interaction import Interaction
 
-__all__ = ["ToolChoice"]
+__all__ = ["InteractionStartEvent"]
 
-ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfig]
+
+class InteractionStartEvent(BaseModel):
+    event_type: Literal["interaction.start"]
+
+    interaction: Interaction
+    """The Interaction resource."""
+
+    event_id: Optional[str] = None
+    """
+    The event_id token to be used to resume the interaction stream, from this event.
+    """

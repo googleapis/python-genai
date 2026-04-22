@@ -102,8 +102,9 @@ def _extract_items(
     index += 1
     if is_dict(obj):
         try:
-            # We are at the last entry in the path so we must remove the field
-            if (len(path)) == index:
+            # Remove the field if there are no more dict keys in the path,
+            # only "<array>" traversal markers or end.
+            if all(p == "<array>" for p in path[index:]):
                 item = obj.pop(key)
             else:
                 item = obj[key]
@@ -190,21 +191,6 @@ def is_list(obj: object) -> TypeGuard[list[object]]:
 
 def is_iterable(obj: object) -> TypeGuard[Iterable[object]]:
     return isinstance(obj, Iterable)
-
-
-def deepcopy_minimal(item: _T) -> _T:
-    """Minimal reimplementation of copy.deepcopy() that will only copy certain object types:
-
-    - mappings, e.g. `dict`
-    - list
-
-    This is done for performance reasons.
-    """
-    if is_mapping(item):
-        return cast(_T, {k: deepcopy_minimal(v) for k, v in item.items()})
-    if is_list(item):
-        return cast(_T, [deepcopy_minimal(entry) for entry in item])
-    return item
 
 
 # copied from https://github.com/Rapptz/RoboDanny

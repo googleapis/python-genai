@@ -25,13 +25,18 @@ from .._models import BaseModel
 from .function import Function
 from .allowed_tools import AllowedTools
 
-__all__ = ["Tool", "GoogleSearch", "CodeExecution", "URLContext", "ComputerUse", "MCPServer", "FileSearch"]
-
-
-class GoogleSearch(BaseModel):
-    """A tool that can be used by the model to search Google."""
-
-    type: Literal["google_search"]
+__all__ = [
+    "Tool",
+    "CodeExecution",
+    "URLContext",
+    "ComputerUse",
+    "MCPServer",
+    "GoogleSearch",
+    "FileSearch",
+    "GoogleMaps",
+    "Retrieval",
+    "RetrievalVertexAISearchConfig",
+]
 
 
 class CodeExecution(BaseModel):
@@ -73,10 +78,16 @@ class MCPServer(BaseModel):
     """The name of the MCPServer."""
 
     url: Optional[str] = None
-    """
-    The full URL for the MCPServer endpoint.
-    Example: "https://api.example.com/mcp"
-    """
+    """The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp" """
+
+
+class GoogleSearch(BaseModel):
+    """A tool that can be used by the model to search Google."""
+
+    type: Literal["google_search"]
+
+    search_types: Optional[List[Literal["web_search", "image_search", "enterprise_web_search"]]] = None
+    """The types of search grounding to enable."""
 
 
 class FileSearch(BaseModel):
@@ -94,7 +105,47 @@ class FileSearch(BaseModel):
     """The number of semantic retrieval chunks to retrieve."""
 
 
+class GoogleMaps(BaseModel):
+    """A tool that can be used by the model to call Google Maps."""
+
+    type: Literal["google_maps"]
+
+    enable_widget: Optional[bool] = None
+    """
+    Whether to return a widget context token in the tool call result of the
+    response.
+    """
+
+    latitude: Optional[float] = None
+    """The latitude of the user's location."""
+
+    longitude: Optional[float] = None
+    """The longitude of the user's location."""
+
+
+class RetrievalVertexAISearchConfig(BaseModel):
+    """Used to specify configuration for VertexAISearch."""
+
+    datastores: Optional[List[str]] = None
+    """Optional. Used to specify Vertex AI Search datastores."""
+
+    engine: Optional[str] = None
+    """Optional. Used to specify Vertex AI Search engine."""
+
+
+class Retrieval(BaseModel):
+    """A tool that can be used by the model to retrieve files."""
+
+    type: Literal["retrieval"]
+
+    retrieval_types: Optional[List[Literal["vertex_ai_search"]]] = None
+    """The types of file retrieval to enable."""
+
+    vertex_ai_search_config: Optional[RetrievalVertexAISearchConfig] = None
+    """Used to specify configuration for VertexAISearch."""
+
+
 Tool: TypeAlias = Annotated[
-    Union[Function, GoogleSearch, CodeExecution, URLContext, ComputerUse, MCPServer, FileSearch],
+    Union[Function, CodeExecution, URLContext, ComputerUse, MCPServer, GoogleSearch, FileSearch, GoogleMaps, Retrieval],
     PropertyInfo(discriminator="type"),
 ]

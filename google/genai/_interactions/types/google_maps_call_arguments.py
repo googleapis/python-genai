@@ -15,11 +15,15 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Union
-from typing_extensions import Literal, TypeAlias
+from typing import List, Optional
 
-__all__ = ["AudioMimeType"]
+from .._models import BaseModel
 
-AudioMimeType: TypeAlias = Union[
-    Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"], str
-]
+__all__ = ["GoogleMapsCallArguments"]
+
+
+class GoogleMapsCallArguments(BaseModel):
+    """The arguments to pass to the Google Maps tool."""
+
+    queries: Optional[List[str]] = None
+    """The queries to be executed."""

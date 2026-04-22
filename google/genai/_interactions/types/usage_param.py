@@ -32,7 +32,7 @@ __all__ = [
 class CachedTokensByModality(TypedDict, total=False):
     """The token count for a single response modality."""
 
-    modality: Literal["text", "image", "audio"]
+    modality: Literal["text", "image", "audio", "video", "document"]
     """The modality associated with the token count."""
 
     tokens: int
@@ -42,7 +42,7 @@ class CachedTokensByModality(TypedDict, total=False):
 class InputTokensByModality(TypedDict, total=False):
     """The token count for a single response modality."""
 
-    modality: Literal["text", "image", "audio"]
+    modality: Literal["text", "image", "audio", "video", "document"]
     """The modality associated with the token count."""
 
     tokens: int
@@ -52,7 +52,7 @@ class InputTokensByModality(TypedDict, total=False):
 class OutputTokensByModality(TypedDict, total=False):
     """The token count for a single response modality."""
 
-    modality: Literal["text", "image", "audio"]
+    modality: Literal["text", "image", "audio", "video", "document"]
     """The modality associated with the token count."""
 
     tokens: int
@@ -62,7 +62,7 @@ class OutputTokensByModality(TypedDict, total=False):
 class ToolUseTokensByModality(TypedDict, total=False):
     """The token count for a single response modality."""
 
-    modality: Literal["text", "image", "audio"]
+    modality: Literal["text", "image", "audio", "video", "document"]
     """The modality associated with the token count."""
 
     tokens: int

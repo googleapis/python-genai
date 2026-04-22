@@ -15,22 +15,25 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Union
-from typing_extensions import Literal, TypeAlias
+from typing import List, Optional
+from typing_extensions import Literal
 
-__all__ = ["VideoMimeType"]
+from .._models import BaseModel
+from .google_maps_result import GoogleMapsResult
 
-VideoMimeType: TypeAlias = Union[
-    Literal[
-        "video/mp4",
-        "video/mpeg",
-        "video/mov",
-        "video/avi",
-        "video/x-flv",
-        "video/mpg",
-        "video/webm",
-        "video/wmv",
-        "video/3gpp",
-    ],
-    str,
-]
+__all__ = ["GoogleMapsResultContent"]
+
+
+class GoogleMapsResultContent(BaseModel):
+    """Google Maps result content."""
+
+    call_id: str
+    """Required. ID to match the ID from the function call block."""
+
+    result: List[GoogleMapsResult]
+    """Required. The results of the Google Maps."""
+
+    type: Literal["google_maps_result"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

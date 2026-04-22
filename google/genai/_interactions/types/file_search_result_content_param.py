@@ -17,8 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Iterable
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypedDict
+
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 
 __all__ = ["FileSearchResultContentParam", "Result"]
 
@@ -26,20 +30,23 @@ __all__ = ["FileSearchResultContentParam", "Result"]
 class Result(TypedDict, total=False):
     """The result of the File Search."""
 
-    file_search_store: str
-    """The name of the file search store."""
-
-    text: str
-    """The text of the search result."""
-
-    title: str
-    """The title of the search result."""
+    custom_metadata: Iterable[object]
+    """User provided metadata about the FileSearchResult."""
 
 
 class FileSearchResultContentParam(TypedDict, total=False):
     """File Search result content."""
 
+    call_id: Required[str]
+    """Required. ID to match the ID from the function call block."""
+
+    result: Required[Iterable[Result]]
+    """Required. The results of the File Search."""
+
     type: Required[Literal["file_search_result"]]
 
-    result: Iterable[Result]
-    """The results of the File Search."""
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(FileSearchResultContentParam, {"arbitrary_types_allowed": True})

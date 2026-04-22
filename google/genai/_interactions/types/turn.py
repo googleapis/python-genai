@@ -24,12 +24,7 @@ __all__ = ["Turn"]
 
 
 class Turn(BaseModel):
-    content: Union[str, List[Content], None] = None
-    """The content of the turn."""
+    content: Union[List[Content], str, None] = None
 
     role: Optional[str] = None
-    """The originator of this turn.
-
-    Must be user for input or model for
-    model output.
-    """
+    """The originator of this turn. Must be user for input or model for model output."""

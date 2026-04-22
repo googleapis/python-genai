@@ -26,7 +26,10 @@ __all__ = ["FileSearchCallContent"]
 class FileSearchCallContent(BaseModel):
     """File Search content."""
 
+    id: str
+    """Required. A unique ID for this specific tool call."""
+
     type: Literal["file_search_call"]
 
-    id: Optional[str] = None
-    """A unique ID for this specific tool call."""
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

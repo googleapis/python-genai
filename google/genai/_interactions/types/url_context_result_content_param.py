@@ -17,9 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Iterable
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .url_context_result_param import URLContextResultParam
 
 __all__ = ["URLContextResultContentParam"]
@@ -28,16 +31,19 @@ __all__ = ["URLContextResultContentParam"]
 class URLContextResultContentParam(TypedDict, total=False):
     """URL context result content."""
 
-    type: Required[Literal["url_context_result"]]
+    call_id: Required[str]
+    """Required. ID to match the ID from the function call block."""
 
-    call_id: str
-    """ID to match the ID from the url context call block."""
+    result: Required[Iterable[URLContextResultParam]]
+    """Required. The results of the URL context."""
+
+    type: Required[Literal["url_context_result"]]
 
     is_error: bool
     """Whether the URL context resulted in an error."""
 
-    result: Iterable[URLContextResultParam]
-    """The results of the URL context."""
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
 
-    signature: str
-    """The signature of the URL context result."""
+
+set_pydantic_config(URLContextResultContentParam, {"arbitrary_types_allowed": True})

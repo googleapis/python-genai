@@ -15,22 +15,29 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
-from typing_extensions import Literal
+from __future__ import annotations
 
-from .._models import BaseModel
-from .interaction import Interaction
+from typing_extensions import Literal, Required, TypedDict
 
-__all__ = ["InteractionEvent"]
+__all__ = ["URLCitationParam"]
 
 
-class InteractionEvent(BaseModel):
-    event_id: Optional[str] = None
+class URLCitationParam(TypedDict, total=False):
+    """A URL citation annotation."""
+
+    type: Required[Literal["url_citation"]]
+
+    end_index: int
+    """End of the attributed segment, exclusive."""
+
+    start_index: int
+    """Start of segment of the response that is attributed to this source.
+
+    Index indicates the start of the segment, measured in bytes.
     """
-    The event_id token to be used to resume the interaction stream, from this event.
-    """
 
-    event_type: Optional[Literal["interaction.start", "interaction.complete"]] = None
+    title: str
+    """The title of the URL."""
 
-    interaction: Optional[Interaction] = None
-    """The Interaction resource."""
+    url: str
+    """The URL."""

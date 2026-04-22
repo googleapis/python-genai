@@ -15,7 +15,7 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Dict
+from typing import Dict, Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -27,12 +27,15 @@ class FunctionCallContent(BaseModel):
     """A function tool call content block."""
 
     id: str
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Dict[str, object]
-    """The arguments to pass to the function."""
+    """Required. The arguments to pass to the function."""
 
     name: str
-    """The name of the tool to call."""
+    """Required. The name of the tool to call."""
 
     type: Literal["function_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

@@ -25,14 +25,14 @@ __all__ = ["ContentStart"]
 
 
 class ContentStart(BaseModel):
-    content: Optional[Content] = None
+    content: Content
     """The content of the response."""
+
+    event_type: Literal["content.start"]
+
+    index: int
 
     event_id: Optional[str] = None
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    event_type: Optional[Literal["content.start"]] = None
-
-    index: Optional[int] = None

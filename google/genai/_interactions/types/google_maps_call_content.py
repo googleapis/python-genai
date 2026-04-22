@@ -15,9 +15,25 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Union
-from typing_extensions import Literal, TypeAlias
+from typing import Optional
+from typing_extensions import Literal
 
-__all__ = ["ImageMimeType"]
+from .._models import BaseModel
+from .google_maps_call_arguments import GoogleMapsCallArguments
 
-ImageMimeType: TypeAlias = Union[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"], str]
+__all__ = ["GoogleMapsCallContent"]
+
+
+class GoogleMapsCallContent(BaseModel):
+    """Google Maps content."""
+
+    id: str
+    """Required. A unique ID for this specific tool call."""
+
+    type: Literal["google_maps_call"]
+
+    arguments: Optional[GoogleMapsCallArguments] = None
+    """The arguments to pass to the Google Maps tool."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

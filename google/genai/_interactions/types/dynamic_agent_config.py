@@ -15,7 +15,7 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Dict
 from typing_extensions import Literal
 
 from pydantic import Field as FieldInfo
@@ -28,7 +28,7 @@ __all__ = ["DynamicAgentConfig"]
 class DynamicAgentConfig(BaseModel):
     """Configuration for dynamic agents."""
 
-    type: Optional[Literal["dynamic"]] = None
+    type: Literal["dynamic"]
 
     if TYPE_CHECKING:
         # Some versions of Pydantic <2.8.0 have a bug and don’t allow assigning a

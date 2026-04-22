@@ -15,14 +15,20 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from .._models import BaseModel
 
-from typing import Union
-from typing_extensions import TypeAlias
+__all__ = ["WebhookDeleteResponse"]
 
-from .tool_choice_type import ToolChoiceType
-from .tool_choice_config_param import ToolChoiceConfigParam
 
-__all__ = ["ToolChoiceParam"]
+class WebhookDeleteResponse(BaseModel):
+    """
+    A generic empty message that you can re-use to avoid defining duplicated
+    empty messages in your APIs. A typical example is to use it as the request
+    or the response type of an API method. For instance:
 
-ToolChoiceParam: TypeAlias = Union[ToolChoiceType, ToolChoiceConfigParam]
+        service Foo {
+          rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
+        }
+    """
+
+    pass

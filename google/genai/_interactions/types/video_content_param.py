@@ -23,7 +23,6 @@ from typing_extensions import Literal, Required, Annotated, TypedDict
 from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
-from .video_mime_type_param import VideoMimeTypeParam
 
 __all__ = ["VideoContentParam"]
 
@@ -34,14 +33,26 @@ class VideoContentParam(TypedDict, total=False):
     type: Required[Literal["video"]]
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """The video content."""
 
-    mime_type: VideoMimeTypeParam
+    mime_type: Literal[
+        "video/mp4",
+        "video/mpeg",
+        "video/mpg",
+        "video/mov",
+        "video/avi",
+        "video/x-flv",
+        "video/webm",
+        "video/wmv",
+        "video/3gpp",
+    ]
     """The mime type of the video."""
 
     resolution: Literal["low", "medium", "high", "ultra_high"]
     """The resolution of the media."""
 
     uri: str
+    """The URI of the video."""
 
 
 set_pydantic_config(VideoContentParam, {"arbitrary_types_allowed": True})

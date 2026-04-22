@@ -38,6 +38,7 @@ from .._base_client import make_request_options
 from ..types.tool_param import ToolParam
 from ..types.interaction import Interaction
 from ..types.model_param import ModelParam
+from ..types.webhook_config_param import WebhookConfigParam
 from ..types.interaction_sse_event import InteractionSSEEvent
 from ..types.generation_config_param import GenerationConfigParam
 
@@ -68,19 +69,21 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -92,22 +95,24 @@ class InteractionsResource(SyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -116,6 +121,9 @@ class InteractionsResource(SyncAPIResource):
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -131,19 +139,21 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: Literal[True],
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -155,30 +165,35 @@ class InteractionsResource(SyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -194,19 +209,28 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
-        input: interaction_create_params.Input,
         api_version: str | None = None,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
+        input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -220,20 +244,22 @@ class InteractionsResource(SyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -242,6 +268,9 @@ class InteractionsResource(SyncAPIResource):
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -257,19 +286,28 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
+        api_version: str | None = None,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
         input: interaction_create_params.Input,
         stream: Literal[True],
-        api_version: str | None = None,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -283,28 +321,33 @@ class InteractionsResource(SyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -320,19 +363,21 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: bool,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -344,30 +389,35 @@ class InteractionsResource(SyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -383,20 +433,30 @@ class InteractionsResource(SyncAPIResource):
     def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam | Omit = omit,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ]
+        | Omit = omit,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -425,10 +485,12 @@ class InteractionsResource(SyncAPIResource):
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
                     "response_modalities": response_modalities,
+                    "service_tier": service_tier,
                     "store": store,
                     "stream": stream,
                     "system_instruction": system_instruction,
                     "tools": tools,
+                    "webhook_config": webhook_config,
                     "agent": agent,
                     "agent_config": agent_config,
                 },
@@ -468,12 +530,12 @@ class InteractionsResource(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._delete(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -496,7 +558,8 @@ class InteractionsResource(SyncAPIResource):
     ) -> Interaction:
         """Cancels an interaction by id.
 
-        This only applies to background interactions that are still running.
+        This only applies to background interactions that
+        are still running.
 
         Args:
           extra_headers: Send extra headers
@@ -507,12 +570,12 @@ class InteractionsResource(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._post(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
             options=make_request_options(
@@ -527,6 +590,7 @@ class InteractionsResource(SyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -537,10 +601,14 @@ class InteractionsResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          include_input: If set to true, includes the input in the response.
+
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           stream: If set to true, the generated content will be streamed incrementally.
 
@@ -559,8 +627,9 @@ class InteractionsResource(SyncAPIResource):
         self,
         id: str,
         *,
-        stream: Literal[True],
         api_version: str | None = None,
+        stream: Literal[True],
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -570,12 +639,16 @@ class InteractionsResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Stream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          include_input: If set to true, includes the input in the response.
+
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
@@ -592,8 +665,9 @@ class InteractionsResource(SyncAPIResource):
         self,
         id: str,
         *,
-        stream: bool,
         api_version: str | None = None,
+        stream: bool,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -603,12 +677,16 @@ class InteractionsResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          include_input: If set to true, includes the input in the response.
+
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
@@ -625,6 +703,7 @@ class InteractionsResource(SyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -634,12 +713,12 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._get(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -649,6 +728,7 @@ class InteractionsResource(SyncAPIResource):
                 timeout=timeout,
                 query=maybe_transform(
                     {
+                        "include_input": include_input,
                         "last_event_id": last_event_id,
                         "stream": stream,
                     },
@@ -685,19 +765,21 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -709,22 +791,24 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -733,6 +817,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -748,19 +835,21 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: Literal[True],
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -772,30 +861,35 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -811,19 +905,28 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
-        input: interaction_create_params.Input,
         api_version: str | None = None,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
+        input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -837,20 +940,22 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
@@ -859,6 +964,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -874,19 +982,28 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]],
+        api_version: str | None = None,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
         input: interaction_create_params.Input,
         stream: Literal[True],
-        api_version: str | None = None,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -900,28 +1017,33 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Args:
           agent: The name of the `Agent` used for generating the interaction.
 
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          agent_config: Configuration for the agent.
+          agent_config: Configuration parameters for the agent interaction.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -937,19 +1059,21 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam,
         stream: bool,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -961,30 +1085,35 @@ class AsyncInteractionsResource(AsyncAPIResource):
         Creates a new interaction.
 
         Args:
-          input: The inputs for the interaction.
+          input: The input for the interaction.
 
           model: The name of the `Model` used for generating the interaction.
 
           stream: Input only. Whether the interaction will be streamed.
 
-          background: Whether to run the model interaction in the background.
+          background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with
-              the JSON schema specified in this field.
+          response_format: Enforces that the generated response is a JSON object that complies with the
+              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          service_tier: The service tier for the interaction.
 
           store: Input only. Whether to store the response and request for later retrieval.
 
           system_instruction: System instruction for the interaction.
 
           tools: A list of tool declarations the model may call during interaction.
+
+          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
+              completes.
 
           extra_headers: Send extra headers
 
@@ -1000,20 +1129,30 @@ class AsyncInteractionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
+        api_version: str | None = None,
         input: interaction_create_params.Input,
         model: ModelParam | Omit = omit,
-        api_version: str | None = None,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: object | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio"]] | Omit = omit,
+        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         system_instruction: str | Omit = omit,
         tools: Iterable[ToolParam] | Omit = omit,
-        agent: Union[str, Literal["deep-research-pro-preview-12-2025"]] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ]
+        | Omit = omit,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1042,10 +1181,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
                     "response_modalities": response_modalities,
+                    "service_tier": service_tier,
                     "store": store,
                     "stream": stream,
                     "system_instruction": system_instruction,
                     "tools": tools,
+                    "webhook_config": webhook_config,
                     "agent": agent,
                     "agent_config": agent_config,
                 },
@@ -1085,12 +1226,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._delete(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -1113,7 +1254,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
     ) -> Interaction:
         """Cancels an interaction by id.
 
-        This only applies to background interactions that are still running.
+        This only applies to background interactions that
+        are still running.
 
         Args:
           extra_headers: Send extra headers
@@ -1124,12 +1266,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._post(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
             options=make_request_options(
@@ -1144,6 +1286,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1154,10 +1297,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          include_input: If set to true, includes the input in the response.
+
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           stream: If set to true, the generated content will be streamed incrementally.
 
@@ -1176,8 +1323,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
         self,
         id: str,
         *,
-        stream: Literal[True],
         api_version: str | None = None,
+        stream: Literal[True],
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1187,12 +1335,16 @@ class AsyncInteractionsResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AsyncStream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          include_input: If set to true, includes the input in the response.
+
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
@@ -1209,8 +1361,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
         self,
         id: str,
         *,
-        stream: bool,
         api_version: str | None = None,
+        stream: bool,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1220,12 +1373,16 @@ class AsyncInteractionsResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
         """
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
+        Retrieves the full details of a single interaction based on its
+        `Interaction.id`.
 
         Args:
           stream: If set to true, the generated content will be streamed incrementally.
 
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+          include_input: If set to true, includes the input in the response.
+
+          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
+              event marked by the event id. Can only be used if `stream` is true.
 
           extra_headers: Send extra headers
 
@@ -1242,6 +1399,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        include_input: bool | Omit = omit,
         last_event_id: str | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1251,12 +1409,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+        if not id:
+            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._get(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -1266,6 +1424,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
                 timeout=timeout,
                 query=await async_maybe_transform(
                     {
+                        "include_input": include_input,
                         "last_event_id": last_event_id,
                         "stream": stream,
                     },

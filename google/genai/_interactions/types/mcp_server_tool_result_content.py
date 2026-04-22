@@ -16,31 +16,28 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from typing import List, Union, Optional
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import Literal, Annotated, TypeAlias
 
+from .._utils import PropertyInfo
 from .._models import BaseModel
+from .text_content import TextContent
 from .image_content import ImageContent
 
-__all__ = ["MCPServerToolResultContent", "Result", "ResultItems", "ResultItemsItem"]
+__all__ = ["MCPServerToolResultContent", "ResultFunctionResultSubcontentList"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContent, object]
-
-
-class ResultItems(BaseModel):
-    items: Optional[List[ResultItemsItem]] = None
-
-
-Result: TypeAlias = Union[ResultItems, str, object]
+ResultFunctionResultSubcontentList: TypeAlias = Annotated[
+    Union[TextContent, ImageContent], PropertyInfo(discriminator="type")
+]
 
 
 class MCPServerToolResultContent(BaseModel):
     """MCPServer tool result content."""
 
     call_id: str
-    """ID to match the ID from the MCP server tool call block."""
+    """Required. ID to match the ID from the function call block."""
 
-    result: Result
-    """The result of the tool call."""
+    result: Union[List[ResultFunctionResultSubcontentList], str, object]
+    """The output from the MCP server call. Can be simple text or rich content."""
 
     type: Literal["mcp_server_tool_result"]
 
@@ -49,3 +46,6 @@ class MCPServerToolResultContent(BaseModel):
 
     server_name: Optional[str] = None
     """The name of the used MCP server."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

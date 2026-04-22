@@ -23,7 +23,6 @@ from typing_extensions import Literal, Required, Annotated, TypedDict
 from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
-from .document_mime_type_param import DocumentMimeTypeParam
 
 __all__ = ["DocumentContentParam"]
 
@@ -34,11 +33,13 @@ class DocumentContentParam(TypedDict, total=False):
     type: Required[Literal["document"]]
 
     data: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """The document content."""
 
-    mime_type: DocumentMimeTypeParam
+    mime_type: Literal["application/pdf"]
     """The mime type of the document."""
 
     uri: str
+    """The URI of the document."""
 
 
 set_pydantic_config(DocumentContentParam, {"arbitrary_types_allowed": True})

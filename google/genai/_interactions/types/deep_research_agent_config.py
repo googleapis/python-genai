@@ -26,7 +26,18 @@ __all__ = ["DeepResearchAgentConfig"]
 class DeepResearchAgentConfig(BaseModel):
     """Configuration for the Deep Research agent."""
 
+    type: Literal["deep-research"]
+
+    collaborative_planning: Optional[bool] = None
+    """Enables human-in-the-loop planning for the Deep Research agent.
+
+    If set to true, the Deep Research agent will provide a research plan in its
+    response. The agent will then proceed only if the user confirms the plan in the
+    next turn. Relevant issue: b/482352502.
+    """
+
     thinking_summaries: Optional[Literal["auto", "none"]] = None
     """Whether to include thought summaries in the response."""
 
-    type: Optional[Literal["deep-research"]] = None
+    visualization: Optional[Literal["off", "auto"]] = None
+    """Whether to include visualizations in the response."""

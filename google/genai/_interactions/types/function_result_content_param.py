@@ -17,31 +17,27 @@
 
 from __future__ import annotations
 
-from typing import Union
-from typing_extensions import Literal, Required, TypeAlias, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
 
-from .._types import SequenceNotStr
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
+from .text_content_param import TextContentParam
 from .image_content_param import ImageContentParam
 
-__all__ = ["FunctionResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
+__all__ = ["FunctionResultContentParam", "ResultFunctionResultSubcontentList"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContentParam, object]
-
-
-class ResultItems(TypedDict, total=False):
-    items: SequenceNotStr[ResultItemsItem]
-
-
-Result: TypeAlias = Union[ResultItems, str, object]
+ResultFunctionResultSubcontentList: TypeAlias = Union[TextContentParam, ImageContentParam]
 
 
 class FunctionResultContentParam(TypedDict, total=False):
     """A function tool result content block."""
 
     call_id: Required[str]
-    """ID to match the ID from the function call block."""
+    """Required. ID to match the ID from the function call block."""
 
-    result: Required[Result]
+    result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
     """The result of the tool call."""
 
     type: Required[Literal["function_result"]]
@@ -51,3 +47,9 @@ class FunctionResultContentParam(TypedDict, total=False):
 
     name: str
     """The name of the tool that was called."""
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(FunctionResultContentParam, {"arbitrary_types_allowed": True})

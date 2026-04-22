@@ -26,16 +26,16 @@ __all__ = ["CodeExecutionResultContent"]
 class CodeExecutionResultContent(BaseModel):
     """Code execution result content."""
 
-    type: Literal["code_execution_result"]
+    call_id: str
+    """Required. ID to match the ID from the function call block."""
 
-    call_id: Optional[str] = None
-    """ID to match the ID from the code execution call block."""
+    result: str
+    """Required. The output of the code execution."""
+
+    type: Literal["code_execution_result"]
 
     is_error: Optional[bool] = None
     """Whether the code execution resulted in an error."""
-
-    result: Optional[str] = None
-    """The output of the code execution."""
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""

@@ -17,32 +17,28 @@
 
 from __future__ import annotations
 
-from typing import Union
-from typing_extensions import Literal, Required, TypeAlias, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
 
-from .._types import SequenceNotStr
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
+from .text_content_param import TextContentParam
 from .image_content_param import ImageContentParam
 
-__all__ = ["MCPServerToolResultContentParam", "Result", "ResultItems", "ResultItemsItem"]
+__all__ = ["MCPServerToolResultContentParam", "ResultFunctionResultSubcontentList"]
 
-ResultItemsItem: TypeAlias = Union[str, ImageContentParam, object]
-
-
-class ResultItems(TypedDict, total=False):
-    items: SequenceNotStr[ResultItemsItem]
-
-
-Result: TypeAlias = Union[ResultItems, str, object]
+ResultFunctionResultSubcontentList: TypeAlias = Union[TextContentParam, ImageContentParam]
 
 
 class MCPServerToolResultContentParam(TypedDict, total=False):
     """MCPServer tool result content."""
 
     call_id: Required[str]
-    """ID to match the ID from the MCP server tool call block."""
+    """Required. ID to match the ID from the function call block."""
 
-    result: Required[Result]
-    """The result of the tool call."""
+    result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
+    """The output from the MCP server call. Can be simple text or rich content."""
 
     type: Required[Literal["mcp_server_tool_result"]]
 
@@ -51,3 +47,9 @@ class MCPServerToolResultContentParam(TypedDict, total=False):
 
     server_name: str
     """The name of the used MCP server."""
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(MCPServerToolResultContentParam, {"arbitrary_types_allowed": True})

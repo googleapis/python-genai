@@ -17,8 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Dict
-from typing_extensions import Literal, Required, TypedDict
+from typing import Dict, Union
+from typing_extensions import Literal, Required, Annotated, TypedDict
+
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 
 __all__ = ["FunctionCallContentParam"]
 
@@ -27,12 +31,18 @@ class FunctionCallContentParam(TypedDict, total=False):
     """A function tool call content block."""
 
     id: Required[str]
-    """A unique ID for this specific tool call."""
+    """Required. A unique ID for this specific tool call."""
 
     arguments: Required[Dict[str, object]]
-    """The arguments to pass to the function."""
+    """Required. The arguments to pass to the function."""
 
     name: Required[str]
-    """The name of the tool to call."""
+    """Required. The name of the tool to call."""
 
     type: Required[Literal["function_call"]]
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(FunctionCallContentParam, {"arbitrary_types_allowed": True})

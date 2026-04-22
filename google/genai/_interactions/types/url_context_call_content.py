@@ -27,10 +27,13 @@ __all__ = ["URLContextCallContent"]
 class URLContextCallContent(BaseModel):
     """URL context content."""
 
+    id: str
+    """Required. A unique ID for this specific tool call."""
+
+    arguments: URLContextCallArguments
+    """Required. The arguments to pass to the URL context."""
+
     type: Literal["url_context_call"]
 
-    id: Optional[str] = None
-    """A unique ID for this specific tool call."""
-
-    arguments: Optional[URLContextCallArguments] = None
-    """The arguments to pass to the URL context."""
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

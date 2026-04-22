@@ -35,7 +35,7 @@ from ._types import (
     RequestOptions,
     not_given,
 )
-from ._utils import is_given, get_async_library
+from ._utils import is_given
 from ._compat import cached_property
 from ._models import FinalRequestOptions
 from ._version import __version__
@@ -49,7 +49,8 @@ from ._base_client import (
 from ._client_adapter import GeminiNextGenAPIClientAdapter, AsyncGeminiNextGenAPIClientAdapter
 
 if TYPE_CHECKING:
-    from .resources import interactions
+    from .resources import webhooks, interactions
+    from .resources.webhooks import WebhooksResource, AsyncWebhooksResource
     from .resources.interactions import InteractionsResource, AsyncInteractionsResource
 
 __all__ = [
@@ -134,6 +135,12 @@ class GeminiNextGenAPIClient(SyncAPIClient):
         return InteractionsResource(self)
 
     @cached_property
+    def webhooks(self) -> WebhooksResource:
+        from .resources.webhooks import WebhooksResource
+
+        return WebhooksResource(self)
+
+    @cached_property
     def with_raw_response(self) -> GeminiNextGenAPIClientWithRawResponse:
         return GeminiNextGenAPIClientWithRawResponse(self)
 
@@ -159,7 +166,6 @@ class GeminiNextGenAPIClient(SyncAPIClient):
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "X-Stainless-Async": "false",
             **self._custom_headers,
         }
 
@@ -356,6 +362,12 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
         return AsyncInteractionsResource(self)
 
     @cached_property
+    def webhooks(self) -> AsyncWebhooksResource:
+        from .resources.webhooks import AsyncWebhooksResource
+
+        return AsyncWebhooksResource(self)
+
+    @cached_property
     def with_raw_response(self) -> AsyncGeminiNextGenAPIClientWithRawResponse:
         return AsyncGeminiNextGenAPIClientWithRawResponse(self)
 
@@ -381,7 +393,6 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "X-Stainless-Async": f"async:{get_async_library()}",
             **self._custom_headers,
         }
 
@@ -520,6 +531,12 @@ class GeminiNextGenAPIClientWithRawResponse:
 
         return InteractionsResourceWithRawResponse(self._client.interactions)
 
+    @cached_property
+    def webhooks(self) -> webhooks.WebhooksResourceWithRawResponse:
+        from .resources.webhooks import WebhooksResourceWithRawResponse
+
+        return WebhooksResourceWithRawResponse(self._client.webhooks)
+
 
 class AsyncGeminiNextGenAPIClientWithRawResponse:
     _client: AsyncGeminiNextGenAPIClient
@@ -532,6 +549,12 @@ class AsyncGeminiNextGenAPIClientWithRawResponse:
         from .resources.interactions import AsyncInteractionsResourceWithRawResponse
 
         return AsyncInteractionsResourceWithRawResponse(self._client.interactions)
+
+    @cached_property
+    def webhooks(self) -> webhooks.AsyncWebhooksResourceWithRawResponse:
+        from .resources.webhooks import AsyncWebhooksResourceWithRawResponse
+
+        return AsyncWebhooksResourceWithRawResponse(self._client.webhooks)
 
 
 class GeminiNextGenAPIClientWithStreamedResponse:
@@ -546,6 +569,12 @@ class GeminiNextGenAPIClientWithStreamedResponse:
 
         return InteractionsResourceWithStreamingResponse(self._client.interactions)
 
+    @cached_property
+    def webhooks(self) -> webhooks.WebhooksResourceWithStreamingResponse:
+        from .resources.webhooks import WebhooksResourceWithStreamingResponse
+
+        return WebhooksResourceWithStreamingResponse(self._client.webhooks)
+
 
 class AsyncGeminiNextGenAPIClientWithStreamedResponse:
     _client: AsyncGeminiNextGenAPIClient
@@ -558,6 +587,12 @@ class AsyncGeminiNextGenAPIClientWithStreamedResponse:
         from .resources.interactions import AsyncInteractionsResourceWithStreamingResponse
 
         return AsyncInteractionsResourceWithStreamingResponse(self._client.interactions)
+
+    @cached_property
+    def webhooks(self) -> webhooks.AsyncWebhooksResourceWithStreamingResponse:
+        from .resources.webhooks import AsyncWebhooksResourceWithStreamingResponse
+
+        return AsyncWebhooksResourceWithStreamingResponse(self._client.webhooks)
 
 
 Client = GeminiNextGenAPIClient

@@ -17,7 +17,12 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union
+from typing_extensions import Literal, Required, Annotated, TypedDict
+
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 
 __all__ = ["CodeExecutionResultContentParam"]
 
@@ -25,16 +30,19 @@ __all__ = ["CodeExecutionResultContentParam"]
 class CodeExecutionResultContentParam(TypedDict, total=False):
     """Code execution result content."""
 
-    type: Required[Literal["code_execution_result"]]
+    call_id: Required[str]
+    """Required. ID to match the ID from the function call block."""
 
-    call_id: str
-    """ID to match the ID from the code execution call block."""
+    result: Required[str]
+    """Required. The output of the code execution."""
+
+    type: Required[Literal["code_execution_result"]]
 
     is_error: bool
     """Whether the code execution resulted in an error."""
 
-    result: str
-    """The output of the code execution."""
-
-    signature: str
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
     """A signature hash for backend validation."""
+
+
+set_pydantic_config(CodeExecutionResultContentParam, {"arbitrary_types_allowed": True})

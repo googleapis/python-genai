@@ -28,6 +28,7 @@ from .text_content_param import TextContentParam
 from .audio_content_param import AudioContentParam
 from .image_content_param import ImageContentParam
 from .video_content_param import VideoContentParam
+from .webhook_config_param import WebhookConfigParam
 from .thought_content_param import ThoughtContentParam
 from .document_content_param import DocumentContentParam
 from .generation_config_param import GenerationConfigParam
@@ -35,9 +36,11 @@ from .dynamic_agent_config_param import DynamicAgentConfigParam
 from .function_call_content_param import FunctionCallContentParam
 from .function_result_content_param import FunctionResultContentParam
 from .file_search_call_content_param import FileSearchCallContentParam
+from .google_maps_call_content_param import GoogleMapsCallContentParam
 from .url_context_call_content_param import URLContextCallContentParam
 from .deep_research_agent_config_param import DeepResearchAgentConfigParam
 from .file_search_result_content_param import FileSearchResultContentParam
+from .google_maps_result_content_param import GoogleMapsResultContentParam
 from .google_search_call_content_param import GoogleSearchCallContentParam
 from .url_context_result_content_param import URLContextResultContentParam
 from .code_execution_call_content_param import CodeExecutionCallContentParam
@@ -59,16 +62,16 @@ __all__ = [
 
 
 class BaseCreateModelInteractionParams(TypedDict, total=False):
+    api_version: str
+
     input: Required[Input]
-    """The inputs for the interaction."""
+    """The input for the interaction."""
 
     model: Required[ModelParam]
     """The name of the `Model` used for generating the interaction."""
 
-    api_version: str
-
     background: bool
-    """Whether to run the model interaction in the background."""
+    """Input only. Whether to run the model interaction in the background."""
 
     generation_config: GenerationConfigParam
     """Input only. Configuration parameters for the model interaction."""
@@ -78,15 +81,18 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
 
     response_format: object
     """
-    Enforces that the generated response is a JSON object that complies with
-    the JSON schema specified in this field.
+    Enforces that the generated response is a JSON object that complies with the
+    JSON schema specified in this field.
     """
 
     response_mime_type: str
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: List[Literal["text", "image", "audio"]]
+    response_modalities: List[Literal["text", "image", "audio", "video", "document"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
+
+    service_tier: Literal["flex", "standard", "priority"]
+    """The service tier for the interaction."""
 
     store: bool
     """Input only. Whether to store the response and request for later retrieval."""
@@ -97,10 +103,17 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     tools: Iterable[ToolParam]
     """A list of tool declarations the model may call during interaction."""
 
+    webhook_config: WebhookConfigParam
+    """Optional.
+
+    Webhook configuration for receiving notifications when the interaction
+    completes.
+    """
+
 
 Input: TypeAlias = Union[
-    str,
     Iterable[ContentParam],
+    str,
     Iterable[TurnParam],
     TextContentParam,
     ImageContentParam,
@@ -109,49 +122,63 @@ Input: TypeAlias = Union[
     VideoContentParam,
     ThoughtContentParam,
     FunctionCallContentParam,
-    FunctionResultContentParam,
     CodeExecutionCallContentParam,
-    CodeExecutionResultContentParam,
     URLContextCallContentParam,
-    URLContextResultContentParam,
-    GoogleSearchCallContentParam,
-    GoogleSearchResultContentParam,
     MCPServerToolCallContentParam,
-    MCPServerToolResultContentParam,
+    GoogleSearchCallContentParam,
     FileSearchCallContentParam,
+    GoogleMapsCallContentParam,
+    FunctionResultContentParam,
+    CodeExecutionResultContentParam,
+    URLContextResultContentParam,
+    GoogleSearchResultContentParam,
+    MCPServerToolResultContentParam,
     FileSearchResultContentParam,
+    GoogleMapsResultContentParam,
 ]
 
 
 class BaseCreateAgentInteractionParams(TypedDict, total=False):
-    agent: Required[Union[str, Literal["deep-research-pro-preview-12-2025"]]]
+    api_version: str
+
+    agent: Required[
+        Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ]
+    ]
     """The name of the `Agent` used for generating the interaction."""
 
     input: Required[Input]
-    """The inputs for the interaction."""
-
-    api_version: str
+    """The input for the interaction."""
 
     agent_config: AgentConfig
-    """Configuration for the agent."""
+    """Configuration parameters for the agent interaction."""
 
     background: bool
-    """Whether to run the model interaction in the background."""
+    """Input only. Whether to run the model interaction in the background."""
 
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
 
     response_format: object
     """
-    Enforces that the generated response is a JSON object that complies with
-    the JSON schema specified in this field.
+    Enforces that the generated response is a JSON object that complies with the
+    JSON schema specified in this field.
     """
 
     response_mime_type: str
     """The mime type of the response. This is required if response_format is set."""
 
-    response_modalities: List[Literal["text", "image", "audio"]]
+    response_modalities: List[Literal["text", "image", "audio", "video", "document"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
+
+    service_tier: Literal["flex", "standard", "priority"]
+    """The service tier for the interaction."""
 
     store: bool
     """Input only. Whether to store the response and request for later retrieval."""
@@ -161,6 +188,13 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
 
     tools: Iterable[ToolParam]
     """A list of tool declarations the model may call during interaction."""
+
+    webhook_config: WebhookConfigParam
+    """Optional.
+
+    Webhook configuration for receiving notifications when the interaction
+    completes.
+    """
 
 
 AgentConfig: TypeAlias = Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam]

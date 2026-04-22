@@ -17,11 +17,19 @@
 
 from __future__ import annotations
 
-from typing import Union
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import TypedDict
 
-__all__ = ["AudioMimeTypeParam"]
+__all__ = ["WebhookPingParams", "Body"]
 
-AudioMimeTypeParam: TypeAlias = Union[
-    Literal["audio/wav", "audio/mp3", "audio/aiff", "audio/aac", "audio/ogg", "audio/flac"], str
-]
+
+class WebhookPingParams(TypedDict, total=False):
+    api_version: str
+
+    body: Body
+    """Request message for WebhookService.PingWebhook."""
+
+
+class Body(TypedDict, total=False):
+    """Request message for WebhookService.PingWebhook."""
+
+    pass

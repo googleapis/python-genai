@@ -17,9 +17,15 @@
 
 from __future__ import annotations
 
-from typing import Union
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import TypedDict
 
-__all__ = ["ImageMimeTypeParam"]
+from .._types import SequenceNotStr
 
-ImageMimeTypeParam: TypeAlias = Union[Literal["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"], str]
+__all__ = ["GoogleMapsCallArgumentsParam"]
+
+
+class GoogleMapsCallArgumentsParam(TypedDict, total=False):
+    """The arguments to pass to the Google Maps tool."""
+
+    queries: SequenceNotStr[str]
+    """The queries to be executed."""

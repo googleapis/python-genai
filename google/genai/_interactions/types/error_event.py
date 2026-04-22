@@ -34,6 +34,8 @@ class Error(BaseModel):
 
 
 class ErrorEvent(BaseModel):
+    event_type: Literal["error"]
+
     error: Optional[Error] = None
     """Error message from an interaction."""
 
@@ -41,5 +43,3 @@ class ErrorEvent(BaseModel):
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
-
-    event_type: Optional[Literal["error"]] = None

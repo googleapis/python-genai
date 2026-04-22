@@ -15,24 +15,19 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from typing import Optional
+from datetime import datetime
 
-from typing import Union
-from typing_extensions import Literal, TypeAlias
+from .._models import BaseModel
 
-__all__ = ["VideoMimeTypeParam"]
+__all__ = ["SigningSecret"]
 
-VideoMimeTypeParam: TypeAlias = Union[
-    Literal[
-        "video/mp4",
-        "video/mpeg",
-        "video/mov",
-        "video/avi",
-        "video/x-flv",
-        "video/mpg",
-        "video/webm",
-        "video/wmv",
-        "video/3gpp",
-    ],
-    str,
-]
+
+class SigningSecret(BaseModel):
+    """Represents a signing secret used to verify webhook payloads."""
+
+    expire_time: Optional[datetime] = None
+    """Output only. The expiration date of the signing secret."""
+
+    truncated_secret: Optional[str] = None
+    """Output only. The truncated version of the signing secret."""

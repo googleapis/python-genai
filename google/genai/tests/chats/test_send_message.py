@@ -768,9 +768,8 @@ def test_mcp_tools(client):
               )
           ],},
   )
-  response = chat.send_message('What is the weather in Boston?');
-  response = chat.send_message('What is the weather in San Francisco?');
-
+  response = chat.send_message('What is the weather in Boston?')
+  response = chat.send_message('What is the weather in San Francisco?')
 
 
 def test_mcp_tools_stream(client):
@@ -842,3 +841,101 @@ async def test_async_mcp_tools_stream(client):
     'What is the weather in San Francisco?'
   ):
     pass
+
+
+def test_server_side_mcp_tools(client):
+   with pytest_helper.exception_if_vertex(client, ValueError):
+    chat = client.chats.create(
+        model='gemini-2.5-flash',
+        config={
+            'tools': [
+                {
+                    'mcp_servers': [
+                        {
+                            'name': 'weather_server',
+                            'streamable_http_transport': {
+                                'url': (
+                                    'https://gemini-api-demos.uc.r.appspot.com/mcp'
+                                ),
+                                'headers': {
+                                    'AUTHORIZATION': 'Bearer github_pat_XXXX',
+                                },
+                                'timeout': '10s',
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    response = chat.send_message('What is the weather in Boston on 02/02/2026?')
+    response = chat.send_message(
+        'What is the weather in San Francisco on 02/02/2026?'
+    )
+
+
+def test_server_side_mcp_tools_stream(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    chat = client.chats.create(
+        model='gemini-2.5-flash',
+        config={
+            'tools': [
+                {
+                    'mcp_servers': [
+                        {
+                            'name': 'weather_server',
+                            'streamable_http_transport': {
+                                'url': (
+                                    'https://gemini-api-demos.uc.r.appspot.com/mcp'
+                                ),
+                                'headers': {
+                                    'AUTHORIZATION': 'Bearer github_pat_XXXX',
+                                },
+                                'timeout': '10s',
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    for chunk in chat.send_message_stream(
+        'What is the weather in Boston on 02/02/2026?'
+    ):
+      pass
+    for chunk in chat.send_message_stream(
+        'What is the weather in San Francisco on 02/02/2026?'
+    ):
+      pass
+
+
+@pytest.mark.asyncio
+async def test_async_server_side_mcp_tools(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    chat = client.aio.chats.create(
+        model='gemini-2.5-flash',
+        config={
+            'tools': [
+                {
+                    'mcp_servers': [
+                        {
+                            'name': 'weather_server',
+                            'streamable_http_transport': {
+                                'url': (
+                                    'https://gemini-api-demos.uc.r.appspot.com/mcp'
+                                ),
+                                'headers': {
+                                    'AUTHORIZATION': 'Bearer github_pat_XXXX',
+                                },
+                                'timeout': '10s',
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    await chat.send_message('What is the weather in Boston on 02/02/2026?')
+    await chat.send_message(
+        'What is the weather in San Francisco on 02/02/2026?'
+    )

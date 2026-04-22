@@ -26,7 +26,7 @@ import warnings
 
 import google.auth
 import pydantic
-from websockets import ConnectionClosed
+import websockets
 
 from . import _api_module
 from . import _common
@@ -41,6 +41,7 @@ from ._common import set_value_by_path as setv
 from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
 
+ConnectionClosed = websockets.ConnectionClosed
 
 try:
   from websockets.asyncio.client import ClientConnection
@@ -91,10 +92,12 @@ class AsyncSession:
       api_client: BaseApiClient,
       websocket: ClientConnection,
       session_id: Optional[str] = None,
+      setup_complete: Optional[types.LiveServerSetupComplete] = None,
   ):
     self._api_client = api_client
     self._ws = websocket
     self.session_id = session_id
+    self.setup_complete = setup_complete
 
   async def send(
       self,
@@ -204,7 +207,7 @@ class AsyncSession:
       from google.genai import types
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -276,7 +279,7 @@ class AsyncSession:
 
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -371,7 +374,7 @@ class AsyncSession:
 
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -534,6 +537,14 @@ class AsyncSession:
       raw_response = await self._ws.recv(decode=False)
     except TypeError:
       raw_response = await self._ws.recv()  # type: ignore[assignment]
+    except ConnectionClosed as e:
+      if e.rcvd:
+        code = e.rcvd.code
+        reason = e.rcvd.reason
+      else:
+        code = 1006
+        reason = websockets.frames.CLOSE_CODE_EXPLANATIONS.get(code, 'Abnormal closure.')
+      errors.APIError.raise_error(code, reason, None)
     if raw_response:
       try:
         response = json.loads(raw_response)
@@ -545,8 +556,11 @@ class AsyncSession:
     if self._api_client.vertexai:
       response_dict = live_converters._LiveServerMessage_from_vertex(response)
     else:
-      response_dict = response
+      response_dict = live_converters._LiveServerMessage_from_mldev(response)
 
+    if not response_dict and response:
+      # Error handling.
+      errors.APIError.raise_error(response.get('code'), response, None)
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
@@ -1093,6 +1107,14 @@ class AsyncLive(_api_module.BaseModule):
         raw_response = await ws.recv(decode=False)
       except TypeError:
         raw_response = await ws.recv()  # type: ignore[assignment]
+      except ConnectionClosed as e:
+        if e.rcvd:
+          code = e.rcvd.code
+          reason = e.rcvd.reason
+        else:
+          code = 1006
+          reason = 'Abnormal closure.'
+        errors.APIError.raise_error(code, reason, None)
       if raw_response:
         try:
           response = json.loads(raw_response)
@@ -1111,12 +1133,15 @@ class AsyncLive(_api_module.BaseModule):
       )
       if setup_response.setup_complete:
         session_id = setup_response.setup_complete.session_id
+        setup_complete = setup_response.setup_complete
       else:
         session_id = None
+        setup_complete = None
       yield AsyncSession(
           api_client=self._api_client,
           websocket=ws,
           session_id=session_id,
+          setup_complete=setup_complete,
       )
 
 

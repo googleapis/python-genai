@@ -17,9 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Iterable
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .google_search_result_param import GoogleSearchResultParam
 
 __all__ = ["GoogleSearchResultContentParam"]
@@ -28,16 +31,19 @@ __all__ = ["GoogleSearchResultContentParam"]
 class GoogleSearchResultContentParam(TypedDict, total=False):
     """Google Search result content."""
 
-    type: Required[Literal["google_search_result"]]
+    call_id: Required[str]
+    """Required. ID to match the ID from the function call block."""
 
-    call_id: str
-    """ID to match the ID from the google search call block."""
+    result: Required[Iterable[GoogleSearchResultParam]]
+    """Required. The results of the Google Search."""
+
+    type: Required[Literal["google_search_result"]]
 
     is_error: bool
     """Whether the Google Search resulted in an error."""
 
-    result: Iterable[GoogleSearchResultParam]
-    """The results of the Google Search."""
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
 
-    signature: str
-    """The signature of the Google Search result."""
+
+set_pydantic_config(GoogleSearchResultContentParam, {"arbitrary_types_allowed": True})

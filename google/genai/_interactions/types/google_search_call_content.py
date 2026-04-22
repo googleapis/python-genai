@@ -27,10 +27,16 @@ __all__ = ["GoogleSearchCallContent"]
 class GoogleSearchCallContent(BaseModel):
     """Google Search content."""
 
+    id: str
+    """Required. A unique ID for this specific tool call."""
+
+    arguments: GoogleSearchCallArguments
+    """Required. The arguments to pass to Google Search."""
+
     type: Literal["google_search_call"]
 
-    id: Optional[str] = None
-    """A unique ID for this specific tool call."""
+    search_type: Optional[Literal["web_search", "image_search", "enterprise_web_search"]] = None
+    """The type of search grounding enabled."""
 
-    arguments: Optional[GoogleSearchCallArguments] = None
-    """The arguments to pass to Google Search."""
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

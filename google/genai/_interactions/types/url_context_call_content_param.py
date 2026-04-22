@@ -17,8 +17,12 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, Required, TypedDict
+from typing import Union
+from typing_extensions import Literal, Required, Annotated, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .url_context_call_arguments_param import URLContextCallArgumentsParam
 
 __all__ = ["URLContextCallContentParam"]
@@ -27,10 +31,16 @@ __all__ = ["URLContextCallContentParam"]
 class URLContextCallContentParam(TypedDict, total=False):
     """URL context content."""
 
+    id: Required[str]
+    """Required. A unique ID for this specific tool call."""
+
+    arguments: Required[URLContextCallArgumentsParam]
+    """Required. The arguments to pass to the URL context."""
+
     type: Required[Literal["url_context_call"]]
 
-    id: str
-    """A unique ID for this specific tool call."""
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
 
-    arguments: URLContextCallArgumentsParam
-    """The arguments to pass to the URL context."""
+
+set_pydantic_config(URLContextCallContentParam, {"arbitrary_types_allowed": True})

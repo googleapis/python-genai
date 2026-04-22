@@ -15,16 +15,19 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import List, Optional
-from typing_extensions import Literal
+from typing import List, Union, Optional
+from typing_extensions import Literal, TypeAlias
 
 from .._models import BaseModel
-from .tool_choice import ToolChoice
 from .image_config import ImageConfig
 from .speech_config import SpeechConfig
 from .thinking_level import ThinkingLevel
+from .tool_choice_type import ToolChoiceType
+from .tool_choice_config import ToolChoiceConfig
 
-__all__ = ["GenerationConfig"]
+__all__ = ["GenerationConfig", "ToolChoice"]
+
+ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfig]
 
 
 class GenerationConfig(BaseModel):
@@ -55,7 +58,7 @@ class GenerationConfig(BaseModel):
     """Whether to include thought summaries in the response."""
 
     tool_choice: Optional[ToolChoice] = None
-    """The tool choice for the interaction."""
+    """The tool choice configuration."""
 
     top_p: Optional[float] = None
     """The maximum cumulative probability of tokens to consider when sampling."""

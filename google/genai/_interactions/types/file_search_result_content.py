@@ -26,20 +26,20 @@ __all__ = ["FileSearchResultContent", "Result"]
 class Result(BaseModel):
     """The result of the File Search."""
 
-    file_search_store: Optional[str] = None
-    """The name of the file search store."""
-
-    text: Optional[str] = None
-    """The text of the search result."""
-
-    title: Optional[str] = None
-    """The title of the search result."""
+    custom_metadata: Optional[List[object]] = None
+    """User provided metadata about the FileSearchResult."""
 
 
 class FileSearchResultContent(BaseModel):
     """File Search result content."""
 
+    call_id: str
+    """Required. ID to match the ID from the function call block."""
+
+    result: List[Result]
+    """Required. The results of the File Search."""
+
     type: Literal["file_search_result"]
 
-    result: Optional[List[Result]] = None
-    """The results of the File Search."""
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

@@ -27,10 +27,13 @@ __all__ = ["CodeExecutionCallContent"]
 class CodeExecutionCallContent(BaseModel):
     """Code execution content."""
 
+    id: str
+    """Required. A unique ID for this specific tool call."""
+
+    arguments: CodeExecutionCallArguments
+    """Required. The arguments to pass to the code execution."""
+
     type: Literal["code_execution_call"]
 
-    id: Optional[str] = None
-    """A unique ID for this specific tool call."""
-
-    arguments: Optional[CodeExecutionCallArguments] = None
-    """The arguments to pass to the code execution."""
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
