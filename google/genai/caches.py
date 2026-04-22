@@ -197,6 +197,9 @@ def _CreateCachedContentConfig_to_vertex(
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
   if getv(from_object, ['contents']) is not None:
     setv(
         parent_object,
