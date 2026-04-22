@@ -873,7 +873,7 @@ class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
 
 
 class EmbeddingApiType(_common.CaseInSensitiveEnum):
-  """Enum representing the Vertex embedding API to use."""
+  """Enum representing the Gemini Enterprise Agent Platform embedding API to use."""
 
   PREDICT = 'PREDICT'
   """predict API endpoint (default)"""
@@ -2328,7 +2328,7 @@ class HttpOptions(_common.BaseModel):
       default=None,
       description="""Extra parameters to add to the request body.
       The structure must match the backend API's request structure.
-      - VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+      - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
       - GeminiAPI backend API docs: https://ai.google.dev/api/rest""",
   )
   retry_options: Optional[HttpRetryOptions] = Field(
@@ -2376,7 +2376,7 @@ class HttpOptionsDict(TypedDict, total=False):
   extra_body: Optional[dict[str, Any]]
   """Extra parameters to add to the request body.
       The structure must match the backend API's request structure.
-      - VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+      - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
       - GeminiAPI backend API docs: https://ai.google.dev/api/rest"""
 
   retry_options: Optional[HttpRetryOptionsDict]
@@ -2658,8 +2658,8 @@ class Schema(_common.BaseModel):
 
      Note: Conversion of fields that are not included in the JSONSchema class
      are ignored.
-     Json Schema is now supported natively by both Vertex AI and Gemini API.
-     Users
+     Json Schema is now supported natively by both Gemini Enterprise Agent
+     Platform and Gemini API. Users
      are recommended to pass/receive Json Schema directly to/from the API. For
      example:
      1. the counter part of GenerateContentConfig.response_schema is
@@ -2678,7 +2678,7 @@ class Schema(_common.BaseModel):
       info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are
 ignored.
-Json Schema is now supported natively by both Vertex AI and Gemini API. Users
+Json Schema is now supported natively by both Gemini Enterprise Agent Platform and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
 1. the counter part of GenerateContentConfig.response_schema is
    GenerateContentConfig.response_json_schema, which accepts [JSON
@@ -2765,8 +2765,8 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
 
      Note: Conversion of fields that are not included in the JSONSchema class
      are ignored.
-     Json Schema is now supported natively by both Vertex AI and Gemini API.
-     Users
+     Json Schema is now supported natively by both Gemini Enterprise Agent
+     Platform and Gemini API. Users
      are recommended to pass/receive Json Schema directly to/from the API. For
      example:
      1. the counter part of GenerateContentConfig.response_schema is
@@ -2785,9 +2785,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
          json_schema: JSONSchema object to be converted.
          api_option: API option to be used. If set to 'VERTEX_AI', the
            JSONSchema will be converted to a Schema object that is compatible
-           with Vertex AI API. If set to 'GEMINI_API', the JSONSchema will be
-           converted to a Schema object that is compatible with Gemini API.
-           Default is 'GEMINI_API'.
+           with Gemini Enterprise Agent Platform API. If set to 'GEMINI_API',
+           the JSONSchema will be converted to a Schema object that is
+           compatible with Gemini API. Default is 'GEMINI_API'.
          raise_error_on_unsupported_field: If set to True, an error will be
            raised if the JSONSchema contains any unsupported fields. Default is
            False.
@@ -2803,7 +2803,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
     if not _from_json_schema_warning_logged:
       info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are ignored.
-Json Schema is now supported natively by both Vertex AI and Gemini API. Users
+Json Schema is now supported natively by both Gemini Enterprise Agent Platform and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
 1. the counter part of GenerateContentConfig.response_schema is
    GenerateContentConfig.response_json_schema, which accepts [JSON
@@ -6007,7 +6007,7 @@ class GenerateContentConfig(_common.BaseModel):
   enable_enhanced_civic_answers: Optional[bool] = Field(
       default=None,
       description="""Enables enhanced civic answers. It may not be available for all
-      models. This field is not supported in Vertex AI.
+      models. This field is not supported in Gemini Enterprise Agent Platform.
       """,
   )
   model_armor_config: Optional[ModelArmorConfig] = Field(
@@ -6226,7 +6226,7 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   enable_enhanced_civic_answers: Optional[bool]
   """Enables enhanced civic answers. It may not be available for all
-      models. This field is not supported in Vertex AI.
+      models. This field is not supported in Gemini Enterprise Agent Platform.
       """
 
   model_armor_config: Optional[ModelArmorConfigDict]
@@ -8266,25 +8266,25 @@ class EmbedContentConfig(_common.BaseModel):
   )
   mime_type: Optional[str] = Field(
       default=None,
-      description="""Vertex API only. The MIME type of the input.
+      description="""Gemini Enterprise Agent Platform only. The MIME type of the input.
       """,
   )
   auto_truncate: Optional[bool] = Field(
       default=None,
-      description="""Vertex API only. Whether to silently truncate inputs longer than
+      description="""Gemini Enterprise Agent Platform only. Whether to silently truncate inputs longer than
       the max sequence length. If this option is set to false, oversized inputs
       will lead to an INVALID_ARGUMENT error, similar to other text APIs.
       """,
   )
   document_ocr: Optional[bool] = Field(
       default=None,
-      description="""Vertex API only. Whether to enable OCR for document content.
+      description="""Gemini Enterprise Agent Platform only. Whether to enable OCR for document content.
       Only applicable to Gemini Embedding 2 models.
       """,
   )
   audio_track_extraction: Optional[bool] = Field(
       default=None,
-      description="""Vertex API only. Whether to extract audio from video content.
+      description="""Gemini Enterprise Agent Platform only. Whether to extract audio from video content.
       Only applicable to Gemini Embedding 2 models.
       """,
   )
@@ -8313,22 +8313,22 @@ class EmbedContentConfigDict(TypedDict, total=False):
       """
 
   mime_type: Optional[str]
-  """Vertex API only. The MIME type of the input.
+  """Gemini Enterprise Agent Platform only. The MIME type of the input.
       """
 
   auto_truncate: Optional[bool]
-  """Vertex API only. Whether to silently truncate inputs longer than
+  """Gemini Enterprise Agent Platform only. Whether to silently truncate inputs longer than
       the max sequence length. If this option is set to false, oversized inputs
       will lead to an INVALID_ARGUMENT error, similar to other text APIs.
       """
 
   document_ocr: Optional[bool]
-  """Vertex API only. Whether to enable OCR for document content.
+  """Gemini Enterprise Agent Platform only. Whether to enable OCR for document content.
       Only applicable to Gemini Embedding 2 models.
       """
 
   audio_track_extraction: Optional[bool]
-  """Vertex API only. Whether to extract audio from video content.
+  """Gemini Enterprise Agent Platform only. Whether to extract audio from video content.
       Only applicable to Gemini Embedding 2 models.
       """
 
@@ -8356,7 +8356,7 @@ class _EmbedContentParametersPrivate(_common.BaseModel):
   )
   embedding_api_type: Optional[EmbeddingApiType] = Field(
       default=None,
-      description="""The Vertex embedding API to use.
+      description="""The Gemini Enterprise Agent Platform embedding API to use.
       """,
   )
   config: Optional[EmbedContentConfig] = Field(
@@ -8382,7 +8382,7 @@ class _EmbedContentParametersPrivateDict(TypedDict, total=False):
       """
 
   embedding_api_type: Optional[EmbeddingApiType]
-  """The Vertex embedding API to use.
+  """The Gemini Enterprise Agent Platform embedding API to use.
       """
 
   config: Optional[EmbedContentConfigDict]
@@ -8400,13 +8400,13 @@ class ContentEmbeddingStatistics(_common.BaseModel):
 
   truncated: Optional[bool] = Field(
       default=None,
-      description="""Vertex API only. If the input text was truncated due to having
+      description="""Gemini Enterprise Agent Platform only. If the input text was truncated due to having
       a length longer than the allowed maximum input.
       """,
   )
   token_count: Optional[float] = Field(
       default=None,
-      description="""Vertex API only. Number of tokens of the input text.
+      description="""Gemini Enterprise Agent Platform only. Number of tokens of the input text.
       """,
   )
 
@@ -8415,12 +8415,12 @@ class ContentEmbeddingStatisticsDict(TypedDict, total=False):
   """Statistics of the input text associated with the result of content embedding."""
 
   truncated: Optional[bool]
-  """Vertex API only. If the input text was truncated due to having
+  """Gemini Enterprise Agent Platform only. If the input text was truncated due to having
       a length longer than the allowed maximum input.
       """
 
   token_count: Optional[float]
-  """Vertex API only. Number of tokens of the input text.
+  """Gemini Enterprise Agent Platform only. Number of tokens of the input text.
       """
 
 
@@ -8439,7 +8439,7 @@ class ContentEmbedding(_common.BaseModel):
   )
   statistics: Optional[ContentEmbeddingStatistics] = Field(
       default=None,
-      description="""Vertex API only. Statistics of the input text associated with this
+      description="""Gemini Enterprise Agent Platform only. Statistics of the input text associated with this
       embedding.
       """,
   )
@@ -8453,7 +8453,7 @@ class ContentEmbeddingDict(TypedDict, total=False):
       """
 
   statistics: Optional[ContentEmbeddingStatisticsDict]
-  """Vertex API only. Statistics of the input text associated with this
+  """Gemini Enterprise Agent Platform only. Statistics of the input text associated with this
       embedding.
       """
 
@@ -8462,21 +8462,21 @@ ContentEmbeddingOrDict = Union[ContentEmbedding, ContentEmbeddingDict]
 
 
 class EmbedContentMetadata(_common.BaseModel):
-  """Request-level metadata for the Vertex Embed Content API."""
+  """Request-level metadata for the Gemini Enterprise Agent Platform Embed Content API."""
 
   billable_character_count: Optional[int] = Field(
       default=None,
-      description="""Vertex API only. The total number of billable characters included
+      description="""Gemini Enterprise Agent Platform only. The total number of billable characters included
       in the request.
       """,
   )
 
 
 class EmbedContentMetadataDict(TypedDict, total=False):
-  """Request-level metadata for the Vertex Embed Content API."""
+  """Request-level metadata for the Gemini Enterprise Agent Platform Embed Content API."""
 
   billable_character_count: Optional[int]
-  """Vertex API only. The total number of billable characters included
+  """Gemini Enterprise Agent Platform only. The total number of billable characters included
       in the request.
       """
 
@@ -8500,7 +8500,7 @@ class EmbedContentResponse(_common.BaseModel):
   )
   metadata: Optional[EmbedContentMetadata] = Field(
       default=None,
-      description="""Vertex API only. Metadata about the request.
+      description="""Gemini Enterprise Agent Platform only. Metadata about the request.
       """,
   )
 
@@ -8517,7 +8517,7 @@ class EmbedContentResponseDict(TypedDict, total=False):
       """
 
   metadata: Optional[EmbedContentMetadataDict]
-  """Vertex API only. Metadata about the request.
+  """Gemini Enterprise Agent Platform only. Metadata about the request.
       """
 
 
@@ -11822,7 +11822,8 @@ class DistillationHyperParameters(_common.BaseModel):
   batch_size: Optional[int] = Field(
       default=None,
       description="""The batch size hyperparameter for tuning.
-      This is only supported for OSS models in Vertex.""",
+      This is only supported for OSS models in Gemini Enterprise Agent Platform.
+      """,
   )
   learning_rate: Optional[float] = Field(
       default=None,
@@ -11844,7 +11845,8 @@ class DistillationHyperParametersDict(TypedDict, total=False):
 
   batch_size: Optional[int]
   """The batch size hyperparameter for tuning.
-      This is only supported for OSS models in Vertex."""
+      This is only supported for OSS models in Gemini Enterprise Agent Platform.
+      """
 
   learning_rate: Optional[float]
   """The learning rate for tuning. OSS models only."""
@@ -14015,7 +14017,7 @@ class TuningDataset(_common.BaseModel):
   )
   vertex_dataset_resource: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+      description="""The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
   examples: Optional[list[TuningExample]] = Field(
       default=None,
@@ -14030,7 +14032,7 @@ class TuningDatasetDict(TypedDict, total=False):
   """GCS URI of the file containing training dataset in JSONL format."""
 
   vertex_dataset_resource: Optional[str]
-  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
+  """The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
   examples: Optional[list[TuningExampleDict]]
   """Inline examples with simple input/output text."""
@@ -14047,7 +14049,7 @@ class TuningValidationDataset(_common.BaseModel):
   )
   vertex_dataset_resource: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+      description="""The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
 
 
@@ -14057,7 +14059,7 @@ class TuningValidationDatasetDict(TypedDict, total=False):
   """GCS URI of the file containing validation dataset in JSONL format."""
 
   vertex_dataset_resource: Optional[str]
-  """The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
+  """The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
 
 TuningValidationDatasetOrDict = Union[
@@ -14110,11 +14112,11 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   custom_base_model: Optional[str] = Field(
       default=None,
-      description="""Custom base model for tuning. This is only supported for OSS models in Vertex.""",
+      description="""Custom base model for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform.""",
   )
   batch_size: Optional[int] = Field(
       default=None,
-      description="""The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex.""",
+      description="""The batch size hyperparameter for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform.""",
   )
   learning_rate: Optional[float] = Field(
       default=None,
@@ -14190,10 +14192,10 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Tuning mode for tuning."""
 
   custom_base_model: Optional[str]
-  """Custom base model for tuning. This is only supported for OSS models in Vertex."""
+  """Custom base model for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform."""
 
   batch_size: Optional[int]
-  """The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex."""
+  """The batch size hyperparameter for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform."""
 
   learning_rate: Optional[float]
   """The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier."""
@@ -16641,7 +16643,7 @@ class BatchJob(_common.BaseModel):
   )
   end_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""The time when the BatchJob was completed. This field is for Vertex AI only.
+      description="""The time when the BatchJob was completed. This field is for Gemini Enterprise Agent Platform only.
       """,
   )
   update_time: Optional[datetime.datetime] = Field(
@@ -16656,7 +16658,7 @@ class BatchJob(_common.BaseModel):
   )
   src: Optional[BatchJobSource] = Field(
       default=None,
-      description="""Configuration for the input data. This field is for Vertex AI only.
+      description="""Configuration for the input data. This field is for Gemini Enterprise Agent Platform only.
       """,
   )
   dest: Optional[BatchJobDestination] = Field(
@@ -16666,7 +16668,7 @@ class BatchJob(_common.BaseModel):
   )
   completion_stats: Optional[CompletionStats] = Field(
       default=None,
-      description="""Statistics on completed and failed prediction instances. This field is for Vertex AI only.
+      description="""Statistics on completed and failed prediction instances. This field is for Gemini Enterprise Agent Platform only.
       """,
   )
 
@@ -16723,7 +16725,7 @@ class BatchJobDict(TypedDict, total=False):
   """Output only. Time when the Job for the first time entered the `JOB_STATE_RUNNING` state."""
 
   end_time: Optional[datetime.datetime]
-  """The time when the BatchJob was completed. This field is for Vertex AI only.
+  """The time when the BatchJob was completed. This field is for Gemini Enterprise Agent Platform only.
       """
 
   update_time: Optional[datetime.datetime]
@@ -16735,7 +16737,7 @@ class BatchJobDict(TypedDict, total=False):
       """
 
   src: Optional[BatchJobSourceDict]
-  """Configuration for the input data. This field is for Vertex AI only.
+  """Configuration for the input data. This field is for Gemini Enterprise Agent Platform only.
       """
 
   dest: Optional[BatchJobDestinationDict]
@@ -16743,7 +16745,7 @@ class BatchJobDict(TypedDict, total=False):
       """
 
   completion_stats: Optional[CompletionStatsDict]
-  """Statistics on completed and failed prediction instances. This field is for Vertex AI only.
+  """Statistics on completed and failed prediction instances. This field is for Gemini Enterprise Agent Platform only.
       """
 
 
@@ -17246,7 +17248,7 @@ class _GetProjectOperationParameters(_common.BaseModel):
 
   operation_id: Optional[str] = Field(
       default=None,
-      description="""The ID of the project-level Vertex operation to get. For example if the operation resource name is
+      description="""The ID of the project-level Gemini Enterprise Agent Platform operation to get. For example if the operation resource name is
       projects/123/locations/us-central1/operations/456, the operation_id is
       456.""",
   )
@@ -17260,7 +17262,7 @@ class _GetProjectOperationParametersDict(TypedDict, total=False):
   """Parameters for the getProjectOperation method."""
 
   operation_id: Optional[str]
-  """The ID of the project-level Vertex operation to get. For example if the operation resource name is
+  """The ID of the project-level Gemini Enterprise Agent Platform operation to get. For example if the operation resource name is
       projects/123/locations/us-central1/operations/456, the operation_id is
       456."""
 
@@ -17274,7 +17276,7 @@ _GetProjectOperationParametersOrDict = Union[
 
 
 class ProjectOperation(_common.BaseModel):
-  """A project-level operation in Vertex."""
+  """A project-level operation in Gemini Enterprise Agent Platform."""
 
   name: Optional[str] = Field(
       default=None,
@@ -17295,7 +17297,7 @@ class ProjectOperation(_common.BaseModel):
 
 
 class ProjectOperationDict(TypedDict, total=False):
-  """A project-level operation in Vertex."""
+  """A project-level operation in Gemini Enterprise Agent Platform."""
 
   name: Optional[str]
   """The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`."""

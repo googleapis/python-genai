@@ -1168,7 +1168,10 @@ def _FunctionDeclaration_to_vertex(
     )
 
   if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'behavior parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -1534,7 +1537,8 @@ def _GenerateContentConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+        'enable_enhanced_civic_answers parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   if getv(from_object, ['model_armor_config']) is not None:
@@ -2286,7 +2290,10 @@ def _GenerateVideosConfig_to_vertex(
     setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['webhook_config']) is not None:
-    raise ValueError('webhook_config parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'webhook_config parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -2823,7 +2830,8 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+        'enable_enhanced_civic_answers parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -3526,13 +3534,22 @@ def _Part_to_vertex(
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   if getv(from_object, ['tool_call']) is not None:
-    raise ValueError('tool_call parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_call parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['tool_response']) is not None:
-    raise ValueError('tool_response parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_response parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['part_metadata']) is not None:
-    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'part_metadata parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -3786,11 +3803,15 @@ def _ReplicatedVoiceConfig_to_vertex(
     )
 
   if getv(from_object, ['consent_audio']) is not None:
-    raise ValueError('consent_audio parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'consent_audio parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['voice_consent_signature']) is not None:
     raise ValueError(
-        'voice_consent_signature parameter is not supported in Vertex AI.'
+        'voice_consent_signature parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -4104,7 +4125,7 @@ def _ToolConfig_to_vertex(
   if getv(from_object, ['include_server_side_tool_invocations']) is not None:
     raise ValueError(
         'include_server_side_tool_invocations parameter is not supported in'
-        ' Vertex AI.'
+        ' Gemini Enterprise Agent Platform.'
     )
 
   return to_object
@@ -4196,7 +4217,10 @@ def _Tool_to_vertex(
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
-    raise ValueError('file_search parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_search parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['google_search']) is not None:
     setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
@@ -4242,7 +4266,10 @@ def _Tool_to_vertex(
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['mcp_servers']) is not None:
-    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'mcp_servers parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -5106,7 +5133,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _EditImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5187,7 +5217,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5294,7 +5327,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _RecontextImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5394,7 +5430,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _SegmentImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5932,7 +5971,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -6168,7 +6210,8 @@ class Models(_api_module.BaseModule):
   ) -> types.GenerateContentResponse:
     """Makes an API request to generate content using a model.
 
-    For the `model` parameter, supported formats for Vertex AI API include:
+    For the `model` parameter, supported formats for Gemini Enterprise Agent
+    Platform API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
     - The full resource name starts with 'projects/', for example:
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
@@ -6329,7 +6372,8 @@ class Models(_api_module.BaseModule):
   ) -> Iterator[types.GenerateContentResponse]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
 
-    For the `model` parameter, supported formats for Vertex AI API include:
+    For the `model` parameter, supported formats for Gemini Enterprise Agent
+    Platform API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
     - The full resource name starts with 'projects/', for example:
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
@@ -7278,7 +7322,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _EditImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7359,7 +7406,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7466,7 +7516,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _RecontextImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7569,7 +7622,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _SegmentImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -8110,7 +8166,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -8405,7 +8464,8 @@ class AsyncModels(_api_module.BaseModule):
   ) -> AsyncIterator[types.GenerateContentResponse]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
 
-    For the `model` parameter, supported formats for Vertex AI API include:
+    For the `model` parameter, supported formats for Gemini Enterprise Agent
+    Platform API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
     - The full resource name starts with 'projects/', for example:
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'

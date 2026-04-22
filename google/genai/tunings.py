@@ -877,7 +877,8 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+        'enable_enhanced_civic_answers parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -1009,11 +1010,15 @@ def _ReplicatedVoiceConfig_to_vertex(
     )
 
   if getv(from_object, ['consent_audio']) is not None:
-    raise ValueError('consent_audio parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'consent_audio parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['voice_consent_signature']) is not None:
     raise ValueError(
-        'voice_consent_signature parameter is not supported in Vertex AI.'
+        'voice_consent_signature parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -1169,7 +1174,10 @@ def _TuningDataset_to_vertex(
       )
 
   if getv(from_object, ['examples']) is not None:
-    raise ValueError('examples parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'examples parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -1567,7 +1575,10 @@ class Tunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _ListTuningJobsParameters_to_vertex(
           parameter_model, None, parameter_model
@@ -1748,7 +1759,10 @@ class Tunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
           parameter_model, None, parameter_model
@@ -2138,7 +2152,10 @@ class AsyncTunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _ListTuningJobsParameters_to_vertex(
           parameter_model, None, parameter_model
@@ -2321,7 +2338,10 @@ class AsyncTunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
           parameter_model, None, parameter_model
@@ -2683,7 +2703,7 @@ class _IpythonUtils:
   def _display_link(
       text: str, url: str, icon: Optional[str] = 'open_in_new'
   ) -> None:
-    """Creates and displays the link to open the Vertex resource.
+    """Creates and displays the link to open the Gemini Enterprise Agent Platform resource.
 
     Args:
       text: The text displayed on the clickable button.
@@ -2733,11 +2753,12 @@ class _IpythonUtils:
 
   @staticmethod
   def display_experiment_button(experiment: str, project: str) -> None:
-    """Function to generate a link bound to the Vertex experiment.
+    """Function to generate a link bound to the Gemini Enterprise Agent Platform experiment.
 
     Args:
-      experiment: The Vertex experiment name. Example format:
-        projects/{project_id}/locations/{location}/metadataStores/default/contexts/{experiment_name}
+      experiment: The Gemini Enterprise Agent Platform experiment name. Example
+        format:
+          projects/{project_id}/locations/{location}/metadataStores/default/contexts/{experiment_name}
       project: The project (alphanumeric) name.
     """
     if (
@@ -2763,10 +2784,11 @@ class _IpythonUtils:
 
   @staticmethod
   def display_model_tuning_button(tuning_job_resource: str) -> None:
-    """Function to generate a link bound to the Vertex model tuning job.
+    """Function to generate a link bound to the Gemini Enterprise Agent Platform model tuning job.
 
     Args:
-      tuning_job_resource: The Vertex tuning job name. Example format:
+      tuning_job_resource: The Gemini Enterprise Agent Platform tuning job name.
+        Example format:
         projects/{project_id}/locations/{location}/tuningJobs/{tuning_job_id}
     """
     if not _IpythonUtils.is_ipython_available():
