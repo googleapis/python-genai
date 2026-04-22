@@ -439,7 +439,10 @@ def _FunctionDeclaration_to_vertex(
     )
 
   if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'behavior parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -761,13 +764,22 @@ def _Part_to_vertex(
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   if getv(from_object, ['tool_call']) is not None:
-    raise ValueError('tool_call parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_call parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['tool_response']) is not None:
-    raise ValueError('tool_response parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_response parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['part_metadata']) is not None:
-    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'part_metadata parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -821,7 +833,7 @@ def _ToolConfig_to_vertex(
   if getv(from_object, ['include_server_side_tool_invocations']) is not None:
     raise ValueError(
         'include_server_side_tool_invocations parameter is not supported in'
-        ' Vertex AI.'
+        ' Gemini Enterprise Agent Platform.'
     )
 
   return to_object
@@ -907,7 +919,10 @@ def _Tool_to_vertex(
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
-    raise ValueError('file_search parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_search parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['google_search']) is not None:
     setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
@@ -953,7 +968,10 @@ def _Tool_to_vertex(
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['mcp_servers']) is not None:
-    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'mcp_servers parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
