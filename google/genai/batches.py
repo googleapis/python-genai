@@ -130,6 +130,15 @@ def _BatchJobDestination_from_vertex(
         getv(from_object, ['bigqueryDestination', 'outputUri']),
     )
 
+  if getv(from_object, ['vertexMultimodalDatasetDestination']) is not None:
+    setv(
+        to_object,
+        ['vertex_dataset'],
+        _VertexMultimodalDatasetDestination_from_vertex(
+            getv(from_object, ['vertexMultimodalDatasetDestination']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -169,6 +178,15 @@ def _BatchJobDestination_to_vertex(
         ' Vertex AI.'
     )
 
+  if getv(from_object, ['vertex_dataset']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetDestination'],
+        _VertexMultimodalDatasetDestination_to_vertex(
+            getv(from_object, ['vertex_dataset']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -188,6 +206,16 @@ def _BatchJobSource_from_vertex(
         to_object,
         ['bigquery_uri'],
         getv(from_object, ['bigquerySource', 'inputUri']),
+    )
+
+  if (
+      getv(from_object, ['vertexMultimodalDatasetSource', 'datasetName'])
+      is not None
+  ):
+    setv(
+        to_object,
+        ['vertex_dataset_name'],
+        getv(from_object, ['vertexMultimodalDatasetSource', 'datasetName']),
     )
 
   return to_object
@@ -221,6 +249,11 @@ def _BatchJobSource_to_mldev(
         ],
     )
 
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    raise ValueError(
+        'vertex_dataset_name parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -248,6 +281,13 @@ def _BatchJobSource_to_vertex(
   if getv(from_object, ['inlined_requests']) is not None:
     raise ValueError(
         'inlined_requests parameter is not supported in Vertex AI.'
+    )
+
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetSource', 'datasetName'],
+        getv(from_object, ['vertex_dataset_name']),
     )
 
   return to_object
@@ -1599,6 +1639,42 @@ def _Tool_to_mldev(
         ['mcpServers'],
         [item for item in getv(from_object, ['mcp_servers'])],
     )
+
+  return to_object
+
+
+def _VertexMultimodalDatasetDestination_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['bigqueryDestination', 'outputUri']) is not None:
+    setv(
+        to_object,
+        ['bigquery_destination'],
+        getv(from_object, ['bigqueryDestination', 'outputUri']),
+    )
+
+  if getv(from_object, ['displayName']) is not None:
+    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
+
+  return to_object
+
+
+def _VertexMultimodalDatasetDestination_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['bigquery_destination']) is not None:
+    setv(
+        to_object,
+        ['bigqueryDestination', 'outputUri'],
+        getv(from_object, ['bigquery_destination']),
+    )
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
 
   return to_object
 

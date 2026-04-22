@@ -16140,7 +16140,7 @@ class BatchJobSource(_common.BaseModel):
   format: Optional[str] = Field(
       default=None,
       description="""Storage format of the input files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """,
   )
   gcs_uri: Optional[list[str]] = Field(
@@ -16164,6 +16164,11 @@ class BatchJobSource(_common.BaseModel):
       description="""The Gemini Developer API's inlined input data to run batch job.
       """,
   )
+  vertex_dataset_name: Optional[str] = Field(
+      default=None,
+      description="""This field is experimental and may change in future versions. The Vertex AI dataset resource name to use as input. Must be of type multimodal.
+      """,
+  )
 
 
 class BatchJobSourceDict(TypedDict, total=False):
@@ -16171,7 +16176,7 @@ class BatchJobSourceDict(TypedDict, total=False):
 
   format: Optional[str]
   """Storage format of the input files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """
 
   gcs_uri: Optional[list[str]]
@@ -16191,8 +16196,46 @@ class BatchJobSourceDict(TypedDict, total=False):
   """The Gemini Developer API's inlined input data to run batch job.
       """
 
+  vertex_dataset_name: Optional[str]
+  """This field is experimental and may change in future versions. The Vertex AI dataset resource name to use as input. Must be of type multimodal.
+      """
+
 
 BatchJobSourceOrDict = Union[BatchJobSource, BatchJobSourceDict]
+
+
+class VertexMultimodalDatasetDestination(_common.BaseModel):
+  """This class is experimental and may change in future versions.
+
+  The specification for an output Vertex AI multimodal dataset.
+  """
+
+  bigquery_destination: Optional[str] = Field(
+      default=None,
+      description="""The BigQuery destination for the multimodal dataset.""",
+  )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""The display name of the multimodal dataset.""",
+  )
+
+
+class VertexMultimodalDatasetDestinationDict(TypedDict, total=False):
+  """This class is experimental and may change in future versions.
+
+  The specification for an output Vertex AI multimodal dataset.
+  """
+
+  bigquery_destination: Optional[str]
+  """The BigQuery destination for the multimodal dataset."""
+
+  display_name: Optional[str]
+  """The display name of the multimodal dataset."""
+
+
+VertexMultimodalDatasetDestinationOrDict = Union[
+    VertexMultimodalDatasetDestination, VertexMultimodalDatasetDestinationDict
+]
 
 
 class JobError(_common.BaseModel):
@@ -16334,7 +16377,7 @@ class BatchJobDestination(_common.BaseModel):
   format: Optional[str] = Field(
       default=None,
       description="""Storage format of the output files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """,
   )
   gcs_uri: Optional[str] = Field(
@@ -16372,6 +16415,11 @@ class BatchJobDestination(_common.BaseModel):
       the input requests.
       """,
   )
+  vertex_dataset: Optional[VertexMultimodalDatasetDestination] = Field(
+      default=None,
+      description="""This field is experimental and may change in future versions. The Vertex AI dataset destination.
+      """,
+  )
 
 
 class BatchJobDestinationDict(TypedDict, total=False):
@@ -16379,7 +16427,7 @@ class BatchJobDestinationDict(TypedDict, total=False):
 
   format: Optional[str]
   """Storage format of the output files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """
 
   gcs_uri: Optional[str]
@@ -16410,6 +16458,10 @@ class BatchJobDestinationDict(TypedDict, total=False):
   """The responses to the requests in the batch. Returned when the batch was
       built using inlined requests. The responses will be in the same order as
       the input requests.
+      """
+
+  vertex_dataset: Optional[VertexMultimodalDatasetDestinationDict]
+  """This field is experimental and may change in future versions. The Vertex AI dataset destination.
       """
 
 
