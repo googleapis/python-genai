@@ -27,5 +27,16 @@ class DeepResearchAgentConfigParam(TypedDict, total=False):
 
     type: Required[Literal["deep-research"]]
 
+    collaborative_planning: bool
+    """Enables human-in-the-loop planning for the Deep Research agent.
+
+    If set to true, the Deep Research agent will provide a research plan in its
+    response. The agent will then proceed only if the user confirms the plan in the
+    next turn. Relevant issue: b/482352502.
+    """
+
     thinking_summaries: Literal["auto", "none"]
     """Whether to include thought summaries in the response."""
+
+    visualization: Literal["off", "auto"]
+    """Whether to include visualizations in the response."""

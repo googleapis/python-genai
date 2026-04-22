@@ -49,7 +49,8 @@ from ._base_client import (
 from ._client_adapter import GeminiNextGenAPIClientAdapter, AsyncGeminiNextGenAPIClientAdapter
 
 if TYPE_CHECKING:
-    from .resources import interactions
+    from .resources import webhooks, interactions
+    from .resources.webhooks import WebhooksResource, AsyncWebhooksResource
     from .resources.interactions import InteractionsResource, AsyncInteractionsResource
 
 __all__ = [
@@ -132,6 +133,12 @@ class GeminiNextGenAPIClient(SyncAPIClient):
         from .resources.interactions import InteractionsResource
 
         return InteractionsResource(self)
+
+    @cached_property
+    def webhooks(self) -> WebhooksResource:
+        from .resources.webhooks import WebhooksResource
+
+        return WebhooksResource(self)
 
     @cached_property
     def with_raw_response(self) -> GeminiNextGenAPIClientWithRawResponse:
@@ -355,6 +362,12 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
         return AsyncInteractionsResource(self)
 
     @cached_property
+    def webhooks(self) -> AsyncWebhooksResource:
+        from .resources.webhooks import AsyncWebhooksResource
+
+        return AsyncWebhooksResource(self)
+
+    @cached_property
     def with_raw_response(self) -> AsyncGeminiNextGenAPIClientWithRawResponse:
         return AsyncGeminiNextGenAPIClientWithRawResponse(self)
 
@@ -518,6 +531,12 @@ class GeminiNextGenAPIClientWithRawResponse:
 
         return InteractionsResourceWithRawResponse(self._client.interactions)
 
+    @cached_property
+    def webhooks(self) -> webhooks.WebhooksResourceWithRawResponse:
+        from .resources.webhooks import WebhooksResourceWithRawResponse
+
+        return WebhooksResourceWithRawResponse(self._client.webhooks)
+
 
 class AsyncGeminiNextGenAPIClientWithRawResponse:
     _client: AsyncGeminiNextGenAPIClient
@@ -530,6 +549,12 @@ class AsyncGeminiNextGenAPIClientWithRawResponse:
         from .resources.interactions import AsyncInteractionsResourceWithRawResponse
 
         return AsyncInteractionsResourceWithRawResponse(self._client.interactions)
+
+    @cached_property
+    def webhooks(self) -> webhooks.AsyncWebhooksResourceWithRawResponse:
+        from .resources.webhooks import AsyncWebhooksResourceWithRawResponse
+
+        return AsyncWebhooksResourceWithRawResponse(self._client.webhooks)
 
 
 class GeminiNextGenAPIClientWithStreamedResponse:
@@ -544,6 +569,12 @@ class GeminiNextGenAPIClientWithStreamedResponse:
 
         return InteractionsResourceWithStreamingResponse(self._client.interactions)
 
+    @cached_property
+    def webhooks(self) -> webhooks.WebhooksResourceWithStreamingResponse:
+        from .resources.webhooks import WebhooksResourceWithStreamingResponse
+
+        return WebhooksResourceWithStreamingResponse(self._client.webhooks)
+
 
 class AsyncGeminiNextGenAPIClientWithStreamedResponse:
     _client: AsyncGeminiNextGenAPIClient
@@ -556,6 +587,12 @@ class AsyncGeminiNextGenAPIClientWithStreamedResponse:
         from .resources.interactions import AsyncInteractionsResourceWithStreamingResponse
 
         return AsyncInteractionsResourceWithStreamingResponse(self._client.interactions)
+
+    @cached_property
+    def webhooks(self) -> webhooks.AsyncWebhooksResourceWithStreamingResponse:
+        from .resources.webhooks import AsyncWebhooksResourceWithStreamingResponse
+
+        return AsyncWebhooksResourceWithStreamingResponse(self._client.webhooks)
 
 
 Client = GeminiNextGenAPIClient

@@ -28,7 +28,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.documents')
 
 
@@ -182,7 +181,22 @@ class Documents(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.Document._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -239,9 +253,7 @@ class Documents(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = self._api_client.request(
-        'delete', path, request_dict, http_options
-    )
+    self._api_client.request('delete', path, request_dict, http_options)
 
   def _list(
       self,
@@ -291,7 +303,22 @@ class Documents(_api_module.BaseModule):
       response_dict = _ListDocumentsResponse_from_mldev(response_dict)
 
     return_value = types.ListDocumentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -384,7 +411,22 @@ class AsyncDocuments(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.Document._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -441,7 +483,7 @@ class AsyncDocuments(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = await self._api_client.async_request(
+    await self._api_client.async_request(
         'delete', path, request_dict, http_options
     )
 
@@ -495,7 +537,22 @@ class AsyncDocuments(_api_module.BaseModule):
       response_dict = _ListDocumentsResponse_from_mldev(response_dict)
 
     return_value = types.ListDocumentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)

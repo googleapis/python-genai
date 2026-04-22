@@ -19,34 +19,35 @@
 from .... import types
 from ... import pytest_helper
 
-PRODUCT_RECONTEXT_MODEL_LATEST = 'imagen-product-recontext-preview-06-30'
+VIRTUAL_TRY_ON_IMAGE_MODEL_LATEST = 'virtual-try-on-001'
 
-BACKPACK1 = types.Image(
-    gcs_uri='gs://genai-sdk-tests/inputs/images/backpack1.png',
+PERSON_IMAGE = types.Image(
+    gcs_uri='gs://genai-sdk-tests/inputs/images/man.jpg',
+)
+
+PANTS = types.Image(
+    gcs_uri='gs://genai-sdk-tests/inputs/images/pants.jpg',
 )
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name='test_product_recontext',
+        name='test_virtual_try_on',
         exception_if_mldev='only supported in the Vertex AI client',
         parameters=types._RecontextImageParameters(
-            model=PRODUCT_RECONTEXT_MODEL_LATEST,
+            model=VIRTUAL_TRY_ON_IMAGE_MODEL_LATEST,
             source=types.RecontextImageSource(
-                prompt='On a school desk',
+                person_image=PERSON_IMAGE,
                 product_images=[
-                    types.ProductImage(product_image=BACKPACK1)
+                    types.ProductImage(product_image=PANTS)
                 ],
             ),
             config=types.RecontextImageConfig(
                 number_of_images=1,
-                add_watermark=True,
                 output_mime_type='image/jpeg',
             ),
         ),
     ),
 ]
-
-
 pytestmark = pytest_helper.setup(
     file=__file__,
     globals_for_file=globals(),

@@ -105,6 +105,9 @@ class DeltaAudio(BaseModel):
             "audio/mpeg",
             "audio/m4a",
             "audio/l16",
+            "audio/opus",
+            "audio/alaw",
+            "audio/mulaw",
         ]
     ] = None
 

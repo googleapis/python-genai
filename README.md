@@ -12,7 +12,7 @@
 Google Gen AI Python SDK provides an interface for developers to integrate
 Google's generative models into their Python applications. It supports the
 [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
-[Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
+[Gemini Enterprise Agent Platform](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
 APIs.
 
 ## Code Generation

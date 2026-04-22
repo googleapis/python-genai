@@ -608,6 +608,39 @@ def test_process_schema_order_properties_propagates_into_any_of(
 
 
 @pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_with_cycle(client):
+  schema = {
+      'type': 'OBJECT',
+      'properties': {
+          'recursive': {'$ref': '#/$defs/RecursiveObject'},
+      },
+      '$defs': {
+          'RecursiveObject': {
+              'type': 'OBJECT',
+              'properties': {
+                  'self': {'$ref': '#/$defs/RecursiveObject'},
+              }
+          }
+      }
+  }
+
+  _transformers.process_schema(schema, client)
+
+  expected = {
+      'type': 'OBJECT',
+      'properties': {
+          'recursive': {
+              'type': 'OBJECT',
+              'properties': {
+                  'self': {}
+              }
+          }
+      }
+  }
+  assert schema == expected
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
 def test_t_schema_does_not_change_property_ordering_if_set(client):
   """Tests t_schema doesn't overwrite the property_ordering field if already set."""
 
