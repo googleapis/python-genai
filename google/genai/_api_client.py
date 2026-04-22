@@ -1224,11 +1224,14 @@ class BaseApiClient:
             base_url,
             versioned_path,
         )
-    elif(
-        self.custom_base_url
-        and patched_http_options.base_url_resource_scope == ResourceScope.COLLECTION
-    ):
-      url = join_url_path(base_url, path)
+    elif self.custom_base_url:
+      if (
+          patched_http_options.base_url_resource_scope
+          == ResourceScope.COLLECTION
+      ):
+        url = join_url_path(base_url, path)
+      else:
+        url = join_url_path(base_url, versioned_path)
 
     if self.api_key and self.api_key.startswith('auth_tokens/'):
       raise EphemeralTokenAPIKeyError(
