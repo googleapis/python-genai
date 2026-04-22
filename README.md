@@ -309,7 +309,7 @@ https://test-api-gateway-proxy.com/publishers/google/models/gemini-3-pro-preview
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
-[Pydantic Models](https://pydantic.readthedocs.io/en/stable/model.html).
+[Pydantic Models](https://docs.pydantic.dev/latest/concepts/models/).
 Pydantic model types are available in the `types` module.
 
 ## Models
@@ -582,12 +582,15 @@ If you put a list within a list, the inner list can only contain
 
 The output of the model can be influenced by several optional settings
 available in generate_content's config parameter. For example, increasing
-`max_output_tokens` is essential for longer model responses. To make a model more
-deterministic, lowering the `temperature` parameter reduces randomness, with
-values near 0 minimizing variability. Capabilities and parameter defaults for
-each model is shown in the
+`max_output_tokens` is essential for longer model responses. To make a model
+more deterministic, lowering the `temperature` parameter reduces randomness,
+with values near 0 minimizing variability. Capabilities and parameter defaults
+for each model is shown in the
 [Vertex AI docs](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash)
-and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models) respectively.
+and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models)
+respectively. Note that all API methods support Pydantic types and
+dictionaries, which you can access from `google.genai.types`. In this example,
+we use GenerateContentConfig to specify the desired behavior from the model.
 
 ```python
 from google.genai import types
