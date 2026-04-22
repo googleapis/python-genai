@@ -207,7 +207,7 @@ class AsyncSession:
       from google.genai import types
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -279,7 +279,7 @@ class AsyncSession:
 
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -374,7 +374,7 @@ class AsyncSession:
 
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';

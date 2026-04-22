@@ -579,11 +579,32 @@ class BaseApiClient:
     self.vertexai = vertexai
     self.custom_base_url = None
     if self.vertexai is None:
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI', '0').lower() in [
-          'true',
-          '1',
-      ]:
-        self.vertexai = True
+      env_enterprise_str = os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE', None)
+      env_vertexai_str = os.environ.get('GOOGLE_GENAI_USE_VERTEXAI', None)
+
+      env_enterprise = None
+      if env_enterprise_str is not None:
+        env_enterprise = env_enterprise_str.lower() in ['true', '1']
+
+      env_vertexai = None
+      if env_vertexai_str is not None:
+        env_vertexai = env_vertexai_str.lower() in ['true', '1']
+
+      if (
+          env_enterprise is not None
+          and env_vertexai is not None
+          and env_enterprise != env_vertexai
+      ):
+        warnings.warn(
+            'Warning: Both GOOGLE_GENAI_USE_ENTERPRISE and'
+            ' GOOGLE_GENAI_USE_VERTEXAI are set with conflicting values. The'
+            ' value of GOOGLE_GENAI_USE_ENTERPRISE will be used.'
+        )
+
+      if env_enterprise is not None:
+        self.vertexai = env_enterprise
+      elif env_vertexai is not None:
+        self.vertexai = env_vertexai
 
     # Validate explicitly set initializer values.
     if (project or location) and api_key:

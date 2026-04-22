@@ -313,37 +313,43 @@ class DebugConfig(pydantic.BaseModel):
 class Client:
   """Client for making synchronous requests.
 
-  Use this client to make a request to the Gemini Developer API or Vertex AI
-  API and then wait for the response.
+  Use this client to make a request to the Gemini Developer API or Gemini
+  Enterprise Agent Platform (previously Vertex AI API) and then wait for the
+  response.
 
   To initialize the client, provide the required arguments either directly
   or by using environment variables. Gemini API users and Vertex AI users in
-  express mode can provide API key by providing input argument
   `api_key="your-api-key"` or by defining `GOOGLE_API_KEY="your-api-key"` as an
   environment variable
 
-  Vertex AI API users can provide inputs argument as `vertexai=True,
+  Gemini Enterprise Agent Platform API users can provide inputs argument as
+  `enterprise=True,
   project="your-project-id", location="us-central1"` or by defining
-  `GOOGLE_GENAI_USE_VERTEXAI=true`, `GOOGLE_CLOUD_PROJECT` and
+  `GOOGLE_GENAI_USE_ENTERPRISE=true`, `GOOGLE_CLOUD_PROJECT` and
+  `GOOGLE_CLOUD_LOCATION` environment variables.
   `GOOGLE_CLOUD_LOCATION` environment variables.
 
   Attributes:
     api_key: The `API key <https://ai.google.dev/gemini-api/docs/api-key>`_ to
       use for authentication. Applies to the Gemini Developer API only.
-    vertexai: Indicates whether the client should use the Vertex AI API
-      endpoints. Defaults to False (uses Gemini Developer API endpoints).
-      Applies to the Vertex AI API only.
+    enterprise (bool): Indicates whether the client should use the Gemini
+      Enterprise Agent Platform endpoints (previously Vertex AI API).
+      Defaults to False (uses Gemini Developer API endpoints). When
+      `enterprise` and `vertexai` are both set, and they have conflicting
+      values, a `ValueError` will be raised.
+    vertexai (bool): Legacy flag for `enterprise`.
     credentials: The credentials to use for authentication when calling the
-      Vertex AI APIs. Credentials can be obtained from environment variables and
-      default credentials. For more information, see `Set up Application Default
-      Credentials
+      Gemini Enterprise Agent Platform APIs. Credentials can be obtained from
+      environment variables and default credentials. For more information, see
+      `Set up Application Default Credentials
       <https://cloud.google.com/docs/authentication/provide-credentials-adc>`_.
       Applies to the Vertex AI API only.
     project: The `Google Cloud project ID
       <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to use
       for quota. Can be obtained from environment variables (for example,
       ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
-      Find your `Google Cloud project ID <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
+      Find your `Google Cloud project ID
+      <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
     location: The `location
       <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
       to send API requests to (for example, ``us-central1``). Can be obtained
@@ -362,20 +368,21 @@ class Client:
 
     client = genai.Client(api_key='my-api-key')
 
-  Usage for the Vertex AI API:
+  Usage for the Gemini Enterprise Agent Platform API:
 
   .. code-block:: python
 
     from google import genai
 
     client = genai.Client(
-        vertexai=True, project='my-project-id', location='us-central1'
+        enterprise=True, project='my-project-id', location='us-central1'
     )
   """
 
   def __init__(
       self,
       *,
+      enterprise: Optional[bool] = None,
       vertexai: Optional[bool] = None,
       api_key: Optional[str] = None,
       credentials: Optional[google.auth.credentials.Credentials] = None,
@@ -387,9 +394,12 @@ class Client:
     """Initializes the client.
 
     Args:
-       vertexai (bool): Indicates whether the client should use the Vertex AI
-         API endpoints. Defaults to False (uses Gemini Developer API endpoints).
-         Applies to the Vertex AI API only.
+       enterprise (bool): Indicates whether the client should use the Gemini
+         Enterprise Agent Platform endpoints (previously Vertex AI API).
+         Defaults to False (uses Gemini Developer API endpoints). When
+         `enterprise` and `vertexai` are both set, and they have conflicting
+         values, a `ValueError` will be raised.
+       vertexai (bool): Legacy flag for `enterprise`.
        api_key (str): The `API key
          <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
          authentication. Applies to the Gemini Developer API only.
@@ -414,10 +424,19 @@ class Client:
     """
 
     self._debug_config = debug_config or DebugConfig()
+
+    if enterprise is not None and vertexai is not None and enterprise != vertexai:
+      raise ValueError(
+          'enterprise and vertexai flags have conflicting values, please set'
+          ' enterprise value only.'
+      )
+
+    resolved_vertexai = enterprise if enterprise is not None else vertexai
+
     if isinstance(http_options, dict):
       http_options = HttpOptions(**http_options)
 
-    base_url = get_base_url(vertexai or False, http_options)
+    base_url = get_base_url(resolved_vertexai or False, http_options)
     if base_url:
       if http_options:
         http_options.base_url = base_url
@@ -425,7 +444,7 @@ class Client:
         http_options = HttpOptions(base_url=base_url)
 
     self._api_client = self._get_api_client(
-        vertexai=vertexai,
+        vertexai=resolved_vertexai,
         api_key=api_key,
         credentials=credentials,
         project=project,
