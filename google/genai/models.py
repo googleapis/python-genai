@@ -3429,10 +3429,15 @@ def _Part_to_mldev(
     )
 
   if getv(from_object, ['function_response']) is not None:
+    function_response = getv(from_object, ['function_response'])
+    if isinstance(function_response, dict):
+      function_response = types.FunctionResponse.model_validate(
+          function_response
+      )
     setv(
         to_object,
         ['functionResponse'],
-        getv(from_object, ['function_response']),
+        function_response.model_dump(by_alias=True, exclude_none=True, mode='json'),
     )
 
   if getv(from_object, ['inline_data']) is not None:
@@ -3500,10 +3505,15 @@ def _Part_to_vertex(
     setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
 
   if getv(from_object, ['function_response']) is not None:
+    function_response = getv(from_object, ['function_response'])
+    if isinstance(function_response, dict):
+      function_response = types.FunctionResponse.model_validate(
+          function_response
+      )
     setv(
         to_object,
         ['functionResponse'],
-        getv(from_object, ['function_response']),
+        function_response.model_dump(by_alias=True, exclude_none=True, mode='json'),
     )
 
   if getv(from_object, ['inline_data']) is not None:
