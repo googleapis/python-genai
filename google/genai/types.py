@@ -7923,6 +7923,10 @@ class GenerateContentResponse(_common.BaseModel):
       default=None,
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
+  parsed_error: Optional[str] = Field(
+      default=None,
+      description="""Details about why structured response parsing failed, if a response schema was provided.""",
+  )
 
   def _get_text(self) -> Optional[str]:
     """Returns the concatenation of all text parts in the response.
@@ -8098,6 +8102,13 @@ class GenerateContentResponse(_common.BaseModel):
   ) -> T:
     result = super()._from_response(response=response, kwargs=kwargs)
 
+    def _set_parsed_error(exc: Exception, result_text: Optional[str]) -> None:
+      details = f'{type(exc).__name__}: {exc}'
+      if result_text is not None:
+        result.parsed_error = f'{details}. Response text: {result_text}'
+      else:
+        result.parsed_error = details
+
     # Handles response schema.
     response_schema = _common.get_value_by_path(
         kwargs, ['config', 'response_schema']
@@ -8121,10 +8132,10 @@ class GenerateContentResponse(_common.BaseModel):
         if result_text is not None:
           result.parsed = response_schema.model_validate_json(result_text)
       # may not be a valid json per stream response
-      except pydantic.ValidationError:
-        pass
-      except json.decoder.JSONDecodeError:
-        pass
+      except pydantic.ValidationError as e:
+        _set_parsed_error(e, result_text if 'result_text' in locals() else None)
+      except json.decoder.JSONDecodeError as e:
+        _set_parsed_error(e, result_text if 'result_text' in locals() else None)
     elif (
         isinstance(response_schema, EnumMeta) and result._get_text() is not None
     ):
@@ -8140,8 +8151,8 @@ class GenerateContentResponse(_common.BaseModel):
             and response_schema.__name__ == 'PlaceholderLiteralEnum'
         ):
           result.parsed = str(response_schema(enum_value).name)  # type: ignore
-      except ValueError:
-        pass
+      except ValueError as e:
+        _set_parsed_error(e, result_text)
     elif isinstance(response_schema, builtin_types.GenericAlias) or isinstance(
         response_schema, type
     ):
@@ -8155,10 +8166,10 @@ class GenerateContentResponse(_common.BaseModel):
           parsed = {'placeholder': json.loads(result_text)}
           placeholder = Placeholder.model_validate(parsed)
           result.parsed = placeholder.placeholder
-      except json.decoder.JSONDecodeError:
-        pass
-      except pydantic.ValidationError:
-        pass
+      except json.decoder.JSONDecodeError as e:
+        _set_parsed_error(e, result_text if 'result_text' in locals() else None)
+      except pydantic.ValidationError as e:
+        _set_parsed_error(e, result_text if 'result_text' in locals() else None)
 
     elif isinstance(response_schema, dict) or isinstance(
         response_schema, Schema
@@ -8171,11 +8182,12 @@ class GenerateContentResponse(_common.BaseModel):
         if result_text is not None:
           result.parsed = json.loads(result_text)
       # may not be a valid json per stream response
-      except json.decoder.JSONDecodeError:
-        pass
+      except json.decoder.JSONDecodeError as e:
+        _set_parsed_error(e, result_text if 'result_text' in locals() else None)
     elif typing.get_origin(response_schema) in _UNION_TYPES:
       # Union schema.
       union_types = typing.get_args(response_schema)
+      union_errors: list[tuple[Exception, Optional[str]]] = []
       for union_type in union_types:
         if issubclass(union_type, pydantic.BaseModel):
           try:
@@ -8188,18 +8200,22 @@ class GenerateContentResponse(_common.BaseModel):
               parsed = {'placeholder': json.loads(result_text)}
               placeholder = Placeholder.model_validate(parsed)
               result.parsed = placeholder.placeholder
-          except json.decoder.JSONDecodeError:
-            pass
-          except pydantic.ValidationError:
-            pass
+          except json.decoder.JSONDecodeError as e:
+            union_errors.append((e, result_text if 'result_text' in locals() else None))
+          except pydantic.ValidationError as e:
+            union_errors.append((e, result_text if 'result_text' in locals() else None))
         else:
           try:
             result_text = result._get_text()
             if result_text is not None:
               result.parsed = json.loads(result_text)
           # may not be a valid json per stream response
-          except json.decoder.JSONDecodeError:
-            pass
+          except json.decoder.JSONDecodeError as e:
+            union_errors.append((e, result_text if 'result_text' in locals() else None))
+        if result.parsed is not None:
+          break
+      if result.parsed is None and union_errors:
+        _set_parsed_error(*union_errors[-1])
 
     return result
 

@@ -122,13 +122,19 @@ def append_library_version_headers(headers: dict[str, str]) -> None:
   library_label = f'google-genai-sdk/{version.__version__}'
   language_label = 'gl-python/' + sys.version.split()[0]
   version_header_value = f'{library_label} {language_label}'
+  user_agent_key = next(
+      (key for key in headers if key.lower() == 'user-agent'),
+      'User-Agent',
+  )
   if (
-      'user-agent' in headers
-      and version_header_value not in headers['user-agent']
+      user_agent_key in headers
+      and version_header_value not in headers[user_agent_key]
   ):
-    headers['user-agent'] = f'{version_header_value} ' + headers['user-agent']
-  elif 'user-agent' not in headers:
-    headers['user-agent'] = version_header_value
+    headers[user_agent_key] = (
+        f'{version_header_value} ' + headers[user_agent_key]
+    )
+  elif user_agent_key not in headers:
+    headers[user_agent_key] = version_header_value
   if (
       'x-goog-api-client' in headers
       and version_header_value not in headers['x-goog-api-client']
