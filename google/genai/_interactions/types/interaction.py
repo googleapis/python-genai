@@ -30,6 +30,7 @@ from .text_content import TextContent
 from .audio_content import AudioContent
 from .image_content import ImageContent
 from .video_content import VideoContent
+from .webhook_config import WebhookConfig
 from .thought_content import ThoughtContent
 from .document_content import DocumentContent
 from .dynamic_agent_config import DynamicAgentConfig
@@ -105,7 +106,13 @@ class Interaction(BaseModel):
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
-    agent: Union[str, Literal["deep-research-pro-preview-12-2025"], None] = None
+    agent: Union[
+        Literal[
+            "deep-research-pro-preview-12-2025", "deep-research-preview-04-2026", "deep-research-max-preview-04-2026"
+        ],
+        str,
+        None,
+    ] = None
     """The name of the `Agent` used for generating the interaction."""
 
     agent_config: Optional[AgentConfig] = None
@@ -149,3 +156,10 @@ class Interaction(BaseModel):
 
     usage: Optional[Usage] = None
     """Output only. Statistics on the interaction request's token usage."""
+
+    webhook_config: Optional[WebhookConfig] = None
+    """Optional.
+
+    Webhook configuration for receiving notifications when the interaction
+    completes.
+    """

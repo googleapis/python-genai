@@ -309,7 +309,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex='is not supported in Vertex AI',
+        exception_if_vertex=(
+            'is not supported in Gemini Enterprise Agent Platform'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_non_existent_file_search_store',
@@ -331,7 +333,9 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='not exist',
-        exception_if_vertex='is not supported in Vertex AI',
+        exception_if_vertex=(
+            'is not supported in Gemini Enterprise Agent Platform'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter',
@@ -353,7 +357,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex='is not supported in Vertex AI',
+        exception_if_vertex=(
+            'is not supported in Gemini Enterprise Agent Platform'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter_and_top_k',
@@ -376,7 +382,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex='is not supported in Vertex AI',
+        exception_if_vertex=(
+            'is not supported in Gemini Enterprise Agent Platform'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_function_call',

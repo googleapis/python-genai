@@ -1,5 +1,60 @@
 # Changelog
 
+## [1.73.1](https://github.com/googleapis/python-genai/compare/v1.73.0...v1.73.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* Refactor Webhook types in GenAI SDKs for easier useage ([3f36ca1](https://github.com/googleapis/python-genai/commit/3f36ca11b30904c8f82dd3e7e3b59eff3bde6a3b))
+* Rename `webhooks.retrieve` to `webhooks.get`. ([649f4b0](https://github.com/googleapis/python-genai/commit/649f4b06d7bd78a23dd77b06713c6ca5c65321f9))
+
+
+### Documentation
+
+* Update python docs for 1.73.0 ([acd3767](https://github.com/googleapis/python-genai/commit/acd3767bff513524172ddd7726b147d01c245f1c))
+
+## [1.73.0](https://github.com/googleapis/python-genai/compare/v1.72.0...v1.73.0) (2026-04-13)
+
+
+### Features
+
+* Add DeepResearchAgentConfig fields ([ec8ca87](https://github.com/googleapis/python-genai/commit/ec8ca87e6e0a80d363ebceadeacb623c0f479776))
+* Add webhook and webhookConfig for js and python sdk ([ccec350](https://github.com/googleapis/python-genai/commit/ccec35073534930130993443e4dea9bed6b07006))
+* Add webhook_config to batches.create() and models.generate_videos() ([772d2fc](https://github.com/googleapis/python-genai/commit/772d2fc0a716e5a23ab241b1efcb1dc5c73fde9e))
+* Wire the webhook into python and js client. ([841bf22](https://github.com/googleapis/python-genai/commit/841bf220d0bf1c539ab349998afb388118c6af05))
+
+
+### Bug Fixes
+
+* Refine Pyink blank line insertion logic and fix range-based formatting regressions. ([b91bda5](https://github.com/googleapis/python-genai/commit/b91bda5d587ee6217fcff8f4e1b8eee4aebb9203))
+
+## [1.72.0](https://github.com/googleapis/python-genai/compare/v1.71.0...v1.72.0) (2026-04-09)
+
+
+### Features
+
+* Add "eu" as a supported service location for Vertex AI platform. ([888a731](https://github.com/googleapis/python-genai/commit/888a73159db17a8f08f928ee1a85e80db1a85a1a))
+* Add Live Avatar new fields ([ad1777e](https://github.com/googleapis/python-genai/commit/ad1777e29e28677101c9a26bdff6fd32e103340b))
+* Add support for new audio MIME types: opus, alaw, and mulaw ([74eb373](https://github.com/googleapis/python-genai/commit/74eb373b2e97291e1d07cedce7cbf1fb82123a18))
+* Add the delete method for the Agent Engine Task Store Service ([d821082](https://github.com/googleapis/python-genai/commit/d821082a91effba4dc684b03b438e51527deed03))
+
+
+### Documentation
+
+* Update python docs for 1.71.0 ([e82f9fc](https://github.com/googleapis/python-genai/commit/e82f9fc9093825b3d5c4388c7faefe0c733f154b))
+
+## [1.71.0](https://github.com/googleapis/python-genai/compare/v1.70.0...v1.71.0) (2026-04-08)
+
+
+### Features
+
+* Introduce TYPE_L16 audio content and optional fields. ([07e932f](https://github.com/googleapis/python-genai/commit/07e932f9bc8dcb224ced2b35061ede9df25432cb))
+
+
+### Documentation
+
+* Remove deprecated product recontext model samples from docstrings ([aca7dcf](https://github.com/googleapis/python-genai/commit/aca7dcf32b15ef2d945a14fb498be0e9c096c0d8))
+
 ## [1.70.0](https://github.com/googleapis/python-genai/compare/v1.69.0...v1.70.0) (2026-03-31)
 
 

@@ -199,7 +199,10 @@ def _FunctionDeclaration_to_vertex(
     )
 
   if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'behavior parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -317,7 +320,8 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+        'enable_enhanced_civic_answers parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -548,7 +552,8 @@ def _LiveClientRealtimeInput_to_vertex(
 
   if getv(from_object, ['audio_stream_end']) is not None:
     raise ValueError(
-        'audio_stream_end parameter is not supported in Vertex AI.'
+        'audio_stream_end parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
     )
 
   if getv(from_object, ['video']) is not None:
@@ -646,6 +651,19 @@ def _LiveClientSetup_to_mldev(
   if getv(from_object, ['history_config']) is not None:
     setv(to_object, ['historyConfig'], getv(from_object, ['history_config']))
 
+  if getv(from_object, ['avatar_config']) is not None:
+    setv(to_object, ['avatarConfig'], getv(from_object, ['avatar_config']))
+
+  if getv(from_object, ['safety_settings']) is not None:
+    setv(
+        to_object,
+        ['safetySettings'],
+        [
+            _SafetySetting_to_mldev(item, to_object)
+            for item in getv(from_object, ['safety_settings'])
+        ],
+    )
+
   return to_object
 
 
@@ -725,7 +743,20 @@ def _LiveClientSetup_to_vertex(
     )
 
   if getv(from_object, ['history_config']) is not None:
-    raise ValueError('history_config parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'history_config parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
+
+  if getv(from_object, ['avatar_config']) is not None:
+    setv(to_object, ['avatarConfig'], getv(from_object, ['avatar_config']))
+
+  if getv(from_object, ['safety_settings']) is not None:
+    setv(
+        to_object,
+        ['safetySettings'],
+        [item for item in getv(from_object, ['safety_settings'])],
+    )
 
   return to_object
 
@@ -893,6 +924,23 @@ def _LiveConnectConfig_to_mldev(
         getv(from_object, ['history_config']),
     )
 
+  if getv(from_object, ['avatar_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'avatarConfig'],
+        getv(from_object, ['avatar_config']),
+    )
+
+  if getv(from_object, ['safety_settings']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'safetySettings'],
+        [
+            _SafetySetting_to_mldev(item, to_object)
+            for item in getv(from_object, ['safety_settings'])
+        ],
+    )
+
   return to_object
 
 
@@ -1054,7 +1102,24 @@ def _LiveConnectConfig_to_vertex(
     )
 
   if getv(from_object, ['history_config']) is not None:
-    raise ValueError('history_config parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'history_config parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
+
+  if getv(from_object, ['avatar_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'avatarConfig'],
+        getv(from_object, ['avatar_config']),
+    )
+
+  if getv(from_object, ['safety_settings']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'safetySettings'],
+        [item for item in getv(from_object, ['safety_settings'])],
+    )
 
   return to_object
 
@@ -1115,19 +1180,26 @@ def _LiveMusicClientMessage_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['setup']) is not None:
-    raise ValueError('setup parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'setup parameter is not supported in Gemini Enterprise Agent Platform.'
+    )
 
   if getv(from_object, ['client_content']) is not None:
-    raise ValueError('client_content parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'client_content parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['music_generation_config']) is not None:
     raise ValueError(
-        'music_generation_config parameter is not supported in Vertex AI.'
+        'music_generation_config parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   if getv(from_object, ['playback_control']) is not None:
     raise ValueError(
-        'playback_control parameter is not supported in Vertex AI.'
+        'playback_control parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
     )
 
   return to_object
@@ -1150,7 +1222,9 @@ def _LiveMusicConnectParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['model']) is not None:
-    raise ValueError('model parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'model parameter is not supported in Gemini Enterprise Agent Platform.'
+    )
 
   return to_object
 
@@ -1177,7 +1251,8 @@ def _LiveMusicSetConfigParameters_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['music_generation_config']) is not None:
     raise ValueError(
-        'music_generation_config parameter is not supported in Vertex AI.'
+        'music_generation_config parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -1205,7 +1280,8 @@ def _LiveMusicSetWeightedPromptsParameters_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['weighted_prompts']) is not None:
     raise ValueError(
-        'weighted_prompts parameter is not supported in Vertex AI.'
+        'weighted_prompts parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
     )
 
   return to_object
@@ -1547,13 +1623,22 @@ def _Part_to_vertex(
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   if getv(from_object, ['tool_call']) is not None:
-    raise ValueError('tool_call parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_call parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['tool_response']) is not None:
-    raise ValueError('tool_response parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_response parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['part_metadata']) is not None:
-    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'part_metadata parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -1574,12 +1659,33 @@ def _ReplicatedVoiceConfig_to_vertex(
     )
 
   if getv(from_object, ['consent_audio']) is not None:
-    raise ValueError('consent_audio parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'consent_audio parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['voice_consent_signature']) is not None:
     raise ValueError(
-        'voice_consent_signature parameter is not supported in Vertex AI.'
+        'voice_consent_signature parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
+
+  return to_object
+
+
+def _SafetySetting_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['category']) is not None:
+    setv(to_object, ['category'], getv(from_object, ['category']))
+
+  if getv(from_object, ['method']) is not None:
+    raise ValueError('method parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['threshold']) is not None:
+    setv(to_object, ['threshold'], getv(from_object, ['threshold']))
 
   return to_object
 
@@ -1723,7 +1829,10 @@ def _Tool_to_vertex(
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
-    raise ValueError('file_search parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_search parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['google_search']) is not None:
     setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
@@ -1769,7 +1878,10 @@ def _Tool_to_vertex(
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['mcp_servers']) is not None:
-    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'mcp_servers parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 

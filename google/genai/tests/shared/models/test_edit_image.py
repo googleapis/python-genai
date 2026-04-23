@@ -47,7 +47,9 @@ mask_ref_image = types.MaskReferenceImage(
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_edit_mask_inpaint_insert',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._EditImageParameters(
             model=CAPABILITY_MODEL_NAME,
             prompt='Sunlight and clear weather',

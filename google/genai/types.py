@@ -37,7 +37,6 @@ from ._operations_converters import (
     _UploadToFileSearchStoreOperation_from_mldev,
 )
 
-
 if sys.version_info >= (3, 10):
   # Supports both Union[t1, t2] and t1 | t2
   VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
@@ -564,6 +563,8 @@ class Modality(_common.CaseInSensitiveEnum):
   """Indicates the model should return images."""
   AUDIO = 'AUDIO'
   """Indicates the model should return audio."""
+  VIDEO = 'VIDEO'
+  """Indicates the model should return video."""
 
 
 class ModelStage(_common.CaseInSensitiveEnum):
@@ -872,7 +873,7 @@ class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
 
 
 class EmbeddingApiType(_common.CaseInSensitiveEnum):
-  """Enum representing the Vertex embedding API to use."""
+  """Enum representing the Gemini Enterprise Agent Platform embedding API to use."""
 
   PREDICT = 'PREDICT'
   """predict API endpoint (default)"""
@@ -1044,6 +1045,60 @@ class TurnCompleteReason(_common.CaseInSensitiveEnum):
   """The response is rejected by the model."""
   NEED_MORE_INPUT = 'NEED_MORE_INPUT'
   """Needs more input from the user."""
+  PROHIBITED_INPUT_CONTENT = 'PROHIBITED_INPUT_CONTENT'
+  """Input content is prohibited."""
+  IMAGE_PROHIBITED_INPUT_CONTENT = 'IMAGE_PROHIBITED_INPUT_CONTENT'
+  """Input image contains prohibited content."""
+  INPUT_TEXT_CONTAIN_PROMINENT_PERSON_PROHIBITED = (
+      'INPUT_TEXT_CONTAIN_PROMINENT_PERSON_PROHIBITED'
+  )
+  """Input text contains prominent person reference."""
+  INPUT_IMAGE_CELEBRITY = 'INPUT_IMAGE_CELEBRITY'
+  """Input image contains celebrity."""
+  INPUT_IMAGE_PHOTO_REALISTIC_CHILD_PROHIBITED = (
+      'INPUT_IMAGE_PHOTO_REALISTIC_CHILD_PROHIBITED'
+  )
+  """Input image contains photo realistic child."""
+  INPUT_TEXT_NCII_PROHIBITED = 'INPUT_TEXT_NCII_PROHIBITED'
+  """Input text contains NCII content."""
+  INPUT_OTHER = 'INPUT_OTHER'
+  """Other input safety issue."""
+  INPUT_IP_PROHIBITED = 'INPUT_IP_PROHIBITED'
+  """Input contains IP violation."""
+  BLOCKLIST = 'BLOCKLIST'
+  """Input matched blocklist."""
+  UNSAFE_PROMPT_FOR_IMAGE_GENERATION = 'UNSAFE_PROMPT_FOR_IMAGE_GENERATION'
+  """Input is unsafe for image generation."""
+  GENERATED_IMAGE_SAFETY = 'GENERATED_IMAGE_SAFETY'
+  """Generated image failed safety check."""
+  GENERATED_CONTENT_SAFETY = 'GENERATED_CONTENT_SAFETY'
+  """Generated content failed safety check."""
+  GENERATED_AUDIO_SAFETY = 'GENERATED_AUDIO_SAFETY'
+  """Generated audio failed safety check."""
+  GENERATED_VIDEO_SAFETY = 'GENERATED_VIDEO_SAFETY'
+  """Generated video failed safety check."""
+  GENERATED_CONTENT_PROHIBITED = 'GENERATED_CONTENT_PROHIBITED'
+  """Generated content is prohibited."""
+  GENERATED_CONTENT_BLOCKLIST = 'GENERATED_CONTENT_BLOCKLIST'
+  """Generated content matched blocklist."""
+  GENERATED_IMAGE_PROHIBITED = 'GENERATED_IMAGE_PROHIBITED'
+  """Generated image is prohibited."""
+  GENERATED_IMAGE_CELEBRITY = 'GENERATED_IMAGE_CELEBRITY'
+  """Generated image contains celebrity."""
+  GENERATED_IMAGE_PROMINENT_PEOPLE_DETECTED_BY_REWRITER = (
+      'GENERATED_IMAGE_PROMINENT_PEOPLE_DETECTED_BY_REWRITER'
+  )
+  """Generated image contains prominent people detected by rewriter."""
+  GENERATED_IMAGE_IDENTIFIABLE_PEOPLE = 'GENERATED_IMAGE_IDENTIFIABLE_PEOPLE'
+  """Generated image contains identifiable people."""
+  GENERATED_IMAGE_MINORS = 'GENERATED_IMAGE_MINORS'
+  """Generated image contains minors."""
+  OUTPUT_IMAGE_IP_PROHIBITED = 'OUTPUT_IMAGE_IP_PROHIBITED'
+  """Generated image contains IP violation."""
+  GENERATED_OTHER = 'GENERATED_OTHER'
+  """Other generated content issue."""
+  MAX_REGENERATION_REACHED = 'MAX_REGENERATION_REACHED'
+  """Max regeneration attempts reached."""
 
 
 class MediaModality(_common.CaseInSensitiveEnum):
@@ -2273,7 +2328,7 @@ class HttpOptions(_common.BaseModel):
       default=None,
       description="""Extra parameters to add to the request body.
       The structure must match the backend API's request structure.
-      - VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+      - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
       - GeminiAPI backend API docs: https://ai.google.dev/api/rest""",
   )
   retry_options: Optional[HttpRetryOptions] = Field(
@@ -2321,7 +2376,7 @@ class HttpOptionsDict(TypedDict, total=False):
   extra_body: Optional[dict[str, Any]]
   """Extra parameters to add to the request body.
       The structure must match the backend API's request structure.
-      - VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+      - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
       - GeminiAPI backend API docs: https://ai.google.dev/api/rest"""
 
   retry_options: Optional[HttpRetryOptionsDict]
@@ -2603,8 +2658,8 @@ class Schema(_common.BaseModel):
 
      Note: Conversion of fields that are not included in the JSONSchema class
      are ignored.
-     Json Schema is now supported natively by both Vertex AI and Gemini API.
-     Users
+     Json Schema is now supported natively by both Gemini Enterprise Agent
+     Platform and Gemini API. Users
      are recommended to pass/receive Json Schema directly to/from the API. For
      example:
      1. the counter part of GenerateContentConfig.response_schema is
@@ -2623,7 +2678,7 @@ class Schema(_common.BaseModel):
       info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are
 ignored.
-Json Schema is now supported natively by both Vertex AI and Gemini API. Users
+Json Schema is now supported natively by both Gemini Enterprise Agent Platform and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
 1. the counter part of GenerateContentConfig.response_schema is
    GenerateContentConfig.response_json_schema, which accepts [JSON
@@ -2710,8 +2765,8 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
 
      Note: Conversion of fields that are not included in the JSONSchema class
      are ignored.
-     Json Schema is now supported natively by both Vertex AI and Gemini API.
-     Users
+     Json Schema is now supported natively by both Gemini Enterprise Agent
+     Platform and Gemini API. Users
      are recommended to pass/receive Json Schema directly to/from the API. For
      example:
      1. the counter part of GenerateContentConfig.response_schema is
@@ -2730,9 +2785,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
          json_schema: JSONSchema object to be converted.
          api_option: API option to be used. If set to 'VERTEX_AI', the
            JSONSchema will be converted to a Schema object that is compatible
-           with Vertex AI API. If set to 'GEMINI_API', the JSONSchema will be
-           converted to a Schema object that is compatible with Gemini API.
-           Default is 'GEMINI_API'.
+           with Gemini Enterprise Agent Platform API. If set to 'GEMINI_API',
+           the JSONSchema will be converted to a Schema object that is
+           compatible with Gemini API. Default is 'GEMINI_API'.
          raise_error_on_unsupported_field: If set to True, an error will be
            raised if the JSONSchema contains any unsupported fields. Default is
            False.
@@ -2748,7 +2803,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
     if not _from_json_schema_warning_logged:
       info_message = """
 Note: Conversion of fields that are not included in the JSONSchema class are ignored.
-Json Schema is now supported natively by both Vertex AI and Gemini API. Users
+Json Schema is now supported natively by both Gemini Enterprise Agent Platform and Gemini API. Users
 are recommended to pass/receive Json Schema directly to/from the API. For example:
 1. the counter part of GenerateContentConfig.response_schema is
    GenerateContentConfig.response_json_schema, which accepts [JSON
@@ -2911,14 +2966,20 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
         root_json_schema_dict: dict[str, Any],
         api_option: Literal['VERTEX_AI', 'GEMINI_API'],
         raise_error_on_unsupported_field: bool,
+        visited_refs: Optional[set[str]] = None,
     ) -> 'Schema':
+      if visited_refs is None:
+        visited_refs = set()
+
       schema = Schema()
       json_schema_dict = current_json_schema.model_dump()
 
-      if json_schema_dict.get('ref'):
-        json_schema_dict = _resolve_ref(
-            json_schema_dict['ref'], root_json_schema_dict
-        )
+      ref = json_schema_dict.get('ref')
+      if ref:
+        if ref in visited_refs:
+          return Schema()
+        visited_refs.add(ref)
+        json_schema_dict = _resolve_ref(ref, root_json_schema_dict)
 
       raise_error_if_cannot_convert(
           json_schema_dict=json_schema_dict,
@@ -2985,6 +3046,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
               root_json_schema_dict=root_json_schema_dict,
               api_option=api_option,
               raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+              visited_refs=visited_refs,
           )
           setattr(schema, field_name, schema_field_value)
         elif field_name in list_schema_field_names:
@@ -2994,6 +3056,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
                   root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+                  visited_refs=visited_refs,
               )
               for this_field_value in field_value
           ]
@@ -3007,6 +3070,7 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
                   root_json_schema_dict=root_json_schema_dict,
                   api_option=api_option,
                   raise_error_on_unsupported_field=raise_error_on_unsupported_field,
+                  visited_refs=visited_refs,
               )
               for key, value in field_value.items()
           }
@@ -3051,6 +3115,8 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
           if default_value is not None:
             schema.default = default_value
 
+      if ref:
+        visited_refs.remove(ref)
       return schema
 
     # This is the initial call to the recursive function.
@@ -5941,7 +6007,7 @@ class GenerateContentConfig(_common.BaseModel):
   enable_enhanced_civic_answers: Optional[bool] = Field(
       default=None,
       description="""Enables enhanced civic answers. It may not be available for all
-      models. This field is not supported in Vertex AI.
+      models. This field is not supported in Gemini Enterprise Agent Platform.
       """,
   )
   model_armor_config: Optional[ModelArmorConfig] = Field(
@@ -6160,7 +6226,7 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   enable_enhanced_civic_answers: Optional[bool]
   """Enables enhanced civic answers. It may not be available for all
-      models. This field is not supported in Vertex AI.
+      models. This field is not supported in Gemini Enterprise Agent Platform.
       """
 
   model_armor_config: Optional[ModelArmorConfigDict]
@@ -8200,14 +8266,26 @@ class EmbedContentConfig(_common.BaseModel):
   )
   mime_type: Optional[str] = Field(
       default=None,
-      description="""Vertex API only. The MIME type of the input.
+      description="""Gemini Enterprise Agent Platform only. The MIME type of the input.
       """,
   )
   auto_truncate: Optional[bool] = Field(
       default=None,
-      description="""Vertex API only. Whether to silently truncate inputs longer than
+      description="""Gemini Enterprise Agent Platform only. Whether to silently truncate inputs longer than
       the max sequence length. If this option is set to false, oversized inputs
       will lead to an INVALID_ARGUMENT error, similar to other text APIs.
+      """,
+  )
+  document_ocr: Optional[bool] = Field(
+      default=None,
+      description="""Gemini Enterprise Agent Platform only. Whether to enable OCR for document content.
+      Only applicable to Gemini Embedding 2 models.
+      """,
+  )
+  audio_track_extraction: Optional[bool] = Field(
+      default=None,
+      description="""Gemini Enterprise Agent Platform only. Whether to extract audio from video content.
+      Only applicable to Gemini Embedding 2 models.
       """,
   )
 
@@ -8235,13 +8313,23 @@ class EmbedContentConfigDict(TypedDict, total=False):
       """
 
   mime_type: Optional[str]
-  """Vertex API only. The MIME type of the input.
+  """Gemini Enterprise Agent Platform only. The MIME type of the input.
       """
 
   auto_truncate: Optional[bool]
-  """Vertex API only. Whether to silently truncate inputs longer than
+  """Gemini Enterprise Agent Platform only. Whether to silently truncate inputs longer than
       the max sequence length. If this option is set to false, oversized inputs
       will lead to an INVALID_ARGUMENT error, similar to other text APIs.
+      """
+
+  document_ocr: Optional[bool]
+  """Gemini Enterprise Agent Platform only. Whether to enable OCR for document content.
+      Only applicable to Gemini Embedding 2 models.
+      """
+
+  audio_track_extraction: Optional[bool]
+  """Gemini Enterprise Agent Platform only. Whether to extract audio from video content.
+      Only applicable to Gemini Embedding 2 models.
       """
 
 
@@ -8268,7 +8356,7 @@ class _EmbedContentParametersPrivate(_common.BaseModel):
   )
   embedding_api_type: Optional[EmbeddingApiType] = Field(
       default=None,
-      description="""The Vertex embedding API to use.
+      description="""The Gemini Enterprise Agent Platform embedding API to use.
       """,
   )
   config: Optional[EmbedContentConfig] = Field(
@@ -8294,7 +8382,7 @@ class _EmbedContentParametersPrivateDict(TypedDict, total=False):
       """
 
   embedding_api_type: Optional[EmbeddingApiType]
-  """The Vertex embedding API to use.
+  """The Gemini Enterprise Agent Platform embedding API to use.
       """
 
   config: Optional[EmbedContentConfigDict]
@@ -8312,13 +8400,13 @@ class ContentEmbeddingStatistics(_common.BaseModel):
 
   truncated: Optional[bool] = Field(
       default=None,
-      description="""Vertex API only. If the input text was truncated due to having
+      description="""Gemini Enterprise Agent Platform only. If the input text was truncated due to having
       a length longer than the allowed maximum input.
       """,
   )
   token_count: Optional[float] = Field(
       default=None,
-      description="""Vertex API only. Number of tokens of the input text.
+      description="""Gemini Enterprise Agent Platform only. Number of tokens of the input text.
       """,
   )
 
@@ -8327,12 +8415,12 @@ class ContentEmbeddingStatisticsDict(TypedDict, total=False):
   """Statistics of the input text associated with the result of content embedding."""
 
   truncated: Optional[bool]
-  """Vertex API only. If the input text was truncated due to having
+  """Gemini Enterprise Agent Platform only. If the input text was truncated due to having
       a length longer than the allowed maximum input.
       """
 
   token_count: Optional[float]
-  """Vertex API only. Number of tokens of the input text.
+  """Gemini Enterprise Agent Platform only. Number of tokens of the input text.
       """
 
 
@@ -8351,7 +8439,7 @@ class ContentEmbedding(_common.BaseModel):
   )
   statistics: Optional[ContentEmbeddingStatistics] = Field(
       default=None,
-      description="""Vertex API only. Statistics of the input text associated with this
+      description="""Gemini Enterprise Agent Platform only. Statistics of the input text associated with this
       embedding.
       """,
   )
@@ -8365,7 +8453,7 @@ class ContentEmbeddingDict(TypedDict, total=False):
       """
 
   statistics: Optional[ContentEmbeddingStatisticsDict]
-  """Vertex API only. Statistics of the input text associated with this
+  """Gemini Enterprise Agent Platform only. Statistics of the input text associated with this
       embedding.
       """
 
@@ -8374,21 +8462,21 @@ ContentEmbeddingOrDict = Union[ContentEmbedding, ContentEmbeddingDict]
 
 
 class EmbedContentMetadata(_common.BaseModel):
-  """Request-level metadata for the Vertex Embed Content API."""
+  """Request-level metadata for the Gemini Enterprise Agent Platform Embed Content API."""
 
   billable_character_count: Optional[int] = Field(
       default=None,
-      description="""Vertex API only. The total number of billable characters included
+      description="""Gemini Enterprise Agent Platform only. The total number of billable characters included
       in the request.
       """,
   )
 
 
 class EmbedContentMetadataDict(TypedDict, total=False):
-  """Request-level metadata for the Vertex Embed Content API."""
+  """Request-level metadata for the Gemini Enterprise Agent Platform Embed Content API."""
 
   billable_character_count: Optional[int]
-  """Vertex API only. The total number of billable characters included
+  """Gemini Enterprise Agent Platform only. The total number of billable characters included
       in the request.
       """
 
@@ -8412,7 +8500,7 @@ class EmbedContentResponse(_common.BaseModel):
   )
   metadata: Optional[EmbedContentMetadata] = Field(
       default=None,
-      description="""Vertex API only. Metadata about the request.
+      description="""Gemini Enterprise Agent Platform only. Metadata about the request.
       """,
   )
 
@@ -8429,7 +8517,7 @@ class EmbedContentResponseDict(TypedDict, total=False):
       """
 
   metadata: Optional[EmbedContentMetadataDict]
-  """Vertex API only. Metadata about the request.
+  """Gemini Enterprise Agent Platform only. Metadata about the request.
       """
 
 
@@ -11009,6 +11097,46 @@ class VideoGenerationMaskDict(TypedDict, total=False):
 VideoGenerationMaskOrDict = Union[VideoGenerationMask, VideoGenerationMaskDict]
 
 
+class WebhookConfig(_common.BaseModel):
+  """Configuration for webhook notifications.
+
+  Used to configure webhook endpoints that will receive notifications
+  when long-running operations (e.g., batch jobs, video generation) complete.
+  """
+
+  uris: Optional[list[str]] = Field(
+      default=None,
+      description="""The webhook URIs to receive notifications. If set, these
+      webhook URIs will be used instead of the registered webhooks.""",
+  )
+  user_metadata: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""User metadata that will be included in each webhook event
+      notification. Use this to attach custom key-value data to correlate
+      webhook events with your internal systems.""",
+  )
+
+
+class WebhookConfigDict(TypedDict, total=False):
+  """Configuration for webhook notifications.
+
+  Used to configure webhook endpoints that will receive notifications
+  when long-running operations (e.g., batch jobs, video generation) complete.
+  """
+
+  uris: Optional[list[str]]
+  """The webhook URIs to receive notifications. If set, these
+      webhook URIs will be used instead of the registered webhooks."""
+
+  user_metadata: Optional[dict[str, Any]]
+  """User metadata that will be included in each webhook event
+      notification. Use this to attach custom key-value data to correlate
+      webhook events with your internal systems."""
+
+
+WebhookConfigOrDict = Union[WebhookConfig, WebhookConfigDict]
+
+
 class GenerateVideosConfig(_common.BaseModel):
   """Configuration for generating videos."""
 
@@ -11092,6 +11220,11 @@ class GenerateVideosConfig(_common.BaseModel):
       default=None,
       description="""User specified labels to track billing usage.""",
   )
+  webhook_config: Optional[WebhookConfig] = Field(
+      default=None,
+      description="""Webhook configuration for receiving notifications when the
+      video generation operation completes.""",
+  )
 
 
 class GenerateVideosConfigDict(TypedDict, total=False):
@@ -11163,6 +11296,10 @@ class GenerateVideosConfigDict(TypedDict, total=False):
 
   labels: Optional[dict[str, str]]
   """User specified labels to track billing usage."""
+
+  webhook_config: Optional[WebhookConfigDict]
+  """Webhook configuration for receiving notifications when the
+      video generation operation completes."""
 
 
 GenerateVideosConfigOrDict = Union[
@@ -11685,7 +11822,8 @@ class DistillationHyperParameters(_common.BaseModel):
   batch_size: Optional[int] = Field(
       default=None,
       description="""The batch size hyperparameter for tuning.
-      This is only supported for OSS models in Vertex.""",
+      This is only supported for OSS models in Gemini Enterprise Agent Platform.
+      """,
   )
   learning_rate: Optional[float] = Field(
       default=None,
@@ -11707,7 +11845,8 @@ class DistillationHyperParametersDict(TypedDict, total=False):
 
   batch_size: Optional[int]
   """The batch size hyperparameter for tuning.
-      This is only supported for OSS models in Vertex."""
+      This is only supported for OSS models in Gemini Enterprise Agent Platform.
+      """
 
   learning_rate: Optional[float]
   """The learning rate for tuning. OSS models only."""
@@ -13878,7 +14017,7 @@ class TuningDataset(_common.BaseModel):
   )
   vertex_dataset_resource: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+      description="""The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
   examples: Optional[list[TuningExample]] = Field(
       default=None,
@@ -13893,7 +14032,7 @@ class TuningDatasetDict(TypedDict, total=False):
   """GCS URI of the file containing training dataset in JSONL format."""
 
   vertex_dataset_resource: Optional[str]
-  """The resource name of the Vertex Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
+  """The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
   examples: Optional[list[TuningExampleDict]]
   """Inline examples with simple input/output text."""
@@ -13910,7 +14049,7 @@ class TuningValidationDataset(_common.BaseModel):
   )
   vertex_dataset_resource: Optional[str] = Field(
       default=None,
-      description="""The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
+      description="""The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.""",
   )
 
 
@@ -13920,7 +14059,7 @@ class TuningValidationDatasetDict(TypedDict, total=False):
   """GCS URI of the file containing validation dataset in JSONL format."""
 
   vertex_dataset_resource: Optional[str]
-  """The resource name of the Vertex Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
+  """The resource name of the Gemini Enterprise Agent Platform (previously known as Vertex AI) Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'."""
 
 
 TuningValidationDatasetOrDict = Union[
@@ -13973,11 +14112,11 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   custom_base_model: Optional[str] = Field(
       default=None,
-      description="""Custom base model for tuning. This is only supported for OSS models in Vertex.""",
+      description="""Custom base model for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform.""",
   )
   batch_size: Optional[int] = Field(
       default=None,
-      description="""The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex.""",
+      description="""The batch size hyperparameter for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform.""",
   )
   learning_rate: Optional[float] = Field(
       default=None,
@@ -14053,10 +14192,10 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Tuning mode for tuning."""
 
   custom_base_model: Optional[str]
-  """Custom base model for tuning. This is only supported for OSS models in Vertex."""
+  """Custom base model for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform."""
 
   batch_size: Optional[int]
-  """The batch size hyperparameter for tuning. This is only supported for OSS models in Vertex."""
+  """The batch size hyperparameter for tuning. This is only supported for OSS models in Gemini Enterprise Agent Platform."""
 
   learning_rate: Optional[float]
   """The learning rate for tuning. OSS models only. Mutually exclusive with learning_rate_multiplier."""
@@ -15987,7 +16126,7 @@ class BatchJobSource(_common.BaseModel):
   format: Optional[str] = Field(
       default=None,
       description="""Storage format of the input files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """,
   )
   gcs_uri: Optional[list[str]] = Field(
@@ -16011,6 +16150,11 @@ class BatchJobSource(_common.BaseModel):
       description="""The Gemini Developer API's inlined input data to run batch job.
       """,
   )
+  vertex_dataset_name: Optional[str] = Field(
+      default=None,
+      description="""This field is experimental and may change in future versions. The Vertex AI dataset resource name to use as input. Must be of type multimodal.
+      """,
+  )
 
 
 class BatchJobSourceDict(TypedDict, total=False):
@@ -16018,7 +16162,7 @@ class BatchJobSourceDict(TypedDict, total=False):
 
   format: Optional[str]
   """Storage format of the input files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """
 
   gcs_uri: Optional[list[str]]
@@ -16038,8 +16182,46 @@ class BatchJobSourceDict(TypedDict, total=False):
   """The Gemini Developer API's inlined input data to run batch job.
       """
 
+  vertex_dataset_name: Optional[str]
+  """This field is experimental and may change in future versions. The Vertex AI dataset resource name to use as input. Must be of type multimodal.
+      """
+
 
 BatchJobSourceOrDict = Union[BatchJobSource, BatchJobSourceDict]
+
+
+class VertexMultimodalDatasetDestination(_common.BaseModel):
+  """This class is experimental and may change in future versions.
+
+  The specification for an output Vertex AI multimodal dataset.
+  """
+
+  bigquery_destination: Optional[str] = Field(
+      default=None,
+      description="""The BigQuery destination for the multimodal dataset.""",
+  )
+  display_name: Optional[str] = Field(
+      default=None,
+      description="""The display name of the multimodal dataset.""",
+  )
+
+
+class VertexMultimodalDatasetDestinationDict(TypedDict, total=False):
+  """This class is experimental and may change in future versions.
+
+  The specification for an output Vertex AI multimodal dataset.
+  """
+
+  bigquery_destination: Optional[str]
+  """The BigQuery destination for the multimodal dataset."""
+
+  display_name: Optional[str]
+  """The display name of the multimodal dataset."""
+
+
+VertexMultimodalDatasetDestinationOrDict = Union[
+    VertexMultimodalDatasetDestination, VertexMultimodalDatasetDestinationDict
+]
 
 
 class JobError(_common.BaseModel):
@@ -16181,7 +16363,7 @@ class BatchJobDestination(_common.BaseModel):
   format: Optional[str] = Field(
       default=None,
       description="""Storage format of the output files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """,
   )
   gcs_uri: Optional[str] = Field(
@@ -16219,6 +16401,11 @@ class BatchJobDestination(_common.BaseModel):
       the input requests.
       """,
   )
+  vertex_dataset: Optional[VertexMultimodalDatasetDestination] = Field(
+      default=None,
+      description="""This field is experimental and may change in future versions. The Vertex AI dataset destination.
+      """,
+  )
 
 
 class BatchJobDestinationDict(TypedDict, total=False):
@@ -16226,7 +16413,7 @@ class BatchJobDestinationDict(TypedDict, total=False):
 
   format: Optional[str]
   """Storage format of the output files. Must be one of:
-      'jsonl', 'bigquery'.
+      'jsonl', 'bigquery', 'vertex-dataset'.
       """
 
   gcs_uri: Optional[str]
@@ -16259,6 +16446,10 @@ class BatchJobDestinationDict(TypedDict, total=False):
       the input requests.
       """
 
+  vertex_dataset: Optional[VertexMultimodalDatasetDestinationDict]
+  """This field is experimental and may change in future versions. The Vertex AI dataset destination.
+      """
+
 
 BatchJobDestinationOrDict = Union[BatchJobDestination, BatchJobDestinationDict]
 
@@ -16288,6 +16479,12 @@ class CreateBatchJobConfig(_common.BaseModel):
       "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
       """,
   )
+  webhook_config: Optional[WebhookConfig] = Field(
+      default=None,
+      description="""Webhook configuration for receiving notifications when the batch
+      operation completes.
+      """,
+  )
 
 
 class CreateBatchJobConfigDict(TypedDict, total=False):
@@ -16303,6 +16500,11 @@ class CreateBatchJobConfigDict(TypedDict, total=False):
   dest: Optional[BatchJobDestinationUnionDict]
   """GCS or BigQuery URI prefix for the output predictions. Example:
       "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".
+      """
+
+  webhook_config: Optional[WebhookConfigDict]
+  """Webhook configuration for receiving notifications when the batch
+      operation completes.
       """
 
 
@@ -16441,7 +16643,7 @@ class BatchJob(_common.BaseModel):
   )
   end_time: Optional[datetime.datetime] = Field(
       default=None,
-      description="""The time when the BatchJob was completed. This field is for Vertex AI only.
+      description="""The time when the BatchJob was completed. This field is for Gemini Enterprise Agent Platform only.
       """,
   )
   update_time: Optional[datetime.datetime] = Field(
@@ -16456,7 +16658,7 @@ class BatchJob(_common.BaseModel):
   )
   src: Optional[BatchJobSource] = Field(
       default=None,
-      description="""Configuration for the input data. This field is for Vertex AI only.
+      description="""Configuration for the input data. This field is for Gemini Enterprise Agent Platform only.
       """,
   )
   dest: Optional[BatchJobDestination] = Field(
@@ -16466,7 +16668,7 @@ class BatchJob(_common.BaseModel):
   )
   completion_stats: Optional[CompletionStats] = Field(
       default=None,
-      description="""Statistics on completed and failed prediction instances. This field is for Vertex AI only.
+      description="""Statistics on completed and failed prediction instances. This field is for Gemini Enterprise Agent Platform only.
       """,
   )
 
@@ -16523,7 +16725,7 @@ class BatchJobDict(TypedDict, total=False):
   """Output only. Time when the Job for the first time entered the `JOB_STATE_RUNNING` state."""
 
   end_time: Optional[datetime.datetime]
-  """The time when the BatchJob was completed. This field is for Vertex AI only.
+  """The time when the BatchJob was completed. This field is for Gemini Enterprise Agent Platform only.
       """
 
   update_time: Optional[datetime.datetime]
@@ -16535,7 +16737,7 @@ class BatchJobDict(TypedDict, total=False):
       """
 
   src: Optional[BatchJobSourceDict]
-  """Configuration for the input data. This field is for Vertex AI only.
+  """Configuration for the input data. This field is for Gemini Enterprise Agent Platform only.
       """
 
   dest: Optional[BatchJobDestinationDict]
@@ -16543,7 +16745,7 @@ class BatchJobDict(TypedDict, total=False):
       """
 
   completion_stats: Optional[CompletionStatsDict]
-  """Statistics on completed and failed prediction instances. This field is for Vertex AI only.
+  """Statistics on completed and failed prediction instances. This field is for Gemini Enterprise Agent Platform only.
       """
 
 
@@ -17046,7 +17248,7 @@ class _GetProjectOperationParameters(_common.BaseModel):
 
   operation_id: Optional[str] = Field(
       default=None,
-      description="""The ID of the project-level Vertex operation to get. For example if the operation resource name is
+      description="""The ID of the project-level Gemini Enterprise Agent Platform operation to get. For example if the operation resource name is
       projects/123/locations/us-central1/operations/456, the operation_id is
       456.""",
   )
@@ -17060,7 +17262,7 @@ class _GetProjectOperationParametersDict(TypedDict, total=False):
   """Parameters for the getProjectOperation method."""
 
   operation_id: Optional[str]
-  """The ID of the project-level Vertex operation to get. For example if the operation resource name is
+  """The ID of the project-level Gemini Enterprise Agent Platform operation to get. For example if the operation resource name is
       projects/123/locations/us-central1/operations/456, the operation_id is
       456."""
 
@@ -17074,7 +17276,7 @@ _GetProjectOperationParametersOrDict = Union[
 
 
 class ProjectOperation(_common.BaseModel):
-  """A project-level operation in Vertex."""
+  """A project-level operation in Gemini Enterprise Agent Platform."""
 
   name: Optional[str] = Field(
       default=None,
@@ -17095,7 +17297,7 @@ class ProjectOperation(_common.BaseModel):
 
 
 class ProjectOperationDict(TypedDict, total=False):
-  """A project-level operation in Vertex."""
+  """A project-level operation in Gemini Enterprise Agent Platform."""
 
   name: Optional[str]
   """The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`."""
@@ -18626,93 +18828,69 @@ class HistoryConfigDict(TypedDict, total=False):
 HistoryConfigOrDict = Union[HistoryConfig, HistoryConfigDict]
 
 
-class AutomaticActivityDetection(_common.BaseModel):
-  """Configures automatic detection of activity."""
+class CustomizedAvatar(_common.BaseModel):
+  """Configures the customized avatar to be used in the session."""
 
-  disabled: Optional[bool] = Field(
+  image_mime_type: Optional[str] = Field(
       default=None,
-      description="""If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
+      description="""The mime type of the reference image, e.g., "image/jpeg".""",
   )
-  start_of_speech_sensitivity: Optional[StartSensitivity] = Field(
+  image_data: Optional[bytes] = Field(
       default=None,
-      description="""Determines how likely speech is to be detected.""",
+      description="""The data of the reference image. The dimensions of the reference
+      image should be 9:16 (portrait) with a minimum resolution of 704x1280.""",
   )
-  end_of_speech_sensitivity: Optional[EndSensitivity] = Field(
+
+
+class CustomizedAvatarDict(TypedDict, total=False):
+  """Configures the customized avatar to be used in the session."""
+
+  image_mime_type: Optional[str]
+  """The mime type of the reference image, e.g., "image/jpeg"."""
+
+  image_data: Optional[bytes]
+  """The data of the reference image. The dimensions of the reference
+      image should be 9:16 (portrait) with a minimum resolution of 704x1280."""
+
+
+CustomizedAvatarOrDict = Union[CustomizedAvatar, CustomizedAvatarDict]
+
+
+class AvatarConfig(_common.BaseModel):
+  """Configures the avatar to be used in the session."""
+
+  avatar_name: Optional[str] = Field(
+      default=None, description="""Pre-built avatar id."""
+  )
+  customized_avatar: Optional[CustomizedAvatar] = Field(
       default=None,
-      description="""Determines how likely detected speech is ended.""",
+      description="""Customized avatar appearance with a reference image.""",
   )
-  prefix_padding_ms: Optional[int] = Field(
-      default=None,
-      description="""The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives.""",
+  audio_bitrate_bps: Optional[int] = Field(
+      default=None, description="""The bitrate of compressed audio."""
   )
-  silence_duration_ms: Optional[int] = Field(
-      default=None,
-      description="""The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
+  video_bitrate_bps: Optional[int] = Field(
+      default=None, description="""The bitrate of compressed video output."""
   )
 
 
-class AutomaticActivityDetectionDict(TypedDict, total=False):
-  """Configures automatic detection of activity."""
+class AvatarConfigDict(TypedDict, total=False):
+  """Configures the avatar to be used in the session."""
 
-  disabled: Optional[bool]
-  """If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
+  avatar_name: Optional[str]
+  """Pre-built avatar id."""
 
-  start_of_speech_sensitivity: Optional[StartSensitivity]
-  """Determines how likely speech is to be detected."""
+  customized_avatar: Optional[CustomizedAvatarDict]
+  """Customized avatar appearance with a reference image."""
 
-  end_of_speech_sensitivity: Optional[EndSensitivity]
-  """Determines how likely detected speech is ended."""
+  audio_bitrate_bps: Optional[int]
+  """The bitrate of compressed audio."""
 
-  prefix_padding_ms: Optional[int]
-  """The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives."""
-
-  silence_duration_ms: Optional[int]
-  """The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
+  video_bitrate_bps: Optional[int]
+  """The bitrate of compressed video output."""
 
 
-AutomaticActivityDetectionOrDict = Union[
-    AutomaticActivityDetection, AutomaticActivityDetectionDict
-]
-
-
-class RealtimeInputConfig(_common.BaseModel):
-  """Marks the end of user activity.
-
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
-  """
-
-  automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
-      default=None,
-      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
-  )
-  activity_handling: Optional[ActivityHandling] = Field(
-      default=None, description="""Defines what effect activity has."""
-  )
-  turn_coverage: Optional[TurnCoverage] = Field(
-      default=None,
-      description="""Defines which input is included in the user's turn.""",
-  )
-
-
-class RealtimeInputConfigDict(TypedDict, total=False):
-  """Marks the end of user activity.
-
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
-  """
-
-  automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
-  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
-
-  activity_handling: Optional[ActivityHandling]
-  """Defines what effect activity has."""
-
-  turn_coverage: Optional[TurnCoverage]
-  """Defines which input is included in the user's turn."""
-
-
-RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
+AvatarConfigOrDict = Union[AvatarConfig, AvatarConfigDict]
 
 
 class LiveClientSetup(_common.BaseModel):
@@ -18783,6 +18961,15 @@ class LiveClientSetup(_common.BaseModel):
       default=None,
       description="""Configures the exchange of history between the client and the server.""",
   )
+  avatar_config: Optional[AvatarConfig] = Field(
+      default=None, description="""Configures the avatar model behavior."""
+  )
+  safety_settings: Optional[list[SafetySetting]] = Field(
+      default=None,
+      description="""Safety settings in the request to block unsafe content in the
+      response.
+      """,
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -18841,6 +19028,14 @@ class LiveClientSetupDict(TypedDict, total=False):
 
   history_config: Optional[HistoryConfigDict]
   """Configures the exchange of history between the client and the server."""
+
+  avatar_config: Optional[AvatarConfigDict]
+  """Configures the avatar model behavior."""
+
+  safety_settings: Optional[list[SafetySettingDict]]
+  """Safety settings in the request to block unsafe content in the
+      response.
+      """
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -19083,91 +19278,6 @@ LiveClientToolResponseOrDict = Union[
 ]
 
 
-if _is_pillow_image_imported:
-  BlobImageUnion = Union[PIL_Image, Blob]
-else:
-  BlobImageUnion = Blob  # type: ignore[misc]
-
-
-if _is_pillow_image_imported:
-  BlobImageUnionDict = Union[PIL_Image, Blob, BlobDict]
-else:
-  BlobImageUnionDict = Union[Blob, BlobDict]  # type: ignore[misc]
-
-
-class LiveSendRealtimeInputParameters(_common.BaseModel):
-  """Parameters for sending realtime input to the live API."""
-
-  media: Optional[BlobImageUnion] = Field(
-      default=None, description="""Realtime input to send to the session."""
-  )
-  audio: Optional[Blob] = Field(
-      default=None, description="""The realtime audio input stream."""
-  )
-  audio_stream_end: Optional[bool] = Field(
-      default=None,
-      description="""
-Indicates that the audio stream has ended, e.g. because the microphone was
-turned off.
-
-This should only be sent when automatic activity detection is enabled
-(which is the default).
-
-The client can reopen the stream by sending an audio message.
-""",
-  )
-  video: Optional[BlobImageUnion] = Field(
-      default=None, description="""The realtime video input stream."""
-  )
-  text: Optional[str] = Field(
-      default=None, description="""The realtime text input stream."""
-  )
-  activity_start: Optional[ActivityStart] = Field(
-      default=None, description="""Marks the start of user activity."""
-  )
-  activity_end: Optional[ActivityEnd] = Field(
-      default=None, description="""Marks the end of user activity."""
-  )
-
-
-class LiveSendRealtimeInputParametersDict(TypedDict, total=False):
-  """Parameters for sending realtime input to the live API."""
-
-  media: Optional[BlobImageUnionDict]
-  """Realtime input to send to the session."""
-
-  audio: Optional[BlobDict]
-  """The realtime audio input stream."""
-
-  audio_stream_end: Optional[bool]
-  """
-Indicates that the audio stream has ended, e.g. because the microphone was
-turned off.
-
-This should only be sent when automatic activity detection is enabled
-(which is the default).
-
-The client can reopen the stream by sending an audio message.
-"""
-
-  video: Optional[BlobImageUnionDict]
-  """The realtime video input stream."""
-
-  text: Optional[str]
-  """The realtime text input stream."""
-
-  activity_start: Optional[ActivityStartDict]
-  """Marks the start of user activity."""
-
-  activity_end: Optional[ActivityEndDict]
-  """Marks the end of user activity."""
-
-
-LiveSendRealtimeInputParametersOrDict = Union[
-    LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
-]
-
-
 class LiveClientMessage(_common.BaseModel):
   """Messages sent by the client in the API call."""
 
@@ -19205,6 +19315,95 @@ class LiveClientMessageDict(TypedDict, total=False):
 
 
 LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
+
+
+class AutomaticActivityDetection(_common.BaseModel):
+  """Configures automatic detection of activity."""
+
+  disabled: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
+  )
+  start_of_speech_sensitivity: Optional[StartSensitivity] = Field(
+      default=None,
+      description="""Determines how likely speech is to be detected.""",
+  )
+  end_of_speech_sensitivity: Optional[EndSensitivity] = Field(
+      default=None,
+      description="""Determines how likely detected speech is ended.""",
+  )
+  prefix_padding_ms: Optional[int] = Field(
+      default=None,
+      description="""The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives.""",
+  )
+  silence_duration_ms: Optional[int] = Field(
+      default=None,
+      description="""The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
+  )
+
+
+class AutomaticActivityDetectionDict(TypedDict, total=False):
+  """Configures automatic detection of activity."""
+
+  disabled: Optional[bool]
+  """If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
+
+  start_of_speech_sensitivity: Optional[StartSensitivity]
+  """Determines how likely speech is to be detected."""
+
+  end_of_speech_sensitivity: Optional[EndSensitivity]
+  """Determines how likely detected speech is ended."""
+
+  prefix_padding_ms: Optional[int]
+  """The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives."""
+
+  silence_duration_ms: Optional[int]
+  """The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
+
+
+AutomaticActivityDetectionOrDict = Union[
+    AutomaticActivityDetection, AutomaticActivityDetectionDict
+]
+
+
+class RealtimeInputConfig(_common.BaseModel):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
+      default=None,
+      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
+  )
+  activity_handling: Optional[ActivityHandling] = Field(
+      default=None, description="""Defines what effect activity has."""
+  )
+  turn_coverage: Optional[TurnCoverage] = Field(
+      default=None,
+      description="""Defines which input is included in the user's turn.""",
+  )
+
+
+class RealtimeInputConfigDict(TypedDict, total=False):
+  """Marks the end of user activity.
+
+  This can only be sent if automatic (i.e. server-side) activity detection is
+  disabled.
+  """
+
+  automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
+  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
+
+  activity_handling: Optional[ActivityHandling]
+  """Defines what effect activity has."""
+
+  turn_coverage: Optional[TurnCoverage]
+  """Defines which input is included in the user's turn."""
+
+
+RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
 
 
 class LiveConnectConfig(_common.BaseModel):
@@ -19336,6 +19535,15 @@ If included the server will send SessionResumptionUpdate messages.""",
       default=None,
       description="""Configures the exchange of history between the client and the server.""",
   )
+  avatar_config: Optional[AvatarConfig] = Field(
+      default=None, description="""Configures the avatar model behavior."""
+  )
+  safety_settings: Optional[list[SafetySetting]] = Field(
+      default=None,
+      description="""Safety settings in the request to block unsafe content in the
+      response.
+      """,
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -19446,6 +19654,14 @@ If included the server will send SessionResumptionUpdate messages."""
   history_config: Optional[HistoryConfigDict]
   """Configures the exchange of history between the client and the server."""
 
+  avatar_config: Optional[AvatarConfigDict]
+  """Configures the avatar model behavior."""
+
+  safety_settings: Optional[list[SafetySettingDict]]
+  """Safety settings in the request to block unsafe content in the
+      response.
+      """
+
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
 
@@ -19479,6 +19695,91 @@ class LiveConnectParametersDict(TypedDict, total=False):
 
 LiveConnectParametersOrDict = Union[
     LiveConnectParameters, LiveConnectParametersDict
+]
+
+
+if _is_pillow_image_imported:
+  BlobImageUnion = Union[PIL_Image, Blob]
+else:
+  BlobImageUnion = Blob  # type: ignore[misc]
+
+
+if _is_pillow_image_imported:
+  BlobImageUnionDict = Union[PIL_Image, Blob, BlobDict]
+else:
+  BlobImageUnionDict = Union[Blob, BlobDict]  # type: ignore[misc]
+
+
+class LiveSendRealtimeInputParameters(_common.BaseModel):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnion] = Field(
+      default=None, description="""Realtime input to send to the session."""
+  )
+  audio: Optional[Blob] = Field(
+      default=None, description="""The realtime audio input stream."""
+  )
+  audio_stream_end: Optional[bool] = Field(
+      default=None,
+      description="""
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+""",
+  )
+  video: Optional[BlobImageUnion] = Field(
+      default=None, description="""The realtime video input stream."""
+  )
+  text: Optional[str] = Field(
+      default=None, description="""The realtime text input stream."""
+  )
+  activity_start: Optional[ActivityStart] = Field(
+      default=None, description="""Marks the start of user activity."""
+  )
+  activity_end: Optional[ActivityEnd] = Field(
+      default=None, description="""Marks the end of user activity."""
+  )
+
+
+class LiveSendRealtimeInputParametersDict(TypedDict, total=False):
+  """Parameters for sending realtime input to the live API."""
+
+  media: Optional[BlobImageUnionDict]
+  """Realtime input to send to the session."""
+
+  audio: Optional[BlobDict]
+  """The realtime audio input stream."""
+
+  audio_stream_end: Optional[bool]
+  """
+Indicates that the audio stream has ended, e.g. because the microphone was
+turned off.
+
+This should only be sent when automatic activity detection is enabled
+(which is the default).
+
+The client can reopen the stream by sending an audio message.
+"""
+
+  video: Optional[BlobImageUnionDict]
+  """The realtime video input stream."""
+
+  text: Optional[str]
+  """The realtime text input stream."""
+
+  activity_start: Optional[ActivityStartDict]
+  """Marks the start of user activity."""
+
+  activity_end: Optional[ActivityEndDict]
+  """Marks the end of user activity."""
+
+
+LiveSendRealtimeInputParametersOrDict = Union[
+    LiveSendRealtimeInputParameters, LiveSendRealtimeInputParametersDict
 ]
 
 

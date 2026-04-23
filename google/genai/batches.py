@@ -31,7 +31,6 @@ from ._common import move_value_by_path as movev
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.batches')
 
 
@@ -131,6 +130,15 @@ def _BatchJobDestination_from_vertex(
         getv(from_object, ['bigqueryDestination', 'outputUri']),
     )
 
+  if getv(from_object, ['vertexMultimodalDatasetDestination']) is not None:
+    setv(
+        to_object,
+        ['vertex_dataset'],
+        _VertexMultimodalDatasetDestination_from_vertex(
+            getv(from_object, ['vertexMultimodalDatasetDestination']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -157,17 +165,30 @@ def _BatchJobDestination_to_vertex(
     )
 
   if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_name parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['inlined_responses']) is not None:
     raise ValueError(
-        'inlined_responses parameter is not supported in Vertex AI.'
+        'inlined_responses parameter is not supported in Gemini Enterprise'
+        ' Agent Platform.'
     )
 
   if getv(from_object, ['inlined_embed_content_responses']) is not None:
     raise ValueError(
-        'inlined_embed_content_responses parameter is not supported in'
-        ' Vertex AI.'
+        'inlined_embed_content_responses parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
+    )
+
+  if getv(from_object, ['vertex_dataset']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetDestination'],
+        _VertexMultimodalDatasetDestination_to_vertex(
+            getv(from_object, ['vertex_dataset']), to_object
+        ),
     )
 
   return to_object
@@ -189,6 +210,16 @@ def _BatchJobSource_from_vertex(
         to_object,
         ['bigquery_uri'],
         getv(from_object, ['bigquerySource', 'inputUri']),
+    )
+
+  if (
+      getv(from_object, ['vertexMultimodalDatasetSource', 'datasetName'])
+      is not None
+  ):
+    setv(
+        to_object,
+        ['vertex_dataset_name'],
+        getv(from_object, ['vertexMultimodalDatasetSource', 'datasetName']),
     )
 
   return to_object
@@ -222,6 +253,11 @@ def _BatchJobSource_to_mldev(
         ],
     )
 
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    raise ValueError(
+        'vertex_dataset_name parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -244,11 +280,22 @@ def _BatchJobSource_to_vertex(
     )
 
   if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_name parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['inlined_requests']) is not None:
     raise ValueError(
-        'inlined_requests parameter is not supported in Vertex AI.'
+        'inlined_requests parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
+
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetSource', 'datasetName'],
+        getv(from_object, ['vertex_dataset_name']),
     )
 
   return to_object
@@ -527,6 +574,13 @@ def _CreateBatchJobConfig_to_mldev(
   if getv(from_object, ['dest']) is not None:
     raise ValueError('dest parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['webhook_config']) is not None:
+    setv(
+        parent_object,
+        ['batch', 'webhookConfig'],
+        getv(from_object, ['webhook_config']),
+    )
+
   return to_object
 
 
@@ -546,6 +600,12 @@ def _CreateBatchJobConfig_to_vertex(
         _BatchJobDestination_to_vertex(
             t.t_batch_job_destination(getv(from_object, ['dest'])), to_object
         ),
+    )
+
+  if getv(from_object, ['webhook_config']) is not None:
+    raise ValueError(
+        'webhook_config parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
     )
 
   return to_object
@@ -788,6 +848,14 @@ def _EmbedContentConfig_to_mldev(
 
   if getv(from_object, ['auto_truncate']) is not None:
     raise ValueError('auto_truncate parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['document_ocr']) is not None:
+    raise ValueError('document_ocr parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['audio_track_extraction']) is not None:
+    raise ValueError(
+        'audio_track_extraction parameter is not supported in Gemini API.'
+    )
 
   return to_object
 
@@ -1586,6 +1654,42 @@ def _Tool_to_mldev(
   return to_object
 
 
+def _VertexMultimodalDatasetDestination_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['bigqueryDestination', 'outputUri']) is not None:
+    setv(
+        to_object,
+        ['bigquery_destination'],
+        getv(from_object, ['bigqueryDestination', 'outputUri']),
+    )
+
+  if getv(from_object, ['displayName']) is not None:
+    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
+
+  return to_object
+
+
+def _VertexMultimodalDatasetDestination_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['bigquery_destination']) is not None:
+    setv(
+        to_object,
+        ['bigqueryDestination', 'outputUri'],
+        getv(from_object, ['bigquery_destination']),
+    )
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
+
+  return to_object
+
+
 class Batches(_api_module.BaseModule):
 
   def _create(
@@ -1650,7 +1754,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1710,7 +1829,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1724,8 +1858,9 @@ class Batches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the Vertex AI client. Or
-          "batches/abc" using the Gemini Developer AI client.
+          when project and location are initialized in the Gemini Enterprise
+          Agent Platform client. Or "batches/abc" using the Gemini Developer AI
+          client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -1790,7 +1925,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1860,9 +2010,7 @@ class Batches(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
+    self._api_client.request('post', path, request_dict, http_options)
 
   def _list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
@@ -1914,7 +2062,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _ListBatchJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1999,7 +2162,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _DeleteResourceJob_from_mldev(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2018,10 +2196,11 @@ class Batches(_api_module.BaseModule):
 
     Args:
       model (str): The model to use for the batch job.
-      src: The source of the batch job. Currently Vertex AI supports GCS URI(-s)
-        or BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId". Gemini Developer API supports
-        List of inlined_request, or file name. Example: "files/file_name".
+      src: The source of the batch job. Currently Gemini Enterprise Agent
+        Platform supports GCS URI(-s) or BigQuery URI. Example:
+        "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
+        Gemini Developer API supports List of inlined_request, or file name.
+        Example: "files/file_name".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:
@@ -2098,7 +2277,10 @@ class Batches(_api_module.BaseModule):
     )
 
     if self._api_client.vertexai:
-      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+      raise ValueError(
+          'Gemini Enterprise Agent Platform (previously known as Vertex AI)'
+          ' does not support batches.create_embeddings.'
+      )
     else:
       return self._create_embeddings(model=model, src=src, config=config)
 
@@ -2195,7 +2377,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -2255,7 +2452,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -2269,8 +2481,9 @@ class AsyncBatches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the Vertex AI client. Or
-          "batches/abc" using the Gemini Developer AI client.
+          when project and location are initialized in the Gemini Enterprise
+          Agent Platform client. Or "batches/abc" using the Gemini Developer AI
+          client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -2337,7 +2550,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -2407,7 +2635,7 @@ class AsyncBatches(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = await self._api_client.async_request(
+    await self._api_client.async_request(
         'post', path, request_dict, http_options
     )
 
@@ -2463,7 +2691,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _ListBatchJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2548,7 +2791,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _DeleteResourceJob_from_mldev(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2567,10 +2825,11 @@ class AsyncBatches(_api_module.BaseModule):
 
     Args:
       model (str): The model to use for the batch job.
-      src: The source of the batch job. Currently Vertex AI supports GCS URI(-s)
-        or BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId". Gemini Develop API supports List
-        of inlined_request, or file name. Example: "files/file_name".
+      src: The source of the batch job. Currently Gemini Enterprise Agent
+        Platform supports GCS URI(-s) or BigQuery URI. Example:
+        "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
+        Gemini Develop API supports List of inlined_request, or file name.
+        Example: "files/file_name".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:
@@ -2653,7 +2912,10 @@ class AsyncBatches(_api_module.BaseModule):
       http_options = parameter_model.config.http_options
 
     if self._api_client.vertexai:
-      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+      raise ValueError(
+          'Gemini Enterprise Agent Platform (previously known as Vertex AI)'
+          ' does not support batches.create_embeddings.'
+      )
     else:
       return await self._create_embeddings(model=model, src=src, config=config)
 

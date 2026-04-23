@@ -33,7 +33,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.models')
 
 
@@ -767,6 +766,14 @@ def _EmbedContentConfig_to_mldev(
   if getv(from_object, ['auto_truncate']) is not None:
     raise ValueError('auto_truncate parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['document_ocr']) is not None:
+    raise ValueError('document_ocr parameter is not supported in Gemini API.')
+
+  if getv(from_object, ['audio_track_extraction']) is not None:
+    raise ValueError(
+        'audio_track_extraction parameter is not supported in Gemini API.'
+    )
+
   return to_object
 
 
@@ -789,7 +796,11 @@ def _EmbedContentConfig_to_vertex(
       )
   elif discriminator == 'EMBED_CONTENT':
     if getv(from_object, ['task_type']) is not None:
-      setv(parent_object, ['taskType'], getv(from_object, ['task_type']))
+      setv(
+          parent_object,
+          ['embedContentConfig', 'taskType'],
+          getv(from_object, ['task_type']),
+      )
 
   discriminator = getv(root_object, ['embedding_api_type'])
   if discriminator is None:
@@ -801,7 +812,11 @@ def _EmbedContentConfig_to_vertex(
       )
   elif discriminator == 'EMBED_CONTENT':
     if getv(from_object, ['title']) is not None:
-      setv(parent_object, ['title'], getv(from_object, ['title']))
+      setv(
+          parent_object,
+          ['embedContentConfig', 'title'],
+          getv(from_object, ['title']),
+      )
 
   discriminator = getv(root_object, ['embedding_api_type'])
   if discriminator is None:
@@ -817,7 +832,7 @@ def _EmbedContentConfig_to_vertex(
     if getv(from_object, ['output_dimensionality']) is not None:
       setv(
           parent_object,
-          ['outputDimensionality'],
+          ['embedContentConfig', 'outputDimensionality'],
           getv(from_object, ['output_dimensionality']),
       )
 
@@ -845,7 +860,31 @@ def _EmbedContentConfig_to_vertex(
   elif discriminator == 'EMBED_CONTENT':
     if getv(from_object, ['auto_truncate']) is not None:
       setv(
-          parent_object, ['autoTruncate'], getv(from_object, ['auto_truncate'])
+          parent_object,
+          ['embedContentConfig', 'autoTruncate'],
+          getv(from_object, ['auto_truncate']),
+      )
+
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['document_ocr']) is not None:
+      setv(
+          parent_object,
+          ['embedContentConfig', 'documentOcr'],
+          getv(from_object, ['document_ocr']),
+      )
+
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'EMBED_CONTENT':
+    if getv(from_object, ['audio_track_extraction']) is not None:
+      setv(
+          parent_object,
+          ['embedContentConfig', 'audioTrackExtraction'],
+          getv(from_object, ['audio_track_extraction']),
       )
 
   return to_object
@@ -1129,7 +1168,10 @@ def _FunctionDeclaration_to_vertex(
     )
 
   if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'behavior parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -1495,7 +1537,8 @@ def _GenerateContentConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+        'enable_enhanced_civic_answers parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   if getv(from_object, ['model_armor_config']) is not None:
@@ -2115,6 +2158,11 @@ def _GenerateVideosConfig_to_mldev(
   if getv(from_object, ['labels']) is not None:
     raise ValueError('labels parameter is not supported in Gemini API.')
 
+  if getv(from_object, ['webhook_config']) is not None:
+    setv(
+        parent_object, ['webhookConfig'], getv(from_object, ['webhook_config'])
+    )
+
   return to_object
 
 
@@ -2240,6 +2288,12 @@ def _GenerateVideosConfig_to_vertex(
 
   if getv(from_object, ['labels']) is not None:
     setv(parent_object, ['labels'], getv(from_object, ['labels']))
+
+  if getv(from_object, ['webhook_config']) is not None:
+    raise ValueError(
+        'webhook_config parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -2776,7 +2830,8 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+        'enable_enhanced_civic_answers parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -3479,13 +3534,22 @@ def _Part_to_vertex(
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
   if getv(from_object, ['tool_call']) is not None:
-    raise ValueError('tool_call parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_call parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['tool_response']) is not None:
-    raise ValueError('tool_response parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'tool_response parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['part_metadata']) is not None:
-    raise ValueError('part_metadata parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'part_metadata parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -3739,11 +3803,15 @@ def _ReplicatedVoiceConfig_to_vertex(
     )
 
   if getv(from_object, ['consent_audio']) is not None:
-    raise ValueError('consent_audio parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'consent_audio parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['voice_consent_signature']) is not None:
     raise ValueError(
-        'voice_consent_signature parameter is not supported in Vertex AI.'
+        'voice_consent_signature parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   return to_object
@@ -4057,7 +4125,7 @@ def _ToolConfig_to_vertex(
   if getv(from_object, ['include_server_side_tool_invocations']) is not None:
     raise ValueError(
         'include_server_side_tool_invocations parameter is not supported in'
-        ' Vertex AI.'
+        ' Gemini Enterprise Agent Platform.'
     )
 
   return to_object
@@ -4149,7 +4217,10 @@ def _Tool_to_vertex(
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
-    raise ValueError('file_search parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_search parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['google_search']) is not None:
     setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
@@ -4195,7 +4266,10 @@ def _Tool_to_vertex(
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['mcp_servers']) is not None:
-    raise ValueError('mcp_servers parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'mcp_servers parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -4704,7 +4778,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.GenerateContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -4790,7 +4879,22 @@ class Models(_api_module.BaseModule):
         )
 
       return_value = types.GenerateContentResponse._from_response(
-          response=response_dict, kwargs=parameter_model.model_dump()
+          response=response_dict,
+          kwargs={
+              'config': {
+                  'response_schema': getattr(
+                      parameter_model.config, 'response_schema', None
+                  ),
+                  'response_json_schema': getattr(
+                      parameter_model.config, 'response_json_schema', None
+                  ),
+                  'include_all_fields': getattr(
+                      parameter_model.config, 'include_all_fields', None
+                  ),
+              }
+          }
+          if getattr(parameter_model, 'config', None)
+          else {},
       )
       return_value.sdk_http_response = types.HttpResponse(
           headers=response.headers
@@ -4896,7 +5000,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.EmbedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -4972,7 +5091,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.GenerateImagesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -4999,7 +5133,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _EditImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5038,7 +5175,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.EditImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -5065,7 +5217,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5104,7 +5259,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.UpscaleImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -5121,38 +5291,20 @@ class Models(_api_module.BaseModule):
   ) -> types.RecontextImageResponse:
     """Recontextualizes an image.
 
-    There are two types of recontextualization currently supported:
-    1) Imagen Product Recontext - Generate images of products in new scenes
-       and contexts.
-    2) Virtual Try-On: Generate images of persons modeling fashion products.
+    There is one type of recontextualization currently supported:
+    1) Virtual Try-On: Generate images of persons modeling fashion products.
 
     Args:
       model (str): The model to use.
       source (RecontextImageSource): An object containing the source inputs
         (prompt, person_image, product_images) for image recontext. prompt is
-        optional for product recontext and disallowed for virtual try-on.
-        person_image is required for virtual try-on, disallowed for product
-        recontext. product_images is required for both product recontext and
-        virtual try-on. Only one product image is supported for virtual try-on,
-        and up to 3 product images (different angles of the same product) are
-        supported for product recontext.
+        behind an allowlist. person_image is required. product_images is
+        required. Only one product image is supported currently.
       config (RecontextImageConfig): Configuration for recontextualization.
 
     Usage:
 
       ```
-      product_recontext_response = client.models.recontext_image(
-          model="imagen-product-recontext-preview-06-30",
-          source=types.RecontextImageSource(
-              prompt="In a modern kitchen setting.",
-              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
-          ),
-          config=types.RecontextImageConfig(
-              number_of_images=1,
-          ),
-      )
-      image = product_recontext_response.generated_images[0].image
-
       virtual_try_on_response = client.models.recontext_image(
           model="virtual-try-on-001",
           source=types.RecontextImageSource(
@@ -5175,7 +5327,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _RecontextImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5214,7 +5369,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.RecontextImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -5260,7 +5430,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _SegmentImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5299,7 +5472,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.SegmentImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -5360,7 +5548,22 @@ class Models(_api_module.BaseModule):
       response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -5429,7 +5632,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.ListModelsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -5497,7 +5715,22 @@ class Models(_api_module.BaseModule):
       response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -5567,7 +5800,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.DeleteModelResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -5662,7 +5910,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.CountTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -5708,7 +5971,10 @@ class Models(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -5747,7 +6013,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.ComputeTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -5829,7 +6110,22 @@ class Models(_api_module.BaseModule):
       )
 
     return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -5864,9 +6160,8 @@ class Models(_api_module.BaseModule):
           },
       )
 
-      # Multimodal embeddings are only supported for the Vertex AI API.
       multimodal_embeddings = client.models.embed_content(
-          model='gemini-embedding-2-exp-11-2025',
+          model='gemini-embedding-2-preview',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -5879,6 +6174,8 @@ class Models(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
+      if 'gemini-embedding-2' in model:
+        contents = t.t_contents(contents)  # type: ignore[assignment]
       return self._embed_content(model=model, contents=contents, config=config)
 
     if t.t_is_vertex_embed_content_model(model):
@@ -5913,7 +6210,8 @@ class Models(_api_module.BaseModule):
   ) -> types.GenerateContentResponse:
     """Makes an API request to generate content using a model.
 
-    For the `model` parameter, supported formats for Vertex AI API include:
+    For the `model` parameter, supported formats for Gemini Enterprise Agent
+    Platform API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
     - The full resource name starts with 'projects/', for example:
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
@@ -6074,7 +6372,8 @@ class Models(_api_module.BaseModule):
   ) -> Iterator[types.GenerateContentResponse]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
 
-    For the `model` parameter, supported formats for Vertex AI API include:
+    For the `model` parameter, supported formats for Gemini Enterprise Agent
+    Platform API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
     - The full resource name starts with 'projects/', for example:
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
@@ -6663,7 +6962,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.GenerateContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -6752,7 +7066,22 @@ class AsyncModels(_api_module.BaseModule):
           )
 
         return_value = types.GenerateContentResponse._from_response(
-            response=response_dict, kwargs=parameter_model.model_dump()
+            response=response_dict,
+            kwargs={
+                'config': {
+                    'response_schema': getattr(
+                        parameter_model.config, 'response_schema', None
+                    ),
+                    'response_json_schema': getattr(
+                        parameter_model.config, 'response_json_schema', None
+                    ),
+                    'include_all_fields': getattr(
+                        parameter_model.config, 'include_all_fields', None
+                    ),
+                }
+            }
+            if getattr(parameter_model, 'config', None)
+            else {},
         )
         return_value.sdk_http_response = types.HttpResponse(
             headers=response.headers
@@ -6860,7 +7189,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.EmbedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -6936,7 +7280,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.GenerateImagesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -6963,7 +7322,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _EditImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7002,7 +7364,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.EditImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -7029,7 +7406,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7068,7 +7448,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.UpscaleImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -7085,39 +7480,21 @@ class AsyncModels(_api_module.BaseModule):
   ) -> types.RecontextImageResponse:
     """Recontextualizes an image.
 
-    There are two types of recontextualization currently supported:
-    1) Imagen Product Recontext - Generate images of products in new scenes
-       and contexts.
-    2) Virtual Try-On: Generate images of persons modeling fashion products.
+    There is one type of recontextualization currently supported:
+    1) Virtual Try-On: Generate images of persons modeling fashion products.
 
     Args:
       model (str): The model to use.
       source (RecontextImageSource): An object containing the source inputs
         (prompt, person_image, product_images) for image recontext. prompt is
-        optional for product recontext and disallowed for virtual try-on.
-        person_image is required for virtual try-on, disallowed for product
-        recontext. product_images is required for both product recontext and
-        virtual try-on. Only one product image is supported for virtual try-on,
-        and up to 3 product images (different angles of the same product) are
-        supported for product recontext.
+        behind an allowlist. person_image is required. product_images is
+        required. Only one product image is supported currently.
       config (RecontextImageConfig): Configuration for recontextualization.
 
     Usage:
 
       ```
-      product_recontext_response = client.models.recontext_image(
-          model="imagen-product-recontext-preview-06-30",
-          source=types.RecontextImageSource(
-              prompt="In a modern kitchen setting.",
-              product_images=[types.ProductImage.from_file(IMAGE_FILE_PATH)],
-          ),
-          config=types.RecontextImageConfig(
-              number_of_images=1,
-          ),
-      )
-      image = product_recontext_response.generated_images[0].image
-
-      virtual_try_on_response = client.models.recontext_image(
+      virtual_try_on_response = await client.aio.models.recontext_image(
           model="virtual-try-on-001",
           source=types.RecontextImageSource(
               person_image=types.Image.from_file(IMAGE1_FILE_PATH),
@@ -7139,7 +7516,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _RecontextImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7178,7 +7558,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.RecontextImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -7227,7 +7622,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _SegmentImageParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7266,7 +7664,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.SegmentImageResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -7329,7 +7742,22 @@ class AsyncModels(_api_module.BaseModule):
       response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -7400,7 +7828,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.ListModelsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -7468,7 +7911,22 @@ class AsyncModels(_api_module.BaseModule):
       response_dict = _Model_from_mldev(response_dict, None, parameter_model)
 
     return_value = types.Model._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -7538,7 +7996,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.DeleteModelResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -7633,7 +8106,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.CountTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -7678,7 +8166,10 @@ class AsyncModels(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in the Gemini Enterprise Agent'
+          ' Platform (previously known as Vertex AI) client.'
+      )
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
@@ -7717,7 +8208,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.ComputeTokensResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -7799,7 +8305,22 @@ class AsyncModels(_api_module.BaseModule):
       )
 
     return_value = types.GenerateVideosOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -7943,7 +8464,8 @@ class AsyncModels(_api_module.BaseModule):
   ) -> AsyncIterator[types.GenerateContentResponse]:
     """Makes an API request to generate content using a model and yields the model's response in chunks.
 
-    For the `model` parameter, supported formats for Vertex AI API include:
+    For the `model` parameter, supported formats for Gemini Enterprise Agent
+    Platform API include:
     - The Gemini model ID, for example: 'gemini-2.0-flash'
     - The full resource name starts with 'projects/', for example:
       'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
@@ -8508,9 +9030,8 @@ class AsyncModels(_api_module.BaseModule):
           },
       )
 
-      # Multimodal embeddings are only supported for the Vertex AI API.
       multimodal_embeddings = await client.aio.models.embed_content(
-          model='gemini-embedding-2-exp-11-2025',
+          model='gemini-embedding-2-preview',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -8523,6 +9044,8 @@ class AsyncModels(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
+      if 'gemini-embedding-2' in model:
+        contents = t.t_contents(contents)  # type: ignore[assignment]
       return await self._embed_content(
           model=model, contents=contents, config=config
       )

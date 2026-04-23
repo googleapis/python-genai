@@ -45,6 +45,9 @@ class AudioContent(BaseModel):
             "audio/mpeg",
             "audio/m4a",
             "audio/l16",
+            "audio/opus",
+            "audio/alaw",
+            "audio/mulaw",
         ]
     ] = None
     """The mime type of the audio."""

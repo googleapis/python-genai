@@ -27,6 +27,24 @@ test_table: list[pytest_helper.TestTableItem] = [
             contents='The quick brown fox jumps over the lazy dog.',
         ),
     ),
+    pytest_helper.TestTableItem(
+        name='test_generate_content_with_config_schema',
+        parameters=genai_types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents='Return a summary of the passage.',
+            config={'response_mime_type': 'application/json', 'response_schema': {'type': 'OBJECT', 'properties': {'summary': {'type': 'STRING'}}}},
+        ),
+        ignore_keys=['parsed'],
+    ),
+    pytest_helper.TestTableItem(
+        name='test_generate_content_with_config_json_schema',
+        parameters=genai_types._GenerateContentParameters(
+            model='gemini-2.5-flash',
+            contents='Return a JSON summary.',
+            config={'response_mime_type': 'application/json', 'response_json_schema': {'type': 'object', 'properties': {'summary': {'type': 'string'}}}},
+        ),
+        ignore_keys=['parsed'],
+    ),
 ]
 
 pytestmark = pytest_helper.setup(
