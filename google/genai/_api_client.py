@@ -2122,10 +2122,11 @@ class BaseApiClient:
     """Closes the API async client."""
     # Let users close the custom client explicitly by themselves. Otherwise,
     # close the client when the object is garbage collected.
-    if not self._http_options.httpx_async_client:
+    http_options = getattr(self, '_http_options', None)
+    if http_options and not http_options.httpx_async_client and getattr(self, '_async_httpx_client', None):
       await self._async_httpx_client.aclose()  # type: ignore[union-attr]
-    if self._aiohttp_session and not self._http_options.aiohttp_client:
-      await self._aiohttp_session.close()
+    if getattr(self, '_aiohttp_session', None) and http_options and not http_options.aiohttp_client:
+      await self._aiohttp_session.close()  # type: ignore[union-attr] 
 
   def __del__(self) -> None:
     """Closes the API client when the object is garbage collected.
