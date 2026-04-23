@@ -2113,19 +2113,51 @@ class BaseApiClient:
     """Closes the API client."""
     # Let users close the custom client explicitly by themselves. Otherwise,
     # close the client when the object is garbage collected.
-    if not self._http_options.httpx_client and self._httpx_client:
-      self._httpx_client.close()
-    if self._authorized_session:
-      self._authorized_session.close()  # type: ignore[no-untyped-call]
+    # Guard against partial initialization if __init__ failed.
+
+    try:
+      authorized_session = self._authorized_session
+    except AttributeError:
+      authorized_session = None
+    if authorized_session:
+      authorized_session.close()  # type: ignore[no-untyped-call]
+
+    try:
+      options = self._http_options
+    except AttributeError:
+      return
+
+    try:
+      client = self._httpx_client
+    except AttributeError:
+      client = None
+    if client and not options.httpx_client:
+      client.close()
 
   async def aclose(self) -> None:
     """Closes the API async client."""
     # Let users close the custom client explicitly by themselves. Otherwise,
     # close the client when the object is garbage collected.
-    if not self._http_options.httpx_async_client:
-      await self._async_httpx_client.aclose()  # type: ignore[union-attr]
-    if self._aiohttp_session and not self._http_options.aiohttp_client:
-      await self._aiohttp_session.close()
+    # Guard against partial initialization if __init__ failed.
+
+    try:
+      options = self._http_options
+    except AttributeError:
+      return
+
+    try:
+      async_http_client = self._async_httpx_client
+    except AttributeError:
+      async_http_client = None
+    if async_http_client and not options.httpx_async_client:
+      await async_http_client.aclose()
+
+    try:
+      aio_http_session = self._aiohttp_session
+    except AttributeError:
+      aio_http_session = None
+    if aio_http_session and not options.aiohttp_client:
+      await aio_http_session.close()
 
   def __del__(self) -> None:
     """Closes the API client when the object is garbage collected.
@@ -2135,8 +2167,7 @@ class BaseApiClient:
     """
 
     try:
-      if not self._http_options.httpx_client:
-        self.close()
+      self.close()
     except Exception:  # pylint: disable=broad-except
       pass
 
