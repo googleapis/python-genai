@@ -21,6 +21,7 @@ The BaseApiClient is intended to be a private module and is subject to change.
 
 import asyncio
 from collections.abc import Generator
+import contextlib
 import copy
 from dataclasses import dataclass
 import inspect
@@ -911,6 +912,16 @@ class BaseApiClient:
 
     return self._aiohttp_session  # type: ignore[return-value]
 
+  async def _reset_aiohttp_session(self) -> None:
+    """Closes the internal aiohttp session so a fresh one can be created."""
+    if self._aiohttp_session is None or self._http_options.aiohttp_client:
+      self._aiohttp_session = None
+      return
+
+    with contextlib.suppress(Exception):
+      await self._aiohttp_session.close()
+    self._aiohttp_session = None
+
   @staticmethod
   def _ensure_httpx_ssl_ctx(
       options: HttpOptions,
@@ -1409,6 +1420,9 @@ class BaseApiClient:
           self._async_client_session_request_args = (
               self._ensure_aiohttp_ssl_ctx(self._http_options)
           )
+          # Reset the current session before retrying so the mTLS path does not
+          # reuse a broken AsyncAuthorizedSession or leak an unclosed one.
+          await self._reset_aiohttp_session()
           # Instantiate a new session with the updated SSL context.
           self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
           response = await self._aiohttp_session.request(  # type: ignore[union-attr]
@@ -1486,6 +1500,9 @@ class BaseApiClient:
           self._async_client_session_request_args = (
               self._ensure_aiohttp_ssl_ctx(self._http_options)
           )
+          # Reset the current session before retrying so the mTLS path does not
+          # reuse a broken AsyncAuthorizedSession or leak an unclosed one.
+          await self._reset_aiohttp_session()
           # Instantiate a new session with the updated SSL context.
           self._aiohttp_session = await self._get_aiohttp_session()  # type: ignore[assignment]
           response = await self._aiohttp_session.request(  # type: ignore[union-attr]
