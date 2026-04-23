@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+from typing import Dict
 from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["FileCitationParam"]
@@ -27,6 +28,9 @@ class FileCitationParam(TypedDict, total=False):
 
     type: Required[Literal["file_citation"]]
 
+    custom_metadata: Dict[str, object]
+    """User provided metadata about the retrieved context."""
+
     document_uri: str
     """The URI of the file."""
 
@@ -35,6 +39,12 @@ class FileCitationParam(TypedDict, total=False):
 
     file_name: str
     """The name of the file."""
+
+    media_id: str
+    """Media ID in-case of image citations, if applicable."""
+
+    page_number: int
+    """Page number of the cited document, if applicable."""
 
     source: str
     """Source attributed for a portion of the text."""
