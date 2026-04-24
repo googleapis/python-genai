@@ -1327,7 +1327,6 @@ def t_metrics(
     metrics_payload = []
 
     for metric in metrics:
-
       if isinstance(metric, dict):
         try:
           metric = types.UnifiedMetric.model_validate(metric)
