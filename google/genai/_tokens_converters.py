@@ -171,7 +171,9 @@ def _CreateAuthTokenParameters_to_vertex(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'config parameter is not supported in Gemini Enterprise Agent Platform.'
+    )
 
   return to_object
 

@@ -51,8 +51,28 @@ def mcp_to_gemini_tool(tool: McpTool) -> types.Tool:
   )
 
 
-def mcp_to_gemini_tools(tools: list[McpTool]) -> list[types.Tool]:
+def agent_platform_to_gemini_tool(tool: McpTool) -> types.Tool:
+  """Translates an Agent Platform tool to a Google GenAI tool."""
+  return types.Tool(
+      function_declarations=[
+          {
+              "name": tool.name,
+              "description": tool.description,
+              "parameters_json_schema": _filter_to_supported_schema(
+                  tool.inputSchema
+              ),
+          }
+      ]
+  )
+
+
+def mcp_to_gemini_tools(
+    tools: list[McpTool],
+    is_agent_platform: bool = False,
+) -> list[types.Tool]:
   """Translates a list of MCP tools to a list of Google GenAI tools."""
+  if is_agent_platform:
+    return [agent_platform_to_gemini_tool(tool) for tool in tools]
   return [mcp_to_gemini_tool(tool) for tool in tools]
 
 
@@ -95,23 +115,34 @@ def _filter_to_supported_schema(
 ) -> _common.StringDict:
   """Filters the schema to only include fields that are supported by JSONSchema."""
   supported_fields: set[str] = set(types.JSONSchema.model_fields.keys())
-  schema_field_names: tuple[str] = ("items",)  # 'additional_properties' to come
-  list_schema_field_names: tuple[str] = (
-      "any_of",  # 'one_of', 'all_of', 'not' to come
+
+  supported_fields.update([
+      "additionalProperties", "anyOf", "oneOf", "$defs", "$ref"
+  ])
+
+  schema_field_names = (
+      "items",
+      "additionalProperties",
+      "additional_properties",
   )
-  dict_schema_field_names: tuple[str] = ("properties",)  # 'defs' to come
+  list_schema_field_names = ("anyOf", "any_of", "oneOf", "one_of")
+  dict_schema_field_names = ("properties", "defs", "$defs")
+
+  filtered_schema: dict[str, Any] = {}
   for field_name, field_value in schema.items():
     if field_name in schema_field_names:
-      schema[field_name] = _filter_to_supported_schema(field_value)
+      filtered_schema[field_name] = _filter_to_supported_schema(field_value)
     elif field_name in list_schema_field_names:
-      schema[field_name] = [
+      filtered_schema[field_name] = [
           _filter_to_supported_schema(value) for value in field_value
       ]
     elif field_name in dict_schema_field_names:
-      schema[field_name] = {
+      filtered_schema[field_name] = {
           key: _filter_to_supported_schema(value)
           for key, value in field_value.items()
       }
-  return {
-      key: value for key, value in schema.items() if key in supported_fields
-  }
+    elif field_name in supported_fields:
+      filtered_schema[field_name] = field_value
+
+  return filtered_schema
+

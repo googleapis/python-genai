@@ -57,7 +57,6 @@ __all__ = [
     "DeltaMCPServerToolResult",
     "DeltaMCPServerToolResultResultFunctionResultSubcontentList",
     "DeltaFileSearchResult",
-    "DeltaFileSearchResultResult",
     "DeltaGoogleMapsResult",
     "DeltaTextAnnotation",
 ]
@@ -345,18 +344,11 @@ class DeltaMCPServerToolResult(BaseModel):
     """A signature hash for backend validation."""
 
 
-class DeltaFileSearchResultResult(BaseModel):
-    """The result of the File Search."""
-
-    custom_metadata: Optional[List[object]] = None
-    """User provided metadata about the FileSearchResult."""
-
-
 class DeltaFileSearchResult(BaseModel):
     call_id: str
     """Required. ID to match the ID from the function call block."""
 
-    result: List[DeltaFileSearchResultResult]
+    result: List[object]
 
     type: Literal["file_search_result"]
 

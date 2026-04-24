@@ -107,7 +107,9 @@ cyberpunk_style_ref_image = types.StyleReferenceImage(
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_edit_mask_inpaint_insert',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._EditImageParameters(
             model=CAPABILITY_MODEL_NAME,
             prompt='Sunlight and clear weather',
@@ -127,13 +129,15 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_compression_quality=80,
                 base_steps=32,
                 add_watermark=False,
-                labels={'imagen_label_key': 'edit_image'}
+                labels={'imagen_label_key': 'edit_image'},
             ),
         ),
     ),
     pytest_helper.TestTableItem(
         name='test_edit_mask_inpaint_insert_user_provided',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._EditImageParameters(
             model=CAPABILITY_MODEL_NAME,
             prompt='Change the colors',
@@ -148,7 +152,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_edit_control_user_provided',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._EditImageParameters(
             model=CAPABILITY_MODEL_NAME,
             prompt='Change the colors aligning with the scribble map [2]',
@@ -162,7 +168,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_edit_style_reference_image_customization',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._EditImageParameters(
             model=CAPABILITY_MODEL_NAME,
             prompt=(
@@ -179,7 +187,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_edit_subject_image_customization',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._EditImageParameters(
             model=CAPABILITY_MODEL_NAME,
             prompt=(
@@ -196,7 +206,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_edit_content_image_ingredients',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._EditImageParameters(
             model='imagen-4.0-ingredients-preview',
             prompt=(
