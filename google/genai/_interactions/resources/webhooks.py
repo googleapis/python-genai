@@ -77,13 +77,11 @@ class WebhooksResource(SyncAPIResource):
             Union[
                 Literal[
                     "batch.succeeded",
-                    "batch.cancelled",
                     "batch.expired",
                     "batch.failed",
                     "interaction.requires_action",
                     "interaction.completed",
                     "interaction.failed",
-                    "interaction.cancelled",
                     "video.generated",
                 ],
                 str,
@@ -91,7 +89,6 @@ class WebhooksResource(SyncAPIResource):
         ],
         uri: str,
         name: str | Omit = omit,
-        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -108,20 +105,16 @@ class WebhooksResource(SyncAPIResource):
         The events that the webhook is subscribed to. Available events:
 
               - batch.succeeded
-              - batch.cancelled
               - batch.expired
               - batch.failed
               - interaction.requires_action
               - interaction.completed
               - interaction.failed
-              - interaction.cancelled
               - video.generated
 
           uri: Required. The URI to which webhook events will be sent.
 
           name: Optional. The user-provided name of the webhook.
-
-          state: The state of the webhook.
 
           extra_headers: Send extra headers
 
@@ -142,7 +135,6 @@ class WebhooksResource(SyncAPIResource):
                     "subscribed_events": subscribed_events,
                     "uri": uri,
                     "name": name,
-                    "state": state,
                 },
                 webhook_create_params.WebhookCreateParams,
             ),
@@ -157,26 +149,25 @@ class WebhooksResource(SyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        update_mask: str | Omit = omit,
+        name: str | Omit = omit,
+        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         subscribed_events: List[
             Union[
                 Literal[
                     "batch.succeeded",
-                    "batch.cancelled",
                     "batch.expired",
                     "batch.failed",
                     "interaction.requires_action",
                     "interaction.completed",
                     "interaction.failed",
-                    "interaction.cancelled",
                     "video.generated",
                 ],
                 str,
             ]
-        ],
-        uri: str,
-        update_mask: str | Omit = omit,
-        name: str | Omit = omit,
-        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
+        ]
+        | Omit = omit,
+        uri: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -187,28 +178,26 @@ class WebhooksResource(SyncAPIResource):
         """Updates an existing Webhook.
 
         Args:
-          subscribed_events:
-              Required.
+          update_mask: Optional.
 
-        The events that the webhook is subscribed to. Available events:
+        The list of fields to update.
+
+          name: Optional. The user-provided name of the webhook.
+
+          state: Optional. The state of the webhook.
+
+          subscribed_events:
+              Optional. The events that the webhook is subscribed to. Available events:
 
               - batch.succeeded
-              - batch.cancelled
               - batch.expired
               - batch.failed
               - interaction.requires_action
               - interaction.completed
               - interaction.failed
-              - interaction.cancelled
               - video.generated
 
-          uri: Required. The URI to which webhook events will be sent.
-
-          update_mask: Optional. The list of fields to update.
-
-          name: Optional. The user-provided name of the webhook.
-
-          state: The state of the webhook.
+          uri: Optional. The URI to which webhook events will be sent.
 
           extra_headers: Send extra headers
 
@@ -228,10 +217,10 @@ class WebhooksResource(SyncAPIResource):
             path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
             body=maybe_transform(
                 {
-                    "subscribed_events": subscribed_events,
-                    "uri": uri,
                     "name": name,
                     "state": state,
+                    "subscribed_events": subscribed_events,
+                    "uri": uri,
                 },
                 webhook_update_params.WebhookUpdateParams,
             ),
@@ -493,13 +482,11 @@ class AsyncWebhooksResource(AsyncAPIResource):
             Union[
                 Literal[
                     "batch.succeeded",
-                    "batch.cancelled",
                     "batch.expired",
                     "batch.failed",
                     "interaction.requires_action",
                     "interaction.completed",
                     "interaction.failed",
-                    "interaction.cancelled",
                     "video.generated",
                 ],
                 str,
@@ -507,7 +494,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
         ],
         uri: str,
         name: str | Omit = omit,
-        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -524,20 +510,16 @@ class AsyncWebhooksResource(AsyncAPIResource):
         The events that the webhook is subscribed to. Available events:
 
               - batch.succeeded
-              - batch.cancelled
               - batch.expired
               - batch.failed
               - interaction.requires_action
               - interaction.completed
               - interaction.failed
-              - interaction.cancelled
               - video.generated
 
           uri: Required. The URI to which webhook events will be sent.
 
           name: Optional. The user-provided name of the webhook.
-
-          state: The state of the webhook.
 
           extra_headers: Send extra headers
 
@@ -558,7 +540,6 @@ class AsyncWebhooksResource(AsyncAPIResource):
                     "subscribed_events": subscribed_events,
                     "uri": uri,
                     "name": name,
-                    "state": state,
                 },
                 webhook_create_params.WebhookCreateParams,
             ),
@@ -573,26 +554,25 @@ class AsyncWebhooksResource(AsyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
+        update_mask: str | Omit = omit,
+        name: str | Omit = omit,
+        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
         subscribed_events: List[
             Union[
                 Literal[
                     "batch.succeeded",
-                    "batch.cancelled",
                     "batch.expired",
                     "batch.failed",
                     "interaction.requires_action",
                     "interaction.completed",
                     "interaction.failed",
-                    "interaction.cancelled",
                     "video.generated",
                 ],
                 str,
             ]
-        ],
-        uri: str,
-        update_mask: str | Omit = omit,
-        name: str | Omit = omit,
-        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
+        ]
+        | Omit = omit,
+        uri: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -603,28 +583,26 @@ class AsyncWebhooksResource(AsyncAPIResource):
         """Updates an existing Webhook.
 
         Args:
-          subscribed_events:
-              Required.
+          update_mask: Optional.
 
-        The events that the webhook is subscribed to. Available events:
+        The list of fields to update.
+
+          name: Optional. The user-provided name of the webhook.
+
+          state: Optional. The state of the webhook.
+
+          subscribed_events:
+              Optional. The events that the webhook is subscribed to. Available events:
 
               - batch.succeeded
-              - batch.cancelled
               - batch.expired
               - batch.failed
               - interaction.requires_action
               - interaction.completed
               - interaction.failed
-              - interaction.cancelled
               - video.generated
 
-          uri: Required. The URI to which webhook events will be sent.
-
-          update_mask: Optional. The list of fields to update.
-
-          name: Optional. The user-provided name of the webhook.
-
-          state: The state of the webhook.
+          uri: Optional. The URI to which webhook events will be sent.
 
           extra_headers: Send extra headers
 
@@ -644,10 +622,10 @@ class AsyncWebhooksResource(AsyncAPIResource):
             path_template("/{api_version}/webhooks/{id}", api_version=api_version, id=id),
             body=await async_maybe_transform(
                 {
-                    "subscribed_events": subscribed_events,
-                    "uri": uri,
                     "name": name,
                     "state": state,
+                    "subscribed_events": subscribed_events,
+                    "uri": uri,
                 },
                 webhook_update_params.WebhookUpdateParams,
             ),
