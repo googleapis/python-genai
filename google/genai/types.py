@@ -2543,6 +2543,14 @@ class JSONSchema(_common.BaseModel):
       alias='$defs',
       description="""Schema definitions to be used with $ref.""",
   )
+  one_of: Optional[list['JSONSchema']] = Field(
+      default=None,
+      description=(
+          'An instance validates successfully against this keyword if it'
+          ' validates successfully against exactly one schema defined by this'
+          " keyword's value."
+      ),
+  )
 
 
 class Schema(_common.BaseModel):
