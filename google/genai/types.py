@@ -7919,7 +7919,7 @@ class GenerateContentResponse(_common.BaseModel):
       description="""Output only. The current model status of this model. This field is not supported in Vertex AI.""",
   )
   automatic_function_calling_history: Optional[list[Content]] = None
-  parsed: Optional[Union[pydantic.BaseModel, dict[Any, Any], Enum]] = Field(
+  parsed: Optional[Union[pydantic.BaseModel, list[Any], dict[Any, Any], Enum]] = Field(
       default=None,
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
