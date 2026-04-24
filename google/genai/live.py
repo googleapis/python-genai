@@ -20,6 +20,7 @@ import base64
 import contextlib
 import json
 import logging
+import sys
 import typing
 from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
@@ -59,22 +60,12 @@ except ImportError:
 if typing.TYPE_CHECKING:
   from mcp import ClientSession as McpClientSession
   from mcp.types import Tool as McpTool
-  from ._adapters import McpToGenAiToolAdapter
-  from ._mcp_utils import mcp_to_gemini_tool
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  McpToGenAiToolAdapter: typing.Type = Any
-  try:
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import Tool as McpTool
-    from ._adapters import McpToGenAiToolAdapter
-    from ._mcp_utils import mcp_to_gemini_tool
-  except ImportError:
-    McpClientSession = None
-    McpTool = None
-    McpToGenAiToolAdapter = None
-    mcp_to_gemini_tool = None
+
+from ._adapters import McpToGenAiToolAdapter
+from ._mcp_utils import mcp_to_gemini_tool
 
 logger = logging.getLogger('google_genai.live')
 
@@ -1174,17 +1165,24 @@ async def _t_live_connect_config(
   parameter_model_copy = parameter_model.model_copy(update={'tools': None})
   if parameter_model.tools:
     parameter_model_copy.tools = []
-    for tool in parameter_model.tools:
-      if McpClientSession is not None and isinstance(tool, McpClientSession):
-        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
-            tool, await tool.list_tools()
-        )
-        # Extend the config with the MCP session tools converted to GenAI tools.
-        parameter_model_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
-      elif McpTool is not None and isinstance(tool, McpTool):
-        parameter_model_copy.tools.append(mcp_to_gemini_tool(tool))
-      else:
-        parameter_model_copy.tools.append(tool)
+    if 'mcp' not in sys.modules:
+      # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
+      parameter_model_copy.tools.extend(parameter_model.tools)
+    else:
+      from mcp import ClientSession as _McpClientSession
+      from mcp.types import Tool as _McpTool
+
+      for tool in parameter_model.tools:
+        if isinstance(tool, _McpClientSession):
+          mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+              tool, await tool.list_tools()
+          )
+          # Extend the config with the MCP session tools converted to GenAI tools.
+          parameter_model_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+        elif isinstance(tool, _McpTool):
+          parameter_model_copy.tools.append(mcp_to_gemini_tool(tool))
+        else:
+          parameter_model_copy.tools.append(tool)
 
   if parameter_model_copy.generation_config is not None:
     warnings.warn(
