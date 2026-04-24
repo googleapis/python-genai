@@ -335,6 +335,8 @@ def test_text_and_image_to_video_poll(client):
       image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+          resize_mode=(types.ImageResizeMode.CROP
+                       if client.vertexai else None),
       ),
   )
   while not operation.done:

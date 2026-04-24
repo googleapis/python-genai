@@ -2163,6 +2163,9 @@ def _GenerateVideosConfig_to_mldev(
         parent_object, ['webhookConfig'], getv(from_object, ['webhook_config'])
     )
 
+  if getv(from_object, ['resize_mode']) is not None:
+    raise ValueError('resize_mode parameter is not supported in Gemini API.')
+
   return to_object
 
 
@@ -2293,6 +2296,13 @@ def _GenerateVideosConfig_to_vertex(
     raise ValueError(
         'webhook_config parameter is not supported in Gemini Enterprise Agent'
         ' Platform.'
+    )
+
+  if getv(from_object, ['resize_mode']) is not None:
+    setv(
+        parent_object,
+        ['parameters', 'resizeMode'],
+        getv(from_object, ['resize_mode']),
     )
 
   return to_object
