@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.74.0](https://github.com/googleapis/python-genai/compare/v1.73.1...v1.74.0) (2026-04-24)
+
+
+### Features
+
+* [Interactions] Add FileCitation.{custom_metadata,media_id,page_number} ([aed41ec](https://github.com/googleapis/python-genai/commit/aed41ecf4940f63446fc3e22744663be4d1057a6))
+* Add `output_info` to `BatchJob` ([7b77ab8](https://github.com/googleapis/python-genai/commit/7b77ab850283a2c55cb711084e8de6b6da5e589c))
+* Add gemini-3.1-flash-tts-preview model to options ([8bdc1c3](https://github.com/googleapis/python-genai/commit/8bdc1c353d987a5a18282fd2265950257891d308))
+* Add ImageResizeMode for GenerateVideos ([317d2af](https://github.com/googleapis/python-genai/commit/317d2af040adc7639c4464971d2a5ffa5e381402))
+* Add new Gemini Deep Research agent models ([16fffbd](https://github.com/googleapis/python-genai/commit/16fffbd3504e9c83c605410dc75914bf3bcaeedb))
+* Add one_of support to JSONSchema for Agent Platform ([8c00c52](https://github.com/googleapis/python-genai/commit/8c00c524488250f25f497e47b495dcedb362da86))
+* Add Vertex Dataset input and output options for batch jobs ([d880f92](https://github.com/googleapis/python-genai/commit/d880f92a0631868d6cf86e30aa219a18305ad1a0))
+* Introduce `enterprise` to Client constructor and `GOOGLE_GENAI_USE_ENTERPRISE` ([693fd9a](https://github.com/googleapis/python-genai/commit/693fd9af1054fde006f76ea820b0c9066577b243))
+* Replace the more ambiguous rate field with sample_rate. ([88d9b4a](https://github.com/googleapis/python-genai/commit/88d9b4ad772ce75f21d44174f4679e994fcfca48))
+
+
+### Bug Fixes
+
+* Catch google-auth wrapped errors ([48ac850](https://github.com/googleapis/python-genai/commit/48ac850fa06de2288e4d736f2f7349909c2a0727))
+* Typing in `AsyncClient.__aexit__`, `__exit__`. ([a74dc65](https://github.com/googleapis/python-genai/commit/a74dc6564e3409f9c45a1ec8456ed4386c3711c0))
+
+
+### Documentation
+
+* Add instruction for custom endpoint ([dd79904](https://github.com/googleapis/python-genai/commit/dd79904ed3a51fb53c43d4b01082556baf579759))
+* Fix broken link for rate limits ([d22ea99](https://github.com/googleapis/python-genai/commit/d22ea99dd4318c3bd47bfd6cb571bf9db3316922))
+* Regenerate docs for 1.73.1 ([2fb714b](https://github.com/googleapis/python-genai/commit/2fb714b3fefa3a8972da57ef0675116b67e4808e))
+* Replace Vertex AI with Gemini Enterprise Agent Platform ([7c1ecd5](https://github.com/googleapis/python-genai/commit/7c1ecd586032a0546268ede3f115b2d25032ce12))
+* Update doc string to replace `Vertex AI` with `Gemini Enterprise Agent Platform`, update method error message to replace `Vertex AI` with `Gemini Enterprise Agent Platform (previously known as Vertex AI)`, update converter error message to replace `Vertex AI` with `Gemini Enterprise Agent Platform` ([413f0f9](https://github.com/googleapis/python-genai/commit/413f0f9f1b5ff8bab9fd3675e9c450a4ddd29755))
+* Update Gemini Enterprise Agent Platform home page url ([b02cb95](https://github.com/googleapis/python-genai/commit/b02cb95459375300c4e2acdef11a8ff0e8d5def6))
+* Update README.md with correct Pydantic link ([fa97cc6](https://github.com/googleapis/python-genai/commit/fa97cc6cf5bc955c1ff81da4e780fe0211648959))
+* Update README.md with correct Pydantic link ([fa97cc6](https://github.com/googleapis/python-genai/commit/fa97cc6cf5bc955c1ff81da4e780fe0211648959))
+
 ## [1.73.1](https://github.com/googleapis/python-genai/compare/v1.73.0...v1.73.1) (2026-04-14)
 
 
