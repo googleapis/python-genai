@@ -414,6 +414,9 @@ def _BatchJob_from_vertex(
         to_object, ['completion_stats'], getv(from_object, ['completionStats'])
     )
 
+  if getv(from_object, ['outputInfo']) is not None:
+    setv(to_object, ['output_info'], getv(from_object, ['outputInfo']))
+
   return to_object
 
 

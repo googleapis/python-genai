@@ -16564,6 +16564,39 @@ _CreateBatchJobParametersOrDict = Union[
 ]
 
 
+class BatchJobOutputInfo(_common.BaseModel):
+  """Represents the `output_info` field in batch jobs."""
+
+  vertex_multimodal_dataset_name: Optional[str] = Field(
+      default=None,
+      description="""This field is experimental and may change in future versions. The Vertex AI dataset name containing the output data.""",
+  )
+  gcs_output_directory: Optional[str] = Field(
+      default=None,
+      description="""The full path of the Cloud Storage directory created, into which the prediction output is written.""",
+  )
+  bigquery_output_table: Optional[str] = Field(
+      default=None,
+      description="""The name of the BigQuery table created, in `predictions_<timestamp>` format, into which the prediction output is written.""",
+  )
+
+
+class BatchJobOutputInfoDict(TypedDict, total=False):
+  """Represents the `output_info` field in batch jobs."""
+
+  vertex_multimodal_dataset_name: Optional[str]
+  """This field is experimental and may change in future versions. The Vertex AI dataset name containing the output data."""
+
+  gcs_output_directory: Optional[str]
+  """The full path of the Cloud Storage directory created, into which the prediction output is written."""
+
+  bigquery_output_table: Optional[str]
+  """The name of the BigQuery table created, in `predictions_<timestamp>` format, into which the prediction output is written."""
+
+
+BatchJobOutputInfoOrDict = Union[BatchJobOutputInfo, BatchJobOutputInfoDict]
+
+
 class CompletionStats(_common.BaseModel):
   """Success and error statistics of processing multiple entities (for example, DataItems or structured data rows) in batch.
 
@@ -16671,6 +16704,11 @@ class BatchJob(_common.BaseModel):
       description="""Statistics on completed and failed prediction instances. This field is for Gemini Enterprise Agent Platform only.
       """,
   )
+  output_info: Optional[BatchJobOutputInfo] = Field(
+      default=None,
+      description="""Information further describing the output of this job. Output only.
+      """,
+  )
 
   @property
   def done(self) -> bool:
@@ -16746,6 +16784,10 @@ class BatchJobDict(TypedDict, total=False):
 
   completion_stats: Optional[CompletionStatsDict]
   """Statistics on completed and failed prediction instances. This field is for Gemini Enterprise Agent Platform only.
+      """
+
+  output_info: Optional[BatchJobOutputInfoDict]
+  """Information further describing the output of this job. Output only.
       """
 
 
