@@ -31,13 +31,11 @@ class WebhookCreateParams(TypedDict, total=False):
             Union[
                 Literal[
                     "batch.succeeded",
-                    "batch.cancelled",
                     "batch.expired",
                     "batch.failed",
                     "interaction.requires_action",
                     "interaction.completed",
                     "interaction.failed",
-                    "interaction.cancelled",
                     "video.generated",
                 ],
                 str,
@@ -47,13 +45,11 @@ class WebhookCreateParams(TypedDict, total=False):
     """Required. The events that the webhook is subscribed to. Available events:
 
     - batch.succeeded
-    - batch.cancelled
     - batch.expired
     - batch.failed
     - interaction.requires_action
     - interaction.completed
     - interaction.failed
-    - interaction.cancelled
     - video.generated
     """
 
@@ -62,6 +58,3 @@ class WebhookCreateParams(TypedDict, total=False):
 
     name: str
     """Optional. The user-provided name of the webhook."""
-
-    state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"]
-    """The state of the webhook."""

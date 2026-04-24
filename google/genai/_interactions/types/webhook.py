@@ -32,13 +32,11 @@ class Webhook(BaseModel):
         Union[
             Literal[
                 "batch.succeeded",
-                "batch.cancelled",
                 "batch.expired",
                 "batch.failed",
                 "interaction.requires_action",
                 "interaction.completed",
                 "interaction.failed",
-                "interaction.cancelled",
                 "video.generated",
             ],
             str,
@@ -47,13 +45,11 @@ class Webhook(BaseModel):
     """Required. The events that the webhook is subscribed to. Available events:
 
     - batch.succeeded
-    - batch.cancelled
     - batch.expired
     - batch.failed
     - interaction.requires_action
     - interaction.completed
     - interaction.failed
-    - interaction.cancelled
     - video.generated
     """
 
@@ -76,7 +72,7 @@ class Webhook(BaseModel):
     """Output only. The signing secrets associated with this webhook."""
 
     state: Optional[Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"]] = None
-    """The state of the webhook."""
+    """Output only. The state of the webhook."""
 
     update_time: Optional[datetime] = None
     """Output only. The timestamp when the webhook was last updated."""
