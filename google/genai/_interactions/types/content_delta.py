@@ -111,6 +111,9 @@ class DeltaAudio(BaseModel):
     ] = None
 
     rate: Optional[int] = None
+    """Deprecated. Use sample_rate instead. The value is ignored."""
+
+    sample_rate: Optional[int] = None
     """The sample rate of the audio."""
 
     uri: Optional[str] = None

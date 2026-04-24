@@ -52,7 +52,7 @@ class AudioContent(BaseModel):
     ] = None
     """The mime type of the audio."""
 
-    rate: Optional[int] = None
+    sample_rate: Optional[int] = None
     """The sample rate of the audio."""
 
     uri: Optional[str] = None
