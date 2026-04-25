@@ -25,9 +25,9 @@ import logging
 import sys
 import types as builtin_types
 import typing
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
+from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
 import pydantic
-from pydantic import ConfigDict, Field, PrivateAttr, model_validator
+from pydantic import ConfigDict, Field, PrivateAttr, WrapValidator, model_validator
 from typing_extensions import Self, TypedDict
 from . import _common
 from ._operations_converters import (
@@ -63,25 +63,42 @@ else:
   except ImportError:
     PIL_Image = None
 
-_is_mcp_imported = False
 if typing.TYPE_CHECKING:
   from mcp import types as mcp_types
   from mcp import ClientSession as McpClientSession
   from mcp.types import CallToolResult as McpCallToolResult
 
-  _is_mcp_imported = True
-else:
-  McpClientSession: typing.Type = Any
-  McpCallToolResult: typing.Type = Any
-  try:
-    from mcp import types as mcp_types
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import CallToolResult as McpCallToolResult
 
-    _is_mcp_imported = True
-  except ImportError:
-    McpClientSession = None
-    McpCallToolResult = None
+def _is_mcp_imported() -> bool:
+  return 'mcp' in sys.modules
+
+
+# PEP 562: lazy-resolve mcp symbols on first attribute access so `import
+# google.genai` doesn't import `mcp` for users who don't use MCP.
+def __getattr__(name: str) -> Any:
+  if name == 'McpClientSession':
+    try:
+      from mcp import ClientSession
+    except ImportError:
+      globals()[name] = None
+      return None
+    globals()[name] = ClientSession
+    return ClientSession
+  if name == 'McpCallToolResult':
+    try:
+      from mcp.types import CallToolResult
+    except ImportError:
+      globals()[name] = None
+      return None
+    globals()[name] = CallToolResult
+    return CallToolResult
+  if name == 'mcp_types':
+    from mcp import types as mcp_types
+
+    globals()[name] = mcp_types
+    return mcp_types
+  raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
 
 if typing.TYPE_CHECKING:
   import yaml
@@ -1798,9 +1815,9 @@ class FunctionResponse(_common.BaseModel):
 
   @classmethod
   def from_mcp_response(
-      cls, *, name: str, response: McpCallToolResult
+      cls, *, name: str, response: 'McpCallToolResult'
   ) -> 'FunctionResponse':
-    if not _is_mcp_imported:
+    if not _is_mcp_imported():
       raise ValueError(
           'MCP response is not supported. Please ensure that the MCP library is'
           ' imported.'
@@ -4907,17 +4924,41 @@ class ToolDict(TypedDict, total=False):
 
 
 ToolOrDict = Union[Tool, ToolDict]
-if _is_mcp_imported:
+
+
+def _validate_tool_list(v: Any, handler: Any) -> Any:
+  """Pass MCP tool/session objects through Pydantic validation untouched.
+
+  `Tool` has all-optional fields, so without this wrapper Pydantic's default
+  Union resolution would coerce any non-Tool item (e.g. an `mcp.ClientSession`)
+  into an empty `Tool()`. This wrapper dispatches dict -> Tool and leaves
+  every other type identity-preserved so MCP routing downstream still works.
+  """
+  if v is None:
+    return None
+  if not isinstance(v, list):
+    return handler(v)
+  out = []
+  for item in v:
+    if isinstance(item, dict):
+      out.append(Tool.model_validate(item))
+    else:
+      out.append(item)
+  return out
+
+
+if typing.TYPE_CHECKING:
   ToolUnion = Union[Tool, Callable[..., Any], mcp_types.Tool, McpClientSession]
   ToolUnionDict = Union[
       ToolDict, Callable[..., Any], mcp_types.Tool, McpClientSession
   ]
+  ToolListUnion = list[ToolUnion]
+  ToolListUnionDict = list[ToolUnionDict]
 else:
   ToolUnion = Union[Tool, Callable[..., Any]]  # type: ignore[misc]
   ToolUnionDict = Union[ToolDict, Callable[..., Any]]  # type: ignore[misc]
-
-ToolListUnion = list[ToolUnion]
-ToolListUnionDict = list[ToolUnionDict]
+  ToolListUnion = Annotated[list, WrapValidator(_validate_tool_list)]
+  ToolListUnionDict = list[ToolUnionDict]
 
 SchemaUnion = Union[
     dict[Any, Any], type, Schema, builtin_types.GenericAlias, VersionedUnionType  # type: ignore[valid-type]
