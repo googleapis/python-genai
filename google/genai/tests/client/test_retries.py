@@ -187,6 +187,23 @@ def test_retry_args_enabled_with_custom_values_are_not_overridden():
       assert not retry.predicate(e)
 
 
+def test_retry_args_retries_httpx_transport_errors():
+  # httpx transport errors (timeouts, connect errors) bypass APIError but are
+  # transient infrastructure failures, so the predicate must still retry them
+  # when HttpRetryOptions is configured. See issue #2337.
+  args = api_client.retry_args(types.HttpRetryOptions())
+  retry = args['retry']
+
+  assert retry.predicate(httpx.TimeoutException('stalled'))
+  assert retry.predicate(httpx.ReadTimeout('read stalled'))
+  assert retry.predicate(httpx.ConnectTimeout('connect stalled'))
+  assert retry.predicate(httpx.ConnectError('connect refused'))
+
+  # Unrelated transport errors are not retried.
+  assert not retry.predicate(httpx.InvalidURL('bad url'))
+  assert not retry.predicate(ValueError('not a transport error'))
+
+
 def _patch_auth_default():
   return mock.patch(
       'google.auth.default',
