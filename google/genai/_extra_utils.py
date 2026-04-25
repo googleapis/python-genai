@@ -45,12 +45,6 @@ if typing.TYPE_CHECKING:
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  try:
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import Tool as McpTool
-  except ImportError:
-    McpClientSession = None
-    McpTool = None
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -568,27 +562,33 @@ async def parse_config_for_mcp_sessions(
   parsed_config_copy = parsed_config.model_copy(update={'tools': None})
   if parsed_config.tools:
     parsed_config_copy.tools = []
-    for tool in parsed_config.tools:
-      if McpClientSession is not None and isinstance(tool, McpClientSession):
-        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
-            tool, await tool.list_tools()
-        )
-        # Extend the config with the MCP session tools converted to GenAI tools.
-        parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
-        for genai_tool in mcp_to_genai_tool_adapter.tools:
-          if genai_tool.function_declarations:
-            for function_declaration in genai_tool.function_declarations:
-              if function_declaration.name:
-                if mcp_to_genai_tool_adapters.get(function_declaration.name):
-                  raise ValueError(
-                      f'Tool {function_declaration.name} is already defined for'
-                      ' the request.'
+    if 'mcp' not in sys.modules:
+      # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
+      parsed_config_copy.tools.extend(parsed_config.tools)
+    else:
+      from mcp import ClientSession as _McpClientSession
+
+      for tool in parsed_config.tools:
+        if isinstance(tool, _McpClientSession):
+          mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+              tool, await tool.list_tools()
+          )
+          # Extend the config with the MCP session tools converted to GenAI tools.
+          parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+          for genai_tool in mcp_to_genai_tool_adapter.tools:
+            if genai_tool.function_declarations:
+              for function_declaration in genai_tool.function_declarations:
+                if function_declaration.name:
+                  if mcp_to_genai_tool_adapters.get(function_declaration.name):
+                    raise ValueError(
+                        f'Tool {function_declaration.name} is already defined'
+                        ' for the request.'
+                    )
+                  mcp_to_genai_tool_adapters[function_declaration.name] = (
+                      mcp_to_genai_tool_adapter
                   )
-                mcp_to_genai_tool_adapters[function_declaration.name] = (
-                    mcp_to_genai_tool_adapter
-                )
-      else:
-        parsed_config_copy.tools.append(tool)
+        else:
+          parsed_config_copy.tools.append(tool)
 
   return parsed_config_copy, mcp_to_genai_tool_adapters
 

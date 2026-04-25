@@ -16,6 +16,7 @@
 """Utils for working with MCP tools."""
 
 from importlib.metadata import PackageNotFoundError, version
+import sys
 import typing
 from typing import Any
 
@@ -28,12 +29,16 @@ if typing.TYPE_CHECKING:
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  try:
-    from mcp.types import Tool as McpTool
-    from mcp import ClientSession as McpClientSession
-  except ImportError:
-    McpTool = None
-    McpClientSession = None
+
+
+def _is_mcp_loaded() -> bool:
+  """True iff `mcp` is already imported in this process.
+
+  An MCP tool/session can only exist if the user has already imported `mcp`,
+  so we can gate isinstance checks behind this without ever importing `mcp`
+  ourselves at module load.
+  """
+  return "mcp" in sys.modules
 
 
 def mcp_to_gemini_tool(tool: McpTool) -> types.Tool:
@@ -78,27 +83,32 @@ def mcp_to_gemini_tools(
 
 def has_mcp_tool_usage(tools: types.ToolListUnion) -> bool:
   """Checks whether the list of tools contains any MCP tools or sessions."""
-  if McpClientSession is None:
+  if not _is_mcp_loaded():
     return False
+  from mcp import ClientSession as _McpClientSession
+  from mcp.types import Tool as _McpTool
+
   for tool in tools:
-    if isinstance(tool, McpTool) or isinstance(tool, McpClientSession):
+    if isinstance(tool, _McpTool) or isinstance(tool, _McpClientSession):
       return True
   return False
 
 
 def has_mcp_session_usage(tools: types.ToolListUnion) -> bool:
   """Checks whether the list of tools contains any MCP sessions."""
-  if McpClientSession is None:
+  if not _is_mcp_loaded():
     return False
+  from mcp import ClientSession as _McpClientSession
+
   for tool in tools:
-    if isinstance(tool, McpClientSession):
+    if isinstance(tool, _McpClientSession):
       return True
   return False
 
 
 def set_mcp_usage_header(headers: dict[str, str]) -> None:
   """Sets the MCP version label in the Google API client header."""
-  if McpClientSession is None:
+  if not _is_mcp_loaded():
     return
   try:
     version_label = version("mcp")
@@ -145,4 +155,3 @@ def _filter_to_supported_schema(
       filtered_schema[field_name] = field_value
 
   return filtered_schema
-
