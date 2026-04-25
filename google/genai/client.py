@@ -48,6 +48,7 @@ from . import _interactions
 from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
 from ._interactions.resources import WebhooksResource, AsyncWebhooksResource
 _interactions_experimental_warned = False
+_webhooks_preview_warned = False
 
 class AsyncGeminiNextGenAPIClientAdapter(_interactions.AsyncGeminiNextGenAPIClientAdapter):
   """Adapter for the Gemini NextGen API Client."""
@@ -201,6 +202,14 @@ class AsyncClient:
 
   @property
   def webhooks(self) -> AsyncWebhooksResource:
+    global _webhooks_preview_warned
+    if not _webhooks_preview_warned:
+      _webhooks_preview_warned = True
+      warnings.warn(
+          'Webhooks usage is preview and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
     return self._nextgen_client.webhooks
 
   @property
@@ -567,6 +576,14 @@ class Client:
 
   @property
   def webhooks(self) -> WebhooksResource:
+    global _webhooks_preview_warned
+    if not _webhooks_preview_warned:
+      _webhooks_preview_warned = True
+      warnings.warn(
+          'Webhooks usage is preview and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
     return self._nextgen_client.webhooks
 
   @property
