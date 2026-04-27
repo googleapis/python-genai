@@ -507,7 +507,8 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   stop = tenacity.stop_after_attempt(options.attempts or _RETRY_ATTEMPTS)
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
-      lambda e: isinstance(e, errors.APIError) and e.code in retriable_codes,
+      lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
+      or isinstance(e, (httpx.TimeoutException, httpx.ConnectError)),
   )
   wait = tenacity.wait_exponential_jitter(
       initial=options.initial_delay or _RETRY_INITIAL_DELAY,
