@@ -23,6 +23,7 @@ from .._models import BaseModel
 __all__ = [
     "Usage",
     "CachedTokensByModality",
+    "GroundingToolCount",
     "InputTokensByModality",
     "OutputTokensByModality",
     "ToolUseTokensByModality",
@@ -37,6 +38,16 @@ class CachedTokensByModality(BaseModel):
 
     tokens: Optional[int] = None
     """Number of tokens for the modality."""
+
+
+class GroundingToolCount(BaseModel):
+    """The number of grounding tool counts."""
+
+    count: Optional[int] = None
+    """The number of grounding tool counts."""
+
+    type: Optional[Literal["google_search", "google_maps", "retrieval"]] = None
+    """The grounding tool type associated with the count."""
 
 
 class InputTokensByModality(BaseModel):
@@ -74,6 +85,9 @@ class Usage(BaseModel):
 
     cached_tokens_by_modality: Optional[List[CachedTokensByModality]] = None
     """A breakdown of cached token usage by modality."""
+
+    grounding_tool_count: Optional[List[GroundingToolCount]] = None
+    """Grounding tool count."""
 
     input_tokens_by_modality: Optional[List[InputTokensByModality]] = None
     """A breakdown of input token usage by modality."""
