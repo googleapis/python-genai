@@ -137,7 +137,7 @@ async def test_httpx_simple_lines(responses: api_client.HttpResponse):
 
 @pytest.mark.asyncio
 async def test_httpx_data_prefix(responses: api_client.HttpResponse):
-  lines = ["data: { 'message': 'hello' }", "data: { 'status': 'ok' }"]
+  lines = ["data: { 'message': 'hello' }", "", "data: { 'status': 'ok' }"]
   mock_response = MockHTTPXResponse(lines)
   responses.response_stream = mock_response
 
@@ -147,6 +147,39 @@ async def test_httpx_data_prefix(responses: api_client.HttpResponse):
   mock_response.aiter_lines.assert_called_once()
   mock_response.aclose.assert_called_once()
 
+@pytest.mark.asyncio
+async def test_httpx_multiline_data(responses: api_client.HttpResponse) -> None:
+  lines = [
+      "data: {",
+      "data:   'message': 'hello'",
+      "data: }",
+      "",
+  ]
+  mock_response = MockHTTPXResponse(lines)
+  responses.response_stream = mock_response
+
+  results = [line async for line in responses._aiter_response_stream()]
+
+  assert results == ["{\n  'message': 'hello'\n}"]
+  mock_response.aiter_lines.assert_called_once()
+  mock_response.aclose.assert_called_once()
+
+
+def test_httpx_multiline_data_sync(responses: api_client.HttpResponse) -> None:
+  lines = [
+      "data: {",
+      "data:   'message': 'hello'",
+      "data: }",
+      "",
+  ]
+  mock_response = MagicMock(spec=httpx.Response)
+  mock_response.iter_lines.return_value = iter(lines)
+  responses.response_stream = mock_response
+
+  results = list(responses._iter_response_stream())
+
+  assert results == ["{\n  'message': 'hello'\n}"]
+
 
 @pytest.mark.asyncio
 async def test_httpx_multiple_json_chunk(responses: api_client.HttpResponse):
@@ -154,6 +187,7 @@ async def test_httpx_multiple_json_chunk(responses: api_client.HttpResponse):
       '{ "id": 1 }',
       "",
       'data: { "id": 2 }',
+      "",
       'data: { "id": 3 }',
   ]
   mock_response = MockHTTPXResponse(lines)
@@ -214,7 +248,7 @@ async def test_aiohttp_simple_lines(responses: api_client.HttpResponse):
 @pytest.mark.asyncio
 async def test_aiohttp_data_prefix(responses: api_client.HttpResponse):
   api_client.has_aiohttp = True  # Force aiohttp
-  lines = ["data: { 'message': 'hello' }", "data: { 'status': 'ok' }"]
+  lines = ["data: { 'message': 'hello' }", "", "data: { 'status': 'ok' }"]
   # Use the mock class that pretends to be aiohttp.ClientResponse
   mock_response = MockAIOHTTPResponse(lines)
   responses.response_stream = mock_response
@@ -234,6 +268,7 @@ async def test_aiohttp_multiple_json_chunks(responses: api_client.HttpResponse):
       '{ "id": 1 }',
       "",  # empty line to check robustness
       'data: { "id": 2 }',
+      "",
       'data: { "id": 3 }',
   ]
   # Use the mock class that pretends to be aiohttp.ClientResponse

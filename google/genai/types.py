@@ -8131,7 +8131,7 @@ class GenerateContentResponse(_common.BaseModel):
         inspect.isclass(response_schema)
         and not (
             isinstance(response_schema, builtin_types.GenericAlias)
-        )  # Needed for Python 3.9 and 3.10
+        )  # Needed for Python 3.10
         and issubclass(response_schema, pydantic.BaseModel)
     ):
       # Pydantic schema.

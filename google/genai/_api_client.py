@@ -341,18 +341,22 @@ class HttpResponse:
 
     chunk = ''
     balance = 0
+    data_buffer: list[str] = []
     if isinstance(self.response_stream, httpx.Response):
       response_stream = self.response_stream.iter_lines()
     else:
       response_stream = self.response_stream.iter_lines(decode_unicode=True)
     for line in response_stream:
       if not line:
+        if data_buffer:
+          yield '\n'.join(data_buffer)
+          data_buffer = []
         continue
 
       # In streaming mode, the response of JSON is prefixed with "data: " which
       # we must strip before parsing.
       if line.startswith('data: '):
-        yield line[len('data: '):]
+        data_buffer.append(line[len('data: '):])
         continue
 
       # When API returns an error message, it comes line by line. So we buffer
@@ -372,6 +376,8 @@ class HttpResponse:
     # If there is any remaining chunk, yield it.
     if chunk:
       yield chunk
+    if data_buffer:
+      yield '\n'.join(data_buffer)
 
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
@@ -387,16 +393,20 @@ class HttpResponse:
 
     chunk = ''
     balance = 0
+    data_buffer: list[str] = []
     # httpx.Response has a dedicated async line iterator.
     if isinstance(self.response_stream, httpx.Response):
       try:
         async for line in self.response_stream.aiter_lines():
           if not line:
+            if data_buffer:
+              yield '\n'.join(data_buffer)
+              data_buffer = []
             continue
           # In streaming mode, the response of JSON is prefixed with "data: "
           # which we must strip before parsing.
           if line.startswith('data: '):
-            yield line[len('data: '):]
+            data_buffer.append(line[len('data: '):])
             continue
 
           # When API returns an error message, it comes line by line. So we buffer
@@ -415,6 +425,8 @@ class HttpResponse:
         # If there is any remaining chunk, yield it.
         if chunk:
           yield chunk
+        if data_buffer:
+          yield '\n'.join(data_buffer)
       finally:
         # Close the response and release the connection.
         await self.response_stream.aclose()
@@ -432,12 +444,15 @@ class HttpResponse:
           # Decode the bytes and remove trailing whitespace and newlines.
           line = line_bytes.decode('utf-8').rstrip()
           if not line:
+            if data_buffer:
+              yield '\n'.join(data_buffer)
+              data_buffer = []
             continue
 
           # In streaming mode, the response of JSON is prefixed with "data: "
           # which we must strip before parsing.
           if line.startswith('data: '):
-            yield line[len('data: '):]
+            data_buffer.append(line[len('data: '):])
             continue
 
           # When API returns an error message, it comes line by line. So we
@@ -456,6 +471,8 @@ class HttpResponse:
         # If there is any remaining chunk, yield it.
         if chunk:
           yield chunk
+        if data_buffer:
+          yield '\n'.join(data_buffer)
       finally:
         # Release the connection back to the pool for potential reuse.
         self.response_stream.release()
