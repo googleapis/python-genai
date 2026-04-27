@@ -62,7 +62,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='Vertex AI does not support',
+        exception_if_vertex=(
+            'Gemini Enterprise Agent Platform'
+        ),
     ),
 ]
 

@@ -153,10 +153,19 @@ def test_aclose_aiohttp_session(mock_request):
           )
       )
       assert async_client._api_client._aiohttp_session is not None
-      assert not async_client._api_client._aiohttp_session.closed
+      if hasattr(async_client._api_client._aiohttp_session, 'closed'):
+        assert not async_client._api_client._aiohttp_session.closed
       # Close the client and check that the session is closed.
       await async_client.aclose()
-      assert async_client._api_client._aiohttp_session.closed
+      if hasattr(async_client._api_client._aiohttp_session, 'closed'):
+        assert async_client._api_client._aiohttp_session.closed
+      else:
+        from google.auth.aio.transport.sessions import AsyncAuthorizedSession
+
+        if isinstance(
+            async_client._api_client._aiohttp_session, AsyncAuthorizedSession
+        ):
+          assert async_client._api_client._aiohttp_session._auth_request._closed
 
   asyncio.run(run())
 
@@ -197,8 +206,17 @@ def test_aiohttp_session_context_manager(mock_request):
             )
         )
         assert async_client._api_client._aiohttp_session is not None
-        assert not async_client._api_client._aiohttp_session.closed
+        if hasattr(async_client._api_client._aiohttp_session, 'closed'):
+          assert not async_client._api_client._aiohttp_session.closed
 
-      assert async_client._api_client._aiohttp_session.closed
+      if hasattr(async_client._api_client._aiohttp_session, 'closed'):
+        assert async_client._api_client._aiohttp_session.closed
+      else:
+        from google.auth.aio.transport.sessions import AsyncAuthorizedSession
+
+        if isinstance(
+            async_client._api_client._aiohttp_session, AsyncAuthorizedSession
+        ):
+          assert async_client._api_client._aiohttp_session._auth_request._closed
 
   asyncio.run(run())

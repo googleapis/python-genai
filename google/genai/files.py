@@ -1272,7 +1272,8 @@ class AsyncFiles(_api_module.BaseModule):
   ) -> bytes:
     """Downloads a file's data from the file service.
 
-    The Vertex-AI implementation of the API foes not include the file service.
+    The Gemini Enterprise Agent Platform implementation of the API foes not
+    include the file service.
 
     Files created by `upload` can't be downloaded. You can tell which files are
     downloadable by checking the `download_uri` property.

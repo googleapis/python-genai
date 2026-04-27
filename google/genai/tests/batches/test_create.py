@@ -86,7 +86,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='not supported in Vertex AI',
+        exception_if_vertex='not supported in Gemini Enterprise Agent Platform',
     ),
     pytest_helper.TestTableItem(
         name='test_create_with_webhook_config_dict',
@@ -108,7 +108,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_vertex='not supported in Vertex AI',
+        exception_if_vertex='not supported in Gemini Enterprise Agent Platform',
     ),
 ]
 

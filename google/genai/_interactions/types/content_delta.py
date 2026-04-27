@@ -57,7 +57,6 @@ __all__ = [
     "DeltaMCPServerToolResult",
     "DeltaMCPServerToolResultResultFunctionResultSubcontentList",
     "DeltaFileSearchResult",
-    "DeltaFileSearchResultResult",
     "DeltaGoogleMapsResult",
     "DeltaTextAnnotation",
 ]
@@ -112,6 +111,9 @@ class DeltaAudio(BaseModel):
     ] = None
 
     rate: Optional[int] = None
+    """Deprecated. Use sample_rate instead. The value is ignored."""
+
+    sample_rate: Optional[int] = None
     """The sample rate of the audio."""
 
     uri: Optional[str] = None
@@ -345,18 +347,11 @@ class DeltaMCPServerToolResult(BaseModel):
     """A signature hash for backend validation."""
 
 
-class DeltaFileSearchResultResult(BaseModel):
-    """The result of the File Search."""
-
-    custom_metadata: Optional[List[object]] = None
-    """User provided metadata about the FileSearchResult."""
-
-
 class DeltaFileSearchResult(BaseModel):
     call_id: str
     """Required. ID to match the ID from the function call block."""
 
-    result: List[DeltaFileSearchResultResult]
+    result: List[object]
 
     type: Literal["file_search_result"]
 

@@ -46,7 +46,9 @@ SCRIBBLE_IMAGE = types.Image.from_file(location=SCRIBBLE_IMAGE_FILE_PATH)
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_segment_foreground',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
             source=types.SegmentImageSource(
@@ -64,7 +66,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_segment_background',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
             source=types.SegmentImageSource(
@@ -77,7 +81,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_segment_prompt',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
             source=types.SegmentImageSource(
@@ -91,7 +97,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_segment_semantic',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
             source=types.SegmentImageSource(
@@ -105,7 +113,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_segment_interactive',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
             source=types.SegmentImageSource(

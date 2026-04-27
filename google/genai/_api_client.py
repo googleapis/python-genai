@@ -46,6 +46,7 @@ import google.auth.credentials
 from google.auth.credentials import Credentials
 from google.auth.transport import mtls
 from google.auth.transport.requests import AuthorizedSession
+from google.auth import exceptions as auth_exceptions
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -1402,6 +1403,7 @@ class BaseApiClient:
             aiohttp.ClientConnectorDNSError,
             aiohttp.ClientOSError,
             aiohttp.ServerDisconnectedError,
+            auth_exceptions.TransportError,
         ) as e:
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)
@@ -1479,6 +1481,7 @@ class BaseApiClient:
             aiohttp.ClientConnectorDNSError,
             aiohttp.ClientOSError,
             aiohttp.ServerDisconnectedError,
+            auth_exceptions.TransportError,
         ) as e:
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)

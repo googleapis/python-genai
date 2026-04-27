@@ -175,7 +175,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported in Vertex',
+        exception_if_vertex='not supported in Gemini Enterprise Agent Platform',
         has_union=True,
     ),
     pytest_helper.TestTableItem(

@@ -27,7 +27,9 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-2.5-flash',
             contents='The quick brown fox jumps over the lazy dog.',
         ),
-        exception_if_mldev='only supported in the Vertex AI',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
     ),
 ]
 

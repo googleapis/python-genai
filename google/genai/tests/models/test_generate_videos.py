@@ -263,7 +263,8 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_vertex=(
-            "webhook_config parameter is not supported in Vertex AI"
+            "webhook_config parameter is not supported in Gemini Enterprise"
+            " Agent Platform"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -279,7 +280,8 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex=(
-            "webhook_config parameter is not supported in Vertex AI"
+            "webhook_config parameter is not supported in Gemini Enterprise"
+            " Agent Platform"
         ),
     ),
 ]
@@ -333,6 +335,8 @@ def test_text_and_image_to_video_poll(client):
       image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+          resize_mode=(types.ImageResizeMode.CROP
+                       if client.vertexai else None),
       ),
   )
   while not operation.done:

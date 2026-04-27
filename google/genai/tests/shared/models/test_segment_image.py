@@ -32,7 +32,9 @@ SOURCE_IMAGE1 = types.Image.from_file(location=SOURCE_IMAGE_FILE_PATH1)
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_segment_background',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
             source=types.SegmentImageSource(

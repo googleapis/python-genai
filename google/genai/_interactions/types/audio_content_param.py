@@ -54,7 +54,7 @@ class AudioContentParam(TypedDict, total=False):
     ]
     """The mime type of the audio."""
 
-    rate: int
+    sample_rate: int
     """The sample rate of the audio."""
 
     uri: str

@@ -189,3 +189,90 @@ def test_properties_conversion():
           ],
       ),
   ]
+
+
+def test_defs_conversion():
+    """Test conversion of MCP tools with shared definitions ($defs)."""
+    mcp_tools = [
+        mcp_types.Tool(
+            name='create_endpoint',
+            description='Creates an endpoint',
+            inputSchema={
+                'type': 'object',
+                'properties': {
+                    'machine_spec': {'$ref': '#/$defs/MachineSpec'}
+                },
+                '$defs': {
+                    'MachineSpec': {
+                        'type': 'object',
+                        'properties': {'machine_type': {'type': 'string'}}
+                    }
+                }
+            },
+        ),
+    ]
+
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+
+    schema = result[0].function_declarations[0].parameters_json_schema
+    assert '$defs' in schema
+    assert 'MachineSpec' in schema['$defs']
+
+
+def test_create_endpoint_one_of_conversion():
+    """Test oneOf translation for Vertex create_endpoint resource selection."""
+
+    mcp_tools = [
+        mcp_types.Tool(
+            name='create_endpoint',
+            description='Creates a Vertex AI Endpoint resource.',
+            inputSchema={
+                'type': 'object',
+                'properties': {
+                    'endpoint': {
+                        'type': 'object',
+                        'oneOf': [
+                            {'title': 'dedicated_resources', 'type': 'object'},
+                            {'title': 'automatic_resources', 'type': 'object'},
+                        ],
+                    }
+                },
+            },
+        ),
+    ]
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+    schema = result[0].function_declarations[0].parameters_json_schema
+    endpoint_schema = schema['properties']['endpoint']
+
+    assert 'oneOf' in endpoint_schema
+    assert len(endpoint_schema['oneOf']) == 2
+
+
+def test_update_endpoint_labels_conversion():
+    """Test additionalProperties translation for Vertex resource labels."""
+
+    mcp_tools = [
+        mcp_types.Tool(
+            name='update_endpoint',
+            description='Updates a Vertex AI Endpoint resource.',
+            inputSchema={
+                'type': 'object',
+                'properties': {
+                    'endpoint': {
+                        'type': 'object',
+                        'properties': {
+                            'labels': {
+                                'type': 'object',
+                                'additionalProperties': {'type': 'string'}
+                            }
+                        }
+                    }
+                }
+            },
+        ),
+    ]
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+    schema = result[0].function_declarations[0].parameters_json_schema
+    labels_schema = schema['properties']['endpoint']['properties']['labels']
+
+    assert 'additionalProperties' in labels_schema

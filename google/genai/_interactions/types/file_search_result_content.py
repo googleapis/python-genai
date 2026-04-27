@@ -20,14 +20,7 @@ from typing_extensions import Literal
 
 from .._models import BaseModel
 
-__all__ = ["FileSearchResultContent", "Result"]
-
-
-class Result(BaseModel):
-    """The result of the File Search."""
-
-    custom_metadata: Optional[List[object]] = None
-    """User provided metadata about the FileSearchResult."""
+__all__ = ["FileSearchResultContent"]
 
 
 class FileSearchResultContent(BaseModel):
@@ -36,10 +29,10 @@ class FileSearchResultContent(BaseModel):
     call_id: str
     """Required. ID to match the ID from the function call block."""
 
-    result: List[Result]
-    """Required. The results of the File Search."""
-
     type: Literal["file_search_result"]
+
+    result: Optional[List[object]] = None
+    """Optional. The results of the File Search."""
 
     signature: Optional[str] = None
     """A signature hash for backend validation."""

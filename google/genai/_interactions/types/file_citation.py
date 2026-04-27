@@ -15,7 +15,7 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
+from typing import Dict, Optional
 from typing_extensions import Literal
 
 from .._models import BaseModel
@@ -28,6 +28,9 @@ class FileCitation(BaseModel):
 
     type: Literal["file_citation"]
 
+    custom_metadata: Optional[Dict[str, object]] = None
+    """User provided metadata about the retrieved context."""
+
     document_uri: Optional[str] = None
     """The URI of the file."""
 
@@ -36,6 +39,12 @@ class FileCitation(BaseModel):
 
     file_name: Optional[str] = None
     """The name of the file."""
+
+    media_id: Optional[str] = None
+    """Media ID in-case of image citations, if applicable."""
+
+    page_number: Optional[int] = None
+    """Page number of the cited document, if applicable."""
 
     source: Optional[str] = None
     """Source attributed for a portion of the text."""

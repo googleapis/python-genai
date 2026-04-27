@@ -165,17 +165,21 @@ def _BatchJobDestination_to_vertex(
     )
 
   if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_name parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['inlined_responses']) is not None:
     raise ValueError(
-        'inlined_responses parameter is not supported in Vertex AI.'
+        'inlined_responses parameter is not supported in Gemini Enterprise'
+        ' Agent Platform.'
     )
 
   if getv(from_object, ['inlined_embed_content_responses']) is not None:
     raise ValueError(
-        'inlined_embed_content_responses parameter is not supported in'
-        ' Vertex AI.'
+        'inlined_embed_content_responses parameter is not supported in Gemini'
+        ' Enterprise Agent Platform.'
     )
 
   if getv(from_object, ['vertex_dataset']) is not None:
@@ -276,11 +280,15 @@ def _BatchJobSource_to_vertex(
     )
 
   if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_name parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   if getv(from_object, ['inlined_requests']) is not None:
     raise ValueError(
-        'inlined_requests parameter is not supported in Vertex AI.'
+        'inlined_requests parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
     )
 
   if getv(from_object, ['vertex_dataset_name']) is not None:
@@ -405,6 +413,9 @@ def _BatchJob_from_vertex(
     setv(
         to_object, ['completion_stats'], getv(from_object, ['completionStats'])
     )
+
+  if getv(from_object, ['outputInfo']) is not None:
+    setv(to_object, ['output_info'], getv(from_object, ['outputInfo']))
 
   return to_object
 
@@ -595,7 +606,10 @@ def _CreateBatchJobConfig_to_vertex(
     )
 
   if getv(from_object, ['webhook_config']) is not None:
-    raise ValueError('webhook_config parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'webhook_config parameter is not supported in Gemini Enterprise Agent'
+        ' Platform.'
+    )
 
   return to_object
 
@@ -1847,8 +1861,9 @@ class Batches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the Vertex AI client. Or
-          "batches/abc" using the Gemini Developer AI client.
+          when project and location are initialized in the Gemini Enterprise
+          Agent Platform client. Or "batches/abc" using the Gemini Developer AI
+          client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -2184,10 +2199,11 @@ class Batches(_api_module.BaseModule):
 
     Args:
       model (str): The model to use for the batch job.
-      src: The source of the batch job. Currently Vertex AI supports GCS URI(-s)
-        or BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId". Gemini Developer API supports
-        List of inlined_request, or file name. Example: "files/file_name".
+      src: The source of the batch job. Currently Gemini Enterprise Agent
+        Platform supports GCS URI(-s) or BigQuery URI. Example:
+        "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
+        Gemini Developer API supports List of inlined_request, or file name.
+        Example: "files/file_name".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:
@@ -2264,7 +2280,10 @@ class Batches(_api_module.BaseModule):
     )
 
     if self._api_client.vertexai:
-      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+      raise ValueError(
+          'Gemini Enterprise Agent Platform (previously known as Vertex AI)'
+          ' does not support batches.create_embeddings.'
+      )
     else:
       return self._create_embeddings(model=model, src=src, config=config)
 
@@ -2465,8 +2484,9 @@ class AsyncBatches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the Vertex AI client. Or
-          "batches/abc" using the Gemini Developer AI client.
+          when project and location are initialized in the Gemini Enterprise
+          Agent Platform client. Or "batches/abc" using the Gemini Developer AI
+          client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -2808,10 +2828,11 @@ class AsyncBatches(_api_module.BaseModule):
 
     Args:
       model (str): The model to use for the batch job.
-      src: The source of the batch job. Currently Vertex AI supports GCS URI(-s)
-        or BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId". Gemini Develop API supports List
-        of inlined_request, or file name. Example: "files/file_name".
+      src: The source of the batch job. Currently Gemini Enterprise Agent
+        Platform supports GCS URI(-s) or BigQuery URI. Example:
+        "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
+        Gemini Develop API supports List of inlined_request, or file name.
+        Example: "files/file_name".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:
@@ -2894,7 +2915,10 @@ class AsyncBatches(_api_module.BaseModule):
       http_options = parameter_model.config.http_options
 
     if self._api_client.vertexai:
-      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+      raise ValueError(
+          'Gemini Enterprise Agent Platform (previously known as Vertex AI)'
+          ' does not support batches.create_embeddings.'
+      )
     else:
       return await self._create_embeddings(model=model, src=src, config=config)
 

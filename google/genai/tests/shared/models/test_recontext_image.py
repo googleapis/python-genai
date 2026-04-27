@@ -32,14 +32,14 @@ PANTS = types.Image(
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_virtual_try_on',
-        exception_if_mldev='only supported in the Vertex AI client',
+        exception_if_mldev=(
+            'only supported in the Gemini Enterprise Agent Platform'
+        ),
         parameters=types._RecontextImageParameters(
             model=VIRTUAL_TRY_ON_IMAGE_MODEL_LATEST,
             source=types.RecontextImageSource(
                 person_image=PERSON_IMAGE,
-                product_images=[
-                    types.ProductImage(product_image=PANTS)
-                ],
+                product_images=[types.ProductImage(product_image=PANTS)],
             ),
             config=types.RecontextImageConfig(
                 number_of_images=1,
