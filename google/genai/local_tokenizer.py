@@ -317,8 +317,8 @@ class LocalTokenizer:
 
     .. code-block:: python
 
-      from google import genai
-      tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+      from google.genai import local_tokenizer
+      tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
       result = tokenizer.count_tokens("What is your name?")
       print(result)
       # total_tokens=5
@@ -358,8 +358,8 @@ class LocalTokenizer:
 
     .. code-block:: python
 
-      from google import genai
-      tokenizer = genai.LocalTokenizer(model_name='gemini-2.0-flash-001')
+      from google.genai import local_tokenizer
+      tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
       result = tokenizer.compute_tokens("What is your name?")
       print(result)
       # tokens_info=[TokensInfo(token_ids=[279, 329, 1313, 2508, 13], tokens=[b' What', b' is', b' your', b' name', b'?'], role='user')]

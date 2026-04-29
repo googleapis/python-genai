@@ -1135,14 +1135,18 @@ print(response)
 #### Local Count Tokens
 
 ```python
-tokenizer = genai.LocalTokenizer(model_name='gemini-2.5-flash')
+from google.genai import local_tokenizer
+
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
 result = tokenizer.count_tokens("What is your name?")
 ```
 
 #### Local Compute Tokens
 
 ```python
-tokenizer = genai.LocalTokenizer(model_name='gemini-2.5-flash')
+from google.genai import local_tokenizer
+
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
 result = tokenizer.compute_tokens("What is your name?")
 ```
 
