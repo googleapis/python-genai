@@ -105,9 +105,6 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
@@ -176,9 +173,6 @@ class InteractionsResource(SyncAPIResource):
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -252,9 +246,6 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
@@ -331,9 +322,6 @@ class InteractionsResource(SyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
@@ -400,9 +388,6 @@ class InteractionsResource(SyncAPIResource):
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -801,9 +786,6 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
@@ -872,9 +854,6 @@ class AsyncInteractionsResource(AsyncAPIResource):
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
@@ -948,9 +927,6 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
@@ -1027,9 +1003,6 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
@@ -1096,9 +1069,6 @@ class AsyncInteractionsResource(AsyncAPIResource):
           generation_config: Input only. Configuration parameters for the model interaction.
 
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
 
           response_mime_type: The mime type of the response. This is required if response_format is set.
 

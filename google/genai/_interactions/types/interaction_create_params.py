@@ -80,10 +80,6 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     """The ID of the previous interaction, if any."""
 
     response_format: object
-    """
-    Enforces that the generated response is a JSON object that complies with the
-    JSON schema specified in this field.
-    """
 
     response_mime_type: str
     """The mime type of the response. This is required if response_format is set."""
@@ -166,10 +162,6 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     """The ID of the previous interaction, if any."""
 
     response_format: object
-    """
-    Enforces that the generated response is a JSON object that complies with the
-    JSON schema specified in this field.
-    """
 
     response_mime_type: str
     """The mime type of the response. This is required if response_format is set."""

@@ -131,10 +131,6 @@ class Interaction(BaseModel):
     """The ID of the previous interaction, if any."""
 
     response_format: Optional[object] = None
-    """
-    Enforces that the generated response is a JSON object that complies with the
-    JSON schema specified in this field.
-    """
 
     response_mime_type: Optional[str] = None
     """The mime type of the response. This is required if response_format is set."""
