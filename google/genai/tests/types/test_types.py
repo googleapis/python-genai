@@ -2739,6 +2739,62 @@ def test_unknown_enum_value_in_nested_dict():
   assert schema.category.value == 'NEW_CATEGORY'
 
 
+def test_generate_content_response_surfaces_json_parse_error():
+  class Recipe(pydantic.BaseModel):
+    name: str
+
+  response = types.GenerateContentResponse._from_response(
+      response={
+          'candidates': [
+              {
+                  'content': {
+                      'parts': [{'text': '{"name": "Soup"'}],
+                      'role': 'model',
+                  }
+              }
+          ]
+      },
+      kwargs={
+          'config': {
+              'response_schema': Recipe,
+          }
+      },
+  )
+
+  assert response.parsed is None
+  assert response.parsed_error is not None
+  assert 'ValidationError' in response.parsed_error
+  assert '{"name": "Soup"' in response.parsed_error
+
+
+def test_generate_content_response_surfaces_validation_error():
+  class Recipe(pydantic.BaseModel):
+    name: str
+
+  response = types.GenerateContentResponse._from_response(
+      response={
+          'candidates': [
+              {
+                  'content': {
+                      'parts': [{'text': '{"title": "Soup"}'}],
+                      'role': 'model',
+                  }
+              }
+          ]
+      },
+      kwargs={
+          'config': {
+              'response_schema': Recipe,
+          }
+      },
+  )
+
+  assert response.parsed is None
+  assert response.parsed_error is not None
+  assert 'ValidationError' in response.parsed_error
+  assert '{"title": "Soup"}' in response.parsed_error
+
+
 # Tests that TypedDict types from types.py are compatible with pydantic
 # pydantic requires TypedDict from typing_extensions for Python <3.12
 def test_typed_dict_pydantic_field():
