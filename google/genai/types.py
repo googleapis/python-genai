@@ -15296,6 +15296,10 @@ class FileSearchStore(_common.BaseModel):
       description="""The size of raw bytes ingested into the FileSearchStore. This is the
       total size of all the documents in the FileSearchStore.""",
   )
+  embedding_model: Optional[str] = Field(
+      default=None,
+      description="""The embedding model used by the FileSearchStore.""",
+  )
 
 
 class FileSearchStoreDict(TypedDict, total=False):
@@ -15325,6 +15329,9 @@ class FileSearchStoreDict(TypedDict, total=False):
   size_bytes: Optional[int]
   """The size of raw bytes ingested into the FileSearchStore. This is the
       total size of all the documents in the FileSearchStore."""
+
+  embedding_model: Optional[str]
+  """The embedding model used by the FileSearchStore."""
 
 
 FileSearchStoreOrDict = Union[FileSearchStore, FileSearchStoreDict]
