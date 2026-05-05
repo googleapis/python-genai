@@ -125,17 +125,26 @@ def append_library_version_headers(headers: dict[str, str]) -> None:
   version_header_value = f'{library_label} {language_label}'
   if (
       'user-agent' in headers
-      and version_header_value not in headers['user-agent']
+      and library_label not in headers['user-agent']
   ):
     headers['user-agent'] = f'{version_header_value} ' + headers['user-agent']
+  elif 'user-agent' in headers and language_label not in headers['user-agent']:
+    headers['user-agent'] = f'{headers["user-agent"]} {language_label}'
   elif 'user-agent' not in headers:
     headers['user-agent'] = version_header_value
   if (
       'x-goog-api-client' in headers
-      and version_header_value not in headers['x-goog-api-client']
+      and library_label not in headers['x-goog-api-client']
   ):
     headers['x-goog-api-client'] = (
         f'{version_header_value} ' + headers['x-goog-api-client']
+    )
+  elif (
+      'x-goog-api-client' in headers
+      and language_label not in headers['x-goog-api-client']
+  ):
+    headers['x-goog-api-client'] = (
+        f"{headers['x-goog-api-client']} {language_label}"
     )
   elif 'x-goog-api-client' not in headers:
     headers['x-goog-api-client'] = version_header_value
