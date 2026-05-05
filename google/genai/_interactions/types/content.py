@@ -23,47 +23,10 @@ from .text_content import TextContent
 from .audio_content import AudioContent
 from .image_content import ImageContent
 from .video_content import VideoContent
-from .thought_content import ThoughtContent
 from .document_content import DocumentContent
-from .function_call_content import FunctionCallContent
-from .function_result_content import FunctionResultContent
-from .file_search_call_content import FileSearchCallContent
-from .google_maps_call_content import GoogleMapsCallContent
-from .url_context_call_content import URLContextCallContent
-from .file_search_result_content import FileSearchResultContent
-from .google_maps_result_content import GoogleMapsResultContent
-from .google_search_call_content import GoogleSearchCallContent
-from .url_context_result_content import URLContextResultContent
-from .code_execution_call_content import CodeExecutionCallContent
-from .google_search_result_content import GoogleSearchResultContent
-from .mcp_server_tool_call_content import MCPServerToolCallContent
-from .code_execution_result_content import CodeExecutionResultContent
-from .mcp_server_tool_result_content import MCPServerToolResultContent
 
 __all__ = ["Content"]
 
 Content: TypeAlias = Annotated[
-    Union[
-        TextContent,
-        ImageContent,
-        AudioContent,
-        DocumentContent,
-        VideoContent,
-        ThoughtContent,
-        FunctionCallContent,
-        CodeExecutionCallContent,
-        URLContextCallContent,
-        MCPServerToolCallContent,
-        GoogleSearchCallContent,
-        FileSearchCallContent,
-        GoogleMapsCallContent,
-        FunctionResultContent,
-        CodeExecutionResultContent,
-        URLContextResultContent,
-        GoogleSearchResultContent,
-        MCPServerToolResultContent,
-        FileSearchResultContent,
-        GoogleMapsResultContent,
-    ],
-    PropertyInfo(discriminator="type"),
+    Union[TextContent, ImageContent, AudioContent, DocumentContent, VideoContent], PropertyInfo(discriminator="type")
 ]

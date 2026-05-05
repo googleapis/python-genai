@@ -20,8 +20,8 @@ from __future__ import annotations
 from typing import List, Union, Iterable
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
+from .step_param import StepParam
 from .tool_param import ToolParam
-from .turn_param import TurnParam
 from .model_param import ModelParam
 from .content_param import ContentParam
 from .text_content_param import TextContentParam
@@ -29,25 +29,10 @@ from .audio_content_param import AudioContentParam
 from .image_content_param import ImageContentParam
 from .video_content_param import VideoContentParam
 from .webhook_config_param import WebhookConfigParam
-from .thought_content_param import ThoughtContentParam
 from .document_content_param import DocumentContentParam
 from .generation_config_param import GenerationConfigParam
 from .dynamic_agent_config_param import DynamicAgentConfigParam
-from .function_call_content_param import FunctionCallContentParam
-from .function_result_content_param import FunctionResultContentParam
-from .file_search_call_content_param import FileSearchCallContentParam
-from .google_maps_call_content_param import GoogleMapsCallContentParam
-from .url_context_call_content_param import URLContextCallContentParam
 from .deep_research_agent_config_param import DeepResearchAgentConfigParam
-from .file_search_result_content_param import FileSearchResultContentParam
-from .google_maps_result_content_param import GoogleMapsResultContentParam
-from .google_search_call_content_param import GoogleSearchCallContentParam
-from .url_context_result_content_param import URLContextResultContentParam
-from .code_execution_call_content_param import CodeExecutionCallContentParam
-from .google_search_result_content_param import GoogleSearchResultContentParam
-from .mcp_server_tool_call_content_param import MCPServerToolCallContentParam
-from .code_execution_result_content_param import CodeExecutionResultContentParam
-from .mcp_server_tool_result_content_param import MCPServerToolResultContentParam
 
 __all__ = [
     "BaseCreateModelInteractionParams",
@@ -112,29 +97,14 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
 
 
 Input: TypeAlias = Union[
-    Iterable[ContentParam],
     str,
-    Iterable[TurnParam],
+    Iterable[StepParam],
+    Iterable[ContentParam],
     TextContentParam,
     ImageContentParam,
     AudioContentParam,
     DocumentContentParam,
     VideoContentParam,
-    ThoughtContentParam,
-    FunctionCallContentParam,
-    CodeExecutionCallContentParam,
-    URLContextCallContentParam,
-    MCPServerToolCallContentParam,
-    GoogleSearchCallContentParam,
-    FileSearchCallContentParam,
-    GoogleMapsCallContentParam,
-    FunctionResultContentParam,
-    CodeExecutionResultContentParam,
-    URLContextResultContentParam,
-    GoogleSearchResultContentParam,
-    MCPServerToolResultContentParam,
-    FileSearchResultContentParam,
-    GoogleMapsResultContentParam,
 ]
 
 

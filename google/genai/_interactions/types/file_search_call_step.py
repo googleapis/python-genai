@@ -15,19 +15,21 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from typing import Optional
+from typing_extensions import Literal
 
-from typing import Union
-from typing_extensions import TypeAlias
+from .._models import BaseModel
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
+__all__ = ["FileSearchCallStep"]
 
-__all__ = ["ContentParam"]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+class FileSearchCallStep(BaseModel):
+    """File Search call step."""
+
+    id: str
+    """Required. A unique ID for this specific tool call."""
+
+    type: Literal["file_search_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""

@@ -17,17 +17,30 @@
 
 from __future__ import annotations
 
-from typing import Union
-from typing_extensions import TypeAlias
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
 
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
 from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
 
-__all__ = ["ContentParam"]
+__all__ = ["ThoughtStepParam", "Summary"]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+Summary: TypeAlias = Union[TextContentParam, ImageContentParam]
+
+
+class ThoughtStepParam(TypedDict, total=False):
+    """A thought step."""
+
+    type: Required[Literal["thought"]]
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+    summary: Iterable[Summary]
+    """A summary of the thought."""
+
+
+set_pydantic_config(ThoughtStepParam, {"arbitrary_types_allowed": True})

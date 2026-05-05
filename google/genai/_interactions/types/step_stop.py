@@ -15,19 +15,20 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from typing import Optional
+from typing_extensions import Literal
 
-from typing import Union
-from typing_extensions import TypeAlias
+from .._models import BaseModel
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
+__all__ = ["StepStop"]
 
-__all__ = ["ContentParam"]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+class StepStop(BaseModel):
+    event_type: Literal["step.stop"]
+
+    index: int
+
+    event_id: Optional[str] = None
+    """
+    The event_id token to be used to resume the interaction stream, from this event.
+    """

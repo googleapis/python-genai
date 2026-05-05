@@ -15,19 +15,27 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from typing import Optional
+from typing_extensions import Literal
 
-from typing import Union
-from typing_extensions import TypeAlias
+from .._models import BaseModel
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
+__all__ = ["CodeExecutionResultStep"]
 
-__all__ = ["ContentParam"]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+class CodeExecutionResultStep(BaseModel):
+    """Code execution result step."""
+
+    call_id: str
+    """Required. ID to match the ID from the function call block."""
+
+    result: str
+    """Required. The output of the code execution."""
+
+    type: Literal["code_execution_result"]
+
+    is_error: Optional[bool] = None
+    """Whether the code execution resulted in an error."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
