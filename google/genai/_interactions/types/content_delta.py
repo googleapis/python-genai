@@ -58,7 +58,7 @@ __all__ = [
     "DeltaMCPServerToolResultResultFunctionResultSubcontentList",
     "DeltaFileSearchResult",
     "DeltaGoogleMapsResult",
-    "DeltaTextAnnotation",
+    "DeltaTextAnnotationDelta",
 ]
 
 
@@ -372,8 +372,8 @@ class DeltaGoogleMapsResult(BaseModel):
     """A signature hash for backend validation."""
 
 
-class DeltaTextAnnotation(BaseModel):
-    type: Literal["text_annotation"]
+class DeltaTextAnnotationDelta(BaseModel):
+    type: Literal["text_annotation_delta"]
 
     annotations: Optional[List[Annotation]] = None
     """Citation information for model-generated content."""
@@ -402,7 +402,7 @@ Delta: TypeAlias = Annotated[
         DeltaMCPServerToolResult,
         DeltaFileSearchResult,
         DeltaGoogleMapsResult,
-        DeltaTextAnnotation,
+        DeltaTextAnnotationDelta,
     ],
     PropertyInfo(discriminator="type"),
 ]

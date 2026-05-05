@@ -15,19 +15,26 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from typing import List, Union, Optional
+from typing_extensions import Literal, Annotated, TypeAlias
 
-from typing import Union
-from typing_extensions import TypeAlias
+from .._utils import PropertyInfo
+from .._models import BaseModel
+from .text_content import TextContent
+from .image_content import ImageContent
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
+__all__ = ["ThoughtStep", "Summary"]
 
-__all__ = ["ContentParam"]
+Summary: TypeAlias = Annotated[Union[TextContent, ImageContent], PropertyInfo(discriminator="type")]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+
+class ThoughtStep(BaseModel):
+    """A thought step."""
+
+    type: Literal["thought"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+    summary: Optional[List[Summary]] = None
+    """A summary of the thought."""

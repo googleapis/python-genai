@@ -18,16 +18,25 @@
 from __future__ import annotations
 
 from typing import Union
-from typing_extensions import TypeAlias
+from typing_extensions import Literal, Required, Annotated, TypedDict
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
 
-__all__ = ["ContentParam"]
+__all__ = ["FileSearchCallStepParam"]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+
+class FileSearchCallStepParam(TypedDict, total=False):
+    """File Search call step."""
+
+    id: Required[str]
+    """Required. A unique ID for this specific tool call."""
+
+    type: Required[Literal["file_search_call"]]
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(FileSearchCallStepParam, {"arbitrary_types_allowed": True})

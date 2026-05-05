@@ -17,17 +17,17 @@
 
 from __future__ import annotations
 
-from typing import Union
-from typing_extensions import TypeAlias
+from typing import Iterable
+from typing_extensions import Literal, Required, TypedDict
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
+from .content_param import ContentParam
 
-__all__ = ["ContentParam"]
+__all__ = ["UserInputStepParam"]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+
+class UserInputStepParam(TypedDict, total=False):
+    """Input provided by the user."""
+
+    type: Required[Literal["user_input"]]
+
+    content: Iterable[ContentParam]

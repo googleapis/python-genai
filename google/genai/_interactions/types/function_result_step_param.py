@@ -1,0 +1,55 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+from __future__ import annotations
+
+from typing import Union, Iterable
+from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
+
+from .._types import Base64FileInput
+from .._utils import PropertyInfo
+from .._models import set_pydantic_config
+from .text_content_param import TextContentParam
+from .image_content_param import ImageContentParam
+
+__all__ = ["FunctionResultStepParam", "ResultFunctionResultSubcontentList"]
+
+ResultFunctionResultSubcontentList: TypeAlias = Union[TextContentParam, ImageContentParam]
+
+
+class FunctionResultStepParam(TypedDict, total=False):
+    """Result of a function tool call."""
+
+    call_id: Required[str]
+    """Required. ID to match the ID from the function call block."""
+
+    result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
+    """The result of the tool call."""
+
+    type: Required[Literal["function_result"]]
+
+    is_error: bool
+    """Whether the tool call resulted in an error."""
+
+    name: str
+    """The name of the tool that was called."""
+
+    signature: Annotated[Union[str, Base64FileInput], PropertyInfo(format="base64")]
+    """A signature hash for backend validation."""
+
+
+set_pydantic_config(FunctionResultStepParam, {"arbitrary_types_allowed": True})

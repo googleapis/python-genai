@@ -15,19 +15,27 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from typing import Dict, Optional
+from typing_extensions import Literal
 
-from typing import Union
-from typing_extensions import TypeAlias
+from .._models import BaseModel
 
-from .text_content_param import TextContentParam
-from .audio_content_param import AudioContentParam
-from .image_content_param import ImageContentParam
-from .video_content_param import VideoContentParam
-from .document_content_param import DocumentContentParam
+__all__ = ["FunctionCallStep"]
 
-__all__ = ["ContentParam"]
 
-ContentParam: TypeAlias = Union[
-    TextContentParam, ImageContentParam, AudioContentParam, DocumentContentParam, VideoContentParam
-]
+class FunctionCallStep(BaseModel):
+    """A function tool call step."""
+
+    id: str
+    """Required. A unique ID for this specific tool call."""
+
+    arguments: Dict[str, object]
+    """Required. The arguments to pass to the function."""
+
+    name: str
+    """Required. The name of the tool to call."""
+
+    type: Literal["function_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
