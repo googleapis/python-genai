@@ -51,7 +51,7 @@ def _CreateFileSearchStoreConfig_to_mldev(
   if getv(from_object, ['embedding_model']) is not None:
     setv(
         parent_object,
-        ['embeddingModel'],
+        ['_query', 'embedding_model'],
         t.t_model(api_client, getv(from_object, ['embedding_model'])),
     )
 
