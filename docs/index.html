@@ -1484,7 +1484,7 @@ Note that it applies to all the modules.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 <span class="c1"># Read local image (uses mimetypes.guess_type to infer mime type)</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;local/path/file.png&quot;</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="s2">&quot;local/path/file.png&quot;</span><span class="p">)</span>
 
 <span class="c1"># Create operation</span>
 <span class="n">operation</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_videos</span><span class="p">(</span>
@@ -2154,6 +2154,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.create"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.create()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.delete"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.delete()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.documents"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.documents</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.download_media"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.download_media()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.get"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.get()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.import_file"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.import_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.AsyncFileSearchStores.list"><code class="docutils literal notranslate"><span class="pre">AsyncFileSearchStores.list()</span></code></a></li>
@@ -2164,6 +2165,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.create"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.create()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.delete"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.delete()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.documents"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.documents</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.download_media"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.download_media()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.get"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.get()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.import_file"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.import_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.file_search_stores.FileSearchStores.list"><code class="docutils literal notranslate"><span class="pre">FileSearchStores.list()</span></code></a></li>
@@ -3113,11 +3115,13 @@ The structure of the dictionary must match the backend API’s request structure
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfig"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfig</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfig.display_name"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfig.display_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfig.embedding_model"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfig.embedding_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfig.http_options"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfig.http_options</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfigDict"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfigDict.display_name"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfigDict.display_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfigDict.embedding_model"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfigDict.embedding_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.CreateFileSearchStoreConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">CreateFileSearchStoreConfigDict.http_options</span></code></a></li>
 </ul>
 </li>
@@ -3484,6 +3488,14 @@ The structure of the dictionary must match the backend API’s request structure
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DownloadFileConfigDict"><code class="docutils literal notranslate"><span class="pre">DownloadFileConfigDict</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DownloadFileConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">DownloadFileConfigDict.http_options</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DownloadMediaConfig"><code class="docutils literal notranslate"><span class="pre">DownloadMediaConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DownloadMediaConfig.http_options"><code class="docutils literal notranslate"><span class="pre">DownloadMediaConfig.http_options</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DownloadMediaConfigDict"><code class="docutils literal notranslate"><span class="pre">DownloadMediaConfigDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.DownloadMediaConfigDict.http_options"><code class="docutils literal notranslate"><span class="pre">DownloadMediaConfigDict.http_options</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="genai.html#genai.types.DynamicRetrievalConfig"><code class="docutils literal notranslate"><span class="pre">DynamicRetrievalConfig</span></code></a><ul>
@@ -3871,6 +3883,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStore.active_documents_count"><code class="docutils literal notranslate"><span class="pre">FileSearchStore.active_documents_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStore.create_time"><code class="docutils literal notranslate"><span class="pre">FileSearchStore.create_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStore.display_name"><code class="docutils literal notranslate"><span class="pre">FileSearchStore.display_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStore.embedding_model"><code class="docutils literal notranslate"><span class="pre">FileSearchStore.embedding_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStore.failed_documents_count"><code class="docutils literal notranslate"><span class="pre">FileSearchStore.failed_documents_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStore.name"><code class="docutils literal notranslate"><span class="pre">FileSearchStore.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStore.pending_documents_count"><code class="docutils literal notranslate"><span class="pre">FileSearchStore.pending_documents_count</span></code></a></li>
@@ -3882,6 +3895,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStoreDict.active_documents_count"><code class="docutils literal notranslate"><span class="pre">FileSearchStoreDict.active_documents_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStoreDict.create_time"><code class="docutils literal notranslate"><span class="pre">FileSearchStoreDict.create_time</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStoreDict.display_name"><code class="docutils literal notranslate"><span class="pre">FileSearchStoreDict.display_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStoreDict.embedding_model"><code class="docutils literal notranslate"><span class="pre">FileSearchStoreDict.embedding_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStoreDict.failed_documents_count"><code class="docutils literal notranslate"><span class="pre">FileSearchStoreDict.failed_documents_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStoreDict.name"><code class="docutils literal notranslate"><span class="pre">FileSearchStoreDict.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.FileSearchStoreDict.pending_documents_count"><code class="docutils literal notranslate"><span class="pre">FileSearchStoreDict.pending_documents_count</span></code></a></li>
@@ -4734,6 +4748,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContext.custom_metadata"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContext.custom_metadata</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContext.document_name"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContext.document_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContext.file_search_store"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContext.file_search_store</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContext.media_id"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContext.media_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContext.page_number"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContext.page_number</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContext.rag_chunk"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContext.rag_chunk</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContext.text"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContext.text</span></code></a></li>
@@ -4745,6 +4760,7 @@ The structure of the dictionary must match the backend API’s request structure
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContextDict.custom_metadata"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContextDict.custom_metadata</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContextDict.document_name"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContextDict.document_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContextDict.file_search_store"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContextDict.file_search_store</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContextDict.media_id"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContextDict.media_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContextDict.page_number"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContextDict.page_number</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContextDict.rag_chunk"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContextDict.rag_chunk</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="genai.html#genai.types.GroundingChunkRetrievedContextDict.text"><code class="docutils literal notranslate"><span class="pre">GroundingChunkRetrievedContextDict.text</span></code></a></li>
