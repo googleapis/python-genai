@@ -866,11 +866,6 @@ class BaseApiClient:
     )
 
   def _use_google_auth_async(self) -> bool:
-    try:
-      from google.auth.aio.credentials import StaticCredentials
-      from google.auth.aio.transport.sessions import AsyncAuthorizedSession
-    except ImportError:
-      return False
     return bool(
         has_aiohttp
         and self.vertexai
