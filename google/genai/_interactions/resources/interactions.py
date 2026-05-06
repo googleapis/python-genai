@@ -22,7 +22,10 @@ from typing_extensions import Literal, overload
 
 import httpx
 
-from ..types import interaction_get_params, interaction_create_params
+from ..types import (
+    interaction_get_params,
+    interaction_create_params,
+)
 from .._types import Body, Omit, Query, Headers, NotGiven, omit, not_given
 from .._utils import required_args, maybe_transform, async_maybe_transform
 from .._compat import cached_property
@@ -48,6 +51,7 @@ from ..types.model_param import ModelParam
 from ..types.webhook_config_param import WebhookConfigParam
 from ..types.interaction_sse_event import InteractionSSEEvent
 from ..types.generation_config_param import GenerationConfigParam
+from ..types.model_armor_config_param import ModelArmorConfigParam
 
 __all__ = ["InteractionsResource", "AsyncInteractionsResource"]
 
@@ -81,6 +85,7 @@ class InteractionsResource(SyncAPIResource):
         model: ModelParam,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -109,6 +114,8 @@ class InteractionsResource(SyncAPIResource):
           background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -152,6 +159,7 @@ class InteractionsResource(SyncAPIResource):
         stream: Literal[True],
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -181,6 +189,8 @@ class InteractionsResource(SyncAPIResource):
           background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -228,6 +238,7 @@ class InteractionsResource(SyncAPIResource):
         input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -256,6 +267,8 @@ class InteractionsResource(SyncAPIResource):
           agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -306,6 +319,7 @@ class InteractionsResource(SyncAPIResource):
         stream: Literal[True],
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -335,6 +349,8 @@ class InteractionsResource(SyncAPIResource):
           agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -376,6 +392,7 @@ class InteractionsResource(SyncAPIResource):
         stream: bool,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -405,6 +422,8 @@ class InteractionsResource(SyncAPIResource):
           background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -445,6 +464,7 @@ class InteractionsResource(SyncAPIResource):
         model: ModelParam | Omit = omit,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -499,6 +519,7 @@ class InteractionsResource(SyncAPIResource):
                     "model": model,
                     "background": background,
                     "generation_config": generation_config,
+                    "model_armor_config": model_armor_config,
                     "previous_interaction_id": previous_interaction_id,
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
@@ -799,6 +820,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         model: ModelParam,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -827,6 +849,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -870,6 +894,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         stream: Literal[True],
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -899,6 +924,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -946,6 +973,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -974,6 +1002,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -1024,6 +1054,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         stream: Literal[True],
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -1053,6 +1084,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           agent_config: Configuration parameters for the agent interaction.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -1094,6 +1127,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         stream: bool,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -1123,6 +1157,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           background: Input only. Whether to run the model interaction in the background.
 
           generation_config: Input only. Configuration parameters for the model interaction.
+
+          model_armor_config: Settings for prompt and response sanitization using the Model Armor service.
 
           previous_interaction_id: The ID of the previous interaction, if any.
 
@@ -1163,6 +1199,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         model: ModelParam | Omit = omit,
         background: bool | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        model_armor_config: ModelArmorConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
@@ -1213,6 +1250,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
                     "model": model,
                     "background": background,
                     "generation_config": generation_config,
+                    "model_armor_config": model_armor_config,
                     "previous_interaction_id": previous_interaction_id,
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,

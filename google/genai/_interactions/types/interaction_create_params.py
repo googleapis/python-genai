@@ -31,6 +31,7 @@ from .video_content_param import VideoContentParam
 from .webhook_config_param import WebhookConfigParam
 from .document_content_param import DocumentContentParam
 from .generation_config_param import GenerationConfigParam
+from .model_armor_config_param import ModelArmorConfigParam
 from .dynamic_agent_config_param import DynamicAgentConfigParam
 from .text_response_format_param import TextResponseFormatParam
 from .audio_response_format_param import AudioResponseFormatParam
@@ -65,6 +66,9 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
 
     generation_config: GenerationConfigParam
     """Input only. Configuration parameters for the model interaction."""
+
+    model_armor_config: ModelArmorConfigParam
+    """Settings for prompt and response sanitization using the Model Armor service."""
 
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
@@ -148,6 +152,9 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
 
     background: bool
     """Input only. Whether to run the model interaction in the background."""
+
+    model_armor_config: ModelArmorConfigParam
+    """Settings for prompt and response sanitization using the Model Armor service."""
 
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""

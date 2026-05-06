@@ -59,6 +59,7 @@ from .model_output_step import ModelOutputStep as ModelOutputStep
 from .function_call_step import FunctionCallStep as FunctionCallStep
 from .google_maps_result import GoogleMapsResult as GoogleMapsResult
 from .image_config_param import ImageConfigParam as ImageConfigParam
+from .model_armor_config import ModelArmorConfig as ModelArmorConfig
 from .text_content_param import TextContentParam as TextContentParam
 from .thought_step_param import ThoughtStepParam as ThoughtStepParam
 from .tool_choice_config import ToolChoiceConfig as ToolChoiceConfig
@@ -100,6 +101,7 @@ from .url_context_result_step import URLContextResultStep as URLContextResultSte
 from .webhook_delete_response import WebhookDeleteResponse as WebhookDeleteResponse
 from .code_execution_call_step import CodeExecutionCallStep as CodeExecutionCallStep
 from .function_call_step_param import FunctionCallStepParam as FunctionCallStepParam
+from .model_armor_config_param import ModelArmorConfigParam as ModelArmorConfigParam
 from .tool_choice_config_param import ToolChoiceConfigParam as ToolChoiceConfigParam
 from .google_search_result_step import GoogleSearchResultStep as GoogleSearchResultStep
 from .interaction_create_params import InteractionCreateParams as InteractionCreateParams

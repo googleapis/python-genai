@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING, Any, Set, Dict, List, Tuple, Union, Optional, 
 from datetime import datetime
 from typing_extensions import Literal, Annotated, TypeAlias, override
 
+from pydantic import Field as FieldInfo
+
 from .step import Step
 from .tool import Tool
 from .model import Model
@@ -34,6 +36,7 @@ from .video_content import VideoContent
 from .._legacy_lyria import is_legacy_lyria_response_body
 from .webhook_config import WebhookConfig
 from .document_content import DocumentContent
+from .model_armor_config import ModelArmorConfig
 from .dynamic_agent_config import DynamicAgentConfig
 from .text_response_format import TextResponseFormat
 from .audio_response_format import AudioResponseFormat
@@ -102,6 +105,9 @@ class Interaction(BaseModel):
 
     model: Optional[Model] = None
     """The name of the `Model` used for generating the interaction."""
+
+    api_model_armor_config: Optional[ModelArmorConfig] = FieldInfo(alias="model_armor_config", default=None)
+    """Settings for prompt and response sanitization using the Model Armor service."""
 
     previous_interaction_id: Optional[str] = None
     """The ID of the previous interaction, if any."""
