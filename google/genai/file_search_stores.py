@@ -26,7 +26,9 @@ from urllib.parse import urlencode
 from . import _api_module
 from . import _common
 from . import _extra_utils
+from . import _transformers as t
 from . import types
+from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from ._operations_converters import _UploadToFileSearchStoreOperation_from_mldev
@@ -37,6 +39,7 @@ logger = logging.getLogger('google_genai.filesearchstores')
 
 
 def _CreateFileSearchStoreConfig_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -45,17 +48,25 @@ def _CreateFileSearchStoreConfig_to_mldev(
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
+  if getv(from_object, ['embedding_model']) is not None:
+    setv(
+        parent_object,
+        ['embeddingModel'],
+        t.t_model(api_client, getv(from_object, ['embedding_model'])),
+    )
+
   return to_object
 
 
 def _CreateFileSearchStoreParameters_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     _CreateFileSearchStoreConfig_to_mldev(
-        getv(from_object, ['config']), to_object
+        api_client, getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -340,7 +351,9 @@ class FileSearchStores(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _CreateFileSearchStoreParameters_to_mldev(
+          self._api_client, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'fileSearchStores'.format_map(request_url_dict)
@@ -843,6 +856,58 @@ class FileSearchStores(_api_module.BaseModule):
         response=response_dict, kwargs={}
     )
 
+  def download_media(
+      self,
+      *,
+      media_id: str,
+      config: Optional[types.DownloadMediaConfigOrDict] = None,
+  ) -> bytes:
+    """Downloads media using a Media ID.
+
+    The media_id has the format:
+      fileSearchStores/<store>/media/<blob_id>
+
+    This is mapped to the DownloadMedia RPC which expects:
+      GET /{name=fileSearchStores/*/media/*}
+
+    Args:
+      media_id: The Media ID from grounding metadata.
+      config: Optional configuration for the download.
+
+    Returns:
+      bytes: The media data.
+    """
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+
+    clean_id = media_id.lstrip('/')
+    if '/media/' not in clean_id:
+      raise ValueError(
+          f'Invalid media_id format: {media_id!r}. '
+          'Expected format: fileSearchStores/<store>/media/<blob_id>'
+      )
+
+    path = f'{clean_id}?alt=media'
+
+    config_model = None
+    if config:
+      if isinstance(config, dict):
+        config_model = types.DownloadMediaConfig(**config)
+      else:
+        config_model = config
+
+    http_options = None
+    if config_model and getv(config_model, ['http_options']) is not None:
+      http_options = getv(config_model, ['http_options'])
+
+    data = self._api_client.download_file(
+        path,
+        http_options=http_options,
+    )
+    return data
+
   def list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
   ) -> Pager[types.FileSearchStore]:
@@ -903,7 +968,9 @@ class AsyncFileSearchStores(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = _CreateFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _CreateFileSearchStoreParameters_to_mldev(
+          self._api_client, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'fileSearchStores'.format_map(request_url_dict)
@@ -1411,6 +1478,58 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     return types.UploadToFileSearchStoreOperation._from_response(
         response=response_dict, kwargs={}
     )
+
+  async def download_media(
+      self,
+      *,
+      media_id: str,
+      config: Optional[types.DownloadMediaConfigOrDict] = None,
+  ) -> bytes:
+    """Downloads media using a Media ID.
+
+    The media_id has the format:
+      fileSearchStores/<store>/media/<blob_id>
+
+    This is mapped to the DownloadMedia RPC which expects:
+      GET /{name=fileSearchStores/*/media/*}
+
+    Args:
+      media_id: The Media ID from grounding metadata.
+      config: Optional configuration for the download.
+
+    Returns:
+      bytes: The media data.
+    """
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+
+    clean_id = media_id.lstrip('/')
+    if '/media/' not in clean_id:
+      raise ValueError(
+          f'Invalid media_id format: {media_id!r}. '
+          'Expected format: fileSearchStores/<store>/media/<blob_id>'
+      )
+
+    path = f'{clean_id}?alt=media'
+
+    config_model = None
+    if config:
+      if isinstance(config, dict):
+        config_model = types.DownloadMediaConfig(**config)
+      else:
+        config_model = config
+
+    http_options = None
+    if config_model and getv(config_model, ['http_options']) is not None:
+      http_options = getv(config_model, ['http_options'])
+
+    data = await self._api_client.async_download_file(
+        path,
+        http_options=http_options,
+    )
+    return data
 
   async def list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None

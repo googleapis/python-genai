@@ -19,6 +19,9 @@ from typing import Union
 from typing_extensions import Annotated, TypeAlias
 
 from .._utils import PropertyInfo
+from .step_stop import StepStop
+from .step_delta import StepDelta
+from .step_start import StepStart
 from .error_event import ErrorEvent
 from .content_stop import ContentStop
 from .content_delta import ContentDelta
@@ -38,6 +41,9 @@ InteractionSSEEvent: TypeAlias = Annotated[
         ContentDelta,
         ContentStop,
         ErrorEvent,
+        StepStart,
+        StepDelta,
+        StepStop,
     ],
     PropertyInfo(discriminator="event_type"),
 ]

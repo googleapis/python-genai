@@ -19,8 +19,8 @@ from typing import List, Union, Optional
 from datetime import datetime
 from typing_extensions import Literal, Annotated, TypeAlias
 
+from .step import Step
 from .tool import Tool
-from .turn import Turn
 from .model import Model
 from .usage import Usage
 from .._utils import PropertyInfo
@@ -31,55 +31,35 @@ from .audio_content import AudioContent
 from .image_content import ImageContent
 from .video_content import VideoContent
 from .webhook_config import WebhookConfig
-from .thought_content import ThoughtContent
 from .document_content import DocumentContent
 from .dynamic_agent_config import DynamicAgentConfig
-from .function_call_content import FunctionCallContent
-from .function_result_content import FunctionResultContent
-from .file_search_call_content import FileSearchCallContent
-from .google_maps_call_content import GoogleMapsCallContent
-from .url_context_call_content import URLContextCallContent
+from .text_response_format import TextResponseFormat
+from .audio_response_format import AudioResponseFormat
+from .image_response_format import ImageResponseFormat
+from .video_response_format import VideoResponseFormat
 from .deep_research_agent_config import DeepResearchAgentConfig
-from .file_search_result_content import FileSearchResultContent
-from .google_maps_result_content import GoogleMapsResultContent
-from .google_search_call_content import GoogleSearchCallContent
-from .url_context_result_content import URLContextResultContent
-from .code_execution_call_content import CodeExecutionCallContent
-from .google_search_result_content import GoogleSearchResultContent
-from .mcp_server_tool_call_content import MCPServerToolCallContent
-from .code_execution_result_content import CodeExecutionResultContent
-from .mcp_server_tool_result_content import MCPServerToolResultContent
 
-__all__ = ["Interaction", "AgentConfig", "Input"]
+__all__ = ["Interaction", "AgentConfig", "Input", "ResponseFormat", "ResponseFormatResponseFormatList"]
 
 AgentConfig: TypeAlias = Annotated[
     Union[DynamicAgentConfig, DeepResearchAgentConfig], PropertyInfo(discriminator="type")
 ]
 
 Input: TypeAlias = Union[
-    List[Content],
-    str,
-    List[Turn],
-    TextContent,
-    ImageContent,
-    AudioContent,
-    DocumentContent,
-    VideoContent,
-    ThoughtContent,
-    FunctionCallContent,
-    CodeExecutionCallContent,
-    URLContextCallContent,
-    MCPServerToolCallContent,
-    GoogleSearchCallContent,
-    FileSearchCallContent,
-    GoogleMapsCallContent,
-    FunctionResultContent,
-    CodeExecutionResultContent,
-    URLContextResultContent,
-    GoogleSearchResultContent,
-    MCPServerToolResultContent,
-    FileSearchResultContent,
-    GoogleMapsResultContent,
+    str, List[Step], List[Content], TextContent, ImageContent, AudioContent, DocumentContent, VideoContent
+]
+
+ResponseFormatResponseFormatList: TypeAlias = Union[
+    AudioResponseFormat, TextResponseFormat, ImageResponseFormat, VideoResponseFormat, object
+]
+
+ResponseFormat: TypeAlias = Union[
+    List[ResponseFormatResponseFormatList],
+    AudioResponseFormat,
+    TextResponseFormat,
+    ImageResponseFormat,
+    VideoResponseFormat,
+    object,
 ]
 
 
@@ -124,13 +104,10 @@ class Interaction(BaseModel):
     model: Optional[Model] = None
     """The name of the `Model` used for generating the interaction."""
 
-    outputs: Optional[List[Content]] = None
-    """Output only. Responses from the model."""
-
     previous_interaction_id: Optional[str] = None
     """The ID of the previous interaction, if any."""
 
-    response_format: Optional[object] = None
+    response_format: Optional[ResponseFormat] = None
     """
     Enforces that the generated response is a JSON object that complies with the
     JSON schema specified in this field.
@@ -147,6 +124,9 @@ class Interaction(BaseModel):
 
     service_tier: Optional[Literal["flex", "standard", "priority"]] = None
     """The service tier for the interaction."""
+
+    steps: Optional[List[Step]] = None
+    """Output only. The steps that make up the interaction."""
 
     system_instruction: Optional[str] = None
     """System instruction for the interaction."""
