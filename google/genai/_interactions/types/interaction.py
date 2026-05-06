@@ -33,9 +33,13 @@ from .video_content import VideoContent
 from .webhook_config import WebhookConfig
 from .document_content import DocumentContent
 from .dynamic_agent_config import DynamicAgentConfig
+from .text_response_format import TextResponseFormat
+from .audio_response_format import AudioResponseFormat
+from .image_response_format import ImageResponseFormat
+from .video_response_format import VideoResponseFormat
 from .deep_research_agent_config import DeepResearchAgentConfig
 
-__all__ = ["Interaction", "AgentConfig", "Input"]
+__all__ = ["Interaction", "AgentConfig", "Input", "ResponseFormat", "ResponseFormatResponseFormatList"]
 
 AgentConfig: TypeAlias = Annotated[
     Union[DynamicAgentConfig, DeepResearchAgentConfig], PropertyInfo(discriminator="type")
@@ -43,6 +47,19 @@ AgentConfig: TypeAlias = Annotated[
 
 Input: TypeAlias = Union[
     str, List[Step], List[Content], TextContent, ImageContent, AudioContent, DocumentContent, VideoContent
+]
+
+ResponseFormatResponseFormatList: TypeAlias = Union[
+    AudioResponseFormat, TextResponseFormat, ImageResponseFormat, VideoResponseFormat, object
+]
+
+ResponseFormat: TypeAlias = Union[
+    List[ResponseFormatResponseFormatList],
+    AudioResponseFormat,
+    TextResponseFormat,
+    ImageResponseFormat,
+    VideoResponseFormat,
+    object,
 ]
 
 
@@ -90,7 +107,7 @@ class Interaction(BaseModel):
     previous_interaction_id: Optional[str] = None
     """The ID of the previous interaction, if any."""
 
-    response_format: Optional[object] = None
+    response_format: Optional[ResponseFormat] = None
     """
     Enforces that the generated response is a JSON object that complies with the
     JSON schema specified in this field.

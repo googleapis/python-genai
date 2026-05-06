@@ -32,11 +32,17 @@ from .webhook_config_param import WebhookConfigParam
 from .document_content_param import DocumentContentParam
 from .generation_config_param import GenerationConfigParam
 from .dynamic_agent_config_param import DynamicAgentConfigParam
+from .text_response_format_param import TextResponseFormatParam
+from .audio_response_format_param import AudioResponseFormatParam
+from .image_response_format_param import ImageResponseFormatParam
+from .video_response_format_param import VideoResponseFormatParam
 from .deep_research_agent_config_param import DeepResearchAgentConfigParam
 
 __all__ = [
     "BaseCreateModelInteractionParams",
     "Input",
+    "ResponseFormat",
+    "ResponseFormatResponseFormatList",
     "BaseCreateAgentInteractionParams",
     "AgentConfig",
     "CreateModelInteractionParamsNonStreaming",
@@ -64,7 +70,7 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
 
-    response_format: object
+    response_format: ResponseFormat
     """
     Enforces that the generated response is a JSON object that complies with the
     JSON schema specified in this field.
@@ -107,6 +113,19 @@ Input: TypeAlias = Union[
     VideoContentParam,
 ]
 
+ResponseFormatResponseFormatList: TypeAlias = Union[
+    AudioResponseFormatParam, TextResponseFormatParam, ImageResponseFormatParam, VideoResponseFormatParam, object
+]
+
+ResponseFormat: TypeAlias = Union[
+    Iterable[ResponseFormatResponseFormatList],
+    AudioResponseFormatParam,
+    TextResponseFormatParam,
+    ImageResponseFormatParam,
+    VideoResponseFormatParam,
+    object,
+]
+
 
 class BaseCreateAgentInteractionParams(TypedDict, total=False):
     api_version: str
@@ -135,7 +154,7 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
 
-    response_format: object
+    response_format: ResponseFormat
     """
     Enforces that the generated response is a JSON object that complies with the
     JSON schema specified in this field.
