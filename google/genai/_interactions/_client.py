@@ -166,7 +166,7 @@ class GeminiNextGenAPIClient(SyncAPIClient):
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "Api-Revision": "2026-05-20",
+            "Api-Revision": "2026-05-26",
             **self._custom_headers,
         }
 
@@ -394,7 +394,7 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "Api-Revision": "2026-05-20",
+            "Api-Revision": "2026-05-26",
             **self._custom_headers,
         }
 
