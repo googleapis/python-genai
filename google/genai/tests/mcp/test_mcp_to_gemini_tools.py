@@ -276,3 +276,28 @@ def test_update_endpoint_labels_conversion():
     labels_schema = schema['properties']['endpoint']['properties']['labels']
 
     assert 'additionalProperties' in labels_schema
+
+
+def test_agent_platform_preserves_unknown_fields():
+    """Test that Agent Platform translation passes all schema fields directly
+    to the backend.
+    """
+    mcp_tools = [
+        mcp_types.Tool(
+            name='tool',
+            description='tool-description',
+            inputSchema={
+                'type': 'object',
+                'properties': {},
+                # A new unknown field
+                'some_new_future_field': 'value',
+            },
+        ),
+    ]
+
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+    schema = result[0].function_declarations[0].parameters_json_schema
+
+    # Verify the entire schema is passed through intact, including the unknown field
+    assert 'some_new_future_field' in schema
+    assert schema['some_new_future_field'] == 'value'
