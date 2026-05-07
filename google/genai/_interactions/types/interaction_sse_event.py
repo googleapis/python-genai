@@ -23,9 +23,6 @@ from .step_stop import StepStop
 from .step_delta import StepDelta
 from .step_start import StepStart
 from .error_event import ErrorEvent
-from .content_stop import ContentStop
-from .content_delta import ContentDelta
-from .content_start import ContentStart
 from .interaction_start_event import InteractionStartEvent
 from .interaction_status_update import InteractionStatusUpdate
 from .interaction_complete_event import InteractionCompleteEvent
@@ -37,9 +34,6 @@ InteractionSSEEvent: TypeAlias = Annotated[
         InteractionStartEvent,
         InteractionCompleteEvent,
         InteractionStatusUpdate,
-        ContentStart,
-        ContentDelta,
-        ContentStop,
         ErrorEvent,
         StepStart,
         StepDelta,
