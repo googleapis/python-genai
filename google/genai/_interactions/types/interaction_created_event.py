@@ -21,11 +21,11 @@ from typing_extensions import Literal
 from .._models import BaseModel
 from .interaction import Interaction
 
-__all__ = ["InteractionStartEvent"]
+__all__ = ["InteractionCreatedEvent"]
 
 
-class InteractionStartEvent(BaseModel):
-    event_type: Literal["interaction.start"]
+class InteractionCreatedEvent(BaseModel):
+    event_type: Literal["interaction.created"]
 
     interaction: Interaction
     """The Interaction resource."""

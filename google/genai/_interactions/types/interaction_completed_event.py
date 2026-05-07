@@ -21,11 +21,11 @@ from typing_extensions import Literal
 from .._models import BaseModel
 from .interaction import Interaction
 
-__all__ = ["InteractionCompleteEvent"]
+__all__ = ["InteractionCompletedEvent"]
 
 
-class InteractionCompleteEvent(BaseModel):
-    event_type: Literal["interaction.complete"]
+class InteractionCompletedEvent(BaseModel):
+    event_type: Literal["interaction.completed"]
 
     interaction: Interaction
     """Required.

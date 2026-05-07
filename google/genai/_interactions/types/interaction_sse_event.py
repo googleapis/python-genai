@@ -23,16 +23,16 @@ from .step_stop import StepStop
 from .step_delta import StepDelta
 from .step_start import StepStart
 from .error_event import ErrorEvent
-from .interaction_start_event import InteractionStartEvent
+from .interaction_created_event import InteractionCreatedEvent
 from .interaction_status_update import InteractionStatusUpdate
-from .interaction_complete_event import InteractionCompleteEvent
+from .interaction_completed_event import InteractionCompletedEvent
 
 __all__ = ["InteractionSSEEvent"]
 
 InteractionSSEEvent: TypeAlias = Annotated[
     Union[
-        InteractionStartEvent,
-        InteractionCompleteEvent,
+        InteractionCreatedEvent,
+        InteractionCompletedEvent,
         InteractionStatusUpdate,
         ErrorEvent,
         StepStart,
