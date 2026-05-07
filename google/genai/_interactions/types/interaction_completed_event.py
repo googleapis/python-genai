@@ -18,19 +18,21 @@
 from typing import Optional
 from typing_extensions import Literal
 
-from .content import Content
 from .._models import BaseModel
+from .interaction import Interaction
 
-__all__ = ["ContentStart"]
+__all__ = ["InteractionCompletedEvent"]
 
 
-class ContentStart(BaseModel):
-    content: Content
-    """The content of the response."""
+class InteractionCompletedEvent(BaseModel):
+    event_type: Literal["interaction.completed"]
 
-    event_type: Literal["content.start"]
+    interaction: Interaction
+    """Required.
 
-    index: int
+    The completed interaction with empty outputs to reduce the payload size. Use the
+    preceding ContentDelta events for the actual output.
+    """
 
     event_id: Optional[str] = None
     """

@@ -1879,13 +1879,6 @@ async def test_async_mtls_uses_refreshable_credentials(monkeypatch):
   """Tests that _RefreshableAsyncCredentials is used in async mTLS path."""
   from google.genai import _api_client
 
-  # Ensure _use_google_auth_async returns True
-  monkeypatch.setattr(_api_client, "has_aiohttp", True)
-  monkeypatch.setattr(_api_client.mtls, "should_use_client_cert", lambda: True, raising=False)
-  monkeypatch.setattr(
-      _api_client.mtls, "has_default_client_cert_source", lambda: True
-  )
-
   # Mock AsyncAuthorizedSession and google.auth.aio modules
   mock_session = mock.MagicMock()
   mock_auth_aio = mock.MagicMock()
@@ -1915,15 +1908,19 @@ async def test_async_mtls_uses_refreshable_credentials(monkeypatch):
   client = Client(vertexai=True, project="fake-project")
   client._api_client._credentials = mock_creds
 
-  # Trigger session creation
-  await client._api_client._get_aiohttp_session()
+  # Ensure _use_google_auth_async returns True
+  with mock.patch.object(
+      client._api_client, "_use_google_auth_async", return_value=True
+  ):
+    # Trigger session creation
+    await client._api_client._get_aiohttp_session()
 
-  # Verify AsyncAuthorizedSession was called with _RefreshableAsyncCredentials
-  assert mock_session.call_count == 1
-  passed_creds = mock_session.call_args[0][0]
-  assert type(passed_creds).__name__ == "_RefreshableAsyncCredentials"
+    # Verify AsyncAuthorizedSession was called with _RefreshableAsyncCredentials
+    assert mock_session.call_count == 1
+    passed_creds = mock_session.call_args[0][0]
+    assert type(passed_creds).__name__ == "_RefreshableAsyncCredentials"
 
-  # Verify valid property
-  assert passed_creds.valid == True
-  mock_creds.expired = True
-  assert passed_creds.valid == False
+    # Verify valid property
+    assert passed_creds.valid == True
+    mock_creds.expired = True
+    assert passed_creds.valid == False
