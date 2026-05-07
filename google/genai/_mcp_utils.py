@@ -58,9 +58,7 @@ def agent_platform_to_gemini_tool(tool: McpTool) -> types.Tool:
           {
               "name": tool.name,
               "description": tool.description,
-              "parameters_json_schema": _filter_to_supported_schema(
-                  tool.inputSchema
-              ),
+              "parameters_json_schema": tool.inputSchema,
           }
       ]
   )
