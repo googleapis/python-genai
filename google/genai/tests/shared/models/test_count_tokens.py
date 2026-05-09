@@ -18,13 +18,14 @@
 
 from .... import types as genai_types
 from ... import pytest_helper
+from .. model_names import MODEL_FLASH
 
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_count_tokens',
         parameters=genai_types._CountTokensParameters(
-            model='gemini-2.5-flash',
+            model=MODEL_FLASH,
             contents='The quick brown fox jumps over the lazy dog.',
         ),
     ),
