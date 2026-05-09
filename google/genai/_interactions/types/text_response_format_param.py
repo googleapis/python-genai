@@ -18,9 +18,7 @@
 from __future__ import annotations
 
 from typing import Dict
-from typing_extensions import Literal, Required, Annotated, TypedDict
-
-from .._utils import PropertyInfo
+from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["TextResponseFormatParam"]
 
@@ -30,7 +28,7 @@ class TextResponseFormatParam(TypedDict, total=False):
 
     type: Required[Literal["text"]]
 
-    mime_type: Annotated[Literal["application/json", "text/plain"], PropertyInfo(alias="mimeType")]
+    mime_type: Literal["application/json", "text/plain"]
     """The MIME type of the text output."""
 
     schema: Dict[str, object]

@@ -18,10 +18,9 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable
-from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from .._types import SequenceNotStr
-from .._utils import PropertyInfo
 from .function_param import FunctionParam
 from .allowed_tools_param import AllowedToolsParam
 
@@ -59,7 +58,7 @@ class ComputerUse(TypedDict, total=False):
     environment: Literal["browser"]
     """The environment being operated."""
 
-    excluded_predefined_functions: Annotated[SequenceNotStr[str], PropertyInfo(alias="excludedPredefinedFunctions")]
+    excluded_predefined_functions: SequenceNotStr[str]
     """The list of predefined functions that are excluded from the model call."""
 
 

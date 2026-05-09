@@ -30,7 +30,7 @@ class TextResponseFormat(BaseModel):
 
     type: Literal["text"]
 
-    mime_type: Optional[Literal["application/json", "text/plain"]] = FieldInfo(alias="mimeType", default=None)
+    mime_type: Optional[Literal["application/json", "text/plain"]] = None
     """The MIME type of the text output."""
 
     schema_: Optional[Dict[str, object]] = FieldInfo(alias="schema", default=None)

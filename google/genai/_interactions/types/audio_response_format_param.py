@@ -17,9 +17,7 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, Required, Annotated, TypedDict
-
-from .._utils import PropertyInfo
+from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["AudioResponseFormatParam"]
 
@@ -29,7 +27,7 @@ class AudioResponseFormatParam(TypedDict, total=False):
 
     type: Required[Literal["audio"]]
 
-    bit_rate: Annotated[int, PropertyInfo(alias="bitRate")]
+    bit_rate: int
     """Bit rate in bits per second (bps).
 
     Only applicable for compressed formats (MP3, Opus).
@@ -38,11 +36,8 @@ class AudioResponseFormatParam(TypedDict, total=False):
     delivery: Literal["inline", "url"]
     """The delivery mode for the audio output."""
 
-    mime_type: Annotated[
-        Literal["audio/mp3", "audio/ogg_opus", "audio/l16", "audio/wav", "audio/alaw", "audio/mulaw"],
-        PropertyInfo(alias="mimeType"),
-    ]
+    mime_type: Literal["audio/mp3", "audio/ogg_opus", "audio/l16", "audio/wav", "audio/alaw", "audio/mulaw"]
     """The MIME type of the audio output."""
 
-    sample_rate: Annotated[int, PropertyInfo(alias="sampleRate")]
+    sample_rate: int
     """Sample rate in Hz."""

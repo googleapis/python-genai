@@ -18,8 +18,6 @@
 from typing import Optional
 from typing_extensions import Literal
 
-from pydantic import Field as FieldInfo
-
 from .._models import BaseModel
 
 __all__ = ["AudioResponseFormat"]
@@ -30,7 +28,7 @@ class AudioResponseFormat(BaseModel):
 
     type: Literal["audio"]
 
-    bit_rate: Optional[int] = FieldInfo(alias="bitRate", default=None)
+    bit_rate: Optional[int] = None
     """Bit rate in bits per second (bps).
 
     Only applicable for compressed formats (MP3, Opus).
@@ -41,8 +39,8 @@ class AudioResponseFormat(BaseModel):
 
     mime_type: Optional[
         Literal["audio/mp3", "audio/ogg_opus", "audio/l16", "audio/wav", "audio/alaw", "audio/mulaw"]
-    ] = FieldInfo(alias="mimeType", default=None)
+    ] = None
     """The MIME type of the audio output."""
 
-    sample_rate: Optional[int] = FieldInfo(alias="sampleRate", default=None)
+    sample_rate: Optional[int] = None
     """Sample rate in Hz."""
