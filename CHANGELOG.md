@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/googleapis/python-genai/compare/v2.0.0...v2.0.1) (2026-05-09)
+
+
+### Bug Fixes
+
+* Update response_format field names to snake_case. ([97142b1](https://github.com/googleapis/python-genai/commit/97142b11fa71ccb5b6b844662db5d4478a50da4c))
+
 ## [2.0.0](https://github.com/googleapis/python-genai/compare/v1.75.0...v2.0.0) (2026-05-07)
 
 
