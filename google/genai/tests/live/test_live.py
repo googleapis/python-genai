@@ -1193,12 +1193,9 @@ async def test_bidi_setup_to_api_with_tools_function_behavior(vertexai):
   }
   config = types.LiveConnectConfig(**config_dict)
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    result = await get_connect_message(
-        mock_api_client(vertexai=vertexai), model='test_model', config=config
-    )
-  if vertexai:
-    return
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config
+  )
 
   assert (
       result['setup']['tools'][0]['functionDeclarations'][0]['behavior']

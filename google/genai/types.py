@@ -277,12 +277,13 @@ class PhishBlockThreshold(_common.CaseInSensitiveEnum):
 class Behavior(_common.CaseInSensitiveEnum):
   """Specifies the function Behavior.
 
-  Currently only supported by the BidiGenerateContent method. This enum is not
-  supported in Vertex AI.
+  Currently only non-blocking functions are supported. If not specified, the
+  system keeps the current function call behavior. This field is currently only
+  supported by the BidiGenerateContent method.
   """
 
   UNSPECIFIED = 'UNSPECIFIED'
-  """This value is unused."""
+  """This value is unspecified."""
   BLOCKING = 'BLOCKING'
   """If set, the system will wait to receive the function response before continuing the conversation."""
   NON_BLOCKING = 'NON_BLOCKING'
@@ -4392,7 +4393,7 @@ class FunctionDeclaration(_common.BaseModel):
   )
   behavior: Optional[Behavior] = Field(
       default=None,
-      description="""Optional. Specifies the function Behavior. Currently only supported by the BidiGenerateContent method. This field is not supported in Vertex AI.""",
+      description="""Optional. Specifies the function Behavior. Currently only non-blocking functions are supported. If not specified, the system keeps the current function call behavior. This field is currently only supported by the BidiGenerateContent method.""",
   )
 
   @classmethod
@@ -4615,7 +4616,7 @@ class FunctionDeclarationDict(TypedDict, total=False):
   """Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`."""
 
   behavior: Optional[Behavior]
-  """Optional. Specifies the function Behavior. Currently only supported by the BidiGenerateContent method. This field is not supported in Vertex AI."""
+  """Optional. Specifies the function Behavior. Currently only non-blocking functions are supported. If not specified, the system keeps the current function call behavior. This field is currently only supported by the BidiGenerateContent method."""
 
 
 FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
