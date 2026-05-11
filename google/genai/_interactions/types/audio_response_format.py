@@ -34,7 +34,7 @@ class AudioResponseFormat(BaseModel):
     Only applicable for compressed formats (MP3, Opus).
     """
 
-    delivery: Optional[Literal["inline", "uri"]] = None
+    delivery: Optional[Literal["inline", "url"]] = None
     """The delivery mode for the audio output."""
 
     mime_type: Optional[

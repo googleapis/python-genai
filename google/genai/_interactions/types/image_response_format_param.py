@@ -32,7 +32,7 @@ class ImageResponseFormatParam(TypedDict, total=False):
     ]
     """The aspect ratio for the image output."""
 
-    delivery: Literal["inline", "uri"]
+    delivery: Literal["inline", "url"]
     """The delivery mode for the image output."""
 
     image_size: Literal["512", "1K", "2K", "4K"]
