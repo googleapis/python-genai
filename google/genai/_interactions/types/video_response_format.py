@@ -15,7 +15,10 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from typing import Optional
 from typing_extensions import Literal
+
+from pydantic import Field as FieldInfo
 
 from .._models import BaseModel
 
@@ -26,3 +29,18 @@ class VideoResponseFormat(BaseModel):
     """Configuration for video output format."""
 
     type: Literal["video"]
+
+    aspect_ratio: Optional[Literal["16:9", "9:16"]] = FieldInfo(alias="aspectRatio", default=None)
+    """The aspect ratio for the video output."""
+
+    delivery: Optional[Literal["inline", "uri"]] = None
+    """The delivery mode for the video output."""
+
+    duration: Optional[str] = None
+    """The duration for the video output."""
+
+    gcs_uri: Optional[str] = FieldInfo(alias="gcsUri", default=None)
+    """The GCS URI to store the video output.
+
+    Required for Vertex if delivery mode is URI.
+    """

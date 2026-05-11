@@ -33,7 +33,7 @@ class AudioResponseFormatParam(TypedDict, total=False):
     Only applicable for compressed formats (MP3, Opus).
     """
 
-    delivery: Literal["inline", "url"]
+    delivery: Literal["inline", "uri"]
     """The delivery mode for the audio output."""
 
     mime_type: Literal["audio/mp3", "audio/ogg_opus", "audio/l16", "audio/wav", "audio/alaw", "audio/mulaw"]

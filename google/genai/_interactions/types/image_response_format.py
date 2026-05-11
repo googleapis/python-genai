@@ -33,7 +33,7 @@ class ImageResponseFormat(BaseModel):
     ] = None
     """The aspect ratio for the image output."""
 
-    delivery: Optional[Literal["inline", "url"]] = None
+    delivery: Optional[Literal["inline", "uri"]] = None
     """The delivery mode for the image output."""
 
     image_size: Optional[Literal["512", "1K", "2K", "4K"]] = None
