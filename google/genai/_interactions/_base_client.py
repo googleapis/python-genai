@@ -102,6 +102,7 @@ from ._exceptions import (
     APIResponseValidationError,
 )
 from ._utils._json import openapi_dumps
+from ._legacy_lyria import LEGACY_LYRIA_SHIM_CTX, maybe_remap_legacy_sse_event
 
 log: logging.Logger = logging.getLogger(__name__)
 
@@ -654,6 +655,17 @@ class BaseClient(Generic[_HttpxClientT, _DefaultStreamT]):
 
         if cast_to is object:
             return cast(ResponseT, data)
+
+        # When the legacy-lyria shim is active for this request (set by the
+        # `LegacyLyriaInteractionStream` subclass after dynamic detection of
+        # a legacy event), rename legacy SSE event types and reshape
+        # `content.start` payloads so the discriminated-union dispatch in
+        # `construct_type` lands on the modern variants.
+        # `Interaction._maybe_coerce_outputs` does its own data inspection
+        # (model field) and doesn't depend on this contextvar for the
+        # non-streaming paths.
+        if LEGACY_LYRIA_SHIM_CTX.get() and isinstance(data, dict):
+            data = maybe_remap_legacy_sse_event(cast("dict[str, object]", data))
 
         try:
             if inspect.isclass(cast_to) and issubclass(cast_to, ModelBuilderProtocol):
