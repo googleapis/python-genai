@@ -933,6 +933,13 @@ def _LiveConnectConfig_to_mldev(
         ],
     )
 
+  if getv(from_object, ['stream_translation_config']) is not None:
+    setv(
+        parent_object,
+        ['setup', 'generationConfig', 'streamTranslationConfig'],
+        getv(from_object, ['stream_translation_config']),
+    )
+
   return to_object
 
 
@@ -1111,6 +1118,12 @@ def _LiveConnectConfig_to_vertex(
         parent_object,
         ['setup', 'safetySettings'],
         [item for item in getv(from_object, ['safety_settings'])],
+    )
+
+  if getv(from_object, ['stream_translation_config']) is not None:
+    raise ValueError(
+        'stream_translation_config parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object

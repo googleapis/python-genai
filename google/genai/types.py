@@ -19507,6 +19507,40 @@ class RealtimeInputConfigDict(TypedDict, total=False):
 RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
 
 
+class StreamTranslationConfig(_common.BaseModel):
+  """Config for stream translation."""
+
+  echo_target_language: Optional[bool] = Field(
+      default=None,
+      description="""If true, the model will generate audio when the target language is
+      spoken, essentially it will parrot the input. If false, we will not produce
+      audio for the target language.""",
+  )
+  target_language_code: Optional[str] = Field(
+      default=None,
+      description="""The target language for translation. Supported values are BCP-47
+      language codes (e.g. "en", "es", "fr").""",
+  )
+
+
+class StreamTranslationConfigDict(TypedDict, total=False):
+  """Config for stream translation."""
+
+  echo_target_language: Optional[bool]
+  """If true, the model will generate audio when the target language is
+      spoken, essentially it will parrot the input. If false, we will not produce
+      audio for the target language."""
+
+  target_language_code: Optional[str]
+  """The target language for translation. Supported values are BCP-47
+      language codes (e.g. "en", "es", "fr")."""
+
+
+StreamTranslationConfigOrDict = Union[
+    StreamTranslationConfig, StreamTranslationConfigDict
+]
+
+
 class LiveConnectConfig(_common.BaseModel):
   """Session config for the API connection."""
 
@@ -19645,6 +19679,9 @@ If included the server will send SessionResumptionUpdate messages.""",
       response.
       """,
   )
+  stream_translation_config: Optional[StreamTranslationConfig] = Field(
+      default=None, description="""Config for stream translation."""
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -19762,6 +19799,9 @@ If included the server will send SessionResumptionUpdate messages."""
   """Safety settings in the request to block unsafe content in the
       response.
       """
+
+  stream_translation_config: Optional[StreamTranslationConfigDict]
+  """Config for stream translation."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
