@@ -57,11 +57,13 @@ from .tool_choice_type import ToolChoiceType as ToolChoiceType
 from .generation_config import GenerationConfig as GenerationConfig
 from .model_output_step import ModelOutputStep as ModelOutputStep
 from .function_call_step import FunctionCallStep as FunctionCallStep
+from .google_maps_result import GoogleMapsResult as GoogleMapsResult
 from .image_config_param import ImageConfigParam as ImageConfigParam
 from .text_content_param import TextContentParam as TextContentParam
 from .thought_step_param import ThoughtStepParam as ThoughtStepParam
 from .tool_choice_config import ToolChoiceConfig as ToolChoiceConfig
 from .url_citation_param import URLCitationParam as URLCitationParam
+from .url_context_result import URLContextResult as URLContextResult
 from .allowed_tools_param import AllowedToolsParam as AllowedToolsParam
 from .audio_content_param import AudioContentParam as AudioContentParam
 from .file_citation_param import FileCitationParam as FileCitationParam
@@ -72,6 +74,7 @@ from .webhook_list_params import WebhookListParams as WebhookListParams
 from .webhook_ping_params import WebhookPingParams as WebhookPingParams
 from .dynamic_agent_config import DynamicAgentConfig as DynamicAgentConfig
 from .function_result_step import FunctionResultStep as FunctionResultStep
+from .google_search_result import GoogleSearchResult as GoogleSearchResult
 from .place_citation_param import PlaceCitationParam as PlaceCitationParam
 from .text_response_format import TextResponseFormat as TextResponseFormat
 from .webhook_config_param import WebhookConfigParam as WebhookConfigParam
@@ -108,7 +111,9 @@ from .code_execution_result_step import CodeExecutionResultStep as CodeExecution
 from .deep_research_agent_config import DeepResearchAgentConfig as DeepResearchAgentConfig
 from .dynamic_agent_config_param import DynamicAgentConfigParam as DynamicAgentConfigParam
 from .function_result_step_param import FunctionResultStepParam as FunctionResultStepParam
+from .google_maps_call_arguments import GoogleMapsCallArguments as GoogleMapsCallArguments
 from .text_response_format_param import TextResponseFormatParam as TextResponseFormatParam
+from .url_context_call_arguments import URLContextCallArguments as URLContextCallArguments
 from .audio_response_format_param import AudioResponseFormatParam as AudioResponseFormatParam
 from .file_search_call_step_param import FileSearchCallStepParam as FileSearchCallStepParam
 from .google_maps_call_step_param import GoogleMapsCallStepParam as GoogleMapsCallStepParam
@@ -117,6 +122,8 @@ from .interaction_completed_event import InteractionCompletedEvent as Interactio
 from .mcp_server_tool_result_step import MCPServerToolResultStep as MCPServerToolResultStep
 from .url_context_call_step_param import URLContextCallStepParam as URLContextCallStepParam
 from .video_response_format_param import VideoResponseFormatParam as VideoResponseFormatParam
+from .google_search_call_arguments import GoogleSearchCallArguments as GoogleSearchCallArguments
+from .code_execution_call_arguments import CodeExecutionCallArguments as CodeExecutionCallArguments
 from .file_search_result_step_param import FileSearchResultStepParam as FileSearchResultStepParam
 from .google_maps_result_step_param import GoogleMapsResultStepParam as GoogleMapsResultStepParam
 from .google_search_call_step_param import GoogleSearchCallStepParam as GoogleSearchCallStepParam
