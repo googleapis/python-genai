@@ -13,8 +13,15 @@
 # limitations under the License.
 #
 
+import contextlib
+from unittest import mock
+
+import pytest
+
 from ... import _mcp_utils
 from ... import types
+from ..._api_client import BaseApiClient
+
 
 try:
   from mcp import types as mcp_types
@@ -301,3 +308,64 @@ def test_agent_platform_preserves_unknown_fields():
     # Verify the entire schema is passed through intact, including the unknown field
     assert 'some_new_future_field' in schema
     assert schema['some_new_future_field'] == 'value'
+
+
+@pytest.mark.asyncio
+@mock.patch('httpx.AsyncClient')
+@mock.patch.object(_mcp_utils, 'streamable_http_client')
+@mock.patch.object(_mcp_utils, 'McpClientSession')
+@mock.patch('google.auth.default')
+async def test_connect_agent_platform_mcp_url_and_headers(
+    mock_auth_default, mock_session_cls, mock_streamable, mock_create_http
+):
+    """Tests that _mcp_utils._connect_agent_platform_mcp builds the correct
+    regional URL and injects auth headers.
+    """
+
+    mock_creds = mock.Mock()
+    mock_creds.token = 'fake-oauth-token'
+    mock_auth_default.return_value = (mock_creds, 'fake-project')
+
+    @contextlib.asynccontextmanager
+    async def mock_streamable_ctx(*args, **kwargs):
+      yield (mock.Mock(), mock.Mock(), mock.Mock())
+
+    mock_streamable.side_effect = mock_streamable_ctx
+
+    @contextlib.asynccontextmanager
+    async def mock_session_ctx(*args, **kwargs):
+      session_instance = mock.AsyncMock()
+      yield session_instance
+
+    mock_session_cls.side_effect = mock_session_ctx
+
+    mock_http_client_instance = mock.AsyncMock()
+    mock_http_client_instance.__aenter__.return_value = (
+        mock_http_client_instance
+    )
+    mock_http_client_instance.__aexit__.return_value = None
+    mock_create_http.return_value = mock_http_client_instance
+
+    api_client = BaseApiClient(
+      vertexai=True,
+      project='test-project-123',
+      location='europe-west4'
+    )
+
+    async with _mcp_utils._connect_agent_platform_mcp(
+        api_client, 'endpoints'
+    ) as session:
+      session.initialize.assert_awaited_once()
+
+    mock_streamable.assert_called_once()
+    assert (
+        mock_streamable.call_args.kwargs['url']
+        == 'https://europe-west4-aiplatform.googleapis.com/mcp/endpoints'
+    )
+
+    mock_create_http.assert_called_once()
+    called_headers = mock_create_http.call_args.kwargs['headers']
+
+    assert called_headers['Authorization'] == 'Bearer fake-oauth-token'
+    assert called_headers['X-Goog-User-Project'] == 'test-project-123'
+    assert 'mcp_used' in called_headers.get('x-goog-api-client', '')
