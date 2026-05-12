@@ -9,7 +9,7 @@
 * Add parameters to video response_format. ([4e9d68d](https://github.com/googleapis/python-genai/commit/4e9d68d027588d1ff984f61554086f8c7f186c7d))
 * Introduce Server Side tools deltas ([97d6fe5](https://github.com/googleapis/python-genai/commit/97d6fe57959535107f74db06b7a316f1b5bb5d8a))
 * Support Blocking FunctionCall in Live API in AgentPlatform (Vertex) ([955bca6](https://github.com/googleapis/python-genai/commit/955bca67cee1a74c91fb5963533beeba8125018d))
-
+* Add support for vertex-lyria models lyria-3-pro-preview & lyria-3-clip-preview ([623e56](https://github.com/google-gemini/private-python-genai/commit/623e561da61b78b7f12a94e4846a6f4ce2ab00f1))
 
 ### Bug Fixes
 
