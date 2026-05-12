@@ -61,7 +61,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'dest': 'invalid_dest',
             },
         ),
-        exception_if_mldev='not supported in Gemini API',
+        exception_if_mldev='supported',
         exception_if_vertex='Unsupported destination',
         has_union=True,
     ),
@@ -86,7 +86,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='not supported in Gemini Enterprise Agent Platform',
+        exception_if_vertex='supported',
     ),
     pytest_helper.TestTableItem(
         name='test_create_with_webhook_config_dict',
@@ -108,7 +108,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_vertex='not supported in Gemini Enterprise Agent Platform',
+        exception_if_vertex='supported',
     ),
 ]
 

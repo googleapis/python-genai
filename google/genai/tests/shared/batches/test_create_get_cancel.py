@@ -42,7 +42,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 }]
             }],
         ),
-        exception_if_vertex="not supported in Gemini Enterprise Agent Platform",
+        exception_if_vertex="Exactly one of ",
     ),
 ]
 

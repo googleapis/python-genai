@@ -559,7 +559,7 @@ def test_process_schema_order_properties_propagates_into_additional_properties(
       _transformers.process_schema(
           schema, client, order_properties=order_properties
       )
-    assert 'additionalProperties is not supported in the Gemini API.' in str(e)
+    assert 'additionalProperties is only supported in Gemini Enterprise Agent Platform mode' in str(e)
 
 
 @pytest.mark.parametrize(

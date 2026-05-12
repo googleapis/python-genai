@@ -39,7 +39,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported',
         has_union=True,
     ),
     pytest_helper.TestTableItem(
@@ -51,7 +51,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported',
     ),
 ]
 

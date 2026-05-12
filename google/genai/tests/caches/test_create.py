@@ -146,7 +146,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_caches_create_with_gcs_uri_cmek',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         exception_if_vertex='INVALID_ARGUMENT',  # The key is invalid.
         parameters=_CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI_CMEK,
     ),

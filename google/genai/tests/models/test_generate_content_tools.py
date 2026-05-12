@@ -310,7 +310,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex=(
-            'is not supported in Gemini Enterprise Agent Platform'
+            'is only supported in Gemini Developer API mode'
         ),
     ),
     pytest_helper.TestTableItem(
@@ -334,7 +334,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev='not exist',
         exception_if_vertex=(
-            'is not supported in Gemini Enterprise Agent Platform'
+            'is only supported in Gemini Developer API mode'
         ),
     ),
     pytest_helper.TestTableItem(
@@ -358,7 +358,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex=(
-            'is not supported in Gemini Enterprise Agent Platform'
+            'is only supported in Gemini Developer API mode'
         ),
     ),
     pytest_helper.TestTableItem(
@@ -383,7 +383,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex=(
-            'is not supported in Gemini Enterprise Agent Platform'
+            'is only supported in Gemini Developer API mode'
         ),
     ),
     pytest_helper.TestTableItem(
@@ -628,7 +628,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='parameter is not supported',
+        exception_if_vertex='parameter is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_include_server_side_tool_invocations_with_tool_call_echo',
@@ -688,7 +688,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='parameter is not supported',
+        exception_if_vertex='parameter is only supported in Gemini Developer API mode',
     ),
 ]
 

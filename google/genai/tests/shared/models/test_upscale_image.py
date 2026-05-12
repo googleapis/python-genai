@@ -30,7 +30,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_upscale',
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
         parameters=types.UpscaleImageParameters(
             model=IMAGEN_MODEL_LATEST,

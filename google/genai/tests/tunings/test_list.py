@@ -27,7 +27,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_default',
         parameters=genai_types._ListTuningJobsParameters(),
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
     ),
     pytest_helper.TestTableItem(
@@ -36,7 +36,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=genai_types.ListTuningJobsConfig(page_size=2)
         ),
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
     ),
 ]

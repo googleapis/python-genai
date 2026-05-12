@@ -148,7 +148,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_labels',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateContentParameters(
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('What is your name?'),
@@ -283,7 +283,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_google_search_tool_with_blocking_confidence',
@@ -300,7 +300,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool',
@@ -315,7 +315,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_exclude_domains',
@@ -332,7 +332,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_blocking_confidence',
@@ -349,7 +349,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_config',
@@ -478,7 +478,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ],
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
-        exception_if_mldev='not supported',
+        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_response_schema_with_default',
@@ -540,7 +540,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'enable_enhanced_civic_answers': True,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_model_armor_config',
@@ -556,7 +556,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_mldev='not supported',
+        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_service_tier',
@@ -2153,7 +2153,10 @@ def test_schema_with_additional_properties(client):
               response_schema=Foo,
           ),
       )
-    assert 'additionalProperties is not supported in the Gemini API.' in str(e)
+    assert (
+        'additionalProperties is only supported in Gemini Enterprise Agent'
+        ' Platform mode' in str(e)
+    )
 
 
 def test_function(client):

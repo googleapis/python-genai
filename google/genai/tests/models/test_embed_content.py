@@ -61,7 +61,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'mime_type': 'text/plain',
             },
         ),
-        exception_if_mldev='parameter is not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_single_text_with_auto_truncate_not_supported_in_mldev',
@@ -73,7 +73,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'auto_truncate': True,
             },
         ),
-        exception_if_mldev='parameter is not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_vertex_new_api_text_only_with_config',
@@ -91,7 +91,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         # auto_truncate not supported on MLDev.
-        exception_if_mldev='parameter is not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_new_api_text_only',
@@ -194,7 +194,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'document_ocr': True,
             },
         ),
-        exception_if_mldev='not supported in Gemini API',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
     ),
     pytest_helper.TestTableItem(
         name='test_vertex_inline_video_audio_track_extraction',
@@ -215,7 +215,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'audio_track_extraction': True,
             },
         ),
-        exception_if_mldev='not supported in Gemini API',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
     ),
 ]
 

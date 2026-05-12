@@ -28,7 +28,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             contents='The quick brown fox jumps over the lazy dog.',
         ),
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
     ),
 ]

@@ -348,7 +348,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateFileSearchStoreParameters_to_mldev(
@@ -430,7 +431,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _GetFileSearchStoreParameters_to_mldev(parameter_model)
@@ -508,7 +510,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _DeleteFileSearchStoreParameters_to_mldev(parameter_model)
@@ -546,7 +549,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ListFileSearchStoresParameters_to_mldev(parameter_model)
@@ -615,7 +619,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _UploadToFileSearchStoreParameters_to_mldev(
@@ -721,7 +726,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ImportFileParameters_to_mldev(parameter_model)
@@ -965,7 +971,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateFileSearchStoreParameters_to_mldev(
@@ -1047,7 +1054,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _GetFileSearchStoreParameters_to_mldev(parameter_model)
@@ -1127,7 +1135,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _DeleteFileSearchStoreParameters_to_mldev(parameter_model)
@@ -1167,7 +1176,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ListFileSearchStoresParameters_to_mldev(parameter_model)
@@ -1238,7 +1248,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _UploadToFileSearchStoreParameters_to_mldev(
@@ -1344,7 +1355,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ImportFileParameters_to_mldev(parameter_model)

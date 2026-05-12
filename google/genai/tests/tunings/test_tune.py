@@ -46,7 +46,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
             ),
         ),
-        exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_pretuned_model",
@@ -56,7 +56,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl",
             ),
         ),
-        exception_if_mldev="is not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_pretuned_model_with_checkpoint_id",
@@ -69,7 +69,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 pre_tuned_model_checkpoint_id="3",
             ),
         ),
-        exception_if_mldev="is not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_simple_dpo",
@@ -84,7 +84,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 method="PREFERENCE_TUNING",
             ),
         ),
-        exception_if_mldev="parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_dpo_with_beta",
@@ -100,7 +100,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 beta=0.5,
             ),
         ),
-        exception_if_mldev="parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_non_pretuned_model_with_checkpoint_id",
@@ -113,7 +113,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 pre_tuned_model_checkpoint_id="3",
             ),
         ),
-        exception_if_mldev="is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri_all_parameters",
@@ -132,7 +132,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_vertex_dataset_resource",
@@ -142,7 +142,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 vertex_dataset_resource="projects/801452371447/locations/us-central1/datasets/5779918772206829568",
             ),
         ),
-        exception_if_mldev="vertex_dataset_resource parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_dataset_resource_all_parameters",
@@ -162,7 +162,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 labels={"testlabelkey": "testlabelvalue"},
             ),
         ),
-        exception_if_mldev="vertex_dataset_resource parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_distillation",
@@ -182,7 +182,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 http_options=VERTEX_HTTP_OPTIONS,
             ),
         ),
-        exception_if_mldev="parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_oss_sft",
@@ -201,7 +201,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 http_options=VERTEX_HTTP_OPTIONS,
             ),
         ),
-        exception_if_mldev="not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_oss_sft_hyperparams",
@@ -222,7 +222,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 http_options=VERTEX_HTTP_OPTIONS,
             ),
         ),
-        exception_if_mldev="not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_oss_distillation",
@@ -243,7 +243,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 http_options=VERTEX_HTTP_OPTIONS,
             ),
         ),
-        exception_if_mldev="not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_oss_distillation_hyperparams",
@@ -262,7 +262,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 http_options=VERTEX_HTTP_OPTIONS,
             ),
         ),
-        exception_if_mldev="not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_encryption_spec",
@@ -277,7 +277,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_mldev="not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
 ]
 
