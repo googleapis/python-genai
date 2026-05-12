@@ -81,6 +81,9 @@ class Interaction(BaseModel):
     status: Literal["in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete"]
     """Required. Output only. The status of the interaction."""
 
+    steps: List[Step]
+    """Required. Output only. The steps that make up the interaction."""
+
     updated: datetime
     """Required.
 
@@ -126,9 +129,6 @@ class Interaction(BaseModel):
 
     service_tier: Optional[Literal["flex", "standard", "priority"]] = None
     """The service tier for the interaction."""
-
-    steps: Optional[List[Step]] = None
-    """Output only. The steps that make up the interaction."""
 
     system_instruction: Optional[str] = None
     """System instruction for the interaction."""
