@@ -179,8 +179,6 @@ class DeltaTextAnnotationDelta(BaseModel):
 class DeltaArgumentsDelta(BaseModel):
     type: Literal["arguments_delta"]
 
-    partial_arguments: Optional[str] = None
-
 
 class DeltaCodeExecutionCall(BaseModel):
     arguments: CodeExecutionCallArguments
