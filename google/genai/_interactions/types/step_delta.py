@@ -57,6 +57,8 @@ __all__ = [
     "DeltaMCPServerToolResultResultFunctionResultSubcontentList",
     "DeltaFileSearchResult",
     "DeltaGoogleMapsResult",
+    "DeltaFunctionResult",
+    "DeltaFunctionResultResultFunctionResultSubcontentList",
 ]
 
 
@@ -178,6 +180,8 @@ class DeltaTextAnnotationDelta(BaseModel):
 
 class DeltaArgumentsDelta(BaseModel):
     type: Literal["arguments_delta"]
+
+    arguments: Optional[str] = None
 
 
 class DeltaCodeExecutionCall(BaseModel):
@@ -310,6 +314,24 @@ class DeltaGoogleMapsResult(BaseModel):
     """A signature hash for backend validation."""
 
 
+DeltaFunctionResultResultFunctionResultSubcontentList: TypeAlias = Annotated[
+    Union[TextContent, ImageContent], PropertyInfo(discriminator="type")
+]
+
+
+class DeltaFunctionResult(BaseModel):
+    call_id: str
+    """Required. ID to match the ID from the function call block."""
+
+    result: Union[List[DeltaFunctionResultResultFunctionResultSubcontentList], str, object]
+
+    type: Literal["function_result"]
+
+    is_error: Optional[bool] = None
+
+    name: Optional[str] = None
+
+
 Delta: TypeAlias = Annotated[
     Union[
         DeltaText,
@@ -333,6 +355,7 @@ Delta: TypeAlias = Annotated[
         DeltaMCPServerToolResult,
         DeltaFileSearchResult,
         DeltaGoogleMapsResult,
+        DeltaFunctionResult,
     ],
     PropertyInfo(discriminator="type"),
 ]
