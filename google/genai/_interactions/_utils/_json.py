@@ -13,12 +13,13 @@
 # limitations under the License.
 #
 
+import base64
+from datetime import datetime
 import json
 from typing import Any
-from datetime import datetime
-from typing_extensions import override
 
 import pydantic
+from typing_extensions import override
 
 from .._compat import model_dump
 
@@ -47,4 +48,6 @@ class _CustomEncoder(json.JSONEncoder):
             return o.isoformat()
         if isinstance(o, pydantic.BaseModel):
             return model_dump(o, exclude_unset=True, mode="json", by_alias=True)
+        if isinstance(o, bytes):
+            return base64.b64encode(o).decode("ascii")
         return super().default(o)
