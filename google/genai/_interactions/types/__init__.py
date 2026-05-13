@@ -85,7 +85,6 @@ from .image_response_format import ImageResponseFormat as ImageResponseFormat
 from .interaction_sse_event import InteractionSSEEvent as InteractionSSEEvent
 from .url_context_call_step import URLContextCallStep as URLContextCallStep
 from .user_input_step_param import UserInputStepParam as UserInputStepParam
-from .video_response_format import VideoResponseFormat as VideoResponseFormat
 from .webhook_create_params import WebhookCreateParams as WebhookCreateParams
 from .webhook_list_response import WebhookListResponse as WebhookListResponse
 from .webhook_ping_response import WebhookPingResponse as WebhookPingResponse
@@ -121,7 +120,6 @@ from .image_response_format_param import ImageResponseFormatParam as ImageRespon
 from .interaction_completed_event import InteractionCompletedEvent as InteractionCompletedEvent
 from .mcp_server_tool_result_step import MCPServerToolResultStep as MCPServerToolResultStep
 from .url_context_call_step_param import URLContextCallStepParam as URLContextCallStepParam
-from .video_response_format_param import VideoResponseFormatParam as VideoResponseFormatParam
 from .google_search_call_arguments import GoogleSearchCallArguments as GoogleSearchCallArguments
 from .code_execution_call_arguments import CodeExecutionCallArguments as CodeExecutionCallArguments
 from .file_search_result_step_param import FileSearchResultStepParam as FileSearchResultStepParam

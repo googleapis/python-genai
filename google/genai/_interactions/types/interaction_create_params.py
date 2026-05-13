@@ -35,7 +35,6 @@ from .dynamic_agent_config_param import DynamicAgentConfigParam
 from .text_response_format_param import TextResponseFormatParam
 from .audio_response_format_param import AudioResponseFormatParam
 from .image_response_format_param import ImageResponseFormatParam
-from .video_response_format_param import VideoResponseFormatParam
 from .deep_research_agent_config_param import DeepResearchAgentConfigParam
 
 __all__ = [
@@ -114,7 +113,7 @@ Input: TypeAlias = Union[
 ]
 
 ResponseFormatResponseFormatList: TypeAlias = Union[
-    AudioResponseFormatParam, TextResponseFormatParam, ImageResponseFormatParam, VideoResponseFormatParam, object
+    AudioResponseFormatParam, TextResponseFormatParam, ImageResponseFormatParam, object
 ]
 
 ResponseFormat: TypeAlias = Union[
@@ -122,7 +121,6 @@ ResponseFormat: TypeAlias = Union[
     AudioResponseFormatParam,
     TextResponseFormatParam,
     ImageResponseFormatParam,
-    VideoResponseFormatParam,
     object,
 ]
 
