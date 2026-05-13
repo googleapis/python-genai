@@ -5932,6 +5932,10 @@ class GenerateContentConfig(_common.BaseModel):
       `response_json_schema` instead.
       """,
   )
+  response_schema_property_ordering: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Controls whether the SDK automatically adds `propertyOrdering` to response schemas derived from `response_schema`. If unset or true, the SDK preserves the default behavior. If false, the SDK does not add `propertyOrdering` unless it is already present in the schema.""",
+  )
   response_json_schema: Optional[Any] = Field(
       default=None,
       description="""Optional. Output schema of the generated response.
@@ -6166,6 +6170,9 @@ class GenerateContentConfigDict(TypedDict, total=False):
       If `response_schema` doesn't process your schema correctly, try using
       `response_json_schema` instead.
       """
+
+  response_schema_property_ordering: Optional[bool]
+  """Optional. Controls whether the SDK automatically adds `propertyOrdering` to response schemas derived from `response_schema`. If unset or true, the SDK preserves the default behavior. If false, the SDK does not add `propertyOrdering` unless it is already present in the schema."""
 
   response_json_schema: Optional[Any]
   """Optional. Output schema of the generated response.
