@@ -42,11 +42,11 @@ from ._api_client import has_aiohttp
 
 from . import _common
 
-from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, GeminiNextGenAPIClient
-from . import _interactions
+from ._interactions_private import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, GeminiNextGenAPIClient
+from . import _interactions_private as _interactions
 
-from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
-from ._interactions.resources import WebhooksResource, AsyncWebhooksResource
+from ._interactions_private.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
+from ._interactions_private.resources import WebhooksResource, AsyncWebhooksResource
 
 
 class AsyncGeminiNextGenAPIClientAdapter(_interactions.AsyncGeminiNextGenAPIClientAdapter):
