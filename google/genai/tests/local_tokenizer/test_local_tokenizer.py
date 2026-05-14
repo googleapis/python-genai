@@ -233,7 +233,7 @@ class TestLocalTokenizer(unittest.TestCase):
         role='user',
         parts=[
             types.Part(text='hello'),
-            # executable_code is not supported by _TextsAccumulator
+            # executable_code is test_count_tokens_with_system_instruction by _TextsAccumulator
             types.Part(
                 executable_code=types.ExecutableCode(
                     language='PYTHON', code='print(1)'

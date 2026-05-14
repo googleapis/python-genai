@@ -42,7 +42,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 epoch_count=1,
             ),
         ),
-        exception_if_mldev="not supported in Gemini API.",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform mode",
     ),
 ]
 

@@ -17,9 +17,7 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, Required, Annotated, TypedDict
-
-from .._utils import PropertyInfo
+from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["ImageResponseFormatParam"]
 
@@ -29,17 +27,16 @@ class ImageResponseFormatParam(TypedDict, total=False):
 
     type: Required[Literal["image"]]
 
-    aspect_ratio: Annotated[
-        Literal["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "1:8", "8:1", "1:4", "4:1"],
-        PropertyInfo(alias="aspectRatio"),
+    aspect_ratio: Literal[
+        "1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "1:8", "8:1", "1:4", "4:1"
     ]
     """The aspect ratio for the image output."""
 
-    delivery: Literal["inline", "url"]
+    delivery: Literal["inline", "uri"]
     """The delivery mode for the image output."""
 
-    image_size: Annotated[Literal["512", "1K", "2K", "4K"], PropertyInfo(alias="imageSize")]
+    image_size: Literal["512", "1K", "2K", "4K"]
     """The size of the image output."""
 
-    mime_type: Annotated[Literal["image/jpeg"], PropertyInfo(alias="mimeType")]
+    mime_type: Literal["image/jpeg"]
     """The MIME type of the image output."""

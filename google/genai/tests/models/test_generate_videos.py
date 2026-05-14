@@ -104,7 +104,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 labels={"veo_label_key": "generate_videos"},
             ),
         ),
-        exception_if_mldev="not supported in Gemini API",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_source",
@@ -157,7 +157,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "output_gcs_uri parameter is not supported in Gemini API"
+            "parameter is only supported in Gemini Enterprise Agent Platform mode"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -177,7 +177,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "output_gcs_uri parameter is not supported in Gemini API"
+            "parameter is only supported in Gemini Enterprise Agent Platform mode"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -200,7 +200,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_mldev="not supported in Gemini API",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_mldev",
@@ -246,7 +246,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "output_gcs_uri parameter is not supported in Gemini API"
+            "only supported in Gemini Enterprise Agent Platform mode"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -263,8 +263,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_vertex=(
-            "webhook_config parameter is not supported in Gemini Enterprise"
-            " Agent Platform"
+            "parameter is only supported in Gemini Developer API mode"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -280,8 +279,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex=(
-            "webhook_config parameter is not supported in Gemini Enterprise"
-            " Agent Platform"
+            "parameter is only supported in Gemini Developer API mode"
         ),
     ),
 ]

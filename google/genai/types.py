@@ -277,12 +277,13 @@ class PhishBlockThreshold(_common.CaseInSensitiveEnum):
 class Behavior(_common.CaseInSensitiveEnum):
   """Specifies the function Behavior.
 
-  Currently only supported by the BidiGenerateContent method. This enum is not
-  supported in Vertex AI.
+  Currently only non-blocking functions are supported. If not specified, the
+  system keeps the current function call behavior. This field is currently only
+  supported by the BidiGenerateContent method.
   """
 
   UNSPECIFIED = 'UNSPECIFIED'
-  """This value is unused."""
+  """This value is unspecified."""
   BLOCKING = 'BLOCKING'
   """If set, the system will wait to receive the function response before continuing the conversation."""
   NON_BLOCKING = 'NON_BLOCKING'
@@ -4392,7 +4393,7 @@ class FunctionDeclaration(_common.BaseModel):
   )
   behavior: Optional[Behavior] = Field(
       default=None,
-      description="""Optional. Specifies the function Behavior. Currently only supported by the BidiGenerateContent method. This field is not supported in Vertex AI.""",
+      description="""Optional. Specifies the function Behavior. Currently only non-blocking functions are supported. If not specified, the system keeps the current function call behavior. This field is currently only supported by the BidiGenerateContent method.""",
   )
 
   @classmethod
@@ -4615,7 +4616,7 @@ class FunctionDeclarationDict(TypedDict, total=False):
   """Optional. Describes the output from this function in JSON Schema format. The value specified by the schema is the response value of the function. This field is mutually exclusive with `response`."""
 
   behavior: Optional[Behavior]
-  """Optional. Specifies the function Behavior. Currently only supported by the BidiGenerateContent method. This field is not supported in Vertex AI."""
+  """Optional. Specifies the function Behavior. Currently only non-blocking functions are supported. If not specified, the system keeps the current function call behavior. This field is currently only supported by the BidiGenerateContent method."""
 
 
 FunctionDeclarationOrDict = Union[FunctionDeclaration, FunctionDeclarationDict]
@@ -19506,6 +19507,40 @@ class RealtimeInputConfigDict(TypedDict, total=False):
 RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
 
 
+class StreamTranslationConfig(_common.BaseModel):
+  """Config for stream translation."""
+
+  echo_target_language: Optional[bool] = Field(
+      default=None,
+      description="""If true, the model will generate audio when the target language is
+      spoken, essentially it will parrot the input. If false, we will not produce
+      audio for the target language.""",
+  )
+  target_language_code: Optional[str] = Field(
+      default=None,
+      description="""The target language for translation. Supported values are BCP-47
+      language codes (e.g. "en", "es", "fr").""",
+  )
+
+
+class StreamTranslationConfigDict(TypedDict, total=False):
+  """Config for stream translation."""
+
+  echo_target_language: Optional[bool]
+  """If true, the model will generate audio when the target language is
+      spoken, essentially it will parrot the input. If false, we will not produce
+      audio for the target language."""
+
+  target_language_code: Optional[str]
+  """The target language for translation. Supported values are BCP-47
+      language codes (e.g. "en", "es", "fr")."""
+
+
+StreamTranslationConfigOrDict = Union[
+    StreamTranslationConfig, StreamTranslationConfigDict
+]
+
+
 class LiveConnectConfig(_common.BaseModel):
   """Session config for the API connection."""
 
@@ -19644,6 +19679,9 @@ If included the server will send SessionResumptionUpdate messages.""",
       response.
       """,
   )
+  stream_translation_config: Optional[StreamTranslationConfig] = Field(
+      default=None, description="""Config for stream translation."""
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -19761,6 +19799,9 @@ If included the server will send SessionResumptionUpdate messages."""
   """Safety settings in the request to block unsafe content in the
       response.
       """
+
+  stream_translation_config: Optional[StreamTranslationConfigDict]
+  """Config for stream translation."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]

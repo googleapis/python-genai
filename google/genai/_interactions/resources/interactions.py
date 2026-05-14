@@ -35,6 +35,13 @@ from .._response import (
 )
 from .._streaming import Stream, AsyncStream
 from .._base_client import make_request_options
+from .._legacy_lyria import (
+    LegacyLyriaInteractionStream,
+    LegacyLyriaInteractionAsyncStream,
+    LegacyLyriaInteractionDetectingStream,
+    LegacyLyriaInteractionDetectingAsyncStream,
+    is_legacy_lyria_request,
+)
 from ..types.tool_param import ToolParam
 from ..types.interaction import Interaction
 from ..types.model_param import ModelParam
@@ -473,6 +480,17 @@ class InteractionsResource(SyncAPIResource):
             raise ValueError("Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`.")
         if agent is not omit and generation_config is not omit:
             raise ValueError("Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`.")
+
+        # For streaming requests against vertex+legacy-lyria, swap in the
+        # Stream subclass that activates the per-event SSE remap during
+        # iteration. Non-streaming and `get()` paths don't need any resource-
+        # layer signal here — `Interaction._maybe_coerce_outputs` looks at the
+        # response body's `model` field directly.
+        stream_cls = (
+            LegacyLyriaInteractionStream[InteractionSSEEvent]
+            if (stream and is_legacy_lyria_request(is_vertex=self._client._is_vertex, model=model))
+            else Stream[InteractionSSEEvent]
+        )
         return self._post(
             self._client._build_maybe_vertex_path(api_version=api_version, path='interactions'),
             body=maybe_transform(
@@ -503,7 +521,7 @@ class InteractionsResource(SyncAPIResource):
             ),
             cast_to=Interaction,
             stream=stream or False,
-            stream_cls=Stream[InteractionSSEEvent],
+            stream_cls=stream_cls,
         )
 
     def delete(
@@ -719,6 +737,17 @@ class InteractionsResource(SyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+
+        # We don't know the model up front for `get`, so we can't apply the
+        # same `is_legacy_lyria_request` gate that `create` uses. Instead, on
+        # vertex we hand the stream off to the detecting subclass, which
+        # activates the shim only after observing the first legacy event_type.
+        # For non-legacy interactions the subclass is a no-op vs. plain Stream.
+        stream_cls = (
+            LegacyLyriaInteractionDetectingStream[InteractionSSEEvent]
+            if (stream and self._client._is_vertex)
+            else Stream[InteractionSSEEvent]
+        )
         return self._get(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -737,7 +766,7 @@ class InteractionsResource(SyncAPIResource):
             ),
             cast_to=Interaction,
             stream=stream or False,
-            stream_cls=Stream[InteractionSSEEvent],
+            stream_cls=stream_cls,
         )
 
 
@@ -1169,6 +1198,13 @@ class AsyncInteractionsResource(AsyncAPIResource):
             raise ValueError("Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`.")
         if agent is not omit and generation_config is not omit:
             raise ValueError("Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`.")
+
+        # See sync `create` above for rationale.
+        stream_cls = (
+            LegacyLyriaInteractionAsyncStream[InteractionSSEEvent]
+            if (stream and is_legacy_lyria_request(is_vertex=self._client._is_vertex, model=model))
+            else AsyncStream[InteractionSSEEvent]
+        )
         return await self._post(
             self._client._build_maybe_vertex_path(api_version=api_version, path='interactions'),
             body=await async_maybe_transform(
@@ -1199,7 +1235,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
             ),
             cast_to=Interaction,
             stream=stream or False,
-            stream_cls=AsyncStream[InteractionSSEEvent],
+            stream_cls=stream_cls,
         )
 
     async def delete(
@@ -1415,6 +1451,13 @@ class AsyncInteractionsResource(AsyncAPIResource):
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+
+        # See sync `get` above for rationale.
+        stream_cls = (
+            LegacyLyriaInteractionDetectingAsyncStream[InteractionSSEEvent]
+            if (stream and self._client._is_vertex)
+            else AsyncStream[InteractionSSEEvent]
+        )
         return await self._get(
             self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
             options=make_request_options(
@@ -1433,7 +1476,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
             ),
             cast_to=Interaction,
             stream=stream or False,
-            stream_cls=AsyncStream[InteractionSSEEvent],
+            stream_cls=stream_cls,
         )
 
 

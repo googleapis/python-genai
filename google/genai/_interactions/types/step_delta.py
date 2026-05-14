@@ -15,7 +15,7 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import List, Union, Optional
+from typing import Dict, List, Union, Optional
 from typing_extensions import Literal, Annotated, TypeAlias
 
 from .._utils import PropertyInfo
@@ -23,6 +23,13 @@ from .._models import BaseModel
 from .annotation import Annotation
 from .text_content import TextContent
 from .image_content import ImageContent
+from .google_maps_result import GoogleMapsResult
+from .url_context_result import URLContextResult
+from .google_search_result import GoogleSearchResult
+from .google_maps_call_arguments import GoogleMapsCallArguments
+from .url_context_call_arguments import URLContextCallArguments
+from .google_search_call_arguments import GoogleSearchCallArguments
+from .code_execution_call_arguments import CodeExecutionCallArguments
 
 __all__ = [
     "StepDelta",
@@ -37,6 +44,21 @@ __all__ = [
     "DeltaThoughtSignature",
     "DeltaTextAnnotationDelta",
     "DeltaArgumentsDelta",
+    "DeltaCodeExecutionCall",
+    "DeltaURLContextCall",
+    "DeltaGoogleSearchCall",
+    "DeltaMCPServerToolCall",
+    "DeltaFileSearchCall",
+    "DeltaGoogleMapsCall",
+    "DeltaCodeExecutionResult",
+    "DeltaURLContextResult",
+    "DeltaGoogleSearchResult",
+    "DeltaMCPServerToolResult",
+    "DeltaMCPServerToolResultResultFunctionResultSubcontentList",
+    "DeltaFileSearchResult",
+    "DeltaGoogleMapsResult",
+    "DeltaFunctionResult",
+    "DeltaFunctionResultResultFunctionResultSubcontentList",
 ]
 
 
@@ -159,7 +181,155 @@ class DeltaTextAnnotationDelta(BaseModel):
 class DeltaArgumentsDelta(BaseModel):
     type: Literal["arguments_delta"]
 
-    partial_arguments: Optional[str] = None
+    arguments: Optional[str] = None
+
+
+class DeltaCodeExecutionCall(BaseModel):
+    arguments: CodeExecutionCallArguments
+    """The arguments to pass to the code execution."""
+
+    type: Literal["code_execution_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaURLContextCall(BaseModel):
+    arguments: URLContextCallArguments
+    """The arguments to pass to the URL context."""
+
+    type: Literal["url_context_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaGoogleSearchCall(BaseModel):
+    arguments: GoogleSearchCallArguments
+    """The arguments to pass to Google Search."""
+
+    type: Literal["google_search_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaMCPServerToolCall(BaseModel):
+    arguments: Dict[str, object]
+
+    name: str
+
+    server_name: str
+
+    type: Literal["mcp_server_tool_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaFileSearchCall(BaseModel):
+    type: Literal["file_search_call"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaGoogleMapsCall(BaseModel):
+    type: Literal["google_maps_call"]
+
+    arguments: Optional[GoogleMapsCallArguments] = None
+    """The arguments to pass to the Google Maps tool."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaCodeExecutionResult(BaseModel):
+    result: str
+
+    type: Literal["code_execution_result"]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaURLContextResult(BaseModel):
+    result: List[URLContextResult]
+
+    type: Literal["url_context_result"]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaGoogleSearchResult(BaseModel):
+    result: List[GoogleSearchResult]
+
+    type: Literal["google_search_result"]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+DeltaMCPServerToolResultResultFunctionResultSubcontentList: TypeAlias = Annotated[
+    Union[TextContent, ImageContent], PropertyInfo(discriminator="type")
+]
+
+
+class DeltaMCPServerToolResult(BaseModel):
+    result: Union[List[DeltaMCPServerToolResultResultFunctionResultSubcontentList], str, object]
+
+    type: Literal["mcp_server_tool_result"]
+
+    name: Optional[str] = None
+
+    server_name: Optional[str] = None
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaFileSearchResult(BaseModel):
+    result: List[object]
+
+    type: Literal["file_search_result"]
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+class DeltaGoogleMapsResult(BaseModel):
+    type: Literal["google_maps_result"]
+
+    result: Optional[List[GoogleMapsResult]] = None
+    """The results of the Google Maps."""
+
+    signature: Optional[str] = None
+    """A signature hash for backend validation."""
+
+
+DeltaFunctionResultResultFunctionResultSubcontentList: TypeAlias = Annotated[
+    Union[TextContent, ImageContent], PropertyInfo(discriminator="type")
+]
+
+
+class DeltaFunctionResult(BaseModel):
+    call_id: str
+    """Required. ID to match the ID from the function call block."""
+
+    result: Union[List[DeltaFunctionResultResultFunctionResultSubcontentList], str, object]
+
+    type: Literal["function_result"]
+
+    is_error: Optional[bool] = None
+
+    name: Optional[str] = None
 
 
 Delta: TypeAlias = Annotated[
@@ -173,6 +343,19 @@ Delta: TypeAlias = Annotated[
         DeltaThoughtSignature,
         DeltaTextAnnotationDelta,
         DeltaArgumentsDelta,
+        DeltaCodeExecutionCall,
+        DeltaURLContextCall,
+        DeltaGoogleSearchCall,
+        DeltaMCPServerToolCall,
+        DeltaFileSearchCall,
+        DeltaGoogleMapsCall,
+        DeltaCodeExecutionResult,
+        DeltaURLContextResult,
+        DeltaGoogleSearchResult,
+        DeltaMCPServerToolResult,
+        DeltaFileSearchResult,
+        DeltaGoogleMapsResult,
+        DeltaFunctionResult,
     ],
     PropertyInfo(discriminator="type"),
 ]

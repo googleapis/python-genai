@@ -37,7 +37,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_all_vertexai_config_parameters',
-        exception_if_mldev='not supported in Gemini API',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',
@@ -64,7 +64,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_all_vertexai_config_person_generation_enum_parameters',
-        exception_if_mldev='enum value is not supported',
+        exception_if_mldev='enum value is only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
@@ -77,7 +77,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_all_vertexai_config_person_generation_enum_parameters_2',
-        exception_if_mldev='enum value is not supported',
+        exception_if_mldev='enum value is only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
@@ -90,7 +90,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_all_vertexai_config_person_generation_enum_parameters_3',
-        exception_if_mldev='enum value is not supported',
+        exception_if_mldev='enum value is only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',

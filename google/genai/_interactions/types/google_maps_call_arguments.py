@@ -15,14 +15,15 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing_extensions import Literal
+from typing import List, Optional
 
 from .._models import BaseModel
 
-__all__ = ["VideoResponseFormat"]
+__all__ = ["GoogleMapsCallArguments"]
 
 
-class VideoResponseFormat(BaseModel):
-    """Configuration for video output format."""
+class GoogleMapsCallArguments(BaseModel):
+    """The arguments to pass to the Google Maps tool."""
 
-    type: Literal["video"]
+    queries: Optional[List[str]] = None
+    """The queries to be executed."""

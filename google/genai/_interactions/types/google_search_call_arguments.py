@@ -13,4 +13,17 @@
 # limitations under the License.
 #
 
-__version__ = '2.2.0' # x-release-please-version
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+from typing import List, Optional
+
+from .._models import BaseModel
+
+__all__ = ["GoogleSearchCallArguments"]
+
+
+class GoogleSearchCallArguments(BaseModel):
+    """The arguments to pass to Google Search."""
+
+    queries: Optional[List[str]] = None
+    """Web search queries for the following-up web search."""

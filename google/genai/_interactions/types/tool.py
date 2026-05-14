@@ -18,8 +18,6 @@
 from typing import Dict, List, Union, Optional
 from typing_extensions import Literal, Annotated, TypeAlias
 
-from pydantic import Field as FieldInfo
-
 from .._utils import PropertyInfo
 from .._models import BaseModel
 from .function import Function
@@ -59,7 +57,7 @@ class ComputerUse(BaseModel):
     environment: Optional[Literal["browser"]] = None
     """The environment being operated."""
 
-    excluded_predefined_functions: Optional[List[str]] = FieldInfo(alias="excludedPredefinedFunctions", default=None)
+    excluded_predefined_functions: Optional[List[str]] = None
     """The list of predefined functions that are excluded from the model call."""
 
 

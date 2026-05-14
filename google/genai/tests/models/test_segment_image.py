@@ -47,7 +47,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_segment_foreground',
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
@@ -67,7 +67,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_segment_background',
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
@@ -82,7 +82,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_segment_prompt',
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
@@ -98,7 +98,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_segment_semantic',
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,
@@ -114,7 +114,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_segment_interactive',
         exception_if_mldev=(
-            'only supported in the Gemini Enterprise Agent Platform'
+            'only supported in Gemini Enterprise Agent Platform'
         ),
         parameters=types._SegmentImageParameters(
             model=SEGMENT_IMAGE_MODEL_LATEST,

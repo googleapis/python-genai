@@ -656,7 +656,7 @@ def _raise_for_unsupported_mldev_properties(
           or schema.get('additional_properties')
       )
   ):
-    raise ValueError('additionalProperties is not supported in the Gemini API.')
+    raise ValueError('additionalProperties is only supported in Gemini Enterprise Agent Platform mode, , not in Gemini Developer API mode.')
 
 
 def process_schema(

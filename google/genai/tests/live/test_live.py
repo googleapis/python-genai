@@ -1193,12 +1193,9 @@ async def test_bidi_setup_to_api_with_tools_function_behavior(vertexai):
   }
   config = types.LiveConnectConfig(**config_dict)
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    result = await get_connect_message(
-        mock_api_client(vertexai=vertexai), model='test_model', config=config
-    )
-  if vertexai:
-    return
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config
+  )
 
   assert (
       result['setup']['tools'][0]['functionDeclarations'][0]['behavior']
@@ -1611,6 +1608,55 @@ async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
     return
 
   assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_stream_translation_config(vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+
+  # Test 1: Config defined using dict representation.
+  config_dict = {
+      'stream_translation_config': {
+          'echo_target_language': True,
+          'target_language_code': 'es',
+      },
+  }
+
+  with pytest_helper.exception_if_vertex(api_client, ValueError):
+    result = await get_connect_message(
+        api_client=api_client, model='test_model', config=config_dict
+    )
+
+  if not vertexai:
+    expected_result = {
+        'setup': {
+            'model': 'models/test_model',
+            'generationConfig': {
+                'streamTranslationConfig': {
+                    'echo_target_language': True,
+                    'target_language_code': 'es',
+                },
+            },
+        }
+    }
+    assert result == expected_result
+
+  # Test 2: Config defined using types.LiveConnectConfig.
+  config = types.LiveConnectConfig(
+      stream_translation_config=types.StreamTranslationConfig(
+          echo_target_language=True,
+          target_language_code='es',
+      )
+  )
+
+  with pytest_helper.exception_if_vertex(api_client, ValueError):
+    result = await get_connect_message(
+        api_client=api_client, model='test_model', config=config
+    )
+
+  if not vertexai:
+    assert result == expected_result
 
 
 @pytest.mark.parametrize('vertexai', [True, False])

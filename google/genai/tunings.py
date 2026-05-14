@@ -146,7 +146,8 @@ def _CreateTuningJobConfig_to_mldev(
 
   if getv(from_object, ['validation_dataset']) is not None:
     raise ValueError(
-        'validation_dataset parameter is not supported in Gemini API.'
+        'validation_dataset parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['tuned_model_display_name']) is not None:
@@ -157,7 +158,10 @@ def _CreateTuningJobConfig_to_mldev(
     )
 
   if getv(from_object, ['description']) is not None:
-    raise ValueError('description parameter is not supported in Gemini API.')
+    raise ValueError(
+        'description parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['epoch_count']) is not None:
     setv(
@@ -175,24 +179,32 @@ def _CreateTuningJobConfig_to_mldev(
 
   if getv(from_object, ['export_last_checkpoint_only']) is not None:
     raise ValueError(
-        'export_last_checkpoint_only parameter is not supported in Gemini API.'
+        'export_last_checkpoint_only parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['pre_tuned_model_checkpoint_id']) is not None:
     raise ValueError(
-        'pre_tuned_model_checkpoint_id parameter is not supported in Gemini'
-        ' API.'
+        'pre_tuned_model_checkpoint_id parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['adapter_size']) is not None:
-    raise ValueError('adapter_size parameter is not supported in Gemini API.')
+    raise ValueError(
+        'adapter_size parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['tuning_mode']) is not None:
-    raise ValueError('tuning_mode parameter is not supported in Gemini API.')
+    raise ValueError(
+        'tuning_mode parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['custom_base_model']) is not None:
     raise ValueError(
-        'custom_base_model parameter is not supported in Gemini API.'
+        'custom_base_model parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['batch_size']) is not None:
@@ -211,36 +223,50 @@ def _CreateTuningJobConfig_to_mldev(
 
   if getv(from_object, ['evaluation_config']) is not None:
     raise ValueError(
-        'evaluation_config parameter is not supported in Gemini API.'
+        'evaluation_config parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
+    raise ValueError(
+        'labels parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['beta']) is not None:
-    raise ValueError('beta parameter is not supported in Gemini API.')
+    raise ValueError(
+        'beta parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['base_teacher_model']) is not None:
     raise ValueError(
-        'base_teacher_model parameter is not supported in Gemini API.'
+        'base_teacher_model parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['tuned_teacher_model_source']) is not None:
     raise ValueError(
-        'tuned_teacher_model_source parameter is not supported in Gemini API.'
+        'tuned_teacher_model_source parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['sft_loss_weight_multiplier']) is not None:
     raise ValueError(
-        'sft_loss_weight_multiplier parameter is not supported in Gemini API.'
+        'sft_loss_weight_multiplier parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['output_uri']) is not None:
-    raise ValueError('output_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'output_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['encryption_spec']) is not None:
     raise ValueError(
-        'encryption_spec parameter is not supported in Gemini API.'
+        'encryption_spec parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -877,8 +903,8 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Gemini'
-        ' Enterprise Agent Platform.'
+        'enable_enhanced_civic_answers parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1011,14 +1037,14 @@ def _ReplicatedVoiceConfig_to_vertex(
 
   if getv(from_object, ['consent_audio']) is not None:
     raise ValueError(
-        'consent_audio parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'consent_audio parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['voice_consent_signature']) is not None:
     raise ValueError(
-        'voice_consent_signature parameter is not supported in Gemini'
-        ' Enterprise Agent Platform.'
+        'voice_consent_signature parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1099,11 +1125,15 @@ def _TuningDataset_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'gcs_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['vertex_dataset_resource']) is not None:
     raise ValueError(
-        'vertex_dataset_resource parameter is not supported in Gemini API.'
+        'vertex_dataset_resource parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['examples']) is not None:
@@ -1175,8 +1205,8 @@ def _TuningDataset_to_vertex(
 
   if getv(from_object, ['examples']) is not None:
     raise ValueError(
-        'examples parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'examples parameter is only supported in Gemini Developer API mode, not'
+        ' in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1576,8 +1606,8 @@ class Tunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _ListTuningJobsParameters_to_vertex(
@@ -1760,8 +1790,8 @@ class Tunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
@@ -1853,7 +1883,8 @@ class Tunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_mldev(
@@ -2153,8 +2184,8 @@ class AsyncTunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _ListTuningJobsParameters_to_vertex(
@@ -2339,8 +2370,8 @@ class AsyncTunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
@@ -2432,7 +2463,8 @@ class AsyncTunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_mldev(

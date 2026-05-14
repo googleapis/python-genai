@@ -15,14 +15,15 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
+from typing import Optional
 
-from typing_extensions import Literal, Required, TypedDict
+from .._models import BaseModel
 
-__all__ = ["VideoResponseFormatParam"]
+__all__ = ["GoogleSearchResult"]
 
 
-class VideoResponseFormatParam(TypedDict, total=False):
-    """Configuration for video output format."""
+class GoogleSearchResult(BaseModel):
+    """The result of the Google Search."""
 
-    type: Required[Literal["video"]]
+    search_suggestions: Optional[str] = None
+    """Web content snippet that can be embedded in a web page or an app webview."""

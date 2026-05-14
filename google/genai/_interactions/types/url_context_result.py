@@ -20,24 +20,14 @@ from typing_extensions import Literal
 
 from .._models import BaseModel
 
-__all__ = ["ImageResponseFormat"]
+__all__ = ["URLContextResult"]
 
 
-class ImageResponseFormat(BaseModel):
-    """Configuration for image output format."""
+class URLContextResult(BaseModel):
+    """The result of the URL context."""
 
-    type: Literal["image"]
+    status: Optional[Literal["success", "error", "paywall", "unsafe"]] = None
+    """The status of the URL retrieval."""
 
-    aspect_ratio: Optional[
-        Literal["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "1:8", "8:1", "1:4", "4:1"]
-    ] = None
-    """The aspect ratio for the image output."""
-
-    delivery: Optional[Literal["inline", "uri"]] = None
-    """The delivery mode for the image output."""
-
-    image_size: Optional[Literal["512", "1K", "2K", "4K"]] = None
-    """The size of the image output."""
-
-    mime_type: Optional[Literal["image/jpeg"]] = None
-    """The MIME type of the image output."""
+    url: Optional[str] = None
+    """The URL that was fetched."""

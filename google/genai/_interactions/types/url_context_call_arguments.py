@@ -13,4 +13,17 @@
 # limitations under the License.
 #
 
-__version__ = '2.2.0' # x-release-please-version
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+from typing import List, Optional
+
+from .._models import BaseModel
+
+__all__ = ["URLContextCallArguments"]
+
+
+class URLContextCallArguments(BaseModel):
+    """The arguments to pass to the URL context."""
+
+    urls: Optional[List[str]] = None
+    """The URLs to fetch."""

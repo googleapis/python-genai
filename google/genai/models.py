@@ -38,19 +38,28 @@ logger = logging.getLogger('google_genai.models')
 
 def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
   if enum_value in set(['ALLOW_ALL']):
-    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
+    raise ValueError(
+        f'{enum_value} enum value is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
 
 def _SafetyFilterLevel_to_mldev_enum_validate(enum_value: Any) -> None:
   if enum_value in set(['BLOCK_NONE']):
-    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
+    raise ValueError(
+        f'{enum_value} enum value is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
 
 def _VideoGenerationReferenceType_to_mldev_enum_validate(
     enum_value: Any,
 ) -> None:
   if enum_value in set(['STYLE']):
-    raise ValueError(f'{enum_value} enum value is not supported in Gemini API.')
+    raise ValueError(
+        f'{enum_value} enum value is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
 
 def _AuthConfig_to_mldev(
@@ -63,27 +72,40 @@ def _AuthConfig_to_mldev(
     setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
 
   if getv(from_object, ['api_key_config']) is not None:
-    raise ValueError('api_key_config parameter is not supported in Gemini API.')
+    raise ValueError(
+        'api_key_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['auth_type']) is not None:
-    raise ValueError('auth_type parameter is not supported in Gemini API.')
+    raise ValueError(
+        'auth_type parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['google_service_account_config']) is not None:
     raise ValueError(
-        'google_service_account_config parameter is not supported in Gemini'
-        ' API.'
+        'google_service_account_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['http_basic_auth_config']) is not None:
     raise ValueError(
-        'http_basic_auth_config parameter is not supported in Gemini API.'
+        'http_basic_auth_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['oauth_config']) is not None:
-    raise ValueError('oauth_config parameter is not supported in Gemini API.')
+    raise ValueError(
+        'oauth_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['oidc_config']) is not None:
-    raise ValueError('oidc_config parameter is not supported in Gemini API.')
+    raise ValueError(
+        'oidc_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -98,7 +120,10 @@ def _Blob_to_mldev(
     setv(to_object, ['data'], getv(from_object, ['data']))
 
   if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'display_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
@@ -335,15 +360,20 @@ def _CountTokensConfig_to_mldev(
 
   if getv(from_object, ['system_instruction']) is not None:
     raise ValueError(
-        'system_instruction parameter is not supported in Gemini API.'
+        'system_instruction parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['tools']) is not None:
-    raise ValueError('tools parameter is not supported in Gemini API.')
+    raise ValueError(
+        'tools parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['generation_config']) is not None:
     raise ValueError(
-        'generation_config parameter is not supported in Gemini API.'
+        'generation_config parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -761,17 +791,27 @@ def _EmbedContentConfig_to_mldev(
     )
 
   if getv(from_object, ['mime_type']) is not None:
-    raise ValueError('mime_type parameter is not supported in Gemini API.')
+    raise ValueError(
+        'mime_type parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['auto_truncate']) is not None:
-    raise ValueError('auto_truncate parameter is not supported in Gemini API.')
+    raise ValueError(
+        'auto_truncate parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['document_ocr']) is not None:
-    raise ValueError('document_ocr parameter is not supported in Gemini API.')
+    raise ValueError(
+        'document_ocr parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['audio_track_extraction']) is not None:
     raise ValueError(
-        'audio_track_extraction parameter is not supported in Gemini API.'
+        'audio_track_extraction parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -1075,7 +1115,10 @@ def _FileData_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'display_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['file_uri']) is not None:
     setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
@@ -1102,10 +1145,16 @@ def _FunctionCall_to_mldev(
     setv(to_object, ['name'], getv(from_object, ['name']))
 
   if getv(from_object, ['partial_args']) is not None:
-    raise ValueError('partial_args parameter is not supported in Gemini API.')
+    raise ValueError(
+        'partial_args parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['will_continue']) is not None:
-    raise ValueError('will_continue parameter is not supported in Gemini API.')
+    raise ValueError(
+        'will_continue parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -1128,49 +1177,8 @@ def _FunctionCallingConfig_to_mldev(
 
   if getv(from_object, ['stream_function_call_arguments']) is not None:
     raise ValueError(
-        'stream_function_call_arguments parameter is not supported in Gemini'
-        ' API.'
-    )
-
-  return to_object
-
-
-def _FunctionDeclaration_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  if getv(from_object, ['parameters_json_schema']) is not None:
-    setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
-    )
-
-  if getv(from_object, ['behavior']) is not None:
-    raise ValueError(
-        'behavior parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'stream_function_call_arguments parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -1262,11 +1270,15 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['routing_config']) is not None:
-    raise ValueError('routing_config parameter is not supported in Gemini API.')
+    raise ValueError(
+        'routing_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['model_selection_config']) is not None:
     raise ValueError(
-        'model_selection_config parameter is not supported in Gemini API.'
+        'model_selection_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['safety_settings']) is not None:
@@ -1299,7 +1311,10 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
+    raise ValueError(
+        'labels parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['cached_content']) is not None:
     setv(
@@ -1331,7 +1346,8 @@ def _GenerateContentConfig_to_mldev(
 
   if getv(from_object, ['audio_timestamp']) is not None:
     raise ValueError(
-        'audio_timestamp parameter is not supported in Gemini API.'
+        'audio_timestamp parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['thinking_config']) is not None:
@@ -1355,7 +1371,8 @@ def _GenerateContentConfig_to_mldev(
 
   if getv(from_object, ['model_armor_config']) is not None:
     raise ValueError(
-        'model_armor_config parameter is not supported in Gemini API.'
+        'model_armor_config parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['service_tier']) is not None:
@@ -1537,8 +1554,8 @@ def _GenerateContentConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Gemini'
-        ' Enterprise Agent Platform.'
+        'enable_enhanced_civic_answers parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['model_armor_config']) is not None:
@@ -1709,11 +1726,15 @@ def _GenerateImagesConfig_to_mldev(
   to_object: dict[str, Any] = {}
 
   if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'output_gcs_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['negative_prompt']) is not None:
     raise ValueError(
-        'negative_prompt parameter is not supported in Gemini API.'
+        'negative_prompt parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['number_of_images']) is not None:
@@ -1738,7 +1759,10 @@ def _GenerateImagesConfig_to_mldev(
     )
 
   if getv(from_object, ['seed']) is not None:
-    raise ValueError('seed parameter is not supported in Gemini API.')
+    raise ValueError(
+        'seed parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['safety_filter_level']) is not None:
     _SafetyFilterLevel_to_mldev_enum_validate(
@@ -1796,10 +1820,16 @@ def _GenerateImagesConfig_to_mldev(
     )
 
   if getv(from_object, ['add_watermark']) is not None:
-    raise ValueError('add_watermark parameter is not supported in Gemini API.')
+    raise ValueError(
+        'add_watermark parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
+    raise ValueError(
+        'labels parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['image_size']) is not None:
     setv(
@@ -1809,7 +1839,10 @@ def _GenerateImagesConfig_to_mldev(
     )
 
   if getv(from_object, ['enhance_prompt']) is not None:
-    raise ValueError('enhance_prompt parameter is not supported in Gemini API.')
+    raise ValueError(
+        'enhance_prompt parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -2070,10 +2103,16 @@ def _GenerateVideosConfig_to_mldev(
     )
 
   if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError('output_gcs_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'output_gcs_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['fps']) is not None:
-    raise ValueError('fps parameter is not supported in Gemini API.')
+    raise ValueError(
+        'fps parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['duration_seconds']) is not None:
     setv(
@@ -2083,7 +2122,10 @@ def _GenerateVideosConfig_to_mldev(
     )
 
   if getv(from_object, ['seed']) is not None:
-    raise ValueError('seed parameter is not supported in Gemini API.')
+    raise ValueError(
+        'seed parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['aspect_ratio']) is not None:
     setv(
@@ -2107,7 +2149,10 @@ def _GenerateVideosConfig_to_mldev(
     )
 
   if getv(from_object, ['pubsub_topic']) is not None:
-    raise ValueError('pubsub_topic parameter is not supported in Gemini API.')
+    raise ValueError(
+        'pubsub_topic parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['negative_prompt']) is not None:
     setv(
@@ -2124,7 +2169,10 @@ def _GenerateVideosConfig_to_mldev(
     )
 
   if getv(from_object, ['generate_audio']) is not None:
-    raise ValueError('generate_audio parameter is not supported in Gemini API.')
+    raise ValueError(
+        'generate_audio parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['last_frame']) is not None:
     setv(
@@ -2148,15 +2196,22 @@ def _GenerateVideosConfig_to_mldev(
     )
 
   if getv(from_object, ['mask']) is not None:
-    raise ValueError('mask parameter is not supported in Gemini API.')
+    raise ValueError(
+        'mask parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['compression_quality']) is not None:
     raise ValueError(
-        'compression_quality parameter is not supported in Gemini API.'
+        'compression_quality parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
+    raise ValueError(
+        'labels parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['webhook_config']) is not None:
     setv(
@@ -2164,7 +2219,10 @@ def _GenerateVideosConfig_to_mldev(
     )
 
   if getv(from_object, ['resize_mode']) is not None:
-    raise ValueError('resize_mode parameter is not supported in Gemini API.')
+    raise ValueError(
+        'resize_mode parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -2294,8 +2352,8 @@ def _GenerateVideosConfig_to_vertex(
 
   if getv(from_object, ['webhook_config']) is not None:
     raise ValueError(
-        'webhook_config parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'webhook_config parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['resize_mode']) is not None:
@@ -2840,8 +2898,8 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Gemini'
-        ' Enterprise Agent Platform.'
+        'enable_enhanced_civic_answers parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -2913,12 +2971,14 @@ def _GoogleSearch_to_mldev(
 
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
-        'blocking_confidence parameter is not supported in Gemini API.'
+        'blocking_confidence parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['exclude_domains']) is not None:
     raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
+        'exclude_domains parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -2943,27 +3003,32 @@ def _ImageConfig_to_mldev(
 
   if getv(from_object, ['person_generation']) is not None:
     raise ValueError(
-        'person_generation parameter is not supported in Gemini API.'
+        'person_generation parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['prominent_people']) is not None:
     raise ValueError(
-        'prominent_people parameter is not supported in Gemini API.'
+        'prominent_people parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['output_mime_type']) is not None:
     raise ValueError(
-        'output_mime_type parameter is not supported in Gemini API.'
+        'output_mime_type parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['output_compression_quality']) is not None:
     raise ValueError(
-        'output_compression_quality parameter is not supported in Gemini API.'
+        'output_compression_quality parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['image_output_options']) is not None:
     raise ValueError(
-        'image_output_options parameter is not supported in Gemini API.'
+        'image_output_options parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -3066,7 +3131,10 @@ def _Image_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'gcs_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['image_bytes']) is not None:
     setv(
@@ -3545,20 +3613,20 @@ def _Part_to_vertex(
 
   if getv(from_object, ['tool_call']) is not None:
     raise ValueError(
-        'tool_call parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'tool_call parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['tool_response']) is not None:
     raise ValueError(
-        'tool_response parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'tool_response parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['part_metadata']) is not None:
     raise ValueError(
-        'part_metadata parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'part_metadata parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -3814,14 +3882,14 @@ def _ReplicatedVoiceConfig_to_vertex(
 
   if getv(from_object, ['consent_audio']) is not None:
     raise ValueError(
-        'consent_audio parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'consent_audio parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['voice_consent_signature']) is not None:
     raise ValueError(
-        'voice_consent_signature parameter is not supported in Gemini'
-        ' Enterprise Agent Platform.'
+        'voice_consent_signature parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -3885,7 +3953,10 @@ def _SafetySetting_to_mldev(
     setv(to_object, ['category'], getv(from_object, ['category']))
 
   if getv(from_object, ['method']) is not None:
-    raise ValueError('method parameter is not supported in Gemini API.')
+    raise ValueError(
+        'method parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['threshold']) is not None:
     setv(to_object, ['threshold'], getv(from_object, ['threshold']))
@@ -4134,8 +4205,9 @@ def _ToolConfig_to_vertex(
 
   if getv(from_object, ['include_server_side_tool_invocations']) is not None:
     raise ValueError(
-        'include_server_side_tool_invocations parameter is not supported in'
-        ' Gemini Enterprise Agent Platform.'
+        'include_server_side_tool_invocations parameter is only supported in'
+        ' Gemini Developer API mode, not in Gemini Enterprise Agent Platform'
+        ' mode.'
     )
 
   return to_object
@@ -4148,7 +4220,10 @@ def _Tool_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
+    raise ValueError(
+        'retrieval parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
@@ -4179,7 +4254,8 @@ def _Tool_to_mldev(
 
   if getv(from_object, ['enterprise_web_search']) is not None:
     raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
+        'enterprise_web_search parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['function_declarations']) is not None:
@@ -4198,7 +4274,8 @@ def _Tool_to_mldev(
 
   if getv(from_object, ['parallel_ai_search']) is not None:
     raise ValueError(
-        'parallel_ai_search parameter is not supported in Gemini API.'
+        'parallel_ai_search parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['url_context']) is not None:
@@ -4228,8 +4305,8 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(
-        'file_search parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'file_search parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['google_search']) is not None:
@@ -4252,10 +4329,7 @@ def _Tool_to_vertex(
     setv(
         to_object,
         ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(item, to_object, root_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
+        [item for item in getv(from_object, ['function_declarations'])],
     )
 
   if getv(from_object, ['google_search_retrieval']) is not None:
@@ -4277,8 +4351,8 @@ def _Tool_to_vertex(
 
   if getv(from_object, ['mcp_servers']) is not None:
     raise ValueError(
-        'mcp_servers parameter is not supported in Gemini Enterprise Agent'
-        ' Platform.'
+        'mcp_servers parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -5144,8 +5218,8 @@ class Models(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _EditImageParameters_to_vertex(
@@ -5228,8 +5302,8 @@ class Models(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
@@ -5340,8 +5414,8 @@ class Models(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _RecontextImageParameters_to_vertex(
@@ -5443,8 +5517,8 @@ class Models(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _SegmentImageParameters_to_vertex(
@@ -5984,8 +6058,8 @@ class Models(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
@@ -7335,8 +7409,8 @@ class AsyncModels(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _EditImageParameters_to_vertex(
@@ -7419,8 +7493,8 @@ class AsyncModels(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _UpscaleImageAPIParameters_to_vertex(
@@ -7531,8 +7605,8 @@ class AsyncModels(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _RecontextImageParameters_to_vertex(
@@ -7637,8 +7711,8 @@ class AsyncModels(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _SegmentImageParameters_to_vertex(
@@ -8181,8 +8255,8 @@ class AsyncModels(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Enterprise Agent'
-          ' Platform (previously known as Vertex AI) client.'
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
       )
     else:
       request_dict = _ComputeTokensParameters_to_vertex(
