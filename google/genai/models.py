@@ -6394,9 +6394,10 @@ class Models(_api_module.BaseModule):
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
         parsed_config
     )
-    logger.info(
-        f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
-    )
+    if parsed_config.tools:
+      logger.info(
+          f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
+      )
     automatic_function_calling_history: list[types.Content] = []
     response = types.GenerateContentResponse()
     i = 0
@@ -6561,9 +6562,10 @@ class Models(_api_module.BaseModule):
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
         parsed_config
     )
-    logger.info(
-        f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
-    )
+    if parsed_config and parsed_config.tools:
+      logger.info(
+          f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
+      )
     automatic_function_calling_history: list[types.Content] = []
     chunk = None
     func_response_parts = None
