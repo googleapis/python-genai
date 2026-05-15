@@ -32,6 +32,8 @@ PagedItem = Literal[
     'cached_contents',
     'file_search_stores',
     'documents',
+    'skills',
+    'skill_revisions',
 ]
 
 
@@ -71,6 +73,28 @@ class _BasePager(Generic[T]):
       response: Any,
       config: Any,
   ):
+    self._limit = None
+    self._yielded = 0
+
+    max_results = None
+    if config:
+      if isinstance(config, dict):
+        max_results = config.get('max_results')
+      else:
+        max_results = getattr(config, 'max_results', None)
+
+    if max_results is not None:
+      try:
+        max_results_int = int(max_results)
+      except (ValueError, TypeError):
+        raise ValueError(f'max_results must be an integer, got {max_results}')
+
+      if max_results_int <= 0:
+        raise ValueError(f'max_results must be greater than 0, got {max_results_int}')
+      self._limit = max_results_int
+    elif name in ['skills', 'skill_revisions']:
+      self._limit = 100
+
     self._init_page(name, request, response, config)
 
   @property
@@ -170,6 +194,9 @@ class Pager(_BasePager[T]):
 
   def __next__(self) -> T:
     """Returns the next item."""
+    if self._limit is not None and self._yielded >= self._limit:
+      raise StopIteration
+
     if self._idx >= len(self):
       try:
         self.next_page()
@@ -178,6 +205,7 @@ class Pager(_BasePager[T]):
 
     item = self.page[self._idx]
     self._idx += 1
+    self._yielded += 1
     return item
 
   def __iter__(self) -> Iterator[T]:
@@ -227,6 +255,9 @@ class AsyncPager(_BasePager[T]):
 
   async def __anext__(self) -> T:
     """Returns the next item asynchronously."""
+    if self._limit is not None and self._yielded >= self._limit:
+      raise StopAsyncIteration
+
     if self._idx >= len(self):
       try:
         await self.next_page()
@@ -235,6 +266,7 @@ class AsyncPager(_BasePager[T]):
 
     item = self.page[self._idx]
     self._idx += 1
+    self._yielded += 1
     return item
 
   async def next_page(self) -> list[T]:
