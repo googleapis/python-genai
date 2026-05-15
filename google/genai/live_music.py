@@ -175,9 +175,8 @@ class AsyncLiveMusic(_api_module.BaseModule):
     transformed_model = t.t_model(self._api_client, model)
 
     if self._api_client.api_key:
-      api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateMusic?key={api_key}'
+      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateMusic'
       headers = self._api_client._http_options.headers
 
       # Only mldev supported
