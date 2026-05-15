@@ -76,6 +76,31 @@ TEST_AFC_HISTORY = [
 ]
 
 
+def _function_call_response(
+    name: str,
+    args: dict[str, object],
+    thought_signature: bytes,
+) -> types.GenerateContentResponse:
+  return types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[
+                      types.Part(
+                          function_call=types.FunctionCall(
+                              name=name,
+                              args=args,
+                          ),
+                          thought_signature=thought_signature,
+                      )
+                  ],
+                  role='model',
+              )
+          )
+      ]
+  )
+
+
 def get_current_weather(location: str) -> str:
   """Returns the current weather.
 
@@ -359,6 +384,58 @@ def test_generate_content_stream_with_thought_summaries(
     ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
 
 
+def test_generate_content_stream_merges_function_call_chunks_with_signatures():
+  with mock.patch.object(
+      models.Models, '_generate_content_stream'
+  ) as mock_stream_with_parallel_calls:
+    mock_stream_with_parallel_calls.side_effect = [
+        [
+            _function_call_response(
+                'get_current_weather',
+                {'location': 'San Francisco'},
+                b'weather-signature',
+            ),
+            _function_call_response(
+                'get_aqi_from_city',
+                {'location': 'San Francisco'},
+                b'aqi-signature',
+            ),
+        ],
+        [
+            types.GenerateContentResponse(
+                candidates=[types.Candidate(content=TEST_AFC_TEXT_CONTENT)]
+            )
+        ],
+    ]
+    models_instance = models.Models(api_client_=mock_api_client)
+    stream = models_instance.generate_content_stream(
+        model='test_model',
+        contents='what is the weather and AQI in San Francisco?',
+        config=types.GenerateContentConfig(
+            tools=[get_current_weather, get_aqi_from_city]
+        ),
+    )
+
+    chunks = list(stream)
+
+  assert len(chunks) == 1
+  assert mock_stream_with_parallel_calls.call_count == 2
+  second_request_contents = mock_stream_with_parallel_calls.call_args_list[
+      1
+  ].kwargs['contents']
+  function_call_content = second_request_contents[-2]
+  function_response_content = second_request_contents[-1]
+
+  assert len(function_call_content.parts) == 2
+  assert [
+      part.function_call.name for part in function_call_content.parts
+  ] == ['get_current_weather', 'get_aqi_from_city']
+  assert [
+      part.thought_signature for part in function_call_content.parts
+  ] == [b'weather-signature', b'aqi-signature']
+  assert len(function_response_content.parts) == 2
+
+
 @pytest.mark.asyncio
 async def test_generate_content_stream_no_function_map_async(
     mock_generate_content_stream_no_afc,
@@ -528,3 +605,59 @@ async def test_generate_content_stream_with_thought_summaries_async(
     assert chunk.automatic_function_calling_history[i].model_dump(
         exclude_none=True
     ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
+
+
+@pytest.mark.asyncio
+async def test_generate_content_stream_merges_function_call_chunks_async():
+  with mock.patch.object(
+      models.AsyncModels, '_generate_content_stream'
+  ) as mock_stream_with_parallel_calls:
+
+    async def async_generator_1():
+      yield _function_call_response(
+          'get_current_weather',
+          {'location': 'San Francisco'},
+          b'weather-signature',
+      )
+      yield _function_call_response(
+          'get_aqi_from_city',
+          {'location': 'San Francisco'},
+          b'aqi-signature',
+      )
+
+    async def async_generator_2():
+      yield types.GenerateContentResponse(
+          candidates=[types.Candidate(content=TEST_AFC_TEXT_CONTENT)]
+      )
+
+    mock_stream_with_parallel_calls.side_effect = [
+        async_generator_1(),
+        async_generator_2(),
+    ]
+    models_instance = models.AsyncModels(api_client_=mock_api_client)
+    stream = await models_instance.generate_content_stream(
+        model='test_model',
+        contents='what is the weather and AQI in San Francisco?',
+        config=types.GenerateContentConfig(
+            tools=[get_current_weather, get_aqi_from_city]
+        ),
+    )
+
+    chunks = [chunk async for chunk in stream]
+
+  assert len(chunks) == 1
+  assert mock_stream_with_parallel_calls.call_count == 2
+  second_request_contents = mock_stream_with_parallel_calls.call_args_list[
+      1
+  ].kwargs['contents']
+  function_call_content = second_request_contents[-2]
+  function_response_content = second_request_contents[-1]
+
+  assert len(function_call_content.parts) == 2
+  assert [
+      part.function_call.name for part in function_call_content.parts
+  ] == ['get_current_weather', 'get_aqi_from_city']
+  assert [
+      part.thought_signature for part in function_call_content.parts
+  ] == [b'weather-signature', b'aqi-signature']
+  assert len(function_response_content.parts) == 2

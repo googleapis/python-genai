@@ -36,6 +36,20 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.models')
 
 
+def _merge_content_parts(contents: list[types.Content]) -> Optional[types.Content]:
+  """Merges streamed content chunks into one content block."""
+  parts: list[types.Part] = []
+  role = None
+  for content in contents:
+    if role is None:
+      role = content.role
+    if content.parts:
+      parts.extend(content.parts)
+  if not parts:
+    return None
+  return types.Content(role=role, parts=parts)
+
+
 def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
   if enum_value in set(['ALLOW_ALL']):
     raise ValueError(
@@ -6567,6 +6581,7 @@ class Models(_api_module.BaseModule):
     automatic_function_calling_history: list[types.Content] = []
     chunk = None
     func_response_parts = None
+    func_call_content = None
     i = 0
     while remaining_remote_calls_afc > 0:
       i += 1
@@ -6575,6 +6590,8 @@ class Models(_api_module.BaseModule):
       )
 
       function_map = _extra_utils.get_function_map(parsed_config)
+      func_response_parts = []
+      func_call_contents = []
 
       if i == 1:
         # First request gets a function call.
@@ -6591,12 +6608,16 @@ class Models(_api_module.BaseModule):
                 or not chunk.candidates[0].content.parts
             ):
               break
-            func_response_parts = _extra_utils.get_function_response_parts(
+            response_parts = _extra_utils.get_function_response_parts(
                 chunk, function_map
             )
-            if not func_response_parts:
+            if response_parts:
+              func_response_parts.extend(response_parts)
+              func_call_contents.append(chunk.candidates[0].content)
+            else:
               contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
               yield chunk
+        func_call_content = _merge_content_parts(func_call_contents)
 
       else:
         #  Second request and beyond, yield chunks.
@@ -6617,6 +6638,7 @@ class Models(_api_module.BaseModule):
         func_response_parts = _extra_utils.get_function_response_parts(
             chunk, function_map
         )
+        func_call_content = chunk.candidates[0].content
 
       if not function_map:
         break
@@ -6629,7 +6651,6 @@ class Models(_api_module.BaseModule):
 
       # Append function response parts to contents for the next request.
       if chunk is not None and chunk.candidates is not None:
-        func_call_content = chunk.candidates[0].content
         func_response_content = types.Content(
             role='user',
             parts=func_response_parts,
@@ -8667,6 +8688,7 @@ class AsyncModels(_api_module.BaseModule):
       )
       automatic_function_calling_history: list[types.Content] = []
       func_response_parts = None
+      func_call_content = None
       chunk = None
       i = 0
       while remaining_remote_calls_afc > 0:
@@ -8686,6 +8708,8 @@ class AsyncModels(_api_module.BaseModule):
         function_map = _extra_utils.get_function_map(
             config, mcp_to_genai_tool_adapters, is_caller_method_async=True
         )
+        func_response_parts = []
+        func_call_contents = []
 
         if i == 1:
           # First request gets a function call.
@@ -8702,14 +8726,18 @@ class AsyncModels(_api_module.BaseModule):
                   or not chunk.candidates[0].content.parts
               ):
                 break
-              func_response_parts = (
+              response_parts = (
                   await _extra_utils.get_function_response_parts_async(
                       chunk, function_map
                   )
               )
-              if not func_response_parts:
+              if response_parts:
+                func_response_parts.extend(response_parts)
+                func_call_contents.append(chunk.candidates[0].content)
+              else:
                 contents = _extra_utils.append_chunk_contents(contents, chunk)
                 yield chunk
+          func_call_content = _merge_content_parts(func_call_contents)
 
         else:
           #  Second request and beyond, yield chunks.
@@ -8733,6 +8761,7 @@ class AsyncModels(_api_module.BaseModule):
                   chunk, function_map
               )
           )
+          func_call_content = chunk.candidates[0].content
         if not function_map:
           break
 
@@ -8742,7 +8771,6 @@ class AsyncModels(_api_module.BaseModule):
         if chunk is None:
           continue
         # Append function response parts to contents for the next request.
-        func_call_content = chunk.candidates[0].content
         func_response_content = types.Content(
             role='user',
             parts=func_response_parts,
