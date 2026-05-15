@@ -8,7 +8,6 @@
 * Add content union to UserInputStep ([a5059a8](https://github.com/googleapis/python-genai/commit/a5059a82dc596f9555dd3221aa6e7414d50df24a))
 * Interaction.{output_text,output_image,output_audio,output_video} ([975d16a](https://github.com/googleapis/python-genai/commit/975d16a3cea49282137dd2a901b219820a641b64))
 * Migrate Agent Engines, Evaluation, Prompt Management, and Skill features to agentplatform ([abb1099](https://github.com/googleapis/python-genai/commit/abb1099fab3fc227acf53f3cdcd51a87679a51fe))
-* Support speech to speech translation in Gemini Live ([6aa8da2](https://github.com/googleapis/python-genai/commit/6aa8da2b3a7306b65e417e772e7698fb542c404a))
 
 
 ### Documentation
