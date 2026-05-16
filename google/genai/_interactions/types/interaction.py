@@ -216,33 +216,31 @@ class Interaction(BaseModel):
                 return coerced
 
     @property
-    def _last_model_output_steps(self) -> List[ModelOutputStep]:
-        if not self.steps:
-            return []
-        trailing: List[ModelOutputStep] = []
-        for step in reversed(self.steps):
-            if isinstance(step, ModelOutputStep):
-                trailing.append(step)
-            else:
-                break
-        trailing.reverse()
-        return trailing
-
-    @property
     def output_text(self) -> str:
-        """Concatenated last consecutive text from the last consecutive model output steps."""
+        """The last consecutive run of text from the trailing model output steps.
+
+        Scans backwards through the steps (stopping at any UserInputStep) and
+        skips non-text content until the first text item is found, then
+        continues collecting text until a non-text item is encountered.
+        Returns an empty string when no text content is present.
+        """
         parts: List[str] = []
-        done = False
-        for step in reversed(self._last_model_output_steps):
-            if done:
+        collecting = False
+        for step in reversed(self.steps or []):
+            if isinstance(step, UserInputStep):
                 break
-            if step.content:
-                for content in reversed(step.content):
-                    if isinstance(content, TextContent):
-                        parts.append(content.text)
-                    else:
-                        done = True
-                        break
+            if not isinstance(step, ModelOutputStep) or not step.content:
+                if collecting:
+                    break
+                continue
+            for content in reversed(step.content):
+                if isinstance(content, TextContent):
+                    collecting = True
+                    parts.append(content.text)
+                elif collecting:
+                    # Hit a non-text barrier after we started collecting.
+                    parts.reverse()
+                    return "".join(parts)
         parts.reverse()
         return "".join(parts)
 
