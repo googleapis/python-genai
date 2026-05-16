@@ -71,10 +71,10 @@ NestedFormat = Literal["dots", "brackets"]
 ProxiesDict = Dict["str | URL", Union[None, str, URL, Proxy]]
 ProxiesTypes = Union[str, Proxy, ProxiesDict]
 if TYPE_CHECKING:
-    Base64FileInput = Union[IO[bytes], PathLike[str]]
+    Base64FileInput = Union[IO[bytes], bytes, PathLike[str]]
     FileContent = Union[IO[bytes], bytes, PathLike[str]]
 else:
-    Base64FileInput = Union[IO[bytes], PathLike]
+    Base64FileInput = Union[IO[bytes], bytes, PathLike]
     FileContent = Union[IO[bytes], bytes, PathLike]  # PathLike is not subscriptable in Python 3.8.
 
 

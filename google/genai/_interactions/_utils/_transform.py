@@ -259,7 +259,9 @@ def _format_data(data: object, format_: PropertyFormat, format_template: str | N
     if format_ == "base64" and is_base64_file_input(data):
         binary: str | bytes | None = None
 
-        if isinstance(data, pathlib.Path):
+        if isinstance(data, bytes):
+            binary = data
+        elif isinstance(data, pathlib.Path):
             binary = data.read_bytes()
         elif isinstance(data, io.IOBase):
             binary = data.read()
@@ -425,7 +427,9 @@ async def _async_format_data(data: object, format_: PropertyFormat, format_templ
     if format_ == "base64" and is_base64_file_input(data):
         binary: str | bytes | None = None
 
-        if isinstance(data, pathlib.Path):
+        if isinstance(data, bytes):
+            binary = data
+        elif isinstance(data, pathlib.Path):
             binary = await anyio.Path(data).read_bytes()
         elif isinstance(data, io.IOBase):
             binary = data.read()
