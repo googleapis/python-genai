@@ -37,7 +37,7 @@ class TestLocalTokenizer(unittest.TestCase):
     self.mock_tokenizer = MagicMock()
     self.mock_get_sentencepiece.return_value = self.mock_tokenizer
 
-    self.tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3-pro-preview')
+    self.tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3-flash-preview')
 
   def tearDown(self):
     patch.stopall()
