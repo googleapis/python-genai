@@ -43,6 +43,7 @@ from ._api_client import has_aiohttp
 from . import _common
 
 from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, GeminiNextGenAPIClient
+from ._interactions._types import NOT_GIVEN
 from . import _interactions
 
 from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
@@ -175,7 +176,9 @@ class AsyncClient:
         default_headers=http_opts.headers,
         http_client=http_client,
         # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
-        timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+        # Pass NOT_GIVEN (not None) when unset so the Stainless client uses
+        # its DEFAULT_TIMEOUT.  httpx treats None as "no timeout".
+        timeout=http_opts.timeout / 1000 if http_opts.timeout else NOT_GIVEN,
         max_retries=max_retries,
         client_adapter=AsyncGeminiNextGenAPIClientAdapter(self._api_client)
     )
@@ -552,7 +555,9 @@ class Client:
         default_headers=http_opts.headers,
         http_client=self._api_client._httpx_client,
         # uSDk expects ms, nextgen uses a httpx Timeout -> expects seconds.
-        timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+        # Pass NOT_GIVEN (not None) when unset so the Stainless client uses
+        # its DEFAULT_TIMEOUT.  httpx treats None as "no timeout".
+        timeout=http_opts.timeout / 1000 if http_opts.timeout else NOT_GIVEN,
         max_retries=max_retries,
         client_adapter=GeminiNextGenAPIClientAdapter(self._api_client),
     )
