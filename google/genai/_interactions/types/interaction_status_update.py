@@ -28,7 +28,9 @@ class InteractionStatusUpdate(BaseModel):
 
     interaction_id: str
 
-    status: Literal["in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete"]
+    status: Literal[
+        "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded"
+    ]
 
     event_id: Optional[str] = None
     """
