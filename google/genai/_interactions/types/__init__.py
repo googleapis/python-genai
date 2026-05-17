@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from .step import Step as Step
 from .tool import Tool as Tool
+from .agent import Agent as Agent
 from .model import Model as Model
 from .usage import Usage as Usage
 from .content import Content as Content
@@ -30,6 +31,7 @@ from .step_delta import StepDelta as StepDelta
 from .step_param import StepParam as StepParam
 from .step_start import StepStart as StepStart
 from .tool_param import ToolParam as ToolParam
+from .environment import Environment as Environment
 from .error_event import ErrorEvent as ErrorEvent
 from .interaction import Interaction as Interaction
 from .model_param import ModelParam as ModelParam
@@ -54,6 +56,8 @@ from .user_input_step import UserInputStep as UserInputStep
 from .annotation_param import AnnotationParam as AnnotationParam
 from .document_content import DocumentContent as DocumentContent
 from .tool_choice_type import ToolChoiceType as ToolChoiceType
+from .agent_list_params import AgentListParams as AgentListParams
+from .environment_param import EnvironmentParam as EnvironmentParam
 from .generation_config import GenerationConfig as GenerationConfig
 from .model_output_step import ModelOutputStep as ModelOutputStep
 from .function_call_step import FunctionCallStep as FunctionCallStep
@@ -64,6 +68,8 @@ from .thought_step_param import ThoughtStepParam as ThoughtStepParam
 from .tool_choice_config import ToolChoiceConfig as ToolChoiceConfig
 from .url_citation_param import URLCitationParam as URLCitationParam
 from .url_context_result import URLContextResult as URLContextResult
+from .agent_create_params import AgentCreateParams as AgentCreateParams
+from .agent_list_response import AgentListResponse as AgentListResponse
 from .allowed_tools_param import AllowedToolsParam as AllowedToolsParam
 from .audio_content_param import AudioContentParam as AudioContentParam
 from .file_citation_param import FileCitationParam as FileCitationParam
@@ -78,6 +84,7 @@ from .google_search_result import GoogleSearchResult as GoogleSearchResult
 from .place_citation_param import PlaceCitationParam as PlaceCitationParam
 from .text_response_format import TextResponseFormat as TextResponseFormat
 from .webhook_config_param import WebhookConfigParam as WebhookConfigParam
+from .agent_delete_response import AgentDeleteResponse as AgentDeleteResponse
 from .audio_response_format import AudioResponseFormat as AudioResponseFormat
 from .file_search_call_step import FileSearchCallStep as FileSearchCallStep
 from .google_maps_call_step import GoogleMapsCallStep as GoogleMapsCallStep

@@ -15,6 +15,14 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from .agents import (
+    AgentsResource,
+    AsyncAgentsResource,
+    AgentsResourceWithRawResponse,
+    AsyncAgentsResourceWithRawResponse,
+    AgentsResourceWithStreamingResponse,
+    AsyncAgentsResourceWithStreamingResponse,
+)
 from .webhooks import (
     WebhooksResource,
     AsyncWebhooksResource,
@@ -45,4 +53,10 @@ __all__ = [
     "AsyncWebhooksResourceWithRawResponse",
     "WebhooksResourceWithStreamingResponse",
     "AsyncWebhooksResourceWithStreamingResponse",
+    "AgentsResource",
+    "AsyncAgentsResource",
+    "AgentsResourceWithRawResponse",
+    "AsyncAgentsResourceWithRawResponse",
+    "AgentsResourceWithStreamingResponse",
+    "AsyncAgentsResourceWithStreamingResponse",
 ]

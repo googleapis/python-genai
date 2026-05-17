@@ -46,8 +46,9 @@ from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, Gem
 from . import _interactions
 
 from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
-from ._interactions.resources import WebhooksResource, AsyncWebhooksResource
+from ._interactions.resources import WebhooksResource, AsyncWebhooksResource, AgentsResource, AsyncAgentsResource
 _interactions_experimental_warned = False
+_agent_experimental_warned = False
 
 class AsyncGeminiNextGenAPIClientAdapter(_interactions.AsyncGeminiNextGenAPIClientAdapter):
   """Adapter for the Gemini NextGen API Client."""
@@ -202,6 +203,18 @@ class AsyncClient:
   @property
   def webhooks(self) -> AsyncWebhooksResource:
     return self._nextgen_client.webhooks
+
+  @property
+  def agents(self) -> AsyncAgentsResource:
+    global _agent_experimental_warned
+    if not _agent_experimental_warned:
+      _agent_experimental_warned = True
+      warnings.warn(
+          'Agents usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    return self._nextgen_client.agents
 
   @property
   def _has_nextgen_client(self) -> bool:
@@ -567,6 +580,18 @@ class Client:
   @property
   def webhooks(self) -> WebhooksResource:
     return self._nextgen_client.webhooks
+
+  @property
+  def agents(self) -> AgentsResource:
+    global _agent_experimental_warned
+    if not _agent_experimental_warned:
+      _agent_experimental_warned = True
+      warnings.warn(
+        'Agents usage is experimental and may change in future versions.',
+        category=UserWarning,
+        stacklevel=2,
+      )
+    return self._nextgen_client.agents
 
   @property
   def _has_nextgen_client(self) -> bool:

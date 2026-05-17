@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, Set, Dict, List, Tuple, Union, Optional, 
 from datetime import datetime
 from typing_extensions import Literal, Annotated, TypeAlias, override
 
+from . import environment
 from .step import Step
 from .tool import Tool
 from .model import Model
@@ -42,11 +43,13 @@ from .audio_response_format import AudioResponseFormat
 from .image_response_format import ImageResponseFormat
 from .deep_research_agent_config import DeepResearchAgentConfig
 
-__all__ = ["Interaction", "AgentConfig", "Input", "ResponseFormat", "ResponseFormatResponseFormatList"]
+__all__ = ["Interaction", "AgentConfig", "Environment", "Input", "ResponseFormat", "ResponseFormatResponseFormatList"]
 
 AgentConfig: TypeAlias = Annotated[
     Union[DynamicAgentConfig, DeepResearchAgentConfig], PropertyInfo(discriminator="type")
 ]
+
+Environment: TypeAlias = Union[str, environment.Environment]
 
 Input: TypeAlias = Union[
     str, List[Step], List[Content], TextContent, ImageContent, AudioContent, DocumentContent, VideoContent
@@ -98,6 +101,20 @@ class Interaction(BaseModel):
 
     agent_config: Optional[AgentConfig] = None
     """Configuration parameters for the agent interaction."""
+
+    environment: Optional[Environment] = None
+    """The environment configuration for the interaction.
+
+    Can be an object specifying remote environment sources or a string referencing
+    an existing environment ID.
+    """
+
+    environment_id: Optional[str] = None
+    """Output only.
+
+    The environment ID for the interaction. Only populated if environment config is
+    set in the request.
+    """
 
     input: Optional[Input] = None
     """The input for the interaction."""

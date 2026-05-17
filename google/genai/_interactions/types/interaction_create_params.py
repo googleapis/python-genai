@@ -24,6 +24,7 @@ from .step_param import StepParam
 from .tool_param import ToolParam
 from .model_param import ModelParam
 from .content_param import ContentParam
+from .environment_param import EnvironmentParam
 from .text_content_param import TextContentParam
 from .audio_content_param import AudioContentParam
 from .image_content_param import ImageContentParam
@@ -40,6 +41,7 @@ from .deep_research_agent_config_param import DeepResearchAgentConfigParam
 __all__ = [
     "BaseCreateModelInteractionParams",
     "Input",
+    "Environment",
     "ResponseFormat",
     "ResponseFormatResponseFormatList",
     "BaseCreateAgentInteractionParams",
@@ -62,6 +64,13 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
 
     background: bool
     """Input only. Whether to run the model interaction in the background."""
+
+    environment: Environment
+    """The environment configuration for the interaction.
+
+    Can be an object specifying remote environment sources or a string referencing
+    an existing environment ID.
+    """
 
     generation_config: GenerationConfigParam
     """Input only. Configuration parameters for the model interaction."""
@@ -112,6 +121,8 @@ Input: TypeAlias = Union[
     VideoContentParam,
 ]
 
+Environment: TypeAlias = Union[str, EnvironmentParam]
+
 ResponseFormatResponseFormatList: TypeAlias = Union[
     AudioResponseFormatParam, TextResponseFormatParam, ImageResponseFormatParam, object
 ]
@@ -148,6 +159,13 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
 
     background: bool
     """Input only. Whether to run the model interaction in the background."""
+
+    environment: Environment
+    """The environment configuration for the interaction.
+
+    Can be an object specifying remote environment sources or a string referencing
+    an existing environment ID.
+    """
 
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
