@@ -32,16 +32,16 @@ class Metadata(BaseModel):
 
 
 class InteractionStatusUpdate(BaseModel):
-    event_type: Literal["interaction.status_update"]
+  event_type: Literal["interaction.status_update"]
 
-    interaction_id: str
+  interaction_id: str
 
     status: Literal[
         "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded"
     ]
 
-    event_id: Optional[str] = None
-    """
+  event_id: Optional[str] = None
+  """
     The event_id token to be used to resume the interaction stream, from this event.
     """
 
