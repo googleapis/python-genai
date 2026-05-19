@@ -6134,6 +6134,12 @@ class GenerateContentConfig(_common.BaseModel):
       default=None,
       description="""The service tier to use for the request. For example, ServiceTier.FLEX.""",
   )
+  request_ttl: Optional[str] = Field(
+      default=None,
+      description="""The timeout for the private inference request. e.g. '120s'. If not
+      set, the default timeout of the corresponding `request` is used.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6350,6 +6356,11 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   service_tier: Optional[ServiceTier]
   """The service tier to use for the request. For example, ServiceTier.FLEX."""
+
+  request_ttl: Optional[str]
+  """The timeout for the private inference request. e.g. '120s'. If not
+      set, the default timeout of the corresponding `request` is used.
+      """
 
 
 GenerateContentConfigOrDict = Union[
