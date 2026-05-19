@@ -77,7 +77,9 @@ class Interaction(BaseModel):
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
-    status: Literal["in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete"]
+    status: Literal[
+        "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded"
+    ]
     """Required. Output only. The status of the interaction."""
 
     steps: List[Step]
