@@ -33,7 +33,7 @@ __all__ = [
     "ToolMCPServer",
 ]
 
-BaseEnvironment: TypeAlias = Union[str, Environment]
+BaseEnvironment: TypeAlias = Union[Environment, str]
 
 
 class ToolCodeExecution(BaseModel):

@@ -56,7 +56,7 @@ class AgentCreateParams(TypedDict, total=False):
     """The tools available to the agent."""
 
 
-BaseEnvironment: TypeAlias = Union[str, EnvironmentParam]
+BaseEnvironment: TypeAlias = Union[EnvironmentParam, str]
 
 
 class ToolCodeExecution(TypedDict, total=False):
