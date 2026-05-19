@@ -15,23 +15,14 @@
 
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Dict, List, Union, Optional
+from typing import List, Union, Optional
 from typing_extensions import Literal, Annotated, TypeAlias
 
 from .._utils import PropertyInfo
 from .._models import BaseModel
 from .environment import Environment
-from .allowed_tools import AllowedTools
 
-__all__ = [
-    "Agent",
-    "BaseEnvironment",
-    "Tool",
-    "ToolCodeExecution",
-    "ToolGoogleSearch",
-    "ToolURLContext",
-    "ToolMCPServer",
-]
+__all__ = ["Agent", "BaseEnvironment", "Tool", "ToolCodeExecution", "ToolGoogleSearch", "ToolURLContext"]
 
 BaseEnvironment: TypeAlias = Union[Environment, str]
 
@@ -57,26 +48,8 @@ class ToolURLContext(BaseModel):
     type: Literal["url_context"]
 
 
-class ToolMCPServer(BaseModel):
-    """A MCPServer is a server that can be called by the model to perform actions."""
-
-    type: Literal["mcp_server"]
-
-    allowed_tools: Optional[List[AllowedTools]] = None
-    """The allowed tools."""
-
-    headers: Optional[Dict[str, str]] = None
-    """Optional: Fields for authentication headers, timeouts, etc., if needed."""
-
-    name: Optional[str] = None
-    """The name of the MCPServer."""
-
-    url: Optional[str] = None
-    """The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp" """
-
-
 Tool: TypeAlias = Annotated[
-    Union[ToolCodeExecution, ToolGoogleSearch, ToolURLContext, ToolMCPServer], PropertyInfo(discriminator="type")
+    Union[ToolCodeExecution, ToolGoogleSearch, ToolURLContext], PropertyInfo(discriminator="type")
 ]
 
 

@@ -17,21 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Union, Iterable
+from typing import List, Union, Iterable
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from .environment_param import EnvironmentParam
-from .allowed_tools_param import AllowedToolsParam
 
-__all__ = [
-    "AgentCreateParams",
-    "BaseEnvironment",
-    "Tool",
-    "ToolCodeExecution",
-    "ToolGoogleSearch",
-    "ToolURLContext",
-    "ToolMCPServer",
-]
+__all__ = ["AgentCreateParams", "BaseEnvironment", "Tool", "ToolCodeExecution", "ToolGoogleSearch", "ToolURLContext"]
 
 
 class AgentCreateParams(TypedDict, total=False):
@@ -80,22 +71,4 @@ class ToolURLContext(TypedDict, total=False):
     type: Required[Literal["url_context"]]
 
 
-class ToolMCPServer(TypedDict, total=False):
-    """A MCPServer is a server that can be called by the model to perform actions."""
-
-    type: Required[Literal["mcp_server"]]
-
-    allowed_tools: Iterable[AllowedToolsParam]
-    """The allowed tools."""
-
-    headers: Dict[str, str]
-    """Optional: Fields for authentication headers, timeouts, etc., if needed."""
-
-    name: str
-    """The name of the MCPServer."""
-
-    url: str
-    """The full URL for the MCPServer endpoint. Example: "https://api.example.com/mcp" """
-
-
-Tool: TypeAlias = Union[ToolCodeExecution, ToolGoogleSearch, ToolURLContext, ToolMCPServer]
+Tool: TypeAlias = Union[ToolCodeExecution, ToolGoogleSearch, ToolURLContext]
