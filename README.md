@@ -57,7 +57,7 @@ from google import genai
 
 # Only run this block for Vertex AI API
 client = genai.Client(
-    vertexai=True, project='your-project-id', location='us-central1'
+    enterprise=True, project='your-project-id', location='us-central1'
 )
 ```
 
@@ -156,7 +156,7 @@ To explicitly close the async client:
 from google.genai import Client
 
 aclient = Client(
-    vertexai=True, project='my-project-id', location='us-central1'
+    enterprise=True, project='my-project-id', location='us-central1'
 ).aio
 response_1 = await aclient.models.generate_content(
     model=MODEL_ID,
@@ -220,7 +220,7 @@ from google import genai
 from google.genai import types
 
 client = genai.Client(
-    vertexai=True,
+    enterprise=True,
     project='your-project-id',
     location='us-central1',
     http_options=types.HttpOptions(api_version='v1')
@@ -287,7 +287,7 @@ You may pass the custom base url like this:
 
 ```python
 client = Client(
-    vertexai=True,
+    enterprise=True,
     http_options=types.HttpOptionsDict(
         base_url='https://test-api-gateway-proxy.com',
         base_url_resource_scope=types.ResourceScope.COLLECTION,
