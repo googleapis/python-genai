@@ -1,5 +1,4 @@
-
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,85 +17,120 @@
 """Tests for Interactions API URL paths."""
 
 from unittest import mock
-import pytest
-from httpx import Request, Response
-from ..._api_client import AsyncHttpxClient
-from httpx import Client as HTTPClient
-from .. import pytest_helper
 import google.auth
+from httpx import Client as HTTPClient
+from httpx import Request, Response
+import pytest
+from ..._api_client import AsyncHttpxClient
+from .. import pytest_helper
 
-@mock.patch.object(google.auth, "default", autospec=True)
+
+@mock.patch.object(google.auth, 'default', autospec=True)
 def test_interactions_paths(mock_auth_default, client):
-    interaction_id = "test-interaction-id"
-
+    interaction_id = 'test-interaction-id'
     mock_creds = mock.Mock()
-    mock_creds.token = "test-token"
+    mock_creds.token = 'test-token'
     mock_creds.expired = False
-    mock_creds.quota_project_id = "test-quota-project"
-    mock_auth_default.return_value = (mock_creds, "test-project")
+    mock_creds.quota_project_id = 'test-quota-project'
+    mock_auth_default.return_value = (mock_creds, 'test-project')
 
     if client._api_client.vertexai:
-        expected_base_url = f'https://{client._api_client.location}-aiplatform.googleapis.com/v1beta1/projects/{client._api_client.project}/locations/{client._api_client.location}'
+        if client._api_client.location == 'global':
+            expected_base_url = (
+                'https://aiplatform.googleapis.com'
+                f'/v1beta1/projects/{client._api_client.project}'
+                '/locations/global'
+            )
+        else:
+            expected_base_url = (
+                f'https://{client._api_client.location}-aiplatform.googleapis.com'
+                f'/v1beta1/projects/{client._api_client.project}'
+                f'/locations/{client._api_client.location}'
+            )
     else:
-        expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
+        expected_base_url = 'https://generativelanguage.googleapis.com/v1beta'
 
-    with mock.patch.object(HTTPClient, "send") as mock_send:
+    with mock.patch.object(HTTPClient, 'send') as mock_send:
         mock_send.return_value = Response(200, request=Request('GET', ''))
         client.interactions.get(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
+        assert str(request.url) == (
+            f'{expected_base_url}/interactions/{interaction_id}'
+        )
 
         mock_send.reset_mock()
         mock_send.return_value = Response(200, request=Request('POST', ''))
         client.interactions.cancel(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}/cancel'
+        assert str(request.url) == (
+            f'{expected_base_url}/interactions/{interaction_id}/cancel'
+        )
 
         mock_send.reset_mock()
         mock_send.return_value = Response(200, request=Request('DELETE', ''))
         client.interactions.delete(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
+        assert str(request.url) == (
+            f'{expected_base_url}/interactions/{interaction_id}'
+        )
+
 
 @pytest.mark.asyncio
-@mock.patch.object(google.auth, "default", autospec=True)
+@mock.patch.object(google.auth, 'default', autospec=True)
 async def test_async_interactions_paths(mock_auth_default, client):
-    interaction_id = "test-interaction-id"
-
+    interaction_id = 'test-interaction-id'
     mock_creds = mock.Mock()
-    mock_creds.token = "test-token"
+    mock_creds.token = 'test-token'
     mock_creds.expired = False
-    mock_creds.quota_project_id = "test-quota-project"
-    mock_auth_default.return_value = (mock_creds, "test-project")
+    mock_creds.quota_project_id = 'test-quota-project'
+    mock_auth_default.return_value = (mock_creds, 'test-project')
 
     if client._api_client.vertexai:
-        expected_base_url = f'https://{client._api_client.location}-aiplatform.googleapis.com/v1beta1/projects/{client._api_client.project}/locations/{client._api_client.location}'
+        if client._api_client.location == 'global':
+            expected_base_url = (
+                'https://aiplatform.googleapis.com'
+                f'/v1beta1/projects/{client._api_client.project}'
+                '/locations/global'
+            )
+        else:
+            expected_base_url = (
+                f'https://{client._api_client.location}-aiplatform.googleapis.com'
+                f'/v1beta1/projects/{client._api_client.project}'
+                f'/locations/{client._api_client.location}'
+            )
     else:
-        expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
+        expected_base_url = 'https://generativelanguage.googleapis.com/v1beta'
 
-    with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
+    with mock.patch.object(AsyncHttpxClient, 'send') as mock_send:
         mock_send.return_value = Response(200, request=Request('GET', ''))
         await client.aio.interactions.get(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
+        assert str(request.url) == (
+            f'{expected_base_url}/interactions/{interaction_id}'
+        )
 
         mock_send.reset_mock()
         mock_send.return_value = Response(200, request=Request('POST', ''))
         await client.aio.interactions.cancel(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}/cancel'
+        assert str(request.url) == (
+            f'{expected_base_url}/interactions/{interaction_id}/cancel'
+        )
 
         mock_send.reset_mock()
         mock_send.return_value = Response(200, request=Request('DELETE', ''))
         await client.aio.interactions.delete(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
+        assert str(request.url) == (
+            f'{expected_base_url}/interactions/{interaction_id}'
+        )
+
 
 pytestmark = pytest_helper.setup(
     file=__file__,

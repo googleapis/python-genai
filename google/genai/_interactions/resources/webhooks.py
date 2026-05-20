@@ -17,55 +17,51 @@
 
 from __future__ import annotations
 
-from typing import List, Union
-from typing_extensions import Literal
+from typing import Iterable, List, Union
 
 import httpx
+from typing_extensions import Literal
 
-from ..types import (
-    webhook_list_params,
-    webhook_ping_params,
-    webhook_create_params,
-    webhook_update_params,
-    webhook_rotate_signing_secret_params,
-)
-from .._types import Body, Omit, Query, Headers, NotGiven, omit, not_given
-from .._utils import maybe_transform, async_maybe_transform
+from .._base_client import make_request_options
 from .._compat import cached_property
-from .._resource import SyncAPIResource, AsyncAPIResource
+from .._resource import AsyncAPIResource, SyncAPIResource
 from .._response import (
-    to_raw_response_wrapper,
-    to_streamed_response_wrapper,
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
+    to_raw_response_wrapper,
+    to_streamed_response_wrapper,
 )
-from .._base_client import make_request_options
+from .._types import Body, Headers, NotGiven, Omit, Query, not_given, omit
+from .._utils import async_maybe_transform, maybe_transform
+from ..types import webhook_create_params, webhook_list_params, webhook_ping_params, webhook_rotate_signing_secret_params, webhook_update_params
 from ..types.webhook import Webhook
+from ..types.webhook_delete_response import WebhookDeleteResponse
 from ..types.webhook_list_response import WebhookListResponse
 from ..types.webhook_ping_response import WebhookPingResponse
-from ..types.webhook_delete_response import WebhookDeleteResponse
 from ..types.webhook_rotate_signing_secret_response import WebhookRotateSigningSecretResponse
 
 __all__ = ["WebhooksResource", "AsyncWebhooksResource"]
 
 
 class WebhooksResource(SyncAPIResource):
+
     @cached_property
     def with_raw_response(self) -> WebhooksResourceWithRawResponse:
-        """
-        This property can be used as a prefix for any HTTP method call to return
+        """This property can be used as a prefix for any HTTP method call to return
+
         the raw response object instead of the parsed content.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
         """
         return WebhooksResourceWithRawResponse(self)
 
     @cached_property
     def with_streaming_response(self) -> WebhooksResourceWithStreamingResponse:
-        """
-        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+        """An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
         """
         return WebhooksResourceWithStreamingResponse(self)
 
@@ -75,16 +71,14 @@ class WebhooksResource(SyncAPIResource):
         api_version: str | None = None,
         subscribed_events: List[
             Union[
-                Literal[
-                    "batch.succeeded",
-                    "batch.expired",
-                    "batch.failed",
-                    "interaction.requires_action",
-                    "interaction.completed",
-                    "interaction.failed",
-                    "video.generated",
-                ],
                 str,
+                Literal["batch.succeeded"],
+                Literal["batch.expired"],
+                Literal["batch.failed"],
+                Literal["interaction.requires_action"],
+                Literal["interaction.completed"],
+                Literal["interaction.failed"],
+                Literal["video.generated"],
             ]
         ],
         uri: str,
@@ -99,37 +93,29 @@ class WebhooksResource(SyncAPIResource):
         """Creates a new Webhook.
 
         Args:
-          subscribed_events:
-              Required.
-
-        The events that the webhook is subscribed to. Available events:
-
-              - batch.succeeded
-              - batch.expired
-              - batch.failed
-              - interaction.requires_action
-              - interaction.completed
-              - interaction.failed
-              - video.generated
-
+          subscribed_events: Required. The events that the webhook is subscribed
+            to. Available events: - batch.succeeded - batch.expired -
+            batch.failed - interaction.requires_action - interaction.completed -
+            interaction.failed - video.generated
           uri: Required. The URI to which webhook events will be sent.
-
           name: Optional. The user-provided name of the webhook.
-
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path="webhooks"
+            ),
             body=maybe_transform(
                 {
                     "subscribed_events": subscribed_events,
@@ -139,7 +125,10 @@ class WebhooksResource(SyncAPIResource):
                 webhook_create_params.WebhookCreateParams,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Webhook,
         )
@@ -149,24 +138,27 @@ class WebhooksResource(SyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
-        update_mask: str | Omit = omit,
         name: str | Omit = omit,
-        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
-        subscribed_events: List[
-            Union[
-                Literal[
-                    "batch.succeeded",
-                    "batch.expired",
-                    "batch.failed",
-                    "interaction.requires_action",
-                    "interaction.completed",
-                    "interaction.failed",
-                    "video.generated",
-                ],
-                str,
+        state: (
+            Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"]
+            | Omit
+        ) = omit,
+        subscribed_events: (
+            List[
+                Union[
+                    str,
+                    Literal["batch.succeeded"],
+                    Literal["batch.expired"],
+                    Literal["batch.failed"],
+                    Literal["interaction.requires_action"],
+                    Literal["interaction.completed"],
+                    Literal["interaction.failed"],
+                    Literal["video.generated"],
+                ]
             ]
-        ]
-        | Omit = omit,
+            | Omit
+        ) = omit,
+        update_mask: str | Omit = omit,
         uri: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -178,43 +170,35 @@ class WebhooksResource(SyncAPIResource):
         """Updates an existing Webhook.
 
         Args:
-          update_mask: Optional.
-
-        The list of fields to update.
-
           name: Optional. The user-provided name of the webhook.
-
           state: Optional. The state of the webhook.
-
-          subscribed_events:
-              Optional. The events that the webhook is subscribed to. Available events:
-
-              - batch.succeeded
-              - batch.expired
-              - batch.failed
-              - interaction.requires_action
-              - interaction.completed
-              - interaction.failed
-              - video.generated
-
+          subscribed_events: Optional. The events that the webhook is subscribed
+            to. Available events: - batch.succeeded - batch.expired -
+            batch.failed - interaction.requires_action - interaction.completed -
+            interaction.failed - video.generated
+          update_mask: Optional. The list of fields to update.
           uri: Optional. The URI to which webhook events will be sent.
-
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return self._patch(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}"
+            ),
             body=maybe_transform(
                 {
                     "name": name,
@@ -229,7 +213,12 @@ class WebhooksResource(SyncAPIResource):
                 extra_query=extra_query,
                 extra_body=extra_body,
                 timeout=timeout,
-                query=maybe_transform({"update_mask": update_mask}, webhook_update_params.WebhookUpdateParams),
+                query=maybe_transform(
+                    {
+                        "update_mask": update_mask,
+                    },
+                    webhook_update_params.WebhookUpdateParams,
+                ),
             ),
             cast_to=Webhook,
         )
@@ -250,29 +239,28 @@ class WebhooksResource(SyncAPIResource):
         """Lists all Webhooks.
 
         Args:
-          page_size: Optional.
-
-        The maximum number of webhooks to return. The service may return fewer
-              than this value. If unspecified, at most 50 webhooks will be returned. The
-              maximum value is 1000.
-
-          page_token: Optional. A page token, received from a previous `ListWebhooks` call. Provide
-              this to retrieve the subsequent page.
-
+          page_size: Optional. The maximum number of webhooks to return. The
+            service may return fewer than this value. If unspecified, at most 50
+            webhooks will be returned. The maximum value is 1000.
+          page_token: Optional. A page token, received from a previous
+            `ListWebhooks` call. Provide this to retrieve the subsequent page.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         return self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path="webhooks"
+            ),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -301,28 +289,35 @@ class WebhooksResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> WebhookDeleteResponse:
-        """
-        Deletes a Webhook.
+        """Deletes a Webhook.
 
         Args:
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=WebhookDeleteResponse,
         )
@@ -339,28 +334,35 @@ class WebhooksResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Webhook:
-        """
-        Gets a specific Webhook.
+        """Gets a specific Webhook.
 
         Args:
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Webhook,
         )
@@ -378,31 +380,36 @@ class WebhooksResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> WebhookPingResponse:
-        """
-        Sends a ping event to a Webhook.
+        """Sends a ping event to a Webhook.
 
         Args:
-          body: Request message for WebhookService.PingWebhook.
-
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:ping'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}:ping"
+            ),
             body=maybe_transform(body, webhook_ping_params.WebhookPingParams),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=WebhookPingResponse,
         )
@@ -412,8 +419,13 @@ class WebhooksResource(SyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
-        revocation_behavior: Literal["revoke_previous_secrets_after_h24", "revoke_previous_secrets_immediately"]
-        | Omit = omit,
+        revocation_behavior: (
+            Literal[
+                "revoke_previous_secrets_after_h24",
+                "revoke_previous_secrets_immediately",
+            ]
+            | Omit
+        ) = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -421,56 +433,70 @@ class WebhooksResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> WebhookRotateSigningSecretResponse:
-        """
-        Generates a new signing secret for a Webhook.
+        """Generates a new signing secret for a Webhook.
 
         Args:
-          revocation_behavior: Optional. The revocation behavior for previous signing secrets.
-
+          revocation_behavior: Optional. The revocation behavior for previous
+            signing secrets.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:rotateSigningSecret'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version,
+                path=f"webhooks/{id}:rotateSigningSecret",
+            ),
             body=maybe_transform(
-                {"revocation_behavior": revocation_behavior},
+                {
+                    "revocation_behavior": revocation_behavior,
+                },
                 webhook_rotate_signing_secret_params.WebhookRotateSigningSecretParams,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=WebhookRotateSigningSecretResponse,
         )
 
 
 class AsyncWebhooksResource(AsyncAPIResource):
+
     @cached_property
     def with_raw_response(self) -> AsyncWebhooksResourceWithRawResponse:
-        """
-        This property can be used as a prefix for any HTTP method call to return
+        """This property can be used as a prefix for any HTTP method call to return
+
         the raw response object instead of the parsed content.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
         """
         return AsyncWebhooksResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncWebhooksResourceWithStreamingResponse:
-        """
-        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+    def with_streaming_response(
+        self,
+    ) -> AsyncWebhooksResourceWithStreamingResponse:
+        """An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
         """
         return AsyncWebhooksResourceWithStreamingResponse(self)
 
@@ -480,16 +506,14 @@ class AsyncWebhooksResource(AsyncAPIResource):
         api_version: str | None = None,
         subscribed_events: List[
             Union[
-                Literal[
-                    "batch.succeeded",
-                    "batch.expired",
-                    "batch.failed",
-                    "interaction.requires_action",
-                    "interaction.completed",
-                    "interaction.failed",
-                    "video.generated",
-                ],
                 str,
+                Literal["batch.succeeded"],
+                Literal["batch.expired"],
+                Literal["batch.failed"],
+                Literal["interaction.requires_action"],
+                Literal["interaction.completed"],
+                Literal["interaction.failed"],
+                Literal["video.generated"],
             ]
         ],
         uri: str,
@@ -504,37 +528,29 @@ class AsyncWebhooksResource(AsyncAPIResource):
         """Creates a new Webhook.
 
         Args:
-          subscribed_events:
-              Required.
-
-        The events that the webhook is subscribed to. Available events:
-
-              - batch.succeeded
-              - batch.expired
-              - batch.failed
-              - interaction.requires_action
-              - interaction.completed
-              - interaction.failed
-              - video.generated
-
+          subscribed_events: Required. The events that the webhook is subscribed
+            to. Available events: - batch.succeeded - batch.expired -
+            batch.failed - interaction.requires_action - interaction.completed -
+            interaction.failed - video.generated
           uri: Required. The URI to which webhook events will be sent.
-
           name: Optional. The user-provided name of the webhook.
-
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path="webhooks"
+            ),
             body=await async_maybe_transform(
                 {
                     "subscribed_events": subscribed_events,
@@ -544,7 +560,10 @@ class AsyncWebhooksResource(AsyncAPIResource):
                 webhook_create_params.WebhookCreateParams,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Webhook,
         )
@@ -554,24 +573,27 @@ class AsyncWebhooksResource(AsyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
-        update_mask: str | Omit = omit,
         name: str | Omit = omit,
-        state: Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"] | Omit = omit,
-        subscribed_events: List[
-            Union[
-                Literal[
-                    "batch.succeeded",
-                    "batch.expired",
-                    "batch.failed",
-                    "interaction.requires_action",
-                    "interaction.completed",
-                    "interaction.failed",
-                    "video.generated",
-                ],
-                str,
+        state: (
+            Literal["enabled", "disabled", "disabled_due_to_failed_deliveries"]
+            | Omit
+        ) = omit,
+        subscribed_events: (
+            List[
+                Union[
+                    str,
+                    Literal["batch.succeeded"],
+                    Literal["batch.expired"],
+                    Literal["batch.failed"],
+                    Literal["interaction.requires_action"],
+                    Literal["interaction.completed"],
+                    Literal["interaction.failed"],
+                    Literal["video.generated"],
+                ]
             ]
-        ]
-        | Omit = omit,
+            | Omit
+        ) = omit,
+        update_mask: str | Omit = omit,
         uri: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -583,43 +605,35 @@ class AsyncWebhooksResource(AsyncAPIResource):
         """Updates an existing Webhook.
 
         Args:
-          update_mask: Optional.
-
-        The list of fields to update.
-
           name: Optional. The user-provided name of the webhook.
-
           state: Optional. The state of the webhook.
-
-          subscribed_events:
-              Optional. The events that the webhook is subscribed to. Available events:
-
-              - batch.succeeded
-              - batch.expired
-              - batch.failed
-              - interaction.requires_action
-              - interaction.completed
-              - interaction.failed
-              - video.generated
-
+          subscribed_events: Optional. The events that the webhook is subscribed
+            to. Available events: - batch.succeeded - batch.expired -
+            batch.failed - interaction.requires_action - interaction.completed -
+            interaction.failed - video.generated
+          update_mask: Optional. The list of fields to update.
           uri: Optional. The URI to which webhook events will be sent.
-
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return await self._patch(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}"
+            ),
             body=await async_maybe_transform(
                 {
                     "name": name,
@@ -635,7 +649,10 @@ class AsyncWebhooksResource(AsyncAPIResource):
                 extra_body=extra_body,
                 timeout=timeout,
                 query=await async_maybe_transform(
-                    {"update_mask": update_mask}, webhook_update_params.WebhookUpdateParams
+                    {
+                        "update_mask": update_mask,
+                    },
+                    webhook_update_params.WebhookUpdateParams,
                 ),
             ),
             cast_to=Webhook,
@@ -657,29 +674,28 @@ class AsyncWebhooksResource(AsyncAPIResource):
         """Lists all Webhooks.
 
         Args:
-          page_size: Optional.
-
-        The maximum number of webhooks to return. The service may return fewer
-              than this value. If unspecified, at most 50 webhooks will be returned. The
-              maximum value is 1000.
-
-          page_token: Optional. A page token, received from a previous `ListWebhooks` call. Provide
-              this to retrieve the subsequent page.
-
+          page_size: Optional. The maximum number of webhooks to return. The
+            service may return fewer than this value. If unspecified, at most 50
+            webhooks will be returned. The maximum value is 1000.
+          page_token: Optional. A page token, received from a previous
+            `ListWebhooks` call. Provide this to retrieve the subsequent page.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         return await self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path="webhooks"
+            ),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -708,28 +724,35 @@ class AsyncWebhooksResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> WebhookDeleteResponse:
-        """
-        Deletes a Webhook.
+        """Deletes a Webhook.
 
         Args:
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return await self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=WebhookDeleteResponse,
         )
@@ -746,28 +769,35 @@ class AsyncWebhooksResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Webhook:
-        """
-        Gets a specific Webhook.
+        """Gets a specific Webhook.
 
         Args:
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return await self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Webhook,
         )
@@ -785,31 +815,38 @@ class AsyncWebhooksResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> WebhookPingResponse:
-        """
-        Sends a ping event to a Webhook.
+        """Sends a ping event to a Webhook.
 
         Args:
-          body: Request message for WebhookService.PingWebhook.
-
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:ping'),
-            body=await async_maybe_transform(body, webhook_ping_params.WebhookPingParams),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"webhooks/{id}:ping"
+            ),
+            body=await async_maybe_transform(
+                body, webhook_ping_params.WebhookPingParams
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=WebhookPingResponse,
         )
@@ -819,8 +856,13 @@ class AsyncWebhooksResource(AsyncAPIResource):
         id: str,
         *,
         api_version: str | None = None,
-        revocation_behavior: Literal["revoke_previous_secrets_after_h24", "revoke_previous_secrets_immediately"]
-        | Omit = omit,
+        revocation_behavior: (
+            Literal[
+                "revoke_previous_secrets_after_h24",
+                "revoke_previous_secrets_immediately",
+            ]
+            | Omit
+        ) = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -828,40 +870,51 @@ class AsyncWebhooksResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> WebhookRotateSigningSecretResponse:
-        """
-        Generates a new signing secret for a Webhook.
+        """Generates a new signing secret for a Webhook.
 
         Args:
-          revocation_behavior: Optional. The revocation behavior for previous signing secrets.
-
+          revocation_behavior: Optional. The revocation behavior for previous
+            signing secrets.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:rotateSigningSecret'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version,
+                path=f"webhooks/{id}:rotateSigningSecret",
+            ),
             body=await async_maybe_transform(
-                {"revocation_behavior": revocation_behavior},
+                {
+                    "revocation_behavior": revocation_behavior,
+                },
                 webhook_rotate_signing_secret_params.WebhookRotateSigningSecretParams,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=WebhookRotateSigningSecretResponse,
         )
 
 
 class WebhooksResourceWithRawResponse:
+
     def __init__(self, webhooks: WebhooksResource) -> None:
         self._webhooks = webhooks
 
@@ -889,6 +942,7 @@ class WebhooksResourceWithRawResponse:
 
 
 class AsyncWebhooksResourceWithRawResponse:
+
     def __init__(self, webhooks: AsyncWebhooksResource) -> None:
         self._webhooks = webhooks
 
@@ -916,6 +970,7 @@ class AsyncWebhooksResourceWithRawResponse:
 
 
 class WebhooksResourceWithStreamingResponse:
+
     def __init__(self, webhooks: WebhooksResource) -> None:
         self._webhooks = webhooks
 
@@ -943,6 +998,7 @@ class WebhooksResourceWithStreamingResponse:
 
 
 class AsyncWebhooksResourceWithStreamingResponse:
+
     def __init__(self, webhooks: AsyncWebhooksResource) -> None:
         self._webhooks = webhooks
 

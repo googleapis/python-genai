@@ -17,58 +17,62 @@
 
 from __future__ import annotations
 
-from typing import List, Union, Iterable
-from typing_extensions import Literal, overload
+from typing import Iterable, List, Union
 
 import httpx
+from typing_extensions import Literal, overload
 
-from ..types import interaction_get_params, interaction_create_params
-from .._types import Body, Omit, Query, Headers, NotGiven, omit, not_given
-from .._utils import required_args, maybe_transform, async_maybe_transform
-from .._compat import cached_property
-from .._resource import SyncAPIResource, AsyncAPIResource
-from .._response import (
-    to_raw_response_wrapper,
-    to_streamed_response_wrapper,
-    async_to_raw_response_wrapper,
-    async_to_streamed_response_wrapper,
-)
-from .._streaming import Stream, AsyncStream
 from .._base_client import make_request_options
+from .._compat import cached_property
 from .._legacy_lyria import (
-    LegacyLyriaInteractionStream,
     LegacyLyriaInteractionAsyncStream,
-    LegacyLyriaInteractionDetectingStream,
     LegacyLyriaInteractionDetectingAsyncStream,
+    LegacyLyriaInteractionDetectingStream,
+    LegacyLyriaInteractionStream,
     is_legacy_lyria_request,
 )
-from ..types.tool_param import ToolParam
-from ..types.interaction import Interaction
-from ..types.model_param import ModelParam
-from ..types.webhook_config_param import WebhookConfigParam
-from ..types.interaction_sse_event import InteractionSSEEvent
+from .._resource import AsyncAPIResource, SyncAPIResource
+from .._response import (
+    async_to_raw_response_wrapper,
+    async_to_streamed_response_wrapper,
+    to_raw_response_wrapper,
+    to_streamed_response_wrapper,
+)
+from .._streaming import AsyncStream, Stream
+from .._types import Body, Headers, NotGiven, Omit, Query, not_given, omit
+from .._utils import async_maybe_transform, maybe_transform, required_args
+from ..types import interaction_create_params, interaction_get_params
 from ..types.generation_config_param import GenerationConfigParam
+from ..types.interaction import Interaction
+from ..types.interaction_sse_event import InteractionSSEEvent
+from ..types.model_param import ModelParam
+from ..types.tool_param import ToolParam
+from ..types.webhook_config_param import WebhookConfigParam
 
 __all__ = ["InteractionsResource", "AsyncInteractionsResource"]
 
 
 class InteractionsResource(SyncAPIResource):
+
     @cached_property
     def with_raw_response(self) -> InteractionsResourceWithRawResponse:
-        """
-        This property can be used as a prefix for any HTTP method call to return
+        """This property can be used as a prefix for any HTTP method call to return
+
         the raw response object instead of the parsed content.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
         """
         return InteractionsResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> InteractionsResourceWithStreamingResponse:
-        """
-        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+    def with_streaming_response(
+        self,
+    ) -> InteractionsResourceWithStreamingResponse:
+        """An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
         """
         return InteractionsResourceWithStreamingResponse(self)
 
@@ -85,7 +89,9 @@ class InteractionsResource(SyncAPIResource):
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
@@ -99,50 +105,39 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
-        """
-        Creates a new interaction.
+        """Creates a new interaction.
 
         Args:
           input: The input for the interaction.
-
           model: The name of the `Model` used for generating the interaction.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          generation_config: Input only. Configuration parameters for the model interaction.
-
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          generation_config: Input only. Configuration parameters for the model
+            interaction.
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
           service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
+          store: Input only. Whether to store the response and request for later
+            retrieval.
           stream: Input only. Whether the interaction will be streamed.
-
           system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -160,7 +155,9 @@ class InteractionsResource(SyncAPIResource):
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -173,212 +170,39 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Stream[InteractionSSEEvent]:
-        """
-        Creates a new interaction.
+        """Creates a new interaction.
 
         Args:
           input: The input for the interaction.
-
           model: The name of the `Model` used for generating the interaction.
-
           stream: Input only. Whether the interaction will be streamed.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          generation_config: Input only. Configuration parameters for the model interaction.
-
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          generation_config: Input only. Configuration parameters for the model
+            interaction.
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
           service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
+          store: Input only. Whether to store the response and request for later
+            retrieval.
           system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        ...
-
-    @overload
-    def create(
-        self,
-        *,
-        api_version: str | None = None,
-        agent: Union[
-            Literal[
-                "deep-research-pro-preview-12-2025",
-                "deep-research-preview-04-2026",
-                "deep-research-max-preview-04-2026",
-            ],
-            str,
-        ],
-        input: interaction_create_params.Input,
-        agent_config: interaction_create_params.AgentConfig | Omit = omit,
-        background: bool | Omit = omit,
-        environment: interaction_create_params.Environment | Omit = omit,
-        previous_interaction_id: str | Omit = omit,
-        response_format: interaction_create_params.ResponseFormat | Omit = omit,
-        response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
-        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
-        store: bool | Omit = omit,
-        stream: Literal[False] | Omit = omit,
-        system_instruction: str | Omit = omit,
-        tools: Iterable[ToolParam] | Omit = omit,
-        webhook_config: WebhookConfigParam | Omit = omit,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> Interaction:
-        """
-        Creates a new interaction.
-
-        Args:
-          agent: The name of the `Agent` used for generating the interaction.
-
-          input: The input for the interaction.
-
-          agent_config: Configuration parameters for the agent interaction.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
-          service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
-          stream: Input only. Whether the interaction will be streamed.
-
-          system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        ...
-
-    @overload
-    def create(
-        self,
-        *,
-        api_version: str | None = None,
-        agent: Union[
-            Literal[
-                "deep-research-pro-preview-12-2025",
-                "deep-research-preview-04-2026",
-                "deep-research-max-preview-04-2026",
-            ],
-            str,
-        ],
-        input: interaction_create_params.Input,
-        stream: Literal[True],
-        agent_config: interaction_create_params.AgentConfig | Omit = omit,
-        background: bool | Omit = omit,
-        environment: interaction_create_params.Environment | Omit = omit,
-        previous_interaction_id: str | Omit = omit,
-        response_format: interaction_create_params.ResponseFormat | Omit = omit,
-        response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
-        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
-        store: bool | Omit = omit,
-        system_instruction: str | Omit = omit,
-        tools: Iterable[ToolParam] | Omit = omit,
-        webhook_config: WebhookConfigParam | Omit = omit,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> Stream[InteractionSSEEvent]:
-        """
-        Creates a new interaction.
-
-        Args:
-          agent: The name of the `Agent` used for generating the interaction.
-
-          input: The input for the interaction.
-
-          stream: Input only. Whether the interaction will be streamed.
-
-          agent_config: Configuration parameters for the agent interaction.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
-          service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
-          system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -396,7 +220,9 @@ class InteractionsResource(SyncAPIResource):
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -409,73 +235,47 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
-        """
-        Creates a new interaction.
+        """Creates a new interaction.
 
         Args:
           input: The input for the interaction.
-
           model: The name of the `Model` used for generating the interaction.
-
           stream: Input only. Whether the interaction will be streamed.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          generation_config: Input only. Configuration parameters for the model interaction.
-
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          generation_config: Input only. Configuration parameters for the model
+            interaction.
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
           service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
+          store: Input only. Whether to store the response and request for later
+            retrieval.
           system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
-    @required_args(["input", "model"], ["input", "model", "stream"], ["agent", "input"], ["agent", "input", "stream"])
+    @overload
     def create(
         self,
         *,
         api_version: str | None = None,
-        input: interaction_create_params.Input,
-        model: ModelParam | Omit = omit,
-        background: bool | Omit = omit,
-        environment: interaction_create_params.Environment | Omit = omit,
-        generation_config: GenerationConfigParam | Omit = omit,
-        previous_interaction_id: str | Omit = omit,
-        response_format: interaction_create_params.ResponseFormat | Omit = omit,
-        response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
-        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
-        store: bool | Omit = omit,
-        stream: Literal[False] | Literal[True] | Omit = omit,
-        system_instruction: str | Omit = omit,
-        tools: Iterable[ToolParam] | Omit = omit,
-        webhook_config: WebhookConfigParam | Omit = omit,
         agent: Union[
             Literal[
                 "deep-research-pro-preview-12-2025",
@@ -483,9 +283,175 @@ class InteractionsResource(SyncAPIResource):
                 "deep-research-max-preview-04-2026",
             ],
             str,
-        ]
-        | Omit = omit,
+        ],
+        input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
+        background: bool | Omit = omit,
+        environment: interaction_create_params.Environment | Omit = omit,
+        previous_interaction_id: str | Omit = omit,
+        response_format: interaction_create_params.ResponseFormat | Omit = omit,
+        response_mime_type: str | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
+        store: bool | Omit = omit,
+        stream: Literal[False] | Omit = omit,
+        system_instruction: str | Omit = omit,
+        tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> Interaction:
+        """Creates a new interaction.
+
+        Args:
+          agent: The name of the `Agent` used for generating the interaction.
+          input: The input for the interaction.
+          agent_config: Configuration parameters for the agent interaction.
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          previous_interaction_id: The ID of the previous interaction, if any.
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
+          service_tier: The service tier for the interaction.
+          store: Input only. Whether to store the response and request for later
+            retrieval.
+          stream: Input only. Whether the interaction will be streamed.
+          system_instruction: System instruction for the interaction.
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
+          extra_headers: Send extra headers
+          extra_query: Add additional query parameters to the request
+          extra_body: Add additional JSON properties to the request
+          timeout: Override the client-level default timeout for this request,
+            in seconds
+        """
+        ...
+
+    @overload
+    def create(
+        self,
+        *,
+        api_version: str | None = None,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
+        input: interaction_create_params.Input,
+        stream: Literal[True],
+        agent_config: interaction_create_params.AgentConfig | Omit = omit,
+        background: bool | Omit = omit,
+        environment: interaction_create_params.Environment | Omit = omit,
+        previous_interaction_id: str | Omit = omit,
+        response_format: interaction_create_params.ResponseFormat | Omit = omit,
+        response_mime_type: str | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
+        store: bool | Omit = omit,
+        system_instruction: str | Omit = omit,
+        tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> Stream[InteractionSSEEvent]:
+        """Creates a new interaction.
+
+        Args:
+          agent: The name of the `Agent` used for generating the interaction.
+          input: The input for the interaction.
+          stream: Input only. Whether the interaction will be streamed.
+          agent_config: Configuration parameters for the agent interaction.
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          previous_interaction_id: The ID of the previous interaction, if any.
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
+          service_tier: The service tier for the interaction.
+          store: Input only. Whether to store the response and request for later
+            retrieval.
+          system_instruction: System instruction for the interaction.
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
+          extra_headers: Send extra headers
+          extra_query: Add additional query parameters to the request
+          extra_body: Add additional JSON properties to the request
+          timeout: Override the client-level default timeout for this request,
+            in seconds
+        """
+        ...
+
+    @required_args(
+        ["input", "model"],
+        ["input", "model", "stream"],
+        ["agent", "input"],
+        ["agent", "input", "stream"],
+    )
+    def create(
+        self,
+        *,
+        api_version: str | None = None,
+        input: interaction_create_params.Input,
+        agent: (
+            Union[
+                Literal[
+                    "deep-research-pro-preview-12-2025",
+                    "deep-research-preview-04-2026",
+                    "deep-research-max-preview-04-2026",
+                ],
+                str,
+            ]
+            | Omit
+        ) = omit,
+        agent_config: interaction_create_params.AgentConfig | Omit = omit,
+        background: bool | Omit = omit,
+        environment: interaction_create_params.Environment | Omit = omit,
+        generation_config: GenerationConfigParam | Omit = omit,
+        model: ModelParam | Omit = omit,
+        previous_interaction_id: str | Omit = omit,
+        response_format: interaction_create_params.ResponseFormat | Omit = omit,
+        response_mime_type: str | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
+        store: bool | Omit = omit,
+        stream: Literal[False] | Literal[True] | Omit = omit,
+        system_instruction: str | Omit = omit,
+        tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -493,34 +459,46 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
+        if model is not omit and agent_config is not omit:
+            raise ValueError(
+                "Invalid request: specified `model` and `agent_config`. If"
+                " specifying `model`, use `generation_config`."
+            )
+        if agent is not omit and generation_config is not omit:
+            raise ValueError(
+                "Invalid request: specified `agent` and `generation_config`. If"
+                " specifying `agent`, use `agent_config`."
+            )
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if model is not omit and agent_config is not omit:
-            raise ValueError("Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`.")
-        if agent is not omit and generation_config is not omit:
-            raise ValueError("Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`.")
-
-        # For streaming requests against vertex+legacy-lyria, swap in the
-        # Stream subclass that activates the per-event SSE remap during
-        # iteration. Non-streaming and `get()` paths don't need any resource-
-        # layer signal here — `Interaction._maybe_coerce_outputs` looks at the
-        # response body's `model` field directly.
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         stream_cls = (
             LegacyLyriaInteractionStream[InteractionSSEEvent]
-            if (stream and is_legacy_lyria_request(is_vertex=self._client._is_vertex, model=model))
+            if (
+                stream
+                and is_legacy_lyria_request(
+                    is_vertex=self._client._is_vertex, model=model
+                )
+            )
             else Stream[InteractionSSEEvent]
         )
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='interactions'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path="interactions"
+            ),
             body=maybe_transform(
                 {
                     "input": input,
-                    "model": model,
+                    "agent": agent,
+                    "agent_config": agent_config,
                     "background": background,
                     "environment": environment,
                     "generation_config": generation_config,
+                    "model": model,
                     "previous_interaction_id": previous_interaction_id,
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
@@ -531,15 +509,16 @@ class InteractionsResource(SyncAPIResource):
                     "system_instruction": system_instruction,
                     "tools": tools,
                     "webhook_config": webhook_config,
-                    "agent": agent,
-                    "agent_config": agent_config,
                 },
                 interaction_create_params.CreateModelInteractionParamsStreaming
                 if stream
                 else interaction_create_params.CreateModelInteractionParamsNonStreaming,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Interaction,
             stream=stream or False,
@@ -558,28 +537,36 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> object:
-        """
-        Deletes the interaction by id.
+        """Deletes the interaction by id.
 
         Args:
+          id: The unique identifier of the interaction to delete.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"interactions/{id}"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=object,
         )
@@ -598,28 +585,36 @@ class InteractionsResource(SyncAPIResource):
     ) -> Interaction:
         """Cancels an interaction by id.
 
-        This only applies to background interactions that
-        are still running.
+        This only applies to background interactions that are still running.
 
         Args:
+          id: The unique identifier of the interaction to cancel.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"interactions/{id}/cancel"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Interaction,
         )
@@ -640,25 +635,21 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
-        """
-        Retrieves the full details of a single interaction based on its
-        `Interaction.id`.
+        """Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
+          id: The unique identifier of the interaction to retrieve.
           include_input: If set to true, includes the input in the response.
-
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
-              event marked by the event id. Can only be used if `stream` is true.
-
-          stream: If set to true, the generated content will be streamed incrementally.
-
+          last_event_id: Optional. If set, resumes the interaction stream from
+            the next chunk after the event marked by the event id. Can only be
+            used if `stream` is true.
+          stream: If set to true, the generated content will be streamed
+            incrementally.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -678,25 +669,21 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Stream[InteractionSSEEvent]:
-        """
-        Retrieves the full details of a single interaction based on its
-        `Interaction.id`.
+        """Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
-          stream: If set to true, the generated content will be streamed incrementally.
-
+          id: The unique identifier of the interaction to retrieve.
+          stream: If set to true, the generated content will be streamed
+            incrementally.
           include_input: If set to true, includes the input in the response.
-
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
-              event marked by the event id. Can only be used if `stream` is true.
-
+          last_event_id: Optional. If set, resumes the interaction stream from
+            the next chunk after the event marked by the event id. Can only be
+            used if `stream` is true.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -716,25 +703,21 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
-        """
-        Retrieves the full details of a single interaction based on its
-        `Interaction.id`.
+        """Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
-          stream: If set to true, the generated content will be streamed incrementally.
-
+          id: The unique identifier of the interaction to retrieve.
+          stream: If set to true, the generated content will be streamed
+            incrementally.
           include_input: If set to true, includes the input in the response.
-
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
-              event marked by the event id. Can only be used if `stream` is true.
-
+          last_event_id: Optional. If set, resumes the interaction stream from
+            the next chunk after the event marked by the event id. Can only be
+            used if `stream` is true.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -753,25 +736,26 @@ class InteractionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | Stream[InteractionSSEEvent]:
+        if not id:
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
-
-        # We don't know the model up front for `get`, so we can't apply the
-        # same `is_legacy_lyria_request` gate that `create` uses. Instead, on
-        # vertex we hand the stream off to the detecting subclass, which
-        # activates the shim only after observing the first legacy event_type.
-        # For non-legacy interactions the subclass is a no-op vs. plain Stream.
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         stream_cls = (
             LegacyLyriaInteractionDetectingStream[InteractionSSEEvent]
             if (stream and self._client._is_vertex)
             else Stream[InteractionSSEEvent]
         )
         return self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"interactions/{id}"
+            ),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -793,22 +777,26 @@ class InteractionsResource(SyncAPIResource):
 
 
 class AsyncInteractionsResource(AsyncAPIResource):
+
     @cached_property
     def with_raw_response(self) -> AsyncInteractionsResourceWithRawResponse:
-        """
-        This property can be used as a prefix for any HTTP method call to return
+        """This property can be used as a prefix for any HTTP method call to return
+
         the raw response object instead of the parsed content.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#accessing-raw-response-data-eg-headers
         """
         return AsyncInteractionsResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncInteractionsResourceWithStreamingResponse:
-        """
-        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+    def with_streaming_response(
+        self,
+    ) -> AsyncInteractionsResourceWithStreamingResponse:
+        """An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
-        For more information, see https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
+        For more information, see
+        https://www.github.com/stainless-sdks/gemini-next-gen-api-python#with_streaming_response
         """
         return AsyncInteractionsResourceWithStreamingResponse(self)
 
@@ -825,7 +813,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
@@ -839,50 +829,39 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
-        """
-        Creates a new interaction.
+        """Creates a new interaction.
 
         Args:
           input: The input for the interaction.
-
           model: The name of the `Model` used for generating the interaction.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          generation_config: Input only. Configuration parameters for the model interaction.
-
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          generation_config: Input only. Configuration parameters for the model
+            interaction.
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
           service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
+          store: Input only. Whether to store the response and request for later
+            retrieval.
           stream: Input only. Whether the interaction will be streamed.
-
           system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -900,7 +879,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -913,212 +894,39 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AsyncStream[InteractionSSEEvent]:
-        """
-        Creates a new interaction.
+        """Creates a new interaction.
 
         Args:
           input: The input for the interaction.
-
           model: The name of the `Model` used for generating the interaction.
-
           stream: Input only. Whether the interaction will be streamed.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          generation_config: Input only. Configuration parameters for the model interaction.
-
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          generation_config: Input only. Configuration parameters for the model
+            interaction.
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
           service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
+          store: Input only. Whether to store the response and request for later
+            retrieval.
           system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        ...
-
-    @overload
-    async def create(
-        self,
-        *,
-        api_version: str | None = None,
-        agent: Union[
-            Literal[
-                "deep-research-pro-preview-12-2025",
-                "deep-research-preview-04-2026",
-                "deep-research-max-preview-04-2026",
-            ],
-            str,
-        ],
-        input: interaction_create_params.Input,
-        agent_config: interaction_create_params.AgentConfig | Omit = omit,
-        background: bool | Omit = omit,
-        environment: interaction_create_params.Environment | Omit = omit,
-        previous_interaction_id: str | Omit = omit,
-        response_format: interaction_create_params.ResponseFormat | Omit = omit,
-        response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
-        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
-        store: bool | Omit = omit,
-        stream: Literal[False] | Omit = omit,
-        system_instruction: str | Omit = omit,
-        tools: Iterable[ToolParam] | Omit = omit,
-        webhook_config: WebhookConfigParam | Omit = omit,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> Interaction:
-        """
-        Creates a new interaction.
-
-        Args:
-          agent: The name of the `Agent` used for generating the interaction.
-
-          input: The input for the interaction.
-
-          agent_config: Configuration parameters for the agent interaction.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
-          service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
-          stream: Input only. Whether the interaction will be streamed.
-
-          system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        ...
-
-    @overload
-    async def create(
-        self,
-        *,
-        api_version: str | None = None,
-        agent: Union[
-            Literal[
-                "deep-research-pro-preview-12-2025",
-                "deep-research-preview-04-2026",
-                "deep-research-max-preview-04-2026",
-            ],
-            str,
-        ],
-        input: interaction_create_params.Input,
-        stream: Literal[True],
-        agent_config: interaction_create_params.AgentConfig | Omit = omit,
-        background: bool | Omit = omit,
-        environment: interaction_create_params.Environment | Omit = omit,
-        previous_interaction_id: str | Omit = omit,
-        response_format: interaction_create_params.ResponseFormat | Omit = omit,
-        response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
-        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
-        store: bool | Omit = omit,
-        system_instruction: str | Omit = omit,
-        tools: Iterable[ToolParam] | Omit = omit,
-        webhook_config: WebhookConfigParam | Omit = omit,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> AsyncStream[InteractionSSEEvent]:
-        """
-        Creates a new interaction.
-
-        Args:
-          agent: The name of the `Agent` used for generating the interaction.
-
-          input: The input for the interaction.
-
-          stream: Input only. Whether the interaction will be streamed.
-
-          agent_config: Configuration parameters for the agent interaction.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
-          service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
-          system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -1136,7 +944,9 @@ class AsyncInteractionsResource(AsyncAPIResource):
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -1149,73 +959,47 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
-        """
-        Creates a new interaction.
+        """Creates a new interaction.
 
         Args:
           input: The input for the interaction.
-
           model: The name of the `Model` used for generating the interaction.
-
           stream: Input only. Whether the interaction will be streamed.
-
-          background: Input only. Whether to run the model interaction in the background.
-
-          environment: The environment configuration for the interaction. Can be an object specifying
-              remote environment sources or a string referencing an existing environment ID.
-
-          generation_config: Input only. Configuration parameters for the model interaction.
-
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          generation_config: Input only. Configuration parameters for the model
+            interaction.
           previous_interaction_id: The ID of the previous interaction, if any.
-
-          response_format: Enforces that the generated response is a JSON object that complies with the
-              JSON schema specified in this field.
-
-          response_mime_type: The mime type of the response. This is required if response_format is set.
-
-          response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
-
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
           service_tier: The service tier for the interaction.
-
-          store: Input only. Whether to store the response and request for later retrieval.
-
+          store: Input only. Whether to store the response and request for later
+            retrieval.
           system_instruction: System instruction for the interaction.
-
-          tools: A list of tool declarations the model may call during interaction.
-
-          webhook_config: Optional. Webhook configuration for receiving notifications when the interaction
-              completes.
-
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
-    @required_args(["input", "model"], ["input", "model", "stream"], ["agent", "input"], ["agent", "input", "stream"])
+    @overload
     async def create(
         self,
         *,
         api_version: str | None = None,
-        input: interaction_create_params.Input,
-        model: ModelParam | Omit = omit,
-        background: bool | Omit = omit,
-        environment: interaction_create_params.Environment | Omit = omit,
-        generation_config: GenerationConfigParam | Omit = omit,
-        previous_interaction_id: str | Omit = omit,
-        response_format: interaction_create_params.ResponseFormat | Omit = omit,
-        response_mime_type: str | Omit = omit,
-        response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
-        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
-        store: bool | Omit = omit,
-        stream: Literal[False] | Literal[True] | Omit = omit,
-        system_instruction: str | Omit = omit,
-        tools: Iterable[ToolParam] | Omit = omit,
-        webhook_config: WebhookConfigParam | Omit = omit,
         agent: Union[
             Literal[
                 "deep-research-pro-preview-12-2025",
@@ -1223,9 +1007,175 @@ class AsyncInteractionsResource(AsyncAPIResource):
                 "deep-research-max-preview-04-2026",
             ],
             str,
-        ]
-        | Omit = omit,
+        ],
+        input: interaction_create_params.Input,
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
+        background: bool | Omit = omit,
+        environment: interaction_create_params.Environment | Omit = omit,
+        previous_interaction_id: str | Omit = omit,
+        response_format: interaction_create_params.ResponseFormat | Omit = omit,
+        response_mime_type: str | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
+        store: bool | Omit = omit,
+        stream: Literal[False] | Omit = omit,
+        system_instruction: str | Omit = omit,
+        tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> Interaction:
+        """Creates a new interaction.
+
+        Args:
+          agent: The name of the `Agent` used for generating the interaction.
+          input: The input for the interaction.
+          agent_config: Configuration parameters for the agent interaction.
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          previous_interaction_id: The ID of the previous interaction, if any.
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
+          service_tier: The service tier for the interaction.
+          store: Input only. Whether to store the response and request for later
+            retrieval.
+          stream: Input only. Whether the interaction will be streamed.
+          system_instruction: System instruction for the interaction.
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
+          extra_headers: Send extra headers
+          extra_query: Add additional query parameters to the request
+          extra_body: Add additional JSON properties to the request
+          timeout: Override the client-level default timeout for this request,
+            in seconds
+        """
+        ...
+
+    @overload
+    async def create(
+        self,
+        *,
+        api_version: str | None = None,
+        agent: Union[
+            Literal[
+                "deep-research-pro-preview-12-2025",
+                "deep-research-preview-04-2026",
+                "deep-research-max-preview-04-2026",
+            ],
+            str,
+        ],
+        input: interaction_create_params.Input,
+        stream: Literal[True],
+        agent_config: interaction_create_params.AgentConfig | Omit = omit,
+        background: bool | Omit = omit,
+        environment: interaction_create_params.Environment | Omit = omit,
+        previous_interaction_id: str | Omit = omit,
+        response_format: interaction_create_params.ResponseFormat | Omit = omit,
+        response_mime_type: str | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
+        store: bool | Omit = omit,
+        system_instruction: str | Omit = omit,
+        tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> AsyncStream[InteractionSSEEvent]:
+        """Creates a new interaction.
+
+        Args:
+          agent: The name of the `Agent` used for generating the interaction.
+          input: The input for the interaction.
+          stream: Input only. Whether the interaction will be streamed.
+          agent_config: Configuration parameters for the agent interaction.
+          background: Input only. Whether to run the model interaction in the
+            background.
+          environment: The environment configuration for the interaction. Can be
+            an object specifying remote environment sources or a string
+            referencing an existing environment ID.
+          previous_interaction_id: The ID of the previous interaction, if any.
+          response_format: Enforces that the generated response is a JSON object
+            that complies with the JSON schema specified in this field.
+          response_mime_type: The mime type of the response. This is required if
+            response_format is set.
+          response_modalities: The requested modalities of the response (TEXT,
+            IMAGE, AUDIO).
+          service_tier: The service tier for the interaction.
+          store: Input only. Whether to store the response and request for later
+            retrieval.
+          system_instruction: System instruction for the interaction.
+          tools: A list of tool declarations the model may call during
+            interaction.
+          webhook_config: Optional. Webhook configuration for receiving
+            notifications when the interaction completes.
+          extra_headers: Send extra headers
+          extra_query: Add additional query parameters to the request
+          extra_body: Add additional JSON properties to the request
+          timeout: Override the client-level default timeout for this request,
+            in seconds
+        """
+        ...
+
+    @required_args(
+        ["input", "model"],
+        ["input", "model", "stream"],
+        ["agent", "input"],
+        ["agent", "input", "stream"],
+    )
+    async def create(
+        self,
+        *,
+        api_version: str | None = None,
+        input: interaction_create_params.Input,
+        agent: (
+            Union[
+                Literal[
+                    "deep-research-pro-preview-12-2025",
+                    "deep-research-preview-04-2026",
+                    "deep-research-max-preview-04-2026",
+                ],
+                str,
+            ]
+            | Omit
+        ) = omit,
+        agent_config: interaction_create_params.AgentConfig | Omit = omit,
+        background: bool | Omit = omit,
+        environment: interaction_create_params.Environment | Omit = omit,
+        generation_config: GenerationConfigParam | Omit = omit,
+        model: ModelParam | Omit = omit,
+        previous_interaction_id: str | Omit = omit,
+        response_format: interaction_create_params.ResponseFormat | Omit = omit,
+        response_mime_type: str | Omit = omit,
+        response_modalities: (
+            List[Literal["text", "image", "audio", "video", "document"]] | Omit
+        ) = omit,
+        service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
+        store: bool | Omit = omit,
+        stream: Literal[False] | Literal[True] | Omit = omit,
+        system_instruction: str | Omit = omit,
+        tools: Iterable[ToolParam] | Omit = omit,
+        webhook_config: WebhookConfigParam | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -1233,30 +1183,46 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
+        if model is not omit and agent_config is not omit:
+            raise ValueError(
+                "Invalid request: specified `model` and `agent_config`. If"
+                " specifying `model`, use `generation_config`."
+            )
+        if agent is not omit and generation_config is not omit:
+            raise ValueError(
+                "Invalid request: specified `agent` and `generation_config`. If"
+                " specifying `agent`, use `agent_config`."
+            )
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if model is not omit and agent_config is not omit:
-            raise ValueError("Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`.")
-        if agent is not omit and generation_config is not omit:
-            raise ValueError("Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`.")
-
-        # See sync `create` above for rationale.
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         stream_cls = (
             LegacyLyriaInteractionAsyncStream[InteractionSSEEvent]
-            if (stream and is_legacy_lyria_request(is_vertex=self._client._is_vertex, model=model))
+            if (
+                stream
+                and is_legacy_lyria_request(
+                    is_vertex=self._client._is_vertex, model=model
+                )
+            )
             else AsyncStream[InteractionSSEEvent]
         )
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='interactions'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path="interactions"
+            ),
             body=await async_maybe_transform(
                 {
                     "input": input,
-                    "model": model,
+                    "agent": agent,
+                    "agent_config": agent_config,
                     "background": background,
                     "environment": environment,
                     "generation_config": generation_config,
+                    "model": model,
                     "previous_interaction_id": previous_interaction_id,
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
@@ -1267,15 +1233,16 @@ class AsyncInteractionsResource(AsyncAPIResource):
                     "system_instruction": system_instruction,
                     "tools": tools,
                     "webhook_config": webhook_config,
-                    "agent": agent,
-                    "agent_config": agent_config,
                 },
                 interaction_create_params.CreateModelInteractionParamsStreaming
                 if stream
                 else interaction_create_params.CreateModelInteractionParamsNonStreaming,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Interaction,
             stream=stream or False,
@@ -1294,28 +1261,36 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> object:
-        """
-        Deletes the interaction by id.
+        """Deletes the interaction by id.
 
         Args:
+          id: The unique identifier of the interaction to delete.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return await self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"interactions/{id}"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=object,
         )
@@ -1334,28 +1309,36 @@ class AsyncInteractionsResource(AsyncAPIResource):
     ) -> Interaction:
         """Cancels an interaction by id.
 
-        This only applies to background interactions that
-        are still running.
+        This only applies to background interactions that are still running.
 
         Args:
+          id: The unique identifier of the interaction to cancel.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"interactions/{id}/cancel"
+            ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
             ),
             cast_to=Interaction,
         )
@@ -1376,25 +1359,21 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction:
-        """
-        Retrieves the full details of a single interaction based on its
-        `Interaction.id`.
+        """Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
+          id: The unique identifier of the interaction to retrieve.
           include_input: If set to true, includes the input in the response.
-
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
-              event marked by the event id. Can only be used if `stream` is true.
-
-          stream: If set to true, the generated content will be streamed incrementally.
-
+          last_event_id: Optional. If set, resumes the interaction stream from
+            the next chunk after the event marked by the event id. Can only be
+            used if `stream` is true.
+          stream: If set to true, the generated content will be streamed
+            incrementally.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -1414,25 +1393,21 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AsyncStream[InteractionSSEEvent]:
-        """
-        Retrieves the full details of a single interaction based on its
-        `Interaction.id`.
+        """Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
-          stream: If set to true, the generated content will be streamed incrementally.
-
+          id: The unique identifier of the interaction to retrieve.
+          stream: If set to true, the generated content will be streamed
+            incrementally.
           include_input: If set to true, includes the input in the response.
-
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
-              event marked by the event id. Can only be used if `stream` is true.
-
+          last_event_id: Optional. If set, resumes the interaction stream from
+            the next chunk after the event marked by the event id. Can only be
+            used if `stream` is true.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -1452,25 +1427,21 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
-        """
-        Retrieves the full details of a single interaction based on its
-        `Interaction.id`.
+        """Retrieves the full details of a single interaction based on its `Interaction.id`.
 
         Args:
-          stream: If set to true, the generated content will be streamed incrementally.
-
+          id: The unique identifier of the interaction to retrieve.
+          stream: If set to true, the generated content will be streamed
+            incrementally.
           include_input: If set to true, includes the input in the response.
-
-          last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the
-              event marked by the event id. Can only be used if `stream` is true.
-
+          last_event_id: Optional. If set, resumes the interaction stream from
+            the next chunk after the event marked by the event id. Can only be
+            used if `stream` is true.
           extra_headers: Send extra headers
-
           extra_query: Add additional query parameters to the request
-
           extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
+          timeout: Override the client-level default timeout for this request,
+            in seconds
         """
         ...
 
@@ -1489,21 +1460,26 @@ class AsyncInteractionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> Interaction | AsyncStream[InteractionSSEEvent]:
+        if not id:
+            raise ValueError(
+                f"Expected a non-empty value for `id` but received {id!r}"
+            )
         if api_version is None:
             api_version = self._client._get_api_version_path_param()
         if not api_version:
-            raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
-        if not id:
-            raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
-
-        # See sync `get` above for rationale.
+            raise ValueError(
+                "Expected a non-empty value for `api_version` but received"
+                f" {api_version!r}"
+            )
         stream_cls = (
             LegacyLyriaInteractionDetectingAsyncStream[InteractionSSEEvent]
             if (stream and self._client._is_vertex)
             else AsyncStream[InteractionSSEEvent]
         )
         return await self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(
+                api_version=api_version, path=f"interactions/{id}"
+            ),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -1525,6 +1501,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
 
 class InteractionsResourceWithRawResponse:
+
     def __init__(self, interactions: InteractionsResource) -> None:
         self._interactions = interactions
 
@@ -1543,6 +1520,7 @@ class InteractionsResourceWithRawResponse:
 
 
 class AsyncInteractionsResourceWithRawResponse:
+
     def __init__(self, interactions: AsyncInteractionsResource) -> None:
         self._interactions = interactions
 
@@ -1561,6 +1539,7 @@ class AsyncInteractionsResourceWithRawResponse:
 
 
 class InteractionsResourceWithStreamingResponse:
+
     def __init__(self, interactions: InteractionsResource) -> None:
         self._interactions = interactions
 
@@ -1579,6 +1558,7 @@ class InteractionsResourceWithStreamingResponse:
 
 
 class AsyncInteractionsResourceWithStreamingResponse:
+
     def __init__(self, interactions: AsyncInteractionsResource) -> None:
         self._interactions = interactions
 
