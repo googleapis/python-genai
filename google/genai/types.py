@@ -16636,7 +16636,7 @@ class BatchJobOutputInfo(_common.BaseModel):
   )
   bigquery_output_table: Optional[str] = Field(
       default=None,
-      description="""The name of the BigQuery table created, in `predictions_<timestamp>` format, into which the prediction output is written.""",
+      description="""The name of the BigQuery table created, in `predictions_TIMESTAMP` format, into which the prediction output is written.""",
   )
 
 
@@ -16650,7 +16650,7 @@ class BatchJobOutputInfoDict(TypedDict, total=False):
   """The full path of the Cloud Storage directory created, into which the prediction output is written."""
 
   bigquery_output_table: Optional[str]
-  """The name of the BigQuery table created, in `predictions_<timestamp>` format, into which the prediction output is written."""
+  """The name of the BigQuery table created, in `predictions_TIMESTAMP` format, into which the prediction output is written."""
 
 
 BatchJobOutputInfoOrDict = Union[BatchJobOutputInfo, BatchJobOutputInfoDict]
