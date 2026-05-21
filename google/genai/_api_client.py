@@ -447,9 +447,7 @@ class HttpResponse:
       try:
         while True:
           # Read a line from the stream. This returns bytes.
-          line_bytes = await self.response_stream.content.readline(
-              max_line_length=READ_BUFFER_SIZE
-          )
+          line_bytes = await self.response_stream.content.readline()
           if not line_bytes:
             break
           # Decode the bytes and remove trailing whitespace and newlines.
