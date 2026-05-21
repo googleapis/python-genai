@@ -36,6 +36,14 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.models')
 
 
+def _Environment_to_vertex_enum_validate(enum_value: Any) -> None:
+  if enum_value in set(['ENVIRONMENT_MOBILE', 'ENVIRONMENT_DESKTOP']):
+    raise ValueError(
+        f'{enum_value} enum value is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+
 def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
   if enum_value in set(['ALLOW_ALL']):
     raise ValueError(
@@ -268,6 +276,33 @@ def _ComputeTokensResponse_from_vertex(
         to_object,
         ['tokens_info'],
         [item for item in getv(from_object, ['tokensInfo'])],
+    )
+
+  return to_object
+
+
+def _ComputerUse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    _Environment_to_vertex_enum_validate(getv(from_object, ['environment']))
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  if getv(from_object, ['excluded_predefined_functions']) is not None:
+    setv(
+        to_object,
+        ['excludedPredefinedFunctions'],
+        getv(from_object, ['excluded_predefined_functions']),
+    )
+
+  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
+    raise ValueError(
+        'enable_prompt_injection_detection parameter is only supported in'
+        ' Gemini Developer API mode, not in Gemini Enterprise Agent Platform'
+        ' mode.'
     )
 
   return to_object
@@ -4350,7 +4385,13 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+    setv(
+        to_object,
+        ['computerUse'],
+        _ComputerUse_to_vertex(
+            getv(from_object, ['computer_use']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(

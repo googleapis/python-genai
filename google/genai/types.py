@@ -202,6 +202,10 @@ class Environment(_common.CaseInSensitiveEnum):
   """Defaults to browser."""
   ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
   """Operates in a web browser."""
+  ENVIRONMENT_MOBILE = 'ENVIRONMENT_MOBILE'
+  """Operates in a mobile environment."""
+  ENVIRONMENT_DESKTOP = 'ENVIRONMENT_DESKTOP'
+  """Operates in a desktop environment."""
 
 
 class AuthType(_common.CaseInSensitiveEnum):
@@ -3295,6 +3299,11 @@ class ComputerUse(_common.BaseModel):
       1. Using a more restricted / different action space.
       2. Improving the definitions / instructions of predefined functions.""",
   )
+  enable_prompt_injection_detection: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Whether enable the prompt injection detection check on computer-use request.
+      """,
+  )
 
 
 class ComputerUseDict(TypedDict, total=False):
@@ -3309,6 +3318,10 @@ class ComputerUseDict(TypedDict, total=False):
     This can serve two purposes:
       1. Using a more restricted / different action space.
       2. Improving the definitions / instructions of predefined functions."""
+
+  enable_prompt_injection_detection: Optional[bool]
+  """Optional. Whether enable the prompt injection detection check on computer-use request.
+      """
 
 
 ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
