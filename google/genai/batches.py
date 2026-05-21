@@ -857,7 +857,6 @@ def _EmbedContentConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
   if getv(from_object, ['task_type']) is not None:
     setv(
         parent_object,

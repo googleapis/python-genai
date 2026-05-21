@@ -204,6 +204,27 @@ def _CitationMetadata_from_mldev(
   return to_object
 
 
+def _CodeExecutionResult_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['outcome']) is not None:
+    setv(to_object, ['outcome'], getv(from_object, ['outcome']))
+
+  if getv(from_object, ['output']) is not None:
+    setv(to_object, ['output'], getv(from_object, ['output']))
+
+  if getv(from_object, ['id']) is not None:
+    raise ValueError(
+        'id parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
 def _ComputeTokensParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -772,7 +793,6 @@ def _EmbedContentConfig_to_mldev(
     root_object: Optional[Union[dict[str, Any], object]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
   if getv(from_object, ['task_type']) is not None:
     setv(
         parent_object,
@@ -1103,6 +1123,27 @@ def _Endpoint_from_vertex(
   if getv(from_object, ['deployedModelId']) is not None:
     setv(
         to_object, ['deployed_model_id'], getv(from_object, ['deployedModelId'])
+    )
+
+  return to_object
+
+
+def _ExecutableCode_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['code']) is not None:
+    setv(to_object, ['code'], getv(from_object, ['code']))
+
+  if getv(from_object, ['language']) is not None:
+    setv(to_object, ['language'], getv(from_object, ['language']))
+
+  if getv(from_object, ['id']) is not None:
+    raise ValueError(
+        'id parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -3573,11 +3614,19 @@ def _Part_to_vertex(
     setv(
         to_object,
         ['codeExecutionResult'],
-        getv(from_object, ['code_execution_result']),
+        _CodeExecutionResult_to_vertex(
+            getv(from_object, ['code_execution_result']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['executable_code']) is not None:
-    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+    setv(
+        to_object,
+        ['executableCode'],
+        _ExecutableCode_to_vertex(
+            getv(from_object, ['executable_code']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['file_data']) is not None:
     setv(to_object, ['fileData'], getv(from_object, ['file_data']))

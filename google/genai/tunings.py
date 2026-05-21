@@ -610,6 +610,155 @@ def _CreateTuningJobParametersPrivate_to_vertex(
   return to_object
 
 
+def _DistillationHyperParameters_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['adapterSize']) is not None:
+    setv(to_object, ['adapter_size'], getv(from_object, ['adapterSize']))
+
+  if getv(from_object, ['epochCount']) is not None:
+    setv(to_object, ['epoch_count'], getv(from_object, ['epochCount']))
+
+  if getv(from_object, ['learningRateMultiplier']) is not None:
+    setv(
+        to_object,
+        ['learning_rate_multiplier'],
+        getv(from_object, ['learningRateMultiplier']),
+    )
+
+  if getv(from_object, ['generationConfig']) is not None:
+    setv(
+        to_object,
+        ['generation_config'],
+        _GenerationConfig_from_vertex(
+            getv(from_object, ['generationConfig']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['learningRate']) is not None:
+    setv(to_object, ['learning_rate'], getv(from_object, ['learningRate']))
+
+  if getv(from_object, ['batchSize']) is not None:
+    setv(to_object, ['batch_size'], getv(from_object, ['batchSize']))
+
+  return to_object
+
+
+def _DistillationSamplingSpec_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['baseTeacherModel']) is not None:
+    setv(
+        to_object,
+        ['base_teacher_model'],
+        getv(from_object, ['baseTeacherModel']),
+    )
+
+  if getv(from_object, ['tunedTeacherModelSource']) is not None:
+    setv(
+        to_object,
+        ['tuned_teacher_model_source'],
+        getv(from_object, ['tunedTeacherModelSource']),
+    )
+
+  if getv(from_object, ['validationDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['validation_dataset_uri'],
+        getv(from_object, ['validationDatasetUri']),
+    )
+
+  if getv(from_object, ['promptDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['prompt_dataset_uri'],
+        getv(from_object, ['promptDatasetUri']),
+    )
+
+  if getv(from_object, ['hyperparameters']) is not None:
+    setv(
+        to_object,
+        ['hyperparameters'],
+        _DistillationHyperParameters_from_vertex(
+            getv(from_object, ['hyperparameters']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _DistillationSpec_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['promptDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['prompt_dataset_uri'],
+        getv(from_object, ['promptDatasetUri']),
+    )
+
+  if getv(from_object, ['baseTeacherModel']) is not None:
+    setv(
+        to_object,
+        ['base_teacher_model'],
+        getv(from_object, ['baseTeacherModel']),
+    )
+
+  if getv(from_object, ['hyperParameters']) is not None:
+    setv(
+        to_object,
+        ['hyper_parameters'],
+        _DistillationHyperParameters_from_vertex(
+            getv(from_object, ['hyperParameters']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['pipelineRootDirectory']) is not None:
+    setv(
+        to_object,
+        ['pipeline_root_directory'],
+        getv(from_object, ['pipelineRootDirectory']),
+    )
+
+  if getv(from_object, ['studentModel']) is not None:
+    setv(to_object, ['student_model'], getv(from_object, ['studentModel']))
+
+  if getv(from_object, ['trainingDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['training_dataset_uri'],
+        getv(from_object, ['trainingDatasetUri']),
+    )
+
+  if getv(from_object, ['tunedTeacherModelSource']) is not None:
+    setv(
+        to_object,
+        ['tuned_teacher_model_source'],
+        getv(from_object, ['tunedTeacherModelSource']),
+    )
+
+  if getv(from_object, ['validationDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['validation_dataset_uri'],
+        getv(from_object, ['validationDatasetUri']),
+    )
+
+  if getv(from_object, ['tuningMode']) is not None:
+    setv(to_object, ['tuning_mode'], getv(from_object, ['tuningMode']))
+
+  return to_object
+
+
 def _EvaluationConfig_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1337,7 +1486,9 @@ def _TuningJob_from_vertex(
     setv(
         to_object,
         ['distillation_spec'],
-        getv(from_object, ['distillationSpec']),
+        _DistillationSpec_from_vertex(
+            getv(from_object, ['distillationSpec']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['tuningDataStats']) is not None:
@@ -1411,18 +1562,29 @@ def _TuningJob_from_vertex(
   if getv(from_object, ['veoTuningSpec']) is not None:
     setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
-  if getv(from_object, ['distillationSamplingSpec']) is not None:
-    setv(
-        to_object,
-        ['distillation_sampling_spec'],
-        getv(from_object, ['distillationSamplingSpec']),
-    )
-
   if getv(from_object, ['tuningJobMetadata']) is not None:
     setv(
         to_object,
         ['tuning_job_metadata'],
         getv(from_object, ['tuningJobMetadata']),
+    )
+
+  if getv(from_object, ['veoLoraTuningSpec']) is not None:
+    setv(
+        to_object,
+        ['veo_lora_tuning_spec'],
+        getv(from_object, ['veoLoraTuningSpec']),
+    )
+
+  if getv(from_object, ['distillationSamplingSpec']) is not None:
+    setv(
+        to_object,
+        ['distillation_sampling_spec'],
+        _DistillationSamplingSpec_from_vertex(
+            getv(from_object, ['distillationSamplingSpec']),
+            to_object,
+            root_object,
+        ),
     )
 
   return to_object
