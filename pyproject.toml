@@ -80,3 +80,17 @@ disable_error_code = [
   "redundant-cast",
 ]
 implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = [
+    "genai._fern_interactions",
+    "genai._fern_interactions.*"
+]
+# Fern-generated package -- skip strict typing on generated code.
+ignore_errors = true
+implicit_reexport = true
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+]

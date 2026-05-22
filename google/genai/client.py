@@ -15,7 +15,8 @@
 
 import asyncio
 import os
-from typing import Any, Optional, Union
+import re
+from typing import Any, Optional, Union, cast
 
 import google.auth
 import pydantic
@@ -45,10 +46,31 @@ from . import _common
 from ._interactions import AsyncGeminiNextGenAPIClient, DEFAULT_MAX_RETRIES, GeminiNextGenAPIClient
 from . import _interactions
 
-from ._interactions.resources import AsyncInteractionsResource as AsyncNextGenInteractionsResource, InteractionsResource as NextGenInteractionsResource
-from ._interactions.resources import WebhooksResource, AsyncWebhooksResource, AgentsResource, AsyncAgentsResource
-_interactions_experimental_warned = False
-_agent_experimental_warned = False
+
+from ._fern_interactions.client import (
+    AsyncGeminiNextGenAPIClient as _FernAsyncClient,
+    GeminiNextGenAPIClient as _FernSyncClient,
+)
+from ._fern_interactions.core.client_wrapper import (
+    AsyncClientWrapper as _FernAsyncWrapper,
+    SyncClientWrapper as _FernSyncWrapper,
+)
+from ._fern_interactions.fern_interactions.client import (
+    AsyncFernInteractionsClient as _FernAsyncInteractionsClient,
+    FernInteractionsClient as _FernSyncInteractionsClient,
+)
+from ._interactions_wrapper import AsyncInteractions, Interactions
+from ._fern_interactions.fern_webhooks.client import (
+    AsyncFernWebhooksClient as _FernAsyncWebhooksClient,
+    FernWebhooksClient as _FernSyncWebhooksClient,
+)
+from ._fern_interactions.fern_agents.client import (
+    AsyncFernAgentsClient as _FernAsyncAgentsClient,
+    FernAgentsClient as _FernSyncAgentsClient,
+)
+
+_fern_interactions_experimental_warned = False
+_FERN_DEFAULT_MAX_RETRIES = 2
 
 class AsyncGeminiNextGenAPIClientAdapter(_interactions.AsyncGeminiNextGenAPIClientAdapter):
   """Adapter for the Gemini NextGen API Client."""
@@ -104,6 +126,198 @@ class GeminiNextGenAPIClientAdapter(_interactions.GeminiNextGenAPIClientAdapter)
     return headers
 
 
+# ---------------------------------------------------------------------------
+# Shared warning helpers (used by both Stainless and Fern nextgen paths)
+# ---------------------------------------------------------------------------
+
+def _warn_unsupported_http_opts(http_opts: HttpOptions) -> None:
+  if http_opts.extra_body:
+    warnings.warn(
+        'extra_body properties are not supported in `.interactions` yet',
+        category=UserWarning,
+        stacklevel=5,
+    )
+  retry_opts = http_opts.retry_options
+  if retry_opts is not None and (
+      retry_opts.initial_delay is not None
+      or retry_opts.max_delay is not None
+      or retry_opts.exp_base is not None
+      or retry_opts.jitter is not None
+      or retry_opts.http_status_codes is not None
+  ):
+    warnings.warn(
+        'Granular retry options are not supported in `.interactions` yet',
+        category=UserWarning,
+        stacklevel=5,
+    )
+
+
+def _warn_aiohttp_fallback(http_opts: HttpOptions) -> None:
+  async_client_args = http_opts.async_client_args or {}
+  if has_aiohttp and 'transport' not in async_client_args:
+    warnings.warn(
+        'Async interactions client cannot use aiohttp, fallingback to httpx.',
+        category=UserWarning,
+        stacklevel=5,
+    )
+
+
+def _resolve_max_retries(http_opts: HttpOptions) -> int:
+  retry_opts = http_opts.retry_options
+  if retry_opts is not None and retry_opts.attempts is not None:
+    return retry_opts.attempts
+  return _FERN_DEFAULT_MAX_RETRIES
+
+
+# ---------------------------------------------------------------------------
+# Fern auth-bridging wrapper subclasses
+# ---------------------------------------------------------------------------
+
+class _FernGenAiSyncClientWrapper(_FernSyncWrapper):
+  """Bridges Fern's static auth to BaseApiClient's dynamic auth."""
+
+  def __init__(self, *, api_client: BaseApiClient, **kwargs: Any) -> None:
+    super().__init__(**kwargs)
+    self._api_client = api_client
+
+  def get_headers(self) -> dict[str, str]:
+    headers = super().get_headers()
+    if self._api_client.api_key:
+      headers['x-goog-api-key'] = self._api_client.api_key
+      return headers
+    headers.pop('x-goog-api-key', None)
+    token = self._api_client._access_token()
+    headers['Authorization'] = f'Bearer {token}'
+    if (creds := self._api_client._credentials) and creds.quota_project_id:
+      headers['x-goog-user-project'] = creds.quota_project_id
+    return headers
+
+
+class _FernGenAiAsyncClientWrapper(_FernAsyncWrapper):
+  """Async equivalent of _FernGenAiSyncClientWrapper."""
+
+  def __init__(self, *, api_client: BaseApiClient, **kwargs: Any) -> None:
+    super().__init__(**kwargs)
+    self._api_client = api_client
+
+  def get_headers(self) -> dict[str, str]:
+    headers = super().get_headers()
+    if self._api_client.api_key:
+      headers['x-goog-api-key'] = self._api_client.api_key
+    else:
+      headers.pop('x-goog-api-key', None)
+    return headers
+
+  async def async_get_headers(self) -> dict[str, str]:
+    headers = self.get_headers()
+    if not self._api_client.api_key:
+      token = await self._api_client._async_access_token()
+      headers['Authorization'] = f'Bearer {token}'
+      if (creds := self._api_client._credentials) and creds.quota_project_id:
+        headers['x-goog-user-project'] = creds.quota_project_id
+    return headers
+
+
+# ---------------------------------------------------------------------------
+# Base URL + api_version helpers
+# ---------------------------------------------------------------------------
+
+_VERSION_SUFFIX = re.compile(r'/v\d+[a-z0-9]*/?$')
+
+
+def _fern_base_url(api_client: BaseApiClient) -> str:
+  http_opts = api_client._http_options
+  if api_client.vertexai:
+    # User already supplied a fully-formed URL with project/location -> trust as-is.
+    if http_opts.base_url and '/projects/' in http_opts.base_url:
+      return http_opts.base_url.rstrip('/')
+    # Trust the host BaseApiClient already picked (handles global,
+    # multi-regional, api_key+vertex, custom base_url). Append the
+    # project/location path Fern's per-call template will be joined onto.
+    host = (http_opts.base_url or f'https://{api_client.location}-aiplatform.googleapis.com').rstrip('/')
+    version = http_opts.api_version or 'v1beta1'
+    return f'{host}/{version}/projects/{api_client.project}/locations/{api_client.location}'
+  if http_opts.base_url:
+    return _VERSION_SUFFIX.sub('', http_opts.base_url).rstrip('/')
+  return 'https://generativelanguage.googleapis.com'
+
+
+# ---------------------------------------------------------------------------
+# Lazy Fern nextgen-client builders
+# ---------------------------------------------------------------------------
+
+def _build_sync_fern_nextgen(api_client: BaseApiClient) -> _FernSyncClient:
+  http_opts = api_client._http_options
+  _warn_unsupported_http_opts(http_opts)
+  max_retries = _resolve_max_retries(http_opts)
+  base_url = _fern_base_url(api_client)
+  # Path template per Fern raw client: `{wrapper.api_version}/{method.api_version}/<path>`.
+  # Vertex base_url already embeds the version, so wrapper api_version stays "".
+  # Gemini puts the version on the wrapper so callers can pass "" per-call.
+  wrapper_api_version = '' if api_client.vertexai else (http_opts.api_version or 'v1beta')
+  api_key = api_client.api_key or 'vertex-oauth'
+
+  nextgen = _FernSyncClient(
+      base_url=base_url,
+      api_key=api_key,
+      api_version=wrapper_api_version,
+      headers=http_opts.headers,
+      httpx_client=api_client._httpx_client,
+      timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+      max_retries=max_retries,
+  )
+
+  nextgen._client_wrapper = _FernGenAiSyncClientWrapper(
+      api_client=api_client,
+      base_url=base_url,
+      api_version=wrapper_api_version,
+      api_key=api_key,
+      headers=http_opts.headers,
+      httpx_client=api_client._httpx_client or nextgen._client_wrapper.httpx_client.httpx_client,
+      timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+      max_retries=max_retries,
+  )
+  nextgen._fern_interactions = None
+  nextgen._fern_webhooks = None
+  nextgen._fern_agents = None
+  return nextgen
+
+
+def _build_async_fern_nextgen(api_client: BaseApiClient) -> _FernAsyncClient:
+  http_opts = api_client._http_options
+  _warn_unsupported_http_opts(http_opts)
+  _warn_aiohttp_fallback(http_opts)
+  max_retries = _resolve_max_retries(http_opts)
+  base_url = _fern_base_url(api_client)
+  wrapper_api_version = '' if api_client.vertexai else (http_opts.api_version or 'v1beta')
+  api_key = api_client.api_key or 'vertex-oauth'
+
+  nextgen = _FernAsyncClient(
+      base_url=base_url,
+      api_key=api_key,
+      api_version=wrapper_api_version,
+      headers=http_opts.headers,
+      httpx_client=api_client._async_httpx_client,
+      timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+      max_retries=max_retries,
+  )
+
+  nextgen._client_wrapper = _FernGenAiAsyncClientWrapper(
+      api_client=api_client,
+      base_url=base_url,
+      api_version=wrapper_api_version,
+      api_key=api_key,
+      headers=http_opts.headers,
+      httpx_client=api_client._async_httpx_client or nextgen._client_wrapper.httpx_client.httpx_client,
+      timeout=http_opts.timeout / 1000 if http_opts.timeout else None,
+      max_retries=max_retries,
+  )
+  nextgen._fern_interactions = None
+  nextgen._fern_webhooks = None
+  nextgen._fern_agents = None
+  return nextgen
+
+
 class AsyncClient:
   """Client for making asynchronous (non-blocking) requests."""
 
@@ -120,6 +334,7 @@ class AsyncClient:
     self._tokens = AsyncTokens(self._api_client)
     self._operations = AsyncOperations(self._api_client)
     self._nextgen_client_instance: Optional[AsyncGeminiNextGenAPIClient] = None
+    self._fern_nextgen_client_instance: Optional[_FernAsyncClient] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPIClient:
@@ -189,32 +404,55 @@ class AsyncClient:
     return self._nextgen_client_instance
 
   @property
-  def interactions(self) -> AsyncNextGenInteractionsResource:
-    global _interactions_experimental_warned
-    if not _interactions_experimental_warned:
-      _interactions_experimental_warned = True
+  def _fern_nextgen_client(self) -> _FernAsyncClient:
+    if self._fern_nextgen_client_instance is None:
+      self._fern_nextgen_client_instance = _build_async_fern_nextgen(self._api_client)
+    return self._fern_nextgen_client_instance
+
+  @property
+  def _has_fern_nextgen_client(self) -> bool:
+    return getattr(self, '_fern_nextgen_client_instance', None) is not None
+
+  def _warn_fern_experimental(self) -> None:
+    global _fern_interactions_experimental_warned
+    if not _fern_interactions_experimental_warned:
+      _fern_interactions_experimental_warned = True
       warnings.warn(
-          'Interactions usage is experimental and may change in future versions.',
+          'Fern-backed integrations (fern_interactions / fern_webhooks / '
+          'fern_agents) are experimental and may change in future versions.',
           category=UserWarning,
           stacklevel=1,
       )
-    return self._nextgen_client.interactions
 
   @property
-  def webhooks(self) -> AsyncWebhooksResource:
-    return self._nextgen_client.webhooks
+  def fern_interactions(self) -> _FernAsyncInteractionsClient:
+    self._warn_fern_experimental()
+    return cast(_FernAsyncInteractionsClient, self._fern_nextgen_client.fern_interactions)
 
   @property
-  def agents(self) -> AsyncAgentsResource:
-    global _agent_experimental_warned
-    if not _agent_experimental_warned:
-      _agent_experimental_warned = True
-      warnings.warn(
-          'Agents usage is experimental and may change in future versions.',
-          category=UserWarning,
-          stacklevel=1,
-      )
-    return self._nextgen_client.agents
+  def fern_webhooks(self) -> _FernAsyncWebhooksClient:
+    self._warn_fern_experimental()
+    return cast(_FernAsyncWebhooksClient, self._fern_nextgen_client.fern_webhooks)
+
+  @property
+  def fern_agents(self) -> _FernAsyncAgentsClient:
+    self._warn_fern_experimental()
+    return cast(_FernAsyncAgentsClient, self._fern_nextgen_client.fern_agents)
+
+  @property
+  def interactions(self) -> AsyncInteractions:
+    self._warn_fern_experimental()
+    return AsyncInteractions(cast(_FernAsyncInteractionsClient, self._fern_nextgen_client.fern_interactions))
+
+  @property
+  def webhooks(self) -> _FernAsyncWebhooksClient:
+    self._warn_fern_experimental()
+    return cast(_FernAsyncWebhooksClient, self._fern_nextgen_client.fern_webhooks)
+
+  @property
+  def agents(self) -> _FernAsyncAgentsClient:
+    self._warn_fern_experimental()
+    return cast(_FernAsyncAgentsClient, self._fern_nextgen_client.fern_agents)
 
   @property
   def _has_nextgen_client(self) -> bool:
@@ -292,6 +530,9 @@ class AsyncClient:
 
     if self._has_nextgen_client:
       await self._nextgen_client.close()
+
+    if self._has_fern_nextgen_client:
+      self._fern_nextgen_client_instance = None
 
   async def __aenter__(self) -> 'AsyncClient':
     return self
@@ -475,6 +716,7 @@ class Client:
     self._tokens = Tokens(self._api_client)
     self._operations = Operations(self._api_client)
     self._nextgen_client_instance: Optional[GeminiNextGenAPIClient] = None
+    self._fern_nextgen_client_instance: Optional[_FernSyncClient] = None
 
   @staticmethod
   def _get_api_client(
@@ -566,32 +808,55 @@ class Client:
     return self._nextgen_client_instance
 
   @property
-  def interactions(self) -> NextGenInteractionsResource:
-    global _interactions_experimental_warned
-    if not _interactions_experimental_warned:
-      _interactions_experimental_warned = True
-      warnings.warn(
-        'Interactions usage is experimental and may change in future versions.',
-        category=UserWarning,
-        stacklevel=2,
-      )
-    return self._nextgen_client.interactions
+  def _fern_nextgen_client(self) -> _FernSyncClient:
+    if self._fern_nextgen_client_instance is None:
+      self._fern_nextgen_client_instance = _build_sync_fern_nextgen(self._api_client)
+    return self._fern_nextgen_client_instance
 
   @property
-  def webhooks(self) -> WebhooksResource:
-    return self._nextgen_client.webhooks
+  def _has_fern_nextgen_client(self) -> bool:
+    return getattr(self, '_fern_nextgen_client_instance', None) is not None
+
+  def _warn_fern_experimental(self) -> None:
+    global _fern_interactions_experimental_warned
+    if not _fern_interactions_experimental_warned:
+      _fern_interactions_experimental_warned = True
+      warnings.warn(
+          'Fern-backed integrations (fern_interactions / fern_webhooks / '
+          'fern_agents) are experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=2,
+      )
 
   @property
-  def agents(self) -> AgentsResource:
-    global _agent_experimental_warned
-    if not _agent_experimental_warned:
-      _agent_experimental_warned = True
-      warnings.warn(
-        'Agents usage is experimental and may change in future versions.',
-        category=UserWarning,
-        stacklevel=2,
-      )
-    return self._nextgen_client.agents
+  def fern_interactions(self) -> _FernSyncInteractionsClient:
+    self._warn_fern_experimental()
+    return cast(_FernSyncInteractionsClient, self._fern_nextgen_client.fern_interactions)
+
+  @property
+  def fern_webhooks(self) -> _FernSyncWebhooksClient:
+    self._warn_fern_experimental()
+    return cast(_FernSyncWebhooksClient, self._fern_nextgen_client.fern_webhooks)
+
+  @property
+  def fern_agents(self) -> _FernSyncAgentsClient:
+    self._warn_fern_experimental()
+    return cast(_FernSyncAgentsClient, self._fern_nextgen_client.fern_agents)
+
+  @property
+  def interactions(self) -> Interactions:
+    self._warn_fern_experimental()
+    return Interactions(cast(_FernSyncInteractionsClient, self._fern_nextgen_client.fern_interactions))
+
+  @property
+  def webhooks(self) -> _FernSyncWebhooksClient:
+    self._warn_fern_experimental()
+    return cast(_FernSyncWebhooksClient, self._fern_nextgen_client.fern_webhooks)
+
+  @property
+  def agents(self) -> _FernSyncAgentsClient:
+    self._warn_fern_experimental()
+    return cast(_FernSyncAgentsClient, self._fern_nextgen_client.fern_agents)
 
   @property
   def _has_nextgen_client(self) -> bool:
@@ -674,6 +939,9 @@ class Client:
 
     if self._has_nextgen_client:
       self._nextgen_client.close()
+
+    if self._has_fern_nextgen_client:
+      self._fern_nextgen_client_instance = None
 
   def __enter__(self) -> 'Client':
     return self

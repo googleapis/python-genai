@@ -40,22 +40,24 @@ def test_interactions_paths(mock_auth_default, client):
     else:
         expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
 
+    dummy_interaction = b'{"id": "test-interaction-id", "status": "completed", "created": "2026-05-22T17:10:40Z", "updated": "2026-05-22T17:10:40Z"}'
+    dummy_cancel_interaction = b'{"id": "test-interaction-id", "status": "cancelled", "created": "2026-05-22T17:10:40Z", "updated": "2026-05-22T17:10:40Z"}'
     with mock.patch.object(HTTPClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('GET', ''))
+        mock_send.return_value = Response(200, content=dummy_interaction, request=Request('GET', ''))
         client.interactions.get(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
 
         mock_send.reset_mock()
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, content=dummy_cancel_interaction, request=Request('POST', ''))
         client.interactions.cancel(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}/cancel'
 
         mock_send.reset_mock()
-        mock_send.return_value = Response(200, request=Request('DELETE', ''))
+        mock_send.return_value = Response(200, content=b'{}', request=Request('DELETE', ''))
         client.interactions.delete(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
@@ -77,22 +79,24 @@ async def test_async_interactions_paths(mock_auth_default, client):
     else:
         expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
 
+    dummy_interaction = b'{"id": "test-interaction-id", "status": "completed", "created": "2026-05-22T17:10:40Z", "updated": "2026-05-22T17:10:40Z"}'
+    dummy_cancel_interaction = b'{"id": "test-interaction-id", "status": "cancelled", "created": "2026-05-22T17:10:40Z", "updated": "2026-05-22T17:10:40Z"}'
     with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('GET', ''))
+        mock_send.return_value = Response(200, content=dummy_interaction, request=Request('GET', ''))
         await client.aio.interactions.get(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
 
         mock_send.reset_mock()
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, content=dummy_cancel_interaction, request=Request('POST', ''))
         await client.aio.interactions.cancel(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}/cancel'
 
         mock_send.reset_mock()
-        mock_send.return_value = Response(200, request=Request('DELETE', ''))
+        mock_send.return_value = Response(200, content=b'{}', request=Request('DELETE', ''))
         await client.aio.interactions.delete(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]

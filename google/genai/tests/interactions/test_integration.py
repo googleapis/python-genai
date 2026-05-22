@@ -21,7 +21,7 @@ pytest_plugins = ("pytest_asyncio",)
 
 def test_client_future_warning():
   with mock.patch.object(
-      client_lib, "_interactions_experimental_warned", new=False
+      client_lib, "_fern_interactions_experimental_warned", new=False
   ):
     client = client_lib.Client(
         api_key="placeholder",
@@ -30,14 +30,14 @@ def test_client_future_warning():
         }
     )
     with pytest.warns(
-        UserWarning, match="Interactions.*experimental"
+        UserWarning, match="Fern-backed.*experimental"
     ):
       _ = client.interactions
 
 
 def test_client_timeout():
   with mock.patch.object(
-      client_lib, "GeminiNextGenAPIClient", spec_set=True
+      client_lib, "_FernSyncClient"
   ) as mock_nextgen_client:
 
     client = client_lib.Client(
@@ -51,18 +51,17 @@ def test_client_timeout():
         base_url=mock.ANY,
         api_key="placeholder",
         api_version="v1alpha",
-        default_headers=mock.ANY,
-        http_client=mock.ANY,
+        headers=mock.ANY,
+        httpx_client=mock.ANY,
         timeout=5.0,
         max_retries=mock.ANY,
-        client_adapter=mock.ANY,
     )
 
 
 @pytest.mark.asyncio
 async def test_async_client_timeout():
   with mock.patch.object(
-      client_lib, "AsyncGeminiNextGenAPIClient", spec_set=True
+      client_lib, "_FernAsyncClient"
   ) as mock_nextgen_client:
 
     client = client_lib.Client(
@@ -76,9 +75,8 @@ async def test_async_client_timeout():
         base_url=mock.ANY,
         api_key="placeholder",
         api_version="v1alpha",
-        default_headers=mock.ANY,
-        http_client=mock.ANY,
+        headers=mock.ANY,
+        httpx_client=mock.ANY,
         timeout=5.0,
         max_retries=mock.ANY,
-        client_adapter=mock.ANY,
     )
