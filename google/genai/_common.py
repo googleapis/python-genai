@@ -23,16 +23,52 @@ import functools
 import logging
 import re
 import typing
-from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
+from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin, TYPE_CHECKING, TypeVar, overload
 import uuid
 import warnings
 import pydantic
 from pydantic import alias_generators
-from typing_extensions import TypeAlias
+from typing_extensions import Protocol, SupportsIndex, TypeAlias
 
 logger = logging.getLogger('google_genai._common')
 
 StringDict: TypeAlias = dict[str, Any]
+
+_T_co = TypeVar("_T_co", covariant=True)
+
+if TYPE_CHECKING:
+  # This works because str.__contains__ does not accept object (either in typeshed or at runtime)
+  # https://github.com/hauntsaninja/useful_types/blob/5e9710f3875107d068e7679fd7fec9cfab0eff3b/useful_types/__init__.py#L285
+  #
+  # Note: index() and count() methods are intentionally omitted to allow pyright to properly
+  # infer TypedDict types when dict literals are used in lists assigned to SequenceNotStr.
+  class SequenceNotStr(Protocol[_T_co]):
+
+    @overload
+    def __getitem__(self, index: SupportsIndex, /) -> _T_co:
+      ...
+
+    @overload
+    def __getitem__(self, index: slice, /) -> typing.Sequence[_T_co]:
+      ...
+
+    def __contains__(self, value: object, /) -> bool:
+      ...
+
+    def __len__(self) -> int:
+      ...
+
+    def __iter__(self) -> typing.Iterator[_T_co]:
+      ...
+
+    def __reversed__(self) -> typing.Iterator[_T_co]:
+      ...
+
+else:
+  # just point this to a normal `Sequence` at runtime to avoid having to special case
+  # deserializing our custom sequence type
+  SequenceNotStr = typing.Sequence
+
 
 
 class ExperimentalWarning(Warning):
